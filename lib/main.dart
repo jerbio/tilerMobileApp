@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/services/api/subCalendarEvent.dart';
+import 'components/tilelist/tileUi.dart';
+import 'data/subCakendarEvent.dart';
 import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/AuthorizedRoute.dart';
 
@@ -19,6 +22,7 @@ class TilerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
@@ -41,16 +45,12 @@ class TilerApp extends StatelessWidget {
         '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),
         '/LoggedOut': (BuildContext context) => new PreAuthenticationRoute()
       },
-      home: FutureBuilder<bool>(
-          future: authenticateUser(),
-          builder: (context, AsyncSnapshot<bool> snapshot) {
+      home: FutureBuilder(
+          future: subCalendarEventApi.getSubEvent('men-can-be-feminist'),
+          builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
             Widget retValue;
             if (snapshot.hasData) {
-              if (isAuthenticated) {
-                retValue = AuthorizedRoute();
-              } else {
-                retValue = PreAuthenticationRoute();
-              }
+              retValue = Tile(snapshot.data);
             } else {
               retValue = CircularProgressIndicator();
             }
