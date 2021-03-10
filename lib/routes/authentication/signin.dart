@@ -10,8 +10,6 @@ class SignInRoute extends StatefulWidget {
   SignInRouteState createState() => SignInRouteState();
 }
 
-// Define a corresponding State class.
-// This class holds data related to the Form.
 class SignInRouteState extends State<SignInRoute> {
   // Create a text controller. Later, use it to retrieve the
   // current value of the TextField.
