@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/tileUi.dart';
-import 'package:tiler_app/data/subCakendarEvent.dart';
+import 'package:tiler_app/components/tilelist/tileUI/tile.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authentication/register.dart';
 import 'package:tiler_app/services/api/subCalendarEvent.dart';
 import 'package:tiler_app/services/localAuthentication.dart';

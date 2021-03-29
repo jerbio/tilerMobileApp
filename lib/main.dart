@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/services/api/subCalendarEvent.dart';
-import 'components/tilelist/tileUi.dart';
-import 'data/subCakendarEvent.dart';
+import 'components/tilelist/tileUI/tile.dart';
+import 'data/subCalendarEvent.dart';
 import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/AuthorizedRoute.dart';
 
@@ -50,7 +50,10 @@ class TilerApp extends StatelessWidget {
           builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
             Widget retValue;
             if (snapshot.hasData) {
-              retValue = Tile(snapshot.data);
+              retValue = Padding(
+                padding: EdgeInsets.fromLTRB(5, 100, 0, 0),
+                child: Tile(snapshot.data),
+              );
             } else {
               retValue = CircularProgressIndicator();
             }
