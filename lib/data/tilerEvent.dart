@@ -1,18 +1,41 @@
 import 'dart:convert';
 
-import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/util.dart';
+import '../util.dart';
 
-import '../../constants.dart' as Constants;
+class TilerEvent {
+  String id;
+  String name;
+  String address;
+  String addressDescription;
+  String thirdpartyType;
+  String searchdDescription;
 
-class SubCalendarEventApi {
-  Future<SubCalendarEvent> getSubEvent(String id) {
-    String tilerDomain = Constants.tilerDomain;
-    String url = tilerDomain + 'api/SubCalendarEvent';
-    return getAdHocSubEventId(id);
+  double start;
+  double end;
+  bool isRecurring;
+  double colorOpacity;
+  int colorRed;
+  int colorGreen;
+  int colorBlue;
+
+  static T cast<T>(x) => x is T ? x : null;
+
+  TilerEvent.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    address = json['address'];
+    addressDescription = json['addressDescription'];
+    thirdpartyType = json['thirdpartyType'];
+    searchdDescription = json['searchdDescription'];
+    start = cast<int>(json['start']).toDouble();
+    end = cast<int>(json['end']).toDouble();
+    colorOpacity = cast<double>(json['colorOpacity']);
+    colorRed = cast<int>(json['colorRed']);
+    colorGreen = cast<int>(json['colorGreen']);
+    colorBlue = cast<int>(json['colorBlue']);
+    isRecurring = json['isRecurring'];
   }
 
-  Future<SubCalendarEvent> getAdHocSubEventId(String id) {
+  static Future<TilerEvent> getAdHocTilerEventId(String id) {
 //     {
 //     "Error": {
 //         "code": "0",
@@ -23,14 +46,19 @@ class SubCalendarEventApi {
 //         "start": 1615306440000,
 //         "end": 1615313640000,
 //         "name": "Morning 203 plans",
+//         "travelTimeBefore": 600000.0,
+//         "travelTimeAfter": 0.0,
 //         "address": "1240 hover st #200, longmont, co 80501, united states",
 //         "addressDescription": "1240 hover st #200, longmont, co 80501, united states",
 //         "searchdDescription": "gym",
+//         "rangeStart": 1615118400000,
+//         "rangeEnd": 1615118400000,
 //         "thirdpartyType": "tiler",
 //         "colorOpacity": 1.0,
 //         "colorRed": 38,
 //         "colorGreen": 255,
 //         "colorBlue": 128,
+//         "isPaused": false,
 //         "isComplete": true,
 //         "isRecurring": true
 //     }
@@ -42,8 +70,7 @@ class SubCalendarEventApi {
     Map<String, dynamic> subEventMap = jsonDecode(subEventString);
     subEventMap['Content']['id'] = id;
 
-    SubCalendarEvent retValue =
-        SubCalendarEvent.fromJson(subEventMap['Content']);
+    TilerEvent retValue = TilerEvent.fromJson(subEventMap['Content']);
 
     double timeSpanDifference = retValue.end - retValue.start;
     int currentTime = Utility.msCurrentTime;
@@ -63,7 +90,7 @@ class SubCalendarEventApi {
     retValue.start = revisedStart.toDouble();
     retValue.end = revisedEnd.toDouble();
 
-    Future<SubCalendarEvent> retFuture =
+    Future<TilerEvent> retFuture =
         new Future.delayed(const Duration(seconds: 1), () => retValue);
     return retFuture;
   }
