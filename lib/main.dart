@@ -45,15 +45,16 @@ class TilerApp extends StatelessWidget {
         '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),
         '/LoggedOut': (BuildContext context) => new PreAuthenticationRoute()
       },
-      home: FutureBuilder(
-          future: subCalendarEventApi.getSubEvent('men-can-be-feminist'),
-          builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
+      home: FutureBuilder<bool>(
+          future: authenticateUser(),
+          builder: (context, AsyncSnapshot<bool> snapshot) {
             Widget retValue;
             if (snapshot.hasData) {
-              retValue = Padding(
-                padding: EdgeInsets.fromLTRB(5, 100, 0, 0),
-                child: Tile(snapshot.data),
-              );
+              if (isAuthenticated) {
+                retValue = AuthorizedRoute();
+              } else {
+                retValue = PreAuthenticationRoute();
+              }
             } else {
               retValue = CircularProgressIndicator();
             }

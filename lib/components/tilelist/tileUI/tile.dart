@@ -40,9 +40,6 @@ class TileState extends State<Tile> {
     ];
 
     var currentTime = Utility.currentTime();
-    // if (widget.subEvent.isCurrent) {
-
-    // }
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),

@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 class Utility {
   static DateTime currentTime() {
     return DateTime.now();
@@ -77,8 +79,17 @@ class Utility {
     return retValue;
   }
 
+  static void noop() {
+    return;
+  }
+
+  static get getUuid {
+    return uuid.v4();
+  }
+
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
+  static var uuid = Uuid();
 }
