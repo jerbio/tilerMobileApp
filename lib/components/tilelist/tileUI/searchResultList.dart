@@ -2,8 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SearchResultList extends StatefulWidget {
-  List<Widget> children;
-  SearchResultList({children, Key key}) : super(key: key);
+  late List<Widget> children;
+  SearchResultList({children, Key? key}) : super(key: key) {
+    assert(children != null);
+    this.children = children;
+  }
   @override
   SearchResultListState createState() => SearchResultListState();
 }

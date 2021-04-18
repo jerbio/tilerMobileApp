@@ -3,22 +3,23 @@ import 'dart:convert';
 import '../util.dart';
 
 class TilerEvent {
-  String id;
-  String name;
-  String address;
-  String addressDescription;
-  String thirdpartyType;
-  String searchdDescription;
+  String? id;
+  String? name;
+  String? address;
+  String? addressDescription;
+  String? thirdpartyType;
+  String? searchdDescription;
 
-  double start;
-  double end;
-  bool isRecurring;
-  double colorOpacity;
-  int colorRed;
-  int colorGreen;
-  int colorBlue;
+  double? start;
+  double? end;
 
-  static T cast<T>(x) => x is T ? x : null;
+  bool? isRecurring;
+  double? colorOpacity;
+  int? colorRed;
+  int? colorGreen;
+  int? colorBlue;
+
+  static T? cast<T>(x) => x is T ? x : null;
 
   TilerEvent.fromJson(Map<String, dynamic> json) {
     name = json['name'];
@@ -26,8 +27,8 @@ class TilerEvent {
     addressDescription = json['addressDescription'];
     thirdpartyType = json['thirdpartyType'];
     searchdDescription = json['searchdDescription'];
-    start = cast<int>(json['start']).toDouble();
-    end = cast<int>(json['end']).toDouble();
+    start = cast<int>(json['start'])!.toDouble();
+    end = cast<int>(json['end'])!.toDouble();
     colorOpacity = cast<double>(json['colorOpacity']);
     colorRed = cast<int>(json['colorRed']);
     colorGreen = cast<int>(json['colorGreen']);
@@ -72,7 +73,7 @@ class TilerEvent {
 
     TilerEvent retValue = TilerEvent.fromJson(subEventMap['Content']);
 
-    double timeSpanDifference = retValue.end - retValue.start;
+    double timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;
 
     // currentTile

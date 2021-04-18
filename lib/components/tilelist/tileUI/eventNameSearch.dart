@@ -14,7 +14,7 @@ class EventNameSearchWidget extends SearchWidget {
       onInputCompletion,
       listView,
       renderBelowTextfield = true,
-      Key key})
+      Key? key})
       : super(
             onChanged: onChanged,
             textField: textField,
@@ -30,57 +30,63 @@ class EventNameSearchState extends SearchWidgetState {
   TileNameApi tileNameApi = new TileNameApi();
   TextEditingController textController = TextEditingController();
   Widget tileToEventNameWidget(TilerEvent tile) {
-    Container textContainer = Container(
-      child: Text(tile.name),
-    );
+    List<Widget> childWidgets = [];
+    Container textContainer;
+    if (tile.name != null) {
+      textContainer = Container(
+        child: Text(tile.name!),
+      );
+      childWidgets.add(textContainer);
 
-    Container iconContainer = Container(
-      alignment: Alignment.centerRight,
-      child: Container(
-        child: Row(
-          children: [
-            Container(
-              height: 30,
-              width: 30,
-              color: Colors.green,
-              child: ElevatedButton(
+      Container iconContainer = Container(
+        alignment: Alignment.centerRight,
+        child: Container(
+          child: Row(
+            children: [
+              Container(
+                height: 30,
+                width: 30,
+                color: Colors.green,
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        // primary: Colors.transparent, // background
+                        // onPrimary: Colors.white,
+                        // shadowColor: Colors.transparent, // foreground
+                        // alignment: Alignment(-1.0, -1.0)
+                        ),
+                    onPressed: Utility.noop,
+                    child: Icon(
+                      Icons.clear_rounded,
+                      color: Colors.grey,
+                    )),
+              ),
+              ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                      // primary: Colors.transparent, // background
-                      // onPrimary: Colors.white,
-                      // shadowColor: Colors.transparent, // foreground
-                      // alignment: Alignment(-1.0, -1.0)
+                      primary: Colors.transparent, // background
+                      onPrimary: Colors.white,
+                      shadowColor: Colors.transparent // foreground
                       ),
                   onPressed: Utility.noop,
-                  child: Icon(
-                    Icons.clear_rounded,
-                    color: Colors.grey,
-                  )),
-            ),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Colors.transparent, // background
-                    onPrimary: Colors.white,
-                    shadowColor: Colors.transparent // foreground
-                    ),
-                onPressed: Utility.noop,
-                child: Icon(Icons.check, color: Colors.grey)),
-            ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    primary: Colors.transparent, // background
-                    onPrimary: Colors.white,
-                    shadowColor: Colors.transparent // foreground
-                    ),
-                onPressed: Utility.noop,
-                child: Transform.rotate(
-                  angle: -pi / 2,
-                  child: Icon(Icons.chevron_right, color: Colors.grey),
-                ))
-          ],
+                  child: Icon(Icons.check, color: Colors.grey)),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                      primary: Colors.transparent, // background
+                      onPrimary: Colors.white,
+                      shadowColor: Colors.transparent // foreground
+                      ),
+                  onPressed: Utility.noop,
+                  child: Transform.rotate(
+                    angle: -pi / 2,
+                    child: Icon(Icons.chevron_right, color: Colors.grey),
+                  ))
+            ],
+          ),
         ),
-      ),
-    );
+      );
+      childWidgets.add(iconContainer);
+    }
     return Row(
-      children: [textContainer, iconContainer],
+      children: childWidgets,
     );
   }
 

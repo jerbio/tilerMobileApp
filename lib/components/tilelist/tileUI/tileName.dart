@@ -4,7 +4,9 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
-  TileName(this.subEvent);
+  TileName(this.subEvent) {
+    assert(this.subEvent != null);
+  }
   @override
   TileNameState createState() => TileNameState();
 }
@@ -13,10 +15,11 @@ class TileNameState extends State<TileName> {
   @override
   Widget build(BuildContext context) {
     var subEvent = widget.subEvent;
-    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed;
-    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue;
-    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen;
-    double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity;
+    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
+    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
+    String name = subEvent.name == null ? "" : subEvent.name!;
+    double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
 
     var nameColor = Color.fromRGBO(redColor, greenColor, blueColor, opacity);
     return Container(
@@ -32,7 +35,7 @@ class TileNameState extends State<TileName> {
                 borderRadius: BorderRadius.circular(12),
               )),
           Text(
-            widget.subEvent.name,
+            name,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
                 fontSize: 20,

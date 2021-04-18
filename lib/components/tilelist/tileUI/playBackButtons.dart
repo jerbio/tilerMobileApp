@@ -57,7 +57,7 @@ class PlayBackState extends State<PlayBack> {
           Text('Pause', style: TextStyle(fontSize: 12))
         ],
       );
-      playBackElements.insert(1, pauseButton);
+      playBackElements.insert(1, pauseButton as Column);
     }
 
     return Container(

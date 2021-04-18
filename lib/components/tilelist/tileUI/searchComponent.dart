@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class SearchWidget extends StatefulWidget {
-  Function onChanged;
-  Function onInputCompletion;
-  TextField textField;
+  Function? onChanged;
+  Function? onInputCompletion;
+  TextField? textField;
   bool renderBelowTextfield;
 
   SearchWidget(
@@ -12,7 +12,7 @@ class SearchWidget extends StatefulWidget {
       this.textField,
       this.onInputCompletion,
       this.renderBelowTextfield = true,
-      Key key})
+      Key? key})
       : super(key: key);
 
   @override
@@ -21,13 +21,15 @@ class SearchWidget extends StatefulWidget {
 
 class SearchWidgetState extends State<SearchWidget> {
   List<TextEditingController> createdControllers = [];
-  Widget listView;
+  Widget? listView;
   final Container blankResult = Container();
   Future<void> onInputChangeDefault() async {
-    Function onInputChangedAsync = this.widget.onChanged;
-    if (onInputChangedAsync != null) {
+    Function? onInputChangedAsync = this.widget.onChanged;
+    if (onInputChangedAsync != null &&
+        this.widget.textField != null &&
+        this.widget.textField!.controller != null) {
       List<Widget> retrievedWidgets =
-          await onInputChangedAsync(this.widget.textField.controller.text);
+          await onInputChangedAsync(this.widget.textField?.controller?.text);
       if (retrievedWidgets.length > 0) {
         setState(() {
           listView = ListView(
@@ -44,7 +46,8 @@ class SearchWidgetState extends State<SearchWidget> {
 
   @override
   Widget build(BuildContext context) {
-    TextField textField = this.widget.textField;
+    TextField? textField = this.widget.textField;
+    List<Widget> allWidgets = [];
 
     double heightOfTextContainer = 40;
     double topMarginOfListContainer = heightOfTextContainer;
@@ -53,14 +56,7 @@ class SearchWidgetState extends State<SearchWidget> {
       topMarginOfListContainer = 0;
       bottomMarginOfListContainer = heightOfTextContainer * 4;
     }
-    Container listContainer = Container(
-      margin: EdgeInsets.fromLTRB(
-          0, topMarginOfListContainer, 0, bottomMarginOfListContainer),
-      width: 200,
-      child: listView,
-    );
-    Function onInputChanged = this.onInputChangeDefault;
-    TextEditingController textEditingController;
+    TextEditingController? textEditingController;
 
     if (textField == null) {
       textEditingController = TextEditingController();
@@ -74,10 +70,12 @@ class SearchWidgetState extends State<SearchWidget> {
       this.widget.textField = textField;
       createdControllers.add(textEditingController);
     } else {
-      textEditingController = textField.controller;
+      if (textField.controller != null) {
+        textEditingController = textField.controller!;
+      }
     }
 
-    textEditingController.addListener(onInputChanged);
+    textEditingController?.addListener(this.onInputChangeDefault);
     Container textFieldContainer = Container(
       margin: EdgeInsets.fromLTRB(0, 13, 0, 0),
       height: heightOfTextContainer,
@@ -85,13 +83,27 @@ class SearchWidgetState extends State<SearchWidget> {
       child: textField,
     );
 
+    allWidgets.add(textFieldContainer);
+
     var backButton = Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: BackButton(
-          onPressed: this.widget.onInputCompletion,
+          onPressed: () => {
+            if (this.widget.onInputCompletion != null)
+              {this.widget.onInputCompletion!()}
+          },
         ));
+    allWidgets.add(backButton);
 
-    List<Widget> allWidgets = [textFieldContainer, backButton, listContainer];
+    Container listContainer = Container(
+      margin: EdgeInsets.fromLTRB(
+          0, topMarginOfListContainer, 0, bottomMarginOfListContainer),
+      width: 200,
+      child: listView,
+    );
+    allWidgets.add(listContainer);
+
+    allWidgets = [textFieldContainer, backButton, listContainer];
     return Container(
       margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
       child: Stack(
