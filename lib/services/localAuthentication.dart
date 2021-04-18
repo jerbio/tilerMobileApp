@@ -7,7 +7,7 @@ import 'api/authorization.dart';
 class Authentication {
   final storage = new FlutterSecureStorage();
   final _credentialKey = 'credentials';
-  AuthenticationData cachedCredentials;
+  AuthenticationData? cachedCredentials;
 
   Future saveCredentials(AuthenticationData credentials) async {
     String credentialJsonString = jsonEncode(credentials.toJson());
@@ -25,17 +25,17 @@ class Authentication {
   }
 
   Future reLoadCredentialsCache() async {
-    AuthenticationData authenticationData = await readCredentials();
+    AuthenticationData? authenticationData = await readCredentials();
     cachedCredentials = authenticationData;
     if (cachedCredentials != null) {
-      if (cachedCredentials.isExpired()) {
+      if (cachedCredentials!.isExpired()) {
         Authorization authorization = new Authorization();
-        if (cachedCredentials.username != null &&
-            cachedCredentials.username.isNotEmpty &&
-            cachedCredentials.password != null &&
-            cachedCredentials.password.isNotEmpty) {
+        if (cachedCredentials!.username != null &&
+            cachedCredentials!.username!.isNotEmpty &&
+            cachedCredentials!.password != null &&
+            cachedCredentials!.password!.isNotEmpty) {
           authenticationData = await authorization.getAuthenticationInfo(
-              cachedCredentials.username, cachedCredentials.password);
+              cachedCredentials!.username!, cachedCredentials!.password!);
           if (authenticationData.isValid) {
             cachedCredentials = authenticationData;
           } else {
@@ -46,8 +46,8 @@ class Authentication {
     }
   }
 
-  Future<AuthenticationData> readCredentials() async {
-    String credentialJsonString = await storage.read(key: _credentialKey);
+  Future<AuthenticationData?> readCredentials() async {
+    String? credentialJsonString = await storage.read(key: _credentialKey);
     AuthenticationData retValue;
     if (credentialJsonString != null && credentialJsonString.length > 0) {
       retValue =
@@ -61,7 +61,7 @@ class Authentication {
   bool isCachedCredentialValid() {
     bool retValue = false;
     if (cachedCredentials != null) {
-      if (!cachedCredentials.isExpired()) {
+      if (!cachedCredentials!.isExpired()) {
         retValue = true;
       }
     }

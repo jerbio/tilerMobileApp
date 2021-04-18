@@ -4,8 +4,12 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 
 class TravelTimeBefore extends StatefulWidget {
-  SubCalendarEvent subEvent;
-  TravelTimeBefore(this.subEvent);
+  SubCalendarEvent? subEvent;
+  late int travelTimeBeforeMs;
+  TravelTimeBefore(travelTimeBeforeMs, this.subEvent) {
+    assert(travelTimeBeforeMs != null);
+    this.travelTimeBeforeMs = travelTimeBeforeMs;
+  }
   @override
   TravelTimeBeforeState createState() => TravelTimeBeforeState();
 }
@@ -13,7 +17,7 @@ class TravelTimeBefore extends StatefulWidget {
 class TravelTimeBeforeState extends State<TravelTimeBefore> {
   @override
   Widget build(BuildContext context) {
-    int travelTimeBeforeMs = widget.subEvent.travelTimeBefore.toInt();
+    int travelTimeBeforeMs = this.widget.travelTimeBeforeMs;
     var duration = Duration(milliseconds: travelTimeBeforeMs);
     String durationString = duration.toString();
     durationString = Utility.toHuman(duration);

@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/services/api/subCalendarEvent.dart';
 
 class TileList extends StatefulWidget {
   final String title;
-  TileList({Key key, this.title}) : super(key: key);
+  TileList({Key? key, required this.title}) : super(key: key) {
+    assert(this.title != null);
+  }
 
   @override
   _TileListState createState() => _TileListState();

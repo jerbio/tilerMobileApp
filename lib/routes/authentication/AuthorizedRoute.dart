@@ -38,14 +38,19 @@ class AuthorizedRouteState extends State<StatefulWidget> {
           builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
             Widget retValue;
             if (snapshot.hasData) {
-              retValue = ListView(
-                children: [
-                  Tile(snapshot.data),
-                  Tile(snapshot.data),
-                  Tile(snapshot.data),
-                  Tile(snapshot.data)
-                ],
-              );
+              SubCalendarEvent? tileData = snapshot.data;
+              if (tileData != null) {
+                retValue = ListView(
+                  children: [
+                    Tile(tileData),
+                    Tile(tileData),
+                    Tile(tileData),
+                    Tile(tileData)
+                  ],
+                );
+              } else {
+                retValue = ListView(children: []);
+              }
             } else {
               retValue = CircularProgressIndicator();
             }
@@ -68,7 +73,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
       )
     ];
 
-    Widget bottomNavigator;
+    Widget? bottomNavigator;
     if (isSearchActive) {
       bottomNavigator = null;
       var eventNameSearch = Scaffold(

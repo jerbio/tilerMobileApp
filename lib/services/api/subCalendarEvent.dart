@@ -45,7 +45,7 @@ class SubCalendarEventApi {
     SubCalendarEvent retValue =
         SubCalendarEvent.fromJson(subEventMap['Content']);
 
-    double timeSpanDifference = retValue.end - retValue.start;
+    double timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;
 
     // currentTile
