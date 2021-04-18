@@ -19,7 +19,7 @@ class AuthorizedRoute extends StatelessWidget {
             builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
               Widget retValue;
               if (snapshot.hasData) {
-                retValue = Tile(snapshot.data);
+                retValue = Tile(snapshot.data!);
               } else {
                 retValue = CircularProgressIndicator();
               }
