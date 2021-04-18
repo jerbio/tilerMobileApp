@@ -4,7 +4,9 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 
 class TileAddress extends StatefulWidget {
   SubCalendarEvent subEvent;
-  TileAddress(this.subEvent);
+  TileAddress(this.subEvent) {
+    assert(this.subEvent != null);
+  }
   @override
   TileAddressState createState() => TileAddressState();
 }
@@ -12,7 +14,7 @@ class TileAddress extends StatefulWidget {
 class TileAddressState extends State<TileAddress> {
   @override
   Widget build(BuildContext context) {
-    String addressString = widget.subEvent.searchdDescription != null
+    String? addressString = widget.subEvent.searchdDescription != null
         ? widget.subEvent.searchdDescription
         : widget.subEvent.address;
     if (addressString != null && addressString.isNotEmpty) {
@@ -37,7 +39,7 @@ class TileAddressState extends State<TileAddress> {
             ),
           ),
           Text(
-            addressString,
+            addressString!,
             style: TextStyle(
                 fontSize: 15,
                 fontFamily: 'Rubik',

@@ -6,7 +6,9 @@ import 'package:tiler_app/util.dart';
 
 class Timeline extends StatefulWidget {
   SubCalendarEvent subEvent;
-  Timeline(this.subEvent);
+  Timeline(this.subEvent) {
+    assert(this.subEvent != null);
+  }
   @override
   TimelineState createState() => TimelineState();
 }
@@ -29,6 +31,9 @@ class TimelineState extends State<Timeline> {
       widthOfUsedUpDuration =
           (durationInMs / subEventDuratonInMs) * maxWidthOfTimeline;
 
+      int colorRed = widget.subEvent.colorRed ?? 0;
+      int colorGreen = widget.subEvent.colorGreen ?? 0;
+      int colorBlue = widget.subEvent.colorBlue ?? 0;
       String startString = formatter.format(
           DateTime.fromMillisecondsSinceEpoch(widget.subEvent.start.toInt()));
       String endString = formatter.format(
@@ -62,11 +67,7 @@ class TimelineState extends State<Timeline> {
                   margin: new EdgeInsets.fromLTRB(evaluatedPosition, 0, 0, 0),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      color: Color.fromRGBO(
-                          widget.subEvent.colorRed,
-                          widget.subEvent.colorGreen,
-                          widget.subEvent.colorBlue,
-                          1),
+                      color: Color.fromRGBO(colorRed, colorGreen, colorBlue, 1),
                       boxShadow: [
                         BoxShadow(
                             color: Color.fromRGBO(150, 150, 150, 0.9),
@@ -120,7 +121,7 @@ class TimelineState extends State<Timeline> {
         ),
       );
     } else {
-      int durationInMs = widget.subEvent.start.toInt() - Utility.msCurrentTime;
+      int durationInMs = widget.subEvent.start.toInt() - Utility.msCurrentTime as int;
       Duration durationToStart = Duration(milliseconds: durationInMs);
       String elapsedTime = Utility.toHuman(durationToStart);
       timeline = Container(

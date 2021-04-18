@@ -11,7 +11,9 @@ import 'timeline.dart';
 
 class Tile extends StatefulWidget {
   SubCalendarEvent subEvent;
-  Tile(this.subEvent);
+  Tile(this.subEvent) {
+    assert(this.subEvent != null);
+  }
   @override
   TileState createState() => TileState();
 }
@@ -20,9 +22,9 @@ class TileState extends State<Tile> {
   @override
   Widget build(BuildContext context) {
     var subEvent = widget.subEvent;
-    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed;
-    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue;
-    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen;
+    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
+    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
 
