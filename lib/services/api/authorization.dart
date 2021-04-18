@@ -13,7 +13,8 @@ class Authorization {
         '&password=' +
         password +
         '&grant_type=password';
-    http.Response response = await http.post(url,
+    Uri uri = Uri.parse(url);
+    http.Response response = await http.post(uri,
         headers: {"Content-Type": "text/plain"},
         body: requestBody,
         encoding: Encoding.getByName("utf-8"));
