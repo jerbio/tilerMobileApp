@@ -79,7 +79,7 @@ class SearchWidgetState extends State<SearchWidget> {
     Container textFieldContainer = Container(
       margin: EdgeInsets.fromLTRB(0, 13, 0, 0),
       height: heightOfTextContainer,
-      width: 400,
+      // width: 400,
       child: textField,
     );
 
@@ -98,7 +98,7 @@ class SearchWidgetState extends State<SearchWidget> {
     Container listContainer = Container(
       margin: EdgeInsets.fromLTRB(
           0, topMarginOfListContainer, 0, bottomMarginOfListContainer),
-      width: 200,
+      padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
       child: listView,
     );
     allWidgets.add(listContainer);

@@ -40,7 +40,7 @@ class TileState extends State<Tile> {
       Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TravelTimeBefore(
-              this.widget.subEvent.travelTimeBefore ?? 0, subEvent)),
+              this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)),
     ];
 
     var currentTime = Utility.currentTime();
