@@ -34,6 +34,9 @@ class TilerEvent {
     colorGreen = cast<int>(json['colorGreen']);
     colorBlue = cast<int>(json['colorBlue']);
     isRecurring = json['isRecurring'];
+    if (json.containsKey('id')) {
+      id = json['id'];
+    }
   }
 
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
@@ -92,7 +95,7 @@ class TilerEvent {
     retValue.end = revisedEnd.toDouble();
 
     Future<TilerEvent> retFuture =
-        new Future.delayed(const Duration(seconds: 1), () => retValue);
+        new Future.delayed(const Duration(seconds: 0), () => retValue);
     return retFuture;
   }
 }

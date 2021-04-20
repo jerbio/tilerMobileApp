@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class Utility {
@@ -85,6 +86,10 @@ class Utility {
 
   static get getUuid {
     return uuid.v4();
+  }
+
+  static String returnMonth(DateTime date) {
+    return new DateFormat.MMMM().format(date);
   }
 
   static Duration thirtyMin = new Duration(minutes: 30);

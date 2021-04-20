@@ -6,6 +6,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authentication/register.dart';
 import 'package:tiler_app/services/api/subCalendarEvent.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/util.dart';
 
 class AuthorizedRoute extends StatefulWidget {
   @override
@@ -34,7 +35,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
     bool isSearchActive = selecedBottomMenu == 0;
     List<Widget> widgetChildren = [
       FutureBuilder(
-          future: subCalendarEventApi.getSubEvent('men-can-be-feminist'),
+          future: subCalendarEventApi.getSubEvent(Utility.getUuid),
           builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
             Widget retValue;
             if (snapshot.hasData) {

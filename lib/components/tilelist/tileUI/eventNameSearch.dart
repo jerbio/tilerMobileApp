@@ -33,61 +33,104 @@ class EventNameSearchState extends SearchWidgetState {
     List<Widget> childWidgets = [];
     Container textContainer;
     if (tile.name != null) {
-      textContainer = Container(
-        child: Text(tile.name!),
-      );
-      childWidgets.add(textContainer);
-
-      Container iconContainer = Container(
-        alignment: Alignment.centerRight,
-        child: Container(
-          child: Row(
+      if (tile.start != null && tile.end != null) {
+        DateTime start =
+            DateTime.fromMillisecondsSinceEpoch(tile.start!.toInt());
+        DateTime end = DateTime.fromMillisecondsSinceEpoch(tile.end!.toInt());
+        String monthString = Utility.returnMonth(end);
+        monthString = monthString.substring(0, 3);
+        Widget deadlineContainer = Container(
+          margin: EdgeInsets.fromLTRB(0, 15, 0, 0),
+          padding: EdgeInsets.fromLTRB(15, 0, 20, 0),
+          child: Column(
             children: [
-              Container(
-                height: 30,
-                width: 30,
-                color: Colors.green,
-                child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        // primary: Colors.transparent, // background
-                        // onPrimary: Colors.white,
-                        // shadowColor: Colors.transparent, // foreground
-                        // alignment: Alignment(-1.0, -1.0)
-                        ),
-                    onPressed: Utility.noop,
-                    child: Icon(
-                      Icons.clear_rounded,
-                      color: Colors.grey,
-                    )),
-              ),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      primary: Colors.transparent, // background
-                      onPrimary: Colors.white,
-                      shadowColor: Colors.transparent // foreground
-                      ),
-                  onPressed: Utility.noop,
-                  child: Icon(Icons.check, color: Colors.grey)),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      primary: Colors.transparent, // background
-                      onPrimary: Colors.white,
-                      shadowColor: Colors.transparent // foreground
-                      ),
-                  onPressed: Utility.noop,
-                  child: Transform.rotate(
-                    angle: -pi / 2,
-                    child: Icon(Icons.chevron_right, color: Colors.grey),
-                  ))
+              Text(monthString, style: TextStyle(fontSize: 25)),
+              Text(end.day.toString(), style: TextStyle(fontSize: 20)),
             ],
           ),
+        );
+        childWidgets.add(deadlineContainer);
+      }
+
+      List<Widget> detailWidgets = [];
+      textContainer = Container(
+        margin: EdgeInsets.fromLTRB(30, 10, 0, 0),
+        child: Text(tile.name!, style: TextStyle(fontSize: 18)),
+      );
+      detailWidgets.add(textContainer);
+
+      Container iconContainer = Container(
+        width: 150,
+        margin: EdgeInsets.fromLTRB(175, 35, 0, 0),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.clear_rounded),
+              color: Colors.red,
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.check),
+              color: Colors.green,
+              onPressed: () {},
+            ),
+            Container(
+                margin: EdgeInsets.fromLTRB(0, 10, 5, 0),
+                child: IconButton(
+                  icon: Transform.rotate(
+                    angle: -pi / 2,
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                      size: 35,
+                    ),
+                  ),
+                  onPressed: () {},
+                ))
+          ],
         ),
       );
-      childWidgets.add(iconContainer);
+      detailWidgets.add(iconContainer);
+
+      Container detailContainer = Container(
+        // color: Colors.blue,
+        margin: EdgeInsets.fromLTRB(60, 10, 0, 0),
+        child: Stack(
+          children: detailWidgets,
+        ),
+      );
+      childWidgets.add(detailContainer);
     }
-    return Row(
-      children: childWidgets,
-    );
+
+    Key dismissibleKey = Key(tile.id!);
+    Widget retValue = Dismissible(
+        key: dismissibleKey,
+        child: Container(
+          height: 90,
+          padding: EdgeInsets.fromLTRB(7, 7, 7, 7),
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+                bottomLeft: Radius.circular(10),
+                bottomRight: Radius.circular(10)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 5,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: childWidgets,
+          ),
+        ));
+
+    return retValue;
   }
 
   Future<List<Widget>> _onInputFieldChange(String name) async {
