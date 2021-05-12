@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/tileUI/searchComponent.dart';
+import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/util.dart';

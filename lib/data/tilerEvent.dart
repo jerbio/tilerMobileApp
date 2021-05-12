@@ -1,8 +1,8 @@
 import 'dart:convert';
-
+import 'package:tiler_app/data/tileObject.dart';
 import '../util.dart';
 
-class TilerEvent {
+class TilerEvent extends TilerObj {
   String? id;
   String? name;
   String? address;

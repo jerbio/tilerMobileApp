@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/services/api/subCalendarEvent.dart';
-import 'components/tilelist/tileUI/tile.dart';
-import 'data/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/AuthorizedRoute.dart';
 

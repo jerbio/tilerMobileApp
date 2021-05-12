@@ -64,7 +64,7 @@ class SubCalendarEventApi {
     retValue.end = revisedEnd.toDouble();
 
     Future<SubCalendarEvent> retFuture =
-        new Future.delayed(const Duration(seconds: 1), () => retValue);
+        new Future.delayed(const Duration(seconds: 0), () => retValue);
     return retFuture;
   }
 }

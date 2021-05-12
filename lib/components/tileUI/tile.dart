@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/tileUI/playBackButtons.dart';
-import 'package:tiler_app/components/tilelist/tileUI/tileAddress.dart';
-import 'package:tiler_app/components/tilelist/tileUI/tileName.dart';
-import 'package:tiler_app/components/tilelist/tileUI/travelTimeBefore.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/components/tileUI/tileAddress.dart';
+import 'package:tiler_app/components/tileUI/tileName.dart';
+import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 
