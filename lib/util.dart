@@ -2,6 +2,20 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class Utility {
+  final List<String> months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
   static DateTime currentTime() {
     return DateTime.now();
   }
@@ -11,7 +25,7 @@ class Utility {
   }
 
   static String toHuman(Duration duration,
-      {bool all = false, bool includeSeconds = false}) {
+      {bool all = false, bool includeSeconds = false, abbreviations = false}) {
     Duration durationLeft = duration;
     var stringArr = [];
     int days = durationLeft.inDays;
@@ -31,8 +45,14 @@ class Utility {
       durationLeft = durationLeft - hourDuration;
 
       String hourString = 'hours';
+      if (abbreviations) {
+        hourString = 'hrs';
+      }
       if (hours == 1) {
         hourString = 'hour';
+        if (abbreviations) {
+          hourString = 'hr';
+        }
       }
       stringArr.add('$hours $hourString');
     }
@@ -43,8 +63,14 @@ class Utility {
       durationLeft = durationLeft - minDuration;
 
       String minuteString = 'minutes';
+      if (abbreviations) {
+        minuteString = 'mins';
+      }
       if (minute == 1) {
         minuteString = 'minute';
+        if (abbreviations) {
+          minuteString = 'min';
+        }
       }
       stringArr.add('$minute $minuteString');
     }
@@ -56,8 +82,14 @@ class Utility {
         durationLeft = durationLeft - secondDuration;
 
         String secondString = 'seconds';
+        if (abbreviations) {
+          secondString = 's';
+        }
         if (seconds == 1) {
           secondString = 'second';
+          if (abbreviations) {
+            secondString = 's';
+          }
         }
         stringArr.add('$seconds $secondString');
       }
@@ -97,4 +129,59 @@ class Utility {
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
   static var uuid = Uuid();
+}
+
+extension DurationHuman on Duration {
+  String get toHuman {
+    return Utility.toHuman(this, includeSeconds: false);
+  }
+}
+
+extension DateTimeHuman on DateTime {
+  bool get isToday {
+    DateTime begin = DateTime(this.year, this.month, this.day);
+    Duration fullDay = Duration(days: 1);
+    DateTime end = begin.add(fullDay);
+    return this.microsecondsSinceEpoch >= begin.microsecondsSinceEpoch &&
+        this.microsecondsSinceEpoch < end.microsecondsSinceEpoch;
+  }
+
+  bool get isTomorrow {
+    DateTime begin = DateTime(this.year, this.month, this.day);
+    Duration fullDay = Duration(days: 1);
+    begin = begin.add(fullDay);
+    DateTime end = begin.add(fullDay);
+    return this.microsecondsSinceEpoch >= begin.microsecondsSinceEpoch &&
+        this.microsecondsSinceEpoch < end.microsecondsSinceEpoch;
+  }
+
+  bool get isYesterday {
+    DateTime begin = DateTime(this.year, this.month, this.day);
+    Duration fullDay = Duration(days: -1);
+    begin = begin.add(fullDay);
+    DateTime end = begin.add(fullDay);
+    return this.microsecondsSinceEpoch >= begin.microsecondsSinceEpoch &&
+        this.microsecondsSinceEpoch < end.microsecondsSinceEpoch;
+  }
+
+  String get humanDate {
+    String dayString = '';
+    if (this.isToday) {
+      dayString = 'Today';
+    } else if (this.isYesterday) {
+      dayString = 'Yesterday';
+    } else if (this.isTomorrow) {
+      dayString = 'Tomorrow';
+    } else {
+      DateTime now = DateTime.now();
+      bool isSameYear = now.year == this.year;
+      if (isSameYear) {
+        dayString = DateFormat('EEE, MMM d').format(this);
+      } else {
+        dayString = DateFormat('EEE, MMM d, ' 'yy').format(this);
+      }
+    }
+
+    return dayString;
+  }
 }

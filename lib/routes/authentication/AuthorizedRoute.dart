@@ -1,12 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/tileUI/eventNameSearch.dart';
-import 'package:tiler_app/components/tilelist/tileUI/tile.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/components/status.dart';
+import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/routes/authentication/register.dart';
-import 'package:tiler_app/services/api/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
-import 'package:tiler_app/util.dart';
 
 class AuthorizedRoute extends StatefulWidget {
   @override
@@ -33,30 +32,9 @@ class AuthorizedRouteState extends State<StatefulWidget> {
   @override
   Widget build(BuildContext context) {
     bool isSearchActive = selecedBottomMenu == 0;
+    DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      FutureBuilder(
-          future: subCalendarEventApi.getSubEvent(Utility.getUuid),
-          builder: (context, AsyncSnapshot<SubCalendarEvent> snapshot) {
-            Widget retValue;
-            if (snapshot.hasData) {
-              SubCalendarEvent? tileData = snapshot.data;
-              if (tileData != null) {
-                retValue = ListView(
-                  children: [
-                    Tile(tileData),
-                    Tile(tileData),
-                    Tile(tileData),
-                    Tile(tileData)
-                  ],
-                );
-              } else {
-                retValue = ListView(children: []);
-              }
-            } else {
-              retValue = CircularProgressIndicator();
-            }
-            return retValue;
-          }),
+      TileList(),
       ElevatedButton(
         child: Text('Log Out'),
         onPressed: () async {
@@ -71,8 +49,10 @@ class AuthorizedRouteState extends State<StatefulWidget> {
             MaterialPageRoute(builder: (context) => RegistrationRoute()),
           );
         },
-      )
+      ),
+      dayStatusWidget
     ];
+    dayStatusWidget.onDayStatusChange(DateTime.now());
 
     Widget? bottomNavigator;
     if (isSearchActive) {
@@ -121,6 +101,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
       );
     }
     return Scaffold(
+        backgroundColor: Colors.yellow,
         body: Stack(
           children: widgetChildren,
         ),
