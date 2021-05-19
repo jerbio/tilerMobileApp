@@ -63,7 +63,7 @@ class DayStatusWidgetState extends State<DayStatusWidget> {
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: Colors.green,
+                    color: Color.fromRGBO(9, 203, 156, 1),
                     size: 30,
                   ),
                   Text(completedCount.toString(),
