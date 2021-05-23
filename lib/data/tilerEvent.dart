@@ -3,7 +3,7 @@ import 'package:tiler_app/data/tileObject.dart';
 import '../util.dart';
 
 class TilerEvent extends TilerObj {
-  String? id;
+  // String? id;
   String? name;
   String? address;
   String? addressDescription;
@@ -21,10 +21,16 @@ class TilerEvent extends TilerObj {
 
   static T? cast<T>(x) => x is T ? x : null;
 
-  TilerEvent.fromJson(Map<String, dynamic> json) {
-    name = json['name'];
-    address = json['address'];
-    addressDescription = json['addressDescription'];
+  TilerEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    if (json.containsKey('name')) {
+      name = json['name'];
+    }
+    if (json.containsKey('address')) {
+      address = json['address'];
+    }
+    if (json.containsKey('addressDescription')) {
+      addressDescription = json['addressDescription'];
+    }
     thirdpartyType = json['thirdpartyType'];
     searchdDescription = json['searchdDescription'];
     start = cast<int>(json['start'])!.toDouble();
@@ -34,9 +40,6 @@ class TilerEvent extends TilerObj {
     colorGreen = cast<int>(json['colorGreen']);
     colorBlue = cast<int>(json['colorBlue']);
     isRecurring = json['isRecurring'];
-    if (json.containsKey('id')) {
-      id = json['id'];
-    }
   }
 
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
