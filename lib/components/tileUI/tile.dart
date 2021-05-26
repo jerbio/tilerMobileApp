@@ -9,17 +9,17 @@ import 'package:tiler_app/util.dart';
 
 import 'timeline.dart';
 
-class Tile extends StatefulWidget {
+class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
-  Tile(subEvent) {
+  TileWidget(subEvent) {
     assert(subEvent != null);
     this.subEvent = subEvent;
   }
   @override
-  TileState createState() => TileState();
+  TileWidgetState createState() => TileWidgetState();
 }
 
-class TileState extends State<Tile> {
+class TileWidgetState extends State<TileWidget> {
   @override
   Widget build(BuildContext context) {
     var subEvent = widget.subEvent;

@@ -19,6 +19,8 @@ class TilerEvent extends TilerObj {
   int? colorGreen;
   int? colorBlue;
 
+  bool? isAllDay = false;
+
   static T? cast<T>(x) => x is T ? x : null;
 
   TilerEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
