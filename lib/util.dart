@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+import 'package:faker/faker.dart';
+import 'data/timeline.dart';
 
 class Utility {
   final List<String> months = [
@@ -16,8 +18,18 @@ class Utility {
     'November',
     'December'
   ];
+  static final Faker _faker = Faker();
   static DateTime currentTime() {
     return DateTime.now();
+  }
+
+  static Timeline todayTimeline() {
+    DateTime currentTime = DateTime.now();
+    DateTime begin = new DateTime(currentTime.year, currentTime.month, currentTime.day);
+    DateTime end = begin.add(Utility.oneDay);
+
+    Timeline retValue = Timeline(start: begin.millisecondsSinceEpoch, end:end.millisecondsSinceEpoch);
+    return retValue;
   }
 
   static get msCurrentTime {
@@ -124,10 +136,15 @@ class Utility {
     return new DateFormat.MMMM().format(date);
   }
 
+  static get randomName {
+    return _faker.person.name();
+  }
+
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
+  static Duration oneDay = new Duration(days: 1);
   static var uuid = Uuid();
 }
 
@@ -136,6 +153,8 @@ extension DurationHuman on Duration {
     return Utility.toHuman(this, includeSeconds: false);
   }
 }
+
+
 
 extension DateTimeHuman on DateTime {
   bool get isToday {

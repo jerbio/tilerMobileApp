@@ -7,7 +7,7 @@ import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 
-import 'timeline.dart';
+import 'timeScrub.dart';
 
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
@@ -47,7 +47,7 @@ class TileWidgetState extends State<TileWidget> {
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-        child: Timeline(widget.subEvent)));
+        child: TimeScrubWidget(widget.subEvent)));
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),

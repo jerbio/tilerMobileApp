@@ -16,6 +16,10 @@ class SubCalendarEvent extends TilerEvent {
     return retValue;
   }
 
+  SubCalendarEvent({double? start, double? end, String? name, String? address, String? addressDescription, String? id, String? userId}):super(
+    start: start, end: end, name: name, address: address, addressDescription:addressDescription,id: id, userId: userId,
+    );
+
   get isCurrent {
     int currentTimeInMs = Utility.msCurrentTime;
     if (this.start != null && this.end != null) {

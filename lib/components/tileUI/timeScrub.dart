@@ -4,16 +4,16 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 
-class Timeline extends StatefulWidget {
+class TimeScrubWidget extends StatefulWidget {
   SubCalendarEvent subEvent;
-  Timeline(this.subEvent) {
+  TimeScrubWidget(this.subEvent) {
     assert(this.subEvent != null);
   }
   @override
-  TimelineState createState() => TimelineState();
+  TimeScrubWidgetState createState() => TimeScrubWidgetState();
 }
 
-class TimelineState extends State<Timeline> {
+class TimeScrubWidgetState extends State<TimeScrubWidget> {
   final double maxWidthOfTimeline = 280;
   final double diameterOfBall = 10;
   final DateFormat formatter = DateFormat.jm();

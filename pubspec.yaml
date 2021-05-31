@@ -31,7 +31,9 @@ dependencies:
   flutter_secure_storage: ^4.1.0
   http: ^0.13.1
   intl: ^0.17.0
+  faker: ^2.0.0
   uuid: 3.0.4
+  
 
 dev_dependencies:
   flutter_test:

@@ -13,15 +13,17 @@ class TilerEvent extends TilerObj {
   double? start;
   double? end;
 
-  bool? isRecurring;
-  double? colorOpacity;
-  int? colorRed;
-  int? colorGreen;
-  int? colorBlue;
+  bool? isRecurring = false;
+  double? colorOpacity = 1;
+  int? colorRed = 127;
+  int? colorGreen = 127;
+  int? colorBlue = 127;
 
   bool? isAllDay = false;
 
   static T? cast<T>(x) => x is T ? x : null;
+
+  TilerEvent({this.name, this.start, this.end, this.address, this.addressDescription, String? id, String? userId}):super(id: id, userId: userId);
 
   TilerEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('name')) {
