@@ -11,6 +11,13 @@ class TileBatch extends StatefulWidget {
 
 class TileBatchState extends State<TileBatch> {
   List<TilerEvent> tiles = [];
+
+  void updateSubEvents(List<TilerEvent> updatedTiles) {
+    this.setState(() {
+      this.tiles = updatedTiles;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
