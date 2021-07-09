@@ -71,7 +71,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
         ),
         child: Container(
           decoration: BoxDecoration(
-              color: Colors.yellow,
+              color: Color.fromRGBO(250, 254, 255, 1),
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.topRight,
@@ -101,7 +101,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
       );
     }
     return Scaffold(
-        backgroundColor: Colors.yellow,
+        backgroundColor: Color.fromRGBO(250, 254, 255, 1),
         body: Stack(
           children: widgetChildren,
         ),
