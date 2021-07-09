@@ -19,16 +19,35 @@ class Utility {
     'December'
   ];
   static final Faker _faker = Faker();
+  static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static DateTime currentTime() {
     return DateTime.now();
   }
 
+  static int getDayIndex(DateTime time) {
+    var spanInMicroSecond = time.microsecondsSinceEpoch -
+        Utility._beginningOfTime.microsecondsSinceEpoch;
+    int retValue = spanInMicroSecond ~/ Duration.microsecondsPerDay;
+    return retValue;
+  }
+
+  static DateTime getTimeFromIndex(int dayIndex) {
+    Duration totalDuration = Duration(days: dayIndex);
+    DateTime retValueShifted = Utility._beginningOfTime.add(totalDuration);
+    DateTime retValue = DateTime(
+        retValueShifted.year, retValueShifted.month, retValueShifted.day);
+    return retValue;
+  }
+
   static Timeline todayTimeline() {
     DateTime currentTime = DateTime.now();
-    DateTime begin = new DateTime(currentTime.year, currentTime.month, currentTime.day);
+    DateTime begin =
+        new DateTime(currentTime.year, currentTime.month, currentTime.day);
     DateTime end = begin.add(Utility.oneDay);
 
-    Timeline retValue = Timeline(start: begin.millisecondsSinceEpoch, end:end.millisecondsSinceEpoch);
+    Timeline retValue = Timeline(
+        start: begin.millisecondsSinceEpoch.toDouble(),
+        end: end.millisecondsSinceEpoch.toDouble());
     return retValue;
   }
 
@@ -145,6 +164,7 @@ class Utility {
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
   static Duration oneDay = new Duration(days: 1);
+  static Duration sevenDays = new Duration(days: 7);
   static var uuid = Uuid();
 }
 
@@ -154,11 +174,11 @@ extension DurationHuman on Duration {
   }
 }
 
-
-
 extension DateTimeHuman on DateTime {
   bool get isToday {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
     DateTime end = begin.add(fullDay);
     return this.microsecondsSinceEpoch >= begin.microsecondsSinceEpoch &&
@@ -166,7 +186,9 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isTomorrow {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
     begin = begin.add(fullDay);
     DateTime end = begin.add(fullDay);
@@ -175,7 +197,9 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isYesterday {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: -1);
     begin = begin.add(fullDay);
     DateTime end = begin.add(fullDay);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
@@ -44,6 +45,9 @@ class SubCalendarEventApi {
 
     SubCalendarEvent retValue =
         SubCalendarEvent.fromJson(subEventMap['Content']);
+    retValue.colorBlue = Random().nextInt(255);
+    retValue.colorGreen = Random().nextInt(255);
+    retValue.colorRed = Random().nextInt(255);
 
     double timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;

@@ -4,3 +4,5 @@ const String remoteDomain = isDebug
     ? 'https://mytilerkid.azurewebsites.net/'
     : 'https://www.tiler.app/';
 const String tilerDomain = isProduction ? remoteDomain : remoteDomain;
+const int stateRetrievalRetry = 100;
+const int autoScrollBuffer = 50;
