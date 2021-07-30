@@ -9,11 +9,34 @@ import '../../constants.dart' as Constants;
 class ScheduleApi {
   bool preserveSubEventList = true;
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
+
   Future<List<SubCalendarEvent>> getSubEvents(Timeline timeLine) {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain + 'api/Schedule';
 
     return getAdHocSubEvents(timeLine);
+  }
+
+  Future<List<SubCalendarEvent>> getSubEventsInScheduleRequest(
+      Timeline timeLine) {
+    String tilerDomain = Constants.tilerDomain;
+    DateTime dateTime = DateTime.now();
+    String url = tilerDomain + 'api/Schedule';
+    // var PostData = {
+    //   UserName: UserCredentials.UserName,
+    //   UserID: UserCredentials.ID,
+    //   StartRange: RangeData.Start.getTime(),
+    //   EndRange: RangeData.End.getTime(),
+    //   TimeZoneOffset: TimeZone
+    // };
+    final queryParameters = {
+      'UserName': 'one',
+      'UserID': 'two',
+      'StartRange': timeLine.start,
+      'EndRange': timeLine.end,
+      'TimeZoneOffset': dateTime.timeZoneOffset,
+      'MobileApp': true
+    };
   }
 
   Future<List<SubCalendarEvent>> getAdHocSubEvents(Timeline timeLine) {
