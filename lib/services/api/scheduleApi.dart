@@ -1,19 +1,61 @@
 import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
-class ScheduleApi {
+class ScheduleApi extends AppApi {
   bool preserveSubEventList = true;
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
-  Future<List<SubCalendarEvent>> getSubEvents(Timeline timeLine) {
-    String tilerDomain = Constants.tilerDomain;
-    String url = tilerDomain + 'api/Schedule';
 
-    return getAdHocSubEvents(timeLine);
+  Future<List<SubCalendarEvent>> getSubEvents(Timeline timeLine) async {
+    // return getAdHocSubEvents(timeLine);
+    return await getSubEventsInScheduleRequest(timeLine);
+  }
+
+  Future<List<SubCalendarEvent>> getSubEventsInScheduleRequest(
+      Timeline timeLine) async {
+    if (await this.authentication.isUserAuthenticated()) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      DateTime dateTime = DateTime.now();
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final queryParameters = {
+          'UserName': username,
+          'StartRange': timeLine.start!.toInt().toString(),
+          'EndRange': timeLine.end!.toInt().toString(),
+          'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+          'MobileApp': true.toString()
+        };
+        Uri uri =
+            Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
+
+        var header = this.getHeaders();
+
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult) &&
+                jsonResult['Content'].containsKey('subCalendarEvents')) {
+              List subEvents = jsonResult['Content']['subCalendarEvents'];
+              List<SubCalendarEvent> retValue = subEvents
+                  .map((eachSubEventJson) =>
+                      SubCalendarEvent.fromJson(eachSubEventJson))
+                  .toList();
+              return retValue;
+            }
+          }
+        }
+      }
+    }
+    return [];
   }
 
   Future<List<SubCalendarEvent>> getAdHocSubEvents(Timeline timeLine) {
@@ -32,7 +74,6 @@ class ScheduleApi {
       while (durationMs < 1) {
         durationMs = Random().nextInt(maxDuration);
       }
-      Duration timeSpan = Duration(milliseconds: durationMs);
       int startLimit =
           timeLine.start!.toInt() - durationMs - Utility.oneMin.inMilliseconds;
       int endLimit =
