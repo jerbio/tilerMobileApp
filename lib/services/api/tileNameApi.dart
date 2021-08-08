@@ -1,10 +1,11 @@
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/services/api/appApi.dart';
 
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
 
-class TileNameApi {
+class TileNameApi extends AppApi {
   Future<List<TilerEvent>> getTilesByName(String name) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain + 'api/CalendarEvent/Name';

@@ -16,9 +16,23 @@ class SubCalendarEvent extends TilerEvent {
     return retValue;
   }
 
-  SubCalendarEvent({double? start, double? end, String? name, String? address, String? addressDescription, String? id, String? userId}):super(
-    start: start, end: end, name: name, address: address, addressDescription:addressDescription,id: id, userId: userId,
-    );
+  SubCalendarEvent(
+      {double? start,
+      double? end,
+      String? name,
+      String? address,
+      String? addressDescription,
+      String? id,
+      String? userId})
+      : super(
+          start: start,
+          end: end,
+          name: name,
+          address: address,
+          addressDescription: addressDescription,
+          id: id,
+          userId: userId,
+        );
 
   get isCurrent {
     int currentTimeInMs = Utility.msCurrentTime;
@@ -40,8 +54,8 @@ class SubCalendarEvent extends TilerEvent {
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
-    travelTimeBefore = cast<int>(json['travelTimeBefore'])!.toDouble();
-    travelTimeAfter = cast<int>(json['travelTimeAfter'])!.toDouble();
+    travelTimeBefore = double.parse(json['travelTimeBefore'].toString());
+    travelTimeAfter = double.parse(json['travelTimeAfter'].toString());
     rangeStart = cast<int>(json['rangeStart'])!.toDouble();
     rangeEnd = cast<int>(json['rangeEnd'])!.toDouble();
   }
