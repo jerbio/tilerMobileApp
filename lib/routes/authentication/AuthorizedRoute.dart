@@ -4,8 +4,10 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/routes/authentication/register.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/util.dart';
 
 class AuthorizedRoute extends StatefulWidget {
   @override
@@ -14,6 +16,7 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<StatefulWidget> {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
+  final ScheduleApi scheduleApi = new ScheduleApi();
   int selecedBottomMenu = -1;
 
   void _onBottomNavigationTap(int index) {
@@ -50,7 +53,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
           );
         },
       ),
-      dayStatusWidget
+      dayStatusWidget,
     ];
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
