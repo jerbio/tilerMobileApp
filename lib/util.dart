@@ -45,9 +45,8 @@ class Utility {
         new DateTime(currentTime.year, currentTime.month, currentTime.day);
     DateTime end = begin.add(Utility.oneDay);
 
-    Timeline retValue = Timeline(
-        start: begin.millisecondsSinceEpoch.toDouble(),
-        end: end.millisecondsSinceEpoch.toDouble());
+    Timeline retValue = Timeline(begin.millisecondsSinceEpoch.toDouble(),
+        end.millisecondsSinceEpoch.toDouble());
     return retValue;
   }
 

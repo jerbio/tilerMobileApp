@@ -1,6 +1,6 @@
 abstract class TimeRange {
-  double? start;
-  double? end;
+  double? start = 0;
+  double? end = 0;
 
   bool isInterfering(TimeRange timeRange) {
     bool retValue = false;
@@ -12,5 +12,9 @@ abstract class TimeRange {
     }
 
     return retValue;
+  }
+
+  bool get hasElapsed {
+    return this.end! < DateTime.now().millisecondsSinceEpoch.toDouble();
   }
 }

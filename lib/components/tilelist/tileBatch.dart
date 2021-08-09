@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
+import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../constants.dart';
@@ -9,12 +13,19 @@ import '../../util.dart';
 
 class TileBatch extends StatefulWidget {
   List<TilerEvent>? tiles;
+  Timeline? sleepTimeline;
   String? header;
   String? footer;
   int? dayIndex;
   TileBatchState? _state;
 
-  TileBatch({this.header, this.footer, this.dayIndex, this.tiles, Key? key})
+  TileBatch(
+      {this.header,
+      this.footer,
+      this.dayIndex,
+      this.tiles,
+      this.sleepTimeline,
+      Key? key})
       : super(key: key);
 
   @override
@@ -39,6 +50,10 @@ class TileBatch extends StatefulWidget {
   Future updateTiles(List<TilerEvent> updatedTiles) async {
     var state = await this.state;
     state.updateSubEvents(updatedTiles);
+  }
+
+  Future updateSleep(Timeline timeline) async {
+    sleepTimeline = timeline;
   }
 }
 
@@ -110,6 +125,12 @@ class TileBatchState extends State<TileBatch> {
         height: 10,
       );
       children.add(bottomHeaderMargin);
+    }
+
+    if (this.widget.sleepTimeline != null) {
+      Timeline sleepTimeline = this.widget.sleepTimeline!;
+      Widget sleepWidget = SleepTileWidget(sleepTimeline);
+      children.add(sleepWidget);
     }
 
     if (tiles.length > 0) {

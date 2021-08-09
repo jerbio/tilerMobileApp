@@ -3,47 +3,111 @@ import 'package:tiler_app/util.dart';
 
 class Timeline with TimeRange {
   String? id = Utility.getUuid;
-  double? start;
-  double? end;
-  Timeline({this.start, this.end}) {
-    if (this.start != null || this.end != null) {
-      if (this.start != null && this.end != null) {
-        if (this.start! > this.end!) {
+  DateTime? startTime;
+  DateTime? endTime;
+  double? _startInMs;
+  double? _endInMs;
+
+  set startInMs(double? value) {
+    _startInMs = value;
+    this.start = _startInMs;
+    _updateStartEndTime();
+  }
+
+  set endInMs(double? value) {
+    _endInMs = value;
+    this.end = _endInMs;
+    _updateStartEndTime();
+  }
+
+  double? get startInMs {
+    return _startInMs;
+  }
+
+  double? get endInMs {
+    return _endInMs;
+  }
+
+  // double? startInMs;
+  // double? endInMs;
+  Timeline(double? startInMs, double? endInMs
+      // {this.startInMs, this.endInMs}
+      ) {
+    this.startInMs = startInMs;
+    this.endInMs = endInMs;
+    if (this.startInMs != null || this.endInMs != null) {
+      if (this.startInMs != null && this.endInMs != null) {
+        if (this.startInMs! > this.endInMs!) {
           throw new Exception('start time cannot be later than end');
         }
       } else {
-        if (this.start != null) {
-          this.end = this.start;
+        if (this.startInMs != null) {
+          this.endInMs = this.startInMs;
         } else {
-          this.start = this.end;
+          this.startInMs = this.endInMs;
         }
       }
     } else {
-      this.start = 0;
-      this.end = 0;
+      this.startInMs = 0;
+      this.endInMs = 0;
     }
+    _updateStartEndTime();
   }
 
   toString() {
     String retValue = "";
-    if (this.start != null && this.end != null) {
-      retValue += (new DateTime.fromMillisecondsSinceEpoch(this.start!.toInt())
-              .toString()) +
-          ' - ' +
-          (new DateTime.fromMillisecondsSinceEpoch(this.end!.toInt())
-              .toString());
+    if (this.startInMs != null && this.endInMs != null) {
+      retValue +=
+          (new DateTime.fromMillisecondsSinceEpoch(this.startInMs!.toInt())
+                  .toString()) +
+              ' - ' +
+              (new DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt())
+                  .toString());
     }
 
     return retValue;
   }
 
+  void _updateStartEndTime() {
+    if (this.startInMs != null && this.endInMs != null) {
+      startTime = DateTime.fromMillisecondsSinceEpoch(this.startInMs!.toInt());
+      endTime = DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt());
+    }
+  }
+
   Timeline.fromDateTime(DateTime startTime, DateTime endTime) {
-    this.start = startTime.millisecondsSinceEpoch.toDouble();
-    this.end = endTime.millisecondsSinceEpoch.toDouble();
+    this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
+    this.endInMs = endTime.millisecondsSinceEpoch.toDouble();
+    assert(this.startInMs! <= this.endInMs!);
+    _updateStartEndTime();
+  }
+
+  Timeline.fromJson(Map<String, dynamic> json) {
+    String? startString;
+    String? endString;
+    if (json.containsKey('start') && json['start'] != null) {
+      startString = json['start'].toString();
+    }
+
+    if (json.containsKey('end') && json['end'] != null) {
+      endString = json['end'].toString();
+    }
+
+    if (startString != null && endString != null) {
+      this.startInMs = double.parse(startString);
+      this.endInMs = double.parse(endString);
+      assert(this.startInMs! <= this.endInMs!);
+    } else {
+      this.startInMs = 0;
+      this.endInMs = 0;
+    }
+    _updateStartEndTime();
   }
 
   Timeline.fromDateTimeAndDuration(DateTime startTime, Duration duration) {
-    this.start = startTime.millisecondsSinceEpoch.toDouble();
-    this.end = startTime.add(duration).millisecondsSinceEpoch.toDouble();
+    this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
+    this.endInMs = startTime.add(duration).millisecondsSinceEpoch.toDouble();
+    assert(this.startInMs! <= this.endInMs!);
+    _updateStartEndTime();
   }
 }

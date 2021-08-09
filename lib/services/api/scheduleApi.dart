@@ -6,19 +6,21 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 import '../../constants.dart' as Constants;
 
 class ScheduleApi extends AppApi {
   bool preserveSubEventList = true;
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
 
-  Future<List<SubCalendarEvent>> getSubEvents(Timeline timeLine) async {
-    // return getAdHocSubEvents(timeLine);
-    return await getSubEventsInScheduleRequest(timeLine);
+  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
+      Timeline timeLine) async {
+    return getAdHocSubEvents(timeLine);
+    // return await getSubEventsInScheduleRequest(timeLine);
   }
 
-  Future<List<SubCalendarEvent>> getSubEventsInScheduleRequest(
-      Timeline timeLine) async {
+  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
+      getSubEventsInScheduleRequest(Timeline timeLine) async {
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -28,8 +30,8 @@ class ScheduleApi extends AppApi {
         String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {
           'UserName': username,
-          'StartRange': timeLine.start!.toInt().toString(),
-          'EndRange': timeLine.end!.toInt().toString(),
+          'StartRange': timeLine.startInMs!.toInt().toString(),
+          'EndRange': timeLine.endInMs!.toInt().toString(),
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
           'MobileApp': true.toString()
         };
@@ -44,21 +46,31 @@ class ScheduleApi extends AppApi {
           if (isJsonResponseOk(jsonResult)) {
             if (isContentInResponse(jsonResult) &&
                 jsonResult['Content'].containsKey('subCalendarEvents')) {
-              List subEvents = jsonResult['Content']['subCalendarEvents'];
-              List<SubCalendarEvent> retValue = subEvents
+              List subEventJson = jsonResult['Content']['subCalendarEvents'];
+              List sleepTimelinesJson = jsonResult['Content']['sleepTimeline'];
+
+              List<Timeline> sleepTimelines = sleepTimelinesJson
+                  .map((timelinesJson) => Timeline.fromJson(timelinesJson))
+                  .toList();
+
+              List<SubCalendarEvent> subEvents = subEventJson
                   .map((eachSubEventJson) =>
                       SubCalendarEvent.fromJson(eachSubEventJson))
                   .toList();
+              Tuple2<List<Timeline>, List<SubCalendarEvent>> retValue =
+                  new Tuple2(sleepTimelines, subEvents);
               return retValue;
             }
           }
         }
       }
     }
-    return [];
+    var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
+    return retValue;
   }
 
-  Future<List<SubCalendarEvent>> getAdHocSubEvents(Timeline timeLine) {
+  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
+      Timeline timeLine) {
     if (!this.preserveSubEventList) {
       adhocGeneratedSubEvents = <SubCalendarEvent>[];
     }
@@ -67,6 +79,7 @@ class ScheduleApi extends AppApi {
       subEventCount = Random().nextInt(20);
     }
 
+    List<Timeline> sleepTimeLines = [];
     List<SubCalendarEvent> refreshedSubEvents = [];
     int maxDuration = Duration.millisecondsPerHour * 3;
     for (int i = 0; i < subEventCount; i++) {
@@ -74,16 +87,48 @@ class ScheduleApi extends AppApi {
       while (durationMs < 1) {
         durationMs = Random().nextInt(maxDuration);
       }
-      int startLimit =
-          timeLine.start!.toInt() - durationMs - Utility.oneMin.inMilliseconds;
-      int endLimit =
-          timeLine.end!.toInt() + durationMs - Utility.oneMin.inMilliseconds;
+      int startLimit = timeLine.startInMs!.toInt() -
+          durationMs -
+          Utility.oneMin.inMilliseconds;
+      int endLimit = timeLine.endInMs!.toInt() +
+          durationMs -
+          Utility.oneMin.inMilliseconds;
       int durationLimit = endLimit - startLimit;
       int durationInSec = durationLimit ~/
           1000; // we need to use seconds because of the random.nextInt of requiring an integer
       int start = startLimit + ((Random().nextInt(durationInSec)) * 1000);
       int end = start + durationMs;
+      int dayCount =
+          (durationLimit / Utility.oneDay.inMilliseconds).toDouble().ceil();
 
+      DateTime? startDayTime = timeLine.startTime;
+      DateTime? endDayTime = timeLine.endTime;
+      if (startDayTime != null && endDayTime != null) {
+        startDayTime = new DateTime(
+            startDayTime.year, startDayTime.month, startDayTime.day, 0, 0, 0);
+        endDayTime = new DateTime(
+            endDayTime.year, endDayTime.month, endDayTime.day, 0, 0, 0);
+
+        Timeline timeLine = new Timeline(
+            startDayTime.millisecondsSinceEpoch.toDouble(),
+            startDayTime
+                .add(Duration(hours: 6))
+                .millisecondsSinceEpoch
+                .toDouble());
+        sleepTimeLines.add(timeLine);
+
+        while (startDayTime!.millisecondsSinceEpoch <
+            endDayTime.millisecondsSinceEpoch) {
+          startDayTime = startDayTime.add(Utility.oneDay);
+          timeLine = new Timeline(
+              startDayTime.millisecondsSinceEpoch.toDouble(),
+              startDayTime
+                  .add(Duration(hours: 6))
+                  .millisecondsSinceEpoch
+                  .toDouble());
+          sleepTimeLines.add(timeLine);
+        }
+      }
       SubCalendarEvent subEvent = new SubCalendarEvent(
           name: Utility.randomName,
           start: start.toDouble(),
@@ -97,9 +142,12 @@ class ScheduleApi extends AppApi {
       refreshedSubEvents.add(subEvent);
     }
     this.adhocGeneratedSubEvents.addAll(refreshedSubEvents);
-    List<SubCalendarEvent> retValue = this.adhocGeneratedSubEvents.toList();
-    Future<List<SubCalendarEvent>> retFuture =
-        new Future.delayed(const Duration(seconds: 0), () => retValue);
+    List<SubCalendarEvent> subEvents = this.adhocGeneratedSubEvents.toList();
+    Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> retFuture =
+        new Future.delayed(
+            const Duration(seconds: 0),
+            () => new Tuple2<List<Timeline>, List<SubCalendarEvent>>(
+                sleepTimeLines, subEvents));
     return retFuture;
   }
 }
