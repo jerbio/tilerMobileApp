@@ -43,8 +43,8 @@ class _TileListState extends State<TileList> {
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
         updatedTimeline = new Timeline(
-            start: timeLine.start!,
-            end: (timeLine.end!.toInt() + Utility.sevenDays.inMilliseconds)
+            timeLine.startInMs!,
+            (timeLine.endInMs!.toInt() + Utility.sevenDays.inMilliseconds)
                 .toDouble());
         setState(() {
           timeLine = updatedTimeline;
@@ -52,9 +52,9 @@ class _TileListState extends State<TileList> {
       } else if (_scrollController.position.pixels <= minScrollLimit &&
           _scrollController.position.userScrollDirection.index == 1) {
         updatedTimeline = new Timeline(
-            start: (timeLine.start!.toInt() - Utility.sevenDays.inMilliseconds)
+            (timeLine.startInMs!.toInt() - Utility.sevenDays.inMilliseconds)
                 .toDouble(),
-            end: timeLine.end!.toInt().toDouble());
+            timeLine.endInMs!.toInt().toDouble());
         setState(() {
           timeLine = updatedTimeline;
         });
@@ -75,8 +75,8 @@ class _TileListState extends State<TileList> {
           todaySubEvents.add(tile);
           continue;
         }
-        if (todayTimeline.start != null && tile.end != null) {
-          if (todayTimeline.start! > tile.end!) {
+        if (todayTimeline.startInMs != null && tile.end != null) {
+          if (todayTimeline.startInMs! > tile.end!) {
             referenceTime = tile.endTime;
           }
         }
@@ -112,20 +112,26 @@ class _TileListState extends State<TileList> {
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
     return FutureBuilder(
         future: this.widget.scheduleApi.getSubEvents(timeLine),
-        builder: (context, AsyncSnapshot<List<SubCalendarEvent>> snapshot) {
+        builder: (context,
+            AsyncSnapshot<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
+                snapshot) {
           Widget retValue;
           if (snapshot.hasData) {
-            List<SubCalendarEvent>? tileData = snapshot.data;
+            Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData =
+                snapshot.data;
             if (tileData != null) {
-              tileData.sort((eachSubEventA, eachSubEventB) =>
+              List<Timeline> sleepTimelines = tileData.item1;
+              tileData.item2.sort((eachSubEventA, eachSubEventB) =>
                   eachSubEventA.start!.compareTo(eachSubEventB.start!));
 
-              // tileData.forEach((eachTile) {
-              //   print(eachTile);
-              // });
+              Map<int, Timeline> dayToSleepTimeLines = {};
+              sleepTimelines.forEach((sleepTimeLine) {
+                int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime!);
+                dayToSleepTimeLines[dayIndex] = sleepTimeLine;
+              });
 
               Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
-                  mapTilesToDays(tileData, _todayTimeLine);
+                  mapTilesToDays(tileData.item2, _todayTimeLine);
 
               List<TilerEvent> todayTiles = dayToTiles.item2;
               Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
@@ -133,10 +139,10 @@ class _TileListState extends State<TileList> {
               int todayDayIndex = Utility.getDayIndex(DateTime.now());
               int startIndex = Utility.getDayIndex(
                   DateTime.fromMillisecondsSinceEpoch(
-                      this.timeLine.start!.toInt()));
+                      this.timeLine.startInMs!.toInt()));
               int endIndex = Utility.getDayIndex(
                   DateTime.fromMillisecondsSinceEpoch(
-                      this.timeLine.end!.toInt()));
+                      this.timeLine.endInMs!.toInt()));
               int numberOfDays = (endIndex - startIndex) + 1;
               List<int> dayIndexes =
                   List.generate(numberOfDays, (index) => index);
@@ -187,7 +193,7 @@ class _TileListState extends State<TileList> {
               var timeStamps = dayIndexes.map(
                   (eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
 
-              print('There are ' + tileData.length.toString() + ' tiles');
+              print('There are ' + tileData.item2.length.toString() + ' tiles');
               print('This is from ' +
                   Utility.getTimeFromIndex(dayIndexes[0]).toString() +
                   ' - ' +
@@ -229,9 +235,21 @@ class _TileListState extends State<TileList> {
                           dayIndexToTileDict[tileBatch.dayIndex]!;
                       tileBatch.updateTiles(tiles);
                     }
+
+                    if (dayToSleepTimeLines.containsKey(tileBatch.dayIndex)) {
+                      Timeline sleepTimeLine =
+                          dayToSleepTimeLines[tileBatch.dayIndex]!;
+                      tileBatch.updateSleep(sleepTimeLine);
+                    }
                     continue;
                   }
                   tileBatch.updateTiles(todayTiles);
+                  int todaysDayIndex = Utility.getDayIndex(DateTime.now());
+                  if (dayToSleepTimeLines.containsKey(todaysDayIndex)) {
+                    Timeline sleepTimeLine =
+                        dayToSleepTimeLines[todaysDayIndex]!;
+                    tileBatch.updateSleep(sleepTimeLine);
+                  }
                 }
               });
             } else {

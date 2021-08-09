@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 
 import '../../constants.dart';
 
@@ -63,6 +65,12 @@ class WithinNowBatchState extends TileBatchState {
     List<Widget> precedingTileWidgets = [];
     List<Widget> currentTileWidgets = [];
     List<Widget> upcomningTileWidgets = [];
+
+    if (this.widget.sleepTimeline != null) {
+      Timeline sleepTimeline = this.widget.sleepTimeline!;
+      Widget sleepWidget = SleepTileWidget(sleepTimeline);
+      children.add(sleepWidget);
+    }
 
     if (tiles.length > 0) {
       tiles.values.forEach((eachTile) {
