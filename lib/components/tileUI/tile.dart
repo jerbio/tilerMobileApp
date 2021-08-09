@@ -83,7 +83,7 @@ class TileWidgetState extends State<TileWidget> {
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-        child: TimeScrubWidget(widget.subEvent)));
+        child: TimeScrubWidget(timeline: widget.subEvent)));
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
