@@ -1,5 +1,14 @@
+import 'dart:collection';
+import 'dart:math';
+
 import 'package:intl/intl.dart';
+import 'package:tiler_app/data/blobEvent.dart';
+import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
+import 'package:faker/faker.dart';
+import 'data/tilerEvent.dart';
+import 'data/timeRangeMix.dart';
+import 'data/timeline.dart';
 
 class Utility {
   final List<String> months = [
@@ -16,8 +25,37 @@ class Utility {
     'November',
     'December'
   ];
+  static final Faker _faker = Faker();
+  static final DateTime _beginningOfTime = DateTime(0, 1, 1);
+  static final Random randomizer = Random.secure();
   static DateTime currentTime() {
     return DateTime.now();
+  }
+
+  static int getDayIndex(DateTime time) {
+    var spanInMicroSecond = time.microsecondsSinceEpoch -
+        Utility._beginningOfTime.microsecondsSinceEpoch;
+    int retValue = spanInMicroSecond ~/ Duration.microsecondsPerDay;
+    return retValue;
+  }
+
+  static DateTime getTimeFromIndex(int dayIndex) {
+    Duration totalDuration = Duration(days: dayIndex);
+    DateTime retValueShifted = Utility._beginningOfTime.add(totalDuration);
+    DateTime retValue = DateTime(
+        retValueShifted.year, retValueShifted.month, retValueShifted.day);
+    return retValue;
+  }
+
+  static Timeline todayTimeline() {
+    DateTime currentTime = DateTime.now();
+    DateTime begin =
+        new DateTime(currentTime.year, currentTime.month, currentTime.day);
+    DateTime end = begin.add(Utility.oneDay);
+
+    Timeline retValue = Timeline(begin.millisecondsSinceEpoch.toDouble(),
+        end.millisecondsSinceEpoch.toDouble());
+    return retValue;
   }
 
   static get msCurrentTime {
@@ -124,10 +162,79 @@ class Utility {
     return new DateFormat.MMMM().format(date);
   }
 
+  static get randomName {
+    return _faker.person.name();
+  }
+
+  static Tuple2<List<BlobEvent>, HashSet<TilerEvent>> getConflictingEvents(
+      Iterable<TilerEvent> AllSubEvents) {
+    HashSet<TilerEvent> dedupedSubEvents = HashSet.from(AllSubEvents);
+    HashSet<TilerEvent> nonConflict = HashSet.from(dedupedSubEvents);
+    List<BlobEvent> conflictingBlob = [];
+
+    List<TilerEvent> orderedByStart = dedupedSubEvents.toList();
+    orderedByStart.sort((eachTileBatchA, eachTileBatchB) =>
+        eachTileBatchA.start!.compareTo(eachTileBatchB.start!));
+    List<TilerEvent> AllSubEvents_List = orderedByStart.toList();
+
+    Map<TimeRange, List<TimeRange>> subEventToConflicting =
+        new Map<TimeRange, List<TimeRange>>();
+
+    for (int i = 0; i < AllSubEvents_List.length && i >= 0; i++) {
+      TilerEvent refSubCalendarEvent = AllSubEvents_List[i];
+      List<TilerEvent> possibleInterferring =
+          AllSubEvents_List.where((obj) => obj != refSubCalendarEvent).toList();
+      List<TilerEvent> interferringEvents = possibleInterferring
+          .where((obj) => obj.isInterfering(refSubCalendarEvent))
+          .toList();
+      if (interferringEvents.length > 0) //this tries to select the rest of
+      {
+        bool conflictFound = false;
+        do {
+          conflictFound = false;
+          AllSubEvents_List = AllSubEvents_List.where(
+              (element) => !interferringEvents.contains(element)).toList();
+          double? LatestEndTimeInMs;
+          interferringEvents.forEach((timeRange) {
+            if (LatestEndTimeInMs == null) {
+              LatestEndTimeInMs = timeRange.end;
+            } else {
+              if (timeRange.start! > LatestEndTimeInMs!) {
+                LatestEndTimeInMs = timeRange.end;
+              }
+            }
+          });
+
+          Timeline possibleInterferringTimeLine =
+              new Timeline(refSubCalendarEvent.start, LatestEndTimeInMs);
+          AllSubEvents_List.forEach((subEvent) {
+            if (subEvent.isInterfering(possibleInterferringTimeLine)) {
+              nonConflict.remove(subEvent);
+              interferringEvents.add(subEvent);
+              conflictFound = true;
+            }
+          });
+        } while (conflictFound);
+        --i;
+      }
+      if (interferringEvents.length > 0) {
+        conflictingBlob.add(BlobEvent.fromTilerEvents(interferringEvents));
+      }
+    }
+
+    Tuple2<List<BlobEvent>, HashSet<TilerEvent>> retValue =
+        new Tuple2<List<BlobEvent>, HashSet<TilerEvent>>(
+            conflictingBlob, nonConflict);
+    return retValue;
+    //Continue from here Jerome you need to write the function for detecting conflicting events and then creating the interferring list.
+  }
+
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
+  static Duration oneDay = new Duration(days: 1);
+  static Duration sevenDays = new Duration(days: 7);
   static var uuid = Uuid();
 }
 
@@ -137,9 +244,21 @@ extension DurationHuman on Duration {
   }
 }
 
+extension ListEnhance on List {
+  get randomEntry {
+    if (this.length > 0) {
+      int index = Utility.randomizer.nextInt(this.length - 1);
+      return this[index];
+    }
+    throw new Exception('Cannot get a random entry from an empty list');
+  }
+}
+
 extension DateTimeHuman on DateTime {
   bool get isToday {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
     DateTime end = begin.add(fullDay);
     return this.microsecondsSinceEpoch >= begin.microsecondsSinceEpoch &&
@@ -147,7 +266,9 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isTomorrow {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
     begin = begin.add(fullDay);
     DateTime end = begin.add(fullDay);
@@ -156,7 +277,9 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isYesterday {
-    DateTime begin = DateTime(this.year, this.month, this.day);
+    DateTime todaysDate = DateTime.now();
+    DateTime begin =
+        DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: -1);
     begin = begin.add(fullDay);
     DateTime end = begin.add(fullDay);
