@@ -1,6 +1,13 @@
+import 'dart:collection';
+import 'dart:math';
+
 import 'package:intl/intl.dart';
+import 'package:tiler_app/data/blobEvent.dart';
+import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
+import 'data/tilerEvent.dart';
+import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 
 class Utility {
@@ -20,6 +27,7 @@ class Utility {
   ];
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
+  static final Random randomizer = Random.secure();
   static DateTime currentTime() {
     return DateTime.now();
   }
@@ -158,6 +166,69 @@ class Utility {
     return _faker.person.name();
   }
 
+  static Tuple2<List<BlobEvent>, HashSet<TilerEvent>> getConflictingEvents(
+      Iterable<TilerEvent> AllSubEvents) {
+    HashSet<TilerEvent> dedupedSubEvents = HashSet.from(AllSubEvents);
+    HashSet<TilerEvent> nonConflict = HashSet.from(dedupedSubEvents);
+    List<BlobEvent> conflictingBlob = [];
+
+    List<TilerEvent> orderedByStart = dedupedSubEvents.toList();
+    orderedByStart.sort((eachTileBatchA, eachTileBatchB) =>
+        eachTileBatchA.start!.compareTo(eachTileBatchB.start!));
+    List<TilerEvent> AllSubEvents_List = orderedByStart.toList();
+
+    Map<TimeRange, List<TimeRange>> subEventToConflicting =
+        new Map<TimeRange, List<TimeRange>>();
+
+    for (int i = 0; i < AllSubEvents_List.length && i >= 0; i++) {
+      TilerEvent refSubCalendarEvent = AllSubEvents_List[i];
+      List<TilerEvent> possibleInterferring =
+          AllSubEvents_List.where((obj) => obj != refSubCalendarEvent).toList();
+      List<TilerEvent> interferringEvents = possibleInterferring
+          .where((obj) => obj.isInterfering(refSubCalendarEvent))
+          .toList();
+      if (interferringEvents.length > 0) //this tries to select the rest of
+      {
+        bool conflictFound = false;
+        do {
+          conflictFound = false;
+          AllSubEvents_List = AllSubEvents_List.where(
+              (element) => !interferringEvents.contains(element)).toList();
+          double? LatestEndTimeInMs;
+          interferringEvents.forEach((timeRange) {
+            if (LatestEndTimeInMs == null) {
+              LatestEndTimeInMs = timeRange.end;
+            } else {
+              if (timeRange.start! > LatestEndTimeInMs!) {
+                LatestEndTimeInMs = timeRange.end;
+              }
+            }
+          });
+
+          Timeline possibleInterferringTimeLine =
+              new Timeline(refSubCalendarEvent.start, LatestEndTimeInMs);
+          AllSubEvents_List.forEach((subEvent) {
+            if (subEvent.isInterfering(possibleInterferringTimeLine)) {
+              nonConflict.remove(subEvent);
+              interferringEvents.add(subEvent);
+              conflictFound = true;
+            }
+          });
+        } while (conflictFound);
+        --i;
+      }
+      if (interferringEvents.length > 0) {
+        conflictingBlob.add(BlobEvent.fromTilerEvents(interferringEvents));
+      }
+    }
+
+    Tuple2<List<BlobEvent>, HashSet<TilerEvent>> retValue =
+        new Tuple2<List<BlobEvent>, HashSet<TilerEvent>>(
+            conflictingBlob, nonConflict);
+    return retValue;
+    //Continue from here Jerome you need to write the function for detecting conflicting events and then creating the interferring list.
+  }
+
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
@@ -170,6 +241,16 @@ class Utility {
 extension DurationHuman on Duration {
   String get toHuman {
     return Utility.toHuman(this, includeSeconds: false);
+  }
+}
+
+extension ListEnhance on List {
+  get randomEntry {
+    if (this.length > 0) {
+      int index = Utility.randomizer.nextInt(this.length - 1);
+      return this[index];
+    }
+    throw new Exception('Cannot get a random entry from an empty list');
   }
 }
 

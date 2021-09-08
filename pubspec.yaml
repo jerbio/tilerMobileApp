@@ -56,6 +56,10 @@ flutter:
   assets:
     - assets/images/crescent_moon.png
     - assets/images/person_in_bed.png
+    - assets/images/umbrella_on_ground.png
+    - assets/images/bath.png
+    - assets/images/person_in_lotus_position.png
+    - assets/images/pinched_fingers.png
     # - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

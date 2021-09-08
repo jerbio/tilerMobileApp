@@ -1,30 +1,41 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 import '../../constants.dart';
 import 'timeScrub.dart';
 
-class SleepTileWidget extends StatefulWidget {
+class ChillTimeWidget extends StatefulWidget {
   late Timeline timeline;
-  SleepTileWidgetState? _state;
-  SleepTileWidget(timeline) {
+  ChillTimeWidgetState? _state;
+  final List<String> chillTexts = ['Chill Now', 'Take a Break', 'Zen Mode'];
+  final List<String> chillImagePaths = [
+    'assets/images/person_in_bed.png',
+    'assets/images/umbrella_on_ground.png',
+    'assets/images/bath.png',
+    'assets/images/person_in_lotus_position.png',
+    'assets/images/pinched_fingers.png'
+  ];
+  ChillTimeWidget(timeline) {
     assert(timeline != null);
     this.timeline = timeline;
   }
 
   @override
-  SleepTileWidgetState createState() {
-    _state = SleepTileWidgetState();
+  ChillTimeWidgetState createState() {
+    _state = ChillTimeWidgetState();
     return _state!;
   }
 
-  Future<SleepTileWidgetState> get state async {
+  Future<ChillTimeWidgetState> get state async {
     if (this._state != null && this._state!.mounted) {
       return this._state!;
     } else {
-      Future<SleepTileWidgetState> retValue = new Future.delayed(
+      Future<ChillTimeWidgetState> retValue = new Future.delayed(
           const Duration(milliseconds: stateRetrievalRetry), () {
         return this.state;
       });
@@ -40,7 +51,7 @@ class SleepTileWidget extends StatefulWidget {
   }
 }
 
-class SleepTileWidgetState extends State<SleepTileWidget> {
+class ChillTimeWidgetState extends State<ChillTimeWidget> {
   void updateTimeline(Timeline timeline) async {
     this.widget.timeline = timeline;
   }
@@ -50,10 +61,12 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
     var timeline = widget.timeline;
     var tileBackGroundColor = Color.fromRGBO(51, 51, 51, 1);
 
-    var sleepName = Container(
+    String chillText = this.widget.chillTexts.randomEntry;
+    String chillImage = this.widget.chillImagePaths.randomEntry;
+    var chillNameWidget = Container(
       margin: const EdgeInsets.fromLTRB(25, 0, 00, 0),
       child: Text(
-        'Sleep',
+        chillText,
         style: TextStyle(
             fontSize: 20,
             fontFamily: 'Rubik',
@@ -62,28 +75,14 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
       ),
     );
 
-    var sleepIcon = Container(
-      width: 76,
-      height: 76,
-      margin: const EdgeInsets.fromLTRB(25, 0, 20, 0),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(38),
-      ),
-      child: Image.asset(
-        'assets/images/crescent_moon.png',
-        scale: 2,
-      ),
-    );
-
     var sleepIconAndRow = Row(
-      children: [sleepIcon, sleepName],
+      children: [chillNameWidget],
     );
 
     var sleepInBedIcon = Container(
       alignment: Alignment.center,
       child: Image.asset(
-        'assets/images/person_in_bed.png',
+        chillImage,
         scale: 1.5,
       ),
     );
