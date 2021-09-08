@@ -28,11 +28,7 @@ class Timeline with TimeRange {
     return _endInMs;
   }
 
-  // double? startInMs;
-  // double? endInMs;
-  Timeline(double? startInMs, double? endInMs
-      // {this.startInMs, this.endInMs}
-      ) {
+  Timeline(double? startInMs, double? endInMs) {
     this.startInMs = startInMs;
     this.endInMs = endInMs;
     if (this.startInMs != null || this.endInMs != null) {

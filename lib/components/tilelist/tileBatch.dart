@@ -1,15 +1,18 @@
+import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
+import 'package:tiler_app/components/tileUI/chillNow.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../constants.dart';
-import '../../util.dart';
 
 class TileBatch extends StatefulWidget {
   List<TilerEvent>? tiles;
@@ -98,8 +101,79 @@ class TileBatchState extends State<TileBatch> {
 
   @override
   Widget build(BuildContext context) {
+    List<Timeline> chillTimeLines = [];
     if (!isInitialized) {
       if (widget.tiles != null) {
+        var conflicts = Utility.getConflictingEvents(widget.tiles!);
+        List<TilerEvent> allTiles = [];
+        HashSet<TilerEvent> postSleepTiles = new HashSet();
+        allTiles.addAll(conflicts.item1);
+        allTiles.addAll(conflicts.item2);
+        allTiles.sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
+        Timeline sleepTileEvent;
+        DateTime? startOfSleep;
+        DateTime? endOfSleep;
+        if (widget.sleepTimeline != null) {
+          postSleepTiles = new HashSet();
+          sleepTileEvent = new Timeline(
+              widget.sleepTimeline!.startInMs!, widget.sleepTimeline!.endInMs!);
+
+          List<TimeRange> contiguousSleep = allTiles.where((tile) {
+            bool isInterfering = sleepTileEvent.isInterfering(tile);
+            if (!isInterfering) {
+              postSleepTiles.add(tile);
+            }
+            if (startOfSleep == null ||
+                startOfSleep!.millisecondsSinceEpoch >
+                    tile.startTime!.millisecondsSinceEpoch) {
+              startOfSleep = tile.startTime;
+            }
+
+            if (endOfSleep == null ||
+                endOfSleep!.millisecondsSinceEpoch <
+                    tile.endTime!.millisecondsSinceEpoch) {
+              endOfSleep = tile.endTime;
+            }
+
+            startOfSleep = startOfSleep!.millisecondsSinceEpoch >
+                    sleepTileEvent.startTime!.millisecondsSinceEpoch
+                ? sleepTileEvent.startTime!
+                : startOfSleep!;
+            endOfSleep = endOfSleep!.millisecondsSinceEpoch <
+                    sleepTileEvent.endTime!.millisecondsSinceEpoch
+                ? sleepTileEvent.endTime!
+                : endOfSleep!;
+
+            return isInterfering;
+          }).toList();
+        } else {
+          postSleepTiles = HashSet.from(allTiles);
+        }
+        var sortedPostSleepTiles = postSleepTiles.toList();
+        sortedPostSleepTiles
+            .sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
+
+        DateTime? refTimeEndTime;
+        int beginIndex = 0;
+        if (endOfSleep != null) {
+          refTimeEndTime = endOfSleep;
+        } else {
+          if (sortedPostSleepTiles.length > 0) {
+            refTimeEndTime = sortedPostSleepTiles[0].endTime;
+            beginIndex = 1;
+          }
+        }
+
+        for (int subEventIndex = beginIndex;
+            subEventIndex < sortedPostSleepTiles.length;
+            subEventIndex++) {
+          TilerEvent eachTilerEvent = sortedPostSleepTiles[subEventIndex];
+          Timeline chillTimeline = new Timeline.fromDateTime(
+              refTimeEndTime!, eachTilerEvent.startTime!);
+          chillTimeLines.add(chillTimeline);
+          refTimeEndTime = eachTilerEvent.endTime;
+        }
+
         widget.tiles!.forEach((eachTile) {
           if (eachTile.id != null) {
             tiles[eachTile.id!] = eachTile;
@@ -133,11 +207,24 @@ class TileBatchState extends State<TileBatch> {
       children.add(sleepWidget);
     }
 
+    List<Tuple3<bool, TimeRange, Widget>> allWidgets = [];
     if (tiles.length > 0) {
       tiles.values.forEach((eachTile) {
         Widget eachTileWidget = TileWidget(eachTile);
-        children.add(eachTileWidget);
+        var tuple = new Tuple3(true, eachTile, eachTileWidget);
+        allWidgets.add(tuple);
       });
+
+      chillTimeLines.forEach((chillTimeline) {
+        Widget eachTileWidget = ChillTimeWidget(chillTimeline);
+        var tuple = new Tuple3(false, chillTimeline, eachTileWidget);
+        allWidgets.add(tuple);
+      });
+
+      allWidgets.sort(
+          (tileA, tileB) => tileA.item2.start!.compareTo(tileB.item2.start!));
+
+      children.addAll(allWidgets.map((widgetTuple) => widgetTuple.item3));
     }
 
     if (widget.footer != null) {
