@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:tiler_app/data/tileObject.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
 import '../util.dart';
 
-class TilerEvent extends TilerObj {
+class TilerEvent extends TilerObj with TimeRange {
   // String? id;
   String? name;
   String? address;
@@ -10,17 +12,61 @@ class TilerEvent extends TilerObj {
   String? thirdpartyType;
   String? searchdDescription;
 
-  double? start;
-  double? end;
+  double? _startInMs;
+  // ignore: unnecessary_getters_setters
+  double? get start {
+    return _startInMs;
+  }
 
-  bool? isRecurring;
-  double? colorOpacity;
-  int? colorRed;
-  int? colorGreen;
-  int? colorBlue;
+  // ignore: unnecessary_getters_setters
+  set start(double? value) {
+    _startInMs = value;
+    if (this._startInMs != null) {
+      startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt());
+    }
+  }
+
+  DateTime? startTime;
+
+  double? _endInMs;
+  // ignore: unnecessary_getters_setters
+  double? get end {
+    return _endInMs;
+  }
+
+  // ignore: unnecessary_getters_setters
+  set end(double? value) {
+    _endInMs = value;
+    if (this._endInMs != null) {
+      endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt());
+    }
+  }
+
+  DateTime? endTime;
+
+  bool? isRecurring = false;
+
+  double? colorOpacity = 1;
+  int? colorRed = 127;
+  int? colorGreen = 127;
+  int? colorBlue = 127;
+
+  bool? isAllDay = false;
 
   static T? cast<T>(x) => x is T ? x : null;
 
+  TilerEvent(
+      {this.name,
+      double? start,
+      double? end,
+      this.address,
+      this.addressDescription,
+      String? id,
+      String? userId})
+      : super(id: id, userId: userId) {
+    this.start = start;
+    this.end = end;
+  }
   TilerEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('name')) {
       name = json['name'];
@@ -40,6 +86,22 @@ class TilerEvent extends TilerObj {
     colorGreen = cast<int>(json['colorGreen']);
     colorBlue = cast<int>(json['colorBlue']);
     isRecurring = json['isRecurring'];
+  }
+
+  toString() {
+    String retValue = "";
+    if (this.name != null) {
+      retValue += this.name! + ' ';
+    }
+    if (this.start != null && this.end != null) {
+      retValue += (new DateTime.fromMillisecondsSinceEpoch(this.start!.toInt())
+              .toString()) +
+          ' - ' +
+          (new DateTime.fromMillisecondsSinceEpoch(this.end!.toInt())
+              .toString());
+    }
+
+    return retValue;
   }
 
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
@@ -78,6 +140,9 @@ class TilerEvent extends TilerObj {
     subEventMap['Content']['id'] = id;
 
     TilerEvent retValue = TilerEvent.fromJson(subEventMap['Content']);
+    retValue.colorBlue = Random().nextInt(255);
+    retValue.colorGreen = Random().nextInt(255);
+    retValue.colorRed = Random().nextInt(255);
 
     double timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;
