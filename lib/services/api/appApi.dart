@@ -6,14 +6,21 @@ abstract class AppApi {
   Authentication authentication = new Authentication();
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
-            jsonResult['Error'].containsKey('code')) &&
-        jsonResult['Error']['code'] == '0';
+            jsonResult['Error'].containsKey('Code')) &&
+        jsonResult['Error']['Code'] == '0';
 
     return retValue;
   }
 
   bool isContentInResponse(Map jsonResult) {
     bool retValue = jsonResult.containsKey('Content');
+    return retValue;
+  }
+
+  bool isTileRequestError(Map jsonResult) {
+    bool retValue = jsonResult.containsKey('Error') &&
+        jsonResult['Error'].containsKey('Code') &&
+        jsonResult['Error']['Code'] != '0';
     return retValue;
   }
 
