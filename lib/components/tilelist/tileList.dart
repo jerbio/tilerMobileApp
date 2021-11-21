@@ -20,7 +20,7 @@ import '../../constants.dart';
 
 class TileList extends StatefulWidget {
   final ScheduleApi scheduleApi = new ScheduleApi();
-  TileList({Key? key}) : super(key: key) {}
+  TileList({Key? key}) : super(key: key);
 
   @override
   _TileListState createState() => _TileListState();
@@ -36,7 +36,6 @@ class _TileListState extends State<TileList> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      print('Scrollcontroller poke');
       double minScrollLimit = _scrollController.position.minScrollExtent + 0;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 0;
       Timeline updatedTimeline;
@@ -104,7 +103,8 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    Map<int, TileBatch> allTileBatches = new Map<int, TileBatch>();
+    // Map<int, Tuple2<Key, TileBatch>> allTileBatches =
+    //     new Map<int, Tuple2<Key, TileBatch>>();
     WithinNowBatch withinNowBatch = WithinNowBatch(
       key: Key(Utility.getUuid),
     );
@@ -161,13 +161,14 @@ class _TileListState extends State<TileList> {
                     }
                     String headerString =
                         Utility.getTimeFromIndex(dayIndex).humanDate;
+                    Key key = Key(Utility.getUuid);
                     TileBatch upcomingTileBatch = TileBatch(
                       header: headerString,
                       dayIndex: dayIndex,
                       tiles: tiles,
-                      key: Key(Utility.getUuid),
+                      key: key,
                     );
-                    allTileBatches[dayIndex] = upcomingTileBatch;
+                    // allTileBatches[dayIndex] = Tuple2(key, upcomingTileBatch);
                     upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
                   }
                 } else {
@@ -178,13 +179,15 @@ class _TileListState extends State<TileList> {
                     if (dayIndexToTileDict.containsKey(dayIndex)) {
                       tiles = dayIndexToTileDict[dayIndex]!;
                     }
+                    Key key = Key(Utility.getUuid);
                     TileBatch preceedingDayTileBatch = TileBatch(
                       footer: footerString,
                       dayIndex: dayIndex,
-                      key: Key(Utility.getUuid),
+                      key: key,
                       tiles: tiles,
                     );
-                    allTileBatches[dayIndex] = preceedingDayTileBatch;
+                    // allTileBatches[dayIndex] =
+                    //     Tuple2(key, preceedingDayTileBatch);
                     preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
                   }
                 }
@@ -193,12 +196,9 @@ class _TileListState extends State<TileList> {
               var timeStamps = dayIndexes.map(
                   (eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
 
-              print('There are ' + tileData.item2.length.toString() + ' tiles');
-              print('This is from ' +
-                  Utility.getTimeFromIndex(dayIndexes[0]).toString() +
-                  ' - ' +
-                  Utility.getTimeFromIndex(dayIndexes[dayIndexes.length - 1])
-                      .toString());
+              print('------------There are ' +
+                  tileData.item2.length.toString() +
+                  ' tiles------------');
 
               List<TileBatch> preceedingDayTiles =
                   preceedingDayTilesDict.values.toList();
@@ -215,7 +215,6 @@ class _TileListState extends State<TileList> {
                 childTileBatchs.add(withinNowBatch);
               }
               childTileBatchs.addAll(upcomingDayTiles);
-              print("Width is " + MediaQuery.of(context).size.width.toString());
               retValue = Container(
                 color: Color.fromRGBO(250, 254, 255, 1),
                 alignment: Alignment.center,
@@ -226,32 +225,6 @@ class _TileListState extends State<TileList> {
                       return childTileBatchs[index];
                     }),
               );
-
-              new Future.delayed(const Duration(seconds: 1), () async {
-                for (TileBatch tileBatch in childTileBatchs) {
-                  if (tileBatch.dayIndex != null) {
-                    if (dayIndexToTileDict.containsKey(tileBatch.dayIndex)) {
-                      List<TilerEvent> tiles =
-                          dayIndexToTileDict[tileBatch.dayIndex]!;
-                      tileBatch.updateTiles(tiles);
-                    }
-
-                    if (dayToSleepTimeLines.containsKey(tileBatch.dayIndex)) {
-                      Timeline sleepTimeLine =
-                          dayToSleepTimeLines[tileBatch.dayIndex]!;
-                      tileBatch.updateSleep(sleepTimeLine);
-                    }
-                    continue;
-                  }
-                  tileBatch.updateTiles(todayTiles);
-                  int todaysDayIndex = Utility.getDayIndex(DateTime.now());
-                  if (dayToSleepTimeLines.containsKey(todaysDayIndex)) {
-                    Timeline sleepTimeLine =
-                        dayToSleepTimeLines[todaysDayIndex]!;
-                    tileBatch.updateSleep(sleepTimeLine);
-                  }
-                }
-              });
             } else {
               retValue = ListView(children: []);
             }

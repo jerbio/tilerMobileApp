@@ -47,7 +47,9 @@ class ScheduleApi extends AppApi {
             if (isContentInResponse(jsonResult) &&
                 jsonResult['Content'].containsKey('subCalendarEvents')) {
               List subEventJson = jsonResult['Content']['subCalendarEvents'];
-              List sleepTimelinesJson = jsonResult['Content']['sleepTimeline'];
+              List sleepTimelinesJson = [];
+              print("Got more data " + subEventJson.length.toString());
+              // List sleepTimelinesJson = jsonResult['Content']['sleepTimeline'];
 
               List<Timeline> sleepTimelines = sleepTimelinesJson
                   .map((timelinesJson) => Timeline.fromJson(timelinesJson))

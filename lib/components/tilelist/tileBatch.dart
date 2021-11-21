@@ -36,35 +36,17 @@ class TileBatch extends StatefulWidget {
     _state = TileBatchState();
     return _state!;
   }
-
-  Future<TileBatchState> get state async {
-    if (this._state != null && this._state!.mounted) {
-      return this._state!;
-    } else {
-      Future<TileBatchState> retValue = new Future.delayed(
-          const Duration(milliseconds: stateRetrievalRetry), () {
-        return this.state;
-      });
-
-      return retValue;
-    }
-  }
-
-  Future updateTiles(List<TilerEvent> updatedTiles) async {
-    var state = await this.state;
-    state.updateSubEvents(updatedTiles);
-  }
-
-  Future updateSleep(Timeline timeline) async {
-    sleepTimeline = timeline;
-  }
 }
 
 class TileBatchState extends State<TileBatch> {
+  String uniqueKey = Utility.getUuid;
   bool isInitialized = false;
   Map<String, TilerEvent> tiles = new Map<String, TilerEvent>();
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
       new Map<String, Tuple2<TilerEvent, RemovalType>>();
+  List<Widget> childrenColumnWidgets = [];
+
+  Timeline? sleepTimeline;
 
   void updateSubEvents(List<TilerEvent> updatedTiles) {
     Map<String, TilerEvent> currentTiles = new Map.from(tiles);
@@ -96,12 +78,25 @@ class TileBatchState extends State<TileBatch> {
     this.setState(() {
       tiles = allTilesRefreshed;
       removedTiles = refreshRemovedTiles;
+      uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
     });
+  }
+
+  void updateSleepTimelines(Timeline timeline) {
+    this.setState(() {
+      sleepTimeline = timeline;
+      uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
+    });
+    print('---sleep TL 0 -- ' +
+        sleepTimeline!.startTime.toString() +
+        ' - ' +
+        uniqueKey);
   }
 
   @override
   Widget build(BuildContext context) {
     List<Timeline> chillTimeLines = [];
+    print('' + this.widget.dayIndex.toString() + " " + uniqueKey);
     if (!isInitialized) {
       if (widget.tiles != null) {
         var conflicts = Utility.getConflictingEvents(widget.tiles!);
@@ -110,10 +105,12 @@ class TileBatchState extends State<TileBatch> {
         allTiles.addAll(conflicts.item1);
         allTiles.addAll(conflicts.item2);
         allTiles.sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
+        // sleepTimeline = this.widget.sleepTimeline;
         Timeline sleepTileEvent;
         DateTime? startOfSleep;
         DateTime? endOfSleep;
-        if (widget.sleepTimeline != null) {
+        if (sleepTimeline != null) {
+          print('---sleep TL 1 -- ' + sleepTimeline!.startTime.toString() + '');
           postSleepTiles = new HashSet();
           sleepTileEvent = new Timeline(
               widget.sleepTimeline!.startInMs!, widget.sleepTimeline!.endInMs!);
@@ -168,9 +165,13 @@ class TileBatchState extends State<TileBatch> {
             subEventIndex < sortedPostSleepTiles.length;
             subEventIndex++) {
           TilerEvent eachTilerEvent = sortedPostSleepTiles[subEventIndex];
-          Timeline chillTimeline = new Timeline.fromDateTime(
-              refTimeEndTime!, eachTilerEvent.startTime!);
-          chillTimeLines.add(chillTimeline);
+          if (refTimeEndTime!.millisecondsSinceEpoch <
+              eachTilerEvent.startTime!.millisecondsSinceEpoch) {
+            Timeline chillTimeline = new Timeline.fromDateTime(
+                refTimeEndTime, eachTilerEvent.startTime!);
+            chillTimeLines.add(chillTimeline);
+          }
+
           refTimeEndTime = eachTilerEvent.endTime;
         }
 
@@ -182,7 +183,7 @@ class TileBatchState extends State<TileBatch> {
       }
       isInitialized = true;
     }
-    List<Widget> children = [];
+    childrenColumnWidgets = [];
     if (widget.header != null) {
       Container headerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
@@ -193,18 +194,20 @@ class TileBatchState extends State<TileBatch> {
       SizedBox topHeaderMargin = SizedBox(
         height: 10,
       );
-      children.add(topHeaderMargin);
-      children.add(headerContainer);
+      childrenColumnWidgets.add(topHeaderMargin);
+      childrenColumnWidgets.add(headerContainer);
       SizedBox bottomHeaderMargin = SizedBox(
         height: 10,
       );
-      children.add(bottomHeaderMargin);
+      childrenColumnWidgets.add(bottomHeaderMargin);
     }
 
-    if (this.widget.sleepTimeline != null) {
-      Timeline sleepTimeline = this.widget.sleepTimeline!;
-      Widget sleepWidget = SleepTileWidget(sleepTimeline);
-      children.add(sleepWidget);
+    Widget? sleepWidget;
+    if (sleepTimeline != null) {
+      Timeline sleepTimeline = this.sleepTimeline!;
+      sleepWidget = SleepTileWidget(sleepTimeline);
+      // print('---sleep TL 2 -- ' + sleepTimeline.startTime.toString() + '');
+      childrenColumnWidgets.add(sleepWidget);
     }
 
     List<Tuple3<bool, TimeRange, Widget>> allWidgets = [];
@@ -224,7 +227,8 @@ class TileBatchState extends State<TileBatch> {
       allWidgets.sort(
           (tileA, tileB) => tileA.item2.start!.compareTo(tileB.item2.start!));
 
-      children.addAll(allWidgets.map((widgetTuple) => widgetTuple.item3));
+      childrenColumnWidgets
+          .addAll(allWidgets.map((widgetTuple) => widgetTuple.item3));
     }
 
     if (widget.footer != null) {
@@ -237,16 +241,27 @@ class TileBatchState extends State<TileBatch> {
       SizedBox topFooterMargin = SizedBox(
         height: 10,
       );
-      children.add(topFooterMargin);
-      children.add(footerContainer);
+      childrenColumnWidgets.add(topFooterMargin);
+      childrenColumnWidgets.add(footerContainer);
       SizedBox bottomFooterMargin = SizedBox(
         height: 10,
       );
-      children.add(bottomFooterMargin);
+      childrenColumnWidgets.add(bottomFooterMargin);
+    }
+
+    if (sleepWidget != null && sleepTimeline != null) {
+      if (childrenColumnWidgets.contains(sleepWidget)) {
+        print('---sleep TL 4 -- ' +
+            sleepTimeline!.startTime.toString() +
+            '\t\t' +
+            childrenColumnWidgets.length.toString() +
+            "Child widgets " +
+            uniqueKey);
+      }
     }
     return Container(
       child: Column(
-        children: children,
+        children: childrenColumnWidgets,
       ),
     );
   }
