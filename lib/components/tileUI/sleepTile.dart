@@ -4,6 +4,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 
 import '../../constants.dart';
+import '../../util.dart';
 import 'timeScrub.dart';
 
 class SleepTileWidget extends StatefulWidget {
@@ -98,6 +99,11 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
     var allEntry = Column(
       children: [sleepIconAndRow, sleepInBedIcon, timeScrub],
     );
+
+    print('Sleep is from ' +
+        this.widget.timeline.startTime.toString() +
+        ' - ' +
+        this.widget.timeline.endTime.toString());
 
     return Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 20),

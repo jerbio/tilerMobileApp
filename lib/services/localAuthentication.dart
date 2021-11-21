@@ -72,6 +72,7 @@ class Authentication {
   Future<bool> isUserAuthenticated() async {
     bool retValue = false;
     if (isCachedCredentialValid()) {
+      retValue = true;
     } else {
       await reLoadCredentialsCache();
       retValue = isCachedCredentialValid();
