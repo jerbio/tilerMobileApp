@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/util.dart';
 
@@ -28,8 +29,26 @@ class EventNameSearchWidget extends SearchWidget {
 
 class EventNameSearchState extends SearchWidgetState {
   TileNameApi tileNameApi = new TileNameApi();
+  CalendarEventApi calendarEventApi = new CalendarEventApi();
   TextEditingController textController = TextEditingController();
   List<Widget> nameSearchResult = [];
+
+  Function? createSetAsNowCallBack(String tileId) {
+    Function retValue = () async => {await calendarEventApi.setAsNow(tileId)};
+    return retValue;
+  }
+
+  Function? createDeletionCallBack(String tileId, String thirdPartyId) {
+    Function retValue =
+        () async => {await calendarEventApi.delete(tileId, thirdPartyId)};
+    return retValue;
+  }
+
+  Function? createCompletionCallBack(String tileId) {
+    Function retValue = () async => {await calendarEventApi.complete(tileId)};
+    return retValue;
+  }
+
   Widget tileToEventNameWidget(TilerEvent tile) {
     List<Widget> childWidgets = [];
     Container textContainer;
@@ -59,7 +78,10 @@ class EventNameSearchState extends SearchWidgetState {
         child: Text(tile.name!, style: TextStyle(fontSize: 18)),
       );
       detailWidgets.add(textContainer);
-
+      Function setAsNowCallBack = createSetAsNowCallBack(tile.id!)!;
+      Function completionCallBack = createCompletionCallBack(tile.id!)!;
+      Function deletionCallBack =
+          createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
       Container iconContainer = Container(
         width: 150,
         margin: EdgeInsets.fromLTRB(175, 35, 0, 0),
@@ -68,26 +90,25 @@ class EventNameSearchState extends SearchWidgetState {
             IconButton(
               icon: const Icon(Icons.clear_rounded),
               color: Colors.red,
-              onPressed: () {},
+              onPressed: () => {deletionCallBack()},
             ),
             IconButton(
               icon: const Icon(Icons.check),
               color: Colors.green,
-              onPressed: () {},
+              onPressed: () => {completionCallBack()},
             ),
             Container(
                 margin: EdgeInsets.fromLTRB(0, 10, 5, 0),
                 child: IconButton(
-                  icon: Transform.rotate(
-                    angle: -pi / 2,
-                    child: Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                      size: 35,
+                    icon: Transform.rotate(
+                      angle: -pi / 2,
+                      child: Icon(
+                        Icons.chevron_right,
+                        color: Colors.grey,
+                        size: 35,
+                      ),
                     ),
-                  ),
-                  onPressed: () {},
-                ))
+                    onPressed: () => {setAsNowCallBack()}))
           ],
         ),
       );

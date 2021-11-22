@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/routes/authentication/addTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -65,7 +66,8 @@ class AuthorizedRouteState extends State<StatefulWidget> {
     // bool isSearchActive = selecedBottomMenu == 0;
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      AddTile(), //TileList() this is the deafault and we need to switch these to routes and so we dont loose back button support
+      TileList(),
+      // AddTile(), //TileList() this is the deafault and we need to switch these to routes and so we dont loose back button support
       // ElevatedButton(
       //   child: Text('Log Out'),
       //   onPressed: () async {

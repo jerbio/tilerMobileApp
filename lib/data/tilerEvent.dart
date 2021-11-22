@@ -10,6 +10,7 @@ class TilerEvent extends TilerObj with TimeRange {
   String? address;
   String? addressDescription;
   String? thirdpartyType;
+  String thirdpartyId = '';
   String? searchdDescription;
 
   double? _startInMs;
