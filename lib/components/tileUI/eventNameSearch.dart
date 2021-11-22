@@ -29,6 +29,7 @@ class EventNameSearchWidget extends SearchWidget {
 class EventNameSearchState extends SearchWidgetState {
   TileNameApi tileNameApi = new TileNameApi();
   TextEditingController textController = TextEditingController();
+  List<Widget> nameSearchResult = [];
   Widget tileToEventNameWidget(TilerEvent tile) {
     List<Widget> childWidgets = [];
     Container textContainer;
@@ -134,15 +135,23 @@ class EventNameSearchState extends SearchWidgetState {
   }
 
   Future<List<Widget>> _onInputFieldChange(String name) async {
-    List<Widget> retValue = [
-      Container(
-        child: Text('No match was found'),
-      )
-    ];
-    List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
-    if (tileEvents.length > 0) {
+    List<Widget> retValue = this.nameSearchResult;
+
+    if (name.length > 3) {
+      List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
       retValue = tileEvents.map((tile) => tileToEventNameWidget(tile)).toList();
+      if (retValue.length == 0) {
+        retValue = [
+          Container(
+            child: Text('No match was found'),
+          )
+        ];
+      }
     }
+
+    setState(() {
+      nameSearchResult = retValue;
+    });
 
     return retValue;
   }
