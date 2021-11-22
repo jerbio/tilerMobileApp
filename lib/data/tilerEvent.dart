@@ -67,7 +67,6 @@ class TilerEvent extends TilerObj with TimeRange {
     this.start = start;
     this.end = end;
   }
-
   TilerEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('name')) {
       name = json['name'];

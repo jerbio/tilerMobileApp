@@ -22,24 +22,34 @@ class SearchWidget extends StatefulWidget {
 class SearchWidgetState extends State<SearchWidget> {
   List<TextEditingController> createdControllers = [];
   Widget? listView;
+  String searchedText = '';
   final Container blankResult = Container();
   Future<void> onInputChangeDefault() async {
     Function? onInputChangedAsync = this.widget.onChanged;
-    if (onInputChangedAsync != null &&
-        this.widget.textField != null &&
-        this.widget.textField!.controller != null) {
-      List<Widget> retrievedWidgets =
-          await onInputChangedAsync(this.widget.textField?.controller?.text);
-      if (retrievedWidgets.length > 0) {
-        setState(() {
-          listView = ListView(
-            children: retrievedWidgets,
-          );
-        });
-      } else {
-        setState(() {
-          listView = blankResult;
-        });
+    if (this.widget.textField?.controller?.text != searchedText) {
+      if (onInputChangedAsync != null &&
+          this.widget.textField != null &&
+          this.widget.textField!.controller != null) {
+        if (this.widget.textField != null &&
+            this.widget.textField!.controller != null) {
+          setState(() {
+            searchedText = this.widget.textField!.controller!.text;
+          });
+        }
+
+        List<Widget> retrievedWidgets =
+            await onInputChangedAsync(this.widget.textField!.controller!.text);
+        if (retrievedWidgets.length > 0) {
+          setState(() {
+            listView = ListView(
+              children: retrievedWidgets,
+            );
+          });
+        } else {
+          setState(() {
+            listView = blankResult;
+          });
+        }
       }
     }
   }
