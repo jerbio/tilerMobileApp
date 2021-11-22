@@ -174,10 +174,6 @@ class ScheduleApi extends AppApi {
             dateTime.timeZoneOffset.inHours.toString();
         newTileParameters['MobileApp'] = true.toString();
 
-        // Uri.parse('https://jsonplaceholder.typicode.com/albums')
-        // Uri uri = Uri.parse('https://jsonplaceholder.typicode.com/albums')
-        // Uri uri = Uri.https(url, 'api/Schedule/Event', newTileParameters);
-
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
 
