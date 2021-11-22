@@ -17,6 +17,13 @@ abstract class AppApi {
     return retValue;
   }
 
+  bool isTileRequestError(Map jsonResult) {
+    bool retValue = jsonResult.containsKey('Error') &&
+        jsonResult['Error'].containsKey('Code') &&
+        jsonResult['Error']['Code'] != '0';
+    return retValue;
+  }
+
   getHeaders() {
     if (authentication.cachedCredentials != null &&
         !authentication.cachedCredentials!.isExpired()) {

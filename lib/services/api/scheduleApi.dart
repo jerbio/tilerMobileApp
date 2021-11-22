@@ -1,8 +1,10 @@
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/request/NewTile.dart';
 import 'dart:convert';
 
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
@@ -151,5 +153,58 @@ class ScheduleApi extends AppApi {
             () => new Tuple2<List<Timeline>, List<SubCalendarEvent>>(
                 sleepTimeLines, subEvents));
     return retFuture;
+  }
+
+  Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
+      NewTile tile) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not send request";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    if (userIsAuthenticated) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      DateTime dateTime = DateTime.now();
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final newTileParameters = tile.toJson();
+        newTileParameters['UserName'] = username;
+        newTileParameters['TimeZoneOffset'] =
+            dateTime.timeZoneOffset.inHours.toString();
+        newTileParameters['MobileApp'] = true.toString();
+
+        // Uri.parse('https://jsonplaceholder.typicode.com/albums')
+        // Uri uri = Uri.parse('https://jsonplaceholder.typicode.com/albums')
+        // Uri uri = Uri.https(url, 'api/Schedule/Event', newTileParameters);
+
+        Uri uri = Uri.https(url, 'api/Schedule/Event');
+        var header = this.getHeaders();
+
+        if (header != null) {
+          var response = await http.post(uri,
+              headers: header, body: jsonEncode(newTileParameters));
+          var jsonResult = jsonDecode(response.body);
+          error.Message = "Issues with reaching Tiler servers";
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult)) {
+              var subEventJson = jsonResult['Content'];
+              SubCalendarEvent subEvent =
+                  SubCalendarEvent.fromJson(subEventJson);
+              return new Tuple2(subEvent, null);
+            } else {
+              if (isTileRequestError(jsonResult)) {
+                var errorJson = jsonResult['Error'];
+                error = TilerError.fromJson(errorJson);
+              } else {
+                error.Message = "Issues with reaching TIler servers";
+              }
+            }
+          }
+        }
+      }
+    }
+    var retValue = new Tuple2<SubCalendarEvent?, TilerError?>(null, error);
+    return retValue;
   }
 }
