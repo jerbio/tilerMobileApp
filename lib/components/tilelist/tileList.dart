@@ -103,11 +103,7 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    // Map<int, Tuple2<Key, TileBatch>> allTileBatches =
-    //     new Map<int, Tuple2<Key, TileBatch>>();
-    WithinNowBatch withinNowBatch = WithinNowBatch(
-      key: Key(Utility.getUuid),
-    );
+    WithinNowBatch withinNowBatch;
     Map<int, TileBatch> preceedingDayTilesDict = new Map<int, TileBatch>();
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
     return FutureBuilder(
@@ -181,13 +177,11 @@ class _TileListState extends State<TileList> {
                     }
                     Key key = Key(Utility.getUuid);
                     TileBatch preceedingDayTileBatch = TileBatch(
-                      footer: footerString,
+                      header: footerString,
                       dayIndex: dayIndex,
                       key: key,
                       tiles: tiles,
                     );
-                    // allTileBatches[dayIndex] =
-                    //     Tuple2(key, preceedingDayTileBatch);
                     preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
                   }
                 }
@@ -212,6 +206,10 @@ class _TileListState extends State<TileList> {
               List<TileBatch> childTileBatchs = <TileBatch>[];
               childTileBatchs.addAll(preceedingDayTiles);
               if (todayTiles.length > 0) {
+                withinNowBatch = WithinNowBatch(
+                  key: Key(Utility.getUuid),
+                  tiles: todayTiles,
+                );
                 childTileBatchs.add(withinNowBatch);
               }
               childTileBatchs.addAll(upcomingDayTiles);

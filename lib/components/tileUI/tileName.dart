@@ -34,7 +34,9 @@ class TileNameState extends State<TileName> {
                 color: nameColor,
                 borderRadius: BorderRadius.circular(12),
               )),
-          Text(
+          Flexible(
+              child: new Container(
+                  child: Text(
             name,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -42,7 +44,7 @@ class TileNameState extends State<TileName> {
                 fontFamily: 'Rubik',
                 fontWeight: FontWeight.bold,
                 color: Color.fromRGBO(31, 31, 31, 1)),
-          )
+          )))
         ],
       ),
     );
