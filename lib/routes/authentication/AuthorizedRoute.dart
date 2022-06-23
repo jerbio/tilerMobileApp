@@ -114,7 +114,12 @@ class AuthorizedRouteState extends State<StatefulWidget> {
                 icon: Icon(Icons.search, color: Colors.white),
                 label: '',
               ),
-              BottomNavigationBarItem(icon: Icon(Icons.add), label: ''),
+              BottomNavigationBarItem(
+                  icon: Icon(
+                    Icons.add,
+                    color: Color.fromRGBO(0, 0, 0, 0),
+                  ),
+                  label: ''),
               BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_today_outlined), label: ''),
             ],
@@ -129,11 +134,23 @@ class AuthorizedRouteState extends State<StatefulWidget> {
         ),
       );
     }
+
     return Scaffold(
-        backgroundColor: Color.fromRGBO(250, 254, 255, 1),
-        body: Stack(
-          children: widgetChildren,
+      backgroundColor: Color.fromRGBO(250, 254, 255, 1),
+      body: Stack(
+        children: widgetChildren,
+      ),
+      bottomNavigationBar: bottomNavigator,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color.fromRGBO(243, 243, 243, 1),
+        onPressed: () {},
+        child: Icon(
+          Icons.add,
+          size: 35,
+          color: Color.fromRGBO(0, 194, 237, 1),
         ),
-        bottomNavigationBar: bottomNavigator);
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+    );
   }
 }
