@@ -105,7 +105,6 @@ class TileBatchState extends State<TileBatch> {
         allTiles.addAll(conflicts.item1);
         allTiles.addAll(conflicts.item2);
         allTiles.sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
-        // sleepTimeline = this.widget.sleepTimeline;
         Timeline sleepTileEvent;
         DateTime? startOfSleep;
         DateTime? endOfSleep;
