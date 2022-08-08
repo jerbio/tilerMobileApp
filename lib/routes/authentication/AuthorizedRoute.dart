@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
-import 'package:tiler_app/routes/authentication/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/util.dart';
@@ -25,12 +25,12 @@ class AuthorizedRouteState extends State<StatefulWidget> {
     switch (index) {
       case 0:
         {
-          selectedPage = ActivePage.search;
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 1:
         {
-          selectedPage = ActivePage.addTile;
+          Navigator.pushNamed(context, '/AddTile');
         }
         break;
       case 2:
@@ -40,9 +40,9 @@ class AuthorizedRouteState extends State<StatefulWidget> {
         break;
     }
 
-    this.setState(() {
-      selecedBottomMenu = selectedPage;
-    });
+    // this.setState(() {
+    //   selecedBottomMenu = selectedPage;
+    // });
   }
 
   void disableSearch() {
@@ -66,24 +66,8 @@ class AuthorizedRouteState extends State<StatefulWidget> {
     // bool isSearchActive = selecedBottomMenu == 0;
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(),
-      // AddTile(), //TileList() this is the deafault and we need to switch these to routes and so we dont loose back button support
-      // ElevatedButton(
-      //   child: Text('Log Out'),
-      //   onPressed: () async {
-      //     Authentication authentication = new Authentication();
-      //     await authentication.deleteCredentials();
-      //     while (Navigator.canPop(context)) {
-      //       Navigator.pop(context);
-      //     }
-      //     Navigator.pop(context);
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => RegistrationRoute()),
-      //     );
-      //   },
-      // ),
-      // dayStatusWidget,
+      TileList(), //this is the deafault and we need to switch these to routes and so we dont loose back button support
+      // AddTile(),
     ];
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
@@ -143,7 +127,9 @@ class AuthorizedRouteState extends State<StatefulWidget> {
       bottomNavigationBar: bottomNavigator,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Color.fromRGBO(243, 243, 243, 1),
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/AddTile');
+        },
         child: Icon(
           Icons.add,
           size: 35,

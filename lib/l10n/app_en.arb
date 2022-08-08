@@ -1,0 +1,18 @@
+{
+    "add": "Add",
+    "setupCustomRestrictions": "Set up Custom restrictions",
+    "customRestrictionTitle": "Custom restrictions",
+    "customRestrictionHeader": "Set up Custom restrictions",
+    "customRestrictionHeaderDescription": "Select when you would like to complete this task.",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunday": "Sunday",
+
+    "@Add": {
+      "description": "The conventional newborn programmer greeting"
+    }
+}

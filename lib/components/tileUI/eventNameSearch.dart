@@ -14,6 +14,7 @@ class EventNameSearchWidget extends SearchWidget {
       textField,
       onInputCompletion,
       listView,
+      context,
       renderBelowTextfield = true,
       Key? key})
       : super(
@@ -21,8 +22,10 @@ class EventNameSearchWidget extends SearchWidget {
             textField: textField,
             onInputCompletion: onInputCompletion,
             renderBelowTextfield: renderBelowTextfield,
+            onBackButtonPressed: () {
+              Navigator.pop(context);
+            },
             key: key);
-
   @override
   EventNameSearchState createState() => EventNameSearchState();
 }
@@ -179,7 +182,6 @@ class EventNameSearchState extends SearchWidgetState {
 
   @override
   Widget build(BuildContext context) {
-    // this.widget.renderBelowTextfield = false;
     String hintText = 'Tile name';
     this.widget.onChanged = this._onInputFieldChange;
     this.widget.textField = TextField(
@@ -189,7 +191,10 @@ class EventNameSearchState extends SearchWidgetState {
         hintText: hintText,
       ),
     );
-    return super.build(context);
+
+    return Scaffold(
+      body: super.build(context),
+    );
   }
 
   @override

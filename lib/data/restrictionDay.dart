@@ -1,0 +1,129 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+
+import 'package:tiler_app/data/tileObject.dart';
+
+class RestrictionTimeLine extends TilerObj {
+  TimeOfDay? _start;
+  Duration? _duration;
+  int? weekDay; // sunday - 0, Monday  - 1 ... Saturday - 6
+  RestrictionTimeLine({
+    start,
+    duration,
+    this.weekDay,
+  }) {
+    this._start = start;
+    this._duration = duration;
+  }
+  static T? cast<T>(x) => x is T ? x : null;
+
+  set start(TimeOfDay? value) {
+    this._start = value;
+  }
+
+  set duration(Duration? value) {
+    this._duration = value;
+  }
+
+  TimeOfDay? get start {
+    return _start;
+  }
+
+  Duration? get duration {
+    return _duration;
+  }
+
+  RestrictionTimeLine copyWith({
+    TimeOfDay? start,
+    Duration? duration,
+    int? weekDay,
+  }) {
+    return RestrictionTimeLine(
+      start: _start ?? this._start,
+      duration: _duration ?? this._duration,
+      weekDay: weekDay ?? this.weekDay,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
+      'start': this.start,
+      'duration': this.duration,
+      'weekDay': weekDay,
+    };
+  }
+
+  factory RestrictionTimeLine.fromMap(Map<String, dynamic> map) {
+    return RestrictionTimeLine(
+      start: map['start'] != null
+          ? TimeOfDay.fromDateTime(
+              DateTime.fromMillisecondsSinceEpoch(map['start'] as int))
+          : null,
+      duration: map['duration'] != null
+          ? Duration(milliseconds: map['duration'] as int)
+          : null,
+      weekDay: map['weekDay'] != null ? map['weekDay'] as int : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory RestrictionTimeLine.fromJson(String source) =>
+      RestrictionTimeLine.fromMap(json.decode(source) as Map<String, dynamic>);
+
+  @override
+  String toString() =>
+      'RestrictionTimeLine(_start: $_start, _duration: $_duration, weekDay: $weekDay)';
+
+  @override
+  bool operator ==(covariant RestrictionTimeLine other) {
+    if (identical(this, other)) return true;
+
+    return other._start == _start &&
+        other._duration == _duration &&
+        other.weekDay == weekDay;
+  }
+
+  @override
+  int get hashCode => _start.hashCode ^ _duration.hashCode ^ weekDay.hashCode;
+}
+
+class RestrictionDay extends TilerObj {
+  RestrictionTimeLine? _restrictionTimeLine;
+  int? _weekday;
+  static T? cast<T>(x) => x is T ? x : null;
+
+  RestrictionDay({restrictionTimeLine, weekday}) {
+    this._restrictionTimeLine = restrictionTimeLine;
+    this._weekday = weekday;
+  }
+
+  RestrictionTimeLine? get restrictionTimeLine {
+    return _restrictionTimeLine;
+  }
+
+  set restrictionTimeLine(RestrictionTimeLine? value) {
+    this._restrictionTimeLine = value;
+  }
+
+  int? get weekday {
+    return _weekday;
+  }
+
+  set weekday(int? value) {
+    this._weekday = value;
+  }
+
+  RestrictionDay.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
+    if (json.containsKey('restrictionTimeLine')) {
+      _restrictionTimeLine =
+          RestrictionTimeLine.fromJson(json['restrictionTimeLine']);
+    }
+
+    if (json.containsKey('weekday')) {
+      weekday = cast<int>(json['weekday'])!;
+    }
+  }
+}
