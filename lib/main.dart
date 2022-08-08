@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/AuthorizedRoute.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'services/localAuthentication.dart';
 
@@ -41,8 +48,26 @@ class TilerApp extends StatelessWidget {
       ),
       routes: <String, WidgetBuilder>{
         '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),
-        '/LoggedOut': (BuildContext context) => new PreAuthenticationRoute()
+        '/LoggedOut': (BuildContext context) => new PreAuthenticationRoute(),
+        '/AddTile': (BuildContext context) => new AddTile(),
+        '/SearchTile': (BuildContext context) =>
+            new EventNameSearchWidget(context: context),
+        '/LocationRoute': (BuildContext context) => new LocationRoute(),
+        '/CustomRestrictionsRoute': (BuildContext context) =>
+            new CustomTimeRestrictionRoute(),
+        '/TimeRestrictionRoute': (BuildContext context) =>
+            new TimeRestrictionRoute(),
       },
+      localizationsDelegates: [
+        AppLocalizations.delegate, // Add this line
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        Locale('en', ''), // English, no country code
+        Locale('es', ''), // Spanish, no country code
+      ],
       home: FutureBuilder<bool>(
           future: authenticateUser(),
           builder: (context, AsyncSnapshot<bool> snapshot) {

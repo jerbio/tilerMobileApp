@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/blobEvent.dart';
 import 'package:tuple/tuple.dart';
@@ -229,12 +230,13 @@ class Utility {
     //Continue from here Jerome you need to write the function for detecting conflicting events and then creating the interferring list.
   }
 
+  static int daysInAweek = 7;
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
   static Duration oneDay = new Duration(days: 1);
-  static Duration sevenDays = new Duration(days: 7);
+  static Duration sevenDays = new Duration(days: daysInAweek);
   static var uuid = Uuid();
 }
 
@@ -251,6 +253,20 @@ extension ListEnhance on List {
       return this[index];
     }
     throw new Exception('Cannot get a random entry from an empty list');
+  }
+}
+
+extension TilerDayOfWeek on DateTime {
+  get tilerDayOfWeek {
+    return this.tilerDayOfWeek % Utility.daysInAweek;
+  }
+}
+
+extension DurationInMS on TimeOfDay {
+  get durationFromMidnight {
+    int retValue = this.hour * Utility.oneHour.inMilliseconds +
+        this.minute * Utility.oneMin.inMilliseconds;
+    return retValue;
   }
 }
 

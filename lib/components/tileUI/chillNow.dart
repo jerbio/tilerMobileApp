@@ -102,40 +102,42 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
       margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
       child: Material(
           type: MaterialType.transparency,
-          child: Container(
-            width: TileStyles.tileWidth,
-            height: 350,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(
-                color: Colors.white,
-                width: 5,
-              ),
-              borderRadius: BorderRadius.circular(TileStyles.borderRadius),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 10,
-                  blurRadius: 20,
-                  offset: Offset(0, 1),
-                ),
-              ],
-            ),
-            child: Container(
-                padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+          child: FractionallySizedBox(
+              widthFactor: TileStyles.tileWidthRatio,
+              child: Container(
+                height: 350,
                 decoration: BoxDecoration(
-                  color: tileBackGroundColor,
+                  color: Colors.white,
                   border: Border.all(
                     color: Colors.white,
-                    width: 0.5,
+                    width: 5,
                   ),
                   borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 10,
+                      blurRadius: 20,
+                      offset: Offset(0, 1),
+                    ),
+                  ],
                 ),
                 child: Container(
-                  margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-                  child: allEntry,
-                )),
-          )),
+                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    decoration: BoxDecoration(
+                      color: tileBackGroundColor,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 0.5,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(TileStyles.borderRadius),
+                    ),
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                      child: allEntry,
+                    )),
+              ))),
     );
   }
 }
