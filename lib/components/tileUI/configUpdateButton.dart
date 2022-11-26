@@ -40,7 +40,7 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       },
       child: Text(
         textButtonString,
-        selectionColor: Color.fromRGBO(31, 31, 31, 1),
+        //selectionColor: Color.fromRGBO(31, 31, 31, 1),
       ),
     );
     childWidgets.add(textButton);

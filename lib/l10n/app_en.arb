@@ -11,6 +11,11 @@
     "friday": "Friday",
     "saturday": "Saturday",
     "sunday": "Sunday",
+    "duration": "Duration",
+    "addTile": "Add Tile",
+    "procrastinate": "Procrastinate",
+    "forecast": "Forecast",
+    "whenQ": "When?",
 
     "@Add": {
       "description": "The conventional newborn programmer greeting"

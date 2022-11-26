@@ -7,9 +7,14 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? onProceed;
   Function? isProceedAllowed;
   Widget? child;
+  PreferredSizeWidget? appBar;
 
   CancelAndProceedTemplateWidget(
-      {this.onCancel, this.onProceed, this.child, this.isProceedAllowed});
+      {this.onCancel,
+      this.onProceed,
+      this.child,
+      this.isProceedAllowed,
+      this.appBar});
 
   @override
   CancelAndProceedTemplateWidgetState createState() =>
@@ -135,6 +140,7 @@ class CancelAndProceedTemplateWidgetState
       children: stackWidgets,
     );
     return Scaffold(
+      appBar: this.widget.appBar,
       body: SafeArea(
         child: contentAndButton,
       ),

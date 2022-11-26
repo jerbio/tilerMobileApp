@@ -10,4 +10,6 @@ class TileStyles {
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static Color enabledTextColor = Colors.black87;
+  static Color primaryColor = Color(0xffE5E5E5);
+  static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
 }
