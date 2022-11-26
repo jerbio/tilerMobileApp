@@ -63,6 +63,8 @@ flutter:
     - assets/images/bath.png
     - assets/images/person_in_lotus_position.png
     - assets/images/pinched_fingers.png
+    - assets/images/move_forward.png
+    - assets/images/binocular.png
     # - images/a_dot_ham.jpeg
   generate: true
 
