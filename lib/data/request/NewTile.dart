@@ -49,7 +49,7 @@ class NewTile {
   /// <summary>
   /// Sets the number of Minutes component for the duration of event. for the given calendar event. Default is 0
   /// </summary>
-  String? DurationMins;
+  String? DurationMinute;
 
   /// <summary>
   /// Day-date component of End date.
