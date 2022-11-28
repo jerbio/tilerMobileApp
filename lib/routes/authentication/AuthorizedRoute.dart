@@ -161,8 +161,10 @@ class AuthorizedRouteState extends State<StatefulWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       GestureDetector(
-                        onTap: () =>
-                            Navigator.of(context).pushNamed('/forecastPreview'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.of(context).pushNamed('/forecastPreview');
+                        },
                         child: ListTile(
                           leading: Image.asset('assets/images/binocular.png'),
                           title: Text(
@@ -175,7 +177,10 @@ class AuthorizedRouteState extends State<StatefulWidget> {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, '/AddTile'),
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.pushNamed(context, '/AddTile');
+                        },
                         child: ListTile(
                           leading: Icon(
                             Icons.add,

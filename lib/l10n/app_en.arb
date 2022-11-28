@@ -16,7 +16,7 @@
     "procrastinate": "Procrastinate",
     "forecast": "Forecast",
     "whenQ": "When?",
-
+    "deadline_auto": "Deadline(Auto)",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }
