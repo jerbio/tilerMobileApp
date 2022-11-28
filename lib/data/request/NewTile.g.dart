@@ -15,7 +15,7 @@ NewTile _$NewTileFromJson(Map<String, dynamic> json) => NewTile()
   ..Count = json['Count'] as String?
   ..DurationDays = json['DurationDays'] as String?
   ..DurationHours = json['DurationHours'] as String?
-  ..DurationMins = json['DurationMins'] as String?
+  ..DurationMinute = json['DurationMinute'] as String?
   ..EndDay = json['EndDay'] as String?
   ..EndHour = json['EndHour'] as String?
   ..EndMins = json['EndMins'] as String?
@@ -59,7 +59,7 @@ Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'Count': instance.Count,
       'DurationDays': instance.DurationDays,
       'DurationHours': instance.DurationHours,
-      'DurationMins': instance.DurationMins,
+      'DurationMinute': instance.DurationMinute,
       'EndDay': instance.EndDay,
       'EndHour': instance.EndHour,
       'EndMins': instance.EndMins,

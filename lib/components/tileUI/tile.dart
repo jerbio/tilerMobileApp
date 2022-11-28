@@ -54,14 +54,9 @@ class TileWidgetState extends State<TileWidget> {
   @override
   Widget build(BuildContext context) {
     var subEvent = widget.subEvent;
-    int redColor =
-        subEvent.colorRed == null ? Random().nextInt(255) : subEvent.colorRed!;
-    int blueColor = subEvent.colorBlue == null
-        ? Random().nextInt(255)
-        : subEvent.colorBlue!;
-    int greenColor = subEvent.colorGreen == null
-        ? Random().nextInt(255)
-        : subEvent.colorGreen!;
+    int redColor = subEvent.colorRed == null ? 127 : subEvent.colorRed!;
+    int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
+    int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
 

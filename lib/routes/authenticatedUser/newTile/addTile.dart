@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/location.dart';
@@ -14,6 +15,7 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
     as durationPickerDialog;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
@@ -47,9 +49,10 @@ class AddTileState extends State<AddTile> {
         ],
       ));
   TextEditingController tileName = TextEditingController();
+  TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCount = TextEditingController();
   Duration _duration = Duration(hours: 0, minutes: 0);
-  DateTime _endTime = Utility.todayTimeline().endTime!.add(Utility.oneDay);
+  DateTime? _endTime;
   Location _location = Location.fromDefault();
   RestrictionProfile? _restrictionProfile;
 
@@ -360,6 +363,9 @@ class AddTileState extends State<AddTile> {
   }
 
   void onEndTimeTap() async {
+    DateTime _endTime = this._endTime == null
+        ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+        : this._endTime!;
     TimeOfDay _endTimeOfDay = TimeOfDay.fromDateTime(_endTime);
     final TimeOfDay? revisedEndTime =
         await showTimePicker(context: context, initialTime: _endTimeOfDay);
@@ -371,9 +377,11 @@ class AddTileState extends State<AddTile> {
   }
 
   void onEndDateTap() async {
-    DateTime _endDate = this._endTime;
-    DateTime firstDate = _endTime.add(Duration(days: -14));
-    DateTime lastDate = _endTime.add(Duration(days: 90));
+    DateTime _endDate = this._endTime == null
+        ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+        : this._endTime!;
+    DateTime firstDate = _endDate.add(Duration(days: -14));
+    DateTime lastDate = _endDate.add(Duration(days: 90));
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,
@@ -386,23 +394,23 @@ class AddTileState extends State<AddTile> {
           revisedEndDate.year,
           revisedEndDate.month,
           revisedEndDate.day,
-          _endTime.hour,
-          _endTime.minute);
+          _endDate.hour,
+          _endDate.minute);
       setState(() => _endTime = updatedEndTime);
     }
   }
 
   void onSubmitButtonTap() async {
+    DateTime? _endTime = this._endTime;
+
     NewTile tile = new NewTile();
     tile.Name = this.tileName.value.text;
-    tile.DurationHours = this._duration.inHours.toString();
-    tile.DurationMins = this._duration.inMinutes.toString();
-    tile.DurationDays = this._duration.inDays.toString();
-    tile.EndYear = this._endTime.year.toString();
-    tile.EndMonth = this._endTime.month.toString();
-    tile.EndDay = this._endTime.day.toString();
-    tile.EndHour = this._endTime.hour.toString();
-    tile.EndMins = this._endTime.minute.toString();
+    tile.DurationMinute = this._duration.inMinutes.toString();
+    tile.EndYear = _endTime?.year.toString();
+    tile.EndMonth = _endTime?.month.toString();
+    tile.EndDay = _endTime?.day.toString();
+    tile.EndHour = _endTime?.hour.toString();
+    tile.EndMins = _endTime?.minute.toString();
 
     DateTime now = DateTime.now();
     tile.StartYear = now.year.toString();
@@ -414,7 +422,14 @@ class AddTileState extends State<AddTile> {
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
 
-    tile.Count = this.splitCount.value.text;
+    tile.BColor = Utility.randomizer.nextInt(255).toString();
+    tile.GColor = Utility.randomizer.nextInt(255).toString();
+    tile.RColor = Utility.randomizer.nextInt(255).toString();
+    tile.ColorSelection = (-1).toString();
+
+    tile.Count = this.splitCount.value.text.isNotEmpty
+        ? this.splitCount.value.text
+        : 1.toString();
     Tuple2 newlyAddedTile = await this.widget.scheduleApi.addNewTile(tile);
     if (newlyAddedTile.item1 != null) {
       SubCalendarEvent subEvent = newlyAddedTile.item1;
@@ -423,48 +438,42 @@ class AddTileState extends State<AddTile> {
   }
 
   Widget generateDeadline() {
-    Widget deadlineContainer = FractionallySizedBox(
-        widthFactor: 0.85,
-        child: Container(
-            height: 80,
-            child: TextField(
-              controller: tileName,
-              style: TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500),
-              decoration: InputDecoration(
-                hintText: 'Deadline',
-                prefixIcon: Icon(
-                  Icons.flag_outlined,
-                  size: 20,
-                ),
-                filled: true,
-                isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-                fillColor: textBackgroundColor,
-                border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(color: textBorderColor, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(
-                    color: textBorderColor,
-                    width: 1.5,
-                  ),
-                ),
-              ),
-            )));
+    String textButtonString = this._endTime == null
+        ? AppLocalizations.of(context)!.deadline_auto
+        : DateFormat.yMMMd().format(this._endTime!);
+    Widget deadlineContainer = new GestureDetector(
+        onTap: this.onEndDateTap,
+        child: FractionallySizedBox(
+            widthFactor: 0.85,
+            child: Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                decoration: BoxDecoration(
+                    color: textBackgroundColor,
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    border: Border.all(
+                      color: textBorderColor,
+                      width: 1.5,
+                    )),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.timelapse_outlined, color: iconColor),
+                    Container(
+                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            textStyle: const TextStyle(
+                              fontSize: 20,
+                            ),
+                          ),
+                          onPressed: onEndDateTap,
+                          child: Text(textButtonString),
+                        ))
+                  ],
+                ))));
     return deadlineContainer;
   }
 
@@ -482,13 +491,13 @@ class AddTileState extends State<AddTile> {
     List<Widget> childrenWidgets = [];
     Widget tileNameWidget = this.getTileNameWidget();
     Widget durationPicker = this.generateDurationPicker();
-    Widget timePicker = this.generateDeadline();
+    Widget deadlinePicker = this.generateDeadline();
     Widget splitCountWidget = this.getSplitCountWidget();
     Widget submitTileWidget = this.generateSubmitTile();
     Widget extraConfigCollection = this.generateExtraConfigSelection();
     childrenWidgets.add(tileNameWidget);
     childrenWidgets.add(durationPicker);
-    childrenWidgets.add(timePicker);
+    childrenWidgets.add(deadlinePicker);
     childrenWidgets.add(splitCountWidget);
     childrenWidgets.add(extraConfigCollection);
     // childrenWidgets.add(submitTileWidget);

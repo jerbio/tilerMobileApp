@@ -8,8 +8,8 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestriction
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
-import 'routes/authentication/PreAuthenticationRoute.dart';
-import 'routes/authentication/AuthorizedRoute.dart';
+import 'routes/authentication/preAuthenticationRoute.dart';
+import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'services/localAuthentication.dart';
