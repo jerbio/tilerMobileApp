@@ -8,6 +8,7 @@ class SearchWidget extends StatefulWidget {
   TextField? textField;
   bool renderBelowTextfield;
   BoxDecoration? resultBoxDecoration;
+  EdgeInsetsGeometry? resultMargin;
 
   SearchWidget(
       {this.onChanged,
@@ -16,6 +17,7 @@ class SearchWidget extends StatefulWidget {
       this.renderBelowTextfield = true,
       this.onBackButtonPressed,
       this.resultBoxDecoration,
+      this.resultMargin,
       Key? key})
       : super(key: key);
 
@@ -72,7 +74,7 @@ class SearchWidgetState extends State<SearchWidget> {
     TextField? textField = this.widget.textField;
     List<Widget> allWidgets = [];
 
-    double heightOfTextContainer = 40;
+    double heightOfTextContainer = 120;
     double topMarginOfListContainer = heightOfTextContainer;
     double bottomMarginOfListContainer = 0;
     if (!this.widget.renderBelowTextfield) {
@@ -105,8 +107,6 @@ class SearchWidgetState extends State<SearchWidget> {
       child: textField,
     );
 
-    // allWidgets.add(textFieldContainer);
-
     var backButton = Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: BackButton(
@@ -120,14 +120,17 @@ class SearchWidgetState extends State<SearchWidget> {
             }
           },
         ));
-    // allWidgets.add(backButton);
 
     allWidgets = [textFieldContainer, backButton];
 
     if (showResponseContainer) {
+      EdgeInsetsGeometry? resultsMargin = this.widget.resultMargin;
+      if (resultsMargin == null) {
+        resultsMargin = EdgeInsets.fromLTRB(
+            0, topMarginOfListContainer, 0, bottomMarginOfListContainer);
+      }
       Container listContainer = Container(
-        margin: EdgeInsets.fromLTRB(
-            0, topMarginOfListContainer, 0, bottomMarginOfListContainer),
+        margin: resultsMargin,
         padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
         child: listView,
       );

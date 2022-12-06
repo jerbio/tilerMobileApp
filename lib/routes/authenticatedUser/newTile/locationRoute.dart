@@ -22,7 +22,6 @@ class LocationRouteState extends State<LocationRoute> {
     Map locationParams = ModalRoute.of(context)?.settings.arguments as Map;
     this.widget.locationParams = locationParams;
     LocationSearchWidget locationSearchWidget = LocationSearchWidget(
-      resultBoxDecoration: BoxDecoration(color: Colors.yellow),
       onChanged: (text) {
         if (this.widget.locationParams != null &&
             this.widget.locationParams!.containsKey('isFromLookup')) {

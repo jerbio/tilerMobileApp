@@ -430,11 +430,16 @@ class AddTileState extends State<AddTile> {
     tile.Count = this.splitCount.value.text.isNotEmpty
         ? this.splitCount.value.text
         : 1.toString();
-    Tuple2 newlyAddedTile = await this.widget.scheduleApi.addNewTile(tile);
-    if (newlyAddedTile.item1 != null) {
-      SubCalendarEvent subEvent = newlyAddedTile.item1;
-      print(subEvent.name);
-    }
+
+    Future retValue = this.widget.scheduleApi.addNewTile(tile);
+    retValue.then((newlyAddedTile) {
+      if (newlyAddedTile.item1 != null) {
+        SubCalendarEvent subEvent = newlyAddedTile.item1;
+        print(subEvent.name);
+      }
+    });
+
+    return retValue;
   }
 
   Widget generateDeadline() {
@@ -502,7 +507,8 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(extraConfigCollection);
     // childrenWidgets.add(submitTileWidget);
 
-    Widget retValue = CancelAndProceedTemplateWidget(
+    Function? showLoading;
+    CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
         alignment: Alignment.topCenter,
@@ -512,9 +518,14 @@ class AddTileState extends State<AddTile> {
         ),
       ),
       onProceed: () {
-        this.onSubmitButtonTap();
+        return this.onSubmitButtonTap();
+        if (showLoading != null) {
+          showLoading();
+        }
       },
     );
+
+    showLoading = retValue.toggleLoading;
 
     return retValue;
   }
