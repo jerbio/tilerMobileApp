@@ -251,7 +251,7 @@ class AddTileState extends State<AddTile> {
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
       textColor: isLocationConfigSet ? populatedColor : iconColor,
       onPress: () {
-        Location locationHolder = Location.fromDefault();
+        Location locationHolder = _location;
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
           'isFromLookup': false
@@ -274,31 +274,49 @@ class AddTileState extends State<AddTile> {
       },
     );
     Widget repetitionConfigButton = ConfigUpdateButton(
-      text: 'Repetition',
-      prefixIcon: Icon(
-        Icons.repeat_outlined,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: 'Repetition',
+        prefixIcon: Icon(
+          Icons.repeat_outlined,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Repetitions are disabled for now :('),
+              action: SnackBarAction(
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget reminderConfigButton = ConfigUpdateButton(
-      text: 'Reminder',
-      prefixIcon: Icon(
-        Icons.doorbell_outlined,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: 'Reminder',
+        prefixIcon: Icon(
+          Icons.doorbell_outlined,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Reminders are disabled for now :('),
+              action: SnackBarAction(
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
       text: 'Restriction',
       prefixIcon: Icon(
@@ -331,18 +349,27 @@ class AddTileState extends State<AddTile> {
       },
     );
     Widget emojiConfigButton = ConfigUpdateButton(
-      text: 'Emoji',
-      prefixIcon: Icon(
-        Icons.emoji_emotions,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: 'Emoji',
+        prefixIcon: Icon(
+          Icons.emoji_emotions,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Emojis are disabled for now :('),
+              action: SnackBarAction(
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget firstRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [locationConfigButton, repetitionConfigButton],
@@ -409,8 +436,8 @@ class AddTileState extends State<AddTile> {
     tile.EndYear = _endTime?.year.toString();
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();
-    tile.EndHour = _endTime?.hour.toString();
-    tile.EndMins = _endTime?.minute.toString();
+    tile.EndHour = '23';
+    tile.EndMins = '59';
 
     DateTime now = DateTime.now();
     tile.StartYear = now.year.toString();
@@ -427,15 +454,43 @@ class AddTileState extends State<AddTile> {
     tile.RColor = Utility.randomizer.nextInt(255).toString();
     tile.ColorSelection = (-1).toString();
 
+    tile.LocationAddress = _location.address;
+    tile.LocationTag = _location.description;
+    tile.LocationId = _location.id;
+    tile.LocationSource = _location.source;
+    tile.LocationIsVerified = _location.isVerified.toString();
+
     tile.Count = this.splitCount.value.text.isNotEmpty
         ? this.splitCount.value.text
         : 1.toString();
 
+    debugPrint(tile.toJson().toString());
     Future retValue = this.widget.scheduleApi.addNewTile(tile);
     retValue.then((newlyAddedTile) {
       if (newlyAddedTile.item1 != null) {
         SubCalendarEvent subEvent = newlyAddedTile.item1;
         print(subEvent.name);
+      }
+    }).onError((error, stackTrace) {
+      if (error != null) {
+        String message = error.toString();
+        if (error is FormatException) {
+          FormatException exception = error;
+          message = exception.message;
+        }
+
+        debugPrint(message);
+        final scaffold = ScaffoldMessenger.of(context);
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            action: SnackBarAction(
+              label: 'Close',
+              onPressed: scaffold.hideCurrentSnackBar,
+              textColor: Colors.redAccent,
+            ),
+          ),
+        );
       }
     });
 
@@ -519,9 +574,6 @@ class AddTileState extends State<AddTile> {
       ),
       onProceed: () {
         return this.onSubmitButtonTap();
-        if (showLoading != null) {
-          showLoading();
-        }
       },
     );
 

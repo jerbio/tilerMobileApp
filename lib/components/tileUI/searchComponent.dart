@@ -27,9 +27,9 @@ class SearchWidget extends StatefulWidget {
 
 class SearchWidgetState extends State<SearchWidget> {
   List<TextEditingController> createdControllers = [];
-  Widget? listView;
+  Widget? resultViewContainer;
   String searchedText = '';
-  bool showResponseContainer = true;
+  bool showResponseContainer = false;
   final Container blankResult = Container();
   Future<void> onInputChangeDefault() async {
     Function collapseResultContainer = (seletedObject) {
@@ -54,15 +54,22 @@ class SearchWidgetState extends State<SearchWidget> {
             this.widget.textField!.controller!.text, collapseResultContainer);
         if (retrievedWidgets.length > 0) {
           setState(() {
-            listView = Container(
-                decoration: this.widget.resultBoxDecoration,
-                child: ListView(
-                  children: retrievedWidgets,
-                ));
+            resultViewContainer = GestureDetector(
+                onTap: () {
+                  setState(() {
+                    showResponseContainer = false;
+                  });
+                },
+                child: Container(
+                    decoration: this.widget.resultBoxDecoration,
+                    child: ListView(
+                      children: retrievedWidgets,
+                    )));
           });
         } else {
           setState(() {
-            listView = blankResult;
+            resultViewContainer = blankResult;
+            showResponseContainer = false;
           });
         }
       }
@@ -103,25 +110,27 @@ class SearchWidgetState extends State<SearchWidget> {
     textEditingController?.addListener(this.onInputChangeDefault);
     Container textFieldContainer = Container(
       margin: EdgeInsets.fromLTRB(0, 13, 0, 0),
-      height: heightOfTextContainer,
       child: textField,
     );
 
-    var backButton = Container(
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        child: BackButton(
-          onPressed: () {
-            if (this.widget.onInputCompletion != null) {
-              this.widget.onInputCompletion!();
-            }
+    allWidgets = [textFieldContainer];
+    if (this.widget.onBackButtonPressed != null) {
+      var backButton = Container(
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+          child: BackButton(
+            onPressed: () {
+              if (this.widget.onInputCompletion != null) {
+                this.widget.onInputCompletion!();
+              }
 
-            if (this.widget.onBackButtonPressed != null) {
-              this.widget.onBackButtonPressed!();
-            }
-          },
-        ));
+              if (this.widget.onBackButtonPressed != null) {
+                this.widget.onBackButtonPressed!();
+              }
+            },
+          ));
 
-    allWidgets = [textFieldContainer, backButton];
+      allWidgets = [textFieldContainer, backButton];
+    }
 
     if (showResponseContainer) {
       EdgeInsetsGeometry? resultsMargin = this.widget.resultMargin;
@@ -132,7 +141,7 @@ class SearchWidgetState extends State<SearchWidget> {
       Container listContainer = Container(
         margin: resultsMargin,
         padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-        child: listView,
+        child: resultViewContainer,
       );
       allWidgets.add(listContainer);
     }

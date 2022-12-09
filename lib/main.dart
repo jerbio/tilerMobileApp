@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
@@ -11,10 +13,23 @@ import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'routes/authentication/preAuthenticationRoute.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
 
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)
+      ..badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+  }
+}
+
 void main() {
+  if (!Constants.isProduction) {
+    HttpOverrides.global = MyHttpOverrides();
+  }
   runApp(TilerApp());
 }
 

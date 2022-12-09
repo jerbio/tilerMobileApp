@@ -229,13 +229,14 @@ class LocationSearchState extends SearchWidgetState {
     hslDarkColor = hslDarkColor.withLightness(hslDarkColor.lightness + 0.4);
     String hintText = 'Address';
     this.widget.onChanged = this._onInputFieldChange;
-    this.widget.textField = TextField(
-      controller: textController,
-      decoration: InputDecoration(
-        prefixIcon: Icon(Icons.arrow_back),
-        hintText: hintText,
-      ),
-    );
+    if (this.widget.textField == null) {
+      this.widget.textField = TextField(
+        controller: textController,
+        decoration: InputDecoration(
+          hintText: hintText,
+        ),
+      );
+    }
     this.widget.resultBoxDecoration = BoxDecoration(
         gradient: LinearGradient(
             begin: Alignment.topLeft,

@@ -5,7 +5,7 @@ part 'TilerError.g.dart';
 class TilerError {
   TilerError();
   String? Message;
-  int? Code;
+  String? Code;
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>
       _$TilerErrorFromJson(json);
