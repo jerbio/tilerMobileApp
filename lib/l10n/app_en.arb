@@ -17,6 +17,8 @@
     "forecast": "Forecast",
     "whenQ": "When?",
     "loading": "Loading",
+    "address": "Address",
+    "locationNickName":"Location Nick Name",
     "deadline_auto": "Deadline(Auto)",
     "@Add": {
       "description": "The conventional newborn programmer greeting"

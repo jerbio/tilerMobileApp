@@ -128,6 +128,10 @@ class CancelAndProceedTemplateWidgetState
                     showLoading = false;
                   });
                   Navigator.pop(context);
+                }).whenComplete(() {
+                  setState(() {
+                    showLoading = false;
+                  });
                 });
                 return;
               }

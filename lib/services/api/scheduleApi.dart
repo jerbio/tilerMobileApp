@@ -188,19 +188,18 @@ class ScheduleApi extends AppApi {
               SubCalendarEvent subEvent =
                   SubCalendarEvent.fromJson(subEventJson);
               return new Tuple2(subEvent, null);
-            } else {
-              if (isTileRequestError(jsonResult)) {
-                var errorJson = jsonResult['Error'];
-                error = TilerError.fromJson(errorJson);
-              } else {
-                error.Message = "Issues with reaching TIler servers";
-              }
-            }
+            } else {}
+          }
+          if (isTileRequestError(jsonResult)) {
+            var errorJson = jsonResult['Error'];
+            error = TilerError.fromJson(errorJson);
+            throw FormatException(error.Message!);
+          } else {
+            error.Message = "Issues with reaching TIler servers";
           }
         }
       }
     }
-    var retValue = new Tuple2<SubCalendarEvent?, TilerError?>(null, error);
-    return retValue;
+    throw error;
   }
 }
