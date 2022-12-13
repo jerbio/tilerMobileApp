@@ -5,6 +5,8 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../styles.dart';
+
 class LocationRoute extends StatefulWidget {
   Location? pushedLocation;
   Map? locationParams;
@@ -63,10 +65,7 @@ class LocationRouteState extends State<LocationRoute> {
     }
 
     TextField addressTextField = TextField(
-      style: TextStyle(
-          color: Color.fromRGBO(31, 31, 31, 1),
-          fontSize: 20,
-          fontWeight: FontWeight.w500),
+      style: TileStyles.fullScreenTextFieldStyle,
       decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.address,
           filled: true,
@@ -96,66 +95,73 @@ class LocationRouteState extends State<LocationRoute> {
       controller: locationAddressController,
     );
 
-    LocationSearchWidget locationSearchWidget = LocationSearchWidget(
-      onChanged: onTextChange,
-      textField: addressTextField,
-      onLocationSelection: (location) {
-        setState(() {
-          selectedLocation = location;
-          if (location != null) {
-            locationNickNameController!.value = TextEditingValue(
-              text: location?.description ?? '',
-              selection: TextSelection.fromPosition(
-                TextPosition(offset: (location?.description ?? '').length),
-              ),
-            );
-            locationAddressController!.value = TextEditingValue(
-              text: location?.address ?? '',
-            );
-          }
-        });
-      },
-    );
+    Widget locationSearchWidget = FractionallySizedBox(
+        alignment: FractionalOffset.center,
+        widthFactor: TileStyles.inputWidthFactor,
+        child: LocationSearchWidget(
+          onChanged: onTextChange,
+          textField: addressTextField,
+          onLocationSelection: (location) {
+            setState(() {
+              selectedLocation = location;
+              if (location != null) {
+                locationNickNameController!.value = TextEditingValue(
+                  text: location?.description ?? '',
+                  selection: TextSelection.fromPosition(
+                    TextPosition(offset: (location?.description ?? '').length),
+                  ),
+                );
+                locationAddressController!.value = TextEditingValue(
+                  text: location?.address ?? '',
+                );
+              }
+            });
+          },
+        ));
     Widget columnOfItems = Stack(
       children: [
+        Align(
+            alignment: Alignment.center,
+            child: FractionallySizedBox(
+                widthFactor: TileStyles.inputWidthFactor,
+                child: Container(
+                  alignment: Alignment.topCenter,
+                  margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
+                  child: TextField(
+                    controller: locationNickNameController,
+                    style: TileStyles.fullScreenTextFieldStyle,
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.locationNickName,
+                      filled: true,
+                      isDense: true,
+                      contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                      fillColor: textBackgroundColor,
+                      border: OutlineInputBorder(
+                        borderRadius: const BorderRadius.all(
+                          const Radius.circular(50.0),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: const BorderRadius.all(
+                          const Radius.circular(8.0),
+                        ),
+                        borderSide:
+                            BorderSide(color: textBorderColor, width: 2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: const BorderRadius.all(
+                          const Radius.circular(8.0),
+                        ),
+                        borderSide: BorderSide(
+                          color: textBorderColor,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ))),
         Container(
-          margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
-          child: TextField(
-            controller: locationNickNameController,
-            style: TextStyle(
-                color: Color.fromRGBO(31, 31, 31, 1),
-                fontSize: 20,
-                fontWeight: FontWeight.w500),
-            decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.locationNickName,
-              filled: true,
-              isDense: true,
-              contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-              fillColor: textBackgroundColor,
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(50.0),
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                borderSide: BorderSide(color: textBorderColor, width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                borderSide: BorderSide(
-                  color: textBorderColor,
-                  width: 1.5,
-                ),
-              ),
-            ),
-          ),
-        ),
-        Container(
+          alignment: Alignment.topCenter,
           child: locationSearchWidget,
         ),
       ],
