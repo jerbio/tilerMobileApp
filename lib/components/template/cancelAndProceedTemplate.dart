@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:math' as math;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:tiler_app/styles.dart';
 
 class CancelAndProceedTemplateWidget extends StatefulWidget {
   bool _isLoadingShown = false;
@@ -38,7 +39,7 @@ class CancelAndProceedTemplateWidgetState
   Widget build(BuildContext context) {
     Widget? proceedButton;
     Widget cancelButton = Container(
-      width: 60,
+      width: TileStyles.proceedAndCancelButtonWidth,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
               topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
@@ -86,7 +87,7 @@ class CancelAndProceedTemplateWidgetState
             this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
       proceedButton = Container(
-        width: 60,
+        width: TileStyles.proceedAndCancelButtonWidth,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),

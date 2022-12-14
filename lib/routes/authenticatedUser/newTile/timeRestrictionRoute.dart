@@ -4,6 +4,8 @@ import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../styles.dart';
+
 class _PreloadedRestrictionsRoute extends StatefulWidget {
   Map? params;
   static final String routeName = '/TimeRestrictionRoute';
@@ -49,27 +51,38 @@ class _PreloadedRestrictionsRouteState
     this.widget.params = restrictionProfileParams;
     return Scaffold(
       body: Container(
+        alignment: Alignment.center,
         child: Stack(alignment: Alignment.center, children: [
-          Column(
-            children: [
-              TilerCheckBox(
-                isChecked: generate.containsKey('weekdays')
-                    ? generate['weekdays']!
-                    : false,
-                text: 'Weekdays and work hours',
-                onChange: generateFunction('weekdays'),
-                key: weekdayCheckBoxKey,
-              ),
-              TilerCheckBox(
-                isChecked: generate.containsKey('weekend')
-                    ? generate['weekend']!
-                    : false,
-                text: 'Weekend',
-                onChange: generateFunction('weekend'),
-                key: weekendCheckBoxKey,
-              )
-            ],
-          ),
+          FractionallySizedBox(
+              alignment: FractionalOffset.topCenter,
+              widthFactor: TileStyles.inputWidthFactor,
+              child: Container(
+                  alignment: Alignment.topCenter,
+                  margin: EdgeInsets.fromLTRB(0, 40, 0, 0),
+                  child: Column(
+                    children: [
+                      Container(
+                          child: TilerCheckBox(
+                        isChecked: generate.containsKey('weekdays')
+                            ? generate['weekdays']!
+                            : false,
+                        text:
+                            AppLocalizations.of(context)!.weekdaysAndWorkHours,
+                        onChange: generateFunction('weekdays'),
+                        key: weekdayCheckBoxKey,
+                      )),
+                      Container(
+                          margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                          child: TilerCheckBox(
+                            isChecked: generate.containsKey('weekend')
+                                ? generate['weekend']!
+                                : false,
+                            text: AppLocalizations.of(context)!.weekend,
+                            onChange: generateFunction('weekend'),
+                            key: weekendCheckBoxKey,
+                          ))
+                    ],
+                  ))),
           Positioned(
             bottom: 20,
             child: GestureDetector(
@@ -86,7 +99,9 @@ class _PreloadedRestrictionsRouteState
                     arguments: this.widget.params);
               },
               child: Container(
-                width: 250,
+                width: (MediaQuery.of(context).size.width *
+                        TileStyles.inputWidthFactor) -
+                    TileStyles.proceedAndCancelTotalButtonWidth,
                 height: 60,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(
@@ -102,7 +117,10 @@ class _PreloadedRestrictionsRouteState
                     )),
                 alignment: Alignment.center,
                 child: Text(
-                    AppLocalizations.of(context)!.setupCustomRestrictions,
+                    AppLocalizations.of(context)!.customRestrictionTitle,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Color.fromRGBO(0, 119, 255, 1),
                         fontWeight: FontWeight.w500,
