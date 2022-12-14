@@ -6,6 +6,9 @@ class TileStyles {
   static final double tileWidthRatio = 0.85;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
+  static final double proceedAndCancelButtonWidth = 60;
+  static final double proceedAndCancelTotalButtonWidth =
+      proceedAndCancelButtonWidth * 2;
   static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
