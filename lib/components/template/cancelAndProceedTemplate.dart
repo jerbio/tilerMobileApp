@@ -36,7 +36,12 @@ class CancelAndProceedTemplateWidgetState
     extends State<CancelAndProceedTemplateWidget> {
   bool showLoading = false;
 
+  bool _keyboardIsVisible() {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
   Widget build(BuildContext context) {
+    bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
     Widget cancelButton = Container(
       width: TileStyles.proceedAndCancelButtonWidth,
@@ -148,6 +153,9 @@ class CancelAndProceedTemplateWidgetState
     bottomButtons.add(cancelButton);
     if (proceedButton != null) {
       bottomButtons.add(proceedButton);
+    }
+    if (isKeyboardShown) {
+      bottomButtons = [];
     }
 
     if (showLoading) {
