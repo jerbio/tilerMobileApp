@@ -33,8 +33,6 @@ class TileNameState extends State<TileName> {
               fontFamily: 'Rubik',
               fontWeight: FontWeight.bold,
               color: Color.fromRGBO(31, 31, 31, 1)));
-      print("Emoji length " + emojiString.length.toString());
-      print("" + emojiString);
     }
 
     var nameColor = Color.fromRGBO(redColor, greenColor, blueColor, opacity);

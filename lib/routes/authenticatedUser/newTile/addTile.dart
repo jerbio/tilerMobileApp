@@ -11,13 +11,12 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
-    as durationPickerDialog;
+// import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
+//     as durationPickerDialog;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import '../../../styles.dart';
 
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
@@ -60,14 +59,18 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: TileStyles.inputWidthFactor,
+        widthFactor: 0.85,
         child: Container(
+            width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
               controller: tileName,
-              style: TileStyles.fullScreenTextFieldStyle,
+              style: TextStyle(
+                  color: Color.fromRGBO(31, 31, 31, 1),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.tileName,
+                hintText: 'Tile Name',
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
@@ -101,7 +104,7 @@ class AddTileState extends State<AddTile> {
     Widget splitCountContainer = FractionallySizedBox(
         widthFactor: 0.85,
         child: Container(
-            height: 90,
+            height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -150,17 +153,17 @@ class AddTileState extends State<AddTile> {
 
   Widget generateDurationPicker() {
     final void Function()? setDuration = () async {
-      durationPickerDialog
-          .showDurationPicker(
-              context: context,
-              initialDuration: _duration,
-              durationPickerMode: durationPickerDialog.DurationPickerMode.Hour)
-          .then((value) {
-        if (value != null) {
-          setState(() {
-            _duration = value;
-          });
-        }
+      Map<String, dynamic> durationParams = {'duration': _duration};
+      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+          .whenComplete(() {
+        print('done with pop');
+        print(durationParams['duration']);
+        Duration? populatedDuration = durationParams['duration'] as Duration?;
+        setState(() {
+          if (populatedDuration != null) {
+            _duration = populatedDuration;
+          }
+        });
       });
     };
     String textButtonString = 'Duration';
@@ -182,7 +185,7 @@ class AddTileState extends State<AddTile> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: FractionallySizedBox(
-            widthFactor: TileStyles.inputWidthFactor,
+            widthFactor: 0.85,
             child: Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -289,8 +292,7 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Repetitions are disabled for now :('),
               action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
-                  onPressed: scaffold.hideCurrentSnackBar),
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -312,8 +314,7 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Reminders are disabled for now :('),
               action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
-                  onPressed: scaffold.hideCurrentSnackBar),
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -366,8 +367,7 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Emojis are disabled for now :('),
               action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
-                  onPressed: scaffold.hideCurrentSnackBar),
+                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -415,7 +415,7 @@ class AddTileState extends State<AddTile> {
       initialDate: _endDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: AppLocalizations.of(context)!.selectADeadline,
+      helpText: 'Select a deadline',
     );
     if (revisedEndDate != null) {
       DateTime updatedEndTime = new DateTime(
@@ -486,7 +486,7 @@ class AddTileState extends State<AddTile> {
           SnackBar(
             content: Text(message),
             action: SnackBarAction(
-              label: AppLocalizations.of(context)!.close,
+              label: 'Close',
               onPressed: scaffold.hideCurrentSnackBar,
               textColor: Colors.redAccent,
             ),
@@ -565,8 +565,21 @@ class AddTileState extends State<AddTile> {
 
     Function? showLoading;
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.addTile,
+          style: TextStyle(
+              color: TileStyles.enabledTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       child: Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        margin: TileStyles.topMargin,
         alignment: Alignment.topCenter,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

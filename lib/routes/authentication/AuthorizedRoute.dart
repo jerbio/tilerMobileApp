@@ -163,7 +163,7 @@ class AuthorizedRouteState extends State<StatefulWidget> {
                       GestureDetector(
                         onTap: () {
                           Navigator.pop(context);
-                          Navigator.of(context).pushNamed('/forecastPreview');
+                          Navigator.of(context).pushNamed('/ForecastPreview');
                         },
                         child: ListTile(
                           leading: Image.asset('assets/images/binocular.png'),
