@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
@@ -74,8 +75,9 @@ class TilerApp extends StatelessWidget {
             new CustomTimeRestrictionRoute(),
         '/TimeRestrictionRoute': (BuildContext context) =>
             new TimeRestrictionRoute(),
-        '/forecastPreview': (ctx) => ForecastPreview(),
-        '/forecastDuration': (ctx) => ForecastDuration(),
+        '/ForecastPreview': (ctx) => ForecastPreview(),
+        '/ForecastDuration': (ctx) => ForecastDuration(),
+        '/DurationDial': (ctx) => DurationDial(),
       },
       localizationsDelegates: [
         AppLocalizations.delegate, // Add this line
