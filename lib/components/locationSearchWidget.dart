@@ -59,36 +59,47 @@ class LocationSearchState extends SearchWidgetState {
       List<Widget> addressChildren = [];
       if (location.description != null) {
         List<Widget> locationText = [
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              alignment: Alignment.topLeft,
-              child: Expanded(
-                  child: Text(
-                location.address.toString(),
-                maxLines: 1,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: 'Rubik',
-                    color: Color.fromRGBO(31, 31, 31, 1)),
-                overflow: TextOverflow.ellipsis,
-              )))
+          FractionallySizedBox(
+              alignment: FractionalOffset.center,
+              widthFactor: TileStyles.inputWidthFactor,
+              child: Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  alignment: Alignment.topLeft,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: Text(
+                          location.address.toString(),
+                          maxLines: 1,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'Rubik',
+                              color: Color.fromRGBO(31, 31, 31, 1)),
+                          overflow: TextOverflow.ellipsis,
+                        ))
+                      ])))
         ];
         if (location.address != location.description) {
-          locationText.add(Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              alignment: Alignment.topLeft,
-              child: Expanded(
-                  child: Text(location.description.toString(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'Rubik',
-                          fontWeight: FontWeight.w700,
-                          color: Color.fromRGBO(31, 31, 31, 1))))));
+          locationText.add(FractionallySizedBox(
+              widthFactor: TileStyles.inputWidthFactor,
+              child: Container(
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  alignment: Alignment.topLeft,
+                  child: Row(children: [
+                    Expanded(
+                        child: Text(location.description.toString(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'Rubik',
+                                fontWeight: FontWeight.w700,
+                                color: Color.fromRGBO(31, 31, 31, 1))))
+                  ]))));
         }
 
         addressChildren.add(Stack(
@@ -98,10 +109,13 @@ class LocationSearchState extends SearchWidgetState {
                   Icons.save_outlined,
                   color: TileStyles.activeColor,
                 ),
-                top: 55,
-                left: (MediaQuery.of(context).size.width * 0.85 - 50)),
+                top: 45,
+                right: 0),
             Container(
-              width: MediaQuery.of(context).size.width * 0.7,
+              width: (MediaQuery.of(context).size.width *
+                      TileStyles.inputWidthFactor *
+                      TileStyles.inputWidthFactor) -
+                  60,
               alignment: Alignment.centerLeft,
               margin: EdgeInsets.fromLTRB(35, 20, 0, 0),
               child: Column(
@@ -113,7 +127,7 @@ class LocationSearchState extends SearchWidgetState {
       }
 
       retValue = FractionallySizedBox(
-          widthFactor: 0.9,
+          widthFactor: TileStyles.inputWidthFactor,
           child: Container(
               margin: EdgeInsets.fromLTRB(5, 10, 5, 10),
               child: GestureDetector(

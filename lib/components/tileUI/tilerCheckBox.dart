@@ -76,7 +76,6 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
           children: [
             Container(
               padding: EdgeInsets.fromLTRB(1, 0, 0, 1),
-              // color: Colors.green,
               margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
               child: Stack(
                   children: [Icon(Icons.check, color: Colors.white, size: 35)]),
@@ -85,7 +84,6 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
                 scale: 2.0,
                 child: Checkbox(
                   checkColor: Colors.white,
-                  // activeColor: TileStyles.activeColor,
                   fillColor: MaterialStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 20,
@@ -106,6 +104,9 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     Widget textBox = Container(
       margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Text(this.text,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
           style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w600,
