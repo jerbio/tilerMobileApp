@@ -20,6 +20,11 @@
     "address": "Address",
     "locationNickName":"Location Nick Name",
     "deadline_auto": "Deadline(Auto)",
+    "selectADeadline":"Select a deadline",
+    "close":"Close",
+    "tileName":"Tile Name",
+    "weekdaysAndWorkHours":"Weekdays and work hours",
+    "weekend":"Weekend",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

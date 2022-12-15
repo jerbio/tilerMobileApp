@@ -17,6 +17,8 @@ import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
     as durationPickerDialog;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../../styles.dart';
+
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
   Function? onAddingATile;
@@ -58,18 +60,14 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: 0.85,
+        widthFactor: TileStyles.inputWidthFactor,
         child: Container(
-            width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
               controller: tileName,
-              style: TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500),
+              style: TileStyles.fullScreenTextFieldStyle,
               decoration: InputDecoration(
-                hintText: 'Tile Name',
+                hintText: AppLocalizations.of(context)!.tileName,
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
@@ -184,7 +182,7 @@ class AddTileState extends State<AddTile> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: FractionallySizedBox(
-            widthFactor: 0.85,
+            widthFactor: TileStyles.inputWidthFactor,
             child: Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -291,7 +289,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Repetitions are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -313,7 +312,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Reminders are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -366,7 +366,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Emojis are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -414,7 +415,7 @@ class AddTileState extends State<AddTile> {
       initialDate: _endDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: 'Select a deadline',
+      helpText: AppLocalizations.of(context)!.selectADeadline,
     );
     if (revisedEndDate != null) {
       DateTime updatedEndTime = new DateTime(
@@ -485,7 +486,7 @@ class AddTileState extends State<AddTile> {
           SnackBar(
             content: Text(message),
             action: SnackBarAction(
-              label: 'Close',
+              label: AppLocalizations.of(context)!.close,
               onPressed: scaffold.hideCurrentSnackBar,
               textColor: Colors.redAccent,
             ),
@@ -520,7 +521,7 @@ class AddTileState extends State<AddTile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.timelapse_outlined, color: iconColor),
+                    Icon(Icons.calendar_month, color: iconColor),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
