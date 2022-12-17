@@ -438,14 +438,14 @@ class AddTileState extends State<AddTile> {
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();
     tile.EndHour = '23';
-    tile.EndMins = '59';
+    tile.EndMinute = '59';
 
     DateTime now = DateTime.now();
     tile.StartYear = now.year.toString();
     tile.StartMonth = now.month.toString();
     tile.StartDay = now.day.toString();
     tile.StartHour = '0';
-    tile.StartMins = '0';
+    tile.StartMinute = '0';
     tile.isEveryDay = false.toString();
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
