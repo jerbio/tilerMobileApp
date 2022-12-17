@@ -171,7 +171,7 @@ class ScheduleApi extends AppApi {
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
         newTileParameters['TimeZoneOffset'] =
-            dateTime.timeZoneOffset.inHours.toString();
+            (-dateTime.timeZoneOffset.inMinutes).toString();
         newTileParameters['MobileApp'] = true.toString();
 
         Uri uri = Uri.https(url, 'api/Schedule/Event');
