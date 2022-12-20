@@ -164,22 +164,24 @@ class ScheduleApi extends AppApi {
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
+      DateTime dateTime = Utility.currentTime();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
-        newTileParameters['TimeZoneOffset'] =
-            (-dateTime.timeZoneOffset.inMinutes).toString();
-        newTileParameters['MobileApp'] = true.toString();
+        Map injectedParameters = await injectRequestParams(newTileParameters);
+
+        // newTileParameters['TimeZoneOffset'] =
+        //     Utility.getTimeZoneOffset().toString();
+        // newTileParameters['MobileApp'] = true.toString();
 
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
 
         if (header != null) {
           var response = await http.post(uri,
-              headers: header, body: jsonEncode(newTileParameters));
+              headers: header, body: jsonEncode(injectedParameters));
           var jsonResult = jsonDecode(response.body);
           error.Message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {

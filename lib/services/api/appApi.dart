@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'package:geolocator/geolocator.dart';
+import 'package:tiler_app/util.dart';
 import '../localAuthentication.dart';
 
 abstract class AppApi {
@@ -22,6 +23,31 @@ abstract class AppApi {
         jsonResult['Error'].containsKey('Code') &&
         jsonResult['Error']['Code'] != '0';
     return retValue;
+  }
+
+  Future<Map> injectRequestParams(Map jsonMap) async {
+    Map requestParams = Map.from(jsonMap);
+    Position position = Utility.getDefaultPosition();
+    bool isLocationVerified = false;
+    try {
+      Position initialPosition = position;
+      isLocationVerified = true;
+      position = await Utility.determineDevicePosition().catchError((onError) {
+        isLocationVerified = false;
+        print('Tiler app: failed to pull device location.');
+        print(onError);
+        return initialPosition;
+      });
+    } catch (e) {
+      print('Tiler app error in getting location');
+      print(e);
+    }
+    requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
+    requestParams['MobileApp'] = true.toString();
+    requestParams['UserLongitude'] = position.longitude.toString();
+    requestParams['UserLatitude'] = position.latitude.toString();
+    requestParams['UserLocationVerified'] = (isLocationVerified).toString();
+    return requestParams;
   }
 
   getHeaders() {
