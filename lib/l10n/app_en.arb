@@ -18,6 +18,7 @@
     "whenQ": "When?",
     "loading": "Loading",
     "address": "Address",
+    "settings": "Settings",
     "locationNickName":"Location Nick Name",
     "deadline_auto": "Deadline(Auto)",
     "selectADeadline":"Select a deadline",
@@ -25,6 +26,7 @@
     "tileName":"Tile Name",
     "weekdaysAndWorkHours":"Weekdays and work hours",
     "weekend":"Weekend",
+    "enableLocations":"Enable location permissions",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

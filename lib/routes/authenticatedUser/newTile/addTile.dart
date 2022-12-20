@@ -14,6 +14,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import 'package:geolocator/geolocator.dart';
 // import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
 //     as durationPickerDialog;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -292,7 +293,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Repetitions are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -314,7 +316,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Reminders are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -367,7 +370,8 @@ class AddTileState extends State<AddTile> {
             SnackBar(
               content: const Text('Emojis are disabled for now :('),
               action: SnackBarAction(
-                  label: 'Close', onPressed: scaffold.hideCurrentSnackBar),
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
             ),
           );
         });
@@ -466,6 +470,27 @@ class AddTileState extends State<AddTile> {
         : 1.toString();
 
     debugPrint(tile.toJson().toString());
+
+    Utility.determineDevicePosition().catchError((onError) async {
+      final scaffold = ScaffoldMessenger.of(context);
+      scaffold.showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 20),
+          content: Text(AppLocalizations.of(context)!.enableLocations),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.settings,
+            onPressed: () async {
+              await Geolocator.openAppSettings();
+              await Geolocator.openLocationSettings();
+              scaffold.hideCurrentSnackBar;
+            },
+            textColor: Colors.redAccent,
+          ),
+        ),
+      );
+      return Utility.getDefaultPosition();
+    });
+
     Future retValue = this.widget.scheduleApi.addNewTile(tile);
     retValue.then((newlyAddedTile) {
       if (newlyAddedTile.item1 != null) {
@@ -486,7 +511,7 @@ class AddTileState extends State<AddTile> {
           SnackBar(
             content: Text(message),
             action: SnackBarAction(
-              label: 'Close',
+              label: AppLocalizations.of(context)!.close,
               onPressed: scaffold.hideCurrentSnackBar,
               textColor: Colors.redAccent,
             ),
