@@ -15,8 +15,6 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
-//     as durationPickerDialog;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AddTile extends StatefulWidget {
@@ -32,7 +30,7 @@ class AddTileState extends State<AddTile> {
   final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
   final Color textBorderColor = Colors.white;
   final Color iconColor = Color.fromRGBO(154, 158, 159, 1);
-  final Color populatedColor = Colors.white;
+  final Color populatedTextColor = Colors.white;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       borderRadius: BorderRadius.all(
@@ -71,7 +69,7 @@ class AddTileState extends State<AddTile> {
                   fontSize: 20,
                   fontWeight: FontWeight.w500),
               decoration: InputDecoration(
-                hintText: 'Tile Name',
+                hintText: AppLocalizations.of(context)!.tileName,
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
@@ -109,7 +107,7 @@ class AddTileState extends State<AddTile> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("How Many Times?",
+                Text(AppLocalizations.of(context)!.howManyTimes,
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 SizedBox(
@@ -121,7 +119,7 @@ class AddTileState extends State<AddTile> {
                         FilteringTextInputFormatter.digitsOnly
                       ],
                       decoration: InputDecoration(
-                        hintText: 'Once',
+                        hintText: AppLocalizations.of(context)!.once,
                         filled: true,
                         isDense: true,
                         contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
@@ -167,7 +165,7 @@ class AddTileState extends State<AddTile> {
         });
       });
     };
-    String textButtonString = 'Duration';
+    String textButtonString = AppLocalizations.of(context)!.duration;
     if (_duration.inMinutes > 1) {
       textButtonString = "";
       int hour = _duration.inHours.floor();
@@ -248,10 +246,10 @@ class AddTileState extends State<AddTile> {
       text: locationName,
       prefixIcon: Icon(
         Icons.location_pin,
-        color: isLocationConfigSet ? populatedColor : iconColor,
+        color: isLocationConfigSet ? populatedTextColor : iconColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedColor : iconColor,
+      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Location locationHolder = _location;
         Map<String, dynamic> locationParams = {
@@ -262,8 +260,6 @@ class AddTileState extends State<AddTile> {
         Navigator.pushNamed(context, '/LocationRoute',
                 arguments: locationParams)
             .whenComplete(() {
-          print('done with pop');
-          print(locationParams['location'].description);
           Location? populatedLocation = locationParams['location'] as Location;
           setState(() {
             if (populatedLocation != null &&
@@ -276,7 +272,7 @@ class AddTileState extends State<AddTile> {
       },
     );
     Widget repetitionConfigButton = ConfigUpdateButton(
-        text: 'Repetition',
+        text: AppLocalizations.of(context)!.repetition,
         prefixIcon: Icon(
           Icons.repeat_outlined,
           color: iconColor,
@@ -299,7 +295,7 @@ class AddTileState extends State<AddTile> {
           );
         });
     Widget reminderConfigButton = ConfigUpdateButton(
-        text: 'Reminder',
+        text: AppLocalizations.of(context)!.reminder,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
           color: iconColor,
@@ -322,14 +318,14 @@ class AddTileState extends State<AddTile> {
           );
         });
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
-      text: 'Restriction',
+      text: AppLocalizations.of(context)!.restriction,
       prefixIcon: Icon(
         Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedColor : iconColor,
+        color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       ),
       decoration:
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedColor : iconColor,
+      textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
           'restrictionProfile': _restrictionProfile,

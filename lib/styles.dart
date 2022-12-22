@@ -24,4 +24,33 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
+  static InputDecoration generateTextInputDecoration(String? inputHint) {
+    return InputDecoration(
+      hintText: inputHint,
+      filled: true,
+      isDense: true,
+      contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+      fillColor: textBackgroundColor,
+      border: OutlineInputBorder(
+        borderRadius: const BorderRadius.all(
+          const Radius.circular(50.0),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: const BorderRadius.all(
+          const Radius.circular(8.0),
+        ),
+        borderSide: BorderSide(color: textBorderColor, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: const BorderRadius.all(
+          const Radius.circular(8.0),
+        ),
+        borderSide: BorderSide(
+          color: textBorderColor,
+          width: 1.5,
+        ),
+      ),
+    );
+  }
 }

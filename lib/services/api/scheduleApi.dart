@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'dart:convert';
 
@@ -71,6 +72,66 @@ class ScheduleApi extends AppApi {
     }
     var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
     return retValue;
+  }
+
+  Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
+      String tileName) async {
+    if (await this.authentication.isUserAuthenticated()) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      DateTime dateTime = DateTime.now();
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final queryParameters = {'UserName': username, 'Name': tileName};
+        Map<String, String> updatedQueryParameters =
+            await this.injectRequestParams(queryParameters);
+        Uri uri = Uri.https(
+            url, 'api/Schedule/NewTilePrediction', updatedQueryParameters);
+
+        var header = this.getHeaders();
+
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult)) {
+              List<Duration> durations = [];
+              List<Location> locations = [];
+              Tuple2<List<Duration>, List<Location>> retValue =
+                  new Tuple2(durations, locations);
+              if (jsonResult['Content'].containsKey('duration')) {
+                List<double> durationInMs = [];
+                for (var eachDuration in jsonResult['Content']['duration']) {
+                  durationInMs.add(eachDuration);
+                }
+                durationInMs.sort((a, b) {
+                  double diff = a - b;
+                  if (diff > 0) {
+                    return 1;
+                  }
+                  if (diff < 0) {
+                    return -1;
+                  }
+                  return 0;
+                });
+                for (var durationInMs in durationInMs) {
+                  durations.add(Duration(milliseconds: durationInMs.toInt()));
+                }
+              }
+              if (jsonResult['Content'].containsKey('location')) {
+                for (var eachLocation in jsonResult['Content']['location']) {
+                  locations.add(Location.fromJson(eachLocation));
+                }
+              }
+
+              return retValue;
+            }
+          }
+        }
+      }
+    }
+    return new Tuple2([], []);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
