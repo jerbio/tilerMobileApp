@@ -5,8 +5,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/styles.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -15,9 +18,11 @@ class AuthorizedRoute extends StatefulWidget {
   AuthorizedRouteState createState() => AuthorizedRouteState();
 }
 
-class AuthorizedRouteState extends State<StatefulWidget> {
+class AuthorizedRouteState extends State<StatefulWidget>
+    with TickerProviderStateMixin {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
+  bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
 
   void _onBottomNavigationTap(int index) {
@@ -57,15 +62,146 @@ class AuthorizedRouteState extends State<StatefulWidget> {
     return eventNameSearch;
   }
 
+  bool _iskeyboardVisible() {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
+  Widget generatePredictiveAdd() {
+    double topValue = MediaQuery.of(this.context).size.height / 4;
+    var future = new Future.delayed(const Duration(milliseconds: 1000), () {
+      topValue = topValue * 2;
+    });
+
+    double autoAddTileBottom = MediaQuery.of(context).viewInsets.bottom;
+    if (_iskeyboardVisible()) {
+      autoAddTileBottom -= 300;
+    }
+
+    Widget containerWrapper = GestureDetector(
+        onTap: () {
+          setState(() {
+            isAddButtonClicked = false;
+          });
+        },
+        child: Container(
+            height: MediaQuery.of(this.context).size.height,
+            width: MediaQuery.of(this.context).size.width,
+            color: Colors.amber,
+            child: Stack(children: <Widget>[
+              AutoAddTile(),
+            ])));
+
+    return containerWrapper;
+  }
+
+  void displayDialog(Size screenSize) {
+    showGeneralDialog(
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.white70,
+      transitionDuration: Duration(milliseconds: 300),
+      pageBuilder: (ctx, anim1, anim2) => AlertDialog(
+        contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
+        insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
+        titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+        backgroundColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.white),
+          borderRadius: BorderRadius.all(
+            Radius.circular(20),
+          ),
+        ),
+        content: Container(
+          padding: const EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white, width: 2),
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.topRight,
+              colors: [
+                Color.fromRGBO(0, 119, 170, 0.75),
+                Color.fromRGBO(0, 194, 237, 0.75)
+              ],
+            ),
+          ),
+          child: SizedBox(
+            height: screenSize.height * 0.3,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).pushNamed('/ForecastPreview');
+                  },
+                  child: ListTile(
+                    leading: Image.asset('assets/images/binocular.png'),
+                    title: Text(
+                      AppLocalizations.of(context)!.forecast,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/AddTile');
+                  },
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    title: Text(
+                      AppLocalizations.of(context)!.addTile,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: Image.asset('assets/images/move_forward.png'),
+                  title: Text(
+                    AppLocalizations.of(context)!.procrastinate,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w300,
+                        color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        elevation: 2,
+      ),
+      transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
+        filter:
+            ImageFilter.blur(sigmaX: 4 * anim1.value, sigmaY: 4 * anim1.value),
+        child: FadeTransition(
+          child: child,
+          opacity: anim1,
+        ),
+      ),
+      context: context,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    // bool isSearchActive = selecedBottomMenu == 0;
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(), //this is the deafault and we need to switch these to routes and so we dont loose back button support
-      // AddTile(),
     ];
+    if (isAddButtonClicked) {
+      widgetChildren.add(generatePredictiveAdd());
+    }
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
     Widget? bottomNavigator;
@@ -122,112 +258,22 @@ class AuthorizedRouteState extends State<StatefulWidget> {
         children: widgetChildren,
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color.fromRGBO(243, 243, 243, 1),
-        onPressed: () {
-          showGeneralDialog(
-            barrierDismissible: true,
-            barrierLabel: '',
-            barrierColor: Colors.white70,
-            transitionDuration: Duration(milliseconds: 300),
-            pageBuilder: (ctx, anim1, anim2) => AlertDialog(
-              contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
-              insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
-              titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-              backgroundColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
-                side: BorderSide(color: Colors.white),
-                borderRadius: BorderRadius.all(
-                  Radius.circular(20),
-                ),
-              ),
-              content: Container(
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white, width: 2),
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.topRight,
-                    colors: [
-                      Color.fromRGBO(0, 119, 170, 0.75),
-                      Color.fromRGBO(0, 194, 237, 0.75)
-                    ],
-                  ),
-                ),
-                child: SizedBox(
-                  height: size.height * 0.3,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.of(context).pushNamed('/ForecastPreview');
-                        },
-                        child: ListTile(
-                          leading: Image.asset('assets/images/binocular.png'),
-                          title: Text(
-                            AppLocalizations.of(context)!.forecast,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.pushNamed(context, '/AddTile');
-                        },
-                        child: ListTile(
-                          leading: Icon(
-                            Icons.add,
-                            color: Colors.white,
-                          ),
-                          title: Text(
-                            AppLocalizations.of(context)!.addTile,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                      ListTile(
-                        leading: Image.asset('assets/images/move_forward.png'),
-                        title: Text(
-                          AppLocalizations.of(context)!.procrastinate,
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              elevation: 2,
-            ),
-            transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
-              filter: ImageFilter.blur(
-                  sigmaX: 4 * anim1.value, sigmaY: 4 * anim1.value),
-              child: FadeTransition(
-                child: child,
-                opacity: anim1,
+      floatingActionButton: isAddButtonClicked
+          ? null
+          : FloatingActionButton(
+              backgroundColor: Color.fromRGBO(243, 243, 243, 1),
+              onPressed: () {
+                // displayDialog(MediaQuery.of(context).size);
+                setState(() {
+                  isAddButtonClicked = true;
+                });
+              },
+              child: Icon(
+                Icons.add,
+                size: 35,
+                color: Color.fromRGBO(0, 194, 237, 1),
               ),
             ),
-            context: context,
-          );
-        },
-        child: Icon(
-          Icons.add,
-          size: 35,
-          color: Color.fromRGBO(0, 194, 237, 1),
-        ),
-      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }

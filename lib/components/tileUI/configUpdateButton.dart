@@ -10,6 +10,20 @@ class ConfigUpdateButton extends StatefulWidget {
   Decoration? decoration;
   Bool? isPopulated;
   Color? textColor = Color.fromRGBO(31, 31, 31, 1);
+  static Color populatedTextColor = Colors.white;
+  static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
+  static BoxDecoration populatedDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          HSLColor.fromAHSL(1, 198, 1, 0.33).toColor(),
+          HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
+        ],
+      ));
   ConfigUpdateButton(
       {required this.text,
       this.decoration,

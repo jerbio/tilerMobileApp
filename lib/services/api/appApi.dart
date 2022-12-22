@@ -25,8 +25,8 @@ abstract class AppApi {
     return retValue;
   }
 
-  Future<Map> injectRequestParams(Map jsonMap) async {
-    Map requestParams = Map.from(jsonMap);
+  Future<Map<String, String>> injectRequestParams(Map jsonMap) async {
+    Map<String, String> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
     try {
