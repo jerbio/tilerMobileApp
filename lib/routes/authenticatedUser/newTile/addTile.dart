@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -11,11 +12,12 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:duration_picker_dialog_box/duration_picker_dialog_box.dart'
-    as durationPickerDialog;
+import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
@@ -30,7 +32,7 @@ class AddTileState extends State<AddTile> {
   final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
   final Color textBorderColor = Colors.white;
   final Color iconColor = Color.fromRGBO(154, 158, 159, 1);
-  final Color populatedColor = Colors.white;
+  final Color populatedTextColor = Colors.white;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       borderRadius: BorderRadius.all(
@@ -48,13 +50,67 @@ class AddTileState extends State<AddTile> {
           HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
         ],
       ));
-  TextEditingController tileName = TextEditingController();
+  TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCount = TextEditingController();
-  Duration _duration = Duration(hours: 0, minutes: 0);
+  Duration? _duration = Duration(hours: 0, minutes: 0);
+  bool _isDurationManuallySet = false;
+  Location? _location = Location.fromDefault();
+  bool _isLocationManuallySet = false;
   DateTime? _endTime;
-  Location _location = Location.fromDefault();
+
   RestrictionProfile? _restrictionProfile;
+  ScheduleApi scheduleApi = ScheduleApi();
+  StreamSubscription? pendingSendTextRequest;
+
+  Function generateCallToServer() {
+    if (pendingSendTextRequest != null) {
+      pendingSendTextRequest!.cancel();
+    }
+
+    Function retValue = () async {
+      if (_isDurationManuallySet && _isLocationManuallySet) {
+        return;
+      }
+      var future = new Future.delayed(
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      // ignore: cancel_subscriptions
+      StreamSubscription streamSubScription = future.asStream().listen((event) {
+        this
+            .scheduleApi
+            .getAutoResult(tileNameController.text)
+            .then((autoTileResponse) {
+          Duration? _durationResponse;
+          Location? _locationResponse;
+          if (autoTileResponse.item1.isNotEmpty) {
+            _durationResponse = autoTileResponse.item1.last;
+          }
+          if (autoTileResponse.item2.isNotEmpty) {
+            _locationResponse = autoTileResponse.item2.last;
+          }
+
+          setState(() {
+            if (!_isDurationManuallySet) {
+              _duration = _durationResponse;
+            }
+            if (!_isLocationManuallySet) {
+              _location = _locationResponse;
+              if (_locationResponse != null) {
+                _location!.isDefault = false;
+                _location!.isNull = false;
+              }
+            }
+          });
+        });
+      });
+
+      setState(() {
+        pendingSendTextRequest = streamSubScription;
+      });
+    };
+
+    return retValue;
+  }
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
@@ -63,39 +119,45 @@ class AddTileState extends State<AddTile> {
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
-              controller: tileName,
-              style: TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500),
-              decoration: InputDecoration(
-                hintText: 'Tile Name',
-                filled: true,
-                isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-                fillColor: textBackgroundColor,
-                border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
+                controller: tileNameController,
+                style: TextStyle(
+                    color: Color.fromRGBO(31, 31, 31, 1),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.tileName,
+                  filled: true,
+                  isDense: true,
+                  contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                  fillColor: textBackgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(50.0),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    borderSide: BorderSide(color: textBorderColor, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    borderSide: BorderSide(
+                      color: textBorderColor,
+                      width: 1.5,
+                    ),
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(color: textBorderColor, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(
-                    color: textBorderColor,
-                    width: 1.5,
-                  ),
-                ),
-              ),
-            )));
+                onChanged: (val) {
+                  if (val.length >
+                      Constants.autoCompleteTriggerCharacterCount) {
+                    Function callAutoResult = generateCallToServer();
+                    callAutoResult();
+                  }
+                })));
     return tileNameContainer;
   }
 
@@ -103,11 +165,11 @@ class AddTileState extends State<AddTile> {
     Widget splitCountContainer = FractionallySizedBox(
         widthFactor: 0.85,
         child: Container(
-            height: 90,
+            height: 60,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text("How Many Times?",
+                Text(AppLocalizations.of(context)!.howManyTimes,
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 SizedBox(
@@ -119,7 +181,7 @@ class AddTileState extends State<AddTile> {
                         FilteringTextInputFormatter.digitsOnly
                       ],
                       decoration: InputDecoration(
-                        hintText: 'Once',
+                        hintText: AppLocalizations.of(context)!.once,
                         filled: true,
                         isDense: true,
                         contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
@@ -152,24 +214,25 @@ class AddTileState extends State<AddTile> {
 
   Widget generateDurationPicker() {
     final void Function()? setDuration = () async {
-      durationPickerDialog
-          .showDurationPicker(
-              context: context,
-              initialDuration: _duration,
-              durationPickerMode: durationPickerDialog.DurationPickerMode.Hour)
-          .then((value) {
-        if (value != null) {
-          setState(() {
-            _duration = value;
-          });
-        }
+      Map<String, dynamic> durationParams = {'duration': _duration};
+      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+          .whenComplete(() {
+        print('done with pop');
+        print(durationParams['duration']);
+        Duration? populatedDuration = durationParams['duration'] as Duration?;
+        setState(() {
+          if (populatedDuration != null) {
+            _duration = populatedDuration;
+            _isDurationManuallySet = true;
+          }
+        });
       });
     };
-    String textButtonString = 'Duration';
-    if (_duration.inMinutes > 1) {
+    String textButtonString = AppLocalizations.of(context)!.duration;
+    if (_duration != null && _duration!.inMinutes > 1) {
       textButtonString = "";
-      int hour = _duration.inHours.floor();
-      int minute = _duration.inMinutes.remainder(60);
+      int hour = _duration!.inHours.floor();
+      int minute = _duration!.inMinutes.remainder(60);
       if (hour > 0) {
         textButtonString = '${hour}h';
         if (minute > 0) {
@@ -221,15 +284,18 @@ class AddTileState extends State<AddTile> {
     String locationName = 'Location';
     bool isLocationConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
-    if (_location.isNotNullAndNotDefault != null &&
-        (_location.isNotNullAndNotDefault!)) {
-      if (_location.description != null && _location.description!.isNotEmpty) {
-        locationName = _location.description!;
-        isLocationConfigSet = true;
-      } else {
-        if (_location.address != null && _location.address!.isNotEmpty) {
-          locationName = _location.address!;
+    if (_location != null) {
+      if (_location!.isNotNullAndNotDefault != null &&
+          (_location!.isNotNullAndNotDefault!)) {
+        if (_location!.description != null &&
+            _location!.description!.isNotEmpty) {
+          locationName = _location!.description!;
           isLocationConfigSet = true;
+        } else {
+          if (_location!.address != null && _location!.address!.isNotEmpty) {
+            locationName = _location!.address!;
+            isLocationConfigSet = true;
+          }
         }
       }
     }
@@ -246,12 +312,12 @@ class AddTileState extends State<AddTile> {
       text: locationName,
       prefixIcon: Icon(
         Icons.location_pin,
-        color: isLocationConfigSet ? populatedColor : iconColor,
+        color: isLocationConfigSet ? populatedTextColor : iconColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedColor : iconColor,
+      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
       onPress: () {
-        Location locationHolder = Location.fromDefault();
+        Location locationHolder = _location!;
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
           'isFromLookup': false
@@ -260,54 +326,73 @@ class AddTileState extends State<AddTile> {
         Navigator.pushNamed(context, '/LocationRoute',
                 arguments: locationParams)
             .whenComplete(() {
-          print('done with pop');
-          print(locationParams['location'].description);
           Location? populatedLocation = locationParams['location'] as Location;
           setState(() {
             if (populatedLocation != null &&
                 populatedLocation.isNotNullAndNotDefault != null &&
                 populatedLocation.isNotNullAndNotDefault!) {
               _location = populatedLocation;
+              _isLocationManuallySet = true;
             }
           });
         });
       },
     );
     Widget repetitionConfigButton = ConfigUpdateButton(
-      text: 'Repetition',
-      prefixIcon: Icon(
-        Icons.repeat_outlined,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: AppLocalizations.of(context)!.repetition,
+        prefixIcon: Icon(
+          Icons.repeat_outlined,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Repetitions are disabled for now :('),
+              action: SnackBarAction(
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget reminderConfigButton = ConfigUpdateButton(
-      text: 'Reminder',
-      prefixIcon: Icon(
-        Icons.doorbell_outlined,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: AppLocalizations.of(context)!.reminder,
+        prefixIcon: Icon(
+          Icons.doorbell_outlined,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Reminders are disabled for now :('),
+              action: SnackBarAction(
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
-      text: 'Restriction',
+      text: AppLocalizations.of(context)!.restriction,
       prefixIcon: Icon(
         Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedColor : iconColor,
+        color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       ),
       decoration:
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedColor : iconColor,
+      textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
           'restrictionProfile': _restrictionProfile,
@@ -331,18 +416,28 @@ class AddTileState extends State<AddTile> {
       },
     );
     Widget emojiConfigButton = ConfigUpdateButton(
-      text: 'Emoji',
-      prefixIcon: Icon(
-        Icons.emoji_emotions,
-        color: iconColor,
-      ),
-      decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          )),
-      textColor: iconColor,
-    );
+        text: 'Emoji',
+        prefixIcon: Icon(
+          Icons.emoji_emotions,
+          color: iconColor,
+        ),
+        decoration: BoxDecoration(
+            color: Color.fromRGBO(31, 31, 31, 0.05),
+            borderRadius: BorderRadius.all(
+              const Radius.circular(10.0),
+            )),
+        textColor: iconColor,
+        onPress: () {
+          final scaffold = ScaffoldMessenger.of(context);
+          scaffold.showSnackBar(
+            SnackBar(
+              content: const Text('Emojis are disabled for now :('),
+              action: SnackBarAction(
+                  label: AppLocalizations.of(context)!.close,
+                  onPressed: scaffold.hideCurrentSnackBar),
+            ),
+          );
+        });
     Widget firstRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [locationConfigButton, repetitionConfigButton],
@@ -404,20 +499,22 @@ class AddTileState extends State<AddTile> {
     DateTime? _endTime = this._endTime;
 
     NewTile tile = new NewTile();
-    tile.Name = this.tileName.value.text;
-    tile.DurationMinute = this._duration.inMinutes.toString();
+    tile.Name = this.tileNameController.value.text;
+    if (this._duration != null) {
+      tile.DurationMinute = this._duration!.inMinutes.toString();
+    }
     tile.EndYear = _endTime?.year.toString();
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();
-    tile.EndHour = _endTime?.hour.toString();
-    tile.EndMins = _endTime?.minute.toString();
+    tile.EndHour = '23';
+    tile.EndMinute = '59';
 
     DateTime now = DateTime.now();
     tile.StartYear = now.year.toString();
     tile.StartMonth = now.month.toString();
     tile.StartDay = now.day.toString();
     tile.StartHour = '0';
-    tile.StartMins = '0';
+    tile.StartMinute = '0';
     tile.isEveryDay = false.toString();
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
@@ -427,14 +524,70 @@ class AddTileState extends State<AddTile> {
     tile.RColor = Utility.randomizer.nextInt(255).toString();
     tile.ColorSelection = (-1).toString();
 
+    if (_location != null) {
+      tile.LocationAddress = _location!.address;
+      tile.LocationTag = _location!.description;
+      tile.LocationId = _location!.id;
+      tile.LocationSource = _location!.source;
+      tile.LocationIsVerified = _location!.isVerified.toString();
+    }
+
     tile.Count = this.splitCount.value.text.isNotEmpty
         ? this.splitCount.value.text
         : 1.toString();
-    Tuple2 newlyAddedTile = await this.widget.scheduleApi.addNewTile(tile);
-    if (newlyAddedTile.item1 != null) {
-      SubCalendarEvent subEvent = newlyAddedTile.item1;
-      print(subEvent.name);
-    }
+
+    debugPrint(tile.toJson().toString());
+
+    Utility.determineDevicePosition().catchError((onError) async {
+      final scaffold = ScaffoldMessenger.of(context);
+      scaffold.showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 20),
+          content: Text(AppLocalizations.of(context)!.enableLocations),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.settings,
+            onPressed: () async {
+              await Geolocator.openAppSettings();
+              await Geolocator.openLocationSettings();
+              scaffold.hideCurrentSnackBar;
+            },
+            textColor: Colors.redAccent,
+          ),
+        ),
+      );
+      return Utility.getDefaultPosition();
+    });
+
+    Future retValue = this.widget.scheduleApi.addNewTile(tile);
+    retValue.then((newlyAddedTile) {
+      if (newlyAddedTile.item1 != null) {
+        SubCalendarEvent subEvent = newlyAddedTile.item1;
+        print(subEvent.name);
+      }
+    }).onError((error, stackTrace) {
+      if (error != null) {
+        String message = error.toString();
+        if (error is FormatException) {
+          FormatException exception = error;
+          message = exception.message;
+        }
+
+        debugPrint(message);
+        final scaffold = ScaffoldMessenger.of(context);
+        scaffold.showSnackBar(
+          SnackBar(
+            content: Text(message),
+            action: SnackBarAction(
+              label: AppLocalizations.of(context)!.close,
+              onPressed: scaffold.hideCurrentSnackBar,
+              textColor: Colors.redAccent,
+            ),
+          ),
+        );
+      }
+    });
+
+    return retValue;
   }
 
   Widget generateDeadline() {
@@ -460,7 +613,7 @@ class AddTileState extends State<AddTile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.timelapse_outlined, color: iconColor),
+                    Icon(Icons.calendar_month, color: iconColor),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
@@ -502,9 +655,23 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(extraConfigCollection);
     // childrenWidgets.add(submitTileWidget);
 
-    Widget retValue = CancelAndProceedTemplateWidget(
+    Function? showLoading;
+    CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.addTile,
+          style: TextStyle(
+              color: TileStyles.enabledTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       child: Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        margin: TileStyles.topMargin,
         alignment: Alignment.topCenter,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -512,16 +679,18 @@ class AddTileState extends State<AddTile> {
         ),
       ),
       onProceed: () {
-        this.onSubmitButtonTap();
+        return this.onSubmitButtonTap();
       },
     );
+
+    showLoading = retValue.toggleLoading;
 
     return retValue;
   }
 
   @override
   void dispose() {
-    tileName.dispose();
+    tileNameController.dispose();
     super.dispose();
   }
 }

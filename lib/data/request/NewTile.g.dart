@@ -18,7 +18,7 @@ NewTile _$NewTileFromJson(Map<String, dynamic> json) => NewTile()
   ..DurationMinute = json['DurationMinute'] as String?
   ..EndDay = json['EndDay'] as String?
   ..EndHour = json['EndHour'] as String?
-  ..EndMins = json['EndMins'] as String?
+  ..EndMinute = json['EndMinute'] as String?
   ..EndMonth = json['EndMonth'] as String?
   ..EndYear = json['EndYear'] as String?
   ..LookupString = json['LookupString'] as String?
@@ -40,7 +40,7 @@ NewTile _$NewTileFromJson(Map<String, dynamic> json) => NewTile()
   ..Rigid = json['Rigid'] as String?
   ..StartDay = json['StartDay'] as String?
   ..StartHour = json['StartHour'] as String?
-  ..StartMins = json['StartMins'] as String?
+  ..StartMinute = json['StartMinute'] as String?
   ..StartMonth = json['StartMonth'] as String?
   ..StartYear = json['StartYear'] as String?
   ..RepeatFrequency = json['RepeatFrequency'] as String?
@@ -62,7 +62,7 @@ Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'DurationMinute': instance.DurationMinute,
       'EndDay': instance.EndDay,
       'EndHour': instance.EndHour,
-      'EndMins': instance.EndMins,
+      'EndMinute': instance.EndMinute,
       'EndMonth': instance.EndMonth,
       'EndYear': instance.EndYear,
       'LookupString': instance.LookupString,
@@ -84,7 +84,7 @@ Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'Rigid': instance.Rigid,
       'StartDay': instance.StartDay,
       'StartHour': instance.StartHour,
-      'StartMins': instance.StartMins,
+      'StartMinute': instance.StartMinute,
       'StartMonth': instance.StartMonth,
       'StartYear': instance.StartYear,
       'RepeatFrequency': instance.RepeatFrequency,
