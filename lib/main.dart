@@ -7,6 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
+import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'routes/authentication/preAuthenticationRoute.dart';
 import 'routes/authentication/authorizedRoute.dart';
@@ -50,7 +51,7 @@ class TilerApp extends StatelessWidget {
       ),
       routes: <String, WidgetBuilder>{
         '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),
-        '/LoggedOut': (BuildContext context) => new PreAuthenticationRoute(),
+        '/LoggedOut': (BuildContext context) => new SignInRoute(),
         '/AddTile': (BuildContext context) => new AddTile(),
         '/SearchTile': (BuildContext context) =>
             new EventNameSearchWidget(context: context),
@@ -80,7 +81,7 @@ class TilerApp extends StatelessWidget {
               if (isAuthenticated) {
                 retValue = AuthorizedRoute();
               } else {
-                retValue = PreAuthenticationRoute();
+                retValue = SignInRoute();
               }
             } else {
               retValue = CircularProgressIndicator();
