@@ -30,7 +30,7 @@ class AutoAddTileState extends State<AutoAddTile> {
 
     Function retValue = () async {
       var future = new Future.delayed(
-          const Duration(milliseconds: Constants.onTextChangeDelatInMs));
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       // ignore: cancel_subscriptions
       StreamSubscription streamSubScription = future.asStream().listen((event) {
         this
