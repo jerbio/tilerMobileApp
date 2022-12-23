@@ -96,7 +96,15 @@ class TileBatchState extends State<TileBatch> {
   @override
   Widget build(BuildContext context) {
     List<Timeline> chillTimeLines = [];
-    print('' + this.widget.dayIndex.toString() + " " + uniqueKey);
+
+    print('' +
+        this.widget.dayIndex.toString() +
+        " " +
+        Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
+        " " +
+        widget.tiles!.length.toString() +
+        " " +
+        uniqueKey);
     if (!isInitialized) {
       if (widget.tiles != null) {
         var conflicts = Utility.getConflictingEvents(widget.tiles!);

@@ -157,7 +157,7 @@ class _TileListState extends State<TileList> {
                     }
                     String headerString =
                         Utility.getTimeFromIndex(dayIndex).humanDate;
-                    Key key = Key(Utility.getUuid);
+                    Key key = Key(dayIndex.toString());
                     TileBatch upcomingTileBatch = TileBatch(
                       header: headerString,
                       dayIndex: dayIndex,
@@ -175,7 +175,7 @@ class _TileListState extends State<TileList> {
                     if (dayIndexToTileDict.containsKey(dayIndex)) {
                       tiles = dayIndexToTileDict[dayIndex]!;
                     }
-                    Key key = Key(Utility.getUuid);
+                    Key key = Key(dayIndex.toString());
                     TileBatch preceedingDayTileBatch = TileBatch(
                       header: footerString,
                       dayIndex: dayIndex,

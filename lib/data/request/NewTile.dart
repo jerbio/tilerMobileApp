@@ -64,7 +64,7 @@ class NewTile {
   /// <summary>
   /// Minute component of End date.
   /// </summary>
-  String? EndMins;
+  String? EndMinute;
 
   /// <summary>
   /// Month component of End date.
@@ -126,7 +126,7 @@ class NewTile {
   String? Rigid;
   String? StartDay;
   String? StartHour;
-  String? StartMins;
+  String? StartMinute;
   String? StartMonth;
   String? StartYear;
   String? RepeatFrequency;

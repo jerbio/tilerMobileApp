@@ -17,6 +17,9 @@ class TileAddressState extends State<TileAddress> {
     String? addressString = widget.subEvent.searchdDescription != null
         ? widget.subEvent.searchdDescription
         : widget.subEvent.address;
+    addressString = addressString == null || addressString.trim().isEmpty
+        ? widget.subEvent.addressDescription
+        : addressString;
     if (addressString != null && addressString.isNotEmpty) {
       addressString =
           addressString[0].toUpperCase() + addressString.substring(1);

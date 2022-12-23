@@ -7,9 +7,17 @@ class Location extends TilerObj {
   double? latitude;
   bool? isVerified;
   bool? isDefault = true;
-  bool? isNotNullAndNotDefault = false;
+  bool? isNull = true;
   String? source;
   String? thirdPartyId;
+
+  bool? get isNotNullAndNotDefault {
+    if (isNull != null && isDefault != null) {
+      return !isNull! && !isDefault!;
+    }
+    return false;
+  }
+
   static T? cast<T>(x) => x is T ? x : null;
   Location.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('description')) {
@@ -27,8 +35,8 @@ class Location extends TilerObj {
     if (json.containsKey('isVerified')) {
       isVerified = cast<bool>(json['isVerified']);
     }
-    if (json.containsKey('isNotNullAndNotDefault')) {
-      isNotNullAndNotDefault = cast<bool>(json['isNotNullAndNotDefault']);
+    if (json.containsKey('isNull')) {
+      isNull = cast<bool>(json['isNull']);
     }
     if (json.containsKey('source')) {
       source = cast<String>(json['source'])!;
@@ -41,14 +49,6 @@ class Location extends TilerObj {
     }
     if (json.containsKey('isDefault')) {
       isDefault = cast<bool>(json['isDefault']);
-    }
-
-    if (isNotNullAndNotDefault != null && isVerified != null) {
-      if (isDefault != null) {
-        isDefault = !(isNotNullAndNotDefault! || isVerified!) && isDefault!;
-      } else {
-        isDefault = !(isNotNullAndNotDefault! || isVerified!);
-      }
     }
   }
 

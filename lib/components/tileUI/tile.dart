@@ -101,9 +101,9 @@ class TileWidgetState extends State<TileWidget> {
                   borderRadius: BorderRadius.circular(TileStyles.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 10,
-                      blurRadius: 20,
+                      color: tileBackGroundColor.withOpacity(0.2),
+                      spreadRadius: 5,
+                      blurRadius: 15,
                       offset: Offset(0, 1),
                     ),
                   ],
