@@ -10,6 +10,7 @@ import 'package:faker/faker.dart';
 import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Utility {
   final List<String> months = [
@@ -31,6 +32,20 @@ class Utility {
   static final Random randomizer = Random.secure();
   static DateTime currentTime() {
     return DateTime.now();
+  }
+
+  static final Position _defaultPosition = new Position(
+      longitude: 7777,
+      latitude: 7777,
+      timestamp: Utility.currentTime(),
+      accuracy: 0,
+      altitude: 0,
+      heading: 0,
+      speed: 0,
+      speedAccuracy: 0);
+
+  static int getTimeZoneOffset() {
+    return (-currentTime().timeZoneOffset.inMinutes);
   }
 
   static int getDayIndex(DateTime time) {
@@ -57,6 +72,10 @@ class Utility {
     Timeline retValue = Timeline(begin.millisecondsSinceEpoch.toDouble(),
         end.millisecondsSinceEpoch.toDouble());
     return retValue;
+  }
+
+  static Position getDefaultPosition() {
+    return _defaultPosition;
   }
 
   static get msCurrentTime {
@@ -165,6 +184,47 @@ class Utility {
 
   static get randomName {
     return _faker.person.name();
+  }
+
+  /// Determine the current position of the device.
+  ///
+  /// When the location services are not enabled or permissions
+  /// are denied the `Future` will return an error.
+  static Future<Position> determineDevicePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        // Permissions are denied, next time you could try
+        // requesting permissions again (this is also where
+        // Android's shouldShowRequestPermissionRationale
+        // returned true. According to Android guidelines
+        // your App should show an explanatory UI now.
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    return await Geolocator.getCurrentPosition();
   }
 
   static Tuple2<List<BlobEvent>, HashSet<TilerEvent>> getConflictingEvents(

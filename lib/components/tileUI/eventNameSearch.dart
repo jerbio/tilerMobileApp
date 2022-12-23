@@ -54,7 +54,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget tileToEventNameWidget(TilerEvent tile) {
     List<Widget> childWidgets = [];
-    Container textContainer;
+    Widget textContainer;
     if (tile.name != null) {
       if (tile.start != null && tile.end != null) {
         DateTime start =
@@ -76,49 +76,71 @@ class EventNameSearchState extends SearchWidgetState {
       }
 
       List<Widget> detailWidgets = [];
-      textContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 10, 0, 0),
-        child: Text(tile.name!, style: TextStyle(fontSize: 18)),
-      );
+      textContainer = FractionallySizedBox(
+          widthFactor: 0.8,
+          child: Container(
+            margin: EdgeInsets.fromLTRB(30, 10, 0, 0),
+            child: Expanded(
+                child: Text(tile.name!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 18))),
+          ));
       detailWidgets.add(textContainer);
       Function setAsNowCallBack = createSetAsNowCallBack(tile.id!)!;
       Function completionCallBack = createCompletionCallBack(tile.id!)!;
       Function deletionCallBack =
           createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
-      Container iconContainer = Container(
-        width: 150,
-        margin: EdgeInsets.fromLTRB(175, 35, 0, 0),
-        child: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.clear_rounded),
-              color: Colors.red,
-              onPressed: () => {deletionCallBack()},
-            ),
-            IconButton(
-              icon: const Icon(Icons.check),
-              color: Colors.green,
-              onPressed: () => {completionCallBack()},
-            ),
-            Container(
-                margin: EdgeInsets.fromLTRB(0, 10, 5, 0),
-                child: IconButton(
-                    icon: Transform.rotate(
-                      angle: -pi / 2,
-                      child: Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey,
-                        size: 35,
-                      ),
+      Widget iconContainer =
+          // FractionallySizedBox(
+          //     widthFactor: 0.9,
+          //     child:
+          Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                // width: 200,
+                color: Colors.blue,
+                margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.clear_rounded),
+                      iconSize: 40,
+                      color: Colors.red,
+                      onPressed: () => {deletionCallBack()},
                     ),
-                    onPressed: () => {setAsNowCallBack()}))
-          ],
-        ),
-      );
+                    IconButton(
+                      icon: const Icon(Icons.check),
+                      iconSize: 40,
+                      color: Colors.green,
+                      onPressed: () => {completionCallBack()},
+                    )
+                  ],
+                ),
+              ))
+          //)
+          ;
+
+      Widget nowButton = Align(
+          alignment: Alignment.topRight,
+          child: Container(
+              margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+              child: IconButton(
+                  icon: Transform.rotate(
+                    angle: -pi / 2,
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                      size: 35,
+                    ),
+                  ),
+                  onPressed: () => {setAsNowCallBack()})));
+
       detailWidgets.add(iconContainer);
+      detailWidgets.add(nowButton);
 
       Container detailContainer = Container(
-        // color: Colors.blue,
         margin: EdgeInsets.fromLTRB(60, 10, 0, 0),
         child: Stack(
           children: detailWidgets,
@@ -131,7 +153,7 @@ class EventNameSearchState extends SearchWidgetState {
     Widget retValue = Dismissible(
         key: dismissibleKey,
         child: Container(
-          height: 90,
+          height: 150,
           padding: EdgeInsets.fromLTRB(7, 7, 7, 7),
           margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
           decoration: BoxDecoration(
@@ -158,7 +180,8 @@ class EventNameSearchState extends SearchWidgetState {
     return retValue;
   }
 
-  Future<List<Widget>> _onInputFieldChange(String name) async {
+  Future<List<Widget>> _onInputFieldChange(
+      String name, Function callBackOnCloseInput) async {
     List<Widget> retValue = this.nameSearchResult;
 
     if (name.length > 3) {
@@ -191,7 +214,22 @@ class EventNameSearchState extends SearchWidgetState {
         hintText: hintText,
       ),
     );
+    var hslLightColor = HSLColor.fromColor(Color.fromRGBO(0, 194, 237, 1));
+    hslLightColor = hslLightColor.withLightness(hslLightColor.lightness + 0.4);
+    var hslDarkColor = HSLColor.fromColor(Color.fromRGBO(0, 119, 170, 1));
+    hslDarkColor = hslDarkColor.withLightness(hslDarkColor.lightness + 0.4);
 
+    this.widget.resultBoxDecoration = BoxDecoration(
+        gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+          hslLightColor.toColor(),
+          hslLightColor.toColor(),
+          hslLightColor.toColor(),
+          hslDarkColor.toColor(),
+          hslDarkColor.toColor()
+        ]));
     return Scaffold(
       body: super.build(context),
     );
