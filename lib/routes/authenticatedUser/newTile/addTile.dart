@@ -173,7 +173,7 @@ class AddTileState extends State<AddTile> {
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
                 SizedBox(
-                    width: 50,
+                    width: 60,
                     child: TextField(
                       controller: splitCount,
                       keyboardType: TextInputType.number,
@@ -184,7 +184,7 @@ class AddTileState extends State<AddTile> {
                         hintText: AppLocalizations.of(context)!.once,
                         filled: true,
                         isDense: true,
-                        contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+                        contentPadding: EdgeInsets.all(10),
                         fillColor: textBackgroundColor,
                         border: OutlineInputBorder(
                           borderRadius: const BorderRadius.all(
@@ -329,8 +329,7 @@ class AddTileState extends State<AddTile> {
           Location? populatedLocation = locationParams['location'] as Location;
           setState(() {
             if (populatedLocation != null &&
-                populatedLocation.isNotNullAndNotDefault != null &&
-                populatedLocation.isNotNullAndNotDefault!) {
+                populatedLocation.isNotNullAndNotDefault != null) {
               _location = populatedLocation;
               _isLocationManuallySet = true;
             }
