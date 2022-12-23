@@ -103,7 +103,7 @@ class TileWidgetState extends State<TileWidget> {
                     BoxShadow(
                       color: tileBackGroundColor.withOpacity(0.2),
                       spreadRadius: 5,
-                      blurRadius: 30,
+                      blurRadius: 15,
                       offset: Offset(0, 1),
                     ),
                   ],
