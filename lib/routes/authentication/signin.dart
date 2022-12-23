@@ -1,5 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rive/rive.dart';
+import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:tiler_app/routes/authentication/signInComponent.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
@@ -50,24 +54,49 @@ class SignInRouteState extends State<SignInRoute> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                Color.fromRGBO(0, 194, 237, 1),
-                Color.fromRGBO(0, 194, 237, 1),
-                Color.fromRGBO(0, 194, 237, 1),
-                Color.fromRGBO(0, 119, 170, 1),
-                Color.fromRGBO(0, 119, 170, 1)
-              ])),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [Container(height: 50), SignInComponent()],
-          )),
-    );
+        body: SafeArea(
+            child: Stack(
+      children: [
+        Positioned.fill(
+            child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 10),
+          child: SizedBox(),
+        )),
+        RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
+        Positioned.fill(
+            child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+          child: SizedBox(),
+        )),
+        Container(
+            decoration: BoxDecoration(
+                gradient: paintGradient.LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
+                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
+                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
+                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55),
+                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55)
+                ])),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [Container(height: 50), SignInComponent()],
+            )),
+        Container(
+          padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
+          alignment: Alignment.topCenter,
+          child: Image.asset(
+            'assets/images/tiler_logo_white.png',
+            scale: 4,
+          ),
+        ),
+      ],
+    )));
+
+    ;
   }
 }
