@@ -263,10 +263,10 @@ class AuthorizedRouteState extends State<StatefulWidget>
           : FloatingActionButton(
               backgroundColor: Color.fromRGBO(243, 243, 243, 1),
               onPressed: () {
-                // displayDialog(MediaQuery.of(context).size);
-                setState(() {
-                  isAddButtonClicked = true;
-                });
+                displayDialog(MediaQuery.of(context).size);
+                // setState(() {
+                //   isAddButtonClicked = true;
+                // });
               },
               child: Icon(
                 Icons.add,

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
@@ -48,13 +50,67 @@ class AddTileState extends State<AddTile> {
           HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
         ],
       ));
-  TextEditingController tileName = TextEditingController();
+  TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCount = TextEditingController();
-  Duration _duration = Duration(hours: 0, minutes: 0);
+  Duration? _duration = Duration(hours: 0, minutes: 0);
+  bool _isDurationManuallySet = false;
+  Location? _location = Location.fromDefault();
+  bool _isLocationManuallySet = false;
   DateTime? _endTime;
-  Location _location = Location.fromDefault();
+
   RestrictionProfile? _restrictionProfile;
+  ScheduleApi scheduleApi = ScheduleApi();
+  StreamSubscription? pendingSendTextRequest;
+
+  Function generateCallToServer() {
+    if (pendingSendTextRequest != null) {
+      pendingSendTextRequest!.cancel();
+    }
+
+    Function retValue = () async {
+      if (_isDurationManuallySet && _isLocationManuallySet) {
+        return;
+      }
+      var future = new Future.delayed(
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      // ignore: cancel_subscriptions
+      StreamSubscription streamSubScription = future.asStream().listen((event) {
+        this
+            .scheduleApi
+            .getAutoResult(tileNameController.text)
+            .then((autoTileResponse) {
+          Duration? _durationResponse;
+          Location? _locationResponse;
+          if (autoTileResponse.item1.isNotEmpty) {
+            _durationResponse = autoTileResponse.item1.last;
+          }
+          if (autoTileResponse.item2.isNotEmpty) {
+            _locationResponse = autoTileResponse.item2.last;
+          }
+
+          setState(() {
+            if (!_isDurationManuallySet) {
+              _duration = _durationResponse;
+            }
+            if (!_isLocationManuallySet) {
+              _location = _locationResponse;
+              if (_locationResponse != null) {
+                _location!.isDefault = false;
+                _location!.isNull = false;
+              }
+            }
+          });
+        });
+      });
+
+      setState(() {
+        pendingSendTextRequest = streamSubScription;
+      });
+    };
+
+    return retValue;
+  }
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
@@ -63,39 +119,45 @@ class AddTileState extends State<AddTile> {
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
-              controller: tileName,
-              style: TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.tileName,
-                filled: true,
-                isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-                fillColor: textBackgroundColor,
-                border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
+                controller: tileNameController,
+                style: TextStyle(
+                    color: Color.fromRGBO(31, 31, 31, 1),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w500),
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.tileName,
+                  filled: true,
+                  isDense: true,
+                  contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                  fillColor: textBackgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(50.0),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    borderSide: BorderSide(color: textBorderColor, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    borderSide: BorderSide(
+                      color: textBorderColor,
+                      width: 1.5,
+                    ),
                   ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(color: textBorderColor, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(
-                    color: textBorderColor,
-                    width: 1.5,
-                  ),
-                ),
-              ),
-            )));
+                onChanged: (val) {
+                  if (val.length >
+                      Constants.autoCompleteTriggerCharacterCount) {
+                    Function callAutoResult = generateCallToServer();
+                    callAutoResult();
+                  }
+                })));
     return tileNameContainer;
   }
 
@@ -161,15 +223,16 @@ class AddTileState extends State<AddTile> {
         setState(() {
           if (populatedDuration != null) {
             _duration = populatedDuration;
+            _isDurationManuallySet = true;
           }
         });
       });
     };
     String textButtonString = AppLocalizations.of(context)!.duration;
-    if (_duration.inMinutes > 1) {
+    if (_duration != null && _duration!.inMinutes > 1) {
       textButtonString = "";
-      int hour = _duration.inHours.floor();
-      int minute = _duration.inMinutes.remainder(60);
+      int hour = _duration!.inHours.floor();
+      int minute = _duration!.inMinutes.remainder(60);
       if (hour > 0) {
         textButtonString = '${hour}h';
         if (minute > 0) {
@@ -221,15 +284,18 @@ class AddTileState extends State<AddTile> {
     String locationName = 'Location';
     bool isLocationConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
-    if (_location.isNotNullAndNotDefault != null &&
-        (_location.isNotNullAndNotDefault!)) {
-      if (_location.description != null && _location.description!.isNotEmpty) {
-        locationName = _location.description!;
-        isLocationConfigSet = true;
-      } else {
-        if (_location.address != null && _location.address!.isNotEmpty) {
-          locationName = _location.address!;
+    if (_location != null) {
+      if (_location!.isNotNullAndNotDefault != null &&
+          (_location!.isNotNullAndNotDefault!)) {
+        if (_location!.description != null &&
+            _location!.description!.isNotEmpty) {
+          locationName = _location!.description!;
           isLocationConfigSet = true;
+        } else {
+          if (_location!.address != null && _location!.address!.isNotEmpty) {
+            locationName = _location!.address!;
+            isLocationConfigSet = true;
+          }
         }
       }
     }
@@ -251,7 +317,7 @@ class AddTileState extends State<AddTile> {
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
       textColor: isLocationConfigSet ? populatedTextColor : iconColor,
       onPress: () {
-        Location locationHolder = _location;
+        Location locationHolder = _location!;
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
           'isFromLookup': false
@@ -266,6 +332,7 @@ class AddTileState extends State<AddTile> {
                 populatedLocation.isNotNullAndNotDefault != null &&
                 populatedLocation.isNotNullAndNotDefault!) {
               _location = populatedLocation;
+              _isLocationManuallySet = true;
             }
           });
         });
@@ -432,8 +499,10 @@ class AddTileState extends State<AddTile> {
     DateTime? _endTime = this._endTime;
 
     NewTile tile = new NewTile();
-    tile.Name = this.tileName.value.text;
-    tile.DurationMinute = this._duration.inMinutes.toString();
+    tile.Name = this.tileNameController.value.text;
+    if (this._duration != null) {
+      tile.DurationMinute = this._duration!.inMinutes.toString();
+    }
     tile.EndYear = _endTime?.year.toString();
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();
@@ -455,11 +524,13 @@ class AddTileState extends State<AddTile> {
     tile.RColor = Utility.randomizer.nextInt(255).toString();
     tile.ColorSelection = (-1).toString();
 
-    tile.LocationAddress = _location.address;
-    tile.LocationTag = _location.description;
-    tile.LocationId = _location.id;
-    tile.LocationSource = _location.source;
-    tile.LocationIsVerified = _location.isVerified.toString();
+    if (_location != null) {
+      tile.LocationAddress = _location!.address;
+      tile.LocationTag = _location!.description;
+      tile.LocationId = _location!.id;
+      tile.LocationSource = _location!.source;
+      tile.LocationIsVerified = _location!.isVerified.toString();
+    }
 
     tile.Count = this.splitCount.value.text.isNotEmpty
         ? this.splitCount.value.text
@@ -619,7 +690,7 @@ class AddTileState extends State<AddTile> {
 
   @override
   void dispose() {
-    tileName.dispose();
+    tileNameController.dispose();
     super.dispose();
   }
 }
