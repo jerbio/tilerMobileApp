@@ -57,5 +57,7 @@ Overall, location permissions are essential for an app that dynamically updates 
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 </dict>
 </plist>
