@@ -39,7 +39,7 @@ class CalendarEventApi extends AppApi {
             var setAsNowJson = jsonResult['Content'];
             return setAsNowJson;
           } else {
-            if (isTileRequestError(jsonResult)) {
+            if (isTilerRequestError(jsonResult)) {
               var errorJson = jsonResult['Error'];
               error = TilerError.fromJson(errorJson);
             } else {
@@ -78,7 +78,7 @@ class CalendarEventApi extends AppApi {
           var setAsNowJson = jsonResult['Content'];
           return setAsNowJson;
         } else {
-          if (isTileRequestError(jsonResult)) {
+          if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
           } else {
@@ -113,7 +113,7 @@ class CalendarEventApi extends AppApi {
           var setAsNowJson = jsonResult['Content'];
           return setAsNowJson;
         } else {
-          if (isTileRequestError(jsonResult)) {
+          if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
           } else {
