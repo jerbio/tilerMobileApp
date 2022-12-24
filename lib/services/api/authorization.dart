@@ -2,8 +2,9 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
+import 'package:tiler_app/services/api/appApi.dart';
 
-class Authorization {
+class Authorization extends AppApi {
   Future<AuthenticationData> getAuthenticationInfo(
       String userName, String password) async {
     String tilerDomain = Constants.tilerDomain;
@@ -25,18 +26,71 @@ class Authorization {
         body: requestBody,
         encoding: Encoding.getByName("utf-8"));
 
+    AuthenticationData retValue = AuthenticationData.noCredentials();
     if (response.statusCode == 200) {
-      var jsonRsult = jsonDecode(response.body);
+      var jsonResult = jsonDecode(response.body);
       var retValue = AuthenticationData.initializedWithRestData(
-        jsonRsult['access_token'],
-        jsonRsult['token_type'],
-        jsonRsult['expires_in'],
+        jsonResult['access_token'],
+        jsonResult['token_type'],
+        jsonResult['expires_in'],
       );
       retValue.username = userName;
       retValue.password = password;
       return retValue;
     } else {
-      return AuthenticationData.noCredentials();
+      var jsonResult = jsonDecode(response.body);
+      if (jsonResult.containsKey('error') &&
+          jsonResult.containsKey('error_description') &&
+          jsonResult['error_description'] != null &&
+          jsonResult['error_description'].isNotEmpty) {
+        retValue.errorMessage = jsonResult['error_description'];
+      }
+      return retValue;
+    }
+  }
+
+  Future<AuthenticationData> registerUser(String email, String password,
+      String userName, String confirmPassword, String? firstname) async {
+    String tilerDomain = Constants.tilerDomain;
+    String url = tilerDomain;
+    String queryFirstName = firstname == null ? email : firstname;
+    String queryUserName = userName.isEmpty ? email : userName;
+
+    final queryParameters = await injectRequestParams({
+      'Username': queryUserName,
+      'Password': password,
+      'FirstName': queryFirstName,
+      'ConfirmPassword': confirmPassword,
+      'Email': email,
+    });
+
+    Uri uri = Uri.https(url, 'Account/mobileSignup');
+    http.Response response = await http.post(uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(queryParameters),
+        encoding: Encoding.getByName('utf-8'));
+    AuthenticationData retValue = AuthenticationData.noCredentials();
+
+    if (response.statusCode == 200) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          return await getAuthenticationInfo(queryUserName, password);
+        }
+      }
+
+      retValue.errorMessage = errorMessage(jsonResult);
+      retValue.isValid = false;
+      return retValue;
+    } else {
+      var jsonResult = jsonDecode(response.body);
+      if (jsonResult.containsKey('error') &&
+          jsonResult.containsKey('error_description') &&
+          jsonResult.containsKey('error_description') != null &&
+          jsonResult.containsKey('error_description').isNotEmpty) {
+        retValue.errorMessage = jsonResult['error_description'];
+      }
+      return retValue;
     }
   }
 }
@@ -50,6 +104,7 @@ class AuthenticationData {
   String? username;
   String? password;
   bool isValid = false;
+  late final String? errorMessage;
 
   AuthenticationData.initializedWithRestData(
       this.accessToken, this.tokenType, this.expirationTime) {

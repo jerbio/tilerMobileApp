@@ -52,7 +52,6 @@ class ScheduleApi extends AppApi {
               List subEventJson = jsonResult['Content']['subCalendarEvents'];
               List sleepTimelinesJson = [];
               print("Got more data " + subEventJson.length.toString());
-              // List sleepTimelinesJson = jsonResult['Content']['sleepTimeline'];
 
               List<Timeline> sleepTimelines = sleepTimelinesJson
                   .map((timelinesJson) => Timeline.fromJson(timelinesJson))
@@ -225,18 +224,13 @@ class ScheduleApi extends AppApi {
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = Utility.currentTime();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
-        Map injectedParameters = await injectRequestParams(newTileParameters);
-
-        // newTileParameters['TimeZoneOffset'] =
-        //     Utility.getTimeZoneOffset().toString();
-        // newTileParameters['MobileApp'] = true.toString();
-
+        Map injectedParameters = await injectRequestParams(newTileParameters,
+            includeLocationParams: true);
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
 
@@ -253,7 +247,7 @@ class ScheduleApi extends AppApi {
               return new Tuple2(subEvent, null);
             } else {}
           }
-          if (isTileRequestError(jsonResult)) {
+          if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
             throw FormatException(error.Message!);
