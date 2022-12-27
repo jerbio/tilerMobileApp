@@ -155,18 +155,6 @@ class SignInComponentState extends State<SignInComponent> {
         prefixIcon: Icon(Icons.person),
         contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
-        // focusedBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.white, width: 0.5),
-        // ),
-        // enabledBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.grey, width: 0.5),
-        // ),
       ),
     );
     var emailTextField = TextFormField(
@@ -184,18 +172,6 @@ class SignInComponentState extends State<SignInComponent> {
         prefixIcon: Icon(Icons.email),
         contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
-        // focusedBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.white, width: 0.5),
-        // ),
-        // enabledBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.grey, width: 0.5),
-        // ),
       ),
     );
     var passwordTextField = TextFormField(

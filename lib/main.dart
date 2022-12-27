@@ -6,6 +6,7 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
@@ -78,6 +79,7 @@ class TilerApp extends StatelessWidget {
             new TimeRestrictionRoute(),
         '/ForecastPreview': (ctx) => ForecastPreview(),
         '/ForecastDuration': (ctx) => ForecastDuration(),
+        '/Procrastinate': (ctx) => ProcrastinateAll(),
         '/DurationDial': (ctx) => DurationDial(),
       },
       localizationsDelegates: [

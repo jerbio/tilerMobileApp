@@ -83,7 +83,7 @@ class ScheduleApi extends AppApi {
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {'UserName': username, 'Name': tileName};
-        Map<String, String> updatedQueryParameters =
+        Map<String, String?> updatedQueryParameters =
             await this.injectRequestParams(queryParameters);
         Uri uri = Uri.https(
             url, 'api/Schedule/NewTilePrediction', updatedQueryParameters);
@@ -246,6 +246,48 @@ class ScheduleApi extends AppApi {
                   SubCalendarEvent.fromJson(subEventJson);
               return new Tuple2(subEvent, null);
             } else {}
+          }
+          if (isTilerRequestError(jsonResult)) {
+            var errorJson = jsonResult['Error'];
+            error = TilerError.fromJson(errorJson);
+            throw FormatException(error.Message!);
+          } else {
+            error.Message = "Issues with reaching TIler servers";
+          }
+        }
+      }
+    }
+    throw error;
+  }
+
+  Future procrastinateAll(Duration duration) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not send procrastinate all request";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    if (userIsAuthenticated) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final procrastinateParameters = {
+          'UserName': username,
+          'DurationInMs': duration.inMilliseconds.toString()
+        };
+        Map injectedParameters = await injectRequestParams(
+            procrastinateParameters,
+            includeLocationParams: true);
+        Uri uri = Uri.https(url, 'api/Schedule/ProcrastinateAll');
+        var header = this.getHeaders();
+
+        if (header != null) {
+          var response = await http.post(uri,
+              headers: header, body: jsonEncode(injectedParameters));
+          var jsonResult = jsonDecode(response.body);
+          error.Message = "Issues with reaching Tiler servers";
+          if (isJsonResponseOk(jsonResult)) {
+            return;
           }
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
