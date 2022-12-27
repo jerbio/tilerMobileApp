@@ -48,6 +48,7 @@
     "passwordNeedsToHaveNumber": "Password needs to have a number",
     "passwordNeedsToHaveASpecialCharacter": "Password needs to have at least 1 special character",
     "enableLocations":"Enable location permissions",
+    "clearedColon":"Cleared: ",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

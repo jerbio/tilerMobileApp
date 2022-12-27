@@ -14,7 +14,8 @@ abstract class AppApi {
   }
 
   bool isContentInResponse(Map jsonResult) {
-    bool retValue = jsonResult.containsKey('Content');
+    bool retValue =
+        jsonResult.containsKey('Content') && jsonResult['Content'] != null;
     return retValue;
   }
 
@@ -40,9 +41,9 @@ abstract class AppApi {
     return 'Unknown Tiler Error';
   }
 
-  Future<Map<String, String>> injectRequestParams(Map jsonMap,
+  Future<Map<String, String?>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
-    Map<String, String> requestParams = Map.from(jsonMap);
+    Map<String, String?> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
     if (includeLocationParams) {

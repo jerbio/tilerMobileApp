@@ -165,16 +165,21 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     ),
                   ),
                 ),
-                ListTile(
-                  leading: Image.asset('assets/images/move_forward.png'),
-                  title: Text(
-                    AppLocalizations.of(context)!.procrastinate,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w300,
-                        color: Colors.white),
-                  ),
-                ),
+                GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.pushNamed(context, '/Procrastinate');
+                    },
+                    child: ListTile(
+                      leading: Image.asset('assets/images/move_forward.png'),
+                      title: Text(
+                        AppLocalizations.of(context)!.procrastinate,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
+                    )),
               ],
             ),
           ),

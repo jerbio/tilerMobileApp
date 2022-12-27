@@ -1,0 +1,73 @@
+import 'package:duration_picker/duration_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
+
+class ProcrastinateAll extends StatefulWidget {
+  @override
+  _ProcrastinateAllState createState() => _ProcrastinateAllState();
+}
+
+class _ProcrastinateAllState extends State<ProcrastinateAll> {
+  Duration _duration = Duration();
+  ScheduleApi _scheduleApi = ScheduleApi();
+
+  void showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
+  void showErrorMessage(String message) {
+    final scaffold = ScaffoldMessenger.of(context);
+    scaffold.showSnackBar(
+      SnackBar(
+          content: Text(message),
+          action: SnackBarAction(
+              label: AppLocalizations.of(context)!.close,
+              onPressed: scaffold.hideCurrentSnackBar)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Function? callBackOnProcrastinate;
+    if (_duration.inMilliseconds > 0) {
+      callBackOnProcrastinate = () {
+        return _scheduleApi.procrastinateAll(_duration).then((value) {
+          showMessage(
+              AppLocalizations.of(context)!.clearedColon + _duration.toHuman);
+        });
+      };
+    }
+    return CancelAndProceedTemplateWidget(
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.procrastinate,
+          style: TextStyle(
+              color: TileStyles.enabledTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
+      child: Container(
+          margin: EdgeInsets.fromLTRB(
+              0, MediaQuery.of(context).size.height / 4, 0, 0),
+          alignment: Alignment.topCenter,
+          child: DurationPicker(
+              duration: _duration,
+              onChange: (val) {
+                setState(() => _duration = val);
+              })),
+      onProceed: callBackOnProcrastinate,
+    );
+  }
+}
