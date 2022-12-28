@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:tiler_app/components/tileUI/chillNow.dart';
+import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
+import 'package:tiler_app/components/tileUI/loadingTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
@@ -20,7 +22,8 @@ class TileBatch extends StatefulWidget {
   String? header;
   String? footer;
   int? dayIndex;
-  TileBatchState? _state;
+  ConnectionState? connectionState;
+  // TileBatchState? _state;
 
   TileBatch(
       {this.header,
@@ -28,14 +31,12 @@ class TileBatch extends StatefulWidget {
       this.dayIndex,
       this.tiles,
       this.sleepTimeline,
+      this.connectionState,
       Key? key})
       : super(key: key);
 
   @override
-  TileBatchState createState() {
-    _state = TileBatchState();
-    return _state!;
-  }
+  TileBatchState createState() => TileBatchState();
 }
 
 class TileBatchState extends State<TileBatch> {
@@ -213,7 +214,6 @@ class TileBatchState extends State<TileBatch> {
     if (sleepTimeline != null) {
       Timeline sleepTimeline = this.sleepTimeline!;
       sleepWidget = SleepTileWidget(sleepTimeline);
-      // print('---sleep TL 2 -- ' + sleepTimeline.startTime.toString() + '');
       childrenColumnWidgets.add(sleepWidget);
     }
 
@@ -237,6 +237,14 @@ class TileBatchState extends State<TileBatch> {
       childrenColumnWidgets
           .addAll(allWidgets.map((widgetTuple) => widgetTuple.item3));
     }
+
+    if (tiles.length == 0) {
+      childrenColumnWidgets.add(EmptyDayTile());
+    }
+
+    // if (this.widget.connectionState != ConnectionState.done) {
+    //   childrenColumnWidgets = [LoadingTile()];
+    // }
 
     if (widget.footer != null) {
       Container footerContainer = Container(

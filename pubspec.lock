@@ -532,6 +532,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.1"
+  scroll_to_index:
+    dependency: "direct main"
+    description:
+      name: scroll_to_index
+      sha256: b707546e7500d9f070d63e5acf74fd437ec7eeeb68d3412ef7b0afada0b4f176
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
   shelf:
     dependency: transitive
     description:
@@ -691,4 +699,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=2.18.0 <4.0.0"
-  flutter: ">=2.8.0"
+  flutter: ">=3.0.0"

@@ -518,9 +518,17 @@ class AddTileState extends State<AddTile> {
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
 
-    tile.BColor = Utility.randomizer.nextInt(255).toString();
-    tile.GColor = Utility.randomizer.nextInt(255).toString();
-    tile.RColor = Utility.randomizer.nextInt(255).toString();
+    var randomColor = HSLColor.fromAHSL(
+            1,
+            (Utility.randomizer.nextDouble() * 360),
+            Utility.randomizer.nextDouble(),
+            (1 - (Utility.randomizer.nextDouble() * 0.4)))
+        .toColor();
+
+    tile.BColor = randomColor.blue.toString();
+    tile.GColor = randomColor.green.toString();
+    tile.RColor = randomColor.red.toString();
+
     tile.ColorSelection = (-1).toString();
 
     if (_location != null) {
