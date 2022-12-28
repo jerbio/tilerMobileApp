@@ -28,7 +28,8 @@ class TileList extends StatefulWidget {
 
 class _TileListState extends State<TileList> {
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
-      DateTime.now().add(Duration(days: -3)), Duration(days: 8));
+      DateTime.now().add(Duration(days: -3)), Duration(days: 3));
+  Timeline? oldTimeline;
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
 
@@ -46,6 +47,7 @@ class _TileListState extends State<TileList> {
             (timeLine.endInMs!.toInt() + Utility.sevenDays.inMilliseconds)
                 .toDouble());
         setState(() {
+          oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
       } else if (_scrollController.position.pixels <= minScrollLimit &&
@@ -55,6 +57,7 @@ class _TileListState extends State<TileList> {
                 .toDouble(),
             timeLine.endInMs!.toInt().toDouble());
         setState(() {
+          oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
       }
@@ -115,6 +118,15 @@ class _TileListState extends State<TileList> {
           if (snapshot.hasData) {
             Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData =
                 snapshot.data;
+
+            if (snapshot.connectionState == ConnectionState.done &&
+                this.oldTimeline != null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                setState(() {
+                  oldTimeline = null;
+                });
+              });
+            }
             if (tileData != null) {
               List<Timeline> sleepTimelines = tileData.item1;
               tileData.item2.sort((eachSubEventA, eachSubEventB) =>
@@ -133,12 +145,13 @@ class _TileListState extends State<TileList> {
               Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
 
               int todayDayIndex = Utility.getDayIndex(DateTime.now());
+              Timeline relevantTimeline = this.oldTimeline ?? this.timeLine;
               int startIndex = Utility.getDayIndex(
                   DateTime.fromMillisecondsSinceEpoch(
-                      this.timeLine.startInMs!.toInt()));
+                      relevantTimeline.startInMs!.toInt()));
               int endIndex = Utility.getDayIndex(
                   DateTime.fromMillisecondsSinceEpoch(
-                      this.timeLine.endInMs!.toInt()));
+                      relevantTimeline.endInMs!.toInt()));
               int numberOfDays = (endIndex - startIndex) + 1;
               List<int> dayIndexes =
                   List.generate(numberOfDays, (index) => index);
@@ -149,6 +162,7 @@ class _TileListState extends State<TileList> {
                 int dayIndex = dayIndexes[i];
                 dayIndex += startIndex;
                 dayIndexes[i] = dayIndex;
+                bool alreadyDayIndex = dayIndexToTileDict.containsKey(dayIndex);
                 if (dayIndex > todayDayIndex) {
                   if (!upcomingDayTilesDict.containsKey(dayIndex)) {
                     var tiles = <TilerEvent>[];
@@ -163,8 +177,12 @@ class _TileListState extends State<TileList> {
                       dayIndex: dayIndex,
                       tiles: tiles,
                       key: key,
+                      connectionState: alreadyDayIndex
+                          ? ConnectionState.done
+                          : (snapshot.connectionState == ConnectionState.done
+                              ? ConnectionState.done
+                              : ConnectionState.waiting),
                     );
-                    // allTileBatches[dayIndex] = Tuple2(key, upcomingTileBatch);
                     upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
                   }
                 } else {
@@ -181,6 +199,11 @@ class _TileListState extends State<TileList> {
                       dayIndex: dayIndex,
                       key: key,
                       tiles: tiles,
+                      connectionState: alreadyDayIndex
+                          ? ConnectionState.done
+                          : (snapshot.connectionState == ConnectionState.done
+                              ? ConnectionState.done
+                              : ConnectionState.waiting),
                     );
                     preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
                   }
@@ -190,8 +213,15 @@ class _TileListState extends State<TileList> {
               var timeStamps = dayIndexes.map(
                   (eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
 
-              print('------------There are ' +
+              print('------------There are 111 ' +
                   tileData.item2.length.toString() +
+                  ' tiles------------');
+              print('------------There are relevant ' +
+                  relevantTimeline.toString() +
+                  ' tiles------------');
+
+              print('------------There are ' +
+                  timeLine.toString() +
                   ' tiles------------');
 
               List<TileBatch> preceedingDayTiles =
@@ -213,16 +243,18 @@ class _TileListState extends State<TileList> {
                 childTileBatchs.add(withinNowBatch);
               }
               childTileBatchs.addAll(upcomingDayTiles);
-              retValue = Container(
-                color: Color.fromRGBO(250, 254, 255, 1),
-                alignment: Alignment.center,
-                child: ListView.builder(
-                    itemCount: childTileBatchs.length,
-                    controller: _scrollController,
-                    itemBuilder: (context, index) {
-                      return childTileBatchs[index];
-                    }),
-              );
+              retValue = Column(children: [
+                Expanded(
+                  // color: Colors.white,
+                  // alignment: Alignment.center,
+                  child: ListView.builder(
+                      itemCount: childTileBatchs.length,
+                      controller: _scrollController,
+                      itemBuilder: (context, index) {
+                        return childTileBatchs[index];
+                      }),
+                )
+              ]);
             } else {
               retValue = ListView(children: []);
             }
