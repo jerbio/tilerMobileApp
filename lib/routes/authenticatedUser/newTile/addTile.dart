@@ -522,7 +522,7 @@ class AddTileState extends State<AddTile> {
             1,
             (Utility.randomizer.nextDouble() * 360),
             Utility.randomizer.nextDouble(),
-            (1 - (Utility.randomizer.nextDouble() * 0.4)))
+            (1 - (Utility.randomizer.nextDouble() * 0.45)))
         .toColor();
 
     tile.BColor = randomColor.blue.toString();
@@ -556,7 +556,6 @@ class AddTileState extends State<AddTile> {
             onPressed: () async {
               await Geolocator.openAppSettings();
               await Geolocator.openLocationSettings();
-              scaffold.hideCurrentSnackBar;
             },
             textColor: Colors.redAccent,
           ),
