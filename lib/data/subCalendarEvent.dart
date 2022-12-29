@@ -7,6 +7,7 @@ class SubCalendarEvent extends TilerEvent {
   double? rangeStart;
   double? rangeEnd;
   String? emojis;
+  bool? isPaused;
 
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
@@ -61,6 +62,10 @@ class SubCalendarEvent extends TilerEvent {
     rangeEnd = cast<int>(json['rangeEnd'])!.toDouble();
     if (json.containsKey('emojis') && json['emojis'] != null) {
       emojis = cast<String>(json['emojis'])!.toString();
+    }
+
+    if (json.containsKey('isPaused') && json['isPaused'] != null) {
+      isPaused = cast<bool>(json['isPaused'])!;
     }
   }
 }

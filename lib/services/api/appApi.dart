@@ -1,7 +1,14 @@
+import 'dart:convert';
 import 'dart:io';
+// import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:http/http.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/util.dart';
 import '../localAuthentication.dart';
+
+import '../../constants.dart' as Constants;
 
 abstract class AppApi {
   Authentication authentication = new Authentication();
@@ -85,4 +92,45 @@ abstract class AppApi {
 
     return null;
   }
+
+  Future<Response> sendPostRequest (String requestPath, Map queryParameters, {bool injectLocation = true}) async {
+    if (await this.authentication.isUserAuthenticated()) {
+      await this.authentication.reLoadCredentialsCache();
+        String tilerDomain = Constants.tilerDomain;
+        String url = tilerDomain;
+        if(this.authentication.cachedCredentials != null) {
+          Map<String, String?> requestParams = Map.from(queryParameters);
+          if(!queryParameters.containsKey('UserName')) {
+            String? username = this.authentication.cachedCredentials!.username;
+            requestParams['UserName'] = username;
+          }
+          if(!queryParameters.containsKey('MobileApp')) {
+            requestParams['MobileApp'] = true.toString();
+          }
+          
+        Map<String, String?> injectedParameters = await injectRequestParams(requestParams, includeLocationParams: injectLocation);
+        var header = this.getHeaders();
+        if(header != null) {
+            Uri uri = Uri.https(url, requestPath);
+            return http.post(uri,
+              headers: header, body: jsonEncode(injectedParameters));
+        }
+        throw TilerError();
+        }
+       throw TilerError(); 
+      }
+   throw TilerError();   
+  }
+
+  TilerError? getTilerResponseError(Map<String, dynamic> responseBody) {
+    TilerError? error;
+    if (isTilerRequestError(responseBody)) {
+      var errorJson = responseBody['Error'];
+      error = TilerError.fromJson(errorJson);
+    }
+
+    return error;
+  }
+
+
 }

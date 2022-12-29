@@ -53,8 +53,12 @@
     "clearedColon":"Cleared: ",
     "complete":"Complete",
     "delete":"Delete",
+    "cancel":"Cancel",
     "now":"Now",
     "color":"Color",
+    "pause":"Pause",
+    "play":"Play",
+    "failedToSendRequest":"Failed to send request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

@@ -1,15 +1,17 @@
 import 'dart:math';
 import 'package:http/http.dart' as http;
-import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/data/request/NewTile.dart';
 import 'dart:convert';
 
+import 'package:tuple/tuple.dart';
+
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
+
 import '../../constants.dart' as Constants;
 
 class ScheduleApi extends AppApi {
