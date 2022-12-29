@@ -141,25 +141,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                       AppLocalizations.of(context)!.forecast,
                       style: TextStyle(
                           fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/AddTile');
-                  },
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    title: Text(
-                      AppLocalizations.of(context)!.addTile,
-                      style: TextStyle(
-                          fontSize: 20,
+                          fontFamily: TileStyles.rubikFontName,
                           fontWeight: FontWeight.w300,
                           color: Colors.white),
                     ),
@@ -176,10 +158,31 @@ class AuthorizedRouteState extends State<StatefulWidget>
                         AppLocalizations.of(context)!.procrastinate,
                         style: TextStyle(
                             fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
                             fontWeight: FontWeight.w300,
                             color: Colors.white),
                       ),
                     )),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/AddTile');
+                  },
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    title: Text(
+                      AppLocalizations.of(context)!.addTile,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -227,8 +230,8 @@ class AuthorizedRouteState extends State<StatefulWidget>
                   begin: Alignment.topLeft,
                   end: Alignment.topRight,
                   colors: [
-                    Color.fromRGBO(0, 119, 170, 0.75),
-                    Color.fromRGBO(0, 194, 237, 0.75)
+                    Color.fromRGBO(0, 119, 170, 1),
+                    Color.fromRGBO(0, 194, 237, 1)
                   ])),
           child: BottomNavigationBar(
             items: [

@@ -231,6 +231,7 @@ class CancelAndProceedTemplateWidgetState
       children: stackWidgets,
     );
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: this.widget.appBar,
       body: SafeArea(
         child: contentAndButton,

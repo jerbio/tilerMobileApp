@@ -8,6 +8,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LocationSearchWidget extends SearchWidget {
   Location? selectedLocation;
@@ -51,7 +52,7 @@ class LocationSearchState extends SearchWidgetState {
   Widget locationNameWidget(
       Location location, Function collapseResultContainer) {
     Widget retValue = Container(
-      child: Text('No location'),
+      child: Text(AppLocalizations.of(context)!.noLocation),
     );
 
     if (location.isNotNullAndNotDefault != null) {
@@ -64,7 +65,7 @@ class LocationSearchState extends SearchWidgetState {
               widthFactor: TileStyles.inputWidthFactor,
               child: Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                  padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
                   alignment: Alignment.topLeft,
                   child: Row(
                       mainAxisAlignment: MainAxisAlignment.start,
@@ -241,7 +242,7 @@ class LocationSearchState extends SearchWidgetState {
     hslLightColor = hslLightColor.withLightness(hslLightColor.lightness + 0.4);
     var hslDarkColor = HSLColor.fromColor(Color.fromRGBO(0, 119, 170, 1));
     hslDarkColor = hslDarkColor.withLightness(hslDarkColor.lightness + 0.4);
-    String hintText = 'Address';
+    String hintText = AppLocalizations.of(context)!.address;
     this.widget.onChanged = this._onInputFieldChange;
     if (this.widget.textField == null) {
       this.widget.textField = TextField(

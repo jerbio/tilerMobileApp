@@ -56,6 +56,7 @@ class AddTileState extends State<AddTile> {
   Duration? _duration = Duration(hours: 0, minutes: 0);
   bool _isDurationManuallySet = false;
   Location? _location = Location.fromDefault();
+  Color? _color;
   bool _isLocationManuallySet = false;
   DateTime? _endTime;
 
@@ -123,6 +124,7 @@ class AddTileState extends State<AddTile> {
                 style: TextStyle(
                     color: Color.fromRGBO(31, 31, 31, 1),
                     fontSize: 20,
+                    fontFamily: TileStyles.rubikFontName,
                     fontWeight: FontWeight.w500),
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.tileName,
@@ -273,7 +275,12 @@ class AddTileState extends State<AddTile> {
                             ),
                           ),
                           onPressed: setDuration,
-                          child: Text(textButtonString),
+                          child: Text(
+                            textButtonString,
+                            style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                            ),
+                          ),
                         ))
                   ],
                 ))));
@@ -283,6 +290,7 @@ class AddTileState extends State<AddTile> {
   Widget generateExtraConfigSelection() {
     String locationName = 'Location';
     bool isLocationConfigSet = false;
+    bool isColorConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
     if (_location != null) {
       if (_location!.isNotNullAndNotDefault != null &&
@@ -306,6 +314,10 @@ class AddTileState extends State<AddTile> {
                 .length >
             0) {
       isTimeRestrictionConfigSet = true;
+    }
+
+    if (_color != null) {
+      isColorConfigSet = true;
     }
 
     Widget locationConfigButton = ConfigUpdateButton(
@@ -437,9 +449,46 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
+
+    Widget colorPickerConfigButton = ConfigUpdateButton(
+      text: AppLocalizations.of(context)!.color,
+      prefixIcon: Icon(
+        Icons.contrast,
+        color: isColorConfigSet ? (_color ?? populatedTextColor) : iconColor,
+      ),
+      decoration: isColorConfigSet ? populatedDecoration : boxDecoration,
+      textColor: isColorConfigSet ? populatedTextColor : iconColor,
+      onPress: () {
+        Color? colorHolder = _color;
+        if (colorHolder == null) {
+          colorHolder = HSLColor.fromAHSL(
+                  1,
+                  (Utility.randomizer.nextDouble() * 360),
+                  Utility.randomizer.nextDouble(),
+                  (1 - (Utility.randomizer.nextDouble() * 0.45)))
+              .toColor();
+        }
+        Map<String, dynamic> colorParams = {
+          'initialColor': colorHolder,
+          'color': colorHolder
+        };
+
+        Navigator.pushNamed(context, '/PickColor', arguments: colorParams)
+            .whenComplete(() {
+          Color? populatedColor = colorParams['color'] as Color;
+          setState(() {
+            isColorConfigSet = false;
+            if (populatedColor != null) {
+              _color = populatedColor;
+              isColorConfigSet = true;
+            }
+          });
+        });
+      },
+    );
     Widget firstRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [locationConfigButton, repetitionConfigButton],
+      children: [locationConfigButton, colorPickerConfigButton],
     );
     Widget secondRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -447,7 +496,7 @@ class AddTileState extends State<AddTile> {
     );
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [timeRestrictionsConfigButton],
+      children: [timeRestrictionsConfigButton, repetitionConfigButton],
     );
 
     Widget retValue = Column(
@@ -518,12 +567,13 @@ class AddTileState extends State<AddTile> {
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
 
-    var randomColor = HSLColor.fromAHSL(
-            1,
-            (Utility.randomizer.nextDouble() * 360),
-            Utility.randomizer.nextDouble(),
-            (1 - (Utility.randomizer.nextDouble() * 0.45)))
-        .toColor();
+    var randomColor = _color ??
+        HSLColor.fromAHSL(
+                1,
+                (Utility.randomizer.nextDouble() * 360),
+                Utility.randomizer.nextDouble(),
+                (1 - (Utility.randomizer.nextDouble() * 0.45)))
+            .toColor();
 
     tile.BColor = randomColor.blue.toString();
     tile.GColor = randomColor.green.toString();
@@ -629,7 +679,12 @@ class AddTileState extends State<AddTile> {
                             ),
                           ),
                           onPressed: onEndDateTap,
-                          child: Text(textButtonString),
+                          child: Text(
+                            textButtonString,
+                            style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                            ),
+                          ),
                         ))
                   ],
                 ))));

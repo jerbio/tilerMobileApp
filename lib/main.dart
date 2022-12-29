@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
+import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'routes/authentication/preAuthenticationRoute.dart';
@@ -81,6 +82,7 @@ class TilerApp extends StatelessWidget {
         '/ForecastDuration': (ctx) => ForecastDuration(),
         '/Procrastinate': (ctx) => ProcrastinateAll(),
         '/DurationDial': (ctx) => DurationDial(),
+        '/PickColor': (ctx) => PickColor(),
       },
       localizationsDelegates: [
         AppLocalizations.delegate, // Add this line

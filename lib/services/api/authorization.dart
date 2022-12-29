@@ -133,11 +133,6 @@ class AuthenticationData {
     expirationTime = -1;
   }
 
-  // int expiryTimeSinceEpochInMs() {
-  //   int retValue = instantiationTime + (expiresIn * 1000);
-  //   return retValue;
-  // }
-
   bool isExpired() {
     var now = new DateTime.now().millisecondsSinceEpoch;
     int expiryTime = this.expirationTime;
@@ -155,14 +150,6 @@ class AuthenticationData {
       'password': password
     };
   }
-
-  // factory AuthenticationData.fromJson(Map<String, dynamic> json) {
-  //   return AuthenticationData.initializedWithRestData(
-  //     json['access_token'],
-  //     json['token_type'],
-  //     json['expires_in'],
-  //   );
-  // }
 
   factory AuthenticationData.fromLocalStorage(Map<String, dynamic> json) {
     return AuthenticationData.initializedWithLocalStorage(
