@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 class SearchWidget extends StatefulWidget {
   Function? onChanged;
   Function? onInputCompletion;
-  Function? onBackButtonPressed;
   TextField? textField;
   bool renderBelowTextfield;
   BoxDecoration? resultBoxDecoration;
@@ -15,7 +14,6 @@ class SearchWidget extends StatefulWidget {
       this.textField,
       this.onInputCompletion,
       this.renderBelowTextfield = true,
-      this.onBackButtonPressed,
       this.resultBoxDecoration,
       this.resultMargin,
       Key? key})
@@ -94,10 +92,6 @@ class SearchWidgetState extends State<SearchWidget> {
       textEditingController = TextEditingController();
       textField = TextField(
         controller: textEditingController,
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.arrow_back),
-          hintText: 'Search',
-        ),
       );
       this.widget.textField = textField;
       createdControllers.add(textEditingController);
@@ -114,23 +108,6 @@ class SearchWidgetState extends State<SearchWidget> {
     );
 
     allWidgets = [textFieldContainer];
-    if (this.widget.onBackButtonPressed != null) {
-      var backButton = Container(
-          margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-          child: BackButton(
-            onPressed: () {
-              if (this.widget.onInputCompletion != null) {
-                this.widget.onInputCompletion!();
-              }
-
-              if (this.widget.onBackButtonPressed != null) {
-                this.widget.onBackButtonPressed!();
-              }
-            },
-          ));
-
-      allWidgets = [textFieldContainer, backButton];
-    }
 
     if (showResponseContainer) {
       EdgeInsetsGeometry? resultsMargin = this.widget.resultMargin;

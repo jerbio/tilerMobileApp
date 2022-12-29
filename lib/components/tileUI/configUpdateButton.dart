@@ -3,6 +3,8 @@ import 'dart:ffi';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../styles.dart';
+
 class ConfigUpdateButton extends StatefulWidget {
   Icon? prefixIcon;
   String text;
@@ -54,7 +56,9 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       },
       child: Text(
         textButtonString,
-        //selectionColor: Color.fromRGBO(31, 31, 31, 1),
+        style: TextStyle(
+          fontFamily: TileStyles.rubikFontName,
+        ),
       ),
     );
     childWidgets.add(textButton);

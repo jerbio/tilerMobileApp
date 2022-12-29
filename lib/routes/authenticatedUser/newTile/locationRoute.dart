@@ -70,7 +70,7 @@ class LocationRouteState extends State<LocationRoute> {
           hintText: AppLocalizations.of(context)!.address,
           filled: true,
           isDense: true,
-          contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+          contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
           fillColor: textBackgroundColor,
           border: OutlineInputBorder(
             borderRadius: const BorderRadius.all(
@@ -126,15 +126,15 @@ class LocationRouteState extends State<LocationRoute> {
                 widthFactor: TileStyles.inputWidthFactor,
                 child: Container(
                   alignment: Alignment.topCenter,
-                  margin: EdgeInsets.fromLTRB(0, 80, 0, 0),
+                  margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
                   child: TextField(
                     controller: locationNickNameController,
                     style: TileStyles.fullScreenTextFieldStyle,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.locationNickName,
+                      hintText: AppLocalizations.of(context)!.nickName,
                       filled: true,
                       isDense: true,
-                      contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                      contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
                       fillColor: textBackgroundColor,
                       border: OutlineInputBorder(
                         borderRadius: const BorderRadius.all(

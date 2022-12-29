@@ -16,35 +16,45 @@ class TileStyles {
   static Color enabledTextColor = Colors.black87;
   static Color primaryColor = Color(0xffE5E5E5);
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
+  static double textFontSize = 25;
+  static String rubikFontName = 'Rubik';
   static TextStyle fullScreenTextFieldStyle = TextStyle(
       color: Color.fromRGBO(31, 31, 31, 1),
-      fontSize: 20,
+      fontSize: textFontSize,
+      fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
-  static Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
+  static Color textBackgroundColor = Colors.white;
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static InputDecoration generateTextInputDecoration(String? inputHint) {
+  static InputDecoration generateTextInputDecoration(String? inputHint,
+      {Icon? prefixIcon}) {
     return InputDecoration(
       hintText: inputHint,
       filled: true,
       isDense: true,
-      contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+      icon: prefixIcon,
+      hintStyle: TextStyle(
+          color: Color.fromRGBO(180, 180, 180, 1),
+          fontSize: textFontSize,
+          fontFamily: 'Rubik',
+          fontWeight: FontWeight.w500),
+      contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
       fillColor: textBackgroundColor,
       border: OutlineInputBorder(
         borderRadius: const BorderRadius.all(
-          const Radius.circular(50.0),
+          const Radius.circular(15.0),
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: const BorderRadius.all(
-          const Radius.circular(8.0),
+          const Radius.circular(15.0),
         ),
         borderSide: BorderSide(color: textBorderColor, width: 2),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: const BorderRadius.all(
-          const Radius.circular(8.0),
+          const Radius.circular(15.0),
         ),
         borderSide: BorderSide(
           color: textBorderColor,

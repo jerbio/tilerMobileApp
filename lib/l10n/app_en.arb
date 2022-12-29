@@ -19,7 +19,7 @@
     "loading": "Loading",
     "address": "Address",
     "settings": "Settings",
-    "locationNickName":"Location Nick Name",
+    "nickName":"Nick Name",
     "deadline_auto": "Deadline(Auto)",
     "selectADeadline":"Select a deadline",
     "close":"Close",
@@ -48,7 +48,13 @@
     "passwordNeedsToHaveNumber": "Password needs to have a number",
     "passwordNeedsToHaveASpecialCharacter": "Password needs to have at least 1 special character",
     "enableLocations":"Enable location permissions",
+    "noMatchWasFound":"No match was found",
+    "noLocation":"No location",
     "clearedColon":"Cleared: ",
+    "complete":"Complete",
+    "delete":"Delete",
+    "now":"Now",
+    "color":"Color",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }
