@@ -300,7 +300,8 @@ class EventNameSearchState extends SearchWidgetState {
             colors: [Colors.transparent, Colors.transparent]));
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Container(
+      body: SafeArea(
+        child: Container(
           margin: TileStyles.topMargin,
           alignment: Alignment.topCenter,
           child: FractionallySizedBox(
@@ -321,7 +322,7 @@ class EventNameSearchState extends SearchWidgetState {
                   colors: [
                 Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
                 Color.fromRGBO(0, 119, 170, 1) //.withOpacity(0.55)
-              ]))),
+              ])))),
     );
   }
 

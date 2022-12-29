@@ -1,17 +1,93 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart' as Constants;
 
-class SubCalendarEventApi {
+class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> getSubEvent(String id) {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain + 'api/SubCalendarEvent';
     return getAdHocSubEventId(id);
   }
+
+  Future<SubCalendarEvent> pauseTile(String id) async {
+    TilerError error = new TilerError();
+    error.Message = "Failed to pause tile";
+    return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult)?? error;
+      throw error;
+    });
+  }
+
+  Future<SubCalendarEvent> resumeTile(String id) async {
+    TilerError error = new TilerError();
+    error.Message = "Failed to resume tile";
+    return sendPostRequest('api/Schedule/Event/Resume', {'EventID': id}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult)?? error;
+      throw error;     
+    });
+  }
+
+  Future<SubCalendarEvent> setAsNow(String id) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not move up task";
+    return sendPostRequest('api/Schedule/Event/Now', {'EventID': id}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult)?? error;
+      throw error;
+    });
+  }
+
+  Future<SubCalendarEvent> complete(String id) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not send complete request";
+    return sendPostRequest('api/Schedule/Event/Complete', {'EventID': id}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult)?? error;
+      throw error;
+    });
+  }
+
+
+
+
+
 
   Future<SubCalendarEvent> getAdHocSubEventId(String id) {
 //     {
