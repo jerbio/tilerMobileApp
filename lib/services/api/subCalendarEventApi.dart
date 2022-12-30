@@ -19,7 +19,8 @@ class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> pauseTile(String id) async {
     TilerError error = new TilerError();
     error.Message = "Failed to pause tile";
-    return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id}).then((response) {
+    return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id})
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -28,15 +29,18 @@ class SubCalendarEventApi extends AppApi {
           return retValue;
         }
       }
-      error = getTilerResponseError(jsonResult)?? error;
+      error = getTilerResponseError(jsonResult) ?? error;
       throw error;
     });
   }
 
-  Future<SubCalendarEvent> resumeTile(String id) async {
+  Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
     error.Message = "Failed to resume tile";
-    return sendPostRequest('api/Schedule/Event/Resume', {'EventID': id}).then((response) {
+    return sendPostRequest('api/Schedule/Event/Resume', {
+      'EventID': subEvent.id,
+      'ThirdPartyType': subEvent.thirdpartyType
+    }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -45,15 +49,18 @@ class SubCalendarEventApi extends AppApi {
           return retValue;
         }
       }
-      error = getTilerResponseError(jsonResult)?? error;
-      throw error;     
+      error = getTilerResponseError(jsonResult) ?? error;
+      throw error;
     });
   }
 
-  Future<SubCalendarEvent> setAsNow(String id) async {
+  Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
     error.Message = "Did not move up task";
-    return sendPostRequest('api/Schedule/Event/Now', {'EventID': id}).then((response) {
+    return sendPostRequest('api/Schedule/Event/Now', {
+      'EventID': subEvent.id,
+      'ThirdPartyType': subEvent.thirdpartyType
+    }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -62,15 +69,18 @@ class SubCalendarEventApi extends AppApi {
           return retValue;
         }
       }
-      error = getTilerResponseError(jsonResult)?? error;
+      error = getTilerResponseError(jsonResult) ?? error;
       throw error;
     });
   }
 
-  Future<SubCalendarEvent> complete(String id) async {
+  Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
     error.Message = "Did not send complete request";
-    return sendPostRequest('api/Schedule/Event/Complete', {'EventID': id}).then((response) {
+    return sendPostRequest('api/Schedule/Event/Complete', {
+      'EventID': subEvent.id,
+      'ThirdPartyType': subEvent.thirdpartyType
+    }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -79,15 +89,10 @@ class SubCalendarEventApi extends AppApi {
           return retValue;
         }
       }
-      error = getTilerResponseError(jsonResult)?? error;
+      error = getTilerResponseError(jsonResult) ?? error;
       throw error;
     });
   }
-
-
-
-
-
 
   Future<SubCalendarEvent> getAdHocSubEventId(String id) {
 //     {
