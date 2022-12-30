@@ -8,6 +8,7 @@ class SubCalendarEvent extends TilerEvent {
   double? rangeEnd;
   String? emojis;
   bool? isPaused;
+  bool? isPausedTimeLine = false;
 
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
@@ -56,16 +57,32 @@ class SubCalendarEvent extends TilerEvent {
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
-    travelTimeBefore = double.parse(json['travelTimeBefore'].toString());
-    travelTimeAfter = double.parse(json['travelTimeAfter'].toString());
-    rangeStart = cast<int>(json['rangeStart'])!.toDouble();
-    rangeEnd = cast<int>(json['rangeEnd'])!.toDouble();
+    if (json.containsKey('travelTimeBefore') &&
+        json['travelTimeBefore'] != null) {
+      travelTimeBefore = double.parse(json['travelTimeBefore'].toString());
+    }
+    if (json.containsKey('travelTimeAfter') &&
+        json['travelTimeAfter'] != null) {
+      travelTimeAfter = double.parse(json['travelTimeAfter'].toString());
+    }
+
+    if (json.containsKey('rangeStart') && json['rangeStart'] != null) {
+      rangeStart = cast<int>(json['rangeStart'])!.toDouble();
+    }
+    if (json.containsKey('rangeEnd') && json['rangeEnd'] != null) {
+      rangeEnd = cast<int>(json['rangeEnd'])!.toDouble();
+    }
     if (json.containsKey('emojis') && json['emojis'] != null) {
       emojis = cast<String>(json['emojis'])!.toString();
     }
 
     if (json.containsKey('isPaused') && json['isPaused'] != null) {
       isPaused = cast<bool>(json['isPaused'])!;
+    }
+
+    if (json.containsKey('isPausedTimeLine') &&
+        json['isPausedTimeLine'] != null) {
+      isPausedTimeLine = cast<bool>(json['isPausedTimeLine'])!;
     }
   }
 }

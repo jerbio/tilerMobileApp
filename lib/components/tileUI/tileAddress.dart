@@ -41,14 +41,16 @@ class TileAddressState extends State<TileAddress> {
               size: 20.0,
             ),
           ),
-          Text(
-            addressString!,
-            style: TextStyle(
-                fontSize: 15,
-                fontFamily: 'Rubik',
-                fontWeight: FontWeight.normal,
-                color: Color.fromRGBO(31, 31, 31, 1)),
-          )
+          addressString != null
+              ? Text(
+                  addressString,
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontFamily: 'Rubik',
+                      fontWeight: FontWeight.normal,
+                      color: Color.fromRGBO(31, 31, 31, 1)),
+                )
+              : Container()
         ],
       ),
     );

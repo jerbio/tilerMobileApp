@@ -57,7 +57,16 @@
     "now":"Now",
     "color":"Color",
     "pause":"Pause",
+    "resume":"Resume",
     "play":"Play",
+    "successfullyPaused":"Successfully Paused",
+    "successfullyResumed":"Successfully Resumed",
+    "successfullyCompleted":"Successfully Completed",
+    "movedUpToNow":"Moving up to now",
+    "pausing":"Pausing",
+    "resuming":"Resuming",
+    "movingUp":"Moving Up your task",
+    "completing":"Completing",
     "failedToSendRequest":"Failed to send request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
