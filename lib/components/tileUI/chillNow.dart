@@ -87,12 +87,14 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
       ),
     );
 
-    var timeScrub = Container(
-        margin: const EdgeInsets.fromLTRB(20, 35, 20, 0),
-        child: TimeScrubWidget(
+    var timeScrub = FractionallySizedBox(
+        alignment: FractionalOffset.center,
+        widthFactor: TileStyles.inputWidthFactor,
+        child: Container(
+            child: TimeScrubWidget(
           timeline: timeline,
           loadTimeScrub: true,
-        ));
+        )));
 
     var allEntry = Column(
       children: [sleepIconAndRow, sleepInBedIcon, timeScrub],
