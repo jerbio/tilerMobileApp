@@ -314,6 +314,19 @@ extension ListEnhance on List {
     }
     throw new Exception('Cannot get a random entry from an empty list');
   }
+
+  List getRandomize() {
+    List retValue = [];
+    List listCopy = this.toList();
+
+    while (listCopy.length > 0) {
+      int index = Utility.randomizer.nextInt(listCopy.length);
+      retValue.add(listCopy[index]);
+      listCopy.removeAt(index);
+    }
+
+    return retValue;
+  }
 }
 
 extension TilerDayOfWeek on DateTime {
