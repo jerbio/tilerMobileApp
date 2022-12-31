@@ -247,7 +247,7 @@ class ScheduleApi extends AppApi {
               SubCalendarEvent subEvent =
                   SubCalendarEvent.fromJson(subEventJson);
               return new Tuple2(subEvent, null);
-            } else {}
+            }
           }
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];

@@ -4,12 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
+
+import '../../constants.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -166,7 +171,69 @@ class AuthorizedRouteState extends State<StatefulWidget>
                 GestureDetector(
                   onTap: () {
                     Navigator.pop(context);
-                    Navigator.pushNamed(context, '/AddTile');
+                    Map<String, dynamic> newTileParams = {'newTile': null};
+
+                    Navigator.pushNamed(context, '/AddTile',
+                            arguments: newTileParams)
+                        .whenComplete(() {
+                      print('Newly created tile');
+                      print(newTileParams);
+                      var subEvents = newTileParams['newTile'];
+                      var subEvent = subEvents.item1;
+                      int redColor =
+                          subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+                      int blueColor = subEvent.colorBlue == null
+                          ? 125
+                          : subEvent.colorBlue!;
+                      int greenColor = subEvent.colorGreen == null
+                          ? 125
+                          : subEvent.colorGreen!;
+                      double opacity = subEvent.colorOpacity == null
+                          ? 1
+                          : subEvent.colorOpacity!;
+                      var nameColor = Color.fromRGBO(
+                          redColor, greenColor, blueColor, opacity);
+
+                      var hslColor = HSLColor.fromColor(nameColor);
+                      Color bgroundColor = hslColor
+                          .withLightness(hslColor.lightness)
+                          .toColor()
+                          .withOpacity(0.7);
+                      showModalBottomSheet<void>(
+                        context: context,
+                        constraints: BoxConstraints(
+                          maxWidth: 400,
+                        ),
+                        builder: (BuildContext context) {
+                          var future = new Future.delayed(
+                              const Duration(milliseconds: autoHideInMs));
+                          future.asStream().listen((input) {
+                            Navigator.pop(context);
+                          });
+                          return Container(
+                            padding: const EdgeInsets.all(20),
+                            height: 250,
+                            width: 300,
+                            decoration: BoxDecoration(
+                              color: bgroundColor,
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  NewTileSheet(subEvent: subEvent),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    }).catchError((errorThrown) {
+                      print('we have error');
+                      print(errorThrown);
+                      return errorThrown;
+                    });
                   },
                   child: ListTile(
                     leading: Icon(

@@ -24,6 +24,7 @@ class AddTile extends StatefulWidget {
   Function? onAddingATile;
   static final String routeName = '/AddTile';
   final ScheduleApi scheduleApi = ScheduleApi();
+  Map? newTileParams;
   @override
   AddTileState createState() => AddTileState();
 }
@@ -620,6 +621,9 @@ class AddTileState extends State<AddTile> {
         SubCalendarEvent subEvent = newlyAddedTile.item1;
         print(subEvent.name);
       }
+      if (this.widget.newTileParams != null) {
+        this.widget.newTileParams!['newTile'] = newlyAddedTile;
+      }
     }).onError((error, stackTrace) {
       if (error != null) {
         String message = error.toString();
@@ -702,6 +706,8 @@ class AddTileState extends State<AddTile> {
 
   @override
   Widget build(BuildContext context) {
+    Map? newTileParams = ModalRoute.of(context)?.settings.arguments as Map?;
+    this.widget.newTileParams = newTileParams;
     List<Widget> childrenWidgets = [];
     Widget tileNameWidget = this.getTileNameWidget();
     Widget durationPicker = this.generateDurationPicker();
