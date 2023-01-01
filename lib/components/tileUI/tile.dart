@@ -67,12 +67,16 @@ class TileWidgetState extends State<TileWidget> {
       ),
       Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-          child: TileAddress(widget.subEvent)),
-      Container(
-          margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TravelTimeBefore(
               this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)),
     ];
+    if (widget.subEvent.address != null &&
+        widget.subEvent.address!.isNotEmpty) {
+      var adrressWidget = Container(
+          margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+          child: TileAddress(widget.subEvent));
+      allElements.insert(1, adrressWidget);
+    }
 
     var currentTime = Utility.currentTime();
 

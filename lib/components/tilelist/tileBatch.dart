@@ -2,6 +2,7 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/chillNow.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/loadingTile.dart';
@@ -11,6 +12,7 @@ import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -242,10 +244,6 @@ class TileBatchState extends State<TileBatch> {
       childrenColumnWidgets.add(EmptyDayTile());
     }
 
-    // if (this.widget.connectionState != ConnectionState.done) {
-    //   childrenColumnWidgets = [LoadingTile()];
-    // }
-
     if (widget.footer != null) {
       Container footerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
@@ -275,6 +273,13 @@ class TileBatchState extends State<TileBatch> {
       }
     }
     return Container(
+      width: (MediaQuery.of(context).size.width * 0.90),
+      margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+      padding: EdgeInsets.fromLTRB(0, 50, 0, 100),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(35),
+      ),
       child: Column(
         children: childrenColumnWidgets,
       ),

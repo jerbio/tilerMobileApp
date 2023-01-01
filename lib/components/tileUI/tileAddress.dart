@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:maps_launcher/maps_launcher.dart';
 
 class TileAddress extends StatefulWidget {
   SubCalendarEvent subEvent;
@@ -24,34 +25,49 @@ class TileAddressState extends State<TileAddress> {
       addressString =
           addressString[0].toUpperCase() + addressString.substring(1);
     }
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.1),
-                borderRadius: BorderRadius.circular(8)),
-            child: Icon(
-              Icons.location_on_rounded,
-              color: Color.fromRGBO(0, 0, 0, 0.4),
-              size: 20.0,
+    return GestureDetector(
+      onTap: () async {
+        String? addressLookup = this.widget.subEvent.address;
+        if (addressLookup == null) {
+          addressLookup = this.widget.subEvent.addressDescription;
+        }
+        if (addressLookup == null) {
+          addressLookup = this.widget.subEvent.searchdDescription;
+        }
+        if (addressLookup != null) {
+          // final availableMaps = await MapLauncher.installedMaps;
+          MapsLauncher.launchQuery(addressLookup);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+              decoration: BoxDecoration(
+                  color: Color.fromRGBO(31, 31, 31, 0.1),
+                  borderRadius: BorderRadius.circular(8)),
+              child: Icon(
+                Icons.location_on_rounded,
+                color: Color.fromRGBO(0, 0, 0, 0.4),
+                size: 20.0,
+              ),
             ),
-          ),
-          addressString != null
-              ? Text(
-                  addressString,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'Rubik',
-                      fontWeight: FontWeight.normal,
-                      color: Color.fromRGBO(31, 31, 31, 1)),
-                )
-              : Container()
-        ],
+            addressString != null
+                ? Text(
+                    addressString,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'Rubik',
+                        fontWeight: FontWeight.normal,
+                        color: Color.fromRGBO(31, 31, 31, 1)),
+                  )
+                : Container()
+          ],
+        ),
       ),
     );
   }
