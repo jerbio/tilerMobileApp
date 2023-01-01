@@ -11,6 +11,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 
 import '../../constants.dart';
 
@@ -243,18 +244,25 @@ class _TileListState extends State<TileList> {
                 childTileBatchs.add(withinNowBatch);
               }
               childTileBatchs.addAll(upcomingDayTiles);
-              retValue = Column(children: [
-                Expanded(
-                  // color: Colors.white,
-                  // alignment: Alignment.center,
-                  child: ListView.builder(
-                      itemCount: childTileBatchs.length,
-                      controller: _scrollController,
-                      itemBuilder: (context, index) {
-                        return childTileBatchs[index];
-                      }),
-                )
-              ]);
+              retValue = Container(
+                  decoration: BoxDecoration(
+                      gradient: paintGradient.LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                        Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
+                        Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
+                      ])),
+                  child: Column(children: [
+                    Expanded(
+                      child: ListView.builder(
+                          itemCount: childTileBatchs.length,
+                          controller: _scrollController,
+                          itemBuilder: (context, index) {
+                            return childTileBatchs[index];
+                          }),
+                    )
+                  ]));
             } else {
               retValue = ListView(children: []);
             }
