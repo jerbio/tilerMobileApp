@@ -4,6 +4,7 @@ import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart';
 
@@ -12,7 +13,7 @@ class WithinNowBatch extends TileBatch {
   WithinNowBatchState? _state;
 
   WithinNowBatch(
-      {String? header = 'Previously',
+      {String? header = '',
       String? footer = 'Upcoming',
       List<TilerEvent>? tiles,
       Key? key})

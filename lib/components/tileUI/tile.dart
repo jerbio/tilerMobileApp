@@ -89,7 +89,9 @@ class TileWidgetState extends State<TileWidget> {
         child: PlayBack(widget.subEvent)));
 
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+      margin: this.widget.subEvent.isCurrentTimeWithin
+          ? EdgeInsets.fromLTRB(0, 100, 0, 100)
+          : EdgeInsets.fromLTRB(0, 20, 0, 20),
       child: Material(
           type: MaterialType.transparency,
           child: FractionallySizedBox(
