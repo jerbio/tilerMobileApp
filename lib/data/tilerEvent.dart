@@ -23,7 +23,8 @@ class TilerEvent extends TilerObj with TimeRange {
   set start(double? value) {
     _startInMs = value;
     if (this._startInMs != null) {
-      startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt());
+      startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
+          isUtc: true);
     }
   }
 
@@ -39,7 +40,8 @@ class TilerEvent extends TilerObj with TimeRange {
   set end(double? value) {
     _endInMs = value;
     if (this._endInMs != null) {
-      endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt());
+      endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
+          isUtc: true);
     }
   }
 

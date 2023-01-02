@@ -1,3 +1,5 @@
+import 'package:tiler_app/util.dart';
+
 abstract class TimeRange {
   double? start = 0;
   double? end = 0;
@@ -12,6 +14,16 @@ abstract class TimeRange {
     }
 
     return retValue;
+  }
+
+  bool isDateTimeWithin(DateTime time) {
+    int currentTime = time.millisecondsSinceEpoch;
+    return this.start! <= currentTime && this.end! > currentTime;
+  }
+
+  bool get isCurrentTimeWithin {
+    int currentTime = Utility.currentTime().millisecondsSinceEpoch;
+    return this.start! <= currentTime && this.end! > currentTime;
   }
 
   bool get hasElapsed {

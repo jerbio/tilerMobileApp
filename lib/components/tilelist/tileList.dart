@@ -29,7 +29,7 @@ class TileList extends StatefulWidget {
 
 class _TileListState extends State<TileList> {
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
-      DateTime.now().add(Duration(days: -3)), Duration(days: 3));
+      DateTime.now().add(Duration(days: -3)), Duration(days: 7));
   Timeline? oldTimeline;
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
@@ -38,8 +38,8 @@ class _TileListState extends State<TileList> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      double minScrollLimit = _scrollController.position.minScrollExtent + 0;
-      double maxScrollLimit = _scrollController.position.maxScrollExtent - 0;
+      double minScrollLimit = _scrollController.position.minScrollExtent + 500;
+      double maxScrollLimit = _scrollController.position.maxScrollExtent - 500;
       Timeline updatedTimeline;
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
@@ -107,7 +107,7 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    WithinNowBatch withinNowBatch;
+    WithinNowBatch elapsedTodayBatch;
     Map<int, TileBatch> preceedingDayTilesDict = new Map<int, TileBatch>();
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
     return FutureBuilder(
@@ -236,14 +236,41 @@ class _TileListState extends State<TileList> {
 
               List<TileBatch> childTileBatchs = <TileBatch>[];
               childTileBatchs.addAll(preceedingDayTiles);
+              List<Widget> beforeNowBatch = preceedingDayTiles.toList();
+              List<Widget> todayAndUpcomingBatch = [];
+              DateTime currentTime = Utility.currentTime();
               if (todayTiles.length > 0) {
-                withinNowBatch = WithinNowBatch(
-                  key: Key(Utility.getUuid),
-                  tiles: todayTiles,
-                );
-                childTileBatchs.add(withinNowBatch);
+                List<TilerEvent> elapsedTiles = [];
+                List<TilerEvent> notElapsedTiles = [];
+                for (TilerEvent eachSubEvent in todayTiles) {
+                  if (eachSubEvent.endTime!.millisecondsSinceEpoch >
+                      currentTime.millisecondsSinceEpoch) {
+                    notElapsedTiles.add(eachSubEvent);
+                  } else {
+                    elapsedTiles.add(eachSubEvent);
+                  }
+                }
+
+                if (elapsedTiles.isNotEmpty) {
+                  elapsedTodayBatch = WithinNowBatch(
+                    // key: Key(Utility.getUuid),
+                    tiles: elapsedTiles,
+                  );
+                  beforeNowBatch.add(elapsedTodayBatch);
+                }
+
+                if (notElapsedTiles.isNotEmpty) {
+                  Widget notElapsedTodayBatch = WithinNowBatch(
+                    // key: Key(Utility.getUuid),
+                    tiles: notElapsedTiles,
+                  );
+                  todayAndUpcomingBatch.add(notElapsedTodayBatch);
+                }
+                // childTileBatchs.add(elapsedTodayBatch);
               }
               childTileBatchs.addAll(upcomingDayTiles);
+              todayAndUpcomingBatch.addAll(upcomingDayTiles);
+              const Key centerKey = ValueKey('second-sliver-list');
               retValue = Container(
                   decoration: BoxDecoration(
                       gradient: paintGradient.LinearGradient(
@@ -253,16 +280,30 @@ class _TileListState extends State<TileList> {
                         Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
                         Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
                       ])),
-                  child: Column(children: [
-                    Expanded(
-                      child: ListView.builder(
-                          itemCount: childTileBatchs.length,
-                          controller: _scrollController,
-                          itemBuilder: (context, index) {
-                            return childTileBatchs[index];
-                          }),
-                    )
-                  ]));
+                  child: CustomScrollView(
+                    center: centerKey,
+                    controller: _scrollController,
+                    slivers: <Widget>[
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                            return beforeNowBatch[
+                                (beforeNowBatch.length - index) - 1];
+                          },
+                          childCount: beforeNowBatch.length,
+                        ),
+                      ),
+                      SliverList(
+                        key: centerKey,
+                        delegate: SliverChildBuilderDelegate(
+                          (BuildContext context, int index) {
+                            return todayAndUpcomingBatch[index];
+                          },
+                          childCount: todayAndUpcomingBatch.length,
+                        ),
+                      ),
+                    ],
+                  ));
             } else {
               retValue = ListView(children: []);
             }
