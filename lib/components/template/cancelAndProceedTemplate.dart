@@ -8,7 +8,6 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:tiler_app/styles.dart';
 
 class CancelAndProceedTemplateWidget extends StatefulWidget {
-  bool _isLoadingShown = false;
   Function? onCancel;
   Function? onProceed;
   Function? loadingFinished;
@@ -27,9 +26,6 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   @override
   CancelAndProceedTemplateWidgetState createState() =>
       CancelAndProceedTemplateWidgetState();
-  toggleLoading() {
-    _isLoadingShown = !_isLoadingShown;
-  }
 }
 
 class CancelAndProceedTemplateWidgetState

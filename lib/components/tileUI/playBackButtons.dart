@@ -2,8 +2,11 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 
@@ -38,34 +41,62 @@ class PlayBackState extends State<PlayBack> {
 
   pauseTile() async {
     showMessage(AppLocalizations.of(context)!.pausing);
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     await _subCalendarEventApi
         .pauseTile((_subEvent ?? this.widget.subEvent).id!)
-        .then((value) =>
-            showMessage(AppLocalizations.of(context)!.successfullyPaused));
+        .then((value) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyPaused,
+          triggerTile: subTile));
+    }).onError((error, stackTrace) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyPaused,
+          triggerTile: subTile));
+    });
   }
 
   resumeTile() async {
     showMessage(AppLocalizations.of(context)!.resuming);
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     await _subCalendarEventApi
         .resumeTile((_subEvent ?? this.widget.subEvent))
-        .then((value) =>
-            showMessage(AppLocalizations.of(context)!.successfullyPaused));
+        .then((value) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyResumed,
+          triggerTile: subTile));
+    }).onError((error, stackTrace) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyResumed,
+          triggerTile: subTile));
+    });
   }
 
   setAsNowTile() async {
     showMessage(AppLocalizations.of(context)!.movingUp);
-    await _subCalendarEventApi
-        .setAsNow((_subEvent ?? this.widget.subEvent))
-        .then(
-            (value) => showMessage(AppLocalizations.of(context)!.movedUpToNow));
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+    await _subCalendarEventApi.setAsNow((subTile)).then((value) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.movedUpToNow,
+          triggerTile: subTile));
+    }).onError((error, stackTrace) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.movedUpToNow,
+          triggerTile: subTile));
+    });
   }
 
   completeTile() async {
     showMessage(AppLocalizations.of(context)!.completing);
-    await _subCalendarEventApi
-        .complete((_subEvent ?? this.widget.subEvent))
-        .then((value) =>
-            showMessage(AppLocalizations.of(context)!.successfullyCompleted));
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+    await _subCalendarEventApi.complete((subTile)).then((value) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyCompleted,
+          triggerTile: subTile));
+    }).onError((error, stackTrace) {
+      this.context.read<SubCalendarTilesBloc>().add(UpdateSchedule(
+          message: AppLocalizations.of(context)!.successfullyCompleted,
+          triggerTile: subTile));
+    });
   }
 
   @override

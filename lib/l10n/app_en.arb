@@ -67,6 +67,8 @@
     "resuming":"Resuming",
     "movingUp":"Moving Up your task",
     "completing":"Completing",
+    "previously":"Previously",
+    "upcoming":"Upcoming",
     "failedToSendRequest":"Failed to send request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"

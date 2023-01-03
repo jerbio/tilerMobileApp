@@ -1,3 +1,6 @@
+import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/util.dart';
+
 const bool isProduction = false;
 const bool isDebug = true;
 // const String remoteDomain = isDebug ? '192.168.1.4:45456' : 'www.tiler.app';
@@ -10,3 +13,5 @@ const int onTextChangeDelayInMs = 500;
 const int autoCompleteTriggerCharacterCount = 3;
 const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
+final Timeline initialScheduleTimeline = Timeline.fromDateTimeAndDuration(
+    Utility.currentTime().add(Duration(days: -3)), Duration(days: 7));
