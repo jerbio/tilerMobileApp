@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -178,8 +180,13 @@ class AuthorizedRouteState extends State<StatefulWidget>
                         .whenComplete(() {
                       print('Newly created tile');
                       print(newTileParams);
+
                       var subEvents = newTileParams['newTile'];
                       var subEvent = subEvents.item1;
+                      this
+                          .context
+                          .read<SubCalendarTilesBloc>()
+                          .add(AddSubCalendarTile(subEvent: subEvent));
                       int redColor =
                           subEvent.colorRed == null ? 125 : subEvent.colorRed!;
                       int blueColor = subEvent.colorBlue == null

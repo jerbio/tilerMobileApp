@@ -77,6 +77,8 @@ class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
     error.Message = "Did not send complete request";
+    print(subEvent);
+    print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType
