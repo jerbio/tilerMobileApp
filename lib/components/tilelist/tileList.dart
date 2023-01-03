@@ -2,6 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -43,6 +47,7 @@ class _TileListState extends State<TileList> {
       Timeline updatedTimeline;
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
+        final currentTimeline = this.timeLine;
         updatedTimeline = new Timeline(
             timeLine.startInMs!,
             (timeLine.endInMs!.toInt() + Utility.sevenDays.inMilliseconds)
@@ -51,8 +56,17 @@ class _TileListState extends State<TileList> {
           oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
+        final currentState = this.context.read<SubCalendarTilesBloc>().state;
+        if (currentState is SubCalendarTilesLoadedState) {
+          this.context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+              previousSubEvents: currentState.subEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: updatedTimeline));
+        }
       } else if (_scrollController.position.pixels <= minScrollLimit &&
           _scrollController.position.userScrollDirection.index == 1) {
+        final currentTimeline = this.timeLine;
         updatedTimeline = new Timeline(
             (timeLine.startInMs!.toInt() - Utility.sevenDays.inMilliseconds)
                 .toDouble(),
@@ -61,6 +75,14 @@ class _TileListState extends State<TileList> {
           oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
+        final currentState = this.context.read<SubCalendarTilesBloc>().state;
+        if (currentState is SubCalendarTilesLoadedState) {
+          this.context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+              previousSubEvents: currentState.subEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
       }
     });
   }
@@ -105,213 +127,242 @@ class _TileListState extends State<TileList> {
     return retValue;
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget renderSubCalendarTiles(
+      Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     WithinNowBatch elapsedTodayBatch;
     Map<int, TileBatch> preceedingDayTilesDict = new Map<int, TileBatch>();
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
-    return FutureBuilder(
-        future: this.widget.scheduleApi.getSubEvents(timeLine),
-        builder: (context,
-            AsyncSnapshot<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
-                snapshot) {
-          Widget retValue;
-          if (snapshot.hasData) {
-            Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData =
-                snapshot.data;
+    Widget retValue = Container();
+    if (tileData != null) {
+      List<Timeline> sleepTimelines = tileData.item1;
+      tileData.item2.sort((eachSubEventA, eachSubEventB) =>
+          eachSubEventA.start!.compareTo(eachSubEventB.start!));
 
-            if (snapshot.connectionState == ConnectionState.done &&
-                this.oldTimeline != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  oldTimeline = null;
-                });
-              });
+      Map<int, Timeline> dayToSleepTimeLines = {};
+      sleepTimelines.forEach((sleepTimeLine) {
+        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime!);
+        dayToSleepTimeLines[dayIndex] = sleepTimeLine;
+      });
+
+      Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
+          mapTilesToDays(tileData.item2, _todayTimeLine);
+
+      List<TilerEvent> todayTiles = dayToTiles.item2;
+      Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
+
+      int todayDayIndex = Utility.getDayIndex(DateTime.now());
+      Timeline relevantTimeline = this.oldTimeline ?? this.timeLine;
+      final currentState = this.context.read<SubCalendarTilesBloc>().state;
+      if (currentState is SubCalendarTilesLoadingState) {
+        if (currentState.previousLookupTimeline != null) {
+          relevantTimeline = currentState.previousLookupTimeline!;
+        }
+      }
+
+      if (currentState is SubCalendarTilesLoadedState) {
+        relevantTimeline = currentState.lookupTimeline;
+      }
+
+      int startIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
+          relevantTimeline.startInMs!.toInt()));
+      int endIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
+          relevantTimeline.endInMs!.toInt()));
+      int numberOfDays = (endIndex - startIndex) + 1;
+      List<int> dayIndexes = List.generate(numberOfDays, (index) => index);
+      dayIndexToTileDict.keys.toList();
+      dayIndexes.sort();
+
+      for (int i = 0; i < dayIndexes.length; i++) {
+        int dayIndex = dayIndexes[i];
+        dayIndex += startIndex;
+        dayIndexes[i] = dayIndex;
+        bool alreadyDayIndex = dayIndexToTileDict.containsKey(dayIndex);
+        if (dayIndex > todayDayIndex) {
+          if (!upcomingDayTilesDict.containsKey(dayIndex)) {
+            var tiles = <TilerEvent>[];
+            if (dayIndexToTileDict.containsKey(dayIndex)) {
+              tiles = dayIndexToTileDict[dayIndex]!;
             }
-            if (tileData != null) {
-              List<Timeline> sleepTimelines = tileData.item1;
-              tileData.item2.sort((eachSubEventA, eachSubEventB) =>
-                  eachSubEventA.start!.compareTo(eachSubEventB.start!));
-
-              Map<int, Timeline> dayToSleepTimeLines = {};
-              sleepTimelines.forEach((sleepTimeLine) {
-                int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime!);
-                dayToSleepTimeLines[dayIndex] = sleepTimeLine;
-              });
-
-              Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
-                  mapTilesToDays(tileData.item2, _todayTimeLine);
-
-              List<TilerEvent> todayTiles = dayToTiles.item2;
-              Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
-
-              int todayDayIndex = Utility.getDayIndex(DateTime.now());
-              Timeline relevantTimeline = this.oldTimeline ?? this.timeLine;
-              int startIndex = Utility.getDayIndex(
-                  DateTime.fromMillisecondsSinceEpoch(
-                      relevantTimeline.startInMs!.toInt()));
-              int endIndex = Utility.getDayIndex(
-                  DateTime.fromMillisecondsSinceEpoch(
-                      relevantTimeline.endInMs!.toInt()));
-              int numberOfDays = (endIndex - startIndex) + 1;
-              List<int> dayIndexes =
-                  List.generate(numberOfDays, (index) => index);
-              dayIndexToTileDict.keys.toList();
-              dayIndexes.sort();
-
-              for (int i = 0; i < dayIndexes.length; i++) {
-                int dayIndex = dayIndexes[i];
-                dayIndex += startIndex;
-                dayIndexes[i] = dayIndex;
-                bool alreadyDayIndex = dayIndexToTileDict.containsKey(dayIndex);
-                if (dayIndex > todayDayIndex) {
-                  if (!upcomingDayTilesDict.containsKey(dayIndex)) {
-                    var tiles = <TilerEvent>[];
-                    if (dayIndexToTileDict.containsKey(dayIndex)) {
-                      tiles = dayIndexToTileDict[dayIndex]!;
-                    }
-                    String headerString =
-                        Utility.getTimeFromIndex(dayIndex).humanDate;
-                    Key key = Key(dayIndex.toString());
-                    TileBatch upcomingTileBatch = TileBatch(
-                      header: headerString,
-                      dayIndex: dayIndex,
-                      tiles: tiles,
-                      key: key,
-                      connectionState: alreadyDayIndex
-                          ? ConnectionState.done
-                          : (snapshot.connectionState == ConnectionState.done
-                              ? ConnectionState.done
-                              : ConnectionState.waiting),
-                    );
-                    upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
-                  }
-                } else {
-                  String footerString =
-                      Utility.getTimeFromIndex(dayIndex).humanDate;
-                  if (!preceedingDayTilesDict.containsKey(dayIndex)) {
-                    var tiles = <TilerEvent>[];
-                    if (dayIndexToTileDict.containsKey(dayIndex)) {
-                      tiles = dayIndexToTileDict[dayIndex]!;
-                    }
-                    Key key = Key(dayIndex.toString());
-                    TileBatch preceedingDayTileBatch = TileBatch(
-                      header: footerString,
-                      dayIndex: dayIndex,
-                      key: key,
-                      tiles: tiles,
-                      connectionState: alreadyDayIndex
-                          ? ConnectionState.done
-                          : (snapshot.connectionState == ConnectionState.done
-                              ? ConnectionState.done
-                              : ConnectionState.waiting),
-                    );
-                    preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
-                  }
-                }
-              }
-
-              var timeStamps = dayIndexes.map(
-                  (eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
-
-              print('------------There are 111 ' +
-                  tileData.item2.length.toString() +
-                  ' tiles------------');
-              print('------------There are relevant ' +
-                  relevantTimeline.toString() +
-                  ' tiles------------');
-
-              print('------------There are ' +
-                  timeLine.toString() +
-                  ' tiles------------');
-
-              List<TileBatch> preceedingDayTiles =
-                  preceedingDayTilesDict.values.toList();
-              preceedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-                  eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-              List<TileBatch> upcomingDayTiles =
-                  upcomingDayTilesDict.values.toList();
-              upcomingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-                  eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-
-              List<TileBatch> childTileBatchs = <TileBatch>[];
-              childTileBatchs.addAll(preceedingDayTiles);
-              List<Widget> beforeNowBatch = preceedingDayTiles.toList();
-              List<Widget> todayAndUpcomingBatch = [];
-              DateTime currentTime = Utility.currentTime();
-              if (todayTiles.length > 0) {
-                List<TilerEvent> elapsedTiles = [];
-                List<TilerEvent> notElapsedTiles = [];
-                for (TilerEvent eachSubEvent in todayTiles) {
-                  if (eachSubEvent.endTime!.millisecondsSinceEpoch >
-                      currentTime.millisecondsSinceEpoch) {
-                    notElapsedTiles.add(eachSubEvent);
-                  } else {
-                    elapsedTiles.add(eachSubEvent);
-                  }
-                }
-
-                if (elapsedTiles.isNotEmpty) {
-                  elapsedTodayBatch = WithinNowBatch(
-                    // key: Key(Utility.getUuid),
-                    tiles: elapsedTiles,
-                  );
-                  beforeNowBatch.add(elapsedTodayBatch);
-                }
-
-                if (notElapsedTiles.isNotEmpty) {
-                  Widget notElapsedTodayBatch = WithinNowBatch(
-                    // key: Key(Utility.getUuid),
-                    tiles: notElapsedTiles,
-                  );
-                  todayAndUpcomingBatch.add(notElapsedTodayBatch);
-                }
-                // childTileBatchs.add(elapsedTodayBatch);
-              }
-              childTileBatchs.addAll(upcomingDayTiles);
-              todayAndUpcomingBatch.addAll(upcomingDayTiles);
-              const Key centerKey = ValueKey('second-sliver-list');
-              retValue = Container(
-                  decoration: BoxDecoration(
-                      gradient: paintGradient.LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                        Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
-                        Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
-                      ])),
-                  child: CustomScrollView(
-                    center: centerKey,
-                    controller: _scrollController,
-                    slivers: <Widget>[
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
-                            return beforeNowBatch[
-                                (beforeNowBatch.length - index) - 1];
-                          },
-                          childCount: beforeNowBatch.length,
-                        ),
-                      ),
-                      SliverList(
-                        key: centerKey,
-                        delegate: SliverChildBuilderDelegate(
-                          (BuildContext context, int index) {
-                            return todayAndUpcomingBatch[index];
-                          },
-                          childCount: todayAndUpcomingBatch.length,
-                        ),
-                      ),
-                    ],
-                  ));
-            } else {
-              retValue = ListView(children: []);
-            }
-          } else {
-            retValue = CircularProgressIndicator();
+            String headerString = Utility.getTimeFromIndex(dayIndex).humanDate;
+            Key key = Key(dayIndex.toString());
+            TileBatch upcomingTileBatch = TileBatch(
+                header: headerString,
+                dayIndex: dayIndex,
+                tiles: tiles,
+                key: key);
+            upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
           }
-          return retValue;
-        });
+        } else {
+          String footerString = Utility.getTimeFromIndex(dayIndex).humanDate;
+          if (!preceedingDayTilesDict.containsKey(dayIndex)) {
+            var tiles = <TilerEvent>[];
+            if (dayIndexToTileDict.containsKey(dayIndex)) {
+              tiles = dayIndexToTileDict[dayIndex]!;
+            }
+            Key key = Key(dayIndex.toString());
+            TileBatch preceedingDayTileBatch = TileBatch(
+                header: footerString,
+                dayIndex: dayIndex,
+                key: key,
+                tiles: tiles);
+            preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
+          }
+        }
+      }
+
+      var timeStamps = dayIndexes
+          .map((eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
+
+      print('------------There are 111 ' +
+          tileData.item2.length.toString() +
+          ' tiles------------');
+      print('------------There are relevant ' +
+          relevantTimeline.toString() +
+          ' tiles------------');
+
+      print('------------There are ' +
+          timeLine.toString() +
+          ' tiles------------');
+
+      List<TileBatch> preceedingDayTiles =
+          preceedingDayTilesDict.values.toList();
+      preceedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
+          eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
+      List<TileBatch> upcomingDayTiles = upcomingDayTilesDict.values.toList();
+      upcomingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
+          eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
+
+      List<TileBatch> childTileBatchs = <TileBatch>[];
+      childTileBatchs.addAll(preceedingDayTiles);
+      List<Widget> beforeNowBatch = preceedingDayTiles.toList();
+      List<Widget> todayAndUpcomingBatch = [];
+      DateTime currentTime = Utility.currentTime();
+      if (todayTiles.length > 0) {
+        List<TilerEvent> elapsedTiles = [];
+        List<TilerEvent> notElapsedTiles = [];
+        for (TilerEvent eachSubEvent in todayTiles) {
+          if (eachSubEvent.endTime!.millisecondsSinceEpoch >
+              currentTime.millisecondsSinceEpoch) {
+            notElapsedTiles.add(eachSubEvent);
+          } else {
+            elapsedTiles.add(eachSubEvent);
+          }
+        }
+
+        if (elapsedTiles.isNotEmpty) {
+          elapsedTodayBatch = WithinNowBatch(
+            // key: Key(Utility.getUuid),
+            tiles: elapsedTiles,
+          );
+          beforeNowBatch.add(elapsedTodayBatch);
+        }
+
+        if (notElapsedTiles.isNotEmpty) {
+          Widget notElapsedTodayBatch = WithinNowBatch(
+            tiles: notElapsedTiles,
+          );
+          todayAndUpcomingBatch.add(notElapsedTodayBatch);
+        }
+      }
+      childTileBatchs.addAll(upcomingDayTiles);
+      todayAndUpcomingBatch.addAll(upcomingDayTiles);
+      // const Key centerKey = ValueKey('second-sliver-list');
+      Key centerKey = ValueKey(Utility.getUuid.toString());
+      retValue = Container(
+          decoration: BoxDecoration(
+              gradient: paintGradient.LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
+                Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
+              ])),
+          child: CustomScrollView(
+            center: centerKey,
+            controller: _scrollController,
+            slivers: <Widget>[
+              SliverList(
+                key: ValueKey(Utility.getUuid.toString()),
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return beforeNowBatch[(beforeNowBatch.length - index) - 1];
+                  },
+                  childCount: beforeNowBatch.length,
+                ),
+              ),
+              SliverList(
+                key: centerKey,
+                delegate: SliverChildBuilderDelegate(
+                  (BuildContext context, int index) {
+                    return todayAndUpcomingBatch[index];
+                  },
+                  childCount: todayAndUpcomingBatch.length,
+                ),
+              ),
+            ],
+          ));
+    } else {
+      retValue = ListView(children: []);
+    }
+
+    return retValue;
+  }
+
+  Widget renderPending() {
+    return Column(children: [CircularProgressIndicator(), Text('... loading')]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<SubCalendarTilesBloc, SubCalendarTilesState>(
+      listener: (context, state) {
+        if (state is SubCalendarTilesLoadingState) {
+          if (state.message != null) {
+            Fluttertoast.showToast(
+                msg: state.message!,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.SNACKBAR,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+          }
+        }
+      },
+      child: BlocBuilder<SubCalendarTilesBloc, SubCalendarTilesState>(
+        builder: (context, state) {
+          if (state is SubCalendarTilesLoadedState) {
+            // String subId =
+            //     '87262d1e-3bbd-4b7b-b258-d1b09a0dcf05_7_0_4621d5ad-80ed-4c60-af8e-9862642217d6';
+            // var sendingThrough =
+            //     state.subEvents.where((o) => o.id == subId).toList();
+            return renderSubCalendarTiles(
+                Tuple2(state.timelines, state.subEvents));
+          }
+
+          if (state is SubCalendarTilesInitialState) {
+            context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+                scheduleTimeline: timeLine,
+                isAlreadyLoaded: false,
+                previousSubEvents: List<SubCalendarEvent>.empty()));
+          }
+
+          if (state is SubCalendarTilesInitialState) {
+            return renderPending();
+          }
+
+          if (state is SubCalendarTilesLoadingState) {
+            if (!state.isAlreadyLoaded) {
+              return renderPending();
+            }
+            return renderSubCalendarTiles(
+                Tuple2(state.timelines, state.subEvents));
+          }
+
+          return Text('Issue with retrieving data');
+        },
+      ),
+    );
   }
 
   @override
