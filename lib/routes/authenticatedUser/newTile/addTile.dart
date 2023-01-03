@@ -750,8 +750,6 @@ class AddTileState extends State<AddTile> {
       },
     );
 
-    showLoading = retValue.toggleLoading;
-
     return retValue;
   }
 
