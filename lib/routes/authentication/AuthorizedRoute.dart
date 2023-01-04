@@ -157,7 +157,13 @@ class AuthorizedRouteState extends State<StatefulWidget>
                 GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      Navigator.pushNamed(context, '/Procrastinate');
+                      Navigator.pushNamed(context, '/Procrastinate')
+                          .whenComplete(() {
+                        this
+                            .context
+                            .read<SubCalendarTilesBloc>()
+                            .add(UpdateSchedule());
+                      });
                     },
                     child: ListTile(
                       leading: Image.asset('assets/images/move_forward.png'),
