@@ -461,22 +461,11 @@ class AddTileState extends State<AddTile> {
       textColor: isColorConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Color? colorHolder = _color;
-        if (colorHolder == null) {
-          colorHolder = HSLColor.fromAHSL(
-                  1,
-                  (Utility.randomizer.nextDouble() * 360),
-                  Utility.randomizer.nextDouble(),
-                  (1 - (Utility.randomizer.nextDouble() * 0.45)))
-              .toColor();
-        }
-        Map<String, dynamic> colorParams = {
-          'initialColor': colorHolder,
-          'color': colorHolder
-        };
+        Map<String, dynamic> colorParams = {'color': colorHolder};
 
         Navigator.pushNamed(context, '/PickColor', arguments: colorParams)
             .whenComplete(() {
-          Color? populatedColor = colorParams['color'] as Color;
+          Color? populatedColor = colorParams['color'] as Color?;
           setState(() {
             isColorConfigSet = false;
             if (populatedColor != null) {

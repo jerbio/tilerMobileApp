@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class PickColor extends StatefulWidget {
   Map? _params;
@@ -17,8 +18,13 @@ class PickColor extends StatefulWidget {
 }
 
 class PickColorState extends State<PickColor> {
-  Color pickerColor = Color(0xff443a49);
-  Color currentColor = Color(0xff443a49);
+  Color pickerColor = HSLColor.fromAHSL(
+          1,
+          (Utility.randomizer.nextDouble() * 360),
+          Utility.randomizer.nextDouble(),
+          (1 - (Utility.randomizer.nextDouble() * 0.35)))
+      .toColor();
+  Color? initialColor;
   bool _isInitialize = false;
 
   void onProceedTap() {
@@ -27,8 +33,16 @@ class PickColorState extends State<PickColor> {
     }
   }
 
+  void onCanceTap() {
+    if (this.widget._params != null) {
+      this.widget._params!['color'] = initialColor;
+    }
+  }
+
   void changeColor(Color color) {
-    setState(() => pickerColor = color);
+    setState(() {
+      pickerColor = color;
+    });
   }
 
   @override
@@ -37,43 +51,46 @@ class PickColorState extends State<PickColor> {
     if (!_isInitialize) {
       _isInitialize = true;
       this.widget._params = colorParams;
-      if (colorParams.containsKey('initialColor') &&
-          colorParams['initialColor'] != null) {
-        this.widget.color = colorParams['initialColor'];
+      if (colorParams.containsKey('color') && colorParams['color'] != null) {
+        this.widget.color = colorParams['color'];
         pickerColor = this.widget.color!;
+        initialColor = this.widget.color!;
       }
     }
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
-        appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.color,
-            style: TextStyle(
-                color: TileStyles.enabledTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
-          automaticallyImplyLeading: false,
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.color,
+          style: TextStyle(
+              color: TileStyles.enabledTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
         ),
-        child: Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-          alignment: Alignment.topCenter,
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                    child: ColorPicker(
-                  pickerColor: pickerColor,
-                  onColorChanged: changeColor,
-                ))
-              ]),
-        ),
-        onProceed: () {
-          return this.onProceedTap();
-        });
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
+      child: Container(
+        margin: EdgeInsets.fromLTRB(0, 40, 0, 0),
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Expanded(
+                  child: ColorPicker(
+                pickerColor: pickerColor,
+                onColorChanged: changeColor,
+              ))
+            ]),
+      ),
+      onProceed: () {
+        return this.onProceedTap();
+      },
+      onCancel: () {
+        this.onCanceTap();
+      },
+    );
 
     return retValue;
   }

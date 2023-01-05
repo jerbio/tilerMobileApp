@@ -137,23 +137,23 @@ class AuthorizedRouteState extends State<StatefulWidget>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).pushNamed('/ForecastPreview');
-                  },
-                  child: ListTile(
-                    leading: Image.asset('assets/images/binocular.png'),
-                    title: Text(
-                      AppLocalizations.of(context)!.forecast,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white),
-                    ),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: () {
+                //     Navigator.pop(context);
+                //     Navigator.of(context).pushNamed('/ForecastPreview');
+                //   },
+                //   child: ListTile(
+                //     leading: Image.asset('assets/images/binocular.png'),
+                //     title: Text(
+                //       AppLocalizations.of(context)!.forecast,
+                //       style: TextStyle(
+                //           fontSize: 20,
+                //           fontFamily: TileStyles.rubikFontName,
+                //           fontWeight: FontWeight.w300,
+                //           color: Colors.white),
+                //     ),
+                //   ),
+                // ),
                 GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
@@ -184,64 +184,66 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     Navigator.pushNamed(context, '/AddTile',
                             arguments: newTileParams)
                         .whenComplete(() {
-                      print('Newly created tile');
-                      print(newTileParams);
+                      var newSubEventParams = newTileParams['newTile'];
+                      if (newSubEventParams != null) {
+                        print('Newly created tile');
+                        print(newTileParams);
+                        var subEvent = newSubEventParams.item1;
+                        this
+                            .context
+                            .read<SubCalendarTilesBloc>()
+                            .add(AddSubCalendarTile(subEvent: subEvent));
+                        int redColor = subEvent.colorRed == null
+                            ? 125
+                            : subEvent.colorRed!;
+                        int blueColor = subEvent.colorBlue == null
+                            ? 125
+                            : subEvent.colorBlue!;
+                        int greenColor = subEvent.colorGreen == null
+                            ? 125
+                            : subEvent.colorGreen!;
+                        double opacity = subEvent.colorOpacity == null
+                            ? 1
+                            : subEvent.colorOpacity!;
+                        var nameColor = Color.fromRGBO(
+                            redColor, greenColor, blueColor, opacity);
 
-                      var subEvents = newTileParams['newTile'];
-                      var subEvent = subEvents.item1;
-                      this
-                          .context
-                          .read<SubCalendarTilesBloc>()
-                          .add(AddSubCalendarTile(subEvent: subEvent));
-                      int redColor =
-                          subEvent.colorRed == null ? 125 : subEvent.colorRed!;
-                      int blueColor = subEvent.colorBlue == null
-                          ? 125
-                          : subEvent.colorBlue!;
-                      int greenColor = subEvent.colorGreen == null
-                          ? 125
-                          : subEvent.colorGreen!;
-                      double opacity = subEvent.colorOpacity == null
-                          ? 1
-                          : subEvent.colorOpacity!;
-                      var nameColor = Color.fromRGBO(
-                          redColor, greenColor, blueColor, opacity);
-
-                      var hslColor = HSLColor.fromColor(nameColor);
-                      Color bgroundColor = hslColor
-                          .withLightness(hslColor.lightness)
-                          .toColor()
-                          .withOpacity(0.7);
-                      showModalBottomSheet<void>(
-                        context: context,
-                        constraints: BoxConstraints(
-                          maxWidth: 400,
-                        ),
-                        builder: (BuildContext context) {
-                          var future = new Future.delayed(
-                              const Duration(milliseconds: autoHideInMs));
-                          future.asStream().listen((input) {
-                            Navigator.pop(context);
-                          });
-                          return Container(
-                            padding: const EdgeInsets.all(20),
-                            height: 250,
-                            width: 300,
-                            decoration: BoxDecoration(
-                              color: bgroundColor,
-                            ),
-                            child: Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                children: <Widget>[
-                                  NewTileSheet(subEvent: subEvent),
-                                ],
+                        var hslColor = HSLColor.fromColor(nameColor);
+                        Color bgroundColor = hslColor
+                            .withLightness(hslColor.lightness)
+                            .toColor()
+                            .withOpacity(0.7);
+                        showModalBottomSheet<void>(
+                          context: context,
+                          constraints: BoxConstraints(
+                            maxWidth: 400,
+                          ),
+                          builder: (BuildContext context) {
+                            var future = new Future.delayed(
+                                const Duration(milliseconds: autoHideInMs));
+                            future.asStream().listen((input) {
+                              Navigator.pop(context);
+                            });
+                            return Container(
+                              padding: const EdgeInsets.all(20),
+                              height: 250,
+                              width: 300,
+                              decoration: BoxDecoration(
+                                color: bgroundColor,
                               ),
-                            ),
-                          );
-                        },
-                      );
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: <Widget>[
+                                    NewTileSheet(subEvent: subEvent),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      }
                     }).catchError((errorThrown) {
                       print('we have error');
                       print(errorThrown);

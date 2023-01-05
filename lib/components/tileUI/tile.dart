@@ -60,16 +60,22 @@ class TileWidgetState extends State<TileWidget> {
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
 
-    var allElements = [
+    List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
         child: TileName(widget.subEvent),
-      ),
-      Container(
+      )
+    ];
+
+    if (this.widget.subEvent.travelTimeBefore != null &&
+        this.widget.subEvent.travelTimeBefore! > 0) {
+      allElements.add(Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TravelTimeBefore(
-              this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)),
-    ];
+              this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)));
+    } else {
+      allElements.add(Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 20)));
+    }
     if (widget.subEvent.address != null &&
         widget.subEvent.address!.isNotEmpty) {
       var adrressWidget = Container(
@@ -97,7 +103,7 @@ class TileWidgetState extends State<TileWidget> {
           child: FractionallySizedBox(
               widthFactor: TileStyles.tileWidthRatio,
               child: Container(
-                height: 300,
+                height: allElements.length < 3 ? 300 : 350,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
@@ -126,6 +132,9 @@ class TileWidgetState extends State<TileWidget> {
                           BorderRadius.circular(TileStyles.borderRadius),
                     ),
                     child: Column(
+                      mainAxisAlignment: allElements.length < 4
+                          ? MainAxisAlignment.spaceBetween
+                          : MainAxisAlignment.center,
                       children: allElements,
                     )),
               ))),

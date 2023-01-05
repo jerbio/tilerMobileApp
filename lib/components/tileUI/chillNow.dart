@@ -64,7 +64,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
     String chillText = this.widget.chillTexts.randomEntry;
     String chillImage = this.widget.chillImagePaths.randomEntry;
     var chillNameWidget = Container(
-      margin: const EdgeInsets.fromLTRB(25, 0, 00, 0),
+      margin: const EdgeInsets.fromLTRB(25, 0, 0, 0),
       child: Text(
         chillText,
         style: TextStyle(
@@ -80,6 +80,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
     );
 
     var sleepInBedIcon = Container(
+      margin: const EdgeInsets.fromLTRB(0, 50, 0, 0),
       alignment: Alignment.center,
       child: Image.asset(
         chillImage,
@@ -91,10 +92,11 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
         alignment: FractionalOffset.center,
         widthFactor: TileStyles.inputWidthFactor,
         child: Container(
+            margin: const EdgeInsets.fromLTRB(0, 30, 0, 0),
             child: TimeScrubWidget(
-          timeline: timeline,
-          loadTimeScrub: true,
-        )));
+              timeline: timeline,
+              loadTimeScrub: true,
+            )));
 
     var allEntry = Column(
       children: [sleepIconAndRow, sleepInBedIcon, timeScrub],

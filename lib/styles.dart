@@ -27,6 +27,14 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
+  static final BoxDecoration defaultBackground = BoxDecoration(
+      gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+        Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
+        Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
+      ]));
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(

@@ -188,6 +188,7 @@ class PlayBackState extends State<PlayBack> {
     }
 
     return Container(
+      margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: playBackElements,
