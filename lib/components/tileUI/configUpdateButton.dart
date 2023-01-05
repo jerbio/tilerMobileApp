@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:ui' as dartUI;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -44,20 +45,27 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       childWidgets.add(this.widget.prefixIcon!);
     }
     String textButtonString = this.widget.text;
-    Widget textButton = TextButton(
-      style: TextButton.styleFrom(
-        textStyle: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-        primary: this.widget.textColor,
-      ),
-      onPressed: () async {
-        if (this.widget.onPress != null) {
-          await this.widget.onPress!();
-        }
-      },
-      child: Text(
-        textButtonString,
-        style: TextStyle(
-          fontFamily: TileStyles.rubikFontName,
+    Widget textButton = Flexible(
+      child: TextButton(
+        style: TextButton.styleFrom(
+          textStyle: TextStyle(
+              overflow: TextOverflow.ellipsis,
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              color: this.widget.textColor),
+          foregroundColor: this.widget.textColor,
+        ),
+        onPressed: () async {
+          if (this.widget.onPress != null) {
+            await this.widget.onPress!();
+          }
+        },
+        child: Text(
+          textButtonString,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontFamily: TileStyles.rubikFontName,
+          ),
         ),
       ),
     );
@@ -69,10 +77,13 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
           }
         },
         child: Container(
+            constraints: BoxConstraints(
+                maxWidth: MediaQuery.of(context).size.width / 2 - 20),
             decoration: this.widget.decoration,
             margin: EdgeInsets.all(10),
-            padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: childWidgets,
             )));
 

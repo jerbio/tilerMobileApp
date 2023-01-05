@@ -79,6 +79,12 @@ class SubCalendarTilesBloc
           previousLookupTimeline: timeline,
           isAlreadyLoaded: true,
           connectionState: ConnectionState.waiting));
+      await getSubTiles(timeline).then((value) {
+        emit(SubCalendarTilesLoadedState(
+            subEvents: value.item2,
+            timelines: value.item1,
+            lookupTimeline: timeline));
+      });
       return;
     }
 

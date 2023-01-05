@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:swipe_deck/swipe_deck.dart';
+import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:tiler_app/util.dart';
 
 class EmptyDayTile extends StatefulWidget {
@@ -25,45 +25,19 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     return Container(
       height: (MediaQuery.of(context).size.height) - 200,
       padding: EdgeInsets.all(20),
-      child: SwipeDeck(
-        startIndex: 3,
-        emptyIndicator: Container(
-          child: Center(
-            child: Text("Nothing Here"),
-          ),
-        ),
-        cardSpreadInDegrees: 5, // Change the Spread of Background Cards
-        onSwipeLeft: () {
-          print("USER SWIPED LEFT -> GOING TO NEXT WIDGET");
-        },
-        onSwipeRight: () {
-          print("USER SWIPED RIGHT -> GOING TO PREVIOUS WIDGET");
-        },
-        onChange: (index) {
-          print(images[index]);
-        },
-        widgets: images
-            .getRandomize()
-            .map((e) => GestureDetector(
-                  onTap: () {
-                    print(e);
-                  },
-                  child: ClipRRect(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(8.0),
-                      ),
-                      child: Image.asset(
-                        e,
-                        fit: BoxFit.cover,
-                      )),
-                ))
-            .toList(),
+      child: AppinioSwiper(
+        cards: images.getRandomize().map((e) {
+          return Container(
+              child: ClipRRect(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(8.0),
+                  ),
+                  child: Image.asset(
+                    e,
+                    fit: BoxFit.cover,
+                  )));
+        }).toList(),
       ),
     );
-
-    // return Container(
-    //   height: (MediaQuery.of(context).size.height),
-    //   child: Text('We got nothing'),
-    // );
   }
 }

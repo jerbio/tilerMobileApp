@@ -251,7 +251,7 @@ class _TileListState extends State<TileList> {
 
         if (elapsedTiles.isNotEmpty) {
           elapsedTodayBatch = WithinNowBatch(
-            // key: Key(Utility.getUuid),
+            key: ValueKey(Utility.getUuid.toString()),
             tiles: elapsedTiles,
           );
           beforeNowBatch.add(elapsedTodayBatch);
@@ -259,6 +259,7 @@ class _TileListState extends State<TileList> {
 
         if (notElapsedTiles.isNotEmpty) {
           Widget notElapsedTodayBatch = WithinNowBatch(
+            key: ValueKey(Utility.getUuid.toString()),
             tiles: notElapsedTiles,
           );
           todayAndUpcomingBatch.add(notElapsedTodayBatch);
@@ -266,17 +267,9 @@ class _TileListState extends State<TileList> {
       }
       childTileBatchs.addAll(upcomingDayTiles);
       todayAndUpcomingBatch.addAll(upcomingDayTiles);
-      // const Key centerKey = ValueKey('second-sliver-list');
       Key centerKey = ValueKey(Utility.getUuid.toString());
       retValue = Container(
-          decoration: BoxDecoration(
-              gradient: paintGradient.LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
-                Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
-              ])),
+          decoration: TileStyles.defaultBackground,
           child: CustomScrollView(
             center: centerKey,
             controller: _scrollController,
@@ -309,7 +302,21 @@ class _TileListState extends State<TileList> {
   }
 
   Widget renderPending() {
-    return Column(children: [CircularProgressIndicator(), Text('... loading')]);
+    return Container(
+      decoration: TileStyles.defaultBackground,
+      child: Center(
+          child: Stack(children: [
+        Center(
+            child: SizedBox(
+          child: CircularProgressIndicator(),
+          height: 200.0,
+          width: 200.0,
+        )),
+        Center(
+            child: Image.asset('assets/images/tiler_logo_black.png',
+                fit: BoxFit.cover, scale: 7)),
+      ])),
+    );
   }
 
   @override
@@ -332,10 +339,6 @@ class _TileListState extends State<TileList> {
       child: BlocBuilder<SubCalendarTilesBloc, SubCalendarTilesState>(
         builder: (context, state) {
           if (state is SubCalendarTilesLoadedState) {
-            // String subId =
-            //     '87262d1e-3bbd-4b7b-b258-d1b09a0dcf05_7_0_4621d5ad-80ed-4c60-af8e-9862642217d6';
-            // var sendingThrough =
-            //     state.subEvents.where((o) => o.id == subId).toList();
             return renderSubCalendarTiles(
                 Tuple2(state.timelines, state.subEvents));
           }

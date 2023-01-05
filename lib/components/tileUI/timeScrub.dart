@@ -143,7 +143,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
             children: [
               Icon(Icons.check_circle_outline_outlined),
               Text(
-                'Completed $elapsedTime ago',
+                'Elpased $elapsedTime ago',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
               )
@@ -175,7 +175,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
     return Container(
       width: 300,
       height: 30,
-      margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: timeline,
     );
   }

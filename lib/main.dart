@@ -53,6 +53,21 @@ class TilerApp extends StatelessWidget {
     return isAuthenticated;
   }
 
+  Widget renderPending() {
+    return Center(
+        child: Stack(children: [
+      Center(
+          child: SizedBox(
+        child: CircularProgressIndicator(),
+        height: 200.0,
+        width: 200.0,
+      )),
+      Center(
+          child: Image.asset('assets/images/tiler_logo_white_text.png',
+              fit: BoxFit.cover, scale: 7)),
+    ]));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -103,7 +118,7 @@ class TilerApp extends StatelessWidget {
                     retValue = SignInRoute();
                   }
                 } else {
-                  retValue = CircularProgressIndicator();
+                  retValue = renderPending();
                 }
                 return retValue;
               }),

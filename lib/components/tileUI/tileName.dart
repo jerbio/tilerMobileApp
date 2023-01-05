@@ -57,15 +57,16 @@ class TileNameState extends State<TileName> {
           ),
           Flexible(
               child: new Container(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                   child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 20,
-                fontFamily: 'Rubik',
-                fontWeight: FontWeight.bold,
-                color: Color.fromRGBO(31, 31, 31, 1)),
-          )))
+                    name,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: 'Rubik',
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromRGBO(31, 31, 31, 1)),
+                  )))
         ],
       ),
     );
