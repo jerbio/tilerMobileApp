@@ -25,7 +25,6 @@ class TileBatch extends StatefulWidget {
   String? footer;
   int? dayIndex;
   ConnectionState? connectionState;
-  // TileBatchState? _state;
 
   TileBatch(
       {this.header,
@@ -199,7 +198,11 @@ class TileBatchState extends State<TileBatch> {
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
         alignment: Alignment.centerLeft,
         child: Text(widget.header!,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontSize: 40,
+                fontFamily: TileStyles.rubikFontName,
+                color: Color.fromRGBO(169, 169, 169, 1),
+                fontWeight: FontWeight.w700)),
       );
       SizedBox topHeaderMargin = SizedBox(
         height: 10,
@@ -249,7 +252,11 @@ class TileBatchState extends State<TileBatch> {
         margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
         alignment: Alignment.centerLeft,
         child: Text(widget.footer!,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontSize: 20,
+                color: Color.fromRGBO(169, 169, 169, 1),
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.bold)),
       );
       SizedBox topFooterMargin = SizedBox(
         height: 10,

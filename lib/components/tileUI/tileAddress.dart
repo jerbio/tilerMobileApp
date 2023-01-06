@@ -35,7 +35,6 @@ class TileAddressState extends State<TileAddress> {
           addressLookup = this.widget.subEvent.searchdDescription;
         }
         if (addressLookup != null) {
-          // final availableMaps = await MapLauncher.installedMaps;
           MapsLauncher.launchQuery(addressLookup);
         }
       },

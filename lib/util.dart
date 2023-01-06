@@ -82,6 +82,11 @@ class Utility {
     return currentTime().millisecondsSinceEpoch;
   }
 
+  static get initialScheduleTimeline {
+    return Timeline.fromDateTimeAndDuration(
+        Utility.currentTime().add(Duration(days: -3)), Duration(days: 7));
+  }
+
   static String toHuman(Duration duration,
       {bool all = false, bool includeSeconds = false, abbreviations = false}) {
     Duration durationLeft = duration;

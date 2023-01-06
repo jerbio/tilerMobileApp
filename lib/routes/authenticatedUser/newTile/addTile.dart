@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
@@ -17,6 +18,7 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
@@ -604,6 +606,14 @@ class AddTileState extends State<AddTile> {
       return Utility.getDefaultPosition();
     });
 
+    final currentState = this.context.read<ScheduleBloc>().state;
+    if (currentState is ScheduleLoadedState) {
+      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
+          isAlreadyLoaded: true,
+          renderedScheduleTimeline: currentState.lookupTimeline,
+          renderedSubEvents: currentState.subEvents,
+          renderedTimelines: currentState.timelines));
+    }
     Future retValue = this.widget.scheduleApi.addNewTile(tile);
     retValue.then((newlyAddedTile) {
       if (newlyAddedTile.item1 != null) {
@@ -612,6 +622,15 @@ class AddTileState extends State<AddTile> {
       }
       if (this.widget.newTileParams != null) {
         this.widget.newTileParams!['newTile'] = newlyAddedTile;
+      }
+      final currentState = this.context.read<ScheduleBloc>().state;
+      if (currentState is ScheduleEvaluationState) {
+        this.context.read<ScheduleBloc>().add(GetSchedule(
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+            ));
       }
     }).onError((error, stackTrace) {
       if (error != null) {
@@ -633,6 +652,15 @@ class AddTileState extends State<AddTile> {
             ),
           ),
         );
+      }
+      final currentState = this.context.read<ScheduleBloc>().state;
+      if (currentState is ScheduleEvaluationState) {
+        this.context.read<ScheduleBloc>().add(GetSchedule(
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+            ));
       }
     });
 

@@ -10,35 +10,20 @@ abstract class SubCalendarTilesState extends Equatable {
 class SubCalendarTilesInitialState extends SubCalendarTilesState {}
 
 class SubCalendarTilesLoadingState extends SubCalendarTilesState {
-  List<SubCalendarEvent> subEvents;
-  List<Timeline> timelines;
-  Timeline? previousLookupTimeline;
-  bool isAlreadyLoaded = true;
-  String? message;
+  String subEventId;
+  SubCalendarEvent? subEvent;
   ConnectionState connectionState = ConnectionState.none;
 
-  SubCalendarTilesLoadingState(
-      {this.subEvents = const <SubCalendarEvent>[],
-      this.timelines = const <Timeline>[],
-      required this.isAlreadyLoaded,
-      required this.connectionState,
-      this.previousLookupTimeline,
-      this.message});
+  SubCalendarTilesLoadingState({required this.subEventId, this.subEvent});
 
   @override
-  List<Object> get props => [subEvents];
+  List<Object> get props => [subEventId];
 }
 
 class SubCalendarTilesLoadedState extends SubCalendarTilesState {
-  final List<SubCalendarEvent> subEvents;
-  List<Timeline> timelines;
-  Timeline lookupTimeline;
-
-  SubCalendarTilesLoadedState(
-      {this.subEvents = const <SubCalendarEvent>[],
-      required this.timelines,
-      required this.lookupTimeline});
+  final SubCalendarEvent subEvent;
+  SubCalendarTilesLoadedState({required this.subEvent});
 
   @override
-  List<Object> get props => [subEvents];
+  List<Object> get props => [subEvent];
 }
