@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/styles.dart';
 
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
@@ -30,7 +31,7 @@ class TileNameState extends State<TileName> {
       emojiField = Text(emojiString,
           style: TextStyle(
               fontSize: fontSize,
-              fontFamily: 'Rubik',
+              fontFamily: TileStyles.rubikFontName,
               fontWeight: FontWeight.bold,
               color: Color.fromRGBO(31, 31, 31, 1)));
     }
@@ -63,8 +64,8 @@ class TileNameState extends State<TileName> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 20,
-                        fontFamily: 'Rubik',
-                        fontWeight: FontWeight.bold,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.w500,
                         color: Color.fromRGBO(31, 31, 31, 1)),
                   )))
         ],

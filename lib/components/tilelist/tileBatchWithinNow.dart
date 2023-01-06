@@ -5,6 +5,7 @@ import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
 
 import '../../constants.dart';
 
@@ -62,7 +63,7 @@ class WithinNowBatchState extends TileBatchState {
       isInitialized = true;
     }
     List<Widget> children = [];
-    int currentTimeInMs = DateTime.now().millisecondsSinceEpoch;
+    int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     List<Widget> precedingTileWidgets = [];
     List<Widget> currentTileWidgets = [];
     List<Widget> upcomningTileWidgets = [];

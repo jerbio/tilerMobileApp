@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -61,6 +62,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
 
   Widget generateSearchWidget() {
     var eventNameSearch = Scaffold(
+      extendBody: true,
       body: Container(
         child: EventNameSearchWidget(onInputCompletion: this.disableSearch),
       ),
@@ -159,10 +161,20 @@ class AuthorizedRouteState extends State<StatefulWidget>
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {
-                        this
-                            .context
-                            .read<SubCalendarTilesBloc>()
-                            .add(UpdateSchedule());
+                        var scheduleBloc =
+                            this.context.read<ScheduleBloc>().state;
+                        if (scheduleBloc is ScheduleLoadedState) {
+                          this.context.read<ScheduleBloc>().add(GetSchedule(
+                              previousSubEvents: scheduleBloc.subEvents,
+                              scheduleTimeline: scheduleBloc.lookupTimeline,
+                              isAlreadyLoaded: true));
+                        }
+                        if (scheduleBloc is ScheduleInitialState) {
+                          this.context.read<ScheduleBloc>().add(GetSchedule(
+                              previousSubEvents: [],
+                              scheduleTimeline: Utility.initialScheduleTimeline,
+                              isAlreadyLoaded: false));
+                        }
                       });
                     },
                     child: ListTile(
@@ -189,10 +201,10 @@ class AuthorizedRouteState extends State<StatefulWidget>
                         print('Newly created tile');
                         print(newTileParams);
                         var subEvent = newSubEventParams.item1;
-                        this
-                            .context
-                            .read<SubCalendarTilesBloc>()
-                            .add(AddSubCalendarTile(subEvent: subEvent));
+                        // this
+                        //     .context
+                        //     .read<SubCalendarTilesBloc>()
+                        //     .add(AddSubCalendarTile(subEvent: subEvent));
                         int redColor = subEvent.colorRed == null
                             ? 125
                             : subEvent.colorRed!;
@@ -343,6 +355,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
     }
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: Color.fromRGBO(250, 254, 255, 1),
       body: Stack(
         children: widgetChildren,

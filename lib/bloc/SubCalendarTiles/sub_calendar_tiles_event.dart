@@ -7,20 +7,14 @@ abstract class SubCalendarTilesEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadSubCalendarTiles extends SubCalendarTilesEvent {
-  final List<SubCalendarEvent> previousSubEvents;
-  final Timeline scheduleTimeline;
-  final bool isAlreadyLoaded;
-  Timeline? previousTimeline;
+class GetSubCalendarTiles extends SubCalendarTilesEvent {
+  String subEventId;
+  SubCalendarEvent? subEvent;
 
-  LoadSubCalendarTiles(
-      {required this.previousSubEvents,
-      required this.scheduleTimeline,
-      required this.isAlreadyLoaded,
-      this.previousTimeline});
+  GetSubCalendarTiles({required this.subEventId, this.subEvent});
 
   @override
-  List<Object> get props => [previousSubEvents, scheduleTimeline];
+  List<Object> get props => [subEventId];
 }
 
 class AddSubCalendarTile extends SubCalendarTilesEvent {
@@ -45,14 +39,4 @@ class DeleteSubCalendarTile extends SubCalendarTilesEvent {
 
   @override
   List<Object> get props => [subEvent];
-}
-
-class UpdateSchedule extends SubCalendarTilesEvent {
-  Timeline? scheduleTimeline;
-  String? message;
-  SubCalendarEvent? triggerTile;
-  UpdateSchedule({this.scheduleTimeline, this.message, this.triggerTile});
-
-  @override
-  List<Object> get props => [];
 }

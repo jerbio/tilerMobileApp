@@ -303,4 +303,42 @@ class ScheduleApi extends AppApi {
     }
     throw error;
   }
+
+  Future reviseSchedule() async {
+    TilerError error = new TilerError();
+    error.Message = "Failed to revise schedule";
+    return sendPostRequest('api/Schedule/Revise', {}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      error.Message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        return;
+      }
+      if (isTilerRequestError(jsonResult)) {
+        var errorJson = jsonResult['Error'];
+        error = TilerError.fromJson(errorJson);
+        throw FormatException(error.Message!);
+      } else {
+        error.Message = "Issues with reaching Tiler servers";
+      }
+    });
+  }
+
+  Future shuffleSchedule() async {
+    TilerError error = new TilerError();
+    error.Message = "Failed to shuffle schedule";
+    return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      error.Message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        return;
+      }
+      if (isTilerRequestError(jsonResult)) {
+        var errorJson = jsonResult['Error'];
+        error = TilerError.fromJson(errorJson);
+        throw FormatException(error.Message!);
+      } else {
+        error.Message = "Issues with reaching Tiler servers";
+      }
+    });
+  }
 }

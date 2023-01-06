@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
-import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -56,9 +56,9 @@ class _TileListState extends State<TileList> {
           oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
-        final currentState = this.context.read<SubCalendarTilesBloc>().state;
-        if (currentState is SubCalendarTilesLoadedState) {
-          this.context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+        final currentState = this.context.read<ScheduleBloc>().state;
+        if (currentState is ScheduleLoadedState) {
+          this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: currentState.subEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -75,9 +75,9 @@ class _TileListState extends State<TileList> {
           oldTimeline = timeLine;
           timeLine = updatedTimeline;
         });
-        final currentState = this.context.read<SubCalendarTilesBloc>().state;
-        if (currentState is SubCalendarTilesLoadedState) {
-          this.context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+        final currentState = this.context.read<ScheduleBloc>().state;
+        if (currentState is ScheduleLoadedState) {
+          this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: currentState.subEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -152,14 +152,14 @@ class _TileListState extends State<TileList> {
 
       int todayDayIndex = Utility.getDayIndex(DateTime.now());
       Timeline relevantTimeline = this.oldTimeline ?? this.timeLine;
-      final currentState = this.context.read<SubCalendarTilesBloc>().state;
-      if (currentState is SubCalendarTilesLoadingState) {
+      final currentState = this.context.read<ScheduleBloc>().state;
+      if (currentState is ScheduleLoadingState) {
         if (currentState.previousLookupTimeline != null) {
           relevantTimeline = currentState.previousLookupTimeline!;
         }
       }
 
-      if (currentState is SubCalendarTilesLoadedState) {
+      if (currentState is ScheduleLoadedState) {
         relevantTimeline = currentState.lookupTimeline;
       }
 
@@ -321,9 +321,9 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SubCalendarTilesBloc, SubCalendarTilesState>(
+    return BlocListener<ScheduleBloc, ScheduleState>(
       listener: (context, state) {
-        if (state is SubCalendarTilesLoadingState) {
+        if (state is ScheduleLoadingState) {
           if (state.message != null) {
             Fluttertoast.showToast(
                 msg: state.message!,
@@ -336,28 +336,33 @@ class _TileListState extends State<TileList> {
           }
         }
       },
-      child: BlocBuilder<SubCalendarTilesBloc, SubCalendarTilesState>(
+      child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
-          if (state is SubCalendarTilesLoadedState) {
+          if (state is ScheduleLoadedState) {
             return renderSubCalendarTiles(
                 Tuple2(state.timelines, state.subEvents));
           }
 
-          if (state is SubCalendarTilesInitialState) {
-            context.read<SubCalendarTilesBloc>().add(LoadSubCalendarTiles(
+          if (state is ScheduleInitialState) {
+            context.read<ScheduleBloc>().add(GetSchedule(
                 scheduleTimeline: timeLine,
                 isAlreadyLoaded: false,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
           }
 
-          if (state is SubCalendarTilesInitialState) {
+          if (state is ScheduleInitialState) {
             return renderPending();
           }
 
-          if (state is SubCalendarTilesLoadingState) {
+          if (state is ScheduleLoadingState) {
             if (!state.isAlreadyLoaded) {
               return renderPending();
             }
+            return renderSubCalendarTiles(
+                Tuple2(state.timelines, state.subEvents));
+          }
+
+          if (state is ScheduleEvaluationState) {
             return renderSubCalendarTiles(
                 Tuple2(state.timelines, state.subEvents));
           }

@@ -5,6 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
@@ -57,12 +59,6 @@ class TilerApp extends StatelessWidget {
     return Center(
         child: Stack(children: [
       Center(
-          child: SizedBox(
-        child: CircularProgressIndicator(),
-        height: 200.0,
-        width: 200.0,
-      )),
-      Center(
           child: Image.asset('assets/images/tiler_logo_white_text.png',
               fit: BoxFit.cover, scale: 7)),
     ]));
@@ -73,6 +69,8 @@ class TilerApp extends StatelessWidget {
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => SubCalendarTilesBloc()),
+          BlocProvider(create: (context) => ScheduleBloc()),
+          BlocProvider(create: (context) => CalendarTileBloc())
         ],
         child: MaterialApp(
           title: 'Flutter Demo',
