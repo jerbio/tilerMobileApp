@@ -114,6 +114,20 @@ flutter:
       fonts:
         - asset: assets/fonts/Rubik/Rubik-VariableFont_wght.ttf
         - asset: assets/fonts/Rubik/Rubik-Italic-VariableFont_wght.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Black.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-BlackItalic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Bold.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-BoldItalic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-ExtraBold.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-ExtraBoldItalic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Italic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Light.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-LightItalic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Medium.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-MediumItalic.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-Regular.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-SemiBold.ttf
+        - asset: assets/fonts/Rubik/static/Rubik-SemiBoldItalic.ttf
           weight: 700
           style: italic
   # fonts:
