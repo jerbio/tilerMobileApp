@@ -84,11 +84,11 @@ class TileWidgetState extends State<TileWidget> {
       allElements.insert(1, adrressWidget);
     }
 
-    var currentTime = Utility.currentTime();
-
-    allElements.add(Container(
-        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-        child: TimeScrubWidget(timeline: widget.subEvent)));
+    allElements.add(FractionallySizedBox(
+        widthFactor: TileStyles.tileWidthRatio,
+        child: Container(
+            margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: TimeScrubWidget(timeline: widget.subEvent))));
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),

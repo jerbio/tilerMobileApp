@@ -253,7 +253,7 @@ class TileBatchState extends State<TileBatch> {
         alignment: Alignment.centerLeft,
         child: Text(widget.footer!,
             style: TextStyle(
-                fontSize: 20,
+                fontSize: 40,
                 color: Color.fromRGBO(169, 169, 169, 1),
                 fontFamily: TileStyles.rubikFontName,
                 fontWeight: FontWeight.bold)),

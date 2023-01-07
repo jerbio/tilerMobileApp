@@ -74,9 +74,7 @@ class Authorization extends AppApi {
     if (response.statusCode == 200) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
-        if (isContentInResponse(jsonResult)) {
-          return await getAuthenticationInfo(queryUserName, password);
-        }
+        return await getAuthenticationInfo(queryUserName, password);
       }
 
       retValue.errorMessage = errorMessage(jsonResult);
