@@ -5,6 +5,7 @@ import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart';
@@ -99,7 +100,11 @@ class WithinNowBatchState extends TileBatchState {
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
         alignment: Alignment.centerLeft,
         child: Text(widget.header!,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontSize: 40,
+                color: Color.fromRGBO(169, 169, 169, 1),
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.bold)),
       );
       precedingTileWidgets.add(headerContainer);
     }
@@ -109,7 +114,11 @@ class WithinNowBatchState extends TileBatchState {
         margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
         alignment: Alignment.centerLeft,
         child: Text(widget.footer!,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            style: TextStyle(
+                fontSize: 40,
+                color: Color.fromRGBO(169, 169, 169, 0.7),
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.bold)),
       );
       upcomningTileWidgets.insert(0, footerContainer);
     }

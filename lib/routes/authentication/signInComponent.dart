@@ -110,6 +110,10 @@ class SignInComponentState extends State<SignInComponent> {
   }
 
   void setAsRegistrationScreen() {
+    userNameEditingController.clear();
+    passwordEditingController.clear();
+    emailEditingController.clear();
+    confirmPasswordEditingController.clear();
     setState(() => {
           isRegistrationScreen = true,
           credentialManagerHeight = 450,
@@ -118,6 +122,10 @@ class SignInComponentState extends State<SignInComponent> {
   }
 
   void setAsSignInScreen() {
+    userNameEditingController.clear();
+    passwordEditingController.clear();
+    emailEditingController.clear();
+    confirmPasswordEditingController.clear();
     setState(() => {
           isRegistrationScreen = false,
           credentialManagerHeight = 350,

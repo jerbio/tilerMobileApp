@@ -308,32 +308,30 @@ class EventNameSearchState extends SearchWidgetState {
     }
 
     Key dismissibleKey = Key(tile.id!);
-    Widget retValue = Dismissible(
-        key: dismissibleKey,
-        child: Container(
-          height: 125,
-          padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-                bottomLeft: Radius.circular(10),
-                bottomRight: Radius.circular(10)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                spreadRadius: 5,
-                blurRadius: 5,
-                offset: Offset(0, 1),
-              ),
-            ],
+    Widget retValue = Container(
+      height: 125,
+      padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 5,
+            blurRadius: 5,
+            offset: Offset(0, 1),
           ),
-          child: Stack(
-            children: childWidgets,
-          ),
-        ));
+        ],
+      ),
+      child: Stack(
+        children: childWidgets,
+      ),
+    );
 
     return retValue;
   }
