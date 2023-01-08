@@ -1,42 +1,49 @@
 part of 'sub_calendar_tiles_bloc.dart';
 
-abstract class SubCalendarTilesEvent extends Equatable {
-  const SubCalendarTilesEvent();
+abstract class SubCalendarTileEvent extends Equatable {
+  const SubCalendarTileEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class GetSubCalendarTiles extends SubCalendarTilesEvent {
+class GetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   String subEventId;
   SubCalendarEvent? subEvent;
 
-  GetSubCalendarTiles({required this.subEventId, this.subEvent});
+  GetSubCalendarTileBlocEvent({required this.subEventId, this.subEvent});
 
   @override
   List<Object> get props => [subEventId];
 }
 
-class AddSubCalendarTile extends SubCalendarTilesEvent {
+class AddSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   final SubCalendarEvent subEvent;
-  const AddSubCalendarTile({required this.subEvent});
+  const AddSubCalendarTileBlocEvent({required this.subEvent});
 
   @override
   List<Object> get props => [subEvent];
 }
 
-class UpdateSubCalendarTile extends SubCalendarTilesEvent {
+class UpdateSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   final SubCalendarEvent subEvent;
-  const UpdateSubCalendarTile({required this.subEvent});
+  const UpdateSubCalendarTileBlocEvent({required this.subEvent});
 
   @override
   List<Object> get props => [subEvent];
 }
 
-class DeleteSubCalendarTile extends SubCalendarTilesEvent {
+class DeleteSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   final SubCalendarEvent subEvent;
-  const DeleteSubCalendarTile({required this.subEvent});
+  const DeleteSubCalendarTileBlocEvent({required this.subEvent});
 
   @override
   List<Object> get props => [subEvent];
+}
+
+class ResetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
+  const ResetSubCalendarTileBlocEvent();
+
+  @override
+  List<Object> get props => [];
 }

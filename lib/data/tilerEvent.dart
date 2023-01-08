@@ -12,6 +12,8 @@ class TilerEvent extends TilerObj with TimeRange {
   String? thirdpartyType;
   String thirdpartyId = '';
   String? searchdDescription;
+  int? split;
+  TilerEvent? calendarEvent;
 
   double? _startInMs;
   // ignore: unnecessary_getters_setters
@@ -103,6 +105,9 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('isRecurring')) {
       isRecurring = json['isRecurring'];
     }
+    if (json.containsKey('splitCount')) {
+      split = json['splitCount'];
+    }    
   }
 
   toString() {

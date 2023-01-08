@@ -3,17 +3,43 @@ import 'dart:math';
 
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
 
 import '../../constants.dart' as Constants;
 
 class SubCalendarEventApi extends AppApi {
-  Future<SubCalendarEvent> getSubEvent(String id) {
+  Future<SubCalendarEvent> getSubEvent(String id) async {
     String tilerDomain = Constants.tilerDomain;
-    String url = tilerDomain + 'api/SubCalendarEvent';
-    return getAdHocSubEventId(id);
+    // String url = tilerDomain + 'api/SubCalendarEvent';
+    // return getAdHocSubEventId(id);
+    if (await this.authentication.isUserAuthenticated()) {
+      await this.authentication.reLoadCredentialsCache();
+        String tilerDomain = Constants.tilerDomain;
+        String url = tilerDomain;
+        final queryParameters = {
+          'EventID': id,
+        };
+        Map<String, String?>updatedParams = await injectRequestParams(queryParameters, includeLocationParams: false);
+        Uri uri =
+            Uri.https(url, 'api/SubCalendarEvent', updatedParams);
+          var header = this.getHeaders();
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult)) {
+              return SubCalendarEvent.fromJson(jsonResult['Content']);
+            }
+          }
+        }
+       throw TilerError(); 
+      }
+   throw TilerError();   
+
   }
 
   Future<SubCalendarEvent> pauseTile(String id) async {
@@ -151,7 +177,7 @@ class SubCalendarEventApi extends AppApi {
     retValue.end = revisedEnd.toDouble();
 
     Future<SubCalendarEvent> retFuture =
-        new Future.delayed(const Duration(seconds: 0), () => retValue);
+        new Future.delayed(const Duration(seconds: 5), () => retValue);
     return retFuture;
   }
 }

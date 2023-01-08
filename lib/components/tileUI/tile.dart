@@ -7,6 +7,7 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 
@@ -94,50 +95,55 @@ class TileWidgetState extends State<TileWidget> {
         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: PlayBack(widget.subEvent)));
 
-    return Container(
-      margin: this.widget.subEvent.isCurrentTimeWithin
-          ? EdgeInsets.fromLTRB(0, 100, 0, 100)
-          : EdgeInsets.fromLTRB(0, 20, 0, 20),
-      child: Material(
-          type: MaterialType.transparency,
-          child: FractionallySizedBox(
-              widthFactor: TileStyles.tileWidthRatio,
-              child: Container(
-                height: allElements.length < 3 ? 300 : 350,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 5,
-                  ),
-                  borderRadius: BorderRadius.circular(TileStyles.borderRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: tileBackGroundColor.withOpacity(0.2),
-                      spreadRadius: 5,
-                      blurRadius: 15,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
-                ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => EditTile(tileId: this.widget.subEvent.id!)));
+      },
+      child: Container(
+        margin: this.widget.subEvent.isCurrentTimeWithin
+            ? EdgeInsets.fromLTRB(0, 100, 0, 100)
+            : EdgeInsets.fromLTRB(0, 20, 0, 20),
+        child: Material(
+            type: MaterialType.transparency,
+            child: FractionallySizedBox(
+                widthFactor: TileStyles.tileWidthRatio,
                 child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    decoration: BoxDecoration(
-                      color: tileBackGroundColor,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 0.5,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(TileStyles.borderRadius),
+                  height: allElements.length < 3 ? 300 : 350,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 5,
                     ),
-                    child: Column(
-                      mainAxisAlignment: allElements.length < 4
-                          ? MainAxisAlignment.spaceBetween
-                          : MainAxisAlignment.center,
-                      children: allElements,
-                    )),
-              ))),
+                    borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                    boxShadow: [
+                      BoxShadow(
+                        color: tileBackGroundColor.withOpacity(0.2),
+                        spreadRadius: 5,
+                        blurRadius: 15,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Container(
+                      padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      decoration: BoxDecoration(
+                        color: tileBackGroundColor,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 0.5,
+                        ),
+                        borderRadius:
+                            BorderRadius.circular(TileStyles.borderRadius),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: allElements.length < 4
+                            ? MainAxisAlignment.spaceBetween
+                            : MainAxisAlignment.center,
+                        children: allElements,
+                      )),
+                ))),
+      ),
     );
   }
 }

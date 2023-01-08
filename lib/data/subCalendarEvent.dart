@@ -84,5 +84,12 @@ class SubCalendarEvent extends TilerEvent {
         json['isPausedTimeLine'] != null) {
       isPausedTimeLine = cast<bool>(json['isPausedTimeLine'])!;
     }
+
+    if (json.containsKey('calendarEvent')) {
+      calendarEvent = TilerEvent.fromJson(json['calendarEvent']);
+      if(calendarEvent!=null) {
+        split = calendarEvent!.split;
+      }
+    }
   }
 }
