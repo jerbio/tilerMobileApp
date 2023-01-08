@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/blobEvent.dart';
+import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
@@ -46,6 +47,13 @@ class Utility {
 
   static int getTimeZoneOffset() {
     return (-currentTime().timeZoneOffset.inMinutes);
+  }
+
+  static bool isEditTileEventEquivalentToTileEvent(EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
+    bool retValue = editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch == tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+      editTilerEvent.name == tilerEvent.name &&
+      editTilerEvent.splitCount == tilerEvent.split;
+      return retValue;
   }
 
   static int getDayIndex(DateTime time) {

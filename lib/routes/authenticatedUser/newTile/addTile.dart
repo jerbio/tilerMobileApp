@@ -522,7 +522,7 @@ class AddTileState extends State<AddTile> {
       initialDate: _endDate,
       firstDate: firstDate,
       lastDate: lastDate,
-      helpText: 'Select a deadline',
+      helpText: AppLocalizations.of(context)!.selectADeadline,
     );
     if (revisedEndDate != null) {
       DateTime updatedEndTime = new DateTime(

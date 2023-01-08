@@ -1,28 +1,26 @@
 part of 'sub_calendar_tiles_bloc.dart';
 
-abstract class SubCalendarTilesState extends Equatable {
-  const SubCalendarTilesState();
+abstract class SubCalendarTileState extends Equatable {
+  const SubCalendarTileState();
 
   @override
   List<Object> get props => [];
 }
 
-class SubCalendarTilesInitialState extends SubCalendarTilesState {}
+class SubCalendarTilesInitialState extends SubCalendarTileState {}
 
-class SubCalendarTilesLoadingState extends SubCalendarTilesState {
-  String subEventId;
-  SubCalendarEvent? subEvent;
-  ConnectionState connectionState = ConnectionState.none;
+class SubCalendarTilesLoadingState extends SubCalendarTileState {
+  final String subEventId;
 
-  SubCalendarTilesLoadingState({required this.subEventId, this.subEvent});
+  SubCalendarTilesLoadingState({required this.subEventId});
 
   @override
   List<Object> get props => [subEventId];
 }
 
-class SubCalendarTilesLoadedState extends SubCalendarTilesState {
+class SubCalendarTileLoadedState extends SubCalendarTileState {
   final SubCalendarEvent subEvent;
-  SubCalendarTilesLoadedState({required this.subEvent});
+  SubCalendarTileLoadedState({required this.subEvent});
 
   @override
   List<Object> get props => [subEvent];
