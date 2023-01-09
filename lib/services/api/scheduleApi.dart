@@ -220,7 +220,7 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
       NewTile tile) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send request";
+    error.message = "Did not send request";
     bool userIsAuthenticated = true;
     userIsAuthenticated = await this.authentication.isUserAuthenticated();
     if (userIsAuthenticated) {
@@ -240,7 +240,7 @@ class ScheduleApi extends AppApi {
           var response = await http.post(uri,
               headers: header, body: jsonEncode(injectedParameters));
           var jsonResult = jsonDecode(response.body);
-          error.Message = "Issues with reaching Tiler servers";
+          error.message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
             if (isContentInResponse(jsonResult)) {
               var subEventJson = jsonResult['Content'];
@@ -252,9 +252,9 @@ class ScheduleApi extends AppApi {
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
-            throw FormatException(error.Message!);
+            throw FormatException(error.message!);
           } else {
-            error.Message = "Issues with reaching TIler servers";
+            error.message = "Issues with reaching TIler servers";
           }
         }
       }
@@ -264,7 +264,7 @@ class ScheduleApi extends AppApi {
 
   Future procrastinateAll(Duration duration) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send procrastinate all request";
+    error.message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;
     userIsAuthenticated = await this.authentication.isUserAuthenticated();
     if (userIsAuthenticated) {
@@ -287,16 +287,16 @@ class ScheduleApi extends AppApi {
           var response = await http.post(uri,
               headers: header, body: jsonEncode(injectedParameters));
           var jsonResult = jsonDecode(response.body);
-          error.Message = "Issues with reaching Tiler servers";
+          error.message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
             return;
           }
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
-            throw FormatException(error.Message!);
+            throw FormatException(error.message!);
           } else {
-            error.Message = "Issues with reaching TIler servers";
+            error.message = "Issues with reaching TIler servers";
           }
         }
       }
@@ -306,38 +306,42 @@ class ScheduleApi extends AppApi {
 
   Future reviseSchedule() async {
     TilerError error = new TilerError();
-    error.Message = "Failed to revise schedule";
+    error.message = "Failed to revise schedule";
+    
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.Message = "Issues with reaching Tiler servers";
+      error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return;
       }
       if (isTilerRequestError(jsonResult)) {
         var errorJson = jsonResult['Error'];
         error = TilerError.fromJson(errorJson);
-        throw FormatException(error.Message!);
+        throw error;
       } else {
-        error.Message = "Issues with reaching Tiler servers";
+        error.message = "Issues with reaching Tiler servers";
+        throw error;
       }
     });
+
+    
   }
 
   Future shuffleSchedule() async {
     TilerError error = new TilerError();
-    error.Message = "Failed to shuffle schedule";
+    error.message = "Failed to shuffle schedule";
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.Message = "Issues with reaching Tiler servers";
+      error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return;
       }
       if (isTilerRequestError(jsonResult)) {
         var errorJson = jsonResult['Error'];
         error = TilerError.fromJson(errorJson);
-        throw FormatException(error.Message!);
+        throw FormatException(error.message!);
       } else {
-        error.Message = "Issues with reaching Tiler servers";
+        error.message = "Issues with reaching Tiler servers";
       }
     });
   }

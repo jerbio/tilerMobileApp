@@ -4,7 +4,7 @@ part 'TilerError.g.dart';
 @JsonSerializable()
 class TilerError {
   TilerError();
-  String? Message;
+  String? message;
   String? Code;
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>

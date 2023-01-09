@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/status.dart';
@@ -156,6 +157,66 @@ class AuthorizedRouteState extends State<StatefulWidget>
                 //     ),
                 //   ),
                 // ),
+                GestureDetector(
+                  onTap: () {
+                    final currentState =
+                        this.context.read<ScheduleBloc>().state;
+                    if (currentState is ScheduleLoadedState) {
+                      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
+                            isAlreadyLoaded: true,
+                            renderedScheduleTimeline:
+                                currentState.lookupTimeline,
+                            renderedSubEvents: currentState.subEvents,
+                            renderedTimelines: currentState.timelines,
+                            message:
+                                AppLocalizations.of(context)!.revisingSchedule,
+                          ));
+                    }
+                    ScheduleApi().reviseSchedule().then((value) {
+                      final currentState =
+                          this.context.read<ScheduleBloc>().state;
+                      if (currentState is ScheduleEvaluationState) {
+                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                      }
+                    }).catchError((onError) {
+                      final currentState =
+                          this.context.read<ScheduleBloc>().state;
+                      Fluttertoast.showToast(
+                          msg: onError!.message,
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.SNACKBAR,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.black45,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      if (currentState is ScheduleEvaluationState) {
+                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                      }
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: ListTile(
+                    leading: Icon(Icons.refresh, color: Colors.white),
+                    title: Text(
+                      AppLocalizations.of(context)!.revise,
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.w300,
+                          color: Colors.white),
+                    ),
+                  ),
+                ),
                 GestureDetector(
                     onTap: () {
                       Navigator.pop(context);

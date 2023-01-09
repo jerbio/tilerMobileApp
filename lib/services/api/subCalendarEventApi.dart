@@ -18,7 +18,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> pauseTile(String id) async {
     TilerError error = new TilerError();
-    error.Message = "Failed to pause tile";
+    error.message = "Failed to pause tile";
     return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id})
         .then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -36,7 +36,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Failed to resume tile";
+    error.message = "Failed to resume tile";
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType
@@ -56,7 +56,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Did not move up task";
+    error.message = "Did not move up task";
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType
@@ -76,7 +76,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send complete request";
+    error.message = "Did not send complete request";
     print(subEvent);
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
