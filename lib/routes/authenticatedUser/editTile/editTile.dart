@@ -170,7 +170,8 @@ class _EditTileState extends State<EditTile> {
         child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
           builder: (context, state) {
             if (state is SubCalendarTilesInitialState ||
-                state is SubCalendarTilesLoadingState) {
+                state is SubCalendarTilesLoadingState ||
+                this.subEvent == null) {
               return PendingWidget();
             }
             _editTileName = EditTileName(

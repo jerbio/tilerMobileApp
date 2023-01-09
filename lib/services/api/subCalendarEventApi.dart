@@ -107,15 +107,15 @@ class SubCalendarEventApi extends AppApi {
     var queryParameters = {
       'EventID': subEvent.id,
       'EventName': subEvent.name,
-      'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch,
-      'End': subEvent.endTime!.toUtc().millisecondsSinceEpoch,
-      'CalStart': subEvent.calStartTime!.toUtc().millisecondsSinceEpoch,
-      'CalEnd': subEvent.calEndTime!.toUtc().millisecondsSinceEpoch,
-      'Split': subEvent.splitCount,
-      'ThirdPartyEventID': subEvent.thirdPartyId,
-      'ThirdPartyUserID': subEvent.thirdPartyUserId,
-      'ThirdPartyType': subEvent.thirdPartyType,
-      'Notes': subEvent.note
+      'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'End': subEvent.endTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'CalStart': subEvent.calStartTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'CalEnd': subEvent.calEndTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'Split': subEvent.splitCount.toString(),
+      'ThirdPartyEventID': subEvent.thirdPartyId.toString(),
+      'ThirdPartyUserID': subEvent.thirdPartyUserId.toString(),
+      'ThirdPartyType': subEvent.thirdPartyType.toString(),
+      'Notes': subEvent.note.toString(),
     };
     return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
         .then((response) {
