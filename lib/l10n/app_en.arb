@@ -70,6 +70,9 @@
     "previously":"Previously",
     "upcoming":"Upcoming",
     "failedToSendRequest":"Failed to send request",
+    "start":"Start",
+    "end":"End",
+    "deadline": "Deadline",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"

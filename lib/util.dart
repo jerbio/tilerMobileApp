@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/blobEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
@@ -49,11 +50,30 @@ class Utility {
     return (-currentTime().timeZoneOffset.inMinutes);
   }
 
-  static bool isEditTileEventEquivalentToTileEvent(EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
-    bool retValue = editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch == tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
-      editTilerEvent.name == tilerEvent.name &&
-      editTilerEvent.splitCount == tilerEvent.split;
-      return retValue;
+  static bool isEditTileEventEquivalentToTileEvent(
+      EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
+    bool retValue =
+        editTilerEvent.startTime!.toLocal().millisecondsSinceEpoch ==
+                tilerEvent.startTime!.toLocal().millisecondsSinceEpoch &&
+            editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch ==
+                tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+            editTilerEvent.name == tilerEvent.name &&
+            editTilerEvent.splitCount == tilerEvent.split;
+    if (editTilerEvent.note != null && tilerEvent.noteData != null) {
+      retValue &= editTilerEvent.note == tilerEvent.noteData!.note;
+    }
+    return retValue;
+  }
+
+  static bool isEditTileEventEquivalentToSubCalendarEvent(
+      EditTilerEvent editTilerEvent, SubCalendarEvent subCalendarEvent) {
+    bool retValue =
+        isEditTileEventEquivalentToTileEvent(editTilerEvent, subCalendarEvent);
+    retValue &= editTilerEvent.calEndTime!.toLocal().millisecondsSinceEpoch ==
+        subCalendarEvent.rangeEndTime!.toLocal().millisecondsSinceEpoch;
+    retValue &= editTilerEvent.calStartTime!.toLocal().millisecondsSinceEpoch ==
+        subCalendarEvent.rangeStartTime!.toLocal().millisecondsSinceEpoch;
+    return retValue;
   }
 
   static int getDayIndex(DateTime time) {
