@@ -186,11 +186,11 @@ class _EditTileState extends State<EditTile> {
               onInputChange: dataChange,
             );
             _editCalStartDateAndTime = EditDateAndTime(
-              time: this.subEvent!.rangeStartTime!.toLocal(),
+              time: this.subEvent!.calendarEventStartTime!.toLocal(),
               onInputChange: dataChange,
             );
             _editCalEndDateAndTime = EditDateAndTime(
-              time: this.subEvent!.rangeEndTime!.toLocal(),
+              time: this.subEvent!.calendarEventEndTime!.toLocal(),
               onInputChange: dataChange,
             );
             return Container(
