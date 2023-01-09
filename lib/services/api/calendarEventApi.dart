@@ -17,13 +17,13 @@ import '../../constants.dart' as Constants;
 class CalendarEventApi extends AppApi {
   Future<TilerEvent> setAsNow(String eventId) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send request";
+    error.message = "Did not send request";
     print('setAsNow ' + eventId);
     return sendPostRequest('api/CalendarEvent/Now', {
       'ID': eventId,
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.Message = "Issues with reaching Tiler servers";
+      error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         var calendarEventAsNowJson = jsonResult['Content'];
         return TilerEvent.fromJson(calendarEventAsNowJson);
@@ -31,9 +31,9 @@ class CalendarEventApi extends AppApi {
       if (isTilerRequestError(jsonResult)) {
         var errorJson = jsonResult['Error'];
         error = TilerError.fromJson(errorJson);
-        throw FormatException(error.Message!);
+        throw FormatException(error.message!);
       } else {
-        error.Message = "Issues with reaching Tiler servers";
+        error.message = "Issues with reaching Tiler servers";
       }
       throw error;
     });
@@ -44,7 +44,7 @@ class CalendarEventApi extends AppApi {
     print('deleting ' + eventId);
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
-      error.Message = "Did not send request";
+      error.message = "Did not send request";
       String url = Constants.tilerDomain;
 
       Uri uri = Uri.https(url, 'api/CalendarEvent');
@@ -61,7 +61,7 @@ class CalendarEventApi extends AppApi {
         var response = await http.delete(uri,
             headers: header, body: json.encode(deleteCalendarEventParameters));
         var jsonResult = jsonDecode(response.body);
-        error.Message = "Issues with reaching Tiler servers";
+        error.message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             var deleteCalendarEventJson = jsonResult['Content'];
@@ -71,7 +71,7 @@ class CalendarEventApi extends AppApi {
               var errorJson = jsonResult['Error'];
               error = TilerError.fromJson(errorJson);
             } else {
-              error.Message = "Issues with reaching TIler servers";
+              error.message = "Issues with reaching TIler servers";
             }
           }
         }
@@ -83,7 +83,7 @@ class CalendarEventApi extends AppApi {
   Future<TilerEvent> complete(String eventId) async {
     TilerError error = new TilerError();
     print('completing ' + eventId);
-    error.Message = "Did not send request";
+    error.message = "Did not send request";
     var completeParameters = {
       'ID': eventId,
       'EventID': eventId,
@@ -94,16 +94,16 @@ class CalendarEventApi extends AppApi {
     return sendPostRequest('api/CalendarEvent/Complete', completeParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.Message = "Issues with reaching Tiler servers";
+      error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return TilerEvent.fromJson(jsonResult['Content']);
       }
       if (isTilerRequestError(jsonResult)) {
         var errorJson = jsonResult['Error'];
         error = TilerError.fromJson(errorJson);
-        throw FormatException(error.Message!);
+        throw FormatException(error.message!);
       } else {
-        error.Message = "Issues with reaching Tiler servers";
+        error.message = "Issues with reaching Tiler servers";
       }
       throw error;
     });
