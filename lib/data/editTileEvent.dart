@@ -21,6 +21,10 @@ class EditTilerEvent {
     retValue &= calStartTime != null;
     retValue &= calEndTime != null;
     retValue &= note != null;
+    if(startTime!=null && endTime != null) {
+      retValue &= startTime!.millisecondsSinceEpoch < endTime!.millisecondsSinceEpoch;
+    }
+    
 
     return retValue;
   }
