@@ -54,6 +54,16 @@ class SubCalendarEvent extends TilerEvent {
     return Utility.msCurrentTime >= this.end;
   }
 
+  DateTime? get rangeStartTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.rangeStart!.toInt(),
+        isUtc: true);
+  }
+
+  DateTime? get rangeEndTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.rangeEnd!.toInt(),
+        isUtc: true);
+  }
+
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
@@ -87,7 +97,7 @@ class SubCalendarEvent extends TilerEvent {
 
     if (json.containsKey('calendarEvent')) {
       calendarEvent = TilerEvent.fromJson(json['calendarEvent']);
-      if(calendarEvent!=null) {
+      if (calendarEvent != null) {
         split = calendarEvent!.split;
       }
     }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -18,28 +19,28 @@ class SubCalendarEventApi extends AppApi {
     // return getAdHocSubEventId(id);
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
-        String tilerDomain = Constants.tilerDomain;
-        String url = tilerDomain;
-        final queryParameters = {
-          'EventID': id,
-        };
-        Map<String, String?>updatedParams = await injectRequestParams(queryParameters, includeLocationParams: false);
-        Uri uri =
-            Uri.https(url, 'api/SubCalendarEvent', updatedParams);
-          var header = this.getHeaders();
-        if (header != null) {
-          var response = await http.get(uri, headers: header);
-          var jsonResult = jsonDecode(response.body);
-          if (isJsonResponseOk(jsonResult)) {
-            if (isContentInResponse(jsonResult)) {
-              return SubCalendarEvent.fromJson(jsonResult['Content']);
-            }
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      final queryParameters = {
+        'EventID': id,
+      };
+      Map<String, String?> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
+      var header = this.getHeaders();
+      if (header != null) {
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            return SubCalendarEvent.fromJson(jsonResult['Content']);
           }
         }
-       throw TilerError(); 
       }
-   throw TilerError();   
-
+      throw TilerError();
+    }
+    throw TilerError();
   }
 
   Future<SubCalendarEvent> pauseTile(String id) async {
@@ -87,6 +88,37 @@ class SubCalendarEventApi extends AppApi {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType
     }).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult) ?? error;
+      throw error;
+    });
+  }
+
+  Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
+    TilerError error = new TilerError();
+    error.Message = "Did not update tile";
+    var queryParameters = {
+      'EventID': subEvent.id,
+      'EventName': subEvent.name,
+      'Start': subEvent.startTime!.toUtc().millisecondsSinceEpoch,
+      'End': subEvent.endTime!.toUtc().millisecondsSinceEpoch,
+      'CalStart': subEvent.calStartTime!.toUtc().millisecondsSinceEpoch,
+      'CalEnd': subEvent.calEndTime!.toUtc().millisecondsSinceEpoch,
+      'Split': subEvent.splitCount,
+      'ThirdPartyEventID': subEvent.thirdPartyId,
+      'ThirdPartyUserID': subEvent.thirdPartyUserId,
+      'ThirdPartyType': subEvent.thirdPartyType,
+      'Notes': subEvent.note
+    };
+    return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
+        .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
