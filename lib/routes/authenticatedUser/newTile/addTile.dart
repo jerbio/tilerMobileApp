@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
+import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
@@ -24,6 +25,7 @@ import '../../../constants.dart' as Constants;
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
   Function? onAddingATile;
+  AutoTile? autoTile;
   static final String routeName = '/AddTile';
   final ScheduleApi scheduleApi = ScheduleApi();
   Map? newTileParams;
@@ -32,6 +34,7 @@ class AddTile extends StatefulWidget {
 }
 
 class AddTileState extends State<AddTile> {
+  late AutoTile? autoTile;
   final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
   final Color textBorderColor = Colors.white;
   final Color iconColor = Color.fromRGBO(154, 158, 159, 1);

@@ -96,6 +96,12 @@ flutter:
     - assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png
     - assets/images/regenerativeArt/pictimely_Make_a_bird_feeder_28f817f4-f638-4730-bf9c-4273f6a6ef33.png
     - assets/images/regenerativeArt/pictimely_Reorganize_your_closets_abdd967a-9592-444b-b772-0326fa46d8ea.png
+    - assets/images/regenerativeArt/pictimely_plant_indoor_garden_fb195907-8fd8-4c03-b998-61eb0d000f5f.png
+    - assets/images/regenerativeArt/pictimely_make_a_tshirt_05b6d04b-a565-4683-bbf8-6e208acee019.png
+    - assets/images/regenerativeArt/pictimely_take_a_nap_d7b1437a-eb98-458b-ad54-50ccd9792ea1.png
+    - assets/images/regenerativeArt/pictimely_go_for_a_walk_at_different_time_of_the_day_and_differ_e708108b-c576-4e27-a01c-dce2a88c7599.png
+    - assets/images/regenerativeArt/pictimely_people_trying_to_find_something_to_do_while_listening_7fcfd84e-fde9-44b1-8835-470d9ff7036d.png
+    - assets/images/regenerativeArt/pictimely_decorate_a_room_05c28f1e-30fb-44f9-9738-30fe5decab93.png
     - assets/rive/
     # - images/a_dot_ham.jpeg
   generate: true
