@@ -56,14 +56,19 @@ class TileAddressState extends State<TileAddress> {
               ),
             ),
             addressString != null
-                ? Text(
-                    addressString,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Rubik',
-                        fontWeight: FontWeight.normal,
-                        color: Color.fromRGBO(31, 31, 31, 1)),
+                ? Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                      child: Text(
+                        addressString,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Rubik',
+                            fontWeight: FontWeight.normal,
+                            color: Color.fromRGBO(31, 31, 31, 1)),
+                      ),
+                    ),
                   )
                 : Container()
           ],
