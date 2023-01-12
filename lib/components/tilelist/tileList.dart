@@ -17,10 +17,6 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import '../../constants.dart';
 
 /**
  * This renders the list of tiles on a given day
@@ -306,28 +302,27 @@ class _TileListState extends State<TileList> {
 
   Widget renderPending({String? message}) {
     List<Widget> centerElements = [
-        Center(
-            child: SizedBox(
-          child: CircularProgressIndicator(),
-          height: 200.0,
-          width: 200.0,
-        )),
-        Center(
-            child: Image.asset('assets/images/tiler_logo_black.png',
-                fit: BoxFit.cover, scale: 7)),
-      ];
-      if(message != null && message.isNotEmpty) {
-        centerElements.add(Center(
-          child: Container(
-            margin: EdgeInsets.fromLTRB(0, 120, 0, 0),
-            child: Text(message),
-          ),
-        ));
-      }
+      Center(
+          child: SizedBox(
+        child: CircularProgressIndicator(),
+        height: 200.0,
+        width: 200.0,
+      )),
+      Center(
+          child: Image.asset('assets/images/tiler_logo_black.png',
+              fit: BoxFit.cover, scale: 7)),
+    ];
+    if (message != null && message.isNotEmpty) {
+      centerElements.add(Center(
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 120, 0, 0),
+          child: Text(message),
+        ),
+      ));
+    }
     return Container(
       decoration: TileStyles.defaultBackground,
-      child: Center(
-          child: Stack(children: centerElements)),
+      child: Center(child: Stack(children: centerElements)),
     );
   }
 
@@ -378,21 +373,21 @@ class _TileListState extends State<TileList> {
             return Stack(
               children: [
                 renderSubCalendarTiles(
-                Tuple2(state.timelines, state.subEvents)),
+                    Tuple2(state.timelines, state.subEvents)),
                 Container(
-                width: (MediaQuery.of(context).size.width),
-                height: (MediaQuery.of(context).size.height),
-                child: new Center(
-                    child: new ClipRect(
-                        child: new BackdropFilter(
-                  filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
-                  child: new Container(
                     width: (MediaQuery.of(context).size.width),
                     height: (MediaQuery.of(context).size.height),
-                    decoration: new BoxDecoration(
-                        color: Colors.grey.shade200.withOpacity(0.5)),
-                  ),
-                )))),
+                    child: new Center(
+                        child: new ClipRect(
+                            child: new BackdropFilter(
+                      filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+                      child: new Container(
+                        width: (MediaQuery.of(context).size.width),
+                        height: (MediaQuery.of(context).size.height),
+                        decoration: new BoxDecoration(
+                            color: Colors.grey.shade200.withOpacity(0.5)),
+                      ),
+                    )))),
                 renderPending(message: state.message),
               ],
             );

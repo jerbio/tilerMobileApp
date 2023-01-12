@@ -71,14 +71,25 @@ class SignInRouteState extends State<SignInRoute> {
         Container(
             decoration: BoxDecoration(
                 gradient: paintGradient.LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                     colors: [
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55)
+                  Colors.white,
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.125),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.25),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.25),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
+                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
+                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
+                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
                 ])),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,13 +101,11 @@ class SignInRouteState extends State<SignInRoute> {
           padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
           alignment: Alignment.topCenter,
           child: Image.asset(
-            'assets/images/tiler_logo_white.png',
+            'assets/images/tiler_logo_black.png',
             scale: 4,
           ),
         ),
       ],
     )));
-
-    ;
   }
 }

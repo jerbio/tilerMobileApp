@@ -58,6 +58,7 @@ class TileAddressState extends State<TileAddress> {
             addressString != null
                 ? Text(
                     addressString,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'Rubik',
