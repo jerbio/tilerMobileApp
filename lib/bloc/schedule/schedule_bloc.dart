@@ -32,7 +32,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         lookupTimeline: event.lookupTimeline));
   }
 
-  void _onGetSchedule(GetSchedule event, Emitter<ScheduleState> emit) async {
+  Future<void> _onGetSchedule(
+      GetSchedule event, Emitter<ScheduleState> emit) async {
     final state = this.state;
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
@@ -92,7 +93,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           isAlreadyLoaded: true,
           connectionState: ConnectionState.waiting));
 
-      await getSubTiles(updateTimeline).then((value) {
+      await getSubTiles(updateTimeline).then((value) async {
         emit(ScheduleLoadedState(
             subEvents: value.item2,
             timelines: value.item1,
@@ -102,7 +103,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
   }
 
-  void _onReviseSchedule(
+  Future<void> _onReviseSchedule(
       ReviseScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
     if (state is ScheduleLoadedState) {
@@ -111,8 +112,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           lookupTimeline: state.lookupTimeline,
           message: event.message));
-      await this.scheduleApi.reviseSchedule().then((value) {
-        this._onGetSchedule(
+      await this.scheduleApi.reviseSchedule().then((value) async {
+        await this._onGetSchedule(
             GetSchedule(
               isAlreadyLoaded: true,
               previousSubEvents: state.subEvents,
@@ -131,5 +132,18 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         timelines: event.renderedTimelines,
         lookupTimeline: event.renderedScheduleTimeline,
         message: event.message));
+    if (event.callBack != null) {
+      await event.callBack!.whenComplete(() async {
+        // emit.call(ScheduleInitialState());
+        await this._onGetSchedule(
+            GetSchedule(
+              isAlreadyLoaded: true,
+              previousSubEvents: event.renderedSubEvents,
+              previousTimeline: event.renderedScheduleTimeline,
+              scheduleTimeline: event.renderedScheduleTimeline,
+            ),
+            emit);
+      });
+    }
   }
 }
