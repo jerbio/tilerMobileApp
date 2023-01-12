@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:tiler_app/styles.dart';
 
 class TileDate extends StatefulWidget {
   DateTime date;
@@ -28,7 +29,7 @@ class _TileDateState extends State<TileDate> {
                   borderRadius: BorderRadius.circular(8)),
               child: Icon(
                 Icons.calendar_month,
-                color: Color.fromRGBO(0, 0, 0, 0.4),
+                color: TileStyles.defaultTextColor,
               )),
           Text(
             DateFormat.yMMMd(locale).format(this.widget.date),
