@@ -142,7 +142,7 @@ class TileWidgetState extends State<TileWidget> {
             child: Container(
           width: 30,
           height: 30,
-          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
           child: Transform.rotate(
             angle: pi / 2,
             child: Icon(
