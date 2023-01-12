@@ -18,8 +18,9 @@ class TileStyles {
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
   static String rubikFontName = 'Rubik';
+  static Color defaultTextColor = Color.fromRGBO(31, 31, 31, 1);
   static TextStyle fullScreenTextFieldStyle = TextStyle(
-      color: Color.fromRGBO(31, 31, 31, 1),
+      color: defaultTextColor,
       fontSize: textFontSize,
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);

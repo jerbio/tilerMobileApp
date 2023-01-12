@@ -4,16 +4,14 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 
-class TileTimeFrame extends StatefulWidget {
-  SubCalendarEvent subEvent;
-  TileTimeFrame(this.subEvent) {
-    assert(this.subEvent != null);
-  }
+class TileDate extends StatefulWidget {
+  DateTime date;
+  TileDate({required this.date});
   @override
-  _TileTimeFrameState createState() => _TileTimeFrameState();
+  _TileDateState createState() => _TileDateState();
 }
 
-class _TileTimeFrameState extends State<TileTimeFrame> {
+class _TileDateState extends State<TileDate> {
   @override
   Widget build(BuildContext context) {
     String locale = Localizations.localeOf(context).languageCode;
@@ -33,8 +31,7 @@ class _TileTimeFrameState extends State<TileTimeFrame> {
                 color: Color.fromRGBO(0, 0, 0, 0.4),
               )),
           Text(
-            DateFormat.yMMMd(locale).format(DateTime.fromMillisecondsSinceEpoch(
-                this.widget.subEvent.end!.toInt())),
+            DateFormat.yMMMd(locale).format(this.widget.date),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
           )

@@ -79,7 +79,17 @@ class Utility {
   }
 
   static get msCurrentTime {
-    return currentTime().millisecondsSinceEpoch;
+    return currentTime().toUtc().millisecondsSinceEpoch;
+  }
+
+  static localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
+    return DateTime.fromMillisecondsSinceEpoch(utcMillisecondsSinceEpoch,
+            isUtc: true)
+        .toLocal();
+  }
+
+  static utcEpochMillisecondsFromDateTime(DateTime dateTime) {
+    return dateTime.toLocal().toUtc().millisecondsSinceEpoch;
   }
 
   static get initialScheduleTimeline {

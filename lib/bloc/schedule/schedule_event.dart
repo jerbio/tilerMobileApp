@@ -46,12 +46,14 @@ class EvaluateSchedule extends ScheduleEvent {
   final List<Timeline> renderedTimelines;
   final Timeline renderedScheduleTimeline;
   final bool isAlreadyLoaded;
+  final Future? callBack;
   EvaluateSchedule(
       {required this.renderedSubEvents,
       required this.renderedTimelines,
       required this.renderedScheduleTimeline,
       required this.isAlreadyLoaded,
-      this.message});
+      this.message,
+      this.callBack});
 
   @override
   List<Object> get props => [];
