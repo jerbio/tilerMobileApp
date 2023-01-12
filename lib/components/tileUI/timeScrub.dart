@@ -7,9 +7,13 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 class TimeScrubWidget extends StatefulWidget {
-  TimeRange timeline;
+  late TimeRange timeline;
   bool loadTimeScrub = false;
-  TimeScrubWidget({required this.timeline, this.loadTimeScrub = false}) {
+  bool isTardy = true;
+  TimeScrubWidget(
+      {required this.timeline,
+      this.loadTimeScrub = false,
+      this.isTardy = false}) {
     assert(this.timeline != null);
   }
   @override
@@ -23,6 +27,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
 
   @override
   Widget build(BuildContext context) {
+    String locale = Localizations.localeOf(context).languageCode;
+    bool isToday = widget.timeline.isInterfering(Utility.todayTimeline());
     var currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     double widthOfUsedUpDuration = 0;
     Widget timeline;
@@ -132,41 +138,88 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                 ],
               )
             ]));
-      } else if (widget.timeline.hasElapsed) {
-        int durationInMs = Utility.msCurrentTime - end.toInt();
-        Duration durationToStart = Duration(milliseconds: durationInMs);
-        String elapsedTime = Utility.toHuman(durationToStart);
-
-        timeline = Container(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Icon(Icons.check_circle_outline_outlined),
-              Text(
-                'Elpased $elapsedTime ago',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
-              )
-            ],
-          ),
-        );
       } else {
-        int durationInMs = start.toInt() - Utility.msCurrentTime as int;
-        Duration durationToStart = Duration(milliseconds: durationInMs);
-        String elapsedTime = Utility.toHuman(durationToStart);
+        String? timeFrameString = MaterialLocalizations.of(context)
+                .formatTimeOfDay(TimeOfDay.fromDateTime(
+                    DateTime.fromMillisecondsSinceEpoch(
+                        widget.timeline.start!.toInt()))) +
+            ' - ' +
+            MaterialLocalizations.of(context).formatTimeOfDay(
+                TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
+                    widget.timeline.end!.toInt())));
         timeline = Container(
+          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.timelapse),
+              this.widget.isTardy
+                  ? Container(
+                      margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                          color: Color.fromRGBO(31, 31, 31, 0.1),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Icon(
+                        Icons.access_time_sharp,
+                        color: this.widget.isTardy
+                            ? Colors.pink
+                            : Color.fromRGBO(0, 0, 0, 1),
+                        size: 20.0,
+                      ),
+                    )
+                  : Container(),
               Text(
-                'Starts in  $elapsedTime',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                timeFrameString,
+                style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'Rubik',
+                    fontWeight: FontWeight.normal,
+                    color: this.widget.isTardy
+                        ? Colors.pink
+                        : Color.fromRGBO(31, 31, 31, 1)),
               )
             ],
           ),
         );
+        if (isToday) {
+          if (widget.timeline.hasElapsed) {
+            int durationInMs = Utility.msCurrentTime - end.toInt();
+            Duration durationToStart = Duration(milliseconds: durationInMs);
+            String elapsedTime = Utility.toHuman(durationToStart);
+
+            timeline = Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(Icons.check_circle_outline_outlined),
+                  Text(
+                    'Elpased $elapsedTime ago',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                  )
+                ],
+              ),
+            );
+          } else {
+            int durationInMs = start.toInt() - Utility.msCurrentTime as int;
+            Duration durationToStart = Duration(milliseconds: durationInMs);
+            String elapsedTime = Utility.toHuman(durationToStart);
+            timeline = Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(Icons.timelapse),
+                  Text(
+                    'Starts in  $elapsedTime',
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                  )
+                ],
+              ),
+            );
+          }
+        }
       }
     } else {
       throw ("Invalid subEvent sent, check the start and end time aren't null");

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
+import 'package:tiler_app/components/tileUI/tileTimeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
@@ -73,9 +74,8 @@ class TileWidgetState extends State<TileWidget> {
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TravelTimeBefore(
               this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)));
-    } else {
-      allElements.add(Padding(padding: EdgeInsets.fromLTRB(0, 20, 0, 20)));
     }
+
     if (widget.subEvent.address != null &&
         widget.subEvent.address!.isNotEmpty) {
       var adrressWidget = Container(
@@ -83,12 +83,15 @@ class TileWidgetState extends State<TileWidget> {
           child: TileAddress(widget.subEvent));
       allElements.insert(1, adrressWidget);
     }
-
+    allElements.add(TileTimeFrame(widget.subEvent));
     allElements.add(FractionallySizedBox(
         widthFactor: TileStyles.tileWidthRatio,
         child: Container(
             margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-            child: TimeScrubWidget(timeline: widget.subEvent))));
+            child: TimeScrubWidget(
+              timeline: widget.subEvent,
+              isTardy: widget.subEvent.isTardy ?? false,
+            ))));
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -103,7 +106,6 @@ class TileWidgetState extends State<TileWidget> {
           child: FractionallySizedBox(
               widthFactor: TileStyles.tileWidthRatio,
               child: Container(
-                height: allElements.length < 3 ? 300 : 350,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
@@ -113,7 +115,7 @@ class TileWidgetState extends State<TileWidget> {
                   borderRadius: BorderRadius.circular(TileStyles.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: tileBackGroundColor.withOpacity(0.2),
+                      color: tileBackGroundColor.withOpacity(0.1),
                       spreadRadius: 5,
                       blurRadius: 15,
                       offset: Offset(0, 1),
@@ -121,7 +123,7 @@ class TileWidgetState extends State<TileWidget> {
                   ],
                 ),
                 child: Container(
-                    padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    padding: const EdgeInsets.fromLTRB(0, 40, 0, 20),
                     decoration: BoxDecoration(
                       color: tileBackGroundColor,
                       border: Border.all(

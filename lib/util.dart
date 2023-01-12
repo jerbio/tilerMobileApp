@@ -64,7 +64,7 @@ class Utility {
   }
 
   static Timeline todayTimeline() {
-    DateTime currentTime = DateTime.now();
+    DateTime currentTime = Utility.currentTime();
     DateTime begin =
         new DateTime(currentTime.year, currentTime.month, currentTime.day);
     DateTime end = begin.add(Utility.oneDay);
