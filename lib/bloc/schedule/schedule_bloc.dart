@@ -134,7 +134,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         message: event.message));
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
-        // emit.call(ScheduleInitialState());
         await this._onGetSchedule(
             GetSchedule(
               isAlreadyLoaded: true,
