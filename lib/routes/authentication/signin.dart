@@ -71,25 +71,18 @@ class SignInRouteState extends State<SignInRoute> {
         Container(
             decoration: BoxDecoration(
                 gradient: paintGradient.LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
                   Colors.white,
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.125),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.25),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.25),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
-                  Color.fromRGBO(179, 194, 242, 1).withOpacity(0.75),
+                  Colors.white,
+                  Colors.white,
                   Color.fromRGBO(179, 194, 242, 1),
                   Color.fromRGBO(179, 194, 242, 1),
                   Color.fromRGBO(179, 194, 242, 1),
-                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
-                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
-                  Color.fromRGBO(239, 48, 84, 1).withOpacity(0.8),
+                  Color.fromRGBO(239, 48, 84, 1),
+                  Color.fromRGBO(239, 48, 84, 1),
+                  Color.fromRGBO(239, 48, 84, 1)
                 ])),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
