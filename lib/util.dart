@@ -64,7 +64,7 @@ class Utility {
   }
 
   static Timeline todayTimeline() {
-    DateTime currentTime = DateTime.now();
+    DateTime currentTime = Utility.currentTime();
     DateTime begin =
         new DateTime(currentTime.year, currentTime.month, currentTime.day);
     DateTime end = begin.add(Utility.oneDay);
@@ -79,7 +79,17 @@ class Utility {
   }
 
   static get msCurrentTime {
-    return currentTime().millisecondsSinceEpoch;
+    return currentTime().toUtc().millisecondsSinceEpoch;
+  }
+
+  static localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
+    return DateTime.fromMillisecondsSinceEpoch(utcMillisecondsSinceEpoch,
+            isUtc: true)
+        .toLocal();
+  }
+
+  static utcEpochMillisecondsFromDateTime(DateTime dateTime) {
+    return dateTime.toLocal().toUtc().millisecondsSinceEpoch;
   }
 
   static get initialScheduleTimeline {

@@ -3,21 +3,18 @@ import 'package:tiler_app/util.dart';
 
 class Timeline with TimeRange {
   String? id = Utility.getUuid;
-  DateTime? startTime;
-  DateTime? endTime;
+
   double? _startInMs;
   double? _endInMs;
 
   set startInMs(double? value) {
     _startInMs = value;
     this.start = _startInMs;
-    _updateStartEndTime();
   }
 
   set endInMs(double? value) {
     _endInMs = value;
     this.end = _endInMs;
-    _updateStartEndTime();
   }
 
   double? get startInMs {
@@ -26,6 +23,14 @@ class Timeline with TimeRange {
 
   double? get endInMs {
     return _endInMs;
+  }
+
+  DateTime get startTime {
+    return Utility.localDateTimeFromMs(this._startInMs!.toInt());
+  }
+
+  DateTime get endTime {
+    return Utility.localDateTimeFromMs(this._endInMs!.toInt());
   }
 
   Timeline(double? startInMs, double? endInMs) {
@@ -47,35 +52,28 @@ class Timeline with TimeRange {
       this.startInMs = 0;
       this.endInMs = 0;
     }
-    _updateStartEndTime();
   }
 
   toString() {
     String retValue = "";
     if (this.startInMs != null && this.endInMs != null) {
-      retValue +=
-          (new DateTime.fromMillisecondsSinceEpoch(this.startInMs!.toInt())
-                  .toString()) +
-              ' - ' +
-              (new DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt())
-                  .toString());
+      retValue += (new DateTime.fromMillisecondsSinceEpoch(
+                  this.startInMs!.toInt(),
+                  isUtc: true)
+              .toString()) +
+          ' - ' +
+          (new DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt(),
+                  isUtc: true)
+              .toString());
     }
 
     return retValue;
-  }
-
-  void _updateStartEndTime() {
-    if (this.startInMs != null && this.endInMs != null) {
-      startTime = DateTime.fromMillisecondsSinceEpoch(this.startInMs!.toInt());
-      endTime = DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt());
-    }
   }
 
   Timeline.fromDateTime(DateTime startTime, DateTime endTime) {
     this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
     this.endInMs = endTime.millisecondsSinceEpoch.toDouble();
     assert(this.startInMs! <= this.endInMs!);
-    _updateStartEndTime();
   }
 
   Timeline.fromJson(Map<String, dynamic> json) {
@@ -97,13 +95,11 @@ class Timeline with TimeRange {
       this.startInMs = 0;
       this.endInMs = 0;
     }
-    _updateStartEndTime();
   }
 
   Timeline.fromDateTimeAndDuration(DateTime startTime, Duration duration) {
     this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
     this.endInMs = startTime.add(duration).millisecondsSinceEpoch.toDouble();
     assert(this.startInMs! <= this.endInMs!);
-    _updateStartEndTime();
   }
 }
