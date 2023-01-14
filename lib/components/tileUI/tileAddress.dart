@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
+import 'package:tiler_app/styles.dart';
 
 class TileAddress extends StatefulWidget {
   SubCalendarEvent subEvent;
@@ -51,18 +52,24 @@ class TileAddressState extends State<TileAddress> {
                   borderRadius: BorderRadius.circular(8)),
               child: Icon(
                 Icons.location_on_rounded,
-                color: Color.fromRGBO(0, 0, 0, 0.4),
+                color: TileStyles.defaultTextColor,
                 size: 20.0,
               ),
             ),
             addressString != null
-                ? Text(
-                    addressString,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Rubik',
-                        fontWeight: FontWeight.normal,
-                        color: Color.fromRGBO(31, 31, 31, 1)),
+                ? Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+                      child: Text(
+                        addressString,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'Rubik',
+                            fontWeight: FontWeight.normal,
+                            color: Color.fromRGBO(31, 31, 31, 1)),
+                      ),
+                    ),
                   )
                 : Container()
           ],

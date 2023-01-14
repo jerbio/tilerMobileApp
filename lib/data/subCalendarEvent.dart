@@ -1,4 +1,5 @@
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 class SubCalendarEvent extends TilerEvent {
@@ -9,6 +10,7 @@ class SubCalendarEvent extends TilerEvent {
   String? emojis;
   bool? isPaused;
   bool? isPausedTimeLine = false;
+  bool? isTardy;
 
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
@@ -44,6 +46,11 @@ class SubCalendarEvent extends TilerEvent {
     }
 
     return false;
+  }
+
+  bool get isToday {
+    Timeline todayTimeline = Utility.todayTimeline();
+    return todayTimeline.isInterfering(this);
   }
 
   get isBeforeNow {
@@ -83,6 +90,9 @@ class SubCalendarEvent extends TilerEvent {
     if (json.containsKey('isPausedTimeLine') &&
         json['isPausedTimeLine'] != null) {
       isPausedTimeLine = cast<bool>(json['isPausedTimeLine'])!;
+    }
+    if (json.containsKey('isTardy') && json['isTardy'] != null) {
+      isTardy = cast<bool>(json['isTardy'])!;
     }
   }
 }

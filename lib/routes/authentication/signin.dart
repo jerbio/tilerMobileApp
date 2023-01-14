@@ -74,11 +74,15 @@ class SignInRouteState extends State<SignInRoute> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 194, 237, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55),
-                  Color.fromRGBO(0, 119, 170, 1).withOpacity(0.55)
+                  Colors.white,
+                  Colors.white,
+                  Colors.white,
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(179, 194, 242, 1),
+                  Color.fromRGBO(239, 48, 84, 1),
+                  Color.fromRGBO(239, 48, 84, 1),
+                  Color.fromRGBO(239, 48, 84, 1)
                 ])),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -90,13 +94,11 @@ class SignInRouteState extends State<SignInRoute> {
           padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
           alignment: Alignment.topCenter,
           child: Image.asset(
-            'assets/images/tiler_logo_white.png',
+            'assets/images/tiler_logo_black.png',
             scale: 4,
           ),
         ),
       ],
     )));
-
-    ;
   }
 }

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -24,73 +25,99 @@ class PlayBackState extends State<PlayBack> {
   SubCalendarEvent? _subEvent;
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 
   void showErrorMessage(String message) {
-    final scaffold = ScaffoldMessenger.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-          content: Text(message),
-          action: SnackBarAction(
-              label: AppLocalizations.of(context)!.close,
-              onPressed: scaffold.hideCurrentSnackBar)),
-    );
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.red,
+        fontSize: 16.0);
   }
 
   pauseTile() async {
     showMessage(AppLocalizations.of(context)!.pausing);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-    await _subCalendarEventApi
-        .pauseTile((_subEvent ?? this.widget.subEvent).id!)
-        .then((value) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-          message: AppLocalizations.of(context)!.successfullyPaused));
-    }).onError((error, stackTrace) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-          message: AppLocalizations.of(context)!.successfullyPaused));
-    });
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      return;
+    }
+
+    if (scheduleState is ScheduleLoadedState) {
+      context.read<ScheduleBloc>().add(EvaluateSchedule(
+          renderedSubEvents: scheduleState.subEvents,
+          renderedTimelines: scheduleState.timelines,
+          renderedScheduleTimeline: scheduleState.lookupTimeline,
+          isAlreadyLoaded: true,
+          callBack: _subCalendarEventApi
+              .pauseTile((_subEvent ?? this.widget.subEvent).id!)));
+    }
   }
 
   resumeTile() async {
     showMessage(AppLocalizations.of(context)!.resuming);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-    await _subCalendarEventApi
-        .resumeTile((_subEvent ?? this.widget.subEvent))
-        .then((value) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-          message: AppLocalizations.of(context)!.successfullyResumed));
-    }).onError((error, stackTrace) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-          message: AppLocalizations.of(context)!.successfullyResumed));
-    });
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      return;
+    }
+
+    if (scheduleState is ScheduleLoadedState) {
+      context.read<ScheduleBloc>().add(EvaluateSchedule(
+          renderedSubEvents: scheduleState.subEvents,
+          renderedTimelines: scheduleState.timelines,
+          renderedScheduleTimeline: scheduleState.lookupTimeline,
+          isAlreadyLoaded: true,
+          callBack: _subCalendarEventApi
+              .resumeTile((_subEvent ?? this.widget.subEvent))));
+    }
   }
 
   setAsNowTile() async {
     showMessage(AppLocalizations.of(context)!.movingUp);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-    await _subCalendarEventApi.setAsNow((subTile)).then((value) {
-      this.context.read<ScheduleBloc>().add(
-          GetSchedule(message: AppLocalizations.of(context)!.movedUpToNow));
-    }).onError((error, stackTrace) {
-      this.context.read<ScheduleBloc>().add(
-          GetSchedule(message: AppLocalizations.of(context)!.movedUpToNow));
-    });
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      return;
+    }
+
+    if (scheduleState is ScheduleLoadedState) {
+      context.read<ScheduleBloc>().add(EvaluateSchedule(
+          renderedSubEvents: scheduleState.subEvents,
+          renderedTimelines: scheduleState.timelines,
+          renderedScheduleTimeline: scheduleState.lookupTimeline,
+          isAlreadyLoaded: true,
+          callBack: _subCalendarEventApi.setAsNow((subTile))));
+    }
   }
 
   completeTile() async {
     showMessage(AppLocalizations.of(context)!.completing);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-    await _subCalendarEventApi.complete((subTile)).then((value) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-          message: AppLocalizations.of(context)!.successfullyCompleted));
-    }).onError((error, stackTrace) {
-      this.context.read<ScheduleBloc>().add(GetSchedule(
-            message: AppLocalizations.of(context)!.successfullyCompleted,
-          ));
-    });
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      return;
+    }
+
+    if (scheduleState is ScheduleLoadedState) {
+      context.read<ScheduleBloc>().add(EvaluateSchedule(
+          renderedSubEvents: scheduleState.subEvents,
+          renderedTimelines: scheduleState.timelines,
+          renderedScheduleTimeline: scheduleState.lookupTimeline,
+          isAlreadyLoaded: true,
+          callBack: _subCalendarEventApi.complete((subTile))));
+    }
   }
 
   @override
