@@ -1,13 +1,11 @@
-import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/util.dart';
-
-const bool isProduction = false;
-const bool isDebug = true;
-const String remoteDomain = isDebug ? '192.168.1.4:45456' : 'www.tiler.app';
+const bool isProduction = true;
+const bool isDebug = !isProduction;
+const prodDomain = 'tilerfront.conveyor.cloud';
+// const String remoteDomain = isDebug ? '192.168.1.4:45456' : 'www.tiler.app';
 // const String remoteDomain = isDebug ? '10.0.2.2:44322' : 'www.tiler.app';
-// const String remoteDomain =
-//     isDebug ? 'tilerfront.conveyor.cloud' : 'www.tiler.app';
-const String tilerDomain = isProduction ? remoteDomain : remoteDomain;
+const String remoteDomain =
+    isDebug ? 'tilerfront.conveyor.cloud' : 'www.tiler.app';
+const String tilerDomain = isProduction ? prodDomain : remoteDomain;
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 500;
 const int autoCompleteTriggerCharacterCount = 3;
