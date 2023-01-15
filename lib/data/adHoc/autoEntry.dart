@@ -5,5 +5,4 @@ class AutoEntry {
   List<Duration> durations = [];
   Location location;
   AutoEntry({required this.image, required this.location});
-  
 }

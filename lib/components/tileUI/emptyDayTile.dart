@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:appinio_swiper/appinio_swiper.dart';
+import 'package:tiler_app/data/adHoc/autoTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EmptyDayTile extends StatefulWidget {
@@ -8,35 +11,106 @@ class EmptyDayTile extends StatefulWidget {
 }
 
 class EmptyDayTileState extends State<EmptyDayTile> {
+  late List<AutoTile> autoTiles;
+  @override
+  void initState() {
+    Map<int, List<AutoTile>> autoTilesByDuration =
+        Utility.adHocAutoTilesByDuration;
+
+    int durationInMs = autoTilesByDuration.keys.toList().getRandomize().first;
+    autoTiles = autoTilesByDuration[durationInMs]!
+        .getRandomize()
+        .cast<AutoTile>()
+        .toList();
+    autoTiles.insert(0, Utility.lastCards.randomEntry);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    var images = [
-      'assets/images/regenerativeArt/pictimely_we_are_not_Gods_064eb660-6cca-44bb-b75b-12da4555ef30.png',
-      'assets/images/regenerativeArt/pictimely_build_a_pillow_fort_d77bbb89-2e18-4e70-a547-a78d9b9eee83.png',
-      'assets/images/regenerativeArt/pictimely_cute_photo_of_woman_and_man_working_together_looking__49c9615b-3c01-4914-aa4c-be6aaeba779d.png',
-      'assets/images/regenerativeArt/pictimely_Do_some_origami_43731a0a-393c-434e-ab3e-1c5bb10143b2.png',
-      'assets/images/regenerativeArt/pictimely_feeling_idle_excited_at_a_dance_party_2efb40a6-7b44-49d9-a038-50f197bb506a.png',
-      'assets/images/regenerativeArt/pictimely_Have_a_movie_marathon_e574a17c-3c4a-439b-8c94-7ae1771495f4.png',
-      'assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png',
-      'assets/images/regenerativeArt/pictimely_Make_a_bird_feeder_28f817f4-f638-4730-bf9c-4273f6a6ef33.png',
-      'assets/images/regenerativeArt/pictimely_Reorganize_your_closets_abdd967a-9592-444b-b772-0326fa46d8ea.png',
-    ];
-
     return Container(
       height: (MediaQuery.of(context).size.height) - 200,
       padding: EdgeInsets.all(20),
       child: AppinioSwiper(
-        cards: images.getRandomize().map((e) {
+        cards: autoTiles.map((autoTile) {
           return Container(
-              child: ClipRRect(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
+            child: Column(
+              children: [
+                Container(
+                    child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          topRight: Radius.circular(8),
+                        ),
+                        child: Image.asset(
+                          autoTile.image,
+                          fit: BoxFit.cover,
+                        ))),
+                FractionallySizedBox(
+                  alignment: FractionalOffset.center,
+                  widthFactor: 1,
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(10),
+                          bottomRight: Radius.circular(10)),
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black87.withOpacity(0.2),
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          blurStyle: BlurStyle.normal,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                            child: Container(
+                                padding: EdgeInsets.fromLTRB(20, 10, 0, 0),
+                                child: Text(
+                                  autoTile.description,
+                                  style: TileStyles.fullScreenTextFieldStyle,
+                                ))),
+                        Expanded(
+                            child: Container(
+                                padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                child: Text(
+                                  autoTile.isLastCard
+                                      ? '   '
+                                      : autoTile.duration.toHuman,
+                                  style: TextStyle(
+                                      color: Colors.grey,
+                                      fontSize: 16,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500),
+                                ))),
+                      ],
+                    ),
                   ),
-                  child: Image.asset(
-                    e,
-                    fit: BoxFit.cover,
-                  )));
+                )
+              ],
+            ),
+          );
         }).toList(),
+        onSwipe: (index, direction) {
+          AutoTile autoTile = autoTiles[index];
+          if (autoTile.isLastCard) {
+            return;
+          }
+          if (AppinioSwiperDirection.top == direction) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => AddTile(
+                          autoTile: autoTile,
+                        )));
+          }
+        },
       ),
     );
   }
