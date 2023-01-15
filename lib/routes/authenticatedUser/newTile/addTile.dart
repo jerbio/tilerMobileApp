@@ -27,8 +27,9 @@ class AddTile extends StatefulWidget {
   Function? onAddingATile;
   AutoTile? autoTile;
   static final String routeName = '/AddTile';
-  final ScheduleApi scheduleApi = ScheduleApi();
   Map? newTileParams;
+
+  AddTile({this.autoTile});
   @override
   AddTileState createState() => AddTileState();
 }
@@ -70,6 +71,50 @@ class AddTileState extends State<AddTile> {
   ScheduleApi scheduleApi = ScheduleApi();
   StreamSubscription? pendingSendTextRequest;
 
+  @override
+  void initState() {
+    if (this.widget.autoTile != null) {
+      _location = this.widget.autoTile!.location;
+      tileNameController =
+          TextEditingController(text: this.widget.autoTile!.description);
+      _duration = this.widget.autoTile!.duration;
+      _endTime = Utility.todayTimeline().endTime;
+
+      if (_location == null) {
+        var future = new Future.delayed(
+            const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+        // ignore: cancel_subscriptions
+        StreamSubscription streamSubScription =
+            future.asStream().listen((event) {
+          this
+              .scheduleApi
+              .getAutoResult(this.widget.autoTile!.description)
+              .then((remoteTileResponse) {
+            Location? _locationResponse;
+            if (remoteTileResponse.item2.isNotEmpty) {
+              _locationResponse = remoteTileResponse.item2.last;
+            }
+
+            setState(() {
+              if (!_isLocationManuallySet) {
+                _location = _locationResponse;
+                if (_locationResponse != null) {
+                  _location!.isDefault = false;
+                  _location!.isNull = false;
+                }
+              }
+            });
+          });
+        });
+
+        setState(() {
+          pendingSendTextRequest = streamSubScription;
+        });
+      }
+    }
+    super.initState();
+  }
+
   Function generateCallToServer() {
     if (pendingSendTextRequest != null) {
       pendingSendTextRequest!.cancel();
@@ -86,14 +131,14 @@ class AddTileState extends State<AddTile> {
         this
             .scheduleApi
             .getAutoResult(tileNameController.text)
-            .then((autoTileResponse) {
+            .then((remoteTileResponse) {
           Duration? _durationResponse;
           Location? _locationResponse;
-          if (autoTileResponse.item1.isNotEmpty) {
-            _durationResponse = autoTileResponse.item1.last;
+          if (remoteTileResponse.item1.isNotEmpty) {
+            _durationResponse = remoteTileResponse.item1.last;
           }
-          if (autoTileResponse.item2.isNotEmpty) {
-            _locationResponse = autoTileResponse.item2.last;
+          if (remoteTileResponse.item2.isNotEmpty) {
+            _locationResponse = remoteTileResponse.item2.last;
           }
 
           setState(() {
@@ -617,7 +662,7 @@ class AddTileState extends State<AddTile> {
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
     }
-    Future retValue = this.widget.scheduleApi.addNewTile(tile);
+    Future retValue = this.scheduleApi.addNewTile(tile);
     retValue.then((newlyAddedTile) {
       if (newlyAddedTile.item1 != null) {
         SubCalendarEvent subEvent = newlyAddedTile.item1;

@@ -3,6 +3,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/data/adHoc/autoData.dart';
+import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/blobEvent.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
@@ -199,6 +201,109 @@ class Utility {
 
   static get randomName {
     return _faker.person.name();
+  }
+
+  static updateMapList(Map map, entry, key, initial) {
+    var entries = initial;
+    if (map.containsKey(key)) {
+      entries = map[key];
+    }
+    map[key] = entries;
+    entries.add(entry);
+  }
+
+  static void _initializeAutotile() {
+    _adHocAutoTiles = {};
+    _adHocAutoTilesByCategory = {};
+    _adHocAutoTilesByDescription = {};
+    _adHocAutoTilesByDuration = {};
+    _lastCards = [];
+    for (int i = 0; i < autoTileParams.length; i++) {
+      var autoTileParam = autoTileParams[i];
+      String categoryId = autoTileParam['id'];
+      bool isLastCard = autoTileParam.containsKey('isLastCard')
+          ? autoTileParam['isLastCard']
+          : false;
+      List<String> descriptions = autoTileParam['descriptions'];
+      List<Duration> durations = autoTileParam['durations'];
+      List<String> imageAsset = autoTileParam['assets'];
+
+      for (int descriptionIndex = 0;
+          descriptionIndex < descriptions.length;
+          descriptionIndex++) {
+        String description = descriptions[descriptionIndex];
+        for (int imageAssetIndex = 0;
+            imageAssetIndex < imageAsset.length;
+            imageAssetIndex++) {
+          String asset = imageAsset[imageAssetIndex];
+          for (int durationIndex = 0;
+              durationIndex < durations.length;
+              durationIndex++) {
+            Duration duration = durations[durationIndex];
+            AutoTile autoTile = AutoTile(
+                description: description,
+                image: asset,
+                duration: duration,
+                categoryId: categoryId,
+                isLastCard: isLastCard);
+
+            _adHocAutoTiles![autoTile.id] = autoTile;
+
+            if (!isLastCard) {
+              updateMapList(_adHocAutoTilesByCategory!, autoTile, categoryId,
+                  <AutoTile>[]);
+              updateMapList(_adHocAutoTilesByDescription!, autoTile,
+                  description, <AutoTile>[]);
+              updateMapList(_adHocAutoTilesByDuration!, autoTile,
+                  duration.inMilliseconds, <AutoTile>[]);
+            } else {
+              _lastCards!.add(autoTile);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  static Map<String, List<AutoTile>>? _adHocAutoTilesByCategory;
+  static Map<String, List<AutoTile>>? _adHocAutoTilesByDescription;
+  static Map<int, List<AutoTile>>? _adHocAutoTilesByDuration;
+  static Map<String, AutoTile>? _adHocAutoTiles;
+  static List<AutoTile>? _lastCards;
+
+  static List<AutoTile> get autoTiles {
+    if (_adHocAutoTiles == null) {
+      _initializeAutotile();
+    }
+    return _adHocAutoTiles!.values.toList();
+  }
+
+  static List<AutoTile> get lastCards {
+    if (_lastCards == null) {
+      _initializeAutotile();
+    }
+    return _lastCards!.toList();
+  }
+
+  static Map<String, List<AutoTile>> get adHocAutoTilesByCategory {
+    if (_adHocAutoTiles == null) {
+      _initializeAutotile();
+    }
+    return _adHocAutoTilesByCategory!;
+  }
+
+  static Map<String, List<AutoTile>> get adHocAutoTilesByDescription {
+    if (_adHocAutoTiles == null) {
+      _initializeAutotile();
+    }
+    return _adHocAutoTilesByDescription!;
+  }
+
+  static Map<int, List<AutoTile>> get adHocAutoTilesByDuration {
+    if (_adHocAutoTiles == null) {
+      _initializeAutotile();
+    }
+    return _adHocAutoTilesByDuration!;
   }
 
   /// Determine the current position of the device.
