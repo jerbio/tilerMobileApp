@@ -16,7 +16,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../bloc/schedule/schedule_bloc.dart';
@@ -67,6 +66,8 @@ class AddTileState extends State<AddTile> {
   bool _isLocationManuallySet = false;
   DateTime? _endTime;
 
+  Function? onProceed;
+
   RestrictionProfile? _restrictionProfile;
   ScheduleApi scheduleApi = ScheduleApi();
   StreamSubscription? pendingSendTextRequest;
@@ -104,6 +105,7 @@ class AddTileState extends State<AddTile> {
                 }
               }
             });
+            isSubmissionReady();
           });
         });
 
@@ -111,11 +113,47 @@ class AddTileState extends State<AddTile> {
           pendingSendTextRequest = streamSubScription;
         });
       }
+      splitCount.addListener(() {
+        isSubmissionReady();
+      });
     }
     super.initState();
   }
 
-  Function generateCallToServer() {
+  void _onProceedTap() {
+    return this.onSubmitButtonTap();
+  }
+
+  isSubmissionReady() {
+    bool isDurationReady = false;
+    bool isNameReady = false;
+    bool isCountReady = false;
+    if (_duration != null &&
+        _duration!.inMilliseconds > Utility.oneMin.inMilliseconds) {
+      isDurationReady = true;
+    }
+
+    if (tileNameController.text.trim().isNotEmpty) {
+      isNameReady = true;
+    }
+
+    int? count = int.tryParse(getSplitCount());
+    if (count != null && count > 0) {
+      isCountReady = true;
+    }
+
+    if (isNameReady && isDurationReady && isCountReady) {
+      setState(() {
+        onProceed = _onProceedTap;
+      });
+    } else {
+      setState(() {
+        onProceed = null;
+      });
+    }
+  }
+
+  Function generateSuggestionCallToServer() {
     if (pendingSendTextRequest != null) {
       pendingSendTextRequest!.cancel();
     }
@@ -153,6 +191,7 @@ class AddTileState extends State<AddTile> {
               }
             }
           });
+          isSubmissionReady();
         });
       });
 
@@ -162,6 +201,12 @@ class AddTileState extends State<AddTile> {
     };
 
     return retValue;
+  }
+
+  String getSplitCount() {
+    return this.splitCount.value.text.isNotEmpty
+        ? this.splitCount.value.text
+        : 1.toString();
   }
 
   Widget getTileNameWidget() {
@@ -207,7 +252,7 @@ class AddTileState extends State<AddTile> {
                 onChanged: (val) {
                   if (val.length >
                       Constants.autoCompleteTriggerCharacterCount) {
-                    Function callAutoResult = generateCallToServer();
+                    Function callAutoResult = generateSuggestionCallToServer();
                     callAutoResult();
                   }
                 })));
@@ -279,6 +324,7 @@ class AddTileState extends State<AddTile> {
             _isDurationManuallySet = true;
           }
         });
+        isSubmissionReady();
       });
     };
     String textButtonString = AppLocalizations.of(context)!.duration;
@@ -629,9 +675,7 @@ class AddTileState extends State<AddTile> {
       tile.LocationIsVerified = _location!.isVerified.toString();
     }
 
-    tile.Count = this.splitCount.value.text.isNotEmpty
-        ? this.splitCount.value.text
-        : 1.toString();
+    tile.Count = getSplitCount();
 
     debugPrint(tile.toJson().toString());
 
@@ -810,9 +854,7 @@ class AddTileState extends State<AddTile> {
           children: childrenWidgets,
         ),
       ),
-      onProceed: () {
-        return this.onSubmitButtonTap();
-      },
+      onProceed: this.onProceed,
     );
 
     return retValue;
