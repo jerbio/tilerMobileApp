@@ -52,18 +52,20 @@ class EventNameSearchState extends SearchWidgetState {
             renderedSubEvents: scheduleState.subEvents,
             renderedTimelines: scheduleState.timelines,
             renderedScheduleTimeline: scheduleState.lookupTimeline,
-            isAlreadyLoaded: true));
+            isAlreadyLoaded: true,
+            message: AppLocalizations.of(context)!.movingUp,
+            callBack: this.calendarEventApi.setAsNow(tileId).then((value) {
+              this.context.read<ScheduleBloc>().add(GetSchedule());
+            }).onError((error, stackTrace) {
+              if (scheduleState is ScheduleEvaluationState) {
+                this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+                    subEvents: scheduleState.subEvents,
+                    timelines: scheduleState.timelines,
+                    lookupTimeline: scheduleState.lookupTimeline));
+              }
+            })));
       }
-      this.calendarEventApi.setAsNow(tileId).then((value) {
-        this.context.read<ScheduleBloc>().add(GetSchedule());
-      }).onError((error, stackTrace) {
-        if (scheduleState is ScheduleEvaluationState) {
-          this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-              subEvents: scheduleState.subEvents,
-              timelines: scheduleState.timelines,
-              lookupTimeline: scheduleState.lookupTimeline));
-        }
-      });
+      Navigator.pop(context);
     };
     return retValue;
   }
@@ -79,19 +81,23 @@ class EventNameSearchState extends SearchWidgetState {
             renderedSubEvents: scheduleState.subEvents,
             renderedTimelines: scheduleState.timelines,
             renderedScheduleTimeline: scheduleState.lookupTimeline,
-            isAlreadyLoaded: true));
+            isAlreadyLoaded: true,
+            message: AppLocalizations.of(context)!.deleting,
+            callBack: this
+                .calendarEventApi
+                .delete(tileId, thirdPartyId)
+                .then((value) {
+              this.context.read<ScheduleBloc>().add(GetSchedule());
+            }).onError((error, stackTrace) {
+              if (scheduleState is ScheduleEvaluationState) {
+                this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+                    subEvents: scheduleState.subEvents,
+                    timelines: scheduleState.timelines,
+                    lookupTimeline: scheduleState.lookupTimeline));
+              }
+            })));
       }
-
-      this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-        this.context.read<ScheduleBloc>().add(GetSchedule());
-      }).onError((error, stackTrace) {
-        if (scheduleState is ScheduleEvaluationState) {
-          this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-              subEvents: scheduleState.subEvents,
-              timelines: scheduleState.timelines,
-              lookupTimeline: scheduleState.lookupTimeline));
-        }
-      });
+      Navigator.pop(context);
     };
     return retValue;
   }
@@ -107,19 +113,19 @@ class EventNameSearchState extends SearchWidgetState {
             renderedSubEvents: scheduleState.subEvents,
             renderedTimelines: scheduleState.timelines,
             renderedScheduleTimeline: scheduleState.lookupTimeline,
-            isAlreadyLoaded: true));
+            isAlreadyLoaded: true,
+            callBack: this.calendarEventApi.complete(tileId).then((value) {
+              this.context.read<ScheduleBloc>().add(GetSchedule());
+            }).onError((error, stackTrace) {
+              if (scheduleState is ScheduleEvaluationState) {
+                this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+                    subEvents: scheduleState.subEvents,
+                    timelines: scheduleState.timelines,
+                    lookupTimeline: scheduleState.lookupTimeline));
+              }
+            })));
       }
-
-      this.calendarEventApi.complete(tileId).then((value) {
-        this.context.read<ScheduleBloc>().add(GetSchedule());
-      }).onError((error, stackTrace) {
-        if (scheduleState is ScheduleEvaluationState) {
-          this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-              subEvents: scheduleState.subEvents,
-              timelines: scheduleState.timelines,
-              lookupTimeline: scheduleState.lookupTimeline));
-        }
-      });
+      Navigator.pop(context);
     };
     return retValue;
   }

@@ -55,7 +55,7 @@ class LocationApi extends AppApi {
   }
 
   Future<List<Location>> getLocationsByName(String name,
-      {IncludeMapSearch = true}) async {
+      {includeMapSearch = true}) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
 
@@ -66,10 +66,13 @@ class LocationApi extends AppApi {
         'Data': name,
         'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
         'MobileApp': true.toString(),
-        'IncludeMapSearch': IncludeMapSearch.toString()
+        'IncludeMapSearch': includeMapSearch.toString()
       };
 
-      Uri uri = Uri.https(url, 'api/Location/Name', queryParameters);
+      Map<String, String?> injectedLocationParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: true);
+      Uri uri = Uri.https(url, 'api/Location/Name', injectedLocationParams);
       var header = this.getHeaders();
 
       if (header != null) {
