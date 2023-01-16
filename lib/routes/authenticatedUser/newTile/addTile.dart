@@ -761,7 +761,7 @@ class AddTileState extends State<AddTile> {
 
   Widget generateDeadline() {
     String textButtonString = this._endTime == null
-        ? AppLocalizations.of(context)!.deadline_auto
+        ? AppLocalizations.of(context)!.deadline_anytime
         : DateFormat.yMMMd().format(this._endTime!);
     Widget deadlineContainer = new GestureDetector(
         onTap: this.onEndDateTap,

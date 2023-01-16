@@ -46,7 +46,7 @@ class _ForecastPreviewState extends State<ForecastPreview> {
     }
 
     String textButtonString = this._endTime == null
-        ? AppLocalizations.of(context)!.deadline_auto
+        ? AppLocalizations.of(context)!.deadline_anytime
         : DateFormat.yMMMd().format(this._endTime!);
     Widget deadlineContainer = new GestureDetector(
         onTap: onEndDateTap,
