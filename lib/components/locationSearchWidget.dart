@@ -107,7 +107,11 @@ class LocationSearchState extends SearchWidgetState {
           children: [
             Positioned(
                 child: Icon(
-                  Icons.save_outlined,
+                  location.source == null ||
+                          location.source!.isEmpty ||
+                          location.source! == 'none'
+                      ? Icons.save_outlined
+                      : Icons.cloud_outlined,
                   color: TileStyles.activeColor,
                 ),
                 top: 45,
