@@ -73,6 +73,10 @@
     "failedToSendRequest":"Failed to send request",
     "revise":"Revise",
     "revisingSchedule":"Revising Schedule",
+    "start":"Start",
+    "end":"End",
+    "deadline": "Deadline",
+    "split":"Split",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"

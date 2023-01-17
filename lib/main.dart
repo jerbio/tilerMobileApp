@@ -65,7 +65,7 @@ class TilerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
         providers: [
-          BlocProvider(create: (context) => SubCalendarTilesBloc()),
+          BlocProvider(create: (context) => SubCalendarTileBloc()),
           BlocProvider(create: (context) => ScheduleBloc()),
           BlocProvider(create: (context) => CalendarTileBloc())
         ],
