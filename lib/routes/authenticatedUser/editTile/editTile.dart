@@ -120,8 +120,33 @@ class _EditTileState extends State<EditTile> {
     }
   }
 
+  bool get isProcrastinateTile {
+    return (this.subEvent!.isProcrastinate ?? false);
+  }
+
+  bool get isRigidTile {
+    return (this.subEvent!.isProcrastinate ?? false);
+  }
+
   void updateProceed() {
     if (editTilerEvent != null) {
+      if (isProcrastinateTile) {
+        bool timeIsTheSame =
+            editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
+                    subEvent!.startTime!.toLocal().millisecondsSinceEpoch &&
+                editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
+                    subEvent!.endTime!.toLocal().millisecondsSinceEpoch;
+
+        bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
+                editTilerEvent!.startTime!) <
+            Utility.utcEpochMillisecondsFromDateTime(editTilerEvent!.endTime!);
+        if (!timeIsTheSame && isValidTimeFrame) {
+          setState(() {
+            onProceed = subEventUpdate;
+          });
+          return;
+        }
+      }
       if (editTilerEvent!.isValid) {
         if (!Utility.isEditTileEventEquivalentToSubCalendarEvent(
             editTilerEvent!, this.subEvent!)) {
@@ -150,7 +175,7 @@ class _EditTileState extends State<EditTile> {
                 editTilerEvent!.endTime = subEvent!.endTime!;
                 editTilerEvent!.startTime = subEvent!.startTime!;
                 editTilerEvent!.splitCount = subEvent!.split;
-                editTilerEvent!.name = subEvent!.name!;
+                editTilerEvent!.name = subEvent!.name ?? '';
                 editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
                 editTilerEvent!.thirdPartyType = subEvent!.thirdpartyType;
                 editTilerEvent!.thirdPartyUserId = subEvent!.thirdPartyUserId;
@@ -195,110 +220,106 @@ class _EditTileState extends State<EditTile> {
               time: this.subEvent!.calendarEventEndTime!.toLocal(),
               onInputChange: dataChange,
             );
+
+            var inputChildWidgets = <Widget>[
+              _editTileName!,
+              FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Text(AppLocalizations.of(context)!.start,
+                              style: TextStyle(
+                                  color: Color.fromRGBO(31, 31, 31, 1),
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        _editStartDateAndTime!
+                      ],
+                    ),
+                  )),
+              FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Text(AppLocalizations.of(context)!.end,
+                              style: TextStyle(
+                                  color: Color.fromRGBO(31, 31, 31, 1),
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        _editEndDateAndTime!
+                      ],
+                    ),
+                  )),
+            ];
+
+            if (!isRigidTile && !isProcrastinateTile) {
+              Widget splitWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: Text(AppLocalizations.of(context)!.split,
+                              style: TextStyle(
+                                  color: Color.fromRGBO(31, 31, 31, 1),
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                          width: 50,
+                          child: TextField(
+                            textAlign: TextAlign.center,
+                            keyboardType: TextInputType.number,
+                            controller: splitCountController,
+                          ),
+                        )
+                      ],
+                    ),
+                  ));
+
+              Widget deadlineWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Text(AppLocalizations.of(context)!.deadline,
+                              style: TextStyle(
+                                  color: Color.fromRGBO(31, 31, 31, 1),
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        _editCalEndDateAndTime!
+                      ],
+                    ),
+                  ));
+              inputChildWidgets.insert(1, splitWidget);
+              inputChildWidgets.add(deadlineWidget);
+            }
+
             return Container(
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
               child: Column(
-                children: [
-                  _editTileName!,
-                  FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Container(
-                              child: Text(AppLocalizations.of(context)!.split,
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
-                                      fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            Container(
-                              margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                              width: 50,
-                              child: TextField(
-                                textAlign: TextAlign.center,
-                                keyboardType: TextInputType.number,
-                                controller: splitCountController,
-                              ),
-                            )
-                          ],
-                        ),
-                      )),
-                  FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              child: Text(AppLocalizations.of(context)!.start,
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
-                                      fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            _editStartDateAndTime!
-                          ],
-                        ),
-                      )),
-                  FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              child: Text(AppLocalizations.of(context)!.end,
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
-                                      fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            _editEndDateAndTime!
-                          ],
-                        ),
-                      )),
-                  FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
-                      child: Container(
-                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              child: Text(
-                                  AppLocalizations.of(context)!.deadline,
-                                  style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
-                                      fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
-                            ),
-                            _editCalEndDateAndTime!
-                          ],
-                        ),
-                      )),
-                  // Container(
-                  //   width: MediaQuery.of(context).size.width *
-                  //       TileStyles.tileWidthRatio,
-                  //   child: Row(
-                  //     children: [
-                  //       TextField(
-                  //         keyboardType: TextInputType.number,
-                  //         controller: splitCountController,
-                  //       ),
-                  //     ],
-                  //   ),
-                  // )
-                ],
+                children: inputChildWidgets,
               ),
             );
           },

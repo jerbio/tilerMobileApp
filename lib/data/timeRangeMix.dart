@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:tiler_app/util.dart';
 
 abstract class TimeRange {
@@ -28,5 +29,12 @@ abstract class TimeRange {
 
   bool get hasElapsed {
     return this.end! < DateTime.now().millisecondsSinceEpoch.toDouble();
+  }
+
+  Duration get duration {
+    if (this.start != null && this.end != null) {
+      return Duration(milliseconds: (this.end!.toInt() - this.start!.toInt()));
+    }
+    throw ErrorDescription("Invalid timerange provided");
   }
 }

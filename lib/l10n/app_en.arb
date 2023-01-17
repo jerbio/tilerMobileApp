@@ -73,6 +73,7 @@
     "failedToSendRequest":"Failed to send request",
     "revise":"Revise",
     "revisingSchedule":"Revising Schedule",
+    "procrastinateBlockOut":"Procrastinate block out",
     "start":"Start",
     "end":"End",
     "deadline": "Deadline",

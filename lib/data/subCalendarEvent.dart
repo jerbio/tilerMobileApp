@@ -13,7 +13,8 @@ class SubCalendarEvent extends TilerEvent {
   bool? isPaused;
   bool? isPausedTimeLine = false;
   bool? isTardy;
-
+  bool? isViable = true;
+  bool? _isAllDay;
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
         (this.addressDescription != null &&
@@ -53,6 +54,11 @@ class SubCalendarEvent extends TilerEvent {
   bool get isToday {
     Timeline todayTimeline = Utility.todayTimeline();
     return todayTimeline.isInterfering(this);
+  }
+
+  bool get isAllDay {
+    return _isAllDay ??
+        this.duration.inMilliseconds > Utility.activeDayDuration.inMicroseconds;
   }
 
   get isBeforeNow {
@@ -133,6 +139,9 @@ class SubCalendarEvent extends TilerEvent {
       if (calendarEvent != null) {
         split = calendarEvent!.split;
       }
+    }
+    if (json.containsKey('isViable') && json['isViable'] != null) {
+      isViable = cast<bool>(json['isViable'])!;
     }
   }
 }

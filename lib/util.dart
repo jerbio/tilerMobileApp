@@ -72,9 +72,11 @@ class Utility {
     bool retValue =
         isEditTileEventEquivalentToTileEvent(editTilerEvent, subCalendarEvent);
     retValue &= editTilerEvent.calEndTime!.toLocal().millisecondsSinceEpoch ==
-        subCalendarEvent.rangeEndTime!.toLocal().millisecondsSinceEpoch;
+        subCalendarEvent.calendarEventEndTime!.toLocal().millisecondsSinceEpoch;
     retValue &= editTilerEvent.calStartTime!.toLocal().millisecondsSinceEpoch ==
-        subCalendarEvent.rangeStartTime!.toLocal().millisecondsSinceEpoch;
+        subCalendarEvent.calendarEventStartTime!
+            .toLocal()
+            .millisecondsSinceEpoch;
     return retValue;
   }
 
@@ -444,6 +446,7 @@ class Utility {
   static Duration oneHour = new Duration(hours: 1);
   static Duration oneMin = new Duration(minutes: 1);
   static Duration oneDay = new Duration(days: 1);
+  static Duration activeDayDuration = new Duration(hours: 16);
   static Duration sevenDays = new Duration(days: daysInAweek);
   static var uuid = Uuid();
 }

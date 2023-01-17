@@ -52,14 +52,16 @@ class _EditTileTimeState extends State<EditTileTime> {
           }
         });
       },
-      child: Row(
-        children: [
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
-              child:
-                  Icon(Icons.access_time_sharp, color: TileStyles.iconColor)),
-          Container(child: Text(formattedTimeOfDay)),
-        ],
+      child: Container(
+        child: Row(
+          children: [
+            Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
+                child:
+                    Icon(Icons.access_time_sharp, color: TileStyles.iconColor)),
+            Container(child: Text(formattedTimeOfDay)),
+          ],
+        ),
       ),
     );
   }
