@@ -63,6 +63,7 @@ class TileWidgetState extends State<TileWidget> {
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+    bool isEditable = !(this.widget.subEvent.isReadOnly ?? true);
 
     List<Widget> allElements = [
       Container(
@@ -120,51 +121,55 @@ class TileWidgetState extends State<TileWidget> {
       ),
     );
     allElements.add(tileTimeFrame);
-    if (isMoreDetailEnabled || (this.widget.subEvent.isToday)) {
-      allElements.add(FractionallySizedBox(
-          widthFactor: TileStyles.tileWidthRatio,
-          child: Container(
-              margin: const EdgeInsets.fromLTRB(0, 40, 0, 0),
-              child: TimeScrubWidget(
-                timeline: widget.subEvent,
-                isTardy: widget.subEvent.isTardy ?? false,
-              ))));
-      allElements.add(Container(
-          margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-          child: PlayBack(widget.subEvent)));
-    } else {
-      allElements.add(GestureDetector(
-        onTap: () {
-          setState(() {
-            isMoreDetailEnabled = true;
-          });
-        },
-        child: Center(
+    if (isEditable) {
+      if (isMoreDetailEnabled || (this.widget.subEvent.isToday)) {
+        allElements.add(FractionallySizedBox(
+            widthFactor: TileStyles.tileWidthRatio,
             child: Container(
-          width: 30,
-          height: 30,
-          margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
-          child: Transform.rotate(
-            angle: pi / 2,
-            child: Icon(
-              Icons.chevron_right,
-              size: 30,
+                margin: const EdgeInsets.fromLTRB(0, 40, 0, 0),
+                child: TimeScrubWidget(
+                  timeline: widget.subEvent,
+                  isTardy: widget.subEvent.isTardy ?? false,
+                ))));
+        allElements.add(Container(
+            margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            child: PlayBack(widget.subEvent)));
+      } else {
+        allElements.add(GestureDetector(
+          onTap: () {
+            setState(() {
+              isMoreDetailEnabled = true;
+            });
+          },
+          child: Center(
+              child: Container(
+            width: 30,
+            height: 30,
+            margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
+            child: Transform.rotate(
+              angle: pi / 2,
+              child: Icon(
+                Icons.chevron_right,
+                size: 30,
+              ),
             ),
-          ),
-          decoration: BoxDecoration(
-              color: Color.fromRGBO(31, 31, 31, .1),
-              borderRadius: BorderRadius.circular(25)),
-        )),
-      ));
+            decoration: BoxDecoration(
+                color: Color.fromRGBO(31, 31, 31, .1),
+                borderRadius: BorderRadius.circular(25)),
+          )),
+        ));
+      }
     }
 
     return GestureDetector(
         onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      EditTile(tileId: this.widget.subEvent.id!)));
+          if (isEditable) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        EditTile(tileId: this.widget.subEvent.id!)));
+          }
         },
         child: AnimatedSize(
             duration: Duration(milliseconds: 250),
@@ -181,7 +186,9 @@ class TileWidgetState extends State<TileWidget> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           border: Border.all(
-                            color: Colors.white,
+                            color: this.widget.subEvent.isViable!
+                                ? Colors.white
+                                : Colors.black,
                             width: 5,
                           ),
                           borderRadius:

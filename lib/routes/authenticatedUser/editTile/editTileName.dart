@@ -26,9 +26,14 @@ class _EditTileNameState extends State<EditTileName> {
   @override
   void initState() {
     super.initState();
+    String name =
+        this.widget.subEvent.name == null || this.widget.subEvent.name!.isEmpty
+            ? ((this.widget.subEvent.isProcrastinate ?? false)
+                ? 'Procrastinate block out'
+                : "")
+            : this.widget.subEvent.name!;
     if (this.widget.onInputChange != null) {
-      _controller.text =
-          this.widget.subEvent.name == null ? "" : this.widget.subEvent.name!;
+      _controller.text = name;
       _controller.addListener(() {
         this.widget.tileName = _controller.text;
         this.widget.onInputChange!();
@@ -44,6 +49,7 @@ class _EditTileNameState extends State<EditTileName> {
           width: 380,
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           child: TextField(
+            enabled: !(this.widget.subEvent.isProcrastinate ?? false),
             controller: _controller,
             style: TextStyle(
                 fontSize: 20,
@@ -58,7 +64,7 @@ class _EditTileNameState extends State<EditTileName> {
               fillColor: textBackgroundColor,
               border: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(
-                  const Radius.circular(50.0),
+                  const Radius.circular(8.0),
                 ),
               ),
               focusedBorder: OutlineInputBorder(

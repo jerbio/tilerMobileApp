@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
@@ -19,7 +20,11 @@ class TileNameState extends State<TileName> {
     int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
     int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
-    String name = subEvent.name == null ? "" : subEvent.name!;
+    String name = subEvent.name == null || subEvent.name!.isEmpty
+        ? ((subEvent.isProcrastinate ?? false)
+            ? AppLocalizations.of(context)!.procrastinateBlockOut
+            : "")
+        : subEvent.name!;
     double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
     Text emojiField = Text('');
     if (subEvent.emojis != null && subEvent.emojis!.isNotEmpty) {

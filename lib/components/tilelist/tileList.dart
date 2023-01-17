@@ -175,19 +175,19 @@ class _TileListState extends State<TileList> {
         int dayIndex = dayIndexes[i];
         dayIndex += startIndex;
         dayIndexes[i] = dayIndex;
-        bool alreadyDayIndex = dayIndexToTileDict.containsKey(dayIndex);
         if (dayIndex > todayDayIndex) {
           if (!upcomingDayTilesDict.containsKey(dayIndex)) {
             var tiles = <TilerEvent>[];
             if (dayIndexToTileDict.containsKey(dayIndex)) {
               tiles = dayIndexToTileDict[dayIndex]!;
             }
+            var allTiles = tiles.toList();
             String headerString = Utility.getTimeFromIndex(dayIndex).humanDate;
             Key key = Key(dayIndex.toString());
             TileBatch upcomingTileBatch = TileBatch(
                 header: headerString,
                 dayIndex: dayIndex,
-                tiles: tiles,
+                tiles: allTiles,
                 key: key);
             upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
           }
@@ -198,12 +198,13 @@ class _TileListState extends State<TileList> {
             if (dayIndexToTileDict.containsKey(dayIndex)) {
               tiles = dayIndexToTileDict[dayIndex]!;
             }
+            var allTiles = tiles.toList();
             Key key = Key(dayIndex.toString());
             TileBatch preceedingDayTileBatch = TileBatch(
                 header: footerString,
                 dayIndex: dayIndex,
                 key: key,
-                tiles: tiles);
+                tiles: allTiles);
             preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
           }
         }

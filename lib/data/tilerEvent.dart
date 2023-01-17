@@ -17,6 +17,9 @@ class TilerEvent extends TilerObj with TimeRange {
   int? split;
   TilerEvent? calendarEvent;
   NoteData? noteData;
+  bool _isReadOnly = false;
+  bool _isProcrastinate = false;
+  bool _isRigid = false;
 
   DateTime? _startTime;
   DateTime? _endTime;
@@ -61,14 +64,24 @@ class TilerEvent extends TilerObj with TimeRange {
     return _endTime;
   }
 
+  bool? get isReadOnly {
+    return _isReadOnly;
+  }
+
+  bool? get isProcrastinate {
+    return _isProcrastinate;
+  }
+
+  bool? get isRigid {
+    return _isRigid;
+  }
+
   bool? isRecurring = false;
 
   double? colorOpacity = 1;
   int? colorRed = 127;
   int? colorGreen = 127;
   int? colorBlue = 127;
-
-  bool? isAllDay = false;
 
   static T? cast<T>(x) => x is T ? x : null;
 
@@ -126,6 +139,18 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('blob')) {
       this.noteData = NoteData.fromJson(json['blob']);
+    }
+    if (json.containsKey('isReadOnly')) {
+      _isReadOnly = json['isReadOnly'];
+    }
+    if (json.containsKey('isReadOnly')) {
+      _isReadOnly = json['isReadOnly'];
+    }
+    if (json.containsKey('isProcrastinateEvent')) {
+      _isProcrastinate = json['isProcrastinateEvent'];
+    }
+    if (json.containsKey('isRigid')) {
+      _isRigid = json['isRigid'];
     }
   }
 
