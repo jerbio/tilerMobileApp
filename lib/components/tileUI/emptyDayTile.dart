@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:appinio_swiper/appinio_swiper.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/styles.dart';
@@ -82,7 +83,11 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                 child: Text(
                                   autoTile.isLastCard
                                       ? '   '
-                                      : autoTile.duration.toHuman,
+                                      : autoTile.duration.toHuman +
+                                          ' (' +
+                                          AppLocalizations.of(context)!
+                                              .swipeUp +
+                                          ')',
                                   style: TextStyle(
                                       color: Colors.grey,
                                       fontSize: 16,
