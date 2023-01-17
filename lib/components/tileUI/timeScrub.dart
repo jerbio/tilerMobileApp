@@ -40,11 +40,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
             (durationInMs / subEventDuratonInMs) * maxWidthOfTimeline;
 
         int colorRed = 255;
-        //widget.subEvent.colorRed ?? 0;
         int colorGreen = 255;
-        //widget.subEvent.colorGreen ?? 0;
         int colorBlue = 255;
-        //widget.subEvent.colorBlue ?? 0;
         String startString = formatter
             .format(DateTime.fromMillisecondsSinceEpoch(start.toInt()));
         String endString =
@@ -60,7 +57,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                 ? Colors.white
                 : Color.fromRGBO(105, 105, 105, 0.2),
           ),
-        ); //background shade
+        );
         var scrubberElements = [backgroundShade];
 
         if (isInterferring) {

@@ -31,6 +31,7 @@ class EditDateAndTime extends StatelessWidget {
         return retValue;
       }
     }
+    return null;
   }
 
   onTimeChange(TimeOfDay timeOfDayUpdate) {
@@ -55,8 +56,16 @@ class EditDateAndTime extends StatelessWidget {
       time: time.toLocal(),
       onInputChange: onDateChange,
     );
-    return Row(
-      children: [_tileTime!, _tileDate!],
+    return Container(
+      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+      height: 35,
+      width:
+          (MediaQuery.of(context).size.width * TileStyles.tileWidthRatio - 75),
+      color: TileStyles.textBackgroundColor,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [_tileTime!, _tileDate!],
+      ),
     );
   }
 }
