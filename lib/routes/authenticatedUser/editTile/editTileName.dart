@@ -1,0 +1,83 @@
+import 'package:flutter/material.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+class EditTileName extends StatefulWidget {
+  SubCalendarEvent subEvent;
+  late String tileName;
+  Function? onInputChange;
+  EditTileName({required this.subEvent, this.onInputChange}) {
+    tileName = subEvent.name == null ? "" : subEvent.name!;
+  }
+
+  String get name {
+    return tileName;
+  }
+
+  @override
+  _EditTileNameState createState() => _EditTileNameState();
+}
+
+class _EditTileNameState extends State<EditTileName> {
+  final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
+  final Color textBorderColor = Colors.white;
+  late TextEditingController _controller = TextEditingController();
+  @override
+  void initState() {
+    super.initState();
+    if (this.widget.onInputChange != null) {
+      _controller.text =
+          this.widget.subEvent.name == null ? "" : this.widget.subEvent.name!;
+      _controller.addListener(() {
+        this.widget.tileName = _controller.text;
+        this.widget.onInputChange!();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+        widthFactor: 0.85,
+        child: Container(
+          width: 380,
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          child: TextField(
+            controller: _controller,
+            style: TextStyle(
+                fontSize: 20,
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.w500,
+                color: Color.fromRGBO(31, 31, 31, 1)),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.tileName,
+              filled: true,
+              isDense: true,
+              contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+              fillColor: textBackgroundColor,
+              border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(50.0),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(8.0),
+                ),
+                borderSide: BorderSide(color: textBorderColor, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(8.0),
+                ),
+                borderSide: BorderSide(
+                  color: textBorderColor,
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+        ));
+  }
+}

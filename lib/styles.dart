@@ -24,7 +24,7 @@ class TileStyles {
       fontSize: textFontSize,
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
-  static Color textBackgroundColor = Colors.white;
+  static Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);

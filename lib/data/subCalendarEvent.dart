@@ -7,6 +7,8 @@ class SubCalendarEvent extends TilerEvent {
   double? travelTimeAfter;
   double? rangeStart;
   double? rangeEnd;
+  double? calendarEventStart;
+  double? calendarEventEnd;
   String? emojis;
   bool? isPaused;
   bool? isPausedTimeLine = false;
@@ -61,6 +63,26 @@ class SubCalendarEvent extends TilerEvent {
     return Utility.msCurrentTime >= this.end;
   }
 
+  DateTime? get rangeStartTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.rangeStart!.toInt(),
+        isUtc: true);
+  }
+
+  DateTime? get rangeEndTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.rangeEnd!.toInt(),
+        isUtc: true);
+  }
+
+  DateTime? get calendarEventStartTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.calendarEventStart!.toInt(),
+        isUtc: true);
+  }
+
+  DateTime? get calendarEventEndTime {
+    return DateTime.fromMillisecondsSinceEpoch(this.calendarEventEnd!.toInt(),
+        isUtc: true);
+  }
+
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
@@ -71,6 +93,16 @@ class SubCalendarEvent extends TilerEvent {
     if (json.containsKey('travelTimeAfter') &&
         json['travelTimeAfter'] != null) {
       travelTimeAfter = double.parse(json['travelTimeAfter'].toString());
+    }
+
+    if (json.containsKey('calendarEventStart') &&
+        json['calendarEventStart'] != null) {
+      calendarEventStart = cast<int>(json['calendarEventStart'])!.toDouble();
+    }
+
+    if (json.containsKey('calendarEventEnd') &&
+        json['calendarEventEnd'] != null) {
+      calendarEventEnd = cast<int>(json['calendarEventEnd'])!.toDouble();
     }
 
     if (json.containsKey('rangeStart') && json['rangeStart'] != null) {
@@ -91,8 +123,16 @@ class SubCalendarEvent extends TilerEvent {
         json['isPausedTimeLine'] != null) {
       isPausedTimeLine = cast<bool>(json['isPausedTimeLine'])!;
     }
+
     if (json.containsKey('isTardy') && json['isTardy'] != null) {
       isTardy = cast<bool>(json['isTardy'])!;
+    }
+
+    if (json.containsKey('calendarEvent')) {
+      calendarEvent = TilerEvent.fromJson(json['calendarEvent']);
+      if (calendarEvent != null) {
+        split = calendarEvent!.split;
+      }
     }
   }
 }

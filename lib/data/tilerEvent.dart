@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:tiler_app/data/noteData.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import '../util.dart';
@@ -11,7 +12,14 @@ class TilerEvent extends TilerObj with TimeRange {
   String? addressDescription;
   String? thirdpartyType;
   String thirdpartyId = '';
+  String thirdPartyUserId = '';
   String? searchdDescription;
+  int? split;
+  TilerEvent? calendarEvent;
+  NoteData? noteData;
+
+  DateTime? _startTime;
+  DateTime? _endTime;
 
   double? _startInMs;
   // ignore: unnecessary_getters_setters
@@ -23,11 +31,11 @@ class TilerEvent extends TilerObj with TimeRange {
   set start(double? value) {
     _startInMs = value;
     if (this._startInMs != null) {
-      startTime = Utility.localDateTimeFromMs(this._startInMs!.toInt());
+      _startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
+              isUtc: true)
+          .toLocal();
     }
   }
-
-  DateTime? startTime;
 
   double? _endInMs;
   // ignore: unnecessary_getters_setters
@@ -39,11 +47,19 @@ class TilerEvent extends TilerObj with TimeRange {
   set end(double? value) {
     _endInMs = value;
     if (this._endInMs != null) {
-      endTime = Utility.localDateTimeFromMs(this._endInMs!.toInt());
+      _endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
+              isUtc: true)
+          .toLocal();
     }
   }
 
-  DateTime? endTime;
+  DateTime? get startTime {
+    return _startTime;
+  }
+
+  DateTime? get endTime {
+    return _endTime;
+  }
 
   bool? isRecurring = false;
 
@@ -81,6 +97,10 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('thirdpartyType')) {
       thirdpartyType = json['thirdpartyType'];
     }
+    if (json.containsKey('thirdPartyUserId') &&
+        json['thirdPartyUserId'] != null) {
+      thirdPartyUserId = json['thirdPartyUserId'];
+    }
     if (json.containsKey('searchdDescription')) {
       searchdDescription = json['searchdDescription'];
     }
@@ -100,6 +120,12 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('isRecurring')) {
       isRecurring = json['isRecurring'];
+    }
+    if (json.containsKey('splitCount')) {
+      split = json['splitCount'];
+    }
+    if (json.containsKey('blob')) {
+      this.noteData = NoteData.fromJson(json['blob']);
     }
   }
 

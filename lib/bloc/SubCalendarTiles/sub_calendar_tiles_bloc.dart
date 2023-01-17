@@ -10,23 +10,23 @@ import 'package:tuple/tuple.dart';
 part 'sub_calendar_tiles_event.dart';
 part 'sub_calendar_tiles_state.dart';
 
-class SubCalendarTilesBloc
-    extends Bloc<SubCalendarTilesEvent, SubCalendarTilesState> {
-  ScheduleApi scheduleApi = ScheduleApi();
+class SubCalendarTileBloc
+    extends Bloc<SubCalendarTileEvent, SubCalendarTileState> {
   SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  SubCalendarTilesBloc() : super(SubCalendarTilesInitialState()) {
-    on<GetSubCalendarTiles>(_onLoadSubCalendarTile);
+  SubCalendarTileBloc() : super(SubCalendarTilesInitialState()) {
+    on<GetSubCalendarTileBlocEvent>(_onLoadSubCalendarTile);
+    on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
+
   }
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
-      Timeline timeLine) async {
-    return await scheduleApi.getSubEvents(timeLine);
+  void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event, Emitter<SubCalendarTileState> emit) async {
+    emit(SubCalendarTilesInitialState());
   }
 
   void _onLoadSubCalendarTile(
-      GetSubCalendarTiles event, Emitter<SubCalendarTilesState> emit) async {
+      GetSubCalendarTileBlocEvent event, Emitter<SubCalendarTileState> emit) async {
     final state = this.state;
-    if (state is SubCalendarTilesLoadedState) {
+    if (state is SubCalendarTileLoadedState) {
       emit(SubCalendarTilesLoadingState(subEventId: state.subEvent.id!));
     }
 
@@ -38,7 +38,7 @@ class SubCalendarTilesBloc
     await subCalendarEventApi
         .getSubEvent(event.subEvent?.id ?? event.subEventId)
         .then((value) {
-      emit(SubCalendarTilesLoadedState(subEvent: value));
+      emit(SubCalendarTileLoadedState(subEvent: value));
     });
   }
 }
