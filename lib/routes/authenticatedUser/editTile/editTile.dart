@@ -12,6 +12,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTile extends StatefulWidget {
@@ -195,31 +196,108 @@ class _EditTileState extends State<EditTile> {
               onInputChange: dataChange,
             );
             return Container(
+              margin: TileStyles.topMargin,
+              alignment: Alignment.topCenter,
               child: Column(
                 children: [
                   _editTileName!,
-                  Row(
-                    children: [
-                      Text(AppLocalizations.of(context)!.start),
-                      _editStartDateAndTime!
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(AppLocalizations.of(context)!.end),
-                      _editEndDateAndTime!
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(AppLocalizations.of(context)!.deadline),
-                      _editCalEndDateAndTime!
-                    ],
-                  ),
-                  TextField(
-                    keyboardType: TextInputType.number,
-                    controller: splitCountController,
-                  )
+                  FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.split,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                              width: 50,
+                              child: TextField(
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                controller: splitCountController,
+                              ),
+                            )
+                          ],
+                        ),
+                      )),
+                  FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.start,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            _editStartDateAndTime!
+                          ],
+                        ),
+                      )),
+                  FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.end,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            _editEndDateAndTime!
+                          ],
+                        ),
+                      )),
+                  FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(
+                                  AppLocalizations.of(context)!.deadline,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            _editCalEndDateAndTime!
+                          ],
+                        ),
+                      )),
+                  // Container(
+                  //   width: MediaQuery.of(context).size.width *
+                  //       TileStyles.tileWidthRatio,
+                  //   child: Row(
+                  //     children: [
+                  //       TextField(
+                  //         keyboardType: TextInputType.number,
+                  //         controller: splitCountController,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // )
                 ],
               ),
             );

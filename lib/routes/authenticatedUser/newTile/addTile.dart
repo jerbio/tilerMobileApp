@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:duration_picker/duration_picker.dart';
@@ -32,8 +31,8 @@ class AddTile extends StatefulWidget {
 }
 
 class AddTileState extends State<AddTile> {
-  final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
-  final Color textBorderColor = Colors.white;
+  final Color textBackgroundColor = TileStyles.textBackgroundColor;
+  final Color textBorderColor = TileStyles.textBorderColor;
   final Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   final Color populatedTextColor = Colors.white;
   final BoxDecoration boxDecoration = BoxDecoration(
