@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -24,13 +26,39 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
   final double maxWidthOfTimeline = 280;
   final double diameterOfBall = 10;
   final DateFormat formatter = DateFormat.jm();
+  late double evaluatedPosition;
+  late double subEventDuratonInMs;
+  late double durationInMs;
+  late double widthOfUsedUpDuration = 0;
+
+  @override
+  void initState() {
+    double start = widget.timeline.start!;
+    double end = widget.timeline.end!;
+    var currentTimeInMs = Utility.msCurrentTime;
+    subEventDuratonInMs = end - start;
+    durationInMs = currentTimeInMs - start;
+    evaluatedPosition = ((durationInMs / subEventDuratonInMs) *
+        (maxWidthOfTimeline - diameterOfBall));
+    widthOfUsedUpDuration =
+        (durationInMs / subEventDuratonInMs) * maxWidthOfTimeline;
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (this.mounted) {
+        setState(() {
+          evaluatedPosition = (maxWidthOfTimeline - diameterOfBall);
+          widthOfUsedUpDuration = maxWidthOfTimeline;
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     String locale = Localizations.localeOf(context).languageCode;
     bool isToday = widget.timeline.isInterfering(Utility.todayTimeline());
-    var currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
-    double widthOfUsedUpDuration = 0;
+    var currentTimeInMs = Utility.msCurrentTime;
+
     Widget timeline;
     if (widget.timeline.start != null && widget.timeline.end != null) {
       double start = widget.timeline.start!;
@@ -38,13 +66,6 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
       bool isInterferring = widget.timeline.isInterfering(new Timeline(
           currentTimeInMs.toDouble(), (currentTimeInMs + 10).toDouble()));
       if (this.widget.loadTimeScrub || isInterferring) {
-        double subEventDuratonInMs = end - start;
-        double durationInMs = currentTimeInMs - start;
-        double evaluatedPosition = ((durationInMs / subEventDuratonInMs) *
-            (maxWidthOfTimeline - diameterOfBall));
-        widthOfUsedUpDuration =
-            (durationInMs / subEventDuratonInMs) * maxWidthOfTimeline;
-
         int colorRed = 255;
         int colorGreen = 255;
         int colorBlue = 255;
@@ -64,32 +85,39 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                 : Color.fromRGBO(105, 105, 105, 0.2),
           ),
         );
-        var scrubberElements = [backgroundShade];
+        var scrubberElements = <Widget>[backgroundShade];
 
         if (isInterferring) {
-          var usedUpTimeWidget = Container(
+          double durationLeft = end - currentTimeInMs;
+          var usedUpTimeWidget = AnimatedPositioned(
+            duration: Duration(milliseconds: durationLeft.toInt()),
             width: widthOfUsedUpDuration,
-            height: 5,
-            margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              color: Colors.greenAccent,
+            child: Container(
+              height: 5,
+              margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                color: Colors.greenAccent,
+              ),
             ),
           ); //Used up time
 
-          var movingBallWidget = Container(
-            width: diameterOfBall,
-            height: diameterOfBall,
-            margin: new EdgeInsets.fromLTRB(evaluatedPosition, 0, 0, 0),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                color: Color.fromRGBO(colorRed, colorGreen, colorBlue, 1),
-                boxShadow: [
-                  BoxShadow(
-                      color: Color.fromRGBO(150, 150, 150, 0.9),
-                      blurRadius: 2,
-                      spreadRadius: 2),
-                ]),
+          var movingBallWidget = AnimatedPositioned(
+            duration: Duration(milliseconds: durationLeft.toInt()),
+            left: evaluatedPosition,
+            child: Container(
+              width: diameterOfBall,
+              height: diameterOfBall,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  color: Color.fromRGBO(colorRed, colorGreen, colorBlue, 1),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Color.fromRGBO(150, 150, 150, 0.9),
+                        blurRadius: 2,
+                        spreadRadius: 2),
+                  ]),
+            ),
           ); // moving ball
           scrubberElements.add(usedUpTimeWidget);
           scrubberElements.add(movingBallWidget);
@@ -97,8 +125,10 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
         timeline = Align(
             alignment: Alignment.center,
             child: Column(children: [
-              Stack(
-                children: scrubberElements,
+              Expanded(
+                child: Stack(
+                  children: scrubberElements,
+                ),
               ),
               Stack(
                 children: [

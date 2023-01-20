@@ -20,7 +20,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
       Timeline timeLine) async {
-    // return getAdHocSubEvents(timeLine);
+    // return await getAdHocSubEvents(timeLine);
     return await getSubEventsInScheduleRequest(timeLine);
   }
 
@@ -136,7 +136,8 @@ class ScheduleApi extends AppApi {
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
-      Timeline timeLine) {
+      Timeline timeLine,
+      {bool forceInterFerringWithNowTile = true}) {
     if (!this.preserveSubEventList) {
       adhocGeneratedSubEvents = <SubCalendarEvent>[];
     }
@@ -147,6 +148,22 @@ class ScheduleApi extends AppApi {
 
     List<Timeline> sleepTimeLines = [];
     List<SubCalendarEvent> refreshedSubEvents = [];
+    if (forceInterFerringWithNowTile) {
+      SubCalendarEvent adHocInterferringWithNowTile = new SubCalendarEvent(
+          name: Utility.randomName,
+          start: Utility.msCurrentTime.toDouble() -
+              Utility.oneMin.inMilliseconds.toDouble(),
+          end: Utility.msCurrentTime.toDouble() +
+              Utility.oneMin.inMilliseconds.toDouble(),
+          address: Utility.randomName,
+          addressDescription: Utility.randomName);
+      adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
+      adHocInterferringWithNowTile.colorGreen = Random().nextInt(255);
+      adHocInterferringWithNowTile.colorRed = Random().nextInt(255);
+      adHocInterferringWithNowTile.id = Utility.getUuid;
+      refreshedSubEvents.add(adHocInterferringWithNowTile);
+    }
+
     int maxDuration = Duration.millisecondsPerHour * 3;
     for (int i = 0; i < subEventCount; i++) {
       int durationMs = Random().nextInt(maxDuration);
@@ -307,7 +324,7 @@ class ScheduleApi extends AppApi {
   Future reviseSchedule() async {
     TilerError error = new TilerError();
     error.message = "Failed to revise schedule";
-    
+
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
       error.message = "Issues with reaching Tiler servers";
@@ -323,8 +340,6 @@ class ScheduleApi extends AppApi {
         throw error;
       }
     });
-
-    
   }
 
   Future shuffleSchedule() async {
