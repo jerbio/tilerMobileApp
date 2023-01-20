@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
@@ -51,8 +54,35 @@ class TileWidget extends StatefulWidget {
 
 class TileWidgetState extends State<TileWidget> {
   bool isMoreDetailEnabled = false;
+  StreamSubscription? pendingScheduleRefresh;
+
+  @override
+  void initState() {
+    if (this.widget.subEvent.isCurrentTimeWithin) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (this.mounted) {
+          double timeLeft = this.widget.subEvent.end! - Utility.msCurrentTime;
+
+          Future onTileExpiredCallBack = Future.delayed(
+              Duration(milliseconds: timeLeft.toInt()), callScheduleRefresh);
+          // ignore: cancel_subscriptions
+          StreamSubscription pendingSchedule =
+              onTileExpiredCallBack.asStream().listen((_) {});
+          setState(() {
+            pendingScheduleRefresh = pendingSchedule;
+          });
+        }
+      });
+    }
+    super.initState();
+  }
+
   void updateSubEvent(SubCalendarEvent subEvent) async {
     this.widget.subEvent = subEvent;
+  }
+
+  void callScheduleRefresh() {
+    this.context.read<ScheduleBloc>().add(GetSchedule());
   }
 
   @override
@@ -221,5 +251,13 @@ class TileWidgetState extends State<TileWidget> {
                             )),
                       ))),
             )));
+  }
+
+  @override
+  void dispose() {
+    if (this.pendingScheduleRefresh != null) {
+      this.pendingScheduleRefresh!.cancel();
+    }
+    super.dispose();
   }
 }

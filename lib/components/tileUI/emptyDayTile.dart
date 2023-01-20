@@ -37,7 +37,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
           return Container(
             child: Column(
               children: [
-                Container(
+                Expanded(
                     child: ClipRRect(
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(8),
