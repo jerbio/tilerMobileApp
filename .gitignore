@@ -40,4 +40,5 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+ios/build/*
 android/key.propertie*

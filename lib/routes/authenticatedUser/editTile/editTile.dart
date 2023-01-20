@@ -82,7 +82,7 @@ class _EditTileState extends State<EditTile> {
   void dataChange() {
     if (editTilerEvent != null) {
       EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
-      if (_editTileName != null) {
+      if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
       if (_editStartDateAndTime != null &&
@@ -200,24 +200,37 @@ class _EditTileState extends State<EditTile> {
                 this.subEvent == null) {
               return PendingWidget();
             }
+            String tileName =
+                this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
             _editTileName = EditTileName(
-              subEvent: this.subEvent!,
+              tileName: tileName,
+              isProcrastinate: isProcrastinateTile,
               onInputChange: dataChange,
             );
+
+            DateTime startTime =
+                this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
             _editStartDateAndTime = EditDateAndTime(
-              time: this.subEvent!.startTime!.toLocal(),
+              time: startTime,
               onInputChange: dataChange,
             );
+            DateTime endTime =
+                this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
             _editEndDateAndTime = EditDateAndTime(
-              time: this.subEvent!.endTime!.toLocal(),
+              time: endTime,
               onInputChange: dataChange,
             );
+            DateTime calStartTime = this.editTilerEvent?.calStartTime ??
+                this.subEvent!.calendarEventStartTime!;
             _editCalStartDateAndTime = EditDateAndTime(
-              time: this.subEvent!.calendarEventStartTime!.toLocal(),
+              time: calStartTime,
               onInputChange: dataChange,
             );
+
+            DateTime calEndTime = this.editTilerEvent?.calEndTime ??
+                this.subEvent!.calendarEventEndTime!;
             _editCalEndDateAndTime = EditDateAndTime(
-              time: this.subEvent!.calendarEventEndTime!.toLocal(),
+              time: calEndTime,
               onInputChange: dataChange,
             );
 

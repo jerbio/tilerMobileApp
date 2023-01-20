@@ -86,7 +86,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                       : autoTile.duration.toHuman +
                                           ' (' +
                                           AppLocalizations.of(context)!
-                                              .swipeUp +
+                                              .swipeRightToTileIt +
                                           ')',
                                   style: TextStyle(
                                       color: Colors.grey,
@@ -107,7 +107,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
           if (autoTile.isLastCard) {
             return;
           }
-          if (AppinioSwiperDirection.top == direction) {
+          if (AppinioSwiperDirection.right == direction) {
             Navigator.push(
                 context,
                 MaterialPageRoute(
