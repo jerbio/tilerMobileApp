@@ -4,12 +4,13 @@ import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditTileName extends StatefulWidget {
-  SubCalendarEvent subEvent;
-  late String tileName;
+  String tileName;
   Function? onInputChange;
-  EditTileName({required this.subEvent, this.onInputChange}) {
-    tileName = subEvent.name == null ? "" : subEvent.name!;
-  }
+  bool isProcrastinate;
+  EditTileName(
+      {required this.tileName,
+      this.onInputChange,
+      this.isProcrastinate = false});
 
   String get name {
     return tileName;
@@ -26,14 +27,8 @@ class _EditTileNameState extends State<EditTileName> {
   @override
   void initState() {
     super.initState();
-    String name =
-        this.widget.subEvent.name == null || this.widget.subEvent.name!.isEmpty
-            ? ((this.widget.subEvent.isProcrastinate ?? false)
-                ? 'Procrastinate block out'
-                : "")
-            : this.widget.subEvent.name!;
     if (this.widget.onInputChange != null) {
-      _controller.text = name;
+      _controller.text = this.widget.tileName;
       _controller.addListener(() {
         this.widget.tileName = _controller.text;
         this.widget.onInputChange!();
@@ -43,14 +38,18 @@ class _EditTileNameState extends State<EditTileName> {
 
   @override
   Widget build(BuildContext context) {
+    String procrastinateText =
+        AppLocalizations.of(context)!.procrastinateBlockOut;
     return FractionallySizedBox(
         widthFactor: 0.85,
         child: Container(
           width: 380,
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-          child: TextField(
-            enabled: !(this.widget.subEvent.isProcrastinate ?? false),
-            controller: _controller,
+          child: TextFormField(
+            initialValue:
+                this.widget.isProcrastinate ? procrastinateText : null,
+            enabled: !(this.widget.isProcrastinate),
+            controller: this.widget.isProcrastinate ? null : _controller,
             style: TextStyle(
                 fontSize: 20,
                 fontFamily: TileStyles.rubikFontName,

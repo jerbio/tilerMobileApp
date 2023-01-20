@@ -78,7 +78,7 @@
     "end":"End",
     "deadline": "Deadline",
     "split":"Split",
-    "swipeUp":"Swipe Up to tile it",
+    "swipeRightToTileIt":"Swipe Right to tile it",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
