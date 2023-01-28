@@ -51,6 +51,10 @@ class SignInRouteState extends State<SignInRoute> {
     super.dispose();
   }
 
+  bool _keyboardIsVisible() {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,10 +97,12 @@ class SignInRouteState extends State<SignInRoute> {
         Container(
           padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
           alignment: Alignment.topCenter,
-          child: Image.asset(
-            'assets/images/tiler_logo_black.png',
-            scale: 4,
-          ),
+          child: _keyboardIsVisible()
+              ? SizedBox.shrink()
+              : Image.asset(
+                  'assets/images/tiler_logo_black.png',
+                  scale: 4,
+                ),
         ),
       ],
     )));

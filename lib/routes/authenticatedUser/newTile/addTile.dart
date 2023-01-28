@@ -24,10 +24,11 @@ class AddTile extends StatefulWidget {
   Function? onAddTileClose;
   Function? onAddingATile;
   AutoTile? autoTile;
+  DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.autoTile});
+  AddTile({this.autoTile, this.autoDeadline});
   @override
   AddTileState createState() => AddTileState();
 }
@@ -73,12 +74,14 @@ class AddTileState extends State<AddTile> {
 
   @override
   void initState() {
+    if (this.widget.autoDeadline != null) {
+      _endTime = this.widget.autoDeadline!;
+    }
     if (this.widget.autoTile != null) {
       _location = this.widget.autoTile!.location;
       tileNameController =
           TextEditingController(text: this.widget.autoTile!.description);
       _duration = this.widget.autoTile!.duration;
-      _endTime = Utility.todayTimeline().endTime;
 
       if (_location == null) {
         var future = new Future.delayed(

@@ -91,7 +91,8 @@ class Utility {
     Duration totalDuration = Duration(days: dayIndex);
     DateTime retValueShifted = Utility._beginningOfTime.add(totalDuration);
     DateTime retValue = DateTime(
-        retValueShifted.year, retValueShifted.month, retValueShifted.day);
+            retValueShifted.year, retValueShifted.month, retValueShifted.day)
+        .toLocal();
     return retValue;
   }
 
@@ -546,5 +547,15 @@ extension DateTimeHuman on DateTime {
     }
 
     return dayString;
+  }
+
+  DateTime get endOfDay {
+    DateTime retValue = DateTime(this.year, this.month, this.day, 23, 59);
+    return retValue;
+  }
+
+  DateTime get startOfDay {
+    DateTime retValue = DateTime(this.year, this.month, this.day, 0, 0);
+    return retValue;
   }
 }

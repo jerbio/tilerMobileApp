@@ -1,8 +1,7 @@
-import 'dart:ffi';
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -26,11 +25,32 @@ class SignInComponentState extends State<SignInComponent> {
   bool isRegistrationScreen = false;
   double credentialManagerHeight = 350;
   double credentialButtonHeight = 150;
+
+  void showMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+
+  void showErrorMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.red,
+        fontSize: 16.0);
+  }
+
   void adHocSignin() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.signingIn)),
-      );
+      showMessage(AppLocalizations.of(context)!.signingIn);
       Authorization authorization = new Authorization();
       AuthenticationData authenticationData =
           await authorization.getAuthenticationInfo(
@@ -58,21 +78,8 @@ class SignInComponentState extends State<SignInComponent> {
     }
   }
 
-  void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  void showErrorMessage(String message) {
-    final scaffold = ScaffoldMessenger.of(context);
-    scaffold.showSnackBar(
-      SnackBar(
-          content: Text(message),
-          action: SnackBarAction(
-              label: AppLocalizations.of(context)!.close,
-              onPressed: scaffold.hideCurrentSnackBar)),
-    );
+  bool _keyboardIsVisible() {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
   void registerUser() async {

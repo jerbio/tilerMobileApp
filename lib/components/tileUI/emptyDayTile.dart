@@ -7,6 +7,8 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EmptyDayTile extends StatefulWidget {
+  DateTime? deadline;
+  EmptyDayTile({this.deadline});
   @override
   EmptyDayTileState createState() => EmptyDayTileState();
 }
@@ -19,10 +21,19 @@ class EmptyDayTileState extends State<EmptyDayTile> {
         Utility.adHocAutoTilesByDuration;
 
     int durationInMs = autoTilesByDuration.keys.toList().getRandomize().first;
-    autoTiles = autoTilesByDuration[durationInMs]!
-        .getRandomize()
-        .cast<AutoTile>()
-        .toList();
+    List<AutoTile> autoTilesWithDuplicateCategory =
+        autoTilesByDuration[durationInMs]!
+            .getRandomize()
+            .cast<AutoTile>()
+            .toList();
+    Map<String, AutoTile> categoryIds = {};
+    autoTiles = <AutoTile>[];
+    for (var eachAutoTile in autoTilesWithDuplicateCategory) {
+      if (!categoryIds.containsKey(eachAutoTile.categoryId)) {
+        autoTiles.add(eachAutoTile);
+        categoryIds[eachAutoTile.categoryId] = eachAutoTile;
+      }
+    }
     autoTiles.insert(0, Utility.lastCards.randomEntry);
     super.initState();
   }
@@ -112,8 +123,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                 context,
                 MaterialPageRoute(
                     builder: (context) => AddTile(
-                          autoTile: autoTile,
-                        )));
+                        autoTile: autoTile,
+                        autoDeadline: this.widget.deadline)));
           }
         },
       ),
