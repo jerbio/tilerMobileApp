@@ -8,6 +8,7 @@ var autoTileParams = [
       'We only have so much',
       'AI will return next week more options'
     ],
+    'relevance': 0,
     'durations': [Utility.oneMin],
     'assets': [
       'assets/images/regenerativeArt/pictimely_we_are_not_Gods_064eb660-6cca-44bb-b75b-12da4555ef30.png'
@@ -17,20 +18,21 @@ var autoTileParams = [
     'id': Utility.getUuid,
     'descriptions': ['Pillow fort', 'Build a fort'],
     'durations': [Utility.thirtyMin, Utility.oneHour],
+    'relevance': 4,
     'assets': [
       'assets/images/regenerativeArt/pictimely_build_a_pillow_fort_d77bbb89-2e18-4e70-a547-a78d9b9eee83.png'
     ]
   },
   {
     'id': Utility.getUuid,
-    'descriptions': ['Origami', 'Paper art'],
+    'descriptions': ['House renovation project', 'Learn magic trick'],
+    'relevance': 5,
     'durations': [
       Utility.thirtyMin,
       Utility.oneHour,
       Duration(hours: 2),
       Duration(hours: 4),
       Duration(hours: 6),
-      Duration(hours: 24)
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_cute_photo_of_woman_and_man_working_together_looking__49c9615b-3c01-4914-aa4c-be6aaeba779d.png'
@@ -44,6 +46,7 @@ var autoTileParams = [
       Utility.oneHour,
       Duration(hours: 2),
     ],
+    'relevance': 5,
     'assets': [
       'assets/images/regenerativeArt/pictimely_Do_some_origami_43731a0a-393c-434e-ab3e-1c5bb10143b2.png'
     ]
@@ -61,6 +64,7 @@ var autoTileParams = [
       Utility.thirtyMin,
       Utility.oneHour,
     ],
+    'relevance': 4,
     'assets': [
       'assets/images/regenerativeArt/pictimely_feeling_idle_excited_at_a_dance_party_2efb40a6-7b44-49d9-a038-50f197bb506a.png'
     ]
@@ -72,8 +76,8 @@ var autoTileParams = [
       Duration(hours: 2),
       Duration(hours: 4),
       Duration(hours: 6),
-      Duration(hours: 24)
     ],
+    'relevance': 4,
     'assets': [
       'assets/images/regenerativeArt/pictimely_Have_a_movie_marathon_e574a17c-3c4a-439b-8c94-7ae1771495f4.png'
     ]
@@ -85,6 +89,7 @@ var autoTileParams = [
       'Work at a shelter',
       'Join a Maker shop'
     ],
+    'relevance': 2,
     'durations': [
       Utility.oneHour,
       Duration(hours: 2),
@@ -97,6 +102,7 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Make a bird feeder', 'Work at a shelter'],
+    'relevance': 5,
     'durations': [
       Utility.thirtyMin,
       Utility.oneHour,
@@ -110,10 +116,10 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Reorganize Closet', 'Reorganize room'],
+    'relevance': 1,
     'durations': [
       Duration(hours: 2),
       Duration(hours: 4),
-      Duration(hours: 6),
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_Reorganize_your_closets_abdd967a-9592-444b-b772-0326fa46d8ea.png'
@@ -122,10 +128,10 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Plant indoor Garden', 'Pick up planting'],
+    'relevance': 5,
     'durations': [
       Duration(hours: 2),
       Duration(hours: 4),
-      Duration(hours: 6),
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_plant_indoor_garden_fb195907-8fd8-4c03-b998-61eb0d000f5f.png'
@@ -134,10 +140,10 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Make a T-shirt'],
+    'relevance': 5,
     'durations': [
       Duration(hours: 2),
       Duration(hours: 4),
-      Duration(hours: 6),
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_make_a_tshirt_05b6d04b-a565-4683-bbf8-6e208acee019.png'
@@ -146,6 +152,7 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Take a nap'],
+    'relevance': 3,
     'durations': [
       Duration(hours: 1),
       Duration(hours: 2),
@@ -157,6 +164,7 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Go for a walk'],
+    'relevance': 1,
     'durations': [
       Duration(minutes: 30),
       Duration(hours: 1),
@@ -168,6 +176,7 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Listen to music', 'Listen to your favorite artist'],
+    'relevance': 3,
     'durations': [
       Duration(minutes: 5),
       Duration(minutes: 15),
@@ -181,12 +190,12 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': ['Redesign room', 'Rearrange home'],
+    'relevance': 2,
     'durations': [
       Duration(minutes: 30),
       Duration(hours: 1),
       Duration(hours: 2),
       Duration(hours: 4),
-      Duration(hours: 12),
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_decorate_a_room_05c28f1e-30fb-44f9-9738-30fe5decab93.png'

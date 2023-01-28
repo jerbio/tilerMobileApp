@@ -244,7 +244,19 @@ class TileBatchState extends State<TileBatch> {
     }
 
     if (tiles.length == 0) {
-      childrenColumnWidgets.add(EmptyDayTile());
+      DateTime? endOfDayTime;
+      if (this.widget.dayIndex != null) {
+        DateTime evaluatedEndOfTIme =
+            Utility.getTimeFromIndex(this.widget.dayIndex!).endOfDay;
+        if (Utility.utcEpochMillisecondsFromDateTime(evaluatedEndOfTIme) >
+            Utility.msCurrentTime) {
+          endOfDayTime = evaluatedEndOfTIme;
+        }
+      }
+
+      childrenColumnWidgets.add(EmptyDayTile(
+        deadline: endOfDayTime,
+      ));
     }
 
     if (widget.footer != null) {
