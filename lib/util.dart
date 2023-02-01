@@ -107,6 +107,12 @@ class Utility {
     return retValue;
   }
 
+  static Duration durationDifference(DateTime a, DateTime b) {
+    int durationInMs = utcEpochMillisecondsFromDateTime(a) -
+        utcEpochMillisecondsFromDateTime(b);
+    return Duration(milliseconds: durationInMs);
+  }
+
   static Position getDefaultPosition() {
     return _defaultPosition;
   }
