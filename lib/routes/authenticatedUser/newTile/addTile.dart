@@ -710,9 +710,6 @@ class AddTileState extends State<AddTile> {
       }
       tile.RepeatData = _repetitionData!.isAutoRepetitionEnd.toString();
       tile.RepeatType = _repetitionData!.frequency.name;
-      if (_endTime == null) {
-        _endTime = Utility.todayTimeline().endTime;
-      }
     }
 
     tile.EndYear = _endTime?.year.toString();
