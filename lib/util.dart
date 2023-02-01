@@ -564,4 +564,18 @@ extension DateTimeHuman on DateTime {
     DateTime retValue = DateTime(this.year, this.month, this.day, 0, 0);
     return retValue;
   }
+
+  DateTime get endOfTheWeek {
+    int weekDay = this.weekday;
+    int zeroThDayOfWeek = weekDay % 7;
+    int daysTillSaturday = 6 - zeroThDayOfWeek;
+    if (daysTillSaturday == 0) {
+      daysTillSaturday += 7;
+    }
+
+    Duration durationTillSaturday = Duration(days: daysTillSaturday);
+    DateTime retValue = DateTime(this.year, this.month, this.day, 23, 59);
+    retValue.add(durationTillSaturday);
+    return retValue;
+  }
 }
