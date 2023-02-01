@@ -14,6 +14,7 @@
     "duration": "Duration",
     "addTile": "Add Tile",
     "procrastinate": "Procrastinate",
+    "procrastinating": "Procrastinating",
     "forecast": "Forecast",
     "whenQ": "When?",
     "loading": "Loading",
@@ -28,7 +29,7 @@
     "once":"Once",
     "weekdaysAndWorkHours":"Weekdays and work hours",
     "weekend":"Weekend",
-    "repetition": "repetition",
+    "repetition": "Repetition",
     "reminder": "Reminder",
     "restriction": "Restriction",
     "username": "Username",
@@ -80,6 +81,10 @@
     "split":"Split",
     "swipeRightToTileIt":"Swipe Right to tile it",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
+    "daily":"Daily",
+    "weekly":"Weekly",
+    "monthly":"Monthly",
+    "yearly":"Yearly",
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

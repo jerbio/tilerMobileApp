@@ -36,6 +36,18 @@ class TileStyles {
         Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
         Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
       ]));
+  static final BoxDecoration invalidBoxDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      gradient: LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          HSLColor.fromAHSL(1, 360, 0.9, 0.46).toColor(),
+          HSLColor.fromAHSL(1, 350, 1, 0.7).toColor()
+        ],
+      ));
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(

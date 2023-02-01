@@ -50,6 +50,7 @@ dependencies:
   swipe_cards: ^1.0.0
   rename: ^2.0.1
   appinio_swiper: ^1.1.1
+  weekday_selector: ^1.1.0
 
 dev_dependencies:
   build_runner: ^2.1.4

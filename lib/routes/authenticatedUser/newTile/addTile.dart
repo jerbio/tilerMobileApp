@@ -9,9 +9,11 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -37,7 +39,7 @@ class AddTileState extends State<AddTile> {
   late AutoTile? autoTile;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
-  final Color iconColor = Color.fromRGBO(154, 158, 159, 1);
+  final Color iconColor = TileStyles.iconColor;
   final Color populatedTextColor = Colors.white;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
@@ -62,6 +64,7 @@ class AddTileState extends State<AddTile> {
   Duration? _duration = Duration(hours: 0, minutes: 0);
   bool _isDurationManuallySet = false;
   Location? _location = Location.fromDefault();
+  RepetitionData? _repetitionData;
   Color? _color;
   bool _isLocationManuallySet = false;
   DateTime? _endTime;
@@ -144,7 +147,7 @@ class AddTileState extends State<AddTile> {
       isCountReady = true;
     }
 
-    if (isNameReady && isDurationReady && isCountReady) {
+    if (isNameReady && isDurationReady && isCountReady && isRepetitionValid()) {
       setState(() {
         onProceed = _onProceedTap;
       });
@@ -389,6 +392,7 @@ class AddTileState extends State<AddTile> {
   Widget generateExtraConfigSelection() {
     String locationName = 'Location';
     bool isLocationConfigSet = false;
+    bool isRepetitionSet = false;
     bool isColorConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
     if (_location != null) {
@@ -417,6 +421,10 @@ class AddTileState extends State<AddTile> {
 
     if (_color != null) {
       isColorConfigSet = true;
+    }
+
+    if (_repetitionData != null) {
+      isRepetitionSet = true;
     }
 
     Widget locationConfigButton = ConfigUpdateButton(
@@ -448,28 +456,61 @@ class AddTileState extends State<AddTile> {
         });
       },
     );
+
     Widget repetitionConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.repetition,
         prefixIcon: Icon(
           Icons.repeat_outlined,
-          color: iconColor,
+          color: isRepetitionSet ? populatedTextColor : iconColor,
         ),
-        decoration: BoxDecoration(
-            color: Color.fromRGBO(31, 31, 31, 0.05),
-            borderRadius: BorderRadius.all(
-              const Radius.circular(10.0),
-            )),
-        textColor: iconColor,
+        decoration: isRepetitionSet
+            ? (isRepetitionValid()
+                ? populatedDecoration
+                : TileStyles.invalidBoxDecoration)
+            : boxDecoration,
+        textColor: isRepetitionSet ? populatedTextColor : iconColor,
         onPress: () {
-          final scaffold = ScaffoldMessenger.of(context);
-          scaffold.showSnackBar(
-            SnackBar(
-              content: const Text('Repetitions are disabled for now :('),
-              action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
-                  onPressed: scaffold.hideCurrentSnackBar),
-            ),
-          );
+          Timeline tileTimeline = Utility.todayTimeline();
+          RepetitionData? repetitionData = _repetitionData?.clone();
+          DateTime deadline = DateTime(tileTimeline.startTime.year,
+              tileTimeline.startTime.month, tileTimeline.startTime.day, 23, 59);
+          tileTimeline =
+              Timeline.fromDateTime(tileTimeline.startTime, deadline);
+          if (this._endTime != null) {
+            tileTimeline =
+                Timeline.fromDateTime(tileTimeline.startTime, this._endTime!);
+          }
+
+          Map<String, dynamic> repetitionParams = {
+            'repetitionData': repetitionData,
+            'tileTimeline': tileTimeline,
+          };
+
+          Navigator.pushNamed(context, '/repetitionRoute',
+                  arguments: repetitionParams)
+              .whenComplete(() {
+            RepetitionData? updatedRepetitionData =
+                repetitionParams['updatedRepetition'] as RepetitionData?;
+            bool isRepetitionEndValid = true;
+            if (repetitionParams.containsKey('isRepetitionEndValid')) {
+              isRepetitionEndValid =
+                  repetitionParams['isRepetitionEndValid'] ?? false;
+            }
+
+            repetitionParams['updatedRepetition'] as RepetitionData?;
+            if (updatedRepetitionData != null) {
+              setState(() {
+                _repetitionData =
+                    isRepetitionEndValid ? updatedRepetitionData : null;
+              });
+            }
+            if (!isRepetitionEndValid) {
+              setState(() {
+                _repetitionData = null;
+              });
+            }
+            isSubmissionReady();
+          });
         });
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
@@ -595,7 +636,7 @@ class AddTileState extends State<AddTile> {
 
   void onEndTimeTap() async {
     DateTime _endTime = this._endTime == null
-        ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+        ? Utility.todayTimeline().endTime.add(Utility.oneDay)
         : this._endTime!;
     TimeOfDay _endTimeOfDay = TimeOfDay.fromDateTime(_endTime);
     final TimeOfDay? revisedEndTime =
@@ -609,10 +650,10 @@ class AddTileState extends State<AddTile> {
 
   void onEndDateTap() async {
     DateTime _endDate = this._endTime == null
-        ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+        ? Utility.todayTimeline().endTime.add(Utility.oneDay)
         : this._endTime!;
-    DateTime firstDate = _endDate.add(Duration(days: -14));
-    DateTime lastDate = _endDate.add(Duration(days: 90));
+    DateTime firstDate = _endDate.add(Duration(days: -180));
+    DateTime lastDate = _endDate.add(Duration(days: 180));
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,
@@ -631,6 +672,19 @@ class AddTileState extends State<AddTile> {
     }
   }
 
+  bool isRepetitionValid() {
+    bool retValue = true;
+    if (_repetitionData != null) {
+      if (this._endTime != null) {
+        retValue = Utility.utcEpochMillisecondsFromDateTime(
+                _repetitionData!.repetitionEnd!) >
+            Utility.utcEpochMillisecondsFromDateTime(this._endTime!);
+      }
+    }
+
+    return retValue;
+  }
+
   void onSubmitButtonTap() async {
     DateTime? _endTime = this._endTime;
 
@@ -639,6 +693,28 @@ class AddTileState extends State<AddTile> {
     if (this._duration != null) {
       tile.DurationMinute = this._duration!.inMinutes.toString();
     }
+
+    if (_repetitionData != null) {
+      tile.RepeatFrequency = _repetitionData!.frequency.name;
+      if (_repetitionData!.repetitionEnd != null) {
+        tile.RepeatEndYear = _repetitionData!.repetitionEnd!.year.toString();
+        tile.RepeatEndMonth = _repetitionData!.repetitionEnd!.month.toString();
+        tile.RepeatEndDay = _repetitionData!.repetitionEnd!.day.toString();
+      }
+
+      if (_repetitionData!.weeklyRepetition != null &&
+          _repetitionData!.weeklyRepetition!.length > 0) {
+        tile.RepeatWeeklyData = _repetitionData!.weeklyRepetition!
+            .map((dayIndex) => dayIndex % 7)
+            .join(',');
+      }
+      tile.RepeatData = _repetitionData!.isAutoRepetitionEnd.toString();
+      tile.RepeatType = _repetitionData!.frequency.name;
+      if (_endTime == null) {
+        _endTime = Utility.todayTimeline().endTime;
+      }
+    }
+
     tile.EndYear = _endTime?.year.toString();
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();

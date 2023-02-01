@@ -1,10 +1,13 @@
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
+
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 
 class ProcrastinateAll extends StatefulWidget {
@@ -17,9 +20,14 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
   ScheduleApi _scheduleApi = ScheduleApi();
 
   void showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 
   void showErrorMessage(String message) {

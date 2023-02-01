@@ -20,7 +20,6 @@ class PlayBack extends StatefulWidget {
 }
 
 class PlayBackState extends State<PlayBack> {
-  ScheduleApi _scheduleApi = new ScheduleApi();
   SubCalendarEventApi _subCalendarEventApi = new SubCalendarEventApi();
   SubCalendarEvent? _subEvent;
 
@@ -120,6 +119,37 @@ class PlayBackState extends State<PlayBack> {
     }
   }
 
+  procrastinate() async {
+    Map<String, dynamic> durationParams = {'duration': Duration(hours: 0)};
+    Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+        .whenComplete(() {
+      print('done with pop');
+      print(durationParams['duration']);
+      Duration? populatedDuration = durationParams['duration'] as Duration?;
+
+      if (populatedDuration != null && populatedDuration.inMinutes > 0) {
+        SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+        if (subTile.id != null) {
+          showMessage(AppLocalizations.of(context)!.procrastinating);
+          final scheduleState = this.context.read<ScheduleBloc>().state;
+          if (scheduleState is ScheduleEvaluationState) {
+            return;
+          }
+
+          if (scheduleState is ScheduleLoadedState) {
+            context.read<ScheduleBloc>().add(EvaluateSchedule(
+                renderedSubEvents: scheduleState.subEvents,
+                renderedTimelines: scheduleState.timelines,
+                renderedScheduleTimeline: scheduleState.lookupTimeline,
+                isAlreadyLoaded: true,
+                callBack: _subCalendarEventApi.procrastinate(
+                    populatedDuration, subTile.id!)));
+          }
+        }
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     var playBackElements = [
@@ -164,6 +194,36 @@ class PlayBackState extends State<PlayBack> {
         ],
       )
     ];
+
+    Widget procrastinateButton = Column(
+      children: [
+        GestureDetector(
+            onTap: procrastinate,
+            child: Container(
+              width: 50,
+              height: 50,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Transform.rotate(
+                angle: 0,
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 35,
+                ),
+              ),
+              decoration: BoxDecoration(
+                  color: Color.fromRGBO(31, 31, 31, .1),
+                  borderRadius: BorderRadius.circular(25)),
+            )),
+        Text(AppLocalizations.of(context)!.procrastinate,
+            style: TextStyle(fontSize: 12))
+      ],
+    );
+
+    if (widget.subEvent.isRigid == null ||
+        (widget.subEvent.isRigid != null && !widget.subEvent.isRigid!)) {
+      playBackElements.add(procrastinateButton);
+    }
+
     if (widget.subEvent.isCurrent ||
         (widget.subEvent.isPaused != null && widget.subEvent.isPaused!)) {
       Widget playPauseButton = Column(

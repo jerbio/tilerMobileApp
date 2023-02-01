@@ -155,6 +155,45 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
+  Future procrastinate(Duration duration, String tileId) async {
+    TilerError error = new TilerError();
+    error.message = "Did not procrastinate tile";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    if (userIsAuthenticated) {
+      await this.authentication.reLoadCredentialsCache();
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final procrastinateParameters = {
+          'UserName': username,
+          'DurationInMs': duration.inMilliseconds.toString(),
+          'EventID': tileId
+        };
+        Map injectedParameters = await injectRequestParams(
+            procrastinateParameters,
+            includeLocationParams: true);
+
+        return sendPostRequest(
+                'api/Schedule/Event/Procrastinate', injectedParameters)
+            .then((response) {
+          var jsonResult = jsonDecode(response.body);
+          error.message = "Issues with reaching Tiler servers";
+          if (isJsonResponseOk(jsonResult)) {
+            return;
+          }
+          if (isTilerRequestError(jsonResult)) {
+            var errorJson = jsonResult['Error'];
+            error = TilerError.fromJson(errorJson);
+            throw FormatException(error.message!);
+          } else {
+            error.message = "Issues with reaching Tiler servers";
+          }
+        });
+      }
+    }
+    throw error;
+  }
+
   Future<SubCalendarEvent> getAdHocSubEventId(String id) {
 //     {
 //     "Error": {
