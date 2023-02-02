@@ -152,7 +152,7 @@ class PlayBackState extends State<PlayBack> {
 
   @override
   Widget build(BuildContext context) {
-    var playBackElements = [
+    var playBackElements = <Widget>[
       GestureDetector(
           onTap: completeTile,
           child: Column(
@@ -170,31 +170,33 @@ class PlayBackState extends State<PlayBack> {
                   style: TextStyle(fontSize: 12))
             ],
           )),
-      Column(
-        children: [
-          GestureDetector(
-              onTap: setAsNowTile,
-              child: Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Transform.rotate(
-                  angle: -pi / 2,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 35,
-                  ),
-                ),
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, .1),
-                    borderRadius: BorderRadius.circular(25)),
-              )),
-          Text(AppLocalizations.of(context)!.now,
-              style: TextStyle(fontSize: 12))
-        ],
-      )
     ];
-
+    Widget setAsNowButton = Column(
+      children: [
+        GestureDetector(
+            onTap: setAsNowTile,
+            child: Container(
+              width: 50,
+              height: 50,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Transform.rotate(
+                angle: -pi / 2,
+                child: Icon(
+                  Icons.chevron_right,
+                  size: 35,
+                ),
+              ),
+              decoration: BoxDecoration(
+                  color: Color.fromRGBO(31, 31, 31, .1),
+                  borderRadius: BorderRadius.circular(25)),
+            )),
+        Text(AppLocalizations.of(context)!.now, style: TextStyle(fontSize: 12))
+      ],
+    );
+    if (!(widget.subEvent.isCurrent ||
+        (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
+      playBackElements.add(setAsNowButton);
+    }
     Widget procrastinateButton = Column(
       children: [
         GestureDetector(
