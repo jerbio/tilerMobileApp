@@ -54,10 +54,8 @@ class _TileListState extends State<TileList> {
         final currentState = this.context.read<ScheduleBloc>().state;
         if (currentState is ScheduleLoadedState) {
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(
-              timeLine.startInMs!,
-              (timeLine.endInMs!.toInt() + Utility.sevenDays.inMilliseconds)
-                  .toDouble());
+          updatedTimeline = new Timeline(timeLine.startInMs!,
+              (timeLine.endInMs! + Utility.sevenDays.inMilliseconds));
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
@@ -75,8 +73,8 @@ class _TileListState extends State<TileList> {
           final currentTimeline = this.timeLine;
           updatedTimeline = new Timeline(
               (timeLine.startInMs!.toInt() - Utility.sevenDays.inMilliseconds)
-                  .toDouble(),
-              timeLine.endInMs!.toInt().toDouble());
+                  .toInt(),
+              timeLine.endInMs!.toInt());
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/util.dart';
 
 abstract class TimeRange {
-  double? start = 0;
-  double? end = 0;
+  int? start = 0;
+  int? end = 0;
 
   bool isInterfering(TimeRange timeRange) {
     bool retValue = false;

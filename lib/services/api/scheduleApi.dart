@@ -151,10 +151,10 @@ class ScheduleApi extends AppApi {
     if (forceInterFerringWithNowTile) {
       SubCalendarEvent adHocInterferringWithNowTile = new SubCalendarEvent(
           name: Utility.randomName,
-          start: Utility.msCurrentTime.toDouble() -
-              Utility.oneMin.inMilliseconds.toDouble(),
-          end: Utility.msCurrentTime.toDouble() +
-              Utility.oneMin.inMilliseconds.toDouble(),
+          start: Utility.msCurrentTime.toInt() -
+              Utility.oneMin.inMilliseconds.toInt(),
+          end: Utility.msCurrentTime.toInt() +
+              Utility.oneMin.inMilliseconds.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
       adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
@@ -193,29 +193,29 @@ class ScheduleApi extends AppApi {
             endDayTime.year, endDayTime.month, endDayTime.day, 0, 0, 0);
 
         Timeline timeLine = new Timeline(
-            startDayTime.millisecondsSinceEpoch.toDouble(),
+            startDayTime.millisecondsSinceEpoch.toInt(),
             startDayTime
                 .add(Duration(hours: 6))
                 .millisecondsSinceEpoch
-                .toDouble());
+                .toInt());
         sleepTimeLines.add(timeLine);
 
         while (startDayTime!.millisecondsSinceEpoch <
             endDayTime.millisecondsSinceEpoch) {
           startDayTime = startDayTime.add(Utility.oneDay);
           timeLine = new Timeline(
-              startDayTime.millisecondsSinceEpoch.toDouble(),
+              startDayTime.millisecondsSinceEpoch.toInt(),
               startDayTime
                   .add(Duration(hours: 6))
                   .millisecondsSinceEpoch
-                  .toDouble());
+                  .toInt());
           sleepTimeLines.add(timeLine);
         }
       }
       SubCalendarEvent subEvent = new SubCalendarEvent(
           name: Utility.randomName,
-          start: start.toDouble(),
-          end: end.toDouble(),
+          start: start.toInt(),
+          end: end.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
       subEvent.colorBlue = Random().nextInt(255);

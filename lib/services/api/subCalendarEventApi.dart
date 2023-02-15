@@ -231,7 +231,7 @@ class SubCalendarEventApi extends AppApi {
     retValue.colorGreen = Random().nextInt(255);
     retValue.colorRed = Random().nextInt(255);
 
-    double timeSpanDifference = retValue.end! - retValue.start!;
+    int timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;
 
     // currentTile
@@ -246,8 +246,8 @@ class SubCalendarEventApi extends AppApi {
     // int revisedStart = currentTime - Utility.oneHour.inMilliseconds;
     // int revisedEnd = currentTime - Utility.fifteenMin.inMilliseconds;
 
-    retValue.start = revisedStart.toDouble();
-    retValue.end = revisedEnd.toDouble();
+    retValue.start = revisedStart.toInt();
+    retValue.end = revisedEnd.toInt();
 
     Future<SubCalendarEvent> retFuture =
         new Future.delayed(const Duration(seconds: 5), () => retValue);
