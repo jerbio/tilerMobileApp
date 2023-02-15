@@ -24,14 +24,14 @@ class TilerEvent extends TilerObj with TimeRange {
   DateTime? _startTime;
   DateTime? _endTime;
 
-  double? _startInMs;
+  int? _startInMs;
   // ignore: unnecessary_getters_setters
-  double? get start {
+  int? get start {
     return _startInMs;
   }
 
   // ignore: unnecessary_getters_setters
-  set start(double? value) {
+  set start(int? value) {
     _startInMs = value;
     if (this._startInMs != null) {
       _startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
@@ -40,15 +40,15 @@ class TilerEvent extends TilerObj with TimeRange {
     }
   }
 
-  double? _endInMs;
+  int? _endInMs;
   // ignore: unnecessary_getters_setters
-  double? get end {
+  int? get end {
     return _endInMs;
   }
 
   // ignore: unnecessary_getters_setters
-  set end(double? value) {
-    _endInMs = value;
+  set end(int? value) {
+    _endInMs = value?.toInt();
     if (this._endInMs != null) {
       _endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
               isUtc: true)
@@ -87,8 +87,8 @@ class TilerEvent extends TilerObj with TimeRange {
 
   TilerEvent(
       {this.name,
-      double? start,
-      double? end,
+      int? start,
+      int? end,
       this.address,
       this.addressDescription,
       String? id,
@@ -117,8 +117,8 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('searchdDescription')) {
       searchdDescription = json['searchdDescription'];
     }
-    start = cast<int>(json['start'])!.toDouble();
-    end = cast<int>(json['end'])!.toDouble();
+    start = cast<int>(json['start'])!.toInt();
+    end = cast<int>(json['end'])!.toInt();
     if (json.containsKey('colorOpacity')) {
       colorOpacity = cast<double>(json['colorOpacity']);
     }
@@ -210,7 +210,7 @@ class TilerEvent extends TilerObj with TimeRange {
     retValue.colorGreen = Random().nextInt(255);
     retValue.colorRed = Random().nextInt(255);
 
-    double timeSpanDifference = retValue.end! - retValue.start!;
+    int timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;
 
     // currentTile
@@ -225,8 +225,8 @@ class TilerEvent extends TilerObj with TimeRange {
     // int revisedStart = currentTime - Utility.oneHour.inMilliseconds;
     // int revisedEnd = currentTime - Utility.fifteenMin.inMilliseconds;
 
-    retValue.start = revisedStart.toDouble();
-    retValue.end = revisedEnd.toDouble();
+    retValue.start = revisedStart.toInt();
+    retValue.end = revisedEnd.toInt();
 
     Future<TilerEvent> retFuture =
         new Future.delayed(const Duration(seconds: 0), () => retValue);

@@ -67,10 +67,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       List<SubCalendarEvent> subEvents = [];
 
       if (!timeline.isInterfering(updateTimeline)) {
-        double startInMs = updateTimeline.start! < timeline.startInMs!
+        int startInMs = updateTimeline.start! < timeline.startInMs!
             ? updateTimeline.start!
             : timeline.startInMs!;
-        double endInMs = updateTimeline.end! > timeline.endInMs!
+        int endInMs = updateTimeline.end! > timeline.endInMs!
             ? updateTimeline.end!
             : timeline.endInMs!;
 
