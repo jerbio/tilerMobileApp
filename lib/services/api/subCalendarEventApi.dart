@@ -46,7 +46,8 @@ class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> pauseTile(String id) async {
     TilerError error = new TilerError();
     error.message = "Failed to pause tile";
-    return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id})
+    return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id},
+            analyze: false)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {

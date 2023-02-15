@@ -11,6 +11,7 @@ import '../localAuthentication.dart';
 import '../../constants.dart' as Constants;
 
 abstract class AppApi {
+  static const String _analyzePath = 'api/Analysis/Analyze';
   Authentication authentication = new Authentication();
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
@@ -31,6 +32,10 @@ abstract class AppApi {
         jsonResult['Error'].containsKey('Code') &&
         jsonResult['Error']['Code'] != '0';
     return retValue;
+  }
+
+  static String get analyzePath {
+    return _analyzePath;
   }
 
   String errorMessage(Map jsonResult) {
@@ -94,7 +99,7 @@ abstract class AppApi {
   }
 
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
-      {bool injectLocation = true}) async {
+      {bool injectLocation = true, bool analyze = true}) async {
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -115,8 +120,22 @@ abstract class AppApi {
         var header = this.getHeaders();
         if (header != null) {
           Uri uri = Uri.https(url, requestPath);
-          return http.post(uri,
-              headers: header, body: jsonEncode(injectedParameters));
+
+          return http
+              .post(uri, headers: header, body: jsonEncode(injectedParameters))
+              .then((value) async {
+            if (analyze) {
+              String tilerDomain = Constants.tilerDomain;
+              String analyzeUrl = tilerDomain;
+              Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
+              Map<String, String?> analyzeParameters =
+                  await injectRequestParams({},
+                      includeLocationParams: injectLocation);
+              http.post(analyzeUri,
+                  headers: header, body: jsonEncode(analyzeParameters));
+            }
+            return value;
+          });
         }
         throw TilerError();
       }

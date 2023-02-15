@@ -37,4 +37,24 @@ abstract class TimeRange {
     }
     throw ErrorDescription("Invalid timerange provided");
   }
+
+  bool isStartAndEndEqual(TimeRange timeRange) {
+    return this.start == timeRange.start && this.end == timeRange.end;
+  }
+
+  Duration get durationTillStart {
+    if (this.start != null) {
+      return Duration(
+          milliseconds: (this.start!.toInt() - Utility.msCurrentTime).toInt());
+    }
+    throw ErrorDescription("Invalid timerange provided");
+  }
+
+  Duration get durationTillEnd {
+    if (this.start != null) {
+      return Duration(
+          milliseconds: (this.end!.toInt() - Utility.msCurrentTime).toInt());
+    }
+    throw ErrorDescription("Invalid timerange provided");
+  }
 }

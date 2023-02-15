@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of 'schedule_bloc.dart';
 
 abstract class ScheduleState extends Equatable {
@@ -41,6 +42,19 @@ class ScheduleLoadedState extends ScheduleState {
 
   @override
   List<Object> get props => [subEvents];
+}
+
+class DelayedScheduleLoadedState extends ScheduleLoadedState {
+  StreamSubscription pendingDelayedScheduleRetrieval;
+  DelayedScheduleLoadedState({
+    subEvents = const <SubCalendarEvent>[],
+    required timelines,
+    required lookupTimeline,
+    required this.pendingDelayedScheduleRetrieval,
+  }) : super(
+            subEvents: subEvents,
+            timelines: timelines,
+            lookupTimeline: lookupTimeline);
 }
 
 class ScheduleEvaluationState extends ScheduleState {

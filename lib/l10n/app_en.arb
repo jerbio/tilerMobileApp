@@ -85,6 +85,29 @@
     "weekly":"Weekly",
     "monthly":"Monthly",
     "yearly":"Yearly",
+    "noneNotificationCategory": "Default",
+    "nextTileNotificationCategory": "Next Tile",
+    "userSetReminderNotificationCategory": "User Set Reminder",
+    "depatureTimeNotificationCategory": "Depature time",
+    "startingAtTime": "Starts at {time}",
+    "@startingAtTime": {
+      "description": "Starts at time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "5:14 PM"
+        }
+      }},
+    "startsInTenMinutes": "Starts in ten minutes",
+    "startsInDuration": "Starts in {duration}",
+    "@startsInDuration": {
+      "description": "Description of time till start",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     }

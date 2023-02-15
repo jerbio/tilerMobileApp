@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
@@ -14,7 +16,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
     on<GetSchedule>(_onGetSchedule);
+    on<DelayedGetSchedule>(_onDelayedGetSchedule);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
+    on<DelayedReloadLocalScheduleEvent>(_onDelayedReloadLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
   }
@@ -32,11 +36,31 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         lookupTimeline: event.lookupTimeline));
   }
 
+  void _onDelayedReloadLocalScheduleEvent(DelayedReloadLocalScheduleEvent event,
+      Emitter<ScheduleState> emit) async {
+    var setTimeOutResult = Utility.setTimeOut(duration: event.duration);
+
+    emit(DelayedScheduleLoadedState(
+        subEvents: event.subEvents,
+        timelines: event.timelines,
+        lookupTimeline: event.lookupTimeline,
+        pendingDelayedScheduleRetrieval:
+            setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
+
+    await setTimeOutResult.item1.then((futureEvent) async {
+      emit(ScheduleLoadedState(
+          subEvents: event.subEvents,
+          timelines: event.timelines,
+          lookupTimeline: event.lookupTimeline));
+    });
+  }
+
   Future<void> _onGetSchedule(
       GetSchedule event, Emitter<ScheduleState> emit) async {
     final state = this.state;
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
+
     if (state is ScheduleLoadedState) {
       Timeline timeline = state.lookupTimeline;
       updateTimeline = event.scheduleTimeline ?? state.lookupTimeline;
@@ -144,5 +168,28 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             emit);
       });
     }
+  }
+
+  void _onDelayedGetSchedule(
+      DelayedGetSchedule event, Emitter<ScheduleState> emit) async {
+    var setTimeOutResult = Utility.setTimeOut(duration: event.delayDuration!);
+
+    emit(DelayedScheduleLoadedState(
+        subEvents: event.previousSubEvents,
+        timelines: event.renderedTimelines,
+        lookupTimeline: event.scheduleTimeline,
+        pendingDelayedScheduleRetrieval:
+            setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
+
+    await setTimeOutResult.item1.then((futureEvent) async {
+      await this._onGetSchedule(
+          GetSchedule(
+            isAlreadyLoaded: true,
+            previousSubEvents: event.previousSubEvents,
+            previousTimeline: event.previousTimeline,
+            scheduleTimeline: event.scheduleTimeline,
+          ),
+          emit);
+    });
   }
 }

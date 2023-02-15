@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
@@ -343,6 +344,19 @@ class Utility {
     return _adHocAutoTilesByDuration!;
   }
 
+  static List<TilerEvent> orderTiles(List<TilerEvent> tiles) {
+    List<TilerEvent> retValue = tiles.toList();
+    retValue.sort((tileA, tileB) {
+      double retValue = tileA.start! - tileB.start!;
+      if (retValue == 0) {
+        retValue = tileA.end! - tileB.end!;
+      }
+      return retValue.toInt();
+    });
+
+    return retValue;
+  }
+
   /// Determine the current position of the device.
   ///
   /// When the location services are not enabled or permissions
@@ -456,6 +470,26 @@ class Utility {
   static Duration activeDayDuration = new Duration(hours: 16);
   static Duration sevenDays = new Duration(days: daysInAweek);
   static var uuid = Uuid();
+
+  static Tuple2<Future, StreamSubscription?> setTimeOut(
+      {required Duration duration, Function? callBack}) {
+    var future = new Future.delayed(duration);
+
+    // ignore: cancel_subscriptions
+    StreamSubscription? streamSubScription;
+    if (callBack != null) {
+      // ignore: cancel_subscriptions
+      streamSubScription = future.asStream().listen((event) async {
+        if (callBack is Future) {
+          await callBack();
+        } else {
+          callBack();
+        }
+      });
+    }
+
+    return new Tuple2(future, streamSubScription);
+  }
 }
 
 extension DurationHuman on Duration {

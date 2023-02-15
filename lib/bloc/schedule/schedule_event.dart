@@ -24,6 +24,27 @@ class GetSchedule extends ScheduleEvent {
   List<Object> get props => [];
 }
 
+class DelayedGetSchedule extends ScheduleEvent {
+  final List<SubCalendarEvent>? previousSubEvents;
+  final List<Timeline>? renderedTimelines;
+  final Timeline? scheduleTimeline;
+  final bool? isAlreadyLoaded;
+  Timeline? previousTimeline;
+  String? message;
+  Duration? delayDuration;
+  DelayedGetSchedule(
+      {this.previousSubEvents,
+      this.scheduleTimeline,
+      this.isAlreadyLoaded,
+      this.previousTimeline,
+      this.message,
+      this.delayDuration,
+      this.renderedTimelines});
+
+  @override
+  List<Object> get props => [];
+}
+
 class ReviseScheduleEvent extends ScheduleEvent {
   String? message;
   ReviseScheduleEvent({this.message});
@@ -67,4 +88,16 @@ class ReloadLocalScheduleEvent extends ScheduleEvent {
       {required this.subEvents,
       required this.timelines,
       required this.lookupTimeline});
+}
+
+class DelayedReloadLocalScheduleEvent extends ScheduleEvent {
+  final List<SubCalendarEvent> subEvents;
+  final List<Timeline> timelines;
+  final Timeline lookupTimeline;
+  final Duration duration;
+  DelayedReloadLocalScheduleEvent(
+      {required this.subEvents,
+      required this.timelines,
+      required this.lookupTimeline,
+      required this.duration});
 }
