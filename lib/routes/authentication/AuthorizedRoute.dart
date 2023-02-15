@@ -15,6 +15,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -31,8 +32,16 @@ class AuthorizedRouteState extends State<StatefulWidget>
     with TickerProviderStateMixin {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
+  late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
+
+  @override
+  void initState() {
+    localNotificationService = LocalNotificationService();
+    super.initState();
+    localNotificationService.initialize(this.context);
+  }
 
   void _onBottomNavigationTap(int index) {
     ActivePage selectedPage = ActivePage.tilelist;

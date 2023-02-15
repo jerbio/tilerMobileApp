@@ -13,16 +13,19 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /**
  * This renders the list of tiles on a given day
  */
 
 class TileList extends StatefulWidget {
+  SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
   TileList({Key? key}) : super(key: key);
 
@@ -36,9 +39,11 @@ class _TileListState extends State<TileList> {
   Timeline? oldTimeline;
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
+  late final LocalNotificationService localNotificationService;
 
   @override
   void initState() {
+    localNotificationService = LocalNotificationService();
     super.initState();
     _scrollController.addListener(() {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
@@ -83,6 +88,7 @@ class _TileListState extends State<TileList> {
               scheduleTimeline: this.timeLine));
         }
       }
+      localNotificationService.initialize(this.context);
     });
   }
 
@@ -139,7 +145,7 @@ class _TileListState extends State<TileList> {
 
       Map<int, Timeline> dayToSleepTimeLines = {};
       sleepTimelines.forEach((sleepTimeLine) {
-        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime!);
+        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
         dayToSleepTimeLines[dayIndex] = sleepTimeLine;
       });
 
@@ -301,6 +307,59 @@ class _TileListState extends State<TileList> {
     return retValue;
   }
 
+  void createNextTileNotification(SubCalendarEvent nextTile) {
+    if (this.widget.notificationSubEvent != null &&
+        this.widget.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
+      return;
+    }
+    this.localNotificationService.cancelAllNotifications();
+    this
+        .localNotificationService
+        .nextTileNotification(tile: nextTile, context: this.context);
+    this.widget.notificationSubEvent = nextTile;
+  }
+
+  void handleNotifications(List<SubCalendarEvent> tiles) {
+    List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
+    double currentTime = Utility.msCurrentTime.toDouble();
+    List<SubCalendarEvent> subSequentTiles = orderedTiles
+        .map((eachTile) => eachTile as SubCalendarEvent)
+        .where((eachTile) =>
+            eachTile.start! > currentTime &&
+            (eachTile.isViable == null || eachTile.isViable!))
+        .toList();
+
+    if (subSequentTiles.isNotEmpty) {
+      SubCalendarEvent notificationTile = subSequentTiles.first;
+      createNextTileNotification(notificationTile);
+    } else {
+      this.localNotificationService.cancelAllNotifications();
+    }
+  }
+
+  void handleAutoRefresh(List<SubCalendarEvent> tiles) {
+    List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
+    double currentTime = Utility.msCurrentTime.toDouble();
+    List<SubCalendarEvent> subSequentTiles = orderedTiles
+        .where((eachTile) => eachTile.end! > currentTime)
+        .map((eachTile) => eachTile as SubCalendarEvent)
+        .toList();
+
+    if (subSequentTiles.isNotEmpty) {
+      SubCalendarEvent notificationTile = subSequentTiles.first;
+      final scheduleState = this.context.read<ScheduleBloc>().state;
+      if (scheduleState is ScheduleLoadedState) {
+        this.context.read<ScheduleBloc>().add(DelayedGetSchedule(
+            delayDuration: notificationTile.durationTillEnd,
+            isAlreadyLoaded: true,
+            previousSubEvents: scheduleState.subEvents,
+            previousTimeline: scheduleState.lookupTimeline,
+            scheduleTimeline: scheduleState.lookupTimeline,
+            renderedTimelines: scheduleState.timelines));
+      }
+    }
+  }
+
   Widget renderPending({String? message}) {
     List<Widget> centerElements = [
       Center(
@@ -327,6 +386,11 @@ class _TileListState extends State<TileList> {
     );
   }
 
+  handleNotificationsAndNextTile(List<SubCalendarEvent> tiles) {
+    handleNotifications(tiles);
+    handleAutoRefresh(tiles);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ScheduleBloc, ScheduleState>(
@@ -347,6 +411,9 @@ class _TileListState extends State<TileList> {
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           if (state is ScheduleLoadedState) {
+            if (!(state is DelayedScheduleLoadedState)) {
+              handleNotificationsAndNextTile(state.subEvents);
+            }
             return renderSubCalendarTiles(
                 Tuple2(state.timelines, state.subEvents));
           }

@@ -24,11 +24,7 @@ class LocationApi extends AppApi {
     if (isJsonResponseOk(jsonResult)) {
       if (isContentInResponse(jsonResult)) {
         List locationJson = jsonResult['Content'];
-        // List sleepTimelinesJson = [];
         print("Got more data " + locationJson.length.toString());
-        // List<Timeline> sleepTimelines = sleepTimelinesJson
-        //     .map((timelinesJson) => Timeline.fromJson(timelinesJson))
-        //     .toList();
 
         List<Location> locations = locationJson
             .map((eachLocationJson) => Location.fromJson(eachLocationJson))
