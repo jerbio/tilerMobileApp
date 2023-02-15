@@ -5,8 +5,8 @@ class BlobEvent extends TilerEvent {
   HashSet<TilerEvent> blobOfTiles = new HashSet();
 
   BlobEvent.fromTilerEvents(List<TilerEvent> tilerEvents) {
-    double? start;
-    double? end;
+    int? start;
+    int? end;
 
     tilerEvents.forEach((tilerEvent) {
       if (end == null) {

@@ -27,14 +27,14 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
   final double diameterOfBall = 10;
   final DateFormat formatter = DateFormat.jm();
   late double evaluatedPosition;
-  late double subEventDuratonInMs;
-  late double durationInMs;
+  late int subEventDuratonInMs;
+  late int durationInMs;
   late double widthOfUsedUpDuration = 0;
 
   @override
   void initState() {
-    double start = widget.timeline.start!;
-    double end = widget.timeline.end!;
+    int start = widget.timeline.start!;
+    int end = widget.timeline.end!;
     var currentTimeInMs = Utility.msCurrentTime;
     subEventDuratonInMs = end - start;
     durationInMs = currentTimeInMs - start;
@@ -61,10 +61,10 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
 
     Widget timeline;
     if (widget.timeline.start != null && widget.timeline.end != null) {
-      double start = widget.timeline.start!;
-      double end = widget.timeline.end!;
+      int start = widget.timeline.start!;
+      int end = widget.timeline.end!;
       bool isInterferring = widget.timeline.isInterfering(new Timeline(
-          currentTimeInMs.toDouble(), (currentTimeInMs + 10).toDouble()));
+          currentTimeInMs.toInt(), (currentTimeInMs + 10).toInt()));
       if (this.widget.loadTimeScrub || isInterferring) {
         int colorRed = 255;
         int colorGreen = 255;
@@ -88,7 +88,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
         var scrubberElements = <Widget>[backgroundShade];
 
         if (isInterferring) {
-          double durationLeft = end - currentTimeInMs;
+          int durationLeft = end - currentTimeInMs;
           var usedUpTimeWidget = AnimatedPositioned(
             duration: Duration(milliseconds: durationLeft.toInt()),
             width: widthOfUsedUpDuration,

@@ -103,8 +103,8 @@ class Utility {
         new DateTime(currentTime.year, currentTime.month, currentTime.day);
     DateTime end = begin.add(Utility.oneDay);
 
-    Timeline retValue = Timeline(begin.millisecondsSinceEpoch.toDouble(),
-        end.millisecondsSinceEpoch.toDouble());
+    Timeline retValue =
+        Timeline(begin.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
     return retValue;
   }
 
@@ -118,7 +118,7 @@ class Utility {
     return _defaultPosition;
   }
 
-  static get msCurrentTime {
+  static int get msCurrentTime {
     return currentTime().toUtc().millisecondsSinceEpoch;
   }
 
@@ -347,7 +347,7 @@ class Utility {
   static List<TilerEvent> orderTiles(List<TilerEvent> tiles) {
     List<TilerEvent> retValue = tiles.toList();
     retValue.sort((tileA, tileB) {
-      double retValue = tileA.start! - tileB.start!;
+      int retValue = tileA.start! - tileB.start!;
       if (retValue == 0) {
         retValue = tileA.end! - tileB.end!;
       }
@@ -426,7 +426,7 @@ class Utility {
           conflictFound = false;
           AllSubEvents_List = AllSubEvents_List.where(
               (element) => !interferringEvents.contains(element)).toList();
-          double? LatestEndTimeInMs;
+          int? LatestEndTimeInMs;
           interferringEvents.forEach((timeRange) {
             if (LatestEndTimeInMs == null) {
               LatestEndTimeInMs = timeRange.end;

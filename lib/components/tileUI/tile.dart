@@ -61,7 +61,7 @@ class TileWidgetState extends State<TileWidget> {
     if (this.widget.subEvent.isCurrentTimeWithin) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (this.mounted) {
-          double timeLeft = this.widget.subEvent.end! - Utility.msCurrentTime;
+          int timeLeft = this.widget.subEvent.end! - Utility.msCurrentTime;
 
           Future onTileExpiredCallBack = Future.delayed(
               Duration(milliseconds: timeLeft.toInt()), callScheduleRefresh);

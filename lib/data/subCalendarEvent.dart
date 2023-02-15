@@ -25,8 +25,8 @@ class SubCalendarEvent extends TilerEvent {
   }
 
   SubCalendarEvent(
-      {double? start,
-      double? end,
+      {int? start,
+      int? end,
       String? name,
       String? address,
       String? addressDescription,
@@ -61,12 +61,18 @@ class SubCalendarEvent extends TilerEvent {
         this.duration.inMilliseconds > Utility.activeDayDuration.inMicroseconds;
   }
 
-  get isBeforeNow {
-    return Utility.msCurrentTime < this.start;
+  bool get isBeforeNow {
+    if (this.start != null) {
+      return Utility.msCurrentTime < this.start!;
+    }
+    throw new ArgumentError.notNull('start');
   }
 
   get hasElapsed {
-    return Utility.msCurrentTime >= this.end;
+    if (this.end != null) {
+      return Utility.msCurrentTime >= this.end!;
+    }
+    throw new ArgumentError.notNull('end');
   }
 
   DateTime? get rangeStartTime {

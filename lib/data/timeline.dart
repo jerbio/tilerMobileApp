@@ -4,24 +4,24 @@ import 'package:tiler_app/util.dart';
 class Timeline with TimeRange {
   String? id = Utility.getUuid;
 
-  double? _startInMs;
-  double? _endInMs;
+  int? _startInMs;
+  int? _endInMs;
 
-  set startInMs(double? value) {
+  set startInMs(int? value) {
     _startInMs = value;
     this.start = _startInMs;
   }
 
-  set endInMs(double? value) {
+  set endInMs(int? value) {
     _endInMs = value;
     this.end = _endInMs;
   }
 
-  double? get startInMs {
+  int? get startInMs {
     return _startInMs;
   }
 
-  double? get endInMs {
+  int? get endInMs {
     return _endInMs;
   }
 
@@ -33,7 +33,7 @@ class Timeline with TimeRange {
     return Utility.localDateTimeFromMs(this._endInMs!.toInt());
   }
 
-  Timeline(double? startInMs, double? endInMs) {
+  Timeline(int? startInMs, int? endInMs) {
     this.startInMs = startInMs;
     this.endInMs = endInMs;
     if (this.startInMs != null || this.endInMs != null) {
@@ -71,8 +71,8 @@ class Timeline with TimeRange {
   }
 
   Timeline.fromDateTime(DateTime startTime, DateTime endTime) {
-    this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
-    this.endInMs = endTime.millisecondsSinceEpoch.toDouble();
+    this.startInMs = startTime.millisecondsSinceEpoch.toInt();
+    this.endInMs = endTime.millisecondsSinceEpoch.toInt();
     assert(this.startInMs! <= this.endInMs!);
   }
 
@@ -88,8 +88,8 @@ class Timeline with TimeRange {
     }
 
     if (startString != null && endString != null) {
-      this.startInMs = double.parse(startString);
-      this.endInMs = double.parse(endString);
+      this.startInMs = int.parse(startString);
+      this.endInMs = int.parse(endString);
       assert(this.startInMs! <= this.endInMs!);
     } else {
       this.startInMs = 0;
@@ -98,8 +98,8 @@ class Timeline with TimeRange {
   }
 
   Timeline.fromDateTimeAndDuration(DateTime startTime, Duration duration) {
-    this.startInMs = startTime.millisecondsSinceEpoch.toDouble();
-    this.endInMs = startTime.add(duration).millisecondsSinceEpoch.toDouble();
+    this.startInMs = startTime.millisecondsSinceEpoch.toInt();
+    this.endInMs = startTime.add(duration).millisecondsSinceEpoch.toInt();
     assert(this.startInMs! <= this.endInMs!);
   }
 }
