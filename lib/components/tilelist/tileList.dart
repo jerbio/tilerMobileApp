@@ -54,8 +54,8 @@ class _TileListState extends State<TileList> {
         final currentState = this.context.read<ScheduleBloc>().state;
         if (currentState is ScheduleLoadedState) {
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(timeLine.startInMs!,
-              (timeLine.endInMs! + Utility.sevenDays.inMilliseconds));
+          updatedTimeline = new Timeline(timeLine.start!,
+              (timeLine.end! + Utility.sevenDays.inMilliseconds));
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
@@ -72,9 +72,9 @@ class _TileListState extends State<TileList> {
         if (currentState is ScheduleLoadedState) {
           final currentTimeline = this.timeLine;
           updatedTimeline = new Timeline(
-              (timeLine.startInMs!.toInt() - Utility.sevenDays.inMilliseconds)
+              (timeLine.start!.toInt() - Utility.sevenDays.inMilliseconds)
                   .toInt(),
-              timeLine.endInMs!.toInt());
+              timeLine.end!.toInt());
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
@@ -103,8 +103,8 @@ class _TileListState extends State<TileList> {
           todaySubEvents.add(tile);
           continue;
         }
-        if (todayTimeline.startInMs != null && tile.end != null) {
-          if (todayTimeline.startInMs! > tile.end!) {
+        if (todayTimeline.start != null && tile.end != null) {
+          if (todayTimeline.start! > tile.end!) {
             referenceTime = tile.endTime;
           }
         }
@@ -166,10 +166,10 @@ class _TileListState extends State<TileList> {
         relevantTimeline = currentState.lookupTimeline;
       }
 
-      int startIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
-          relevantTimeline.startInMs!.toInt()));
-      int endIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
-          relevantTimeline.endInMs!.toInt()));
+      int startIndex = Utility.getDayIndex(
+          DateTime.fromMillisecondsSinceEpoch(relevantTimeline.start!.toInt()));
+      int endIndex = Utility.getDayIndex(
+          DateTime.fromMillisecondsSinceEpoch(relevantTimeline.end!.toInt()));
       int numberOfDays = (endIndex - startIndex) + 1;
       List<int> dayIndexes = List.generate(numberOfDays, (index) => index);
       dayIndexToTileDict.keys.toList();
@@ -310,7 +310,6 @@ class _TileListState extends State<TileList> {
         this.widget.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
       return;
     }
-    this.localNotificationService.cancelAllNotifications();
     this
         .localNotificationService
         .nextTileNotification(tile: nextTile, context: this.context);
@@ -327,11 +326,16 @@ class _TileListState extends State<TileList> {
             (eachTile.isViable == null || eachTile.isViable!))
         .toList();
 
+    this.localNotificationService.cancelAllNotifications();
     if (subSequentTiles.isNotEmpty) {
       SubCalendarEvent notificationTile = subSequentTiles.first;
       createNextTileNotification(notificationTile);
-    } else {
-      this.localNotificationService.cancelAllNotifications();
+      for (int i = 1; i < subSequentTiles.length; i++) {
+        SubCalendarEvent tile = subSequentTiles[i];
+        this
+            .localNotificationService
+            .nextTileNotification(tile: tile, context: this.context);
+      }
     }
   }
 

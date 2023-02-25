@@ -122,7 +122,7 @@ class TileBatchState extends State<TileBatch> {
           print('---sleep TL 1 -- ' + sleepTimeline!.startTime.toString() + '');
           postSleepTiles = new HashSet();
           sleepTileEvent = new Timeline(
-              widget.sleepTimeline!.startInMs!, widget.sleepTimeline!.endInMs!);
+              widget.sleepTimeline!.start!, widget.sleepTimeline!.end!);
 
           List<TimeRange> contiguousSleep = allTiles.where((tile) {
             bool isInterfering = sleepTileEvent.isInterfering(tile);
