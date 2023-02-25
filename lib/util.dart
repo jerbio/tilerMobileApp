@@ -35,8 +35,14 @@ class Utility {
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
-  static DateTime currentTime() {
-    return DateTime.now();
+  static DateTime currentTime({bool minuteLimitAccuracy = true}) {
+    DateTime time = DateTime.now();
+    if (minuteLimitAccuracy) {
+      DateTime retValue =
+          DateTime(time.year, time.month, time.day, time.hour, time.minute);
+      time = retValue;
+    }
+    return time;
   }
 
   static final Position _defaultPosition = new Position(
@@ -128,7 +134,7 @@ class Utility {
         .toLocal();
   }
 
-  static utcEpochMillisecondsFromDateTime(DateTime dateTime) {
+  static int utcEpochMillisecondsFromDateTime(DateTime dateTime) {
     return dateTime.toLocal().toUtc().millisecondsSinceEpoch;
   }
 

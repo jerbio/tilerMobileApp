@@ -137,7 +137,7 @@ class CancelAndProceedTemplateWidgetState
                 });
                 return;
               }
-              Navigator.pop(context);
+              Navigator.pop(context, proceedResult);
             } else {
               Navigator.pop(context);
             }

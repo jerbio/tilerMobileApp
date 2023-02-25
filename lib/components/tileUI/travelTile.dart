@@ -18,10 +18,10 @@ class TravelTimeWidgetState extends State<TravelTimeWidget> {
   final DateFormat formatter = DateFormat.jm();
   @override
   Widget build(BuildContext context) {
-    String startString = formatter.format(DateTime.fromMillisecondsSinceEpoch(
-        widget.timeline.startInMs!.toInt()));
+    String startString = formatter.format(
+        DateTime.fromMillisecondsSinceEpoch(widget.timeline.start!.toInt()));
     String endString = formatter.format(
-        DateTime.fromMillisecondsSinceEpoch(widget.timeline.endInMs!.toInt()));
+        DateTime.fromMillisecondsSinceEpoch(widget.timeline.end!.toInt()));
 
     return Column(
       children: [

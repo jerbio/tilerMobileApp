@@ -9,6 +9,8 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -31,10 +33,9 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
-  EditDateAndTime? _editStartDateAndTime;
-  EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
   EditDateAndTime? _editCalEndDateAndTime;
+  StartEndDurationTimeline? _startEndDurationTimeline;
 
   @override
   void initState() {
@@ -85,16 +86,11 @@ class _EditTileState extends State<EditTile> {
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
-      if (_editStartDateAndTime != null &&
-          _editStartDateAndTime!.dateAndTime != null) {
-        revisedEditTilerEvent.startTime =
-            _editStartDateAndTime!.dateAndTime!.toUtc();
-      }
 
-      if (_editEndDateAndTime != null &&
-          _editEndDateAndTime!.dateAndTime != null) {
-        revisedEditTilerEvent.endTime =
-            _editEndDateAndTime!.dateAndTime!.toUtc();
+      if (_startEndDurationTimeline != null) {
+        TimeRange timeRange = _startEndDurationTimeline!.timeRange;
+        revisedEditTilerEvent.startTime = timeRange.startTime;
+        revisedEditTilerEvent.endTime = timeRange.endTime;
       }
 
       if (_editCalStartDateAndTime != null &&
@@ -133,9 +129,9 @@ class _EditTileState extends State<EditTile> {
       if (isProcrastinateTile) {
         bool timeIsTheSame =
             editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.startTime!.toLocal().millisecondsSinceEpoch &&
+                    subEvent!.startTime.toLocal().millisecondsSinceEpoch &&
                 editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.endTime!.toLocal().millisecondsSinceEpoch;
+                    subEvent!.endTime.toLocal().millisecondsSinceEpoch;
 
         bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
                 editTilerEvent!.startTime!) <
@@ -172,8 +168,8 @@ class _EditTileState extends State<EditTile> {
               if (subEvent == null) {
                 subEvent = state.subEvent;
                 editTilerEvent = new EditTilerEvent();
-                editTilerEvent!.endTime = subEvent!.endTime!;
-                editTilerEvent!.startTime = subEvent!.startTime!;
+                editTilerEvent!.endTime = subEvent!.endTime;
+                editTilerEvent!.startTime = subEvent!.startTime;
                 editTilerEvent!.splitCount = subEvent!.split;
                 editTilerEvent!.name = subEvent!.name ?? '';
                 editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
@@ -208,18 +204,6 @@ class _EditTileState extends State<EditTile> {
               onInputChange: dataChange,
             );
 
-            DateTime startTime =
-                this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
-            _editStartDateAndTime = EditDateAndTime(
-              time: startTime,
-              onInputChange: dataChange,
-            );
-            DateTime endTime =
-                this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
-            _editEndDateAndTime = EditDateAndTime(
-              time: endTime,
-              onInputChange: dataChange,
-            );
             DateTime calStartTime = this.editTilerEvent?.calStartTime ??
                 this.subEvent!.calendarEventStartTime!;
             _editCalStartDateAndTime = EditDateAndTime(
@@ -234,46 +218,20 @@ class _EditTileState extends State<EditTile> {
               onInputChange: dataChange,
             );
 
+            _startEndDurationTimeline = StartEndDurationTimeline.fromTimeline(
+              timeRange: this.subEvent!,
+              onChange: (timeline) {
+                dataChange();
+              },
+            );
+
             var inputChildWidgets = <Widget>[
               _editTileName!,
               FractionallySizedBox(
                   widthFactor: TileStyles.tileWidthRatio,
                   child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.start,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editStartDateAndTime!
-                      ],
-                    ),
-                  )),
-              FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.end,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editEndDateAndTime!
-                      ],
-                    ),
-                  )),
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: _startEndDurationTimeline)),
             ];
 
             if (!isRigidTile && !isProcrastinateTile) {
@@ -324,7 +282,7 @@ class _EditTileState extends State<EditTile> {
                       ],
                     ),
                   ));
-              inputChildWidgets.insert(1, splitWidget);
+              inputChildWidgets.add(splitWidget);
               inputChildWidgets.add(deadlineWidget);
             }
 

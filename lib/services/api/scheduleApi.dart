@@ -35,8 +35,8 @@ class ScheduleApi extends AppApi {
         String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {
           'UserName': username,
-          'StartRange': timeLine.startInMs!.toInt().toString(),
-          'EndRange': timeLine.endInMs!.toInt().toString(),
+          'StartRange': timeLine.start!.toInt().toString(),
+          'EndRange': timeLine.end!.toInt().toString(),
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
           'MobileApp': true.toString()
         };
@@ -170,12 +170,10 @@ class ScheduleApi extends AppApi {
       while (durationMs < 1) {
         durationMs = Random().nextInt(maxDuration);
       }
-      int startLimit = timeLine.startInMs!.toInt() -
-          durationMs -
-          Utility.oneMin.inMilliseconds;
-      int endLimit = timeLine.endInMs!.toInt() +
-          durationMs -
-          Utility.oneMin.inMilliseconds;
+      int startLimit =
+          timeLine.start!.toInt() - durationMs - Utility.oneMin.inMilliseconds;
+      int endLimit =
+          timeLine.end!.toInt() + durationMs - Utility.oneMin.inMilliseconds;
       int durationLimit = endLimit - startLimit;
       int durationInSec = durationLimit ~/
           1000; // we need to use seconds because of the random.nextInt of requiring an integer
