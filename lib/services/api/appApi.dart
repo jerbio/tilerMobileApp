@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-// import 'package:dio/dio.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
@@ -75,6 +75,7 @@ abstract class AppApi {
       }
     }
     requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
+    requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
     requestParams['MobileApp'] = true.toString();
     requestParams['UserLongitude'] = position.longitude.toString();
     requestParams['UserLatitude'] = position.latitude.toString();

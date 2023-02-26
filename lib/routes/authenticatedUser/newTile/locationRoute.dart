@@ -9,7 +9,7 @@ import '../../../styles.dart';
 
 class LocationRoute extends StatefulWidget {
   Location? pushedLocation;
-  Map? locationParams;
+  Map? _locationParams;
   @override
   LocationRouteState createState() => LocationRouteState();
 }
@@ -20,48 +20,90 @@ class LocationRouteState extends State<LocationRoute> {
   Location? selectedLocation;
   TextEditingController? locationNickNameController;
   TextEditingController? locationAddressController;
+  bool isLocationVerified = false;
+  String? addressText;
   String? lookupNickNameText;
 
-  @override
-  Widget build(BuildContext context) {
-    Map locationParams = ModalRoute.of(context)?.settings.arguments as Map;
-    this.widget.locationParams = locationParams;
-    var onTextChange = (textController) {
-      return () {
-        if (this.widget.locationParams != null &&
-            this.widget.locationParams!.containsKey('isFromLookup')) {
-          this.widget.locationParams!['isFromLookup'] = false;
+  onAutoSuggestedLocationTap(Location? location) {
+    setState(() {
+      selectedLocation = location;
+      if (location != null) {
+        locationNickNameController!.value = TextEditingValue(
+          text: location.description ?? '',
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: (location.description ?? '').length),
+          ),
+        );
+        if (addressText != location.address) {
+          addressText = location.address;
         }
+        locationAddressController!.value = TextEditingValue(
+          text: location.address ?? '',
+        );
+        isLocationVerified = location.isVerified ?? false;
+        if (!(location.source == null ||
+            location.source!.isEmpty ||
+            location.source! == 'none')) {
+          isLocationVerified = true;
+        }
+      }
+    });
+  }
+
+  onNickNameTextChange(TextEditingController textController) {
+    return () {
+      if (textController.text != lookupNickNameText) {
         setState(() {
           lookupNickNameText = textController.text;
           selectedLocation = null;
         });
-      };
+      }
     };
-    if (this.widget.locationParams != null &&
-        this.widget.locationParams!.containsKey('location') &&
+  }
+
+  onAddressTextChange(TextEditingController textController) {
+    return () {
+      if (textController.text != addressText) {
+        setState(() {
+          addressText = textController.text;
+          selectedLocation = null;
+          isLocationVerified = false;
+        });
+      }
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Map? locationParams = ModalRoute.of(context)?.settings.arguments as Map?;
+    if (locationParams != null && this.widget._locationParams == null) {
+      this.widget._locationParams = locationParams;
+    }
+
+    if (this.widget._locationParams != null &&
+        this.widget._locationParams!.containsKey('location') &&
         this.widget.pushedLocation == null) {
-      this.widget.pushedLocation = this.widget.locationParams!['location'];
+      this.widget.pushedLocation = this.widget._locationParams!['location'];
       locationAddressController = new TextEditingController(
           text: this.widget.pushedLocation!.address ?? '');
       locationNickNameController = new TextEditingController(
           text: this.widget.pushedLocation!.description ?? '');
       selectedLocation = this.widget.pushedLocation;
       locationNickNameController!
-          .addListener(onTextChange(locationNickNameController));
+          .addListener(onNickNameTextChange(locationNickNameController!));
       locationAddressController!
-          .addListener(onTextChange(locationAddressController));
+          .addListener(onAddressTextChange(locationAddressController!));
     }
 
     if (locationNickNameController == null) {
       locationNickNameController = TextEditingController();
       locationNickNameController!
-          .addListener(onTextChange(locationNickNameController));
+          .addListener(onNickNameTextChange(locationNickNameController!));
     }
     if (locationAddressController == null) {
       locationAddressController = TextEditingController();
       locationAddressController!
-          .addListener(onTextChange(locationAddressController));
+          .addListener(onAddressTextChange(locationAddressController!));
     }
 
     TextField addressTextField = TextField(
@@ -99,25 +141,11 @@ class LocationRouteState extends State<LocationRoute> {
         alignment: FractionalOffset.center,
         widthFactor: TileStyles.inputWidthFactor,
         child: LocationSearchWidget(
-          onChanged: onTextChange,
-          textField: addressTextField,
-          onLocationSelection: (location) {
-            setState(() {
-              selectedLocation = location;
-              if (location != null) {
-                locationNickNameController!.value = TextEditingValue(
-                  text: location?.description ?? '',
-                  selection: TextSelection.fromPosition(
-                    TextPosition(offset: (location?.description ?? '').length),
-                  ),
-                );
-                locationAddressController!.value = TextEditingValue(
-                  text: location?.address ?? '',
-                );
-              }
-            });
-          },
-        ));
+            onChanged: (address) {
+              onAddressTextChange(locationAddressController!);
+            },
+            textField: addressTextField,
+            onLocationSelection: onAutoSuggestedLocationTap));
     Widget columnOfItems = Stack(
       children: [
         Align(
@@ -194,15 +222,16 @@ class LocationRouteState extends State<LocationRoute> {
             selectedLocation!.isDefault = false;
             selectedLocation!.isNull = false;
           }
+          selectedLocation!.isVerified = this.isLocationVerified;
         }
 
         if (selectedLocation!.description != locationNickNameText) {
           selectedLocation!.id = '';
         }
 
-        if (this.widget.locationParams != null &&
-            this.widget.locationParams!.containsKey('location')) {
-          this.widget.locationParams!['location'] = selectedLocation;
+        if (this.widget._locationParams != null &&
+            this.widget._locationParams!.containsKey('location')) {
+          this.widget._locationParams!['location'] = selectedLocation;
         }
       },
     );

@@ -36,7 +36,7 @@ class LocationSearchWidget extends SearchWidget {
 }
 
 class LocationSearchState extends SearchWidgetState {
-  Function? inheritedOnChange;
+  Function? onChange;
   Location? selectedLocation;
   LocationApi locationNameApi = new LocationApi();
   List<Widget> locationSearchResult = [];
@@ -46,7 +46,7 @@ class LocationSearchState extends SearchWidgetState {
   @override
   void initState() {
     super.initState();
-    inheritedOnChange = this.widget.onChanged;
+    onChange = this.widget.onChanged;
   }
 
   Widget locationNameWidget(
@@ -211,8 +211,8 @@ class LocationSearchState extends SearchWidgetState {
     if (isRequestEnabled) {
       List<Widget> retValue = this.locationSearchResult;
 
-      if (inheritedOnChange != null) {
-        inheritedOnChange!(name);
+      if (onChange != null) {
+        onChange!(name);
       }
 
       if (name.length > 3) {
