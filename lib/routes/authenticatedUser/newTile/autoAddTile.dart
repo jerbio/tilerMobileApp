@@ -140,10 +140,7 @@ class AutoAddTileState extends State<AutoAddTile> {
         textColor: ConfigUpdateButton.populatedTextColor,
         onPress: () {
           Location locationHolder = _location!;
-          Map<String, dynamic> locationParams = {
-            'location': locationHolder,
-            'isFromLookup': false
-          };
+          Map<String, dynamic> locationParams = {'location': locationHolder};
 
           Navigator.pushNamed(context, '/LocationRoute',
                   arguments: locationParams)
