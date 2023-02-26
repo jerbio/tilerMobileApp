@@ -450,7 +450,6 @@ class AddTileState extends State<AddTile> {
         Location locationHolder = _location!;
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
-          'isFromLookup': false
         };
 
         Navigator.pushNamed(context, '/LocationRoute',
