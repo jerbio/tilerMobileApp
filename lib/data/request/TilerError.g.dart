@@ -7,11 +7,11 @@ part of 'TilerError.dart';
 // **************************************************************************
 
 TilerError _$TilerErrorFromJson(Map<String, dynamic> json) => TilerError()
-  ..message = json['Message'] as String?
+  ..message = json['message'] as String?
   ..Code = json['Code'] as String?;
 
 Map<String, dynamic> _$TilerErrorToJson(TilerError instance) =>
     <String, dynamic>{
-      'Message': instance.message,
+      'message': instance.message,
       'Code': instance.Code,
     };

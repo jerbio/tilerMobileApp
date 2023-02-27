@@ -1,8 +1,11 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 
 part 'NewTile.g.dart';
 
-@JsonSerializable()
+//flutter pub run build_runner watch
+
+@JsonSerializable(explicitToJson: true)
 class NewTile {
   NewTile();
 
@@ -151,6 +154,8 @@ class NewTile {
   /// </summary>
   String? isWorkWeek;
   String? isEveryDay;
+
+  RestrictionWeekConfig? RestrictiveWeek;
 
   factory NewTile.fromJson(Map<String, dynamic> json) =>
       _$NewTileFromJson(json);

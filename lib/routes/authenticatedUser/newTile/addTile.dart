@@ -436,7 +436,7 @@ class AddTileState extends State<AddTile> {
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
       textColor: isLocationConfigSet ? populatedTextColor : iconColor,
       onPress: () {
-        Location locationHolder = _location!;
+        Location locationHolder = _location ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
         };
@@ -545,7 +545,7 @@ class AddTileState extends State<AddTile> {
       textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
-          'restrictionProfile': _restrictionProfile,
+          'routeRestrictionProfile': _restrictionProfile,
           'stackRouteHistory': [AddTile.routeName]
         };
 
@@ -553,15 +553,14 @@ class AddTileState extends State<AddTile> {
                 arguments: restrictionParams)
             .whenComplete(() {
           RestrictionProfile? populatedRestrictionProfile;
-          if (restrictionParams.containsKey('restrictionProfile') &&
-              restrictionParams['restrictionProfile'] != null)
+          if (restrictionParams.containsKey('routeRestrictionProfile')) {
             populatedRestrictionProfile =
-                restrictionParams['restrictionProfile'] as RestrictionProfile;
-          setState(() {
-            if (populatedRestrictionProfile != null) {
+                restrictionParams['routeRestrictionProfile']
+                    as RestrictionProfile?;
+            setState(() {
               _restrictionProfile = populatedRestrictionProfile;
-            }
-          });
+            });
+          }
         });
       },
     );
@@ -747,6 +746,13 @@ class AddTileState extends State<AddTile> {
       tile.LocationId = _location!.id;
       tile.LocationSource = _location!.source;
       tile.LocationIsVerified = _location!.isVerified.toString();
+    }
+
+    if (this._restrictionProfile != null &&
+        this._restrictionProfile!.isAnyDayNotNull) {
+      tile.RestrictiveWeek =
+          this._restrictionProfile!.toRestrictionWeekConfig();
+      tile.isRestricted = true.toString();
     }
 
     tile.Count = getSplitCount();

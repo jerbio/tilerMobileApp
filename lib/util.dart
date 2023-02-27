@@ -533,6 +533,13 @@ extension DurationInMS on TimeOfDay {
         this.minute * Utility.oneMin.inMilliseconds;
     return retValue;
   }
+
+  String get formatTimeOfDay {
+    final now = Utility.currentTime();
+    final dt = DateTime(now.year, now.month, now.day, this.hour, this.minute);
+    final format = DateFormat.jm(); //"6:00 AM"
+    return format.format(dt);
+  }
 }
 
 extension DateTimeHuman on DateTime {
