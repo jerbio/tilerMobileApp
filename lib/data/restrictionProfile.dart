@@ -1,3 +1,4 @@
+import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/tileObject.dart';
 
@@ -7,6 +8,11 @@ class RestrictionProfile extends TilerObj {
     assert(daySelection.length == 7);
     this.daySelection = daySelection as List<RestrictionDay?>;
   }
+
+  bool get isAnyDayNotNull {
+    return this.daySelection.any((restrictedDay) => restrictedDay != null);
+  }
+
   RestrictionProfile.fromJson(Map<String, dynamic> json)
       : super.fromJson(json) {
     if (json.containsKey('daySelection')) {
@@ -28,5 +34,46 @@ class RestrictionProfile extends TilerObj {
       daySelection = daySelectionCpy;
       assert(daySelection.length == 7);
     }
+  }
+
+  RestrictionProfile.workDay(RestrictionTimeLine restrictionTimeLine) {
+    for (int i = 0; i < 7; i++) {
+      RestrictionDay? restrictionDay;
+      if (i != 0 && i != 6) {
+        restrictionDay = RestrictionDay(
+            restrictionTimeLine: restrictionTimeLine, weekday: i);
+      }
+      daySelection.add(restrictionDay);
+    }
+  }
+
+  RestrictionProfile.everyDay(RestrictionTimeLine restrictionTimeLine) {
+    for (int i = 0; i < 7; i++) {
+      RestrictionDay restrictionDay =
+          RestrictionDay(restrictionTimeLine: restrictionTimeLine, weekday: i);
+      daySelection.add(restrictionDay);
+    }
+  }
+
+  RestrictionWeekConfig? toRestrictionWeekConfig() {
+    RestrictionWeekConfig retValue = RestrictionWeekConfig();
+    bool isRestrictionEnabled = false;
+    if (daySelection.isNotEmpty) {
+      List<RestrictionWeekDayConfig> weekDayOptions =
+          <RestrictionWeekDayConfig>[];
+      for (RestrictionDay? restrictionDay
+          in daySelection.where((restrictionDay) => restrictionDay != null)) {
+        weekDayOptions.add(restrictionDay!.toRestrictionWeekDayConfig());
+      }
+      if (weekDayOptions.isNotEmpty) {
+        isRestrictionEnabled = true;
+        retValue.WeekDayOption = weekDayOptions;
+      }
+    }
+    if (isRestrictionEnabled) {
+      retValue.isEnabled = isRestrictionEnabled.toString();
+      return retValue;
+    }
+    return null;
   }
 }

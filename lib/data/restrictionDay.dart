@@ -2,8 +2,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 
 import 'package:tiler_app/data/tileObject.dart';
+import 'package:tiler_app/util.dart';
 
 class RestrictionTimeLine extends TilerObj {
   TimeOfDay? _start;
@@ -125,5 +127,22 @@ class RestrictionDay extends TilerObj {
     if (json.containsKey('weekday')) {
       weekday = cast<int>(json['weekday'])!;
     }
+  }
+
+  RestrictionWeekDayConfig toRestrictionWeekDayConfig() {
+    RestrictionWeekDayConfig retValue = RestrictionWeekDayConfig();
+    retValue.Start = _restrictionTimeLine!.start!.formatTimeOfDay;
+
+    DateTime endTime = DateTime(
+            Utility.currentTime().year,
+            1,
+            1,
+            _restrictionTimeLine!.start!.hour,
+            _restrictionTimeLine!.start!.minute)
+        .add(_restrictionTimeLine!.duration!);
+    retValue.End = TimeOfDay.now().toString();
+    retValue.End = TimeOfDay.fromDateTime(endTime).formatTimeOfDay;
+    retValue.Index = this._weekday.toString();
+    return retValue;
   }
 }

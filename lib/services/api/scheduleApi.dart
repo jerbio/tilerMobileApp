@@ -246,8 +246,22 @@ class ScheduleApi extends AppApi {
         String? username = this.authentication.cachedCredentials!.username;
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
-        Map injectedParameters = await injectRequestParams(newTileParameters,
+        var restrictedWeekData;
+        if (newTileParameters.containsKey('RestrictiveWeek')) {
+          restrictedWeekData = newTileParameters['RestrictiveWeek'];
+          newTileParameters.remove('RestrictiveWeek');
+        }
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
+            newTileParameters,
             includeLocationParams: true);
+        if (restrictedWeekData != null) {
+          Map<String, dynamic> injectedParametersCpy = injectedParameters;
+          injectedParameters = {};
+          for (String eachKey in injectedParametersCpy.keys) {
+            injectedParameters[eachKey] = injectedParametersCpy[eachKey];
+          }
+          injectedParameters['RestrictiveWeek'] = restrictedWeekData;
+        }
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
 
