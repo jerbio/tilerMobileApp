@@ -29,6 +29,7 @@
     "once":"Once",
     "weekdaysAndWorkHours":"Weekdays and work hours",
     "weekend":"Weekend",
+    "anytime":"Anytime",
     "repetition": "Repetition",
     "reminder": "Reminder",
     "restriction": "Restriction",
