@@ -51,7 +51,7 @@ class LocationApi extends AppApi {
   }
 
   Future<List<Location>> getLocationsByName(String name,
-      {includeMapSearch = true}) async {
+      {includeMapSearch = true, includeLocationParams = true}) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
 
@@ -67,7 +67,7 @@ class LocationApi extends AppApi {
 
       Map<String, String?> injectedLocationParams = await injectRequestParams(
           queryParameters,
-          includeLocationParams: true);
+          includeLocationParams: includeLocationParams);
       Uri uri = Uri.https(url, 'api/Location/Name', injectedLocationParams);
       var header = this.getHeaders();
 
@@ -94,5 +94,20 @@ class LocationApi extends AppApi {
 
     List<Location> locations = [];
     return locations;
+  }
+
+  Future<Location?> getSpecificLocationByNickName(String name) async {
+    List<Location>? locations = await getLocationsByName(name,
+        includeMapSearch: false, includeLocationParams: false);
+
+    List<Location> foundEvents = locations
+        .where((location) =>
+            location.description != null &&
+            location.description!.toLowerCase() == name.toLowerCase())
+        .toList();
+    if (foundEvents.isNotEmpty) {
+      return foundEvents.first;
+    }
+    return null;
   }
 }
