@@ -527,6 +527,12 @@ extension ListEnhance on List {
   }
 }
 
+extension StringEnhance on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
+  }
+}
+
 extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
     return this.tilerDayOfWeek % Utility.daysInAweek;
