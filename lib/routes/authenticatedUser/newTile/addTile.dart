@@ -18,6 +18,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -48,6 +49,11 @@ class AddTileState extends State<AddTile> {
   final Color iconColor = TileStyles.iconColor;
   final Color populatedTextColor = Colors.white;
   final CarouselController tilerCarouselController = CarouselController();
+  String tileNameText = '';
+  String splitCountText = '';
+  final LocationApi locationApi = LocationApi();
+  Location? home;
+  Location? work;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       borderRadius: BorderRadius.all(
@@ -67,7 +73,7 @@ class AddTileState extends State<AddTile> {
       ));
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
-  TextEditingController splitCount = TextEditingController();
+  TextEditingController splitCountController = TextEditingController();
   Duration? _duration = Duration(hours: 0, minutes: 0);
   bool _isDurationManuallySet = false;
   Location? _location = Location.fromDefault();
@@ -126,10 +132,44 @@ class AddTileState extends State<AddTile> {
           pendingSendTextRequest = streamSubScription;
         });
       }
-      splitCount.addListener(() {
-        isSubmissionReady();
-      });
     }
+
+    splitCountController.addListener(() {
+      if (splitCountText != splitCountController.text) {
+        setState(() {
+          splitCountText = splitCountController.text;
+        });
+        isSubmissionReady();
+      }
+    });
+    tileNameController.addListener(() {
+      // isSubmissionReady();
+      if (tileNameText != tileNameController.text) {
+        if (tileNameController.text.length >
+            Constants.autoCompleteTriggerCharacterCount) {
+          Function callAutoResult = generateSuggestionCallToServer();
+          callAutoResult();
+        }
+        setState(() {
+          tileNameText = tileNameController.text;
+        });
+        isSubmissionReady();
+      }
+    });
+
+    locationApi
+        .getSpecificLocationByNickName(Location.homeLocationNickName)
+        .then((homeLocation) {
+      locationApi
+          .getSpecificLocationByNickName(Location.workLocationNickName)
+          .then((workLocation) {
+        setState(() {
+          home = homeLocation;
+          work = workLocation;
+        });
+      });
+    });
+
     super.initState();
   }
 
@@ -220,8 +260,8 @@ class AddTileState extends State<AddTile> {
   }
 
   String getSplitCount() {
-    return this.splitCount.value.text.isNotEmpty
-        ? this.splitCount.value.text
+    return this.splitCountController.value.text.isNotEmpty
+        ? this.splitCountController.value.text
         : 1.toString();
   }
 
@@ -232,46 +272,47 @@ class AddTileState extends State<AddTile> {
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
-                controller: tileNameController,
-                style: TextStyle(
-                    color: Color.fromRGBO(31, 31, 31, 1),
-                    fontSize: 20,
-                    fontFamily: TileStyles.rubikFontName,
-                    fontWeight: FontWeight.w500),
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.tileName,
-                  filled: true,
-                  isDense: true,
-                  contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-                  fillColor: textBackgroundColor,
-                  border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(50.0),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    borderSide: BorderSide(color: textBorderColor, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    borderSide: BorderSide(
-                      color: textBorderColor,
-                      width: 1.5,
-                    ),
+              controller: tileNameController,
+              style: TextStyle(
+                  color: Color.fromRGBO(31, 31, 31, 1),
+                  fontSize: 20,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.tileName,
+                filled: true,
+                isDense: true,
+                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                fillColor: textBackgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(50.0),
                   ),
                 ),
-                onChanged: (val) {
-                  if (val.length >
-                      Constants.autoCompleteTriggerCharacterCount) {
-                    Function callAutoResult = generateSuggestionCallToServer();
-                    callAutoResult();
-                  }
-                })));
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(8.0),
+                  ),
+                  borderSide: BorderSide(color: textBorderColor, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(8.0),
+                  ),
+                  borderSide: BorderSide(
+                    color: textBorderColor,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              // onChanged: (val) {
+              //   if (val.length >
+              //       Constants.autoCompleteTriggerCharacterCount) {
+              //     Function callAutoResult = generateSuggestionCallToServer();
+              //     callAutoResult();
+              //   }
+              // }
+            )));
     return tileNameContainer;
   }
 
@@ -289,7 +330,7 @@ class AddTileState extends State<AddTile> {
                 SizedBox(
                     width: 60,
                     child: TextField(
-                      controller: splitCount,
+                      controller: splitCountController,
                       keyboardType: TextInputType.number,
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.digitsOnly
@@ -407,8 +448,7 @@ class AddTileState extends State<AddTile> {
     bool isColorConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
     if (_location != null) {
-      if (_location!.isNotNullAndNotDefault != null &&
-          (_location!.isNotNullAndNotDefault!)) {
+      if (_location!.isNotNullAndNotDefault) {
         if (_location!.description != null &&
             _location!.description!.isNotEmpty) {
           locationName = _location!.description!;
@@ -451,6 +491,17 @@ class AddTileState extends State<AddTile> {
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
         };
+        List<Location> defaultLocations = [];
+
+        if (home != null && home!.isNotNullAndNotDefault) {
+          defaultLocations.add(home!);
+        }
+        if (work != null && work!.isNotNullAndNotDefault) {
+          defaultLocations.add(work!);
+        }
+        if (defaultLocations.isNotEmpty) {
+          locationParams['defaults'] = defaultLocations;
+        }
 
         Navigator.pushNamed(context, '/LocationRoute',
                 arguments: locationParams)
@@ -1068,6 +1119,8 @@ class AddTileState extends State<AddTile> {
   @override
   void dispose() {
     tileNameController.dispose();
+    tileDeadline.dispose();
+    splitCountController.dispose();
     super.dispose();
   }
 }
