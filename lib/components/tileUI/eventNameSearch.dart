@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -130,6 +129,129 @@ class EventNameSearchState extends SearchWidgetState {
     return retValue;
   }
 
+  Widget createDeletionButton(TilerEvent tile) {
+    Function deletionCallBack =
+        createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
+    return GestureDetector(
+      onTap: () => {deletionCallBack()},
+      child: Container(
+          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+          height: 70,
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(53, 53, 53, 0.1),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(5),
+                topRight: Radius.circular(5),
+                bottomLeft: Radius.circular(5),
+                bottomRight: Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white70.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 5,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                iconSize: 15,
+                onPressed: () => {deletionCallBack()},
+              ),
+              Text(
+                AppLocalizations.of(context)!.delete,
+                style: TextStyle(fontSize: 10),
+              )
+            ],
+          )),
+    );
+  }
+
+  Widget createCompletionButton(TilerEvent tile) {
+    Function completionCallBack = createCompletionCallBack(tile.id!)!;
+    return GestureDetector(
+      onTap: () => {completionCallBack()},
+      child: Container(
+          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+          height: 70,
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(53, 53, 53, 0.1),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(5),
+                topRight: Radius.circular(5),
+                bottomLeft: Radius.circular(5),
+                bottomRight: Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white70.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 5,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.check),
+                iconSize: 15,
+                color: Colors.green,
+                onPressed: () => {completionCallBack()},
+              ),
+              Text(AppLocalizations.of(context)!.complete,
+                  style: TextStyle(fontSize: 10))
+            ],
+          )),
+    );
+  }
+
+  Widget createSetAsNowButton(TilerEvent tile) {
+    Function setAsNowCallBack = createSetAsNowCallBack(tile.id!)!;
+    return GestureDetector(
+      onTap: () => {setAsNowCallBack()},
+      child: Container(
+          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+          height: 70,
+          decoration: BoxDecoration(
+            color: Color.fromRGBO(53, 53, 53, 0.1),
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(5),
+                topRight: Radius.circular(5),
+                bottomLeft: Radius.circular(5),
+                bottomRight: Radius.circular(5)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.white70.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 5,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                  icon: Transform.rotate(
+                    angle: -pi / 2,
+                    child: Icon(
+                      Icons.chevron_right,
+                      color: Colors.grey,
+                      size: 35,
+                    ),
+                  ),
+                  onPressed: () => {setAsNowCallBack()}),
+              Text(AppLocalizations.of(context)!.now,
+                  style: TextStyle(fontSize: 10))
+            ],
+          )),
+    );
+  }
+
   Widget tileToEventNameWidget(TilerEvent tile) {
     List<Widget> childWidgets = [];
     Widget textContainer;
@@ -176,10 +298,34 @@ class EventNameSearchState extends SearchWidgetState {
         ]),
       );
       detailWidgets.add(textContainer);
-      Function setAsNowCallBack = createSetAsNowCallBack(tile.id!)!;
-      Function completionCallBack = createCompletionCallBack(tile.id!)!;
-      Function deletionCallBack =
-          createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
+
+      DateTime now = Utility.currentTime();
+      Widget completionButton = Expanded(
+        child: Padding(
+            padding: const EdgeInsets.all(2.0),
+            child: createCompletionButton(tile)),
+      );
+      Widget setAsNowButton = Expanded(
+          child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: createSetAsNowButton(tile)));
+      Widget deletionButton = Expanded(
+          child: Padding(
+              padding: const EdgeInsets.all(2.0),
+              child: createDeletionButton(tile)));
+
+      List<Widget> searchActionButtons = <Widget>[];
+      if (!(tile.isRecurring ?? false)) {
+        searchActionButtons.add(completionButton);
+      }
+
+      if ((!(tile.isRecurring ?? false)) ||
+          tile.end! > Utility.utcEpochMillisecondsFromDateTime(now)) {
+        searchActionButtons.add(setAsNowButton);
+      }
+
+      searchActionButtons.add(deletionButton);
+
       Widget iconContainer = FractionallySizedBox(
           child: Align(
               alignment: Alignment.bottomCenter,
@@ -187,118 +333,7 @@ class EventNameSearchState extends SearchWidgetState {
                 margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: () => {deletionCallBack()},
-                      child: Container(
-                          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(53, 53, 53, 0.1),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(5),
-                                topRight: Radius.circular(5),
-                                bottomLeft: Radius.circular(5),
-                                bottomRight: Radius.circular(5)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white70.withOpacity(0.2),
-                                spreadRadius: 5,
-                                blurRadius: 5,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.clear_rounded),
-                                iconSize: 15,
-                                onPressed: () => {deletionCallBack()},
-                              ),
-                              Text(
-                                AppLocalizations.of(context)!.delete,
-                                style: TextStyle(fontSize: 10),
-                              )
-                            ],
-                          )),
-                    ),
-                    GestureDetector(
-                      onTap: () => {completionCallBack()},
-                      child: Container(
-                          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(53, 53, 53, 0.1),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(5),
-                                topRight: Radius.circular(5),
-                                bottomLeft: Radius.circular(5),
-                                bottomRight: Radius.circular(5)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white70.withOpacity(0.2),
-                                spreadRadius: 5,
-                                blurRadius: 5,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.check),
-                                iconSize: 15,
-                                color: Colors.green,
-                                onPressed: () => {completionCallBack()},
-                              ),
-                              Text(AppLocalizations.of(context)!.complete,
-                                  style: TextStyle(fontSize: 10))
-                            ],
-                          )),
-                    ),
-                    GestureDetector(
-                      onTap: () => {setAsNowCallBack()},
-                      child: Container(
-                          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: Color.fromRGBO(53, 53, 53, 0.1),
-                            borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(5),
-                                topRight: Radius.circular(5),
-                                bottomLeft: Radius.circular(5),
-                                bottomRight: Radius.circular(5)),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.white70.withOpacity(0.2),
-                                spreadRadius: 5,
-                                blurRadius: 5,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              IconButton(
-                                  icon: Transform.rotate(
-                                    angle: -pi / 2,
-                                    child: Icon(
-                                      Icons.chevron_right,
-                                      color: Colors.grey,
-                                      size: 35,
-                                    ),
-                                  ),
-                                  onPressed: () => {setAsNowCallBack()}),
-                              Text(AppLocalizations.of(context)!.now,
-                                  style: TextStyle(fontSize: 10))
-                            ],
-                          )),
-                    )
-                  ],
+                  children: searchActionButtons,
                 ),
               )));
 
