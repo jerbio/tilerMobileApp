@@ -10,8 +10,6 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
-import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -271,10 +269,6 @@ class AuthorizedRouteState extends State<StatefulWidget>
                         print('Newly created tile');
                         print(newTileParams);
                         var subEvent = newSubEventParams.item1;
-                        // this
-                        //     .context
-                        //     .read<SubCalendarTilesBloc>()
-                        //     .add(AddSubCalendarTile(subEvent: subEvent));
                         int redColor = subEvent.colorRed == null
                             ? 125
                             : subEvent.colorRed!;
@@ -369,7 +363,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
   Widget build(BuildContext context) {
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(), //this is the deafault and we need to switch these to routes and so we dont loose back button support
+      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
@@ -389,14 +383,13 @@ class AuthorizedRouteState extends State<StatefulWidget>
         ),
         child: Container(
           decoration: BoxDecoration(
-              color: Color.fromRGBO(250, 254, 255, 1),
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.topRight,
                   colors: [
-                    Color.fromRGBO(0, 119, 170, 1),
-                    Color.fromRGBO(0, 194, 237, 1)
-                  ])),
+                Color.fromRGBO(239, 48, 84, 1),
+                Color.fromRGBO(179, 194, 242, 1),
+              ])),
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
@@ -426,9 +419,11 @@ class AuthorizedRouteState extends State<StatefulWidget>
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: Color.fromRGBO(250, 254, 255, 1),
-      body: Stack(
-        children: widgetChildren,
+      backgroundColor: Colors.white,
+      body: Container(
+        child: Stack(
+          children: widgetChildren,
+        ),
       ),
       bottomNavigationBar: bottomNavigator,
       floatingActionButton: isAddButtonClicked
@@ -444,7 +439,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
               child: Icon(
                 Icons.add,
                 size: 35,
-                color: Color.fromRGBO(0, 194, 237, 1),
+                color: Color.fromRGBO(2, 0, 36, 1),
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
