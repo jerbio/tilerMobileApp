@@ -21,7 +21,7 @@ class EditTileName extends StatefulWidget {
 }
 
 class _EditTileNameState extends State<EditTileName> {
-  final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
+  final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = Colors.white;
   late TextEditingController _controller = TextEditingController();
   @override

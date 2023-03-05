@@ -19,6 +19,11 @@ import 'package:tuple/tuple.dart';
 import '../../constants.dart';
 
 class TileBatch extends StatefulWidget {
+  static final TextStyle dayHeaderTextStyle = TextStyle(
+      fontSize: 40,
+      fontFamily: TileStyles.rubikFontName,
+      color: TileStyles.primaryColorDarkHSL.toColor(),
+      fontWeight: FontWeight.w700);
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
   String? header;
@@ -197,12 +202,7 @@ class TileBatchState extends State<TileBatch> {
       Container headerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
         alignment: Alignment.centerLeft,
-        child: Text(widget.header!,
-            style: TextStyle(
-                fontSize: 40,
-                fontFamily: TileStyles.rubikFontName,
-                color: Color.fromRGBO(169, 169, 169, 1),
-                fontWeight: FontWeight.w700)),
+        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
       );
       SizedBox topHeaderMargin = SizedBox(
         height: 10,
@@ -263,12 +263,7 @@ class TileBatchState extends State<TileBatch> {
       Container footerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
         alignment: Alignment.centerLeft,
-        child: Text(widget.footer!,
-            style: TextStyle(
-                fontSize: 40,
-                color: Color.fromRGBO(169, 169, 169, 1),
-                fontFamily: TileStyles.rubikFontName,
-                fontWeight: FontWeight.bold)),
+        child: Text(widget.footer!, style: TileBatch.dayHeaderTextStyle),
       );
       SizedBox topFooterMargin = SizedBox(
         height: 10,

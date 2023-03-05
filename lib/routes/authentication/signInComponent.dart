@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
@@ -64,6 +65,8 @@ class SignInComponentState extends State<SignInComponent> {
           return;
         }
       }
+
+      TextInput.finishAutofillContext();
       Authentication localAuthentication = new Authentication();
       await localAuthentication.saveCredentials(authenticationData);
       while (Navigator.canPop(context)) {
@@ -142,8 +145,6 @@ class SignInComponentState extends State<SignInComponent> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
     userNameEditingController.dispose();
     passwordEditingController.dispose();
     emailEditingController.dispose();
@@ -154,6 +155,8 @@ class SignInComponentState extends State<SignInComponent> {
   @override
   Widget build(BuildContext context) {
     var usernameTextField = TextFormField(
+      keyboardType: TextInputType.name,
+      textInputAction: TextInputAction.next,
       validator: (value) {
         if (!isRegistrationScreen) {
           if (value == null || value.isEmpty) {
@@ -163,8 +166,14 @@ class SignInComponentState extends State<SignInComponent> {
         return null;
       },
       controller: userNameEditingController,
+      autofillHints: [
+        this.isRegistrationScreen
+            ? AutofillHints.newUsername
+            : AutofillHints.username
+      ],
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.username,
+        labelText: AppLocalizations.of(context)!.username,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.person),
@@ -173,6 +182,7 @@ class SignInComponentState extends State<SignInComponent> {
       ),
     );
     var emailTextField = TextFormField(
+      keyboardType: TextInputType.emailAddress,
       validator: (value) {
         if (value == null || value.isEmpty) {
           return AppLocalizations.of(context)!.emailIsRequired;
@@ -180,7 +190,9 @@ class SignInComponentState extends State<SignInComponent> {
         return null;
       },
       controller: emailEditingController,
+      autofillHints: [AutofillHints.email],
       decoration: InputDecoration(
+        labelText: AppLocalizations.of(context)!.email,
         hintText: AppLocalizations.of(context)!.email,
         filled: true,
         isDense: true,
@@ -225,26 +237,22 @@ class SignInComponentState extends State<SignInComponent> {
         return null;
       },
       controller: passwordEditingController,
+      autofillHints: [
+        this.isRegistrationScreen
+            ? AutofillHints.newPassword
+            : AutofillHints.password
+      ],
+      onEditingComplete: () => TextInput.finishAutofillContext(),
       obscureText: true,
+      keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.password,
+        labelText: AppLocalizations.of(context)!.password,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.lock),
         contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
-        // focusedBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.white, width: 0.5),
-        // ),
-        // enabledBorder: OutlineInputBorder(
-        //   borderRadius: const BorderRadius.all(
-        //     const Radius.circular(5.0),
-        //   ),
-        //   borderSide: BorderSide(color: Colors.grey, width: 0.5),
-        // ),
       ),
     );
     List<Widget> textFields = [usernameTextField, passwordTextField];
@@ -351,6 +359,7 @@ class SignInComponentState extends State<SignInComponent> {
 
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
+        keyboardType: TextInputType.visiblePassword,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return AppLocalizations.of(context)!.confirmPasswordRequired;
@@ -359,6 +368,7 @@ class SignInComponentState extends State<SignInComponent> {
         },
         controller: confirmPasswordEditingController,
         obscureText: true,
+        autofillHints: [AutofillHints.newPassword],
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.confirmPassword,
           filled: true,
@@ -366,18 +376,6 @@ class SignInComponentState extends State<SignInComponent> {
           prefixIcon: Icon(Icons.lock),
           contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
           fillColor: Color.fromRGBO(255, 255, 255, .75),
-          // focusedBorder: OutlineInputBorder(
-          //   borderRadius: const BorderRadius.all(
-          //     const Radius.circular(5.0),
-          //   ),
-          //   borderSide: BorderSide(color: Colors.white, width: 0.5),
-          // ),
-          // enabledBorder: OutlineInputBorder(
-          //   borderRadius: const BorderRadius.all(
-          //     const Radius.circular(5.0),
-          //   ),
-          //   borderSide: BorderSide(color: Colors.grey, width: 0.5),
-          // ),
         ),
       );
       textFields = [
@@ -414,9 +412,11 @@ class SignInComponentState extends State<SignInComponent> {
                       height: credentialButtonHeight,
                       padding: const EdgeInsets.symmetric(
                           vertical: 5.0, horizontal: 20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: textFields,
+                      child: AutofillGroup(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: textFields,
+                        ),
                       ),
                     ),
                     Container(
