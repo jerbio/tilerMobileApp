@@ -294,13 +294,6 @@ class AddTileState extends State<AddTile> {
                   ),
                 ),
               ),
-              // onChanged: (val) {
-              //   if (val.length >
-              //       Constants.autoCompleteTriggerCharacterCount) {
-              //     Function callAutoResult = generateSuggestionCallToServer();
-              //     callAutoResult();
-              //   }
-              // }
             )));
     return tileNameContainer;
   }
@@ -669,17 +662,17 @@ class AddTileState extends State<AddTile> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [locationConfigButton, colorPickerConfigButton],
     );
-    Widget secondRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [reminderConfigButton, emojiConfigButton],
-    );
+    // Widget secondRow = Row(
+    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //   children: [reminderConfigButton, emojiConfigButton],
+    // );
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [timeRestrictionsConfigButton, repetitionConfigButton],
     );
 
     Widget retValue = Column(
-      children: [firstRow, secondRow, thirdRow],
+      children: [firstRow, thirdRow],
     );
     return retValue;
   }

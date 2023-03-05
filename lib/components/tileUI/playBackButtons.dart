@@ -47,7 +47,6 @@ class PlayBackState extends State<PlayBack> {
 
   pauseTile() async {
     showMessage(AppLocalizations.of(context)!.pausing);
-    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
       return;
@@ -274,7 +273,9 @@ class PlayBackState extends State<PlayBack> {
       margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: playBackElements,
+        children: playBackElements
+            .map((e) => Expanded(child: e))
+            .toList(), // Wrapping in expanded to ensure they are equally spaced
       ),
     );
   }

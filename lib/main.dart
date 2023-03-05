@@ -64,6 +64,18 @@ class TilerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Map<int, Color> color = {
+      50: Color.fromRGBO(239, 48, 84, .1),
+      100: Color.fromRGBO(239, 48, 84, .2),
+      200: Color.fromRGBO(239, 48, 84, .3),
+      300: Color.fromRGBO(239, 48, 84, .4),
+      400: Color.fromRGBO(239, 48, 84, .5),
+      500: Color.fromRGBO(239, 48, 84, .6),
+      600: Color.fromRGBO(239, 48, 84, .7),
+      700: Color.fromRGBO(239, 48, 84, .8),
+      800: Color.fromRGBO(239, 48, 84, .9),
+      900: Color.fromRGBO(239, 48, 84, 1),
+    };
     return MultiBlocProvider(
         providers: [
           BlocProvider(create: (context) => SubCalendarTileBloc()),
@@ -71,9 +83,9 @@ class TilerApp extends StatelessWidget {
           BlocProvider(create: (context) => CalendarTileBloc())
         ],
         child: MaterialApp(
-          title: 'Flutter Demo',
+          title: 'Tiler',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: MaterialColor(0xFF880E4F, color),
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),
           routes: <String, WidgetBuilder>{

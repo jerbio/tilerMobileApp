@@ -296,7 +296,7 @@ class TileBatchState extends State<TileBatch> {
       margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
       padding: EdgeInsets.fromLTRB(0, 50, 0, 100),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white70,
         borderRadius: BorderRadius.circular(35),
       ),
       child: Column(

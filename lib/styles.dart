@@ -33,8 +33,9 @@ class TileStyles {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-        Color.fromRGBO(0, 194, 237, 1).withOpacity(0.1),
-        Color.fromRGBO(0, 119, 170, 1).withOpacity(0.1),
+        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.1),
+        Colors.white.withOpacity(0.1),
+        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.1),
       ]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -20,10 +19,7 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/**
- * This renders the list of tiles on a given day
- */
-
+/// This renders the list of tiles on a given day
 class TileList extends StatefulWidget {
   SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
