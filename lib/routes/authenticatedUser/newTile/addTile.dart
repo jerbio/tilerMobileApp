@@ -271,7 +271,7 @@ class AddTileState extends State<AddTile> {
                 hintText: AppLocalizations.of(context)!.tileName,
                 filled: true,
                 isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
                 fillColor: textBackgroundColor,
                 border: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(
