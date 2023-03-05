@@ -13,8 +13,15 @@ class TileStyles {
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
-  static Color enabledTextColor = Colors.black87;
-  static Color primaryColor = Color(0xffE5E5E5);
+  static Color enabledTextColor = Colors.white;
+  static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
+  static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
+  static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
+      .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
+  static HSLColor primaryColorLightHSL = HSLColor.fromColor(primaryColor)
+      .withLightness(HSLColor.fromColor(primaryColor).lightness + 0.2);
+  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
+  static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
   static String rubikFontName = 'Rubik';
@@ -24,7 +31,7 @@ class TileStyles {
       fontSize: textFontSize,
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
-  static Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
+  static Color textBackgroundColor = Color.fromRGBO(239, 48, 84, .05);
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);

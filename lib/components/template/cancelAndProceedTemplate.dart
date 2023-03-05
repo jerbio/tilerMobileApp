@@ -48,8 +48,12 @@ class CancelAndProceedTemplateWidgetState
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              HSLColor.fromAHSL(1, 198, 1, 0.33).toColor(),
-              HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
+              TileStyles.primaryColor,
+              HSLColor.fromColor(TileStyles.primaryColor)
+                  .withLightness(
+                      HSLColor.fromColor(TileStyles.primaryColor).lightness +
+                          0.3)
+                  .toColor()
             ],
           )),
       child: ElevatedButton(
@@ -96,8 +100,12 @@ class CancelAndProceedTemplateWidgetState
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                HSLColor.fromAHSL(1, 191, 1, 0.46).toColor(),
-                HSLColor.fromAHSL(1, 198, 1, 0.33).toColor()
+                HSLColor.fromColor(TileStyles.primaryColor)
+                    .withLightness(
+                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
+                            0.3)
+                    .toColor(),
+                TileStyles.primaryColor,
               ],
             )),
         child: ElevatedButton(

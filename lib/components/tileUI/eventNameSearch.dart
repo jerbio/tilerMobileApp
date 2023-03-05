@@ -426,28 +426,45 @@ class EventNameSearchState extends SearchWidgetState {
                 Navigator.pop(context);
               });
             }
-
-            // this.context.read<ScheduleBloc>().add(GetSchedule());
-
-            // if (calendarTileState is CalendarTileLoaded &&
-            //     isPendingScheduleEvaluation &&
-            //     scheduleState is ScheduleEvaluationState) {
-            //   WidgetsBinding.instance.addPostFrameCallback((_) {
-            //     this.context.read<ScheduleBloc>().add(GetSchedule());
-            //     Navigator.pop(context);
-            //     setState(() {
-            //       isPendingScheduleEvaluation = false;
-            //     });
-            //   });
-            // }
             String hintText = AppLocalizations.of(context)!.tileName;
             this.widget.onChanged = this._onInputFieldChange;
             this.widget.resultMargin = EdgeInsets.fromLTRB(0, 70, 0, 0);
             this.widget.textField = TextField(
-              controller: textController,
-              style: TileStyles.fullScreenTextFieldStyle,
-              decoration: TileStyles.generateTextInputDecoration(hintText),
-            );
+                controller: textController,
+                style: TileStyles.fullScreenTextFieldStyle,
+                decoration: InputDecoration(
+                  hintText: hintText,
+                  filled: true,
+                  isDense: true,
+                  hintStyle: TextStyle(
+                      color: Color.fromRGBO(180, 180, 180, 1),
+                      fontSize: TileStyles.textFontSize,
+                      fontFamily: 'Rubik',
+                      fontWeight: FontWeight.w500),
+                  contentPadding: EdgeInsets.fromLTRB(20, 15, 50, 15),
+                  fillColor: TileStyles.textBackgroundColor,
+                  border: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(15.0),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(15.0),
+                    ),
+                    borderSide:
+                        BorderSide(color: TileStyles.textBorderColor, width: 2),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(15.0),
+                    ),
+                    borderSide: BorderSide(
+                      color: TileStyles.textBorderColor,
+                      width: 1.5,
+                    ),
+                  ),
+                ));
             var hslLightColor =
                 HSLColor.fromColor(Color.fromRGBO(0, 194, 237, 1));
             hslLightColor =
@@ -467,16 +484,31 @@ class EventNameSearchState extends SearchWidgetState {
               body: Container(
                   margin: TileStyles.topMargin,
                   alignment: Alignment.topCenter,
-                  child: FractionallySizedBox(
-                      alignment: FractionalOffset.center,
-                      widthFactor: TileStyles.inputWidthFactor,
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: <Widget>[
-                            Expanded(
-                              child: super.build(context),
-                            )
-                          ])),
+                  child:
+                      Stack(alignment: Alignment.topCenter, children: <Widget>[
+                    // Positioned(
+                    //     left: 50,
+                    //     child:
+                    FractionallySizedBox(
+                        widthFactor: 0.825,
+                        child: Expanded(
+                          child: super.build(context),
+                        )),
+
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                        child: BackButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ),
+                    )
+                  ])
+                  // )
+                  ,
                   decoration: TileStyles.defaultBackground),
             );
           }),

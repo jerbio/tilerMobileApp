@@ -137,8 +137,14 @@ class AuthorizedRouteState extends State<StatefulWidget>
               begin: Alignment.topLeft,
               end: Alignment.topRight,
               colors: [
-                Color.fromRGBO(0, 119, 170, 0.75),
-                Color.fromRGBO(0, 194, 237, 0.75)
+                TileStyles.primaryColorHSL.toColor().withOpacity(0.75),
+                TileStyles.primaryColorHSL
+                    .withLightness(TileStyles.primaryColorHSL.lightness + .2)
+                    .toColor()
+                    .withOpacity(0.75),
+                // toColor().withOpacity(0.75),
+                // Color.fromRGBO(0, 119, 170, 0.75),
+                // Color.fromRGBO(0, 194, 237, 0.75)
               ],
             ),
           ),
@@ -429,7 +435,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
       floatingActionButton: isAddButtonClicked
           ? null
           : FloatingActionButton(
-              backgroundColor: Color.fromRGBO(243, 243, 243, 1),
+              backgroundColor: Colors.white,
               onPressed: () {
                 displayDialog(MediaQuery.of(context).size);
                 // setState(() {
@@ -439,7 +445,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
               child: Icon(
                 Icons.add,
                 size: 35,
-                color: Color.fromRGBO(2, 0, 36, 1),
+                color: Color.fromRGBO(60, 0, 21, 1),
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
