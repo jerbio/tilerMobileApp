@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -99,12 +99,7 @@ class WithinNowBatchState extends TileBatchState {
       Container headerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
         alignment: Alignment.centerLeft,
-        child: Text(widget.header!,
-            style: TextStyle(
-                fontSize: 40,
-                color: Color.fromRGBO(169, 169, 169, 1),
-                fontFamily: TileStyles.rubikFontName,
-                fontWeight: FontWeight.bold)),
+        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
       );
       precedingTileWidgets.add(headerContainer);
     }
@@ -113,12 +108,7 @@ class WithinNowBatchState extends TileBatchState {
       Container footerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
         alignment: Alignment.centerLeft,
-        child: Text(widget.footer!,
-            style: TextStyle(
-                fontSize: 40,
-                color: Color.fromRGBO(169, 169, 169, 0.7),
-                fontFamily: TileStyles.rubikFontName,
-                fontWeight: FontWeight.bold)),
+        child: Text(widget.footer!, style: TileBatch.dayHeaderTextStyle),
       );
       upcomningTileWidgets.insert(0, footerContainer);
     }
