@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,7 +17,7 @@ class TileName extends StatefulWidget {
 class TileNameState extends State<TileName> {
   @override
   Widget build(BuildContext context) {
-    var subEvent = widget.subEvent;
+    SubCalendarEvent subEvent = widget.subEvent;
     int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
     int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
@@ -26,7 +27,7 @@ class TileNameState extends State<TileName> {
             : "")
         : subEvent.name!;
     double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
-    Text emojiField = Text('');
+    Widget emojiField = Text('');
     if (subEvent.emojis != null && subEvent.emojis!.isNotEmpty) {
       double fontSize = 16;
       String emojiString = subEvent.emojis!.trim();
@@ -39,6 +40,15 @@ class TileNameState extends State<TileName> {
               fontFamily: TileStyles.rubikFontName,
               fontWeight: FontWeight.bold,
               color: Color.fromRGBO(31, 31, 31, 1)));
+    }
+
+    if (subEvent.emojis == null || subEvent.emojis!.isEmpty) {
+      if (subEvent.thirdpartyType == 'google') {
+        String assetLabel = AppLocalizations.of(this.context)!.googleLogo;
+        String assetName =
+            'assets/icons/svg/google-outline---filled(24x24)@1x.svg';
+        emojiField = SvgPicture.asset(assetName, semanticsLabel: assetLabel);
+      }
     }
 
     var nameColor = Color.fromRGBO(redColor, greenColor, blueColor, opacity);

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -67,8 +66,14 @@ class AddTileState extends State<AddTile> {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
         colors: [
-          HSLColor.fromAHSL(1, 198, 1, 0.33).toColor(),
-          HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
+          HSLColor.fromColor(TileStyles.primaryColor)
+              .withLightness(
+                  HSLColor.fromColor(TileStyles.primaryColor).lightness)
+              .toColor(),
+          HSLColor.fromColor(TileStyles.primaryColor)
+              .withLightness(
+                  HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
+              .toColor(),
         ],
       ));
   TextEditingController tileNameController = TextEditingController();
@@ -282,7 +287,7 @@ class AddTileState extends State<AddTile> {
                 hintText: AppLocalizations.of(context)!.tileName,
                 filled: true,
                 isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
+                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
                 fillColor: textBackgroundColor,
                 border: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(
@@ -305,13 +310,6 @@ class AddTileState extends State<AddTile> {
                   ),
                 ),
               ),
-              // onChanged: (val) {
-              //   if (val.length >
-              //       Constants.autoCompleteTriggerCharacterCount) {
-              //     Function callAutoResult = generateSuggestionCallToServer();
-              //     callAutoResult();
-              //   }
-              // }
             )));
     return tileNameContainer;
   }
@@ -679,17 +677,17 @@ class AddTileState extends State<AddTile> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [locationConfigButton, colorPickerConfigButton],
     );
-    Widget secondRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [reminderConfigButton, emojiConfigButton],
-    );
+    // Widget secondRow = Row(
+    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //   children: [reminderConfigButton, emojiConfigButton],
+    // );
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [timeRestrictionsConfigButton, repetitionConfigButton],
     );
 
     Widget retValue = Column(
-      children: [firstRow, secondRow, thirdRow],
+      children: [firstRow, thirdRow],
     );
     return retValue;
   }
