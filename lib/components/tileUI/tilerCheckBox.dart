@@ -35,7 +35,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     };
 
     if (states.any(interactiveStates.contains)) {
-      return TileStyles.activeColor;
+      return TileStyles.primaryColor;
     }
     return TileStyles.disabledColor;
   }
@@ -87,8 +87,9 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
                   fillColor: MaterialStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 20,
-                  shape: const CircleBorder(
-                      side: BorderSide(width: 5, color: Colors.blue)),
+                  shape: CircleBorder(
+                      side:
+                          BorderSide(width: 5, color: TileStyles.primaryColor)),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;

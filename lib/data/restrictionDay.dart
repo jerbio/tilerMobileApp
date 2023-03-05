@@ -37,6 +37,13 @@ class RestrictionTimeLine extends TilerObj {
     return _duration;
   }
 
+  bool get isValid {
+    if (_duration == null) {
+      return false;
+    }
+    return _duration!.inMilliseconds > 0;
+  }
+
   RestrictionTimeLine copyWith({
     TimeOfDay? start,
     Duration? duration,
