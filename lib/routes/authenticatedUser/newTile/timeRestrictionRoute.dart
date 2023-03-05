@@ -175,11 +175,7 @@ class _PreloadedRestrictionsRouteState
                   }
                   Map<String, bool> generateCpy = generate;
                   generateCpy['anytime'] = isAnytime;
-                  // if (!isAnytime && resultMap is Map) {
-                  //   resultMap['routeRestrictionProfile'] = restrictionProfile;
-                  // }
                   setState(() {
-                    // _restrictionProfile = restrictionProfile;
                     setRestrictionProfile(restrictionProfile);
                     _isAnyTime = isAnytime;
                     generate = generateCpy;
@@ -200,8 +196,8 @@ class _PreloadedRestrictionsRouteState
                       begin: Alignment.centerLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        HSLColor.fromAHSL(0.12, 198, 1, 0.33).toColor(),
-                        HSLColor.fromAHSL(0.12, 198, 1, 0.33).toColor(),
+                        TileStyles.primaryColorLightHSL.toColor(),
+                        TileStyles.primaryColorLightHSL.toColor(),
                       ],
                     )),
                 alignment: Alignment.center,
@@ -211,7 +207,7 @@ class _PreloadedRestrictionsRouteState
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                        color: Color.fromRGBO(0, 119, 255, 1),
+                        color: TileStyles.primaryColorDarkHSL.toColor(),
                         fontWeight: FontWeight.w500,
                         fontSize: 18)),
               ),

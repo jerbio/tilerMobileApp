@@ -9,19 +9,20 @@ class TileStyles {
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
-  static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
-  static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
-  static Color enabledTextColor = Colors.white;
   static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
+  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
   static HSLColor primaryColorLightHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness + 0.2);
-  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
+  static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
+  static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
+  static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
+  static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
+  static Color enabledTextColor = primaryColorDarkHSL.toColor();
+
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
   static String rubikFontName = 'Rubik';
