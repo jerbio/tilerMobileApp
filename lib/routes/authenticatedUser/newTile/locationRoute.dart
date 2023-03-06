@@ -78,7 +78,7 @@ class LocationRouteState extends State<LocationRoute> {
     String locationText = location.description!.capitalize();
     Icon defaultLocationIcon = Icon(
       Icons.location_pin,
-      size: 30,
+      size: 25,
     );
     Widget retValue = GestureDetector(
       onTap: () {
@@ -101,7 +101,8 @@ class LocationRouteState extends State<LocationRoute> {
             borderRadius: BorderRadius.all(
               const Radius.circular(5.0),
             ),
-            border: Border.all(color: Colors.grey, width: 1)),
+            border: Border.all(
+                color: TileStyles.primaryColorDarkHSL.toColor(), width: 1)),
         padding: EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -271,7 +272,8 @@ class LocationRouteState extends State<LocationRoute> {
       defaultLocationFields.add(renderNickNameDefaultButton(workLocation,
           icon: Icon(
             Icons.work,
-            size: 30,
+            size: 25,
+            color: TileStyles.primaryColorDarkHSL.toColor(),
           )));
     }
     if (homeLocation != null) {
@@ -280,7 +282,8 @@ class LocationRouteState extends State<LocationRoute> {
           renderNickNameDefaultButton(homeLocation,
               icon: Icon(
                 Icons.home,
-                size: 30,
+                size: 25,
+                color: TileStyles.primaryColorDarkHSL.toColor(),
               )));
     }
     Widget rowOfDefaults = Container(
