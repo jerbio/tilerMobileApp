@@ -268,12 +268,14 @@ class AddTileState extends State<AddTile> {
             child: TextField(
               controller: tileNameController,
               style: TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
+                  color: TileStyles.primaryColorDarkHSL.toColor(),
                   fontSize: 20,
                   fontFamily: TileStyles.rubikFontName,
                   fontWeight: FontWeight.w500),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileName,
+                hintStyle:
+                    TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
