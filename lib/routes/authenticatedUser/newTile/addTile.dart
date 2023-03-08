@@ -684,8 +684,8 @@ class AddTileState extends State<AddTile> {
     //   children: [reminderConfigButton, emojiConfigButton],
     // );
     List<Widget> thirdRowConfigButtons = [repetitionConfigButton];
-    if (this.isAppointment) {
-      thirdRowConfigButtons.add(repetitionConfigButton);
+    if (!this.isAppointment) {
+      thirdRowConfigButtons.add(timeRestrictionsConfigButton);
     }
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
