@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -8,8 +7,6 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 
 class PlayBack extends StatefulWidget {
