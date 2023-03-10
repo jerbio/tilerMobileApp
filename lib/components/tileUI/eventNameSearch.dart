@@ -441,7 +441,7 @@ class EventNameSearchState extends SearchWidgetState {
                       fontSize: TileStyles.textFontSize,
                       fontFamily: 'Rubik',
                       fontWeight: FontWeight.w500),
-                  contentPadding: EdgeInsets.fromLTRB(20, 15, 50, 15),
+                  contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
                   fillColor: TileStyles.textBackgroundColor,
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(

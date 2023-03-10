@@ -147,12 +147,12 @@ class TileBatchState extends State<TileBatch> {
             }
 
             startOfSleep = startOfSleep!.millisecondsSinceEpoch >
-                    sleepTileEvent.startTime!.millisecondsSinceEpoch
-                ? sleepTileEvent.startTime!
+                    sleepTileEvent.startTime.millisecondsSinceEpoch
+                ? sleepTileEvent.startTime
                 : startOfSleep!;
             endOfSleep = endOfSleep!.millisecondsSinceEpoch <
-                    sleepTileEvent.endTime!.millisecondsSinceEpoch
-                ? sleepTileEvent.endTime!
+                    sleepTileEvent.endTime.millisecondsSinceEpoch
+                ? sleepTileEvent.endTime
                 : endOfSleep!;
 
             return isInterfering;
@@ -227,12 +227,6 @@ class TileBatchState extends State<TileBatch> {
       tiles.values.forEach((eachTile) {
         Widget eachTileWidget = TileWidget(eachTile);
         var tuple = new Tuple3(true, eachTile, eachTileWidget);
-        allWidgets.add(tuple);
-      });
-
-      chillTimeLines.forEach((chillTimeline) {
-        Widget eachTileWidget = ChillTimeWidget(chillTimeline);
-        var tuple = new Tuple3(false, chillTimeline, eachTileWidget);
         allWidgets.add(tuple);
       });
 

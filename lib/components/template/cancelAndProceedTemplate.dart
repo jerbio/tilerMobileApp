@@ -173,8 +173,8 @@ class CancelAndProceedTemplateWidgetState
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              HSLColor.fromAHSL(1, 191, 1, 0.46).toColor(),
-              HSLColor.fromAHSL(1, 198, 1, 0.33).toColor()
+              TileStyles.primaryColor,
+              TileStyles.primaryColorLightHSL.toColor()
             ],
           )),
           child: Row(
