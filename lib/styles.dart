@@ -26,6 +26,10 @@ class TileStyles {
   static double textFontSize = 25;
   static String rubikFontName = 'Rubik';
   static Color defaultTextColor = Color.fromRGBO(31, 31, 31, 1);
+<<<<<<< Updated upstream
+=======
+  static Color lateTextColor = Color.fromRGBO(209, 24, 25, 1);
+>>>>>>> Stashed changes
   static TextStyle fullScreenTextFieldStyle = TextStyle(
       color: defaultTextColor,
       fontSize: textFontSize,
