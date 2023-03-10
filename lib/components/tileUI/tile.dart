@@ -15,12 +15,13 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 
-import '../../constants.dart';
+import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
 
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
+  late bool _isFaded = false;
   TileWidget(subEvent) : super(key: Key(subEvent.id)) {
     assert(subEvent != null);
     this.subEvent = subEvent;
@@ -31,29 +32,17 @@ class TileWidget extends StatefulWidget {
     return _state!;
   }
 
-  Future<TileWidgetState> get state async {
-    if (this._state != null && this._state!.mounted) {
-      return this._state!;
-    } else {
-      Future<TileWidgetState> retValue = new Future.delayed(
-          const Duration(milliseconds: stateRetrievalRetry), () {
-        return this.state;
-      });
-
-      return retValue;
-    }
-  }
-
-  void updateSubEvent(SubCalendarEvent subEvent) async {
-    this.subEvent = subEvent;
-    var state = await this.state;
-    state.updateSubEvent(subEvent);
+  fade() {
+    _isFaded = true;
   }
 }
 
-class TileWidgetState extends State<TileWidget> {
+class TileWidgetState extends State<TileWidget>
+    with SingleTickerProviderStateMixin {
   bool isMoreDetailEnabled = false;
   StreamSubscription? pendingScheduleRefresh;
+  late AnimationController controller;
+  late Animation<double> fadeAnimation;
 
   @override
   void initState() {
@@ -73,7 +62,20 @@ class TileWidgetState extends State<TileWidget> {
         }
       });
     }
+    controller = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: Constants.animationDuration));
+    fadeAnimation = Tween(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(controller);
     super.initState();
+  }
+
+  fade() {
+    controller.forward().then((value) {
+      this.widget._isFaded = true;
+    });
   }
 
   void updateSubEvent(SubCalendarEvent subEvent) async {
@@ -190,66 +192,70 @@ class TileWidgetState extends State<TileWidget> {
       }
     }
 
-    return GestureDetector(
-        onTap: () {
-          if (isEditable) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        EditTile(tileId: this.widget.subEvent.id!)));
-          }
-        },
-        child: AnimatedSize(
-            duration: Duration(milliseconds: 250),
-            curve: Curves.fastOutSlowIn,
-            child: Container(
-              margin: this.widget.subEvent.isCurrentTimeWithin
-                  ? EdgeInsets.fromLTRB(0, 100, 0, 100)
-                  : EdgeInsets.fromLTRB(0, 20, 0, 20),
-              child: Material(
-                  type: MaterialType.transparency,
-                  child: FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            color: this.widget.subEvent.isViable!
-                                ? Colors.white
-                                : Colors.black,
-                            width: 5,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(TileStyles.borderRadius),
-                          boxShadow: [
-                            BoxShadow(
-                              color: tileBackGroundColor.withOpacity(0.1),
-                              spreadRadius: 5,
-                              blurRadius: 15,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
-                        ),
+    return FadeTransition(
+      opacity: fadeAnimation,
+      child: GestureDetector(
+          onTap: () {
+            this.fade();
+            // if (isEditable) {
+            //   Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //           builder: (context) =>
+            //               EditTile(tileId: this.widget.subEvent.id!)));
+            // }
+          },
+          child: AnimatedSize(
+              duration: Duration(milliseconds: Constants.animationDuration),
+              curve: Curves.fastOutSlowIn,
+              child: Container(
+                margin: this.widget.subEvent.isCurrentTimeWithin
+                    ? EdgeInsets.fromLTRB(0, 100, 0, 100)
+                    : EdgeInsets.fromLTRB(0, 20, 0, 20),
+                child: Material(
+                    type: MaterialType.transparency,
+                    child: FractionallySizedBox(
+                        widthFactor: TileStyles.tileWidthRatio,
                         child: Container(
-                            padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                            decoration: BoxDecoration(
-                              color: tileBackGroundColor,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(
-                                  TileStyles.borderRadius),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              color: this.widget.subEvent.isViable!
+                                  ? Colors.white
+                                  : Colors.black,
+                              width: 5,
                             ),
-                            child: Column(
-                              mainAxisAlignment: allElements.length < 4
-                                  ? MainAxisAlignment.spaceBetween
-                                  : MainAxisAlignment.center,
-                              children: allElements,
-                            )),
-                      ))),
-            )));
+                            borderRadius:
+                                BorderRadius.circular(TileStyles.borderRadius),
+                            boxShadow: [
+                              BoxShadow(
+                                color: tileBackGroundColor.withOpacity(0.1),
+                                spreadRadius: 5,
+                                blurRadius: 15,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Container(
+                              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                              decoration: BoxDecoration(
+                                color: tileBackGroundColor,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 0.5,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                    TileStyles.borderRadius),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: allElements.length < 4
+                                    ? MainAxisAlignment.spaceBetween
+                                    : MainAxisAlignment.center,
+                                children: allElements,
+                              )),
+                        ))),
+              ))),
+    );
   }
 
   @override
