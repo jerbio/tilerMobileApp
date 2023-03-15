@@ -30,6 +30,8 @@ class TileList extends StatefulWidget {
 }
 
 class _TileListState extends State<TileList> {
+  Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>?
+      renderedTiles;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
       DateTime.now().add(Duration(days: -3)), Duration(days: 7));
   Timeline? oldTimeline;
@@ -109,15 +111,16 @@ class _TileListState extends State<TileList> {
     });
   }
 
-  Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> mapTilesToDays(
-      List<TilerEvent> tiles, Timeline? todayTimeline) {
+  Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>
+      mapTilesToDays(List<TilerEvent> tiles, Timeline? todayTimeline) {
     Map<int, List<TilerEvent>> dayIndexToTiles =
         new Map<int, List<TilerEvent>>();
     List<TilerEvent> todaySubEvents = [];
-
+    int todayDayIndex = -1;
     for (var tile in tiles) {
       DateTime? referenceTime = tile.startTime;
       if (todayTimeline != null) {
+        todayDayIndex = Utility.getDayIndex(todayTimeline.startTime);
         if (todayTimeline.isInterfering(tile)) {
           todaySubEvents.add(tile);
           continue;
@@ -142,11 +145,87 @@ class _TileListState extends State<TileList> {
       }
     }
 
-    Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> retValue =
-        new Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>>(
-            dayIndexToTiles, todaySubEvents);
+    Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>> retValue =
+        new Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>(
+            dayIndexToTiles, new Tuple2(todayDayIndex, todaySubEvents));
 
     return retValue;
+  }
+
+  List<TilerEvent>? getPreviousRenderedTiles(
+      Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>
+          previousRender,
+      dayIndex) {
+    if (previousRender.item2.item1 == dayIndex) {
+      return previousRender.item2.item2;
+    }
+
+    if (previousRender.item1.containsKey(dayIndex)) {
+      return previousRender.item1[dayIndex];
+    }
+  }
+
+  bool isBothDayTileTheSame(int firstDayIndex, List<TilerEvent> firstTiles,
+      int secondDayIndex, List<TilerEvent> secondTiles) {
+    if (firstDayIndex != secondDayIndex) {
+      return false;
+    }
+
+    if (firstTiles.length != secondTiles.length) {
+      return false;
+    }
+
+    firstTiles = Utility.orderTiles(firstTiles);
+    secondTiles = Utility.orderTiles(secondTiles);
+
+    for (int i = 0; i < firstTiles.length; i++) {
+      TilerEvent firstTilerEvent = firstTiles[i];
+      TilerEvent secondTilerEvent = secondTiles[i];
+      if (!firstTilerEvent.isEquivalent(secondTilerEvent)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  bool isNewRenderedResponseSame(
+      Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>?
+          firstResponse,
+      Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>?
+          secondResponse) {
+    if (firstResponse != null && secondResponse != null) {
+      bool isDayTheSame = isBothDayTileTheSame(
+          firstResponse.item2.item1,
+          firstResponse.item2.item2,
+          secondResponse.item2.item1,
+          secondResponse.item2.item2);
+      if (!isDayTheSame) {
+        return false;
+      }
+
+      if (firstResponse.item1.length != secondResponse.item1.length) {
+        return false;
+      }
+
+      for (int firstResponseKey in firstResponse.item1.keys) {
+        if (!secondResponse.item1.containsKey(firstResponseKey)) {
+          return false;
+        }
+        List<TilerEvent> firstResponseTiles =
+            firstResponse.item1[firstResponseKey]!;
+        List<TilerEvent> secondResponseTiles =
+            secondResponse.item1[firstResponseKey]!;
+        bool isDayTheSame = isBothDayTileTheSame(firstResponseKey,
+            firstResponseTiles, firstResponseKey, secondResponseTiles);
+        if (!isDayTheSame) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    return firstResponse == secondResponse;
   }
 
   Widget renderSubCalendarTiles(
@@ -166,10 +245,20 @@ class _TileListState extends State<TileList> {
         dayToSleepTimeLines[dayIndex] = sleepTimeLine;
       });
 
-      Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
-          mapTilesToDays(tileData.item2, _todayTimeLine);
+      Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>
+          dayToTiles = mapTilesToDays(tileData.item2, _todayTimeLine);
 
-      List<TilerEvent> todayTiles = dayToTiles.item2;
+      Tuple2<Map<int, List<TilerEvent>>, Tuple2<int, List<TilerEvent>>>?
+          previousRenderedResults = renderedTiles;
+      bool isSame =
+          isNewRenderedResponseSame(dayToTiles, previousRenderedResults);
+
+      if (!isSame) {
+        // previousRenderedResults = null;
+        renderedTiles = dayToTiles;
+      }
+
+      List<TilerEvent> todayTiles = dayToTiles.item2.item2;
       Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
 
       int todayDayIndex = Utility.getDayIndex(DateTime.now());
@@ -200,10 +289,17 @@ class _TileListState extends State<TileList> {
         dayIndexes[i] = dayIndex;
         if (dayIndex > todayDayIndex) {
           if (!upcomingDayTilesDict.containsKey(dayIndex)) {
-            var tiles = <TilerEvent>[];
+            List<TilerEvent> tiles = <TilerEvent>[];
             if (dayIndexToTileDict.containsKey(dayIndex)) {
               tiles = dayIndexToTileDict[dayIndex]!;
             }
+
+            List<TilerEvent>? previousRenderedTiles;
+            if (previousRenderedResults != null) {
+              previousRenderedTiles =
+                  getPreviousRenderedTiles(previousRenderedResults, dayIndex);
+            }
+
             var allTiles = tiles.toList();
             String headerString = Utility.getTimeFromIndex(dayIndex).humanDate;
             Key key = Key(dayIndex.toString());
@@ -211,6 +307,7 @@ class _TileListState extends State<TileList> {
                 header: headerString,
                 dayIndex: dayIndex,
                 tiles: allTiles,
+                previousRenderedTiles: previousRenderedTiles,
                 key: key);
             upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
           }
@@ -221,12 +318,19 @@ class _TileListState extends State<TileList> {
             if (dayIndexToTileDict.containsKey(dayIndex)) {
               tiles = dayIndexToTileDict[dayIndex]!;
             }
+
+            List<TilerEvent>? previousRenderedTiles;
+            if (previousRenderedResults != null) {
+              previousRenderedTiles =
+                  getPreviousRenderedTiles(previousRenderedResults, dayIndex);
+            }
             var allTiles = tiles.toList();
             Key key = Key(dayIndex.toString());
             TileBatch preceedingDayTileBatch = TileBatch(
                 header: dayBatchDate,
                 dayIndex: dayIndex,
                 key: key,
+                previousRenderedTiles: previousRenderedTiles,
                 tiles: allTiles);
             preceedingDayTilesDict[dayIndex] = preceedingDayTileBatch;
           }
@@ -265,6 +369,22 @@ class _TileListState extends State<TileList> {
           .toList();
       List<Widget> todayAndUpcomingBatch = [];
       DateTime currentTime = Utility.currentTime();
+      List<TilerEvent>? oldElapsedTiles;
+      List<TilerEvent>? oldNotElapsedTiles;
+      if (previousRenderedResults != null &&
+          previousRenderedResults.item2.item1 >= 0) {
+        oldElapsedTiles = [];
+        oldNotElapsedTiles = [];
+        for (TilerEvent eachSubEvent in previousRenderedResults.item2.item2) {
+          if (eachSubEvent.endTime!.millisecondsSinceEpoch >
+              currentTime.millisecondsSinceEpoch) {
+            oldNotElapsedTiles.add(eachSubEvent);
+          } else {
+            oldElapsedTiles.add(eachSubEvent);
+          }
+        }
+      }
+
       if (todayTiles.length > 0) {
         List<TilerEvent> elapsedTiles = [];
         List<TilerEvent> notElapsedTiles = [];
@@ -281,6 +401,7 @@ class _TileListState extends State<TileList> {
           elapsedTodayBatch = WithinNowBatch(
             key: ValueKey(Utility.getUuid.toString()),
             tiles: elapsedTiles,
+            previousRenderedTiles: oldElapsedTiles,
           );
           beforeNowBatch.add(Container(child: elapsedTodayBatch));
         }
@@ -289,6 +410,7 @@ class _TileListState extends State<TileList> {
           Widget notElapsedTodayBatch = WithinNowBatch(
             key: ValueKey(Utility.getUuid.toString()),
             tiles: notElapsedTiles,
+            previousRenderedTiles: oldNotElapsedTiles,
           );
           todayAndUpcomingBatch.add(notElapsedTodayBatch);
         }

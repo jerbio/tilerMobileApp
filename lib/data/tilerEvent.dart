@@ -170,6 +170,23 @@ class TilerEvent extends TilerObj with TimeRange {
     return retValue;
   }
 
+  bool isEquivalent(TilerEvent tilerEvent) {
+    bool isNameEquivalent = tilerEvent.name == this.name;
+    bool isTimeLineEquivalent = this.isStartAndEndEqual(tilerEvent);
+    bool isBothLocked = this.isRigid == tilerEvent.isRigid;
+    bool isSameType = this.thirdpartyType == tilerEvent.thirdpartyType;
+    bool isAddressDescription =
+        this.addressDescription == tilerEvent.addressDescription;
+    bool isAddressSame = this.address == tilerEvent.address;
+
+    return isNameEquivalent &&
+        isTimeLineEquivalent &&
+        isBothLocked &&
+        isSameType &&
+        isAddressDescription &&
+        isAddressSame;
+  }
+
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
 //     {
 //     "Error": {

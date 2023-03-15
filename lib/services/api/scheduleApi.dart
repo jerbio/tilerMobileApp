@@ -20,8 +20,8 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
       Timeline timeLine) async {
-    // return await getAdHocSubEvents(timeLine);
-    return await getSubEventsInScheduleRequest(timeLine);
+    return await getAdHocSubEvents(timeLine);
+    // return await getSubEventsInScheduleRequest(timeLine);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
@@ -138,23 +138,29 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
+    timeLine = Utility.todayTimeline();
+    timeLine = Timeline.fromDateTime(timeLine.startTime.add(Duration(days: 1)),
+        timeLine.endTime.add(Duration(days: 1)));
     if (!this.preserveSubEventList) {
       adhocGeneratedSubEvents = <SubCalendarEvent>[];
     }
-    int subEventCount = Random().nextInt(20);
+    int randomCountLimit = 2;
+    int subEventCount = Random().nextInt(randomCountLimit);
     while (subEventCount < 1) {
-      subEventCount = Random().nextInt(20);
+      subEventCount = Random().nextInt(randomCountLimit);
     }
 
     List<Timeline> sleepTimeLines = [];
     List<SubCalendarEvent> refreshedSubEvents = [];
-    if (forceInterFerringWithNowTile) {
+    if (forceInterFerringWithNowTile && adhocGeneratedSubEvents.length == 0) {
       SubCalendarEvent adHocInterferringWithNowTile = new SubCalendarEvent(
           name: Utility.randomName,
           start: Utility.msCurrentTime.toInt() -
               Utility.oneMin.inMilliseconds.toInt(),
           end: Utility.msCurrentTime.toInt() +
-              Utility.oneMin.inMilliseconds.toInt(),
+              Duration(seconds: adhocGeneratedSubEvents.length == 0 ? 5 : 90)
+                  .inMilliseconds
+                  .toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
       adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);

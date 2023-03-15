@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:collection';
 import 'dart:developer';
 
@@ -25,6 +26,7 @@ class TileBatch extends StatefulWidget {
       color: TileStyles.primaryColorDarkHSL.toColor(),
       fontWeight: FontWeight.w700);
   List<TilerEvent>? tiles;
+  List<TilerEvent>? previousRenderedTiles;
   Timeline? sleepTimeline;
   String? header;
   String? footer;
@@ -38,6 +40,7 @@ class TileBatch extends StatefulWidget {
       this.tiles,
       this.sleepTimeline,
       this.connectionState,
+      this.previousRenderedTiles,
       Key? key})
       : super(key: key);
 
@@ -46,6 +49,7 @@ class TileBatch extends StatefulWidget {
 }
 
 class TileBatchState extends State<TileBatch> {
+  bool isTransitionToNewTile = false;
   String uniqueKey = Utility.getUuid;
   bool isInitialized = false;
   Map<String, TilerEvent> tiles = new Map<String, TilerEvent>();
@@ -224,11 +228,40 @@ class TileBatchState extends State<TileBatch> {
 
     List<Tuple3<bool, TimeRange, Widget>> allWidgets = [];
     if (tiles.length > 0) {
-      tiles.values.forEach((eachTile) {
-        Widget eachTileWidget = TileWidget(eachTile);
+      List<TilerEvent> tileList = tiles.values.toList();
+      for (int eachTileIndex = 0;
+          eachTileIndex < tileList.length;
+          eachTileIndex++) {
+        TilerEvent eachTile = tileList[eachTileIndex];
+        Widget eachTileWidget = AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            transitionBuilder: (Widget child, Animation<double> animation) {
+              return ScaleTransition(scale: animation, child: child);
+            },
+            child: TileWidget(eachTile));
+        if ((isTransitionToNewTile ||
+                (this.widget.previousRenderedTiles != null &&
+                    this.widget.previousRenderedTiles!.length > 0)) &&
+            eachTileIndex < this.widget.previousRenderedTiles!.length) {
+          TilerEvent previousTile =
+              this.widget.previousRenderedTiles![eachTileIndex];
+          if (!previousTile.isEquivalent(eachTile)) {
+            Widget previousTileWidget =
+                TileWidget(this.widget.previousRenderedTiles![eachTileIndex]);
+            eachTileWidget = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 500),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: isTransitionToNewTile
+                    ? TileWidget(eachTile)
+                    : previousTileWidget);
+          }
+        }
         var tuple = new Tuple3(true, eachTile, eachTileWidget);
         allWidgets.add(tuple);
-      });
+      }
+      tiles.values.forEach((eachTile) {});
 
       allWidgets.sort(
           (tileA, tileB) => tileA.item2.start!.compareTo(tileB.item2.start!));
@@ -279,6 +312,20 @@ class TileBatchState extends State<TileBatch> {
             "Child widgets " +
             uniqueKey);
       }
+    }
+
+    if (this.widget.previousRenderedTiles != null &&
+        this.widget.previousRenderedTiles!.length > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Timer(Duration(milliseconds: 1000), () {
+          if (this.mounted && !this.isTransitionToNewTile) {
+            print("There should be a dance");
+            setState(() {
+              isTransitionToNewTile = true;
+            });
+          }
+        });
+      });
     }
     return Container(
       width: (MediaQuery.of(context).size.width * 0.90),

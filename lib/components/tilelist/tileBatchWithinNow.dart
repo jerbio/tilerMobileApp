@@ -18,8 +18,14 @@ class WithinNowBatch extends TileBatch {
       {String? header = '',
       String? footer = 'Upcoming',
       List<TilerEvent>? tiles,
+      List<TilerEvent>? previousRenderedTiles,
       Key? key})
-      : super(header: header, footer: footer, key: key, tiles: tiles);
+      : super(
+            header: header,
+            footer: footer,
+            key: key,
+            tiles: tiles,
+            previousRenderedTiles: previousRenderedTiles);
 
   @override
   WithinNowBatchState createState() {
