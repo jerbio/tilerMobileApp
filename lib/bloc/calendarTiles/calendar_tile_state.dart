@@ -10,7 +10,7 @@ abstract class CalendarTileState extends Equatable {
 class CalendarTileInitial extends CalendarTileState {}
 
 class CalendarTileLoaded extends CalendarTileState {
-  final TilerEvent calEvent;
+  final CalendarEvent calEvent;
   CalendarTileLoaded({required this.calEvent});
 }
 

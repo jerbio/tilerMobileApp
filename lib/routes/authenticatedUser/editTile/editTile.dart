@@ -167,7 +167,7 @@ class _EditTileState extends State<EditTile> {
     return CancelAndProceedTemplateWidget(
       child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
         listener: (context, state) {
-          if (state is SubCalendarTileLoadedState)
+          if (state is SubCalendarTileLoadedState) {
             setState(() {
               if (subEvent == null) {
                 subEvent = state.subEvent;
@@ -192,6 +192,7 @@ class _EditTileState extends State<EditTile> {
                 }
               }
             });
+          }
         },
         child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
           builder: (context, state) {
