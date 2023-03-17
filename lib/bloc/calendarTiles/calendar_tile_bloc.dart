@@ -4,6 +4,8 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 
+import '../../data/calendarEvent.dart';
+
 part 'calendar_tile_event.dart';
 part 'calendar_tile_state.dart';
 
@@ -15,6 +17,8 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
     on<DeleteCalendarTileEvent>(_onDeleteCalendarTileEvent);
 
     on<CompleteCalendarTileEvent>(_onCompleteCalendarTileEvent);
+
+    on<GetCalendarTileEvent>(_onGetCalendarTileEvent);
   }
 
   _onSetAsNowCalendarTileEvent(
@@ -39,6 +43,14 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
     await calendarEventApi
         .delete(event.calEventId, event.thirdPartyId)
         .then((value) {
+      emit(CalendarTileLoaded(calEvent: value));
+    });
+  }
+
+  _onGetCalendarTileEvent(
+      GetCalendarTileEvent event, Emitter<CalendarTileState> emit) async {
+    emit(CalendarTileLoading(calEventId: event.calEventId));
+    await calendarEventApi.getCalEvent(event.calEventId).then((value) async {
       emit(CalendarTileLoaded(calEvent: value));
     });
   }
