@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -16,15 +15,15 @@ class SubCalendarTileBloc
   SubCalendarTileBloc() : super(SubCalendarTilesInitialState()) {
     on<GetSubCalendarTileBlocEvent>(_onLoadSubCalendarTile);
     on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
-
   }
 
-  void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event, Emitter<SubCalendarTileState> emit) async {
+  void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event,
+      Emitter<SubCalendarTileState> emit) async {
     emit(SubCalendarTilesInitialState());
   }
 
-  void _onLoadSubCalendarTile(
-      GetSubCalendarTileBlocEvent event, Emitter<SubCalendarTileState> emit) async {
+  void _onLoadSubCalendarTile(GetSubCalendarTileBlocEvent event,
+      Emitter<SubCalendarTileState> emit) async {
     final state = this.state;
     if (state is SubCalendarTileLoadedState) {
       emit(SubCalendarTilesLoadingState(subEventId: state.subEvent.id!));
