@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -79,6 +80,35 @@ class CalendarEventApi extends AppApi {
       }
     }
     throw error;
+  }
+
+  Future<CalendarEvent> updateCalEvent(EditTilerEvent calEvent) async {
+    TilerError error = new TilerError();
+    error.message = "Did not update tile";
+    var queryParameters = {
+      'EventID': calEvent.id,
+      'EventName': calEvent.name,
+      'Start': calEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'End': calEvent.endTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'Split': calEvent.splitCount.toString(),
+      'ThirdPartyEventID': calEvent.thirdPartyId.toString(),
+      'ThirdPartyUserID': calEvent.thirdPartyUserId.toString(),
+      'ThirdPartyType': calEvent.thirdPartyType.toString(),
+      'Notes': calEvent.note.toString(),
+    };
+    return sendPostRequest('api/CalendarEvent/Update', queryParameters)
+        .then((response) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> tileJson = jsonResult['Content'];
+          CalendarEvent retValue = CalendarEvent.fromJson(tileJson);
+          return retValue;
+        }
+      }
+      error = getTilerResponseError(jsonResult) ?? error;
+      throw error;
+    });
   }
 
   Future<CalendarEvent> complete(String eventId) async {

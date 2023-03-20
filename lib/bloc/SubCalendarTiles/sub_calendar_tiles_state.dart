@@ -25,3 +25,23 @@ class SubCalendarTileLoadedState extends SubCalendarTileState {
   @override
   List<Object> get props => [subEvent];
 }
+
+class ListOfSubCalendarTileLoadedState extends SubCalendarTileState {
+  final List<SubCalendarEvent> subEvents;
+  ListOfSubCalendarTileLoadedState({required this.subEvents}) {
+    print(this.subEvents);
+  }
+
+  @override
+  List<Object> get props => subEvents.map<String>((e) => e.id!).toList();
+}
+
+class ListOfSubCalendarTilesLoadingState extends SubCalendarTileState {
+  final List<String> subEventIds;
+  List<SubCalendarEvent>? subEvents;
+  ListOfSubCalendarTilesLoadingState(
+      {required this.subEventIds, this.subEvents});
+
+  @override
+  List<Object> get props => subEventIds.toList();
+}
