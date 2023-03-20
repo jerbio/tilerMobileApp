@@ -7,6 +7,7 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
@@ -211,13 +212,23 @@ class _EditTileState extends State<EditTile> {
               time: calStartTime,
               onInputChange: dataChange,
             );
+            if (this.subEvent!.calendarEventStartTime != null) {
+              DateTime calStartTime = this.editTilerEvent?.calStartTime ??
+                  this.subEvent!.calendarEventStartTime!;
+              _editCalStartDateAndTime = EditDateAndTime(
+                time: calStartTime,
+                onInputChange: dataChange,
+              );
+            }
 
-            DateTime calEndTime = this.editTilerEvent?.calEndTime ??
-                this.subEvent!.calendarEventEndTime!;
-            _editCalEndDateAndTime = EditDateAndTime(
-              time: calEndTime,
-              onInputChange: dataChange,
-            );
+            if (this.subEvent!.calendarEventEndTime != null) {
+              DateTime calEndTime = this.editTilerEvent?.calEndTime ??
+                  this.subEvent!.calendarEventEndTime!;
+              _editCalEndDateAndTime = EditDateAndTime(
+                time: calEndTime,
+                onInputChange: dataChange,
+              );
+            }
 
             _startEndDurationTimeline = StartEndDurationTimeline.fromTimeline(
               timeRange: this.subEvent!,
@@ -264,28 +275,61 @@ class _EditTileState extends State<EditTile> {
                     ),
                   ));
 
-              Widget deadlineWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.deadline,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editCalEndDateAndTime!
-                      ],
-                    ),
-                  ));
-              inputChildWidgets.add(splitWidget);
-              inputChildWidgets.add(deadlineWidget);
+              if (_editCalEndDateAndTime != null) {
+                Widget deadlineWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.deadline,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          _editCalEndDateAndTime!
+                        ],
+                      ),
+                    ));
+                inputChildWidgets.add(deadlineWidget);
+              }
+              inputChildWidgets.insert(1, splitWidget);
             }
+            PlayBack playBackButton = PlayBack(
+              this.subEvent!,
+              forcedOption: [
+                PlaybackOptions.Procrastinate,
+                PlaybackOptions.Now,
+                PlaybackOptions.Delete,
+                PlaybackOptions.Complete
+              ],
+              callBack: (status, response) {
+                final currentState = this.context.read<ScheduleBloc>().state;
+                if (currentState is ScheduleEvaluationState) {
+                  this.context.read<ScheduleBloc>().add(GetSchedule(
+                        isAlreadyLoaded: true,
+                        previousSubEvents: currentState.subEvents,
+                        scheduleTimeline: currentState.lookupTimeline,
+                        previousTimeline: currentState.lookupTimeline,
+                      ));
+                }
+                if (currentState is ScheduleLoadedState) {
+                  this.context.read<ScheduleBloc>().add(GetSchedule(
+                        isAlreadyLoaded: true,
+                        previousSubEvents: currentState.subEvents,
+                        scheduleTimeline: currentState.lookupTimeline,
+                        previousTimeline: currentState.lookupTimeline,
+                      ));
+                }
+                Navigator.pop(context);
+              },
+            );
+
+            inputChildWidgets.add(playBackButton);
 
             return Container(
               margin: TileStyles.topMargin,
