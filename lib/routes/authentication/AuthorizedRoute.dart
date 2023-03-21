@@ -56,7 +56,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
         break;
       case 2:
         {
-          selectedPage = ActivePage.review;
+          Navigator.pushNamed(context, '/Setting');
         }
         break;
     }

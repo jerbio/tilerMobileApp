@@ -64,7 +64,7 @@ class RestrictionTimeLine extends TilerObj {
               DateTime.fromMillisecondsSinceEpoch(map['start'] as int))
           : null,
       duration: map['duration'] != null
-          ? Duration(milliseconds: map['duration'] as int)
+          ? Duration(milliseconds: map['duration'].toInt() as int)
           : null,
       weekDay: map['weekDay'] != null ? map['weekDay'] as int : null,
     );
@@ -121,7 +121,7 @@ class RestrictionDay extends TilerObj {
   RestrictionDay.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('restrictionTimeLine')) {
       _restrictionTimeLine =
-          RestrictionTimeLine.fromJson(json['restrictionTimeLine']);
+          RestrictionTimeLine.fromMap(json['restrictionTimeLine']);
     }
 
     if (json.containsKey('weekday')) {

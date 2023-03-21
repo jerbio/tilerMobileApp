@@ -15,10 +15,14 @@ class RestrictionProfile extends TilerObj {
 
   RestrictionProfile.fromJson(Map<String, dynamic> json)
       : super.fromJson(json) {
-    if (json.containsKey('daySelection')) {
+    if (json.containsKey('daySelection') && json['daySelection'] != null) {
       List<RestrictionDay?> daySelection = [];
       for (var eachRestrictionDay in json['daySelection']!) {
-        daySelection.add(RestrictionDay.fromJson(eachRestrictionDay));
+        if (eachRestrictionDay != null) {
+          daySelection.add(RestrictionDay.fromJson(eachRestrictionDay));
+        } else {
+          daySelection.add(eachRestrictionDay);
+        }
       }
       List<int?> notFoundDayIndexes = [0, 1, 2, 3, 4, 5, 6];
 
@@ -32,7 +36,13 @@ class RestrictionProfile extends TilerObj {
       daySelectionCpy.sort((eachDaySelectionA, eachDaySelectionB) =>
           eachDaySelectionA!.weekday!.compareTo(eachDaySelectionB!.weekday!));
       daySelection = daySelectionCpy;
+      for (int? notFoundDayIndex in notFoundDayIndexes) {
+        if (notFoundDayIndex != null) {
+          daySelection.insert(notFoundDayIndex, null);
+        }
+      }
       assert(daySelection.length == 7);
+      this.daySelection = daySelection;
     }
   }
 

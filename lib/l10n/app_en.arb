@@ -115,5 +115,7 @@
     "home": "Home",
     "work": "Work",
     "googleLogo": "Google Logo",
-    "edit": "Edit"
+    "edit": "Edit",
+    "workProfileHours": "Work Hours",
+    "personalHours": "Personal Hours"
 }

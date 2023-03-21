@@ -13,12 +13,15 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tuple/tuple.dart';
 import '../../../bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
@@ -84,7 +87,9 @@ class AddTileState extends State<AddTile> {
 
   RestrictionProfile? _restrictionProfile;
   ScheduleApi scheduleApi = ScheduleApi();
+  SettingsApi settingsApi = SettingsApi();
   StreamSubscription? pendingSendTextRequest;
+  List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
 
   @override
   void initState() {
@@ -165,6 +170,22 @@ class AddTileState extends State<AddTile> {
           work = workLocation;
         });
       });
+    });
+
+    settingsApi.getUserRestrictionProfile().then((response) {
+      if (response.length > 0) {
+        setState(() {
+          _listedRestrictionProfile = response.entries
+              .map<Tuple2<String, RestrictionProfile>>(
+                  (e) => Tuple2<String, RestrictionProfile>(e.key, e.value))
+              .toList();
+        });
+        return response;
+      }
+      setState(() {
+        _listedRestrictionProfile = null;
+      });
+      return response;
     });
 
     super.initState();
@@ -599,6 +620,10 @@ class AddTileState extends State<AddTile> {
           'routeRestrictionProfile': _restrictionProfile,
           'stackRouteHistory': [AddTile.routeName]
         };
+        if (_listedRestrictionProfile != null) {
+          restrictionParams['namedRestrictionProfiles'] =
+              _listedRestrictionProfile;
+        }
 
         Navigator.pushNamed(context, '/TimeRestrictionRoute',
                 arguments: restrictionParams)
@@ -608,6 +633,7 @@ class AddTileState extends State<AddTile> {
             populatedRestrictionProfile =
                 restrictionParams['routeRestrictionProfile']
                     as RestrictionProfile?;
+            restrictionParams.remove('routeRestrictionProfile');
             setState(() {
               _restrictionProfile = populatedRestrictionProfile;
             });
@@ -804,6 +830,7 @@ class AddTileState extends State<AddTile> {
       tile.RestrictiveWeek =
           this._restrictionProfile!.toRestrictionWeekConfig();
       tile.isRestricted = true.toString();
+      tile.RestrictionProfileId = this._restrictionProfile!.id;
     }
 
     tile.Count = getSplitCount();

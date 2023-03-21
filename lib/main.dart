@@ -19,6 +19,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -105,6 +106,7 @@ class TilerApp extends StatelessWidget {
             '/DurationDial': (ctx) => DurationDial(),
             '/repetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
+            '/Setting': (ctx) => Setting(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,
