@@ -76,23 +76,32 @@ class SubCalendarEvent extends TilerEvent {
   }
 
   DateTime? get rangeStartTime {
-    return DateTime.fromMillisecondsSinceEpoch(this.rangeStart!.toInt(),
-        isUtc: true);
+    if (this.rangeStart != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this.rangeStart!.toInt(),
+          isUtc: true);
+    }
   }
 
   DateTime? get rangeEndTime {
-    return DateTime.fromMillisecondsSinceEpoch(this.rangeEnd!.toInt(),
-        isUtc: true);
+    if (this.rangeEnd != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this.rangeEnd!.toInt(),
+          isUtc: true);
+    }
   }
 
   DateTime? get calendarEventStartTime {
-    return DateTime.fromMillisecondsSinceEpoch(this.calendarEventStart!.toInt(),
-        isUtc: true);
+    if (this.calendarEventStart != null) {
+      return DateTime.fromMillisecondsSinceEpoch(
+          this.calendarEventStart!.toInt(),
+          isUtc: true);
+    }
   }
 
   DateTime? get calendarEventEndTime {
-    return DateTime.fromMillisecondsSinceEpoch(this.calendarEventEnd!.toInt(),
-        isUtc: true);
+    if (this.calendarEventEnd != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this.calendarEventEnd!.toInt(),
+          isUtc: true);
+    }
   }
 
   static T? cast<T>(x) => x is T ? x : null;

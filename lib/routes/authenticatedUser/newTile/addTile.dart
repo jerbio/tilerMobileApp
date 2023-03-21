@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +13,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -41,6 +41,11 @@ class AddTileState extends State<AddTile> {
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color iconColor = TileStyles.iconColor;
   final Color populatedTextColor = Colors.white;
+  String tileNameText = '';
+  String splitCountText = '';
+  final LocationApi locationApi = LocationApi();
+  Location? home;
+  Location? work;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       borderRadius: BorderRadius.all(
@@ -54,13 +59,19 @@ class AddTileState extends State<AddTile> {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
         colors: [
-          HSLColor.fromAHSL(1, 198, 1, 0.33).toColor(),
-          HSLColor.fromAHSL(1, 191, 1, 0.46).toColor()
+          HSLColor.fromColor(TileStyles.primaryColor)
+              .withLightness(
+                  HSLColor.fromColor(TileStyles.primaryColor).lightness)
+              .toColor(),
+          HSLColor.fromColor(TileStyles.primaryColor)
+              .withLightness(
+                  HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
+              .toColor(),
         ],
       ));
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
-  TextEditingController splitCount = TextEditingController();
+  TextEditingController splitCountController = TextEditingController();
   Duration? _duration = Duration(hours: 0, minutes: 0);
   bool _isDurationManuallySet = false;
   Location? _location = Location.fromDefault();
@@ -118,10 +129,44 @@ class AddTileState extends State<AddTile> {
           pendingSendTextRequest = streamSubScription;
         });
       }
-      splitCount.addListener(() {
-        isSubmissionReady();
-      });
     }
+
+    splitCountController.addListener(() {
+      if (splitCountText != splitCountController.text) {
+        setState(() {
+          splitCountText = splitCountController.text;
+        });
+        isSubmissionReady();
+      }
+    });
+    tileNameController.addListener(() {
+      // isSubmissionReady();
+      if (tileNameText != tileNameController.text) {
+        if (tileNameController.text.length >
+            Constants.autoCompleteTriggerCharacterCount) {
+          Function callAutoResult = generateSuggestionCallToServer();
+          callAutoResult();
+        }
+        setState(() {
+          tileNameText = tileNameController.text;
+        });
+        isSubmissionReady();
+      }
+    });
+
+    locationApi
+        .getSpecificLocationByNickName(Location.homeLocationNickName)
+        .then((homeLocation) {
+      locationApi
+          .getSpecificLocationByNickName(Location.workLocationNickName)
+          .then((workLocation) {
+        setState(() {
+          home = homeLocation;
+          work = workLocation;
+        });
+      });
+    });
+
     super.initState();
   }
 
@@ -209,8 +254,8 @@ class AddTileState extends State<AddTile> {
   }
 
   String getSplitCount() {
-    return this.splitCount.value.text.isNotEmpty
-        ? this.splitCount.value.text
+    return this.splitCountController.value.text.isNotEmpty
+        ? this.splitCountController.value.text
         : 1.toString();
   }
 
@@ -221,46 +266,42 @@ class AddTileState extends State<AddTile> {
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
-                controller: tileNameController,
-                style: TextStyle(
-                    color: Color.fromRGBO(31, 31, 31, 1),
-                    fontSize: 20,
-                    fontFamily: TileStyles.rubikFontName,
-                    fontWeight: FontWeight.w500),
-                decoration: InputDecoration(
-                  hintText: AppLocalizations.of(context)!.tileName,
-                  filled: true,
-                  isDense: true,
-                  contentPadding: EdgeInsets.fromLTRB(10, 15, 0, 15),
-                  fillColor: textBackgroundColor,
-                  border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(50.0),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    borderSide: BorderSide(color: textBorderColor, width: 2),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    borderSide: BorderSide(
-                      color: textBorderColor,
-                      width: 1.5,
-                    ),
+              controller: tileNameController,
+              style: TextStyle(
+                  color: TileStyles.primaryColorDarkHSL.toColor(),
+                  fontSize: 20,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.tileName,
+                hintStyle:
+                    TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
+                filled: true,
+                isDense: true,
+                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
+                fillColor: textBackgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(50.0),
                   ),
                 ),
-                onChanged: (val) {
-                  if (val.length >
-                      Constants.autoCompleteTriggerCharacterCount) {
-                    Function callAutoResult = generateSuggestionCallToServer();
-                    callAutoResult();
-                  }
-                })));
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(8.0),
+                  ),
+                  borderSide: BorderSide(color: textBorderColor, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: const BorderRadius.all(
+                    const Radius.circular(8.0),
+                  ),
+                  borderSide: BorderSide(
+                    color: textBorderColor,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            )));
     return tileNameContainer;
   }
 
@@ -278,7 +319,7 @@ class AddTileState extends State<AddTile> {
                 SizedBox(
                     width: 60,
                     child: TextField(
-                      controller: splitCount,
+                      controller: splitCountController,
                       keyboardType: TextInputType.number,
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.digitsOnly
@@ -396,8 +437,7 @@ class AddTileState extends State<AddTile> {
     bool isColorConfigSet = false;
     bool isTimeRestrictionConfigSet = false;
     if (_location != null) {
-      if (_location!.isNotNullAndNotDefault != null &&
-          (_location!.isNotNullAndNotDefault!)) {
+      if (_location!.isNotNullAndNotDefault) {
         if (_location!.description != null &&
             _location!.description!.isNotEmpty) {
           locationName = _location!.description!;
@@ -440,6 +480,17 @@ class AddTileState extends State<AddTile> {
         Map<String, dynamic> locationParams = {
           'location': locationHolder,
         };
+        List<Location> defaultLocations = [];
+
+        if (home != null && home!.isNotNullAndNotDefault) {
+          defaultLocations.add(home!);
+        }
+        if (work != null && work!.isNotNullAndNotDefault) {
+          defaultLocations.add(work!);
+        }
+        if (defaultLocations.isNotEmpty) {
+          locationParams['defaults'] = defaultLocations;
+        }
 
         Navigator.pushNamed(context, '/LocationRoute',
                 arguments: locationParams)
@@ -617,17 +668,17 @@ class AddTileState extends State<AddTile> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [locationConfigButton, colorPickerConfigButton],
     );
-    Widget secondRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [reminderConfigButton, emojiConfigButton],
-    );
+    // Widget secondRow = Row(
+    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    //   children: [reminderConfigButton, emojiConfigButton],
+    // );
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [timeRestrictionsConfigButton, repetitionConfigButton],
     );
 
     Widget retValue = Column(
-      children: [firstRow, secondRow, thirdRow],
+      children: [firstRow, thirdRow],
     );
     return retValue;
   }
@@ -943,6 +994,8 @@ class AddTileState extends State<AddTile> {
   @override
   void dispose() {
     tileNameController.dispose();
+    tileDeadline.dispose();
+    splitCountController.dispose();
     super.dispose();
   }
 }
