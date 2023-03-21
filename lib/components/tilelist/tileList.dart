@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -20,10 +19,7 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/**
- * This renders the list of tiles on a given day
- */
-
+/// This renders the list of tiles on a given day
 class TileList extends StatefulWidget {
   SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
@@ -40,6 +36,29 @@ class _TileListState extends State<TileList> {
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;
+  BoxDecoration previousTileBatchDecoration = BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.5),
+        spreadRadius: 5,
+        blurRadius: 7,
+        offset: const Offset(0, 3), // changes position of shadow
+      ),
+    ],
+  );
+
+  BoxDecoration upcomingTileBatchDecoration = BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.5),
+        spreadRadius: 5,
+        blurRadius: 7,
+        offset: const Offset(0, -3), // changes position of shadow
+      ),
+    ],
+  );
 
   @override
   void initState() {
@@ -238,7 +257,12 @@ class _TileListState extends State<TileList> {
 
       List<TileBatch> childTileBatchs = <TileBatch>[];
       childTileBatchs.addAll(preceedingDayTiles);
-      List<Widget> beforeNowBatch = preceedingDayTiles.toList();
+      List<Widget> beforeNowBatch = preceedingDayTiles
+          .map((tileBatch) => Container(
+                decoration: previousTileBatchDecoration,
+                child: tileBatch,
+              ))
+          .toList();
       List<Widget> todayAndUpcomingBatch = [];
       DateTime currentTime = Utility.currentTime();
       if (todayTiles.length > 0) {
@@ -258,7 +282,7 @@ class _TileListState extends State<TileList> {
             key: ValueKey(Utility.getUuid.toString()),
             tiles: elapsedTiles,
           );
-          beforeNowBatch.add(elapsedTodayBatch);
+          beforeNowBatch.add(Container(child: elapsedTodayBatch));
         }
 
         if (notElapsedTiles.isNotEmpty) {
@@ -270,7 +294,11 @@ class _TileListState extends State<TileList> {
         }
       }
       childTileBatchs.addAll(upcomingDayTiles);
-      todayAndUpcomingBatch.addAll(upcomingDayTiles);
+      todayAndUpcomingBatch
+          .addAll(upcomingDayTiles.map((tileBatch) => Container(
+                decoration: upcomingTileBatchDecoration,
+                child: tileBatch,
+              )));
       Key centerKey = ValueKey(Utility.getUuid.toString());
       retValue = Container(
           decoration: TileStyles.defaultBackground,

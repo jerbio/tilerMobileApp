@@ -111,5 +111,9 @@
       }},
     "@Add": {
       "description": "The conventional newborn programmer greeting"
-    }
+    },
+    "home": "Home",
+    "work": "Work",
+    "googleLogo": "Google Logo",
+    "edit": "Edit"
 }

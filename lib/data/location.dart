@@ -1,6 +1,8 @@
 import 'package:tiler_app/data/tileObject.dart';
 
 class Location extends TilerObj {
+  static const String homeLocationNickName = 'home';
+  static const String workLocationNickName = 'work';
   String? description;
   String? address;
   double? longitude;
@@ -11,7 +13,7 @@ class Location extends TilerObj {
   String? source;
   String? thirdPartyId;
 
-  bool? get isNotNullAndNotDefault {
+  bool get isNotNullAndNotDefault {
     if (isNull != null && isDefault != null) {
       return !isNull! && !isDefault!;
     }

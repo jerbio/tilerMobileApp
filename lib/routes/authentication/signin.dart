@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;

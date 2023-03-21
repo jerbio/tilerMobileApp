@@ -4,6 +4,7 @@ import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
 
 import '../../../styles.dart';
 
@@ -71,6 +72,56 @@ class LocationRouteState extends State<LocationRoute> {
         });
       }
     };
+  }
+
+  Widget renderNickNameDefaultButton(Location location, {Icon? icon}) {
+    String locationText = location.description!.capitalize();
+    Icon defaultLocationIcon = Icon(
+      Icons.location_pin,
+      size: 25,
+    );
+    Widget retValue = GestureDetector(
+      onTap: () {
+        TextEditingController locationNickNameControllerUpdate =
+            TextEditingController(text: location.description ?? '');
+        TextEditingController locationAddressControllerUpdate =
+            TextEditingController(text: location.address ?? '');
+        locationNickNameControllerUpdate.addListener(
+            onNickNameTextChange(locationNickNameControllerUpdate));
+        locationAddressControllerUpdate
+            .addListener(onAddressTextChange(locationAddressControllerUpdate));
+        setState(() {
+          selectedLocation = location;
+          locationAddressController = locationAddressControllerUpdate;
+          locationNickNameController = locationNickNameControllerUpdate;
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(
+              const Radius.circular(5.0),
+            ),
+            border: Border.all(
+                color: TileStyles.primaryColorDarkHSL.toColor(), width: 1)),
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            icon ?? defaultLocationIcon,
+            Container(
+              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: Text(
+                locationText,
+                style: TileStyles.fullScreenTextFieldStyle,
+                overflow: TextOverflow.ellipsis,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+
+    return retValue;
   }
 
   @override
@@ -146,53 +197,109 @@ class LocationRouteState extends State<LocationRoute> {
             },
             textField: addressTextField,
             onLocationSelection: onAutoSuggestedLocationTap));
-    Widget columnOfItems = Stack(
-      children: [
-        Align(
-            alignment: Alignment.center,
-            child: FractionallySizedBox(
-                widthFactor: TileStyles.inputWidthFactor,
-                child: Container(
-                  alignment: Alignment.topCenter,
-                  margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
-                  child: TextField(
-                    controller: locationNickNameController,
-                    style: TileStyles.fullScreenTextFieldStyle,
-                    decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.nickName,
-                      filled: true,
-                      isDense: true,
-                      contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                      fillColor: textBackgroundColor,
-                      border: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(
-                          const Radius.circular(50.0),
-                        ),
+    List<Widget> routeStackWidgets = <Widget>[
+      Align(
+          alignment: Alignment.center,
+          child: FractionallySizedBox(
+              widthFactor: TileStyles.inputWidthFactor,
+              child: Container(
+                alignment: Alignment.topCenter,
+                margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
+                child: TextField(
+                  controller: locationNickNameController,
+                  style: TileStyles.fullScreenTextFieldStyle,
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.nickName,
+                    filled: true,
+                    isDense: true,
+                    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                    fillColor: textBackgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(50.0),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(
-                          const Radius.circular(8.0),
-                        ),
-                        borderSide:
-                            BorderSide(color: textBorderColor, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(8.0),
                       ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: const BorderRadius.all(
-                          const Radius.circular(8.0),
-                        ),
-                        borderSide: BorderSide(
-                          color: textBorderColor,
-                          width: 1.5,
-                        ),
+                      borderSide: BorderSide(color: textBorderColor, width: 2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(8.0),
+                      ),
+                      borderSide: BorderSide(
+                        color: textBorderColor,
+                        width: 1.5,
                       ),
                     ),
                   ),
-                ))),
-        Container(
-          alignment: Alignment.topCenter,
-          child: locationSearchWidget,
-        ),
-      ],
+                ),
+              ))),
+      Container(
+        alignment: Alignment.topCenter,
+        child: locationSearchWidget,
+      ),
+    ];
+
+    Location? homeLocation = Location.fromDefault();
+    homeLocation.description = AppLocalizations.of(context)!.home;
+    homeLocation.address = '';
+    Location? workLocation = Location.fromDefault();
+    workLocation.description = AppLocalizations.of(context)!.work;
+    workLocation.address = '';
+    List<Widget> defaultLocationFields = <Widget>[];
+    if (this.widget._locationParams != null &&
+        this.widget._locationParams!.containsKey('defaults') &&
+        this.widget._locationParams!['defaults'] != null &&
+        this.widget._locationParams!['defaults'].isNotEmpty) {
+      for (Location eachLocation in this.widget._locationParams!['defaults']) {
+        if (eachLocation.description!.toLowerCase() ==
+            Location.homeLocationNickName.toLowerCase()) {
+          homeLocation = eachLocation;
+          continue;
+        }
+        if (eachLocation.description!.toLowerCase() ==
+            Location.workLocationNickName.toLowerCase()) {
+          workLocation = eachLocation;
+          continue;
+        }
+        defaultLocationFields.add(renderNickNameDefaultButton(eachLocation));
+      }
+    }
+    if (workLocation != null) {
+      defaultLocationFields.add(renderNickNameDefaultButton(workLocation,
+          icon: Icon(
+            Icons.work,
+            size: 25,
+            color: TileStyles.primaryColorDarkHSL.toColor(),
+          )));
+    }
+    if (homeLocation != null) {
+      defaultLocationFields.insert(
+          0,
+          renderNickNameDefaultButton(homeLocation,
+              icon: Icon(
+                Icons.home,
+                size: 25,
+                color: TileStyles.primaryColorDarkHSL.toColor(),
+              )));
+    }
+    Widget rowOfDefaults = Container(
+      margin: EdgeInsets.fromLTRB(0, 160, 0, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: defaultLocationFields,
+      ),
+    );
+    // This needs to be inserted before the address field.
+    // This is so the auto complete result from the address search will have
+    // the default  Z-index positioning
+    routeStackWidgets.insert(0, rowOfDefaults);
+
+    Widget columnOfItems = Stack(
+      children: routeStackWidgets,
     );
     return CancelAndProceedTemplateWidget(
       child: Container(

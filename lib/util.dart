@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoData.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/blobEvent.dart';
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tuple/tuple.dart';
@@ -78,6 +79,13 @@ class Utility {
         subCalendarEvent.calendarEventStartTime!
             .toLocal()
             .millisecondsSinceEpoch;
+    return retValue;
+  }
+
+  static bool isEditTileEventEquivalentToCalendarEvent(
+      EditTilerEvent editTilerEvent, CalendarEvent calendarEvent) {
+    bool retValue =
+        isEditTileEventEquivalentToTileEvent(editTilerEvent, calendarEvent);
     return retValue;
   }
 
@@ -518,6 +526,12 @@ extension ListEnhance on List {
     }
 
     return retValue;
+  }
+}
+
+extension StringEnhance on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1).toLowerCase()}";
   }
 }
 
