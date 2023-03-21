@@ -130,7 +130,7 @@ class Utility {
     return currentTime().toUtc().millisecondsSinceEpoch;
   }
 
-  static localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
+  static DateTime localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
     return DateTime.fromMillisecondsSinceEpoch(utcMillisecondsSinceEpoch,
             isUtc: true)
         .toLocal();
@@ -363,6 +363,15 @@ class Utility {
     });
 
     return retValue;
+  }
+
+  static TimeOfDay stringToTimeOfDay(String tod) {
+    final format = DateFormat.jm(); //"6:00 AM"
+    return TimeOfDay.fromDateTime(format.parse(tod));
+  }
+
+  static TimeOfDay timeOfDayFromTime(DateTime dateTime) {
+    return TimeOfDay.fromDateTime(dateTime);
   }
 
   /// Determine the current position of the device.
