@@ -4,6 +4,8 @@ import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../../styles.dart';
 
@@ -29,6 +31,7 @@ class _PreloadedRestrictionsRouteState
   bool _isParamLoaded = false;
   bool _isAnyTime = true;
   RestrictionProfile? _restrictionProfile;
+  List<Tuple2<String, RestrictionProfile>>? _namedRestrictionProfiles;
   Map<String, bool> generate = {};
   final Key weekendCheckBoxKey = Key('weekendCheckBoxKey');
   final Key weekdayCheckBoxKey = Key('weekdayCheckBoxKey');
@@ -57,6 +60,9 @@ class _PreloadedRestrictionsRouteState
       setState(() {
         generate = generatedCopy;
         _isAnyTime = isAnytime;
+        if (isAnytime) {
+          _restrictionProfile = null;
+        }
       });
     };
 
@@ -75,6 +81,7 @@ class _PreloadedRestrictionsRouteState
         ModalRoute.of(context)?.settings.arguments as Map?;
     this.widget.params = restrictionProfileParams ?? {};
     RestrictionProfile? paramRestrictionProfile;
+    List<Tuple2<String, RestrictionProfile>>? namedRestricitonProfile;
     if (this.widget.params!.containsKey('routeRestrictionProfile') &&
         !_isParamLoaded) {
       paramRestrictionProfile =
@@ -84,10 +91,17 @@ class _PreloadedRestrictionsRouteState
         _isAnyTime = !_restrictionProfile!.isAnyDayNotNull;
       }
     }
+    if (this.widget.params!.containsKey('namedRestrictionProfiles') &&
+        !_isParamLoaded) {
+      namedRestricitonProfile = this.widget.params!['namedRestrictionProfiles']
+          as List<Tuple2<String, RestrictionProfile>>?;
+      this._namedRestrictionProfiles = namedRestricitonProfile;
+    }
     if (!_isParamLoaded) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _restrictionProfile = paramRestrictionProfile;
         this.widget._restrictionProfile = paramRestrictionProfile;
+        this._namedRestrictionProfiles = namedRestricitonProfile;
         _isParamLoaded = true;
       });
     }
@@ -103,6 +117,43 @@ class _PreloadedRestrictionsRouteState
   @override
   Widget build(BuildContext context) {
     handleParamLoading();
+    List<Widget> checkListElements = [
+      Container(
+          margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+          child: TilerCheckBox(
+            isChecked: isAnyTime(),
+            text: AppLocalizations.of(context)!.anytime,
+            onChange: generateFunction('anytime'),
+            key: anyTimeCheckBoxKey,
+          ))
+    ];
+    if (_namedRestrictionProfiles != null) {
+      for (var namedRestrictionProfile in _namedRestrictionProfiles!) {
+        checkListElements.add(Container(
+            margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: TilerCheckBox(
+              isChecked: _restrictionProfile != null &&
+                  _restrictionProfile == namedRestrictionProfile.item2,
+              text: namedRestrictionProfile.item1.capitalize(),
+              onChange: (checkBoxState) {
+                generateFunction(namedRestrictionProfile.item1)(checkBoxState);
+                if (_restrictionProfile == null ||
+                    (_restrictionProfile != null &&
+                        _restrictionProfile != namedRestrictionProfile.item2)) {
+                  setRestrictionProfile(namedRestrictionProfile.item2);
+                  generate[namedRestrictionProfile.item1] = true;
+                  setState(() {
+                    _isAnyTime = false;
+                  });
+                } else {
+                  setRestrictionProfile(null);
+                  generate[namedRestrictionProfile.item1] = false;
+                }
+              },
+              key: ValueKey(namedRestrictionProfile.item1),
+            )));
+      }
+    }
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
@@ -114,36 +165,7 @@ class _PreloadedRestrictionsRouteState
                   alignment: Alignment.topCenter,
                   margin: EdgeInsets.fromLTRB(0, 40, 0, 0),
                   child: Column(
-                    children: [
-                      // Container(
-                      //     child: TilerCheckBox(
-                      //   isChecked: generate.containsKey('weekdays')
-                      //       ? generate['weekdays']!
-                      //       : false,
-                      //   text:
-                      //       AppLocalizations.of(context)!.weekdaysAndWorkHours,
-                      //   onChange: generateFunction('weekdays'),
-                      //   key: weekdayCheckBoxKey,
-                      // )),
-                      // Container(
-                      //     margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      //     child: TilerCheckBox(
-                      //       isChecked: generate.containsKey('weekend')
-                      //           ? generate['weekend']!
-                      //           : false,
-                      //       text: AppLocalizations.of(context)!.weekend,
-                      //       onChange: generateFunction('weekend'),
-                      //       key: weekendCheckBoxKey,
-                      //     )),
-                      Container(
-                          margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                          child: TilerCheckBox(
-                            isChecked: isAnyTime(),
-                            text: AppLocalizations.of(context)!.anytime,
-                            onChange: generateFunction('anytime'),
-                            key: anyTimeCheckBoxKey,
-                          ))
-                    ],
+                    children: checkListElements,
                   ))),
           Positioned(
             bottom: 20,
