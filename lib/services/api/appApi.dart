@@ -123,12 +123,24 @@ abstract class AppApi {
         print(e);
       }
     }
-    requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
-    requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
-    requestParams['MobileApp'] = true.toString();
-    requestParams['UserLongitude'] = position.longitude.toString();
-    requestParams['UserLatitude'] = position.latitude.toString();
-    requestParams['UserLocationVerified'] = (isLocationVerified).toString();
+    if (!requestParams.containsKey('TimeZoneOffset')) {
+      requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
+    }
+    if (!requestParams.containsKey('TimeZone')) {
+      requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
+    }
+    if (!requestParams.containsKey('MobileApp')) {
+      requestParams['MobileApp'] = true.toString();
+    }
+    if (!requestParams.containsKey('UserLongitude')) {
+      requestParams['UserLongitude'] = position.longitude.toString();
+    }
+    if (!requestParams.containsKey('UserLatitude')) {
+      requestParams['UserLatitude'] = position.latitude.toString();
+    }
+    if (!requestParams.containsKey('UserLocationVerified')) {
+      requestParams['UserLocationVerified'] = (isLocationVerified).toString();
+    }
     return requestParams;
   }
 

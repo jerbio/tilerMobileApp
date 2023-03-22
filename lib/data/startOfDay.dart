@@ -11,7 +11,10 @@ class StartOfDay {
 
   StartOfDayConfig generateStartOfDayConfig() {
     StartOfDayConfig retValue = StartOfDayConfig();
-    retValue.TimeOfDay = timeOfDay?.toString();
+    int hour = (timeOfDay?.hour ?? Utility.defaultEndOfDay.hour);
+    int minute = (timeOfDay?.minute ?? Utility.defaultEndOfDay.minute);
+    String amOrPm = hour > 11 ? 'pm' : 'am';
+    retValue.TimeOfDay = '${hour % 12}:$minute $amOrPm';
     retValue.TimeZoneOffSet = timeZoneOffSet?.inMinutes.toString();
     retValue.TimeZone = timeZone;
     return retValue;

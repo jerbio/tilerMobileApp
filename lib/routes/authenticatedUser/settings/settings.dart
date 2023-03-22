@@ -5,9 +5,12 @@ import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/services/localAuthentication.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class Setting extends StatefulWidget {
   static final String routeName = '/Setting';
@@ -16,6 +19,7 @@ class Setting extends StatefulWidget {
 }
 
 class _SettingState extends State<Setting> {
+  Authentication authentication = Authentication();
   SettingsApi settingsApi = SettingsApi();
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
@@ -58,6 +62,13 @@ class _SettingState extends State<Setting> {
           settingsApi.updateRestrictionProfile(personalRestrictionProfile!,
               restrictionProfileType: 'personal');
       futureExecutions.add(personalRestrictionProfileUpdateFuture);
+    }
+
+    if (this.endOfDay != null) {
+      Future endOfDayUpdateFuture =
+          settingsApi.updateStartOfDay(this.endOfDay!);
+
+      futureExecutions.add(endOfDayUpdateFuture);
     }
 
     return Future.wait(futureExecutions).onError((error, stackTrace) {
@@ -170,30 +181,78 @@ class _SettingState extends State<Setting> {
     });
   }
 
+  Widget createEndOfDay() {
+    TimeOfDay napTimeOfDay =
+        this.endOfDay?.timeOfDay ?? Utility.defaultEndOfDay;
+    final formattedTimeOfDay =
+        MaterialLocalizations.of(context).formatTimeOfDay(napTimeOfDay);
+    Widget retValue = Row(
+      children: [
+        Text(AppLocalizations.of(context)!.snoozeTime),
+        OutlinedButton(
+            onPressed: () {},
+            child: EditTileTime(
+              time: napTimeOfDay,
+              onInputChange: (updatedTimeOfDay) {
+                if (this.endOfDay != null) {
+                  setState(() {
+                    this.endOfDay!.timeOfDay = updatedTimeOfDay;
+                  });
+                }
+              },
+            ))
+      ],
+    );
+    return retValue;
+  }
+
+  Widget createLogOutButton() {
+    Widget retValue = ElevatedButton(
+        onPressed: () {
+          authentication.deauthenticateCredentials();
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/LoggedOut', (route) => false);
+        },
+        child: Text(AppLocalizations.of(context)!.logout));
+    return retValue;
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget personalConfigButton = renderRestrictionProfile(
-        restrictionProfile: personalRestrictionProfile,
-        configButtonName: AppLocalizations.of(context)!.personalHours,
-        callBack: (updatedRestrictionProfile) {
-          setState(() {
-            this.personalRestrictionProfile = updatedRestrictionProfile;
+    List<Widget> childElements = [];
+    if (this.isAllRestrictionProfileLoaded) {
+      Widget personalConfigButton = renderRestrictionProfile(
+          restrictionProfile: personalRestrictionProfile,
+          configButtonName: AppLocalizations.of(context)!.personalHours,
+          callBack: (updatedRestrictionProfile) {
+            setState(() {
+              this.personalRestrictionProfile = updatedRestrictionProfile;
+            });
           });
-        });
 
-    Widget workConfigButton = renderRestrictionProfile(
-        restrictionProfile: workRestrictionProfile,
-        configButtonName: AppLocalizations.of(context)!.workProfileHours,
-        callBack: (updatedRestrictionProfile) {
-          setState(() {
-            this.workRestrictionProfile = updatedRestrictionProfile;
+      Widget workConfigButton = renderRestrictionProfile(
+          restrictionProfile: workRestrictionProfile,
+          configButtonName: AppLocalizations.of(context)!.workProfileHours,
+          callBack: (updatedRestrictionProfile) {
+            setState(() {
+              this.workRestrictionProfile = updatedRestrictionProfile;
+            });
           });
-        });
+      childElements.add(personalConfigButton);
+      childElements.add(workConfigButton);
+    }
+    Widget logoutButton = createLogOutButton();
+    if (isTimeOfDayLoaded) {
+      Widget endOfDayWidget = createEndOfDay();
+      childElements.add(endOfDayWidget);
+    }
+
+    childElements.add(logoutButton);
     return CancelAndProceedTemplateWidget(
       onProceed: this.isProceedReady() ? proceedUpdate : null,
       child: Container(
           child: Column(
-        children: [personalConfigButton, workConfigButton],
+        children: childElements,
       )),
     );
   }
