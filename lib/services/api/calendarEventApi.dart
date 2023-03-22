@@ -88,8 +88,8 @@ class CalendarEventApi extends AppApi {
     var queryParameters = {
       'EventID': calEvent.id,
       'EventName': calEvent.name,
-      'Start': calEvent.startTime!.toUtc().millisecondsSinceEpoch.toString(),
-      'End': calEvent.endTime!.toUtc().millisecondsSinceEpoch.toString(),
+      'Start': calEvent.startTime!.millisecondsSinceEpoch.toString(),
+      'End': calEvent.endTime!.millisecondsSinceEpoch.toString(),
       'Split': calEvent.splitCount.toString(),
       'ThirdPartyEventID': calEvent.thirdPartyId.toString(),
       'ThirdPartyUserID': calEvent.thirdPartyUserId.toString(),
@@ -151,7 +151,7 @@ class CalendarEventApi extends AppApi {
       final queryParameters = {
         'EventID': id,
       };
-      Map<String, String?> updatedParams = await injectRequestParams(
+      Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
           includeLocationParams: false);
       Uri uri = Uri.https(url, 'api/CalendarEvent', updatedParams);

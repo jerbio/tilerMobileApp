@@ -65,7 +65,7 @@ class LocationApi extends AppApi {
         'IncludeMapSearch': includeMapSearch.toString()
       };
 
-      Map<String, String?> injectedLocationParams = await injectRequestParams(
+      Map<String, dynamic> injectedLocationParams = await injectRequestParams(
           queryParameters,
           includeLocationParams: includeLocationParams);
       Uri uri = Uri.https(url, 'api/Location/Name', injectedLocationParams);

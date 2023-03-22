@@ -23,7 +23,7 @@ class SubCalendarEventApi extends AppApi {
       final queryParameters = {
         'EventID': id,
       };
-      Map<String, String?> updatedParams = await injectRequestParams(
+      Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
           includeLocationParams: false);
       Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
@@ -56,7 +56,7 @@ class SubCalendarEventApi extends AppApi {
         final queryParameters = {
           'EventID': ids.take(batchSize).join(Constants.requestDelimiter),
         };
-        Map<String, String?> updatedParams = await injectRequestParams(
+        Map<String, dynamic> updatedParams = await injectRequestParams(
             queryParameters,
             includeLocationParams: false);
         Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
