@@ -375,6 +375,10 @@ class Utility {
     return TimeOfDay.fromDateTime(dateTime);
   }
 
+  static DateTime dateTimeFromTimeOfDay(TimeOfDay timeOfDay) {
+    return DateTime(2020, 1, 1, timeOfDay.hour, timeOfDay.minute);
+  }
+
   /// Determine the current position of the device.
   ///
   /// When the location services are not enabled or permissions

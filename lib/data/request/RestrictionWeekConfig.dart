@@ -6,6 +6,7 @@ part 'RestrictionWeekConfig.g.dart';
 class RestrictionWeekConfig {
   List<RestrictionWeekDayConfig>? WeekDayOption;
   String isEnabled = 'false';
+  String timeZone = 'utc';
   RestrictionWeekConfig();
 
   factory RestrictionWeekConfig.fromJson(Map<String, dynamic> json) =>
