@@ -117,5 +117,7 @@
     "googleLogo": "Google Logo",
     "edit": "Edit",
     "workProfileHours": "Work Hours",
-    "personalHours": "Personal Hours"
+    "personalHours": "Personal Hours",
+    "logout": "Logout",
+    "snoozeTime": "Snooze Time"
 }

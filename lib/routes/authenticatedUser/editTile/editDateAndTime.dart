@@ -12,7 +12,7 @@ class EditDateAndTime extends StatelessWidget {
   Function? onInputChange;
   EditDateAndTime({required this.time, this.onInputChange}) {
     _tileTime = EditTileTime(
-      time: time.toLocal(),
+      time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
     );
     _tileDate = EditTileDate(
@@ -49,7 +49,7 @@ class EditDateAndTime extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     _tileTime = EditTileTime(
-      time: time.toLocal(),
+      time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
     );
     _tileDate = EditTileDate(

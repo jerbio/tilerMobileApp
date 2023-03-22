@@ -36,6 +36,7 @@ class Utility {
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
+  static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
   static DateTime currentTime() {
     return DateTime.now();
   }
@@ -616,6 +617,13 @@ extension DateTimeHuman on DateTime {
       }
     }
 
+    return dayString;
+  }
+
+  //Returns the date in the format 03/08/2023 22:42:00
+  String get backEndFormat {
+    String dayString =
+        '${this.month}/${this.day}/${this.year} ${this.hour}:${this.minute}';
     return dayString;
   }
 
