@@ -54,36 +54,6 @@ abstract class AppApi {
     return 'Unknown Tiler Error';
   }
 
-  Future<Map<String, String?>> injectRequestParams(Map jsonMap,
-      {bool includeLocationParams = false}) async {
-    Map<String, String?> requestParams = Map.from(jsonMap);
-    Position position = Utility.getDefaultPosition();
-    bool isLocationVerified = false;
-    if (includeLocationParams) {
-      try {
-        Position initialPosition = position;
-        isLocationVerified = true;
-        position =
-            await Utility.determineDevicePosition().catchError((onError) {
-          isLocationVerified = false;
-          print('Tiler app: failed to pull device location.');
-          print(onError);
-          return initialPosition;
-        });
-      } catch (e) {
-        print('Tiler app error in getting location');
-        print(e);
-      }
-    }
-    requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
-    requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
-    requestParams['MobileApp'] = true.toString();
-    requestParams['UserLongitude'] = position.longitude.toString();
-    requestParams['UserLatitude'] = position.latitude.toString();
-    requestParams['UserLocationVerified'] = (isLocationVerified).toString();
-    return requestParams;
-  }
-
   getHeaders() {
     if (authentication.cachedCredentials != null &&
         !authentication.cachedCredentials!.isExpired()) {
@@ -100,9 +70,7 @@ abstract class AppApi {
     return null;
   }
 
-  //injectRequestParamsDynamic
-
-  Future<Map<String, dynamic>> injectRequestParamsDynamic(Map jsonMap,
+  Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
@@ -151,7 +119,7 @@ abstract class AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        Map<String, String?> requestParams = Map.from(queryParameters);
+        Map<String, dynamic> requestParams = Map.from(queryParameters);
         if (!queryParameters.containsKey('UserName')) {
           String? username = this.authentication.cachedCredentials!.username;
           requestParams['UserName'] = username;
@@ -160,7 +128,7 @@ abstract class AppApi {
           requestParams['MobileApp'] = true.toString();
         }
 
-        Map<String, String?> injectedParameters = await injectRequestParams(
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
             requestParams,
             includeLocationParams: injectLocation);
         var header = this.getHeaders();
@@ -174,55 +142,8 @@ abstract class AppApi {
               String tilerDomain = Constants.tilerDomain;
               String analyzeUrl = tilerDomain;
               Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-              Map<String, String?> analyzeParameters =
-                  await injectRequestParams({},
-                      includeLocationParams: injectLocation);
-              http.post(analyzeUri,
-                  headers: header, body: jsonEncode(analyzeParameters));
-            }
-            return value;
-          });
-        }
-        throw TilerError();
-      }
-      throw TilerError();
-    }
-    throw TilerError();
-  }
-
-  Future<Response> sendPostRequestDynamic(
-      String requestPath, Map queryParameters,
-      {bool injectLocation = true, bool analyze = true}) async {
-    if (await this.authentication.isUserAuthenticated()) {
-      await this.authentication.reLoadCredentialsCache();
-      String tilerDomain = Constants.tilerDomain;
-      String url = tilerDomain;
-      if (this.authentication.cachedCredentials != null) {
-        Map<String, dynamic> requestParams = Map.from(queryParameters);
-        if (!queryParameters.containsKey('UserName')) {
-          String? username = this.authentication.cachedCredentials!.username;
-          requestParams['UserName'] = username;
-        }
-        if (!queryParameters.containsKey('MobileApp')) {
-          requestParams['MobileApp'] = true.toString();
-        }
-
-        Map<String, dynamic> injectedParameters =
-            await injectRequestParamsDynamic(requestParams,
-                includeLocationParams: injectLocation);
-        var header = this.getHeaders();
-        if (header != null) {
-          Uri uri = Uri.https(url, requestPath);
-
-          return http
-              .post(uri, headers: header, body: jsonEncode(injectedParameters))
-              .then((value) async {
-            if (analyze) {
-              String tilerDomain = Constants.tilerDomain;
-              String analyzeUrl = tilerDomain;
-              Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
               Map<String, dynamic> analyzeParameters =
-                  await injectRequestParamsDynamic({},
+                  await injectRequestParams({},
                       includeLocationParams: injectLocation);
               http.post(analyzeUri,
                   headers: header, body: jsonEncode(analyzeParameters));
