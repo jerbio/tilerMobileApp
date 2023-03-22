@@ -23,6 +23,7 @@ class TileCarousel extends StatefulWidget {
 
 class _TileCarouselState extends State<TileCarousel> {
   bool isAutoScrolled = false;
+  double renderSummaryContainerWidth = 300;
   final ItemScrollController dayScrollController = ItemScrollController();
   final ItemPositionsListener dayPositionsListener =
       ItemPositionsListener.create();
@@ -66,7 +67,10 @@ class _TileCarouselState extends State<TileCarousel> {
     return Expanded(
         child: Row(
       children: orderedSubEvents
-          .map((e) => Container(height: 200, width: 300, child: TileSummary(e)))
+          .map((e) => Container(
+              height: 200,
+              width: renderSummaryContainerWidth,
+              child: TileSummary(e)))
           .toList(),
     ));
   }
@@ -143,7 +147,8 @@ class _TileCarouselState extends State<TileCarousel> {
                     itemBuilder: (context, index) {
                       return Container(
                         height: 250,
-                        width: 300,
+                        width: renderSummaryContainerWidth *
+                            dayIndexToSubEvents[dayIndexes[index]]!.length,
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,

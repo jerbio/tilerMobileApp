@@ -85,7 +85,7 @@ class ScheduleApi extends AppApi {
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {'UserName': username, 'Name': tileName};
-        Map<String, String?> updatedQueryParameters =
+        Map<String, dynamic> updatedQueryParameters =
             await this.injectRequestParams(queryParameters);
         Uri uri = Uri.https(
             url, 'api/Schedule/NewTilePrediction', updatedQueryParameters);
