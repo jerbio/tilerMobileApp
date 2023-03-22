@@ -59,7 +59,8 @@ class SettingsApi extends AppApi {
           }
         }
       }
-      throw TilerError(message: "Issues with reaching TIler servers");
+      print('restriction profile update issue');
+      throw TilerError(message: "Issues with reaching Tiler servers");
     });
   }
 
@@ -88,5 +89,30 @@ class SettingsApi extends AppApi {
       }
     }
     throw TilerError();
+  }
+
+  Future<StartOfDay> updateStartOfDay(StartOfDay startOfDay) async {
+    Map<String, dynamic> updateStartOfDayParams =
+        startOfDay.generateStartOfDayConfig().toJson();
+    updateStartOfDayParams.remove('TimeZoneOffSet');
+    return sendPostRequestDynamic(
+            'Manage/UpdateStartOfDay', updateStartOfDayParams,
+            analyze: false)
+        .then((response) {
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content'];
+            StartOfDay retValue =
+                StartOfDayConfig.fromJson(jsonMap).toStartOfDay();
+            return retValue;
+          }
+        }
+      }
+      print('Update start of day issue');
+      print(response.body);
+      throw TilerError(message: "Issues with reaching TIler servers");
+    });
   }
 }
