@@ -13,7 +13,7 @@ class SettingsApi extends AppApi {
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
       Map<String, dynamic> restrictedUpdatedParams =
-          await injectRequestParamsDynamic({}, includeLocationParams: false);
+          await injectRequestParams({}, includeLocationParams: false);
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetRestrictionProfile');
       var header = this.getHeaders();
@@ -45,7 +45,7 @@ class SettingsApi extends AppApi {
       'RestrictiveWeek': restrictionProfile.toRestrictionWeekConfig()!.toJson(),
       'RestrictionProfileType': restrictionProfileType
     };
-    return sendPostRequestDynamic(
+    return sendPostRequest(
             'Manage/RestrictionProfile', restrictionProfileParams,
             analyze: false)
         .then((response) {
@@ -70,7 +70,7 @@ class SettingsApi extends AppApi {
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
       Map<String, dynamic> restrictedUpdatedParams =
-          await injectRequestParamsDynamic({}, includeLocationParams: false);
+          await injectRequestParams({}, includeLocationParams: false);
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetStartOfDay');
       var header = this.getHeaders();
@@ -95,8 +95,7 @@ class SettingsApi extends AppApi {
     Map<String, dynamic> updateStartOfDayParams =
         startOfDay.generateStartOfDayConfig().toJson();
     updateStartOfDayParams.remove('TimeZoneOffSet');
-    return sendPostRequestDynamic(
-            'Manage/UpdateStartOfDay', updateStartOfDayParams,
+    return sendPostRequest('Manage/UpdateStartOfDay', updateStartOfDayParams,
             analyze: false)
         .then((response) {
       if (response.statusCode == 200) {
