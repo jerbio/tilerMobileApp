@@ -100,9 +100,36 @@ class TileWidgetState extends State<TileWidget>
     List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-        child: TileName(widget.subEvent),
+        child: Stack(
+          children: [
+            FractionallySizedBox(
+                widthFactor: 0.9, child: TileName(widget.subEvent)),
+            GestureDetector(
+              onTap: () {
+                if (isEditable) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              EditTile(tileId: this.widget.subEvent.id!)));
+                }
+              },
+              child: Container(
+                alignment: Alignment.topRight,
+                margin: EdgeInsets.fromLTRB(0, 5, 20, 0),
+                child: Icon(
+                  Icons.edit_outlined,
+                  color: TileStyles.defaultTextColor,
+                  size: 20.0,
+                ),
+              ),
+            )
+          ],
+        ),
       )
     ];
+
+    // allElements.add(editTileButton);
 
     if (this.widget.subEvent.travelTimeBefore != null &&
         this.widget.subEvent.travelTimeBefore! > 0) {
@@ -192,26 +219,6 @@ class TileWidgetState extends State<TileWidget>
         ));
       }
     }
-
-    Widget editTileButton = GestureDetector(
-      onTap: () {
-        if (isEditable) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      EditTile(tileId: this.widget.subEvent.id!)));
-        }
-      },
-      child: Center(
-        child: Container(
-          child: Text('...',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30)),
-        ),
-      ),
-    );
-
-    allElements.add(editTileButton);
 
     return AnimatedSize(
         duration: Duration(milliseconds: 250),
