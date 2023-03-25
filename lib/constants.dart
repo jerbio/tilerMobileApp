@@ -12,4 +12,5 @@ const int onTextChangeDelayInMs = 500;
 const int autoCompleteTriggerCharacterCount = 3;
 const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
+const int animationDuration = 200;
 const String requestDelimiter = ',';
