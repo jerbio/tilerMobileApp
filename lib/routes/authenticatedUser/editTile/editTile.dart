@@ -335,14 +335,26 @@ class _EditTileState extends State<EditTile> {
               }
               inputChildWidgets.insert(1, splitWidget);
             }
+
+            List<PlaybackOptions> playbackOptions = [
+              PlaybackOptions.Procrastinate,
+              PlaybackOptions.Now,
+              PlaybackOptions.Delete,
+              PlaybackOptions.Complete
+            ];
+            if (((this.subEvent!.isComplete ?? false)) ||
+                (!(this.subEvent!.isEnabled ?? true))) {
+              playbackOptions.remove(PlaybackOptions.Complete);
+              playbackOptions.remove(PlaybackOptions.Delete);
+              playbackOptions.remove(PlaybackOptions.Now);
+              playbackOptions.remove(PlaybackOptions.Procrastinate);
+            }
+            if ((this.subEvent!.isProcrastinate ?? false)) {
+              playbackOptions.remove(PlaybackOptions.Procrastinate);
+            }
             PlayBack playBackButton = PlayBack(
               this.subEvent!,
-              forcedOption: [
-                PlaybackOptions.Procrastinate,
-                PlaybackOptions.Now,
-                PlaybackOptions.Delete,
-                PlaybackOptions.Complete
-              ],
+              forcedOption: playbackOptions,
               callBack: (status, response) {
                 final currentState = this.context.read<ScheduleBloc>().state;
                 if (currentState is ScheduleEvaluationState) {

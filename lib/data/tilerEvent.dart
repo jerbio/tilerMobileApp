@@ -20,6 +20,8 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isReadOnly = false;
   bool _isProcrastinate = false;
   bool _isRigid = false;
+  bool _isComplete = false;
+  bool _isEnabled = false;
 
   DateTime? _startTime;
   DateTime? _endTime;
@@ -74,6 +76,21 @@ class TilerEvent extends TilerObj with TimeRange {
 
   bool? get isRigid {
     return _isRigid;
+  }
+
+  bool? get isComplete {
+    return _isComplete;
+  }
+
+  bool? get isEnabled {
+    return _isEnabled;
+  }
+
+  bool? get isActive {
+    if (_isComplete != null && _isEnabled != null) {
+      return _isEnabled && !_isComplete;
+    }
+    return null;
   }
 
   bool? isRecurring = false;
@@ -151,6 +168,12 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('isRigid')) {
       _isRigid = json['isRigid'];
+    }
+    if (json.containsKey('isEnabled')) {
+      _isEnabled = json['isEnabled'];
+    }
+    if (json.containsKey('isComplete')) {
+      _isComplete = json['isComplete'];
     }
   }
 
