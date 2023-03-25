@@ -9,9 +9,13 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 
+enum PlaybackOptions { PlayPause, Now, Procrastinate, Delete, Complete }
+
 class PlayBack extends StatefulWidget {
   SubCalendarEvent subEvent;
-  PlayBack(this.subEvent);
+  List<PlaybackOptions>? forcedOption;
+  Function? callBack;
+  PlayBack(this.subEvent, {this.forcedOption, this.callBack});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -56,7 +60,13 @@ class PlayBackState extends State<PlayBack> {
           renderedScheduleTimeline: scheduleState.lookupTimeline,
           isAlreadyLoaded: true,
           callBack: _subCalendarEventApi
-              .pauseTile((_subEvent ?? this.widget.subEvent).id!)));
+              .pauseTile((_subEvent ?? this.widget.subEvent).id!)
+              .then((value) {
+            if (this.widget.callBack != null) {
+              this.widget.callBack!(PlaybackOptions.PlayPause, value);
+            }
+            return value;
+          })));
     }
   }
 
@@ -75,7 +85,13 @@ class PlayBackState extends State<PlayBack> {
           renderedScheduleTimeline: scheduleState.lookupTimeline,
           isAlreadyLoaded: true,
           callBack: _subCalendarEventApi
-              .resumeTile((_subEvent ?? this.widget.subEvent))));
+              .resumeTile((_subEvent ?? this.widget.subEvent))
+              .then((value) {
+            if (this.widget.callBack != null) {
+              this.widget.callBack!(PlaybackOptions.PlayPause, value);
+            }
+            return value;
+          })));
     }
   }
 
@@ -93,7 +109,12 @@ class PlayBackState extends State<PlayBack> {
           renderedTimelines: scheduleState.timelines,
           renderedScheduleTimeline: scheduleState.lookupTimeline,
           isAlreadyLoaded: true,
-          callBack: _subCalendarEventApi.setAsNow((subTile))));
+          callBack: _subCalendarEventApi.setAsNow((subTile)).then((value) {
+            if (this.widget.callBack != null) {
+              this.widget.callBack!(PlaybackOptions.Now, value);
+            }
+            return value;
+          })));
     }
   }
 
@@ -111,7 +132,37 @@ class PlayBackState extends State<PlayBack> {
           renderedTimelines: scheduleState.timelines,
           renderedScheduleTimeline: scheduleState.lookupTimeline,
           isAlreadyLoaded: true,
-          callBack: _subCalendarEventApi.complete((subTile))));
+          callBack: _subCalendarEventApi.complete((subTile)).then((value) {
+            if (this.widget.callBack != null) {
+              this.widget.callBack!(PlaybackOptions.Complete, value);
+            }
+            return value;
+          })));
+    }
+  }
+
+  deleteTile() async {
+    showMessage(AppLocalizations.of(context)!.deleting);
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      return;
+    }
+
+    if (scheduleState is ScheduleLoadedState) {
+      context.read<ScheduleBloc>().add(EvaluateSchedule(
+          renderedSubEvents: scheduleState.subEvents,
+          renderedTimelines: scheduleState.timelines,
+          renderedScheduleTimeline: scheduleState.lookupTimeline,
+          isAlreadyLoaded: true,
+          callBack: _subCalendarEventApi
+              .delete(subTile.id!, subTile.thirdpartyType!)
+              .then((value) {
+            if (this.widget.callBack != null) {
+              this.widget.callBack!(PlaybackOptions.Delete, value);
+            }
+            return value;
+          })));
     }
   }
 
@@ -138,8 +189,14 @@ class PlayBackState extends State<PlayBack> {
                 renderedTimelines: scheduleState.timelines,
                 renderedScheduleTimeline: scheduleState.lookupTimeline,
                 isAlreadyLoaded: true,
-                callBack: _subCalendarEventApi.procrastinate(
-                    populatedDuration, subTile.id!)));
+                callBack: _subCalendarEventApi
+                    .procrastinate(populatedDuration, subTile.id!)
+                    .then((value) {
+                  if (this.widget.callBack != null) {
+                    this.widget.callBack!(PlaybackOptions.Procrastinate, value);
+                  }
+                  return value;
+                })));
           }
         }
       }
@@ -148,26 +205,55 @@ class PlayBackState extends State<PlayBack> {
 
   @override
   Widget build(BuildContext context) {
+    Set<PlaybackOptions> alreadyAddedButton = Set<PlaybackOptions>();
+    Widget? playPauseButton;
+    Widget? deleteButton;
+    Widget? setAsNowButton;
+    Widget? procrastinateButton;
+    Widget? completeButton = GestureDetector(
+        onTap: completeTile,
+        child: Column(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Icon(Icons.check),
+              decoration: BoxDecoration(
+                  color: Color.fromRGBO(31, 31, 31, .1),
+                  borderRadius: BorderRadius.circular(25)),
+            ),
+            Text(AppLocalizations.of(context)!.complete,
+                style: TextStyle(fontSize: 12))
+          ],
+        ));
     var playBackElements = <Widget>[
-      GestureDetector(
-          onTap: completeTile,
-          child: Column(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Icon(Icons.check),
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, .1),
-                    borderRadius: BorderRadius.circular(25)),
-              ),
-              Text(AppLocalizations.of(context)!.complete,
-                  style: TextStyle(fontSize: 12))
-            ],
-          )),
+      completeButton,
     ];
-    Widget setAsNowButton = Column(
+    alreadyAddedButton.add(PlaybackOptions.Complete);
+
+    deleteButton = Column(
+      children: [
+        GestureDetector(
+            onTap: deleteTile,
+            child: Container(
+              width: 50,
+              height: 50,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: Icon(
+                Icons.close,
+                size: 35,
+              ),
+              decoration: BoxDecoration(
+                  color: Color.fromRGBO(31, 31, 31, .1),
+                  borderRadius: BorderRadius.circular(25)),
+            )),
+        Text(AppLocalizations.of(context)!.delete,
+            style: TextStyle(fontSize: 12))
+      ],
+    );
+
+    setAsNowButton = Column(
       children: [
         GestureDetector(
             onTap: setAsNowTile,
@@ -189,11 +275,13 @@ class PlayBackState extends State<PlayBack> {
         Text(AppLocalizations.of(context)!.now, style: TextStyle(fontSize: 12))
       ],
     );
+
     if (!(widget.subEvent.isCurrent ||
         (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
       playBackElements.add(setAsNowButton);
+      alreadyAddedButton.add(PlaybackOptions.Now);
     }
-    Widget procrastinateButton = Column(
+    procrastinateButton = Column(
       children: [
         GestureDetector(
             onTap: procrastinate,
@@ -220,11 +308,12 @@ class PlayBackState extends State<PlayBack> {
     if (widget.subEvent.isRigid == null ||
         (widget.subEvent.isRigid != null && !widget.subEvent.isRigid!)) {
       playBackElements.add(procrastinateButton);
+      alreadyAddedButton.add(PlaybackOptions.Procrastinate);
     }
 
     if (widget.subEvent.isCurrent ||
         (widget.subEvent.isPaused != null && widget.subEvent.isPaused!)) {
-      Widget playPauseButton = Column(
+      playPauseButton = Column(
         children: [
           GestureDetector(
             onTap: pauseTile,
@@ -264,6 +353,43 @@ class PlayBackState extends State<PlayBack> {
         );
       }
       playBackElements.insert(1, playPauseButton as Column);
+      alreadyAddedButton.add(PlaybackOptions.PlayPause);
+    }
+
+    if (this.widget.forcedOption != null) {
+      for (PlaybackOptions playbackOptions in this.widget.forcedOption!) {
+        if (!alreadyAddedButton.contains(playbackOptions)) {
+          switch (playbackOptions) {
+            case PlaybackOptions.PlayPause:
+              if (playPauseButton != null) {
+                playBackElements.add(playPauseButton);
+              }
+              break;
+            case PlaybackOptions.Now:
+              if (setAsNowButton != null) {
+                playBackElements.add(setAsNowButton);
+              }
+              break;
+            case PlaybackOptions.Procrastinate:
+              if (procrastinateButton != null) {
+                playBackElements.add(procrastinateButton);
+              }
+              break;
+            case PlaybackOptions.Delete:
+              if (deleteButton != null) {
+                playBackElements.add(deleteButton);
+              }
+              break;
+            case PlaybackOptions.Complete:
+              if (completeButton != null) {
+                playBackElements.add(completeButton);
+              }
+              break;
+
+            default:
+          }
+        }
+      }
     }
 
     return Container(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -14,8 +15,6 @@ import '../../constants.dart' as Constants;
 
 class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> getSubEvent(String id) async {
-    String tilerDomain = Constants.tilerDomain;
-    // String url = tilerDomain + 'api/SubCalendarEvent';
     // return getAdHocSubEventId(id);
     if (await this.authentication.isUserAuthenticated()) {
       await this.authentication.reLoadCredentialsCache();
@@ -24,7 +23,7 @@ class SubCalendarEventApi extends AppApi {
       final queryParameters = {
         'EventID': id,
       };
-      Map<String, String?> updatedParams = await injectRequestParams(
+      Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
           includeLocationParams: false);
       Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
@@ -41,6 +40,64 @@ class SubCalendarEventApi extends AppApi {
       throw TilerError();
     }
     throw TilerError();
+  }
+
+  Future<List<SubCalendarEvent>> getSubEvents(Iterable<String> ids,
+      {int batchSize = AppApi.batchCount}) async {
+    if (batchSize < 1) {
+      batchSize = AppApi.batchCount;
+    }
+    // return getAdHocSubEventId(id);
+    if (ids.length <= batchSize) {
+      if (await this.authentication.isUserAuthenticated()) {
+        await this.authentication.reLoadCredentialsCache();
+        String tilerDomain = Constants.tilerDomain;
+        String url = tilerDomain;
+        final queryParameters = {
+          'EventID': ids.take(batchSize).join(Constants.requestDelimiter),
+        };
+        Map<String, dynamic> updatedParams = await injectRequestParams(
+            queryParameters,
+            includeLocationParams: false);
+        Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
+        var header = this.getHeaders();
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult)) {
+              if (jsonResult['Content'] is List) {
+                return jsonResult['Content']
+                    .map<SubCalendarEvent>((eachSubEventJson) =>
+                        SubCalendarEvent.fromJson(eachSubEventJson))
+                    .toList();
+              }
+              return [SubCalendarEvent.fromJson(jsonResult['Content'])];
+            }
+          }
+        }
+        throw TilerError();
+      }
+      throw TilerError();
+    }
+    List<Future<List<SubCalendarEvent>>> waitingFutures =
+        <Future<List<SubCalendarEvent>>>[];
+    for (int i = 0; i < ids.length;) {
+      int skipCount = i;
+      List<String> fetchIds = ids.skip(skipCount).take(batchSize).toList();
+      Future<List<SubCalendarEvent>> futureSubEvents =
+          getSubEvents(fetchIds, batchSize: batchSize);
+      waitingFutures.add(futureSubEvents);
+      i += batchSize;
+    }
+    var futureResult = await Future.wait(waitingFutures);
+
+    List<SubCalendarEvent> retValue = <SubCalendarEvent>[];
+    for (var listOfSubEventFuture in futureResult) {
+      retValue.addAll(listOfSubEventFuture);
+    }
+
+    return retValue;
   }
 
   Future<SubCalendarEvent> pauseTile(String id) async {
@@ -154,6 +211,52 @@ class SubCalendarEventApi extends AppApi {
       error = getTilerResponseError(jsonResult) ?? error;
       throw error;
     });
+  }
+
+  Future<CalendarEvent> delete(String eventId, String thirdPartyId) async {
+    TilerError error = new TilerError();
+    print('deleting ' + eventId);
+    if (await this.authentication.isUserAuthenticated()) {
+      await this.authentication.reLoadCredentialsCache();
+      error.message = "Did not send request";
+      String url = Constants.tilerDomain;
+
+      Uri uri = Uri.https(url, 'api/Schedule/Event');
+      var header = this.getHeaders();
+
+      if (header != null) {
+        var deleteSubEventParameters = {
+          'ID': eventId,
+          'EventID': eventId,
+          'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+          'ThirdPartyEventID': thirdPartyId,
+          'ThirdPartyType': thirdPartyId,
+          'MobileApp': true.toString()
+        };
+
+        var injectedDeleteSubEventParameters =
+            await injectRequestParams(deleteSubEventParameters);
+        var response = await http.delete(uri,
+            headers: header,
+            body: json.encode(injectedDeleteSubEventParameters));
+        var jsonResult = jsonDecode(response.body);
+        error.message = "Issues with reaching Tiler servers";
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            var deleteCalendarEventJson = jsonResult['Content'];
+            return CalendarEvent.fromJson(deleteCalendarEventJson);
+          } else {
+            if (isTilerRequestError(jsonResult)) {
+              var errorJson = jsonResult['Error'];
+              error = TilerError.fromJson(errorJson);
+            } else {
+              error.message = "Issues with reaching TIler servers";
+            }
+          }
+        }
+      }
+    }
+    throw error;
   }
 
   Future procrastinate(Duration duration, String tileId) async {

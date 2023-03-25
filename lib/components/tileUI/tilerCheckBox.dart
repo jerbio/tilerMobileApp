@@ -111,7 +111,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
               fontSize: 20,
               fontWeight: FontWeight.w600,
               color: checkStatus
-                  ? TileStyles.enabledTextColor
+                  ? TileStyles.activeColor
                   : TileStyles.disabledTextColor)),
     );
     return new GestureDetector(

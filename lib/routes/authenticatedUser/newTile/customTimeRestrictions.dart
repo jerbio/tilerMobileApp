@@ -47,7 +47,7 @@ class CustomTimeRestrictionRouteState
   ];
   final NumberFormat doubleZeroFormatter = new NumberFormat('00');
   Map<String, _DayOfWeekRestriction> mapOfWeekDayToDayRestriction = {};
-  Map paramArgs = {};
+  Map? paramArgs = {};
   RestrictionProfile? restrictionProfileParams;
   bool isMapOfDayRestrictionInitialized = false;
   static String routeName = '/CustomRestrictionsRoute';
@@ -94,9 +94,9 @@ class CustomTimeRestrictionRouteState
     localMapOfWeekDayToDayRestriction['saturday'] = _DayOfWeekRestriction(
         weekDayText: AppLocalizations.of(this.context)!.saturday, dayIndex: 6);
 
-    Map args = ModalRoute.of(context)?.settings.arguments as Map;
+    Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
     this.widget.params = args;
-    if (args.containsKey('restrictionProfile')) {
+    if (args != null && args.containsKey('restrictionProfile')) {
       RestrictionProfile? restrictionProfileParams = args['restrictionProfile'];
       this.restrictionProfileParams = restrictionProfileParams;
     }
@@ -244,21 +244,17 @@ class CustomTimeRestrictionRouteState
                   ? dayRestriction.toRestrictionDay()
                   : null)
               .toList();
-          RestrictionProfile restrictionProfile =
-              RestrictionProfile(daySelection: daySelections);
-          this.paramArgs['restrictionProfile'] = restrictionProfile;
-          List<String> stackRouteHistory = [];
-          if (this.widget.params != null) {
-            this.widget.params!['restrictionProfile'] = restrictionProfile;
-            if (this.widget.params!.containsKey('stackRouteHistory'))
-              stackRouteHistory = this.widget.params!['stackRouteHistory'];
+          List<RestrictionDay?> nonNullRestrictionDays = daySelections
+              .where((restrictionDay) => restrictionDay != null)
+              .toList();
+          if (this.paramArgs != null) {
+            this.paramArgs!.remove('restrictionProfile');
+            if (nonNullRestrictionDays.isNotEmpty) {
+              RestrictionProfile restrictionProfile =
+                  RestrictionProfile(daySelection: daySelections);
+              this.paramArgs!['restrictionProfile'] = restrictionProfile;
+            }
           }
-
-          if (stackRouteHistory.length > 0) {
-            Navigator.popUntil(
-                context, (ModalRoute.withName(stackRouteHistory.first)));
-          }
-          ;
         },
         child: Scaffold(
           body: Stack(
