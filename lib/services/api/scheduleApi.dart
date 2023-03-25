@@ -138,90 +138,11 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
-    if (!this.preserveSubEventList) {
-      adhocGeneratedSubEvents = <SubCalendarEvent>[];
-    }
-    int subEventCount = Random().nextInt(20);
-    while (subEventCount < 1) {
-      subEventCount = Random().nextInt(20);
-    }
-
-    List<Timeline> sleepTimeLines = [];
-    List<SubCalendarEvent> refreshedSubEvents = [];
-    if (forceInterFerringWithNowTile) {
-      SubCalendarEvent adHocInterferringWithNowTile = new SubCalendarEvent(
-          name: Utility.randomName,
-          start: Utility.msCurrentTime.toInt() -
-              Utility.oneMin.inMilliseconds.toInt(),
-          end: Utility.msCurrentTime.toInt() +
-              Utility.oneMin.inMilliseconds.toInt(),
-          address: Utility.randomName,
-          addressDescription: Utility.randomName);
-      adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorGreen = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorRed = Random().nextInt(255);
-      adHocInterferringWithNowTile.id = Utility.getUuid;
-      refreshedSubEvents.add(adHocInterferringWithNowTile);
-    }
-
-    int maxDuration = Duration.millisecondsPerHour * 3;
-    for (int i = 0; i < subEventCount; i++) {
-      int durationMs = Random().nextInt(maxDuration);
-      while (durationMs < 1) {
-        durationMs = Random().nextInt(maxDuration);
-      }
-      int startLimit =
-          timeLine.start!.toInt() - durationMs - Utility.oneMin.inMilliseconds;
-      int endLimit =
-          timeLine.end!.toInt() + durationMs - Utility.oneMin.inMilliseconds;
-      int durationLimit = endLimit - startLimit;
-      int durationInSec = durationLimit ~/
-          1000; // we need to use seconds because of the random.nextInt of requiring an integer
-      int start = startLimit + ((Random().nextInt(durationInSec)) * 1000);
-      int end = start + durationMs;
-      int dayCount =
-          (durationLimit / Utility.oneDay.inMilliseconds).toDouble().ceil();
-
-      DateTime? startDayTime = timeLine.startTime;
-      DateTime? endDayTime = timeLine.endTime;
-      if (startDayTime != null && endDayTime != null) {
-        startDayTime = new DateTime(
-            startDayTime.year, startDayTime.month, startDayTime.day, 0, 0, 0);
-        endDayTime = new DateTime(
-            endDayTime.year, endDayTime.month, endDayTime.day, 0, 0, 0);
-
-        Timeline timeLine = new Timeline(
-            startDayTime.millisecondsSinceEpoch.toInt(),
-            startDayTime
-                .add(Duration(hours: 6))
-                .millisecondsSinceEpoch
-                .toInt());
-        sleepTimeLines.add(timeLine);
-
-        while (startDayTime!.millisecondsSinceEpoch <
-            endDayTime.millisecondsSinceEpoch) {
-          startDayTime = startDayTime.add(Utility.oneDay);
-          timeLine = new Timeline(
-              startDayTime.millisecondsSinceEpoch.toInt(),
-              startDayTime
-                  .add(Duration(hours: 6))
-                  .millisecondsSinceEpoch
-                  .toInt());
-          sleepTimeLines.add(timeLine);
-        }
-      }
-      SubCalendarEvent subEvent = new SubCalendarEvent(
-          name: Utility.randomName,
-          start: start.toInt(),
-          end: end.toInt(),
-          address: Utility.randomName,
-          addressDescription: Utility.randomName);
-      subEvent.colorBlue = Random().nextInt(255);
-      subEvent.colorGreen = Random().nextInt(255);
-      subEvent.colorRed = Random().nextInt(255);
-      subEvent.id = Utility.getUuid;
-      refreshedSubEvents.add(subEvent);
-    }
+    Tuple2<List<Timeline>, List<SubCalendarEvent>> refreshedResults =
+        Utility.generateAdhocSubEvents(timeLine,
+            forceInterFerringWithNowTile: forceInterFerringWithNowTile);
+    List<Timeline> sleepTimeLines = refreshedResults.item1;
+    List<SubCalendarEvent> refreshedSubEvents = refreshedResults.item2;
     this.adhocGeneratedSubEvents.addAll(refreshedSubEvents);
     List<SubCalendarEvent> subEvents = this.adhocGeneratedSubEvents.toList();
     Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> retFuture =
