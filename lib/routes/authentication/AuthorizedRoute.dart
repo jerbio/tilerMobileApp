@@ -56,7 +56,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
         break;
       case 2:
         {
-          selectedPage = ActivePage.review;
+          Navigator.pushNamed(context, '/Setting');
         }
         break;
     }
@@ -142,9 +142,6 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     .withLightness(TileStyles.primaryColorHSL.lightness + .2)
                     .toColor()
                     .withOpacity(0.75),
-                // toColor().withOpacity(0.75),
-                // Color.fromRGBO(0, 119, 170, 0.75),
-                // Color.fromRGBO(0, 194, 237, 0.75)
               ],
             ),
           ),
@@ -408,8 +405,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     color: Color.fromRGBO(0, 0, 0, 0),
                   ),
                   label: ''),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_today_outlined), label: ''),
+              BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
             ],
             unselectedItemColor: Colors.white,
             selectedItemColor: Colors.black,

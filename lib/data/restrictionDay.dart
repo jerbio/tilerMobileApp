@@ -2,8 +2,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 
 import 'package:tiler_app/data/tileObject.dart';
+import 'package:tiler_app/util.dart';
 
 class RestrictionTimeLine extends TilerObj {
   TimeOfDay? _start;
@@ -62,7 +64,7 @@ class RestrictionTimeLine extends TilerObj {
               DateTime.fromMillisecondsSinceEpoch(map['start'] as int))
           : null,
       duration: map['duration'] != null
-          ? Duration(milliseconds: map['duration'] as int)
+          ? Duration(milliseconds: map['duration'].toInt() as int)
           : null,
       weekDay: map['weekDay'] != null ? map['weekDay'] as int : null,
     );
@@ -119,11 +121,28 @@ class RestrictionDay extends TilerObj {
   RestrictionDay.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('restrictionTimeLine')) {
       _restrictionTimeLine =
-          RestrictionTimeLine.fromJson(json['restrictionTimeLine']);
+          RestrictionTimeLine.fromMap(json['restrictionTimeLine']);
     }
 
     if (json.containsKey('weekday')) {
       weekday = cast<int>(json['weekday'])!;
     }
+  }
+
+  RestrictionWeekDayConfig toRestrictionWeekDayConfig() {
+    RestrictionWeekDayConfig retValue = RestrictionWeekDayConfig();
+    retValue.Start = _restrictionTimeLine!.start!.formatTimeOfDay;
+
+    DateTime endTime = DateTime(
+            Utility.currentTime().year,
+            1,
+            1,
+            _restrictionTimeLine!.start!.hour,
+            _restrictionTimeLine!.start!.minute)
+        .add(_restrictionTimeLine!.duration!);
+    retValue.End = TimeOfDay.now().toString();
+    retValue.End = TimeOfDay.fromDateTime(endTime).formatTimeOfDay;
+    retValue.Index = this._weekday.toString();
+    return retValue;
   }
 }

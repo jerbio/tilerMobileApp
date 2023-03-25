@@ -4,7 +4,7 @@ import 'package:tiler_app/styles.dart';
 class PendingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-        return Container(
+    return Container(
       decoration: TileStyles.defaultBackground,
       child: Center(
           child: Stack(children: [
