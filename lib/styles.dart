@@ -14,6 +14,8 @@ class TileStyles {
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static Color enabledTextColor = Colors.white;
+  static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
+  static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
   static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
