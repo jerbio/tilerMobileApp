@@ -11,6 +11,7 @@ import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -214,6 +215,10 @@ class TileBatchState extends State<TileBatch> {
     }
     childrenColumnWidgets = [];
     if (_dayData != null) {
+      this._dayData!.nonViableTiles = tiles.values
+          .where(
+              (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
+          .toList();
       childrenColumnWidgets.add(DaySummary(dayData: this._dayData!));
     }
 
@@ -227,9 +232,11 @@ class TileBatchState extends State<TileBatch> {
     List<Tuple3<bool, TimeRange, Widget>> allWidgets = [];
     if (tiles.length > 0) {
       tiles.values.forEach((eachTile) {
-        Widget eachTileWidget = TileWidget(eachTile);
-        var tuple = new Tuple3(true, eachTile, eachTileWidget);
-        allWidgets.add(tuple);
+        if ((eachTile as SubCalendarEvent).isViable ?? true) {
+          Widget eachTileWidget = TileWidget(eachTile);
+          var tuple = new Tuple3(true, eachTile, eachTileWidget);
+          allWidgets.add(tuple);
+        }
       });
 
       allWidgets.sort(
