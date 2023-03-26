@@ -342,8 +342,8 @@ class _EditTileState extends State<EditTile> {
               PlaybackOptions.Delete,
               PlaybackOptions.Complete
             ];
-            if (((this.subEvent!.isComplete ?? false)) ||
-                (!(this.subEvent!.isEnabled ?? true))) {
+            if (((this.subEvent!.isComplete)) ||
+                (!(this.subEvent!.isEnabled))) {
               playbackOptions.remove(PlaybackOptions.Complete);
               playbackOptions.remove(PlaybackOptions.Delete);
               playbackOptions.remove(PlaybackOptions.Now);
