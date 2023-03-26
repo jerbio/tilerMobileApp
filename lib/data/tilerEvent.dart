@@ -21,7 +21,7 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isProcrastinate = false;
   bool _isRigid = false;
   bool _isComplete = false;
-  bool _isEnabled = false;
+  bool _isEnabled = true;
 
   DateTime? _startTime;
   DateTime? _endTime;
@@ -78,19 +78,16 @@ class TilerEvent extends TilerObj with TimeRange {
     return _isRigid;
   }
 
-  bool? get isComplete {
+  bool get isComplete {
     return _isComplete;
   }
 
-  bool? get isEnabled {
+  bool get isEnabled {
     return _isEnabled;
   }
 
-  bool? get isActive {
-    if (_isComplete != null && _isEnabled != null) {
-      return _isEnabled && !_isComplete;
-    }
-    return null;
+  bool get isActive {
+    return _isEnabled && !_isComplete;
   }
 
   bool? isRecurring = false;
