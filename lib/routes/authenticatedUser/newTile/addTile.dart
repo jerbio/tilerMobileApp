@@ -485,6 +485,7 @@ class AddTileState extends State<AddTile> {
     }
 
     if (_restrictionProfile != null &&
+        _restrictionProfile!.isEnabled &&
         _restrictionProfile!.daySelection
                 .where((eachRestrictionDay) => eachRestrictionDay != null)
                 .length >
@@ -852,7 +853,8 @@ class AddTileState extends State<AddTile> {
     }
 
     if (this._restrictionProfile != null &&
-        this._restrictionProfile!.isAnyDayNotNull) {
+        this._restrictionProfile!.isAnyDayNotNull &&
+        this._restrictionProfile!.isEnabled) {
       tile.RestrictiveWeek =
           this._restrictionProfile!.toRestrictionWeekConfig();
       tile.isRestricted = true.toString();

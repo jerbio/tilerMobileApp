@@ -1,12 +1,12 @@
 import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/tileObject.dart';
-import 'package:tiler_app/util.dart';
 
 class RestrictionProfile extends TilerObj {
   List<RestrictionDay?> daySelection = [];
   String timeZone = 'utc';
-  RestrictionProfile({required List daySelection}) {
+  bool isEnabled = true;
+  RestrictionProfile({required List daySelection, this.isEnabled = true}) {
     assert(daySelection.length == 7);
     this.daySelection = daySelection as List<RestrictionDay?>;
   }
@@ -50,7 +50,11 @@ class RestrictionProfile extends TilerObj {
     if (json.containsKey('timeZone') &&
         json['timeZone'] != null &&
         json['timeZone'].isNotEmpty) {
-      timeZone = json['timzeZone'];
+      timeZone = json['timeZone'];
+    }
+
+    if (json.containsKey('isEnabled') && json['isEnabled'] != null) {
+      isEnabled = TilerObj.cast<bool>(json['isEnabled']) ?? true;
     }
   }
 
@@ -88,13 +92,11 @@ class RestrictionProfile extends TilerObj {
         retValue.WeekDayOption = weekDayOptions;
       }
     }
+    isRestrictionEnabled = this.isEnabled;
     if (this.timeZone.isNotEmpty) {
       retValue.timeZone = this.timeZone;
     }
-    if (isRestrictionEnabled) {
-      retValue.isEnabled = isRestrictionEnabled.toString();
-      return retValue;
-    }
-    return null;
+    retValue.isEnabled = isRestrictionEnabled.toString();
+    return retValue;
   }
 }

@@ -89,7 +89,8 @@ class _SettingState extends State<Setting> {
       {String? configButtonName,
       RestrictionProfile? restrictionProfile,
       Function? callBack}) {
-    bool isTimeRestrictionConfigSet = restrictionProfile != null;
+    bool isTimeRestrictionConfigSet =
+        restrictionProfile != null && restrictionProfile.isEnabled;
     final Color populatedTextColor = Colors.white;
     final Color iconColor = TileStyles.iconColor;
     final BoxDecoration boxDecoration = BoxDecoration(
@@ -138,6 +139,10 @@ class _SettingState extends State<Setting> {
             populatedRestrictionProfile =
                 restrictionParams['routeRestrictionProfile']
                     as RestrictionProfile?;
+            if (populatedRestrictionProfile != null &&
+                restrictionProfile != null) {
+              populatedRestrictionProfile.id = restrictionProfile.id;
+            }
             if (callBack != null) {
               callBack(populatedRestrictionProfile);
             }
