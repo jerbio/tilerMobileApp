@@ -42,7 +42,7 @@ class SettingsApi extends AppApi {
       {String? restrictionProfileType}) async {
     Map restrictionProfileParams = {
       'Id': restrictionProfile.id,
-      'RestrictiveWeek': restrictionProfile.toRestrictionWeekConfig()!.toJson(),
+      'RestrictiveWeek': restrictionProfile.toRestrictionWeekConfig()?.toJson(),
       'RestrictionProfileType': restrictionProfileType
     };
     return sendPostRequest(
