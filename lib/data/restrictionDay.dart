@@ -3,9 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
-
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/util.dart';
+import 'package:timezone/timezone.dart';
 
 class RestrictionTimeLine extends TilerObj {
   TimeOfDay? _start;
@@ -58,10 +59,22 @@ class RestrictionTimeLine extends TilerObj {
   }
 
   factory RestrictionTimeLine.fromMap(Map<String, dynamic> map) {
+    String timzeZone = 'utc';
+    if (map.containsKey('timeZone') &&
+        map['timeZone'] != null &&
+        map['timeZone'].isNotEmpty) {
+      timzeZone = map['timeZone'];
+    }
+    TZDateTime? start;
+    if (map['start'] != null) {
+      final tzLocation = getLocation(timzeZone);
+      DateTime startTime =
+          DateTime.fromMillisecondsSinceEpoch(map['start'] as int).toUtc();
+      start = TZDateTime.from(startTime, tzLocation);
+    }
     return RestrictionTimeLine(
-      start: map['start'] != null
-          ? TimeOfDay.fromDateTime(
-              DateTime.fromMillisecondsSinceEpoch(map['start'] as int))
+      start: start != null
+          ? TimeOfDay(hour: start.hour, minute: start.minute)
           : null,
       duration: map['duration'] != null
           ? Duration(milliseconds: map['duration'].toInt() as int)
