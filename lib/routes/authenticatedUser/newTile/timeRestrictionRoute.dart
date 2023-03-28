@@ -108,7 +108,9 @@ class _PreloadedRestrictionsRouteState
   }
 
   bool isAnyTime() {
-    this.widget._isAnyTime = (_restrictionProfile == null || _isAnyTime)
+    this.widget._isAnyTime = (_restrictionProfile == null ||
+            _isAnyTime ||
+            !_restrictionProfile!.isEnabled)
         ? true
         : (generate.containsKey('anytime') ? generate['anytime']! : false);
     return this.widget._isAnyTime;
@@ -258,7 +260,12 @@ class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
             ModalRoute.of(context)?.settings.arguments as Map?;
         if (stateWidget.isAnyTime) {
           if (restrictionProfileParams != null) {
-            restrictionProfileParams['routeRestrictionProfile'] = null;
+            if (stateWidget.restrictionProfile != null) {
+              stateWidget.restrictionProfile!.isEnabled = false;
+            }
+            restrictionProfileParams['routeRestrictionProfile'] =
+                stateWidget.restrictionProfile;
+            restrictionProfileParams['isAnytTime'] = true;
           }
           return;
         }
