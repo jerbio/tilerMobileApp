@@ -85,6 +85,7 @@ class TileNameState extends State<TileName> {
                   padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                   child: Text(
                     name,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: this.textStyle,
                   )))

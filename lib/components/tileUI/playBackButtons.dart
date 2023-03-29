@@ -210,26 +210,28 @@ class PlayBackState extends State<PlayBack> {
     Widget? deleteButton;
     Widget? setAsNowButton;
     Widget? procrastinateButton;
-    Widget? completeButton = GestureDetector(
-        onTap: completeTile,
-        child: Column(
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Icon(Icons.check),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, .1),
-                  borderRadius: BorderRadius.circular(25)),
-            ),
-            Text(AppLocalizations.of(context)!.complete,
-                style: TextStyle(fontSize: 12))
-          ],
-        ));
-    var playBackElements = <Widget>[
-      completeButton,
-    ];
+    Widget? completeButton;
+    var playBackElements = <Widget>[];
+    if ((widget.subEvent.isFromTiler)) {
+      completeButton = GestureDetector(
+          onTap: completeTile,
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                child: Icon(Icons.check),
+                decoration: BoxDecoration(
+                    color: Color.fromRGBO(31, 31, 31, .1),
+                    borderRadius: BorderRadius.circular(25)),
+              ),
+              Text(AppLocalizations.of(context)!.complete,
+                  style: TextStyle(fontSize: 12))
+            ],
+          ));
+      playBackElements.add(completeButton);
+    }
     alreadyAddedButton.add(PlaybackOptions.Complete);
 
     deleteButton = Column(
@@ -276,8 +278,10 @@ class PlayBackState extends State<PlayBack> {
       ],
     );
 
-    if (!(widget.subEvent.isCurrent ||
-        (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
+    if (((widget.subEvent.isFromTiler)) &&
+        (!(widget.subEvent.isProcrastinate ?? false)) &&
+        (!(widget.subEvent.isCurrent ||
+            (widget.subEvent.isPaused != null && widget.subEvent.isPaused!)))) {
       playBackElements.add(setAsNowButton);
       alreadyAddedButton.add(PlaybackOptions.Now);
     }

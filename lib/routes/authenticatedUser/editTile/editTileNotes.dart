@@ -3,24 +3,24 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class EditTileName extends StatefulWidget {
-  String tileName;
+class EditTileNnote extends StatefulWidget {
+  String tileNote;
   Function? onInputChange;
   bool isProcrastinate;
-  EditTileName(
-      {required this.tileName,
+  EditTileNnote(
+      {required this.tileNote,
       this.onInputChange,
       this.isProcrastinate = false});
 
-  String get name {
-    return tileName;
+  String get note {
+    return tileNote;
   }
 
   @override
-  _EditTileNameState createState() => _EditTileNameState();
+  _EditTileNoteState createState() => _EditTileNoteState();
 }
 
-class _EditTileNameState extends State<EditTileName> {
+class _EditTileNoteState extends State<EditTileNnote> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = Colors.white;
   late TextEditingController _controller = TextEditingController();
@@ -28,9 +28,9 @@ class _EditTileNameState extends State<EditTileName> {
   void initState() {
     super.initState();
     if (this.widget.onInputChange != null) {
-      _controller.text = this.widget.tileName;
+      _controller.text = this.widget.tileNote;
       _controller.addListener(() {
-        this.widget.tileName = _controller.text;
+        this.widget.tileNote = _controller.text;
         this.widget.onInputChange!();
       });
     }
@@ -46,8 +46,8 @@ class _EditTileNameState extends State<EditTileName> {
           width: 380,
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           child: TextFormField(
-            minLines: 1,
-            maxLines: 5,
+            minLines: 5,
+            maxLines: 10,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
             enabled: !(this.widget.isProcrastinate),
@@ -58,7 +58,7 @@ class _EditTileNameState extends State<EditTileName> {
                 fontWeight: FontWeight.w500,
                 color: Color.fromRGBO(31, 31, 31, 1)),
             decoration: InputDecoration(
-              hintText: AppLocalizations.of(context)!.tileName,
+              hintText: AppLocalizations.of(context)!.noteEllipsis,
               filled: true,
               isDense: true,
               contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
