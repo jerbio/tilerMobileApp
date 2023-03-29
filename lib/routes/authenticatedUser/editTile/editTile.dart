@@ -7,10 +7,12 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -31,6 +33,7 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
+  EditTileNote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
@@ -84,6 +87,9 @@ class _EditTileState extends State<EditTile> {
       EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
+      }
+      if (_editTileNote != null) {
+        revisedEditTilerEvent.note = _editTileNote!.tileNote;
       }
       if (_editStartDateAndTime != null &&
           _editStartDateAndTime!.dateAndTime != null) {
@@ -167,7 +173,7 @@ class _EditTileState extends State<EditTile> {
     return CancelAndProceedTemplateWidget(
       child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
         listener: (context, state) {
-          if (state is SubCalendarTileLoadedState)
+          if (state is SubCalendarTileLoadedState) {
             setState(() {
               if (subEvent == null) {
                 subEvent = state.subEvent;
@@ -192,6 +198,7 @@ class _EditTileState extends State<EditTile> {
                 }
               }
             });
+          }
         },
         child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
           builder: (context, state) {
@@ -207,7 +214,13 @@ class _EditTileState extends State<EditTile> {
               isProcrastinate: isProcrastinateTile,
               onInputChange: dataChange,
             );
-
+            String tileNote = this.editTilerEvent?.note ??
+                this.subEvent!.noteData?.note ??
+                '';
+            _editTileNote = EditTileNote(
+              tileNote: tileNote,
+              onInputChange: dataChange,
+            );
             DateTime startTime =
                 this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
             _editStartDateAndTime = EditDateAndTime(
@@ -220,19 +233,23 @@ class _EditTileState extends State<EditTile> {
               time: endTime,
               onInputChange: dataChange,
             );
-            DateTime calStartTime = this.editTilerEvent?.calStartTime ??
-                this.subEvent!.calendarEventStartTime!;
-            _editCalStartDateAndTime = EditDateAndTime(
-              time: calStartTime,
-              onInputChange: dataChange,
-            );
+            if (this.subEvent!.calendarEventStartTime != null) {
+              DateTime calStartTime = this.editTilerEvent?.calStartTime ??
+                  this.subEvent!.calendarEventStartTime!;
+              _editCalStartDateAndTime = EditDateAndTime(
+                time: calStartTime,
+                onInputChange: dataChange,
+              );
+            }
 
-            DateTime calEndTime = this.editTilerEvent?.calEndTime ??
-                this.subEvent!.calendarEventEndTime!;
-            _editCalEndDateAndTime = EditDateAndTime(
-              time: calEndTime,
-              onInputChange: dataChange,
-            );
+            if (this.subEvent!.calendarEventEndTime != null) {
+              DateTime calEndTime = this.editTilerEvent?.calEndTime ??
+                  this.subEvent!.calendarEventEndTime!;
+              _editCalEndDateAndTime = EditDateAndTime(
+                time: calEndTime,
+                onInputChange: dataChange,
+              );
+            }
 
             var inputChildWidgets = <Widget>[
               _editTileName!,
@@ -305,33 +322,86 @@ class _EditTileState extends State<EditTile> {
                     ),
                   ));
 
-              Widget deadlineWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.deadline,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editCalEndDateAndTime!
-                      ],
-                    ),
-                  ));
+              if (_editCalEndDateAndTime != null) {
+                Widget deadlineWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.deadline,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          _editCalEndDateAndTime!
+                        ],
+                      ),
+                    ));
+                inputChildWidgets.add(deadlineWidget);
+              }
               inputChildWidgets.insert(1, splitWidget);
-              inputChildWidgets.add(deadlineWidget);
             }
+
+            if (_editTileNote != null) {
+              inputChildWidgets.add(Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: _editTileNote!));
+            }
+
+            List<PlaybackOptions> playbackOptions = [
+              PlaybackOptions.Procrastinate,
+              PlaybackOptions.Now,
+              PlaybackOptions.Delete,
+              PlaybackOptions.Complete
+            ];
+            if (((this.subEvent!.isComplete)) ||
+                (!(this.subEvent!.isEnabled))) {
+              playbackOptions.remove(PlaybackOptions.Complete);
+              playbackOptions.remove(PlaybackOptions.Delete);
+              playbackOptions.remove(PlaybackOptions.Now);
+              playbackOptions.remove(PlaybackOptions.Procrastinate);
+            }
+            if ((this.subEvent!.isProcrastinate ?? false)) {
+              playbackOptions.remove(PlaybackOptions.Procrastinate);
+              playbackOptions.remove(PlaybackOptions.PlayPause);
+              playbackOptions.remove(PlaybackOptions.Now);
+            }
+            PlayBack playBackButton = PlayBack(
+              this.subEvent!,
+              forcedOption: playbackOptions,
+              callBack: (status, response) {
+                final currentState = this.context.read<ScheduleBloc>().state;
+                if (currentState is ScheduleEvaluationState) {
+                  this.context.read<ScheduleBloc>().add(GetSchedule(
+                        isAlreadyLoaded: true,
+                        previousSubEvents: currentState.subEvents,
+                        scheduleTimeline: currentState.lookupTimeline,
+                        previousTimeline: currentState.lookupTimeline,
+                      ));
+                }
+                if (currentState is ScheduleLoadedState) {
+                  this.context.read<ScheduleBloc>().add(GetSchedule(
+                        isAlreadyLoaded: true,
+                        previousSubEvents: currentState.subEvents,
+                        scheduleTimeline: currentState.lookupTimeline,
+                        previousTimeline: currentState.lookupTimeline,
+                      ));
+                }
+                Navigator.pop(context);
+              },
+            );
+
+            inputChildWidgets.add(playBackButton);
 
             return Container(
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
-              child: Column(
+              child: ListView(
                 children: inputChildWidgets,
               ),
             );

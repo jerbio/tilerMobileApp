@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoData.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/blobEvent.dart';
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tuple/tuple.dart';
@@ -35,6 +36,7 @@ class Utility {
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
+  static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
   static DateTime currentTime() {
     return DateTime.now();
   }
@@ -81,6 +83,13 @@ class Utility {
     return retValue;
   }
 
+  static bool isEditTileEventEquivalentToCalendarEvent(
+      EditTilerEvent editTilerEvent, CalendarEvent calendarEvent) {
+    bool retValue =
+        isEditTileEventEquivalentToTileEvent(editTilerEvent, calendarEvent);
+    return retValue;
+  }
+
   static int getDayIndex(DateTime time) {
     var spanInMicroSecond = time.microsecondsSinceEpoch -
         Utility._beginningOfTime.microsecondsSinceEpoch;
@@ -122,7 +131,7 @@ class Utility {
     return currentTime().toUtc().millisecondsSinceEpoch;
   }
 
-  static localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
+  static DateTime localDateTimeFromMs(int utcMillisecondsSinceEpoch) {
     return DateTime.fromMillisecondsSinceEpoch(utcMillisecondsSinceEpoch,
             isUtc: true)
         .toLocal();
@@ -357,6 +366,19 @@ class Utility {
     return retValue;
   }
 
+  static TimeOfDay stringToTimeOfDay(String tod) {
+    final format = DateFormat.jm(); //"6:00 AM"
+    return TimeOfDay.fromDateTime(format.parse(tod));
+  }
+
+  static TimeOfDay timeOfDayFromTime(DateTime dateTime) {
+    return TimeOfDay.fromDateTime(dateTime);
+  }
+
+  static DateTime dateTimeFromTimeOfDay(TimeOfDay timeOfDay) {
+    return DateTime(2020, 1, 1, timeOfDay.hour, timeOfDay.minute);
+  }
+
   /// Determine the current position of the device.
   ///
   /// When the location services are not enabled or permissions
@@ -539,6 +561,13 @@ extension DurationInMS on TimeOfDay {
         this.minute * Utility.oneMin.inMilliseconds;
     return retValue;
   }
+
+  String get formatTimeOfDay {
+    final now = Utility.currentTime();
+    final dt = DateTime(now.year, now.month, now.day, this.hour, this.minute);
+    final format = DateFormat.jm(); //"6:00 AM"
+    return format.format(dt);
+  }
 }
 
 extension DateTimeHuman on DateTime {
@@ -592,6 +621,13 @@ extension DateTimeHuman on DateTime {
       }
     }
 
+    return dayString;
+  }
+
+  //Returns the date in the format 03/08/2023 22:42:00
+  String get backEndFormat {
+    String dayString =
+        '${this.month}/${this.day}/${this.year} ${this.hour}:${this.minute}';
     return dayString;
   }
 

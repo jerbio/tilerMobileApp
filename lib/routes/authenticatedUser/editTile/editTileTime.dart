@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
 
 class EditTileTime extends StatefulWidget {
-  DateTime time;
+  TimeOfDay time;
   _EditTileTimeState? _state;
   Function? onInputChange;
   EditTileTime({required this.time, this.onInputChange});
@@ -15,12 +15,12 @@ class EditTileTime extends StatefulWidget {
   }
 
   TimeOfDay? get timeOfDay {
-    return TimeOfDay.fromDateTime(time);
+    return time;
   }
 }
 
 class _EditTileTimeState extends State<EditTileTime> {
-  late DateTime time;
+  late TimeOfDay time;
   @override
   void initState() {
     super.initState();
@@ -30,24 +30,21 @@ class _EditTileTimeState extends State<EditTileTime> {
   @override
   Widget build(BuildContext context) {
     final localizations = MaterialLocalizations.of(context);
-    final formattedTimeOfDay =
-        localizations.formatTimeOfDay(TimeOfDay.fromDateTime(time));
+    final formattedTimeOfDay = localizations.formatTimeOfDay(time);
     return GestureDetector(
       onTap: () {
         Future<TimeOfDay?> selectedTime = showTimePicker(
-          initialTime: TimeOfDay.fromDateTime(time),
+          initialTime: time,
           context: context,
         );
         selectedTime.then((timeOfDayUpdate) {
           if (timeOfDayUpdate != null) {
-            DateTime updatedTime = DateTime(time.year, time.month, time.day,
-                timeOfDayUpdate.hour, timeOfDayUpdate.minute);
-            this.widget.time = updatedTime;
+            this.widget.time = timeOfDayUpdate;
             setState(() {
-              time = updatedTime;
+              time = timeOfDayUpdate;
             });
             if (this.widget.onInputChange != null) {
-              this.widget.onInputChange!(TimeOfDay.fromDateTime(updatedTime));
+              this.widget.onInputChange!(timeOfDayUpdate);
             }
           }
         });

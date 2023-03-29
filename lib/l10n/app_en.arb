@@ -29,6 +29,7 @@
     "once":"Once",
     "weekdaysAndWorkHours":"Weekdays and work hours",
     "weekend":"Weekend",
+    "anytime":"Anytime",
     "repetition": "Repetition",
     "reminder": "Reminder",
     "restriction": "Restriction",
@@ -63,6 +64,7 @@
     "successfullyPaused":"Successfully Paused",
     "successfullyResumed":"Successfully Resumed",
     "successfullyCompleted":"Successfully Completed",
+    "completed":"Completed",
     "movedUpToNow":"Moving up to now",
     "pausing":"Pausing",
     "resuming":"Resuming",
@@ -113,5 +115,56 @@
     },
     "home": "Home",
     "work": "Work",
-    "googleLogo": "Google Logo"
+    "googleLogo": "Google Logo",
+    "edit": "Edit",
+    "workProfileHours": "Work Hours",
+    "personalHours": "Personal Hours",
+    "logout": "Logout",
+    "snoozeTime": "Snooze Time",
+    "noteEllipsis": "Note...",
+    "youNeedToLeaveInDuration": "You need to leave in {duration}",
+    "@youNeedToLeaveInDuration": {
+      "description": "Description of time to depart",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+      "durationLate": "{duration} Late",
+      "@durationLate": {
+        "description": "Description of departure tardiness",
+        "placeholders": {
+          "duration": {
+            "type": "String",
+            "example": "5 Hours"
+          }
+        }},
+        "elapsedDurationAgo": "Elapsed {duration} ago",
+        "@elapsedDurationAgo": {
+          "description": "Description of duration ago",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "5 Hours"
+            }
+          }},
+          "completedDurationAgo": "Completed {duration} ago",
+          "@completedDurationAgo": {
+            "description": "Description of duration ago",
+            "placeholders": {
+              "duration": {
+                "type": "String",
+                "example": "5 Hours"
+              }
+            }},
+          "durationLeft": "{duration} left",
+          "@durationLeft": {
+            "description": "Description of duration remaining",
+            "placeholders": {
+              "duration": {
+                "type": "String",
+                "example": "5 Hours"
+              }
+            }}
 }

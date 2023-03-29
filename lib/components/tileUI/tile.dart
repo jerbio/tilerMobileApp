@@ -14,6 +14,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
@@ -94,21 +95,58 @@ class TileWidgetState extends State<TileWidget>
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
-    bool isEditable = !(this.widget.subEvent.isReadOnly ?? true);
+    bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
+        this.widget.subEvent.isFromTiler;
 
     List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-        child: TileName(widget.subEvent),
+        child: Stack(
+          children: [
+            FractionallySizedBox(
+                widthFactor: 0.9, child: TileName(widget.subEvent)),
+            GestureDetector(
+              onTap: () {
+                if (isEditable) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              EditTile(tileId: this.widget.subEvent.id!)));
+                }
+              },
+              child: Container(
+                alignment: Alignment.topRight,
+                margin: EdgeInsets.fromLTRB(0, 5, 20, 0),
+                child: isEditable
+                    ? Icon(
+                        Icons.edit_outlined,
+                        color: TileStyles.defaultTextColor,
+                        size: 20.0,
+                      )
+                    : null,
+              ),
+            )
+          ],
+        ),
       )
     ];
 
     if (this.widget.subEvent.travelTimeBefore != null &&
-        this.widget.subEvent.travelTimeBefore! > 0) {
-      allElements.add(Container(
-          margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-          child: TravelTimeBefore(
-              this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)));
+        this.widget.subEvent.travelTimeBefore! > 0 &&
+        this.widget.subEvent.isToday) {
+      Duration duration = Duration();
+      if (this.widget.subEvent.isCurrent) {
+        int durationTillTravel = (this.widget.subEvent.end! -
+                this.widget.subEvent.travelTimeBefore!.toInt()) -
+            Utility.msCurrentTime;
+        duration = Duration(milliseconds: durationTillTravel);
+      }
+      if (duration.inMilliseconds > 0) {
+        allElements.add(Container(
+            margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: TravelTimeBefore(duration, subEvent)));
+      }
     }
 
     if (widget.subEvent.address != null &&
@@ -192,70 +230,56 @@ class TileWidgetState extends State<TileWidget>
       }
     }
 
-    return FadeTransition(
-      opacity: fadeAnimation,
-      child: GestureDetector(
-          onTap: () {
-            this.fade();
-            // if (isEditable) {
-            //   Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //           builder: (context) =>
-            //               EditTile(tileId: this.widget.subEvent.id!)));
-            // }
-          },
-          child: AnimatedSize(
-              duration: Duration(milliseconds: Constants.animationDuration),
-              curve: Curves.fastOutSlowIn,
-              child: Container(
-                margin: this.widget.subEvent.isCurrentTimeWithin
-                    ? EdgeInsets.fromLTRB(0, 100, 0, 100)
-                    : EdgeInsets.fromLTRB(0, 20, 0, 20),
-                child: Material(
-                    type: MaterialType.transparency,
-                    child: FractionallySizedBox(
-                        widthFactor: TileStyles.tileWidthRatio,
-                        child: Container(
-                          decoration: BoxDecoration(
+    return AnimatedSize(
+        duration: Duration(milliseconds: 250),
+        curve: Curves.fastOutSlowIn,
+        child: Container(
+          margin: this.widget.subEvent.isCurrentTimeWithin
+              ? EdgeInsets.fromLTRB(0, 100, 0, 100)
+              : EdgeInsets.fromLTRB(0, 20, 0, 20),
+          child: Material(
+              type: MaterialType.transparency,
+              child: FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(
+                        color: this.widget.subEvent.isViable!
+                            ? Colors.white
+                            : Colors.black,
+                        width: 5,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(TileStyles.borderRadius),
+                      boxShadow: [
+                        BoxShadow(
+                          color: tileBackGroundColor.withOpacity(0.1),
+                          spreadRadius: 5,
+                          blurRadius: 15,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Container(
+                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                        decoration: BoxDecoration(
+                          color: tileBackGroundColor,
+                          border: Border.all(
                             color: Colors.white,
-                            border: Border.all(
-                              color: this.widget.subEvent.isViable!
-                                  ? Colors.white
-                                  : Colors.black,
-                              width: 5,
-                            ),
-                            borderRadius:
-                                BorderRadius.circular(TileStyles.borderRadius),
-                            boxShadow: [
-                              BoxShadow(
-                                color: tileBackGroundColor.withOpacity(0.1),
-                                spreadRadius: 5,
-                                blurRadius: 15,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
+                            width: 0.5,
                           ),
-                          child: Container(
-                              padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                              decoration: BoxDecoration(
-                                color: tileBackGroundColor,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 0.5,
-                                ),
-                                borderRadius: BorderRadius.circular(
-                                    TileStyles.borderRadius),
-                              ),
-                              child: Column(
-                                mainAxisAlignment: allElements.length < 4
-                                    ? MainAxisAlignment.spaceBetween
-                                    : MainAxisAlignment.center,
-                                children: allElements,
-                              )),
-                        ))),
-              ))),
-    );
+                          borderRadius:
+                              BorderRadius.circular(TileStyles.borderRadius),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: allElements.length < 4
+                              ? MainAxisAlignment.spaceBetween
+                              : MainAxisAlignment.center,
+                          children: allElements,
+                        )),
+                  ))),
+        ));
   }
 
   @override

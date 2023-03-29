@@ -12,6 +12,7 @@ import '../../constants.dart' as Constants;
 
 abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';
+  static const int batchCount = 10;
   Authentication authentication = new Authentication();
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
@@ -53,9 +54,25 @@ abstract class AppApi {
     return 'Unknown Tiler Error';
   }
 
-  Future<Map<String, String?>> injectRequestParams(Map jsonMap,
+  getHeaders() {
+    if (authentication.cachedCredentials != null &&
+        !authentication.cachedCredentials!.isExpired()) {
+      var cachedCredentials = authentication.cachedCredentials!;
+      String token = cachedCredentials.accessToken;
+      var header = {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        HttpHeaders.authorizationHeader: 'Bearer ' + token,
+      };
+
+      return header;
+    }
+
+    return null;
+  }
+
+  Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
-    Map<String, String?> requestParams = Map.from(jsonMap);
+    Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
     if (includeLocationParams) {
@@ -74,29 +91,25 @@ abstract class AppApi {
         print(e);
       }
     }
-    requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
-    requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
-    requestParams['MobileApp'] = true.toString();
-    requestParams['UserLongitude'] = position.longitude.toString();
-    requestParams['UserLatitude'] = position.latitude.toString();
-    requestParams['UserLocationVerified'] = (isLocationVerified).toString();
-    return requestParams;
-  }
-
-  getHeaders() {
-    if (authentication.cachedCredentials != null &&
-        !authentication.cachedCredentials!.isExpired()) {
-      var cachedCredentials = authentication.cachedCredentials!;
-      String token = cachedCredentials.accessToken;
-      var header = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        HttpHeaders.authorizationHeader: 'Bearer ' + token,
-      };
-
-      return header;
+    if (!requestParams.containsKey('TimeZoneOffset')) {
+      requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
     }
-
-    return null;
+    if (!requestParams.containsKey('TimeZone')) {
+      requestParams['TimeZone'] = await FlutterTimezone.getLocalTimezone();
+    }
+    if (!requestParams.containsKey('MobileApp')) {
+      requestParams['MobileApp'] = true.toString();
+    }
+    if (!requestParams.containsKey('UserLongitude')) {
+      requestParams['UserLongitude'] = position.longitude.toString();
+    }
+    if (!requestParams.containsKey('UserLatitude')) {
+      requestParams['UserLatitude'] = position.latitude.toString();
+    }
+    if (!requestParams.containsKey('UserLocationVerified')) {
+      requestParams['UserLocationVerified'] = (isLocationVerified).toString();
+    }
+    return requestParams;
   }
 
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
@@ -106,7 +119,7 @@ abstract class AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        Map<String, String?> requestParams = Map.from(queryParameters);
+        Map<String, dynamic> requestParams = Map.from(queryParameters);
         if (!queryParameters.containsKey('UserName')) {
           String? username = this.authentication.cachedCredentials!.username;
           requestParams['UserName'] = username;
@@ -115,7 +128,7 @@ abstract class AppApi {
           requestParams['MobileApp'] = true.toString();
         }
 
-        Map<String, String?> injectedParameters = await injectRequestParams(
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
             requestParams,
             includeLocationParams: injectLocation);
         var header = this.getHeaders();
@@ -129,7 +142,7 @@ abstract class AppApi {
               String tilerDomain = Constants.tilerDomain;
               String analyzeUrl = tilerDomain;
               Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-              Map<String, String?> analyzeParameters =
+              Map<String, dynamic> analyzeParameters =
                   await injectRequestParams({},
                       includeLocationParams: injectLocation);
               http.post(analyzeUri,

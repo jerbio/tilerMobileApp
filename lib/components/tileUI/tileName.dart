@@ -7,7 +7,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
-  TileName(this.subEvent) {
+  TextStyle? textStyle;
+  TileName(this.subEvent, {this.textStyle}) {
     assert(this.subEvent != null);
   }
   @override
@@ -15,8 +16,16 @@ class TileName extends StatefulWidget {
 }
 
 class TileNameState extends State<TileName> {
+  TextStyle textStyle = TextStyle(
+      fontSize: 20,
+      fontFamily: TileStyles.rubikFontName,
+      fontWeight: FontWeight.w500,
+      color: Color.fromRGBO(31, 31, 31, 1));
   @override
   Widget build(BuildContext context) {
+    if (this.widget.textStyle != null) {
+      textStyle = this.widget.textStyle!;
+    }
     SubCalendarEvent subEvent = widget.subEvent;
     int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
     int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
@@ -76,12 +85,9 @@ class TileNameState extends State<TileName> {
                   padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                   child: Text(
                     name,
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.w500,
-                        color: Color.fromRGBO(31, 31, 31, 1)),
+                    style: this.textStyle,
                   )))
         ],
       ),

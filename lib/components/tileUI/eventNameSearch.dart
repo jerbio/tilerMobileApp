@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/util.dart';
@@ -348,29 +349,55 @@ class EventNameSearchState extends SearchWidgetState {
       childWidgets.add(detailContainer);
     }
 
-    Key dismissibleKey = Key(tile.id!);
-    Widget retValue = Container(
-      height: 125,
-      padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10),
-            bottomLeft: Radius.circular(10),
-            bottomRight: Radius.circular(10)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 5,
-            blurRadius: 5,
-            offset: Offset(0, 1),
+    Widget editTileButton = GestureDetector(
+      onTap: () {
+        if (tile.id != null) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TileDetail(tileId: tile.id!)));
+        }
+      },
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+          child: Icon(
+            Icons.edit_outlined,
+            color: TileStyles.defaultTextColor,
+            size: 20.0,
           ),
-        ],
+        ),
       ),
-      child: Stack(
-        children: childWidgets,
+    );
+    childWidgets.add(editTileButton);
+
+    Key dismissibleKey = Key(tile.id!);
+    Widget retValue = GestureDetector(
+      onTap: () {},
+      child: Container(
+        height: 125,
+        padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 5,
+              blurRadius: 5,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: childWidgets,
+        ),
       ),
     );
 

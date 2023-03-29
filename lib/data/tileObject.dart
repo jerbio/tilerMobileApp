@@ -8,6 +8,7 @@ class TilerObj {
   TilerObj({this.id, this.userId});
 
   TilerObj.fromJson(Map<String, dynamic> json) {
+    id = '';
     if (json.containsKey('id')) {
       id = json['id'];
     }
