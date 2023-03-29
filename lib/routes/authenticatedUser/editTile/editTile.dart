@@ -12,6 +12,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -32,6 +33,7 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
+  EditTileNnote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
@@ -85,6 +87,9 @@ class _EditTileState extends State<EditTile> {
       EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
+      }
+      if (_editTileNote != null) {
+        revisedEditTilerEvent.note = _editTileNote!.tileNote;
       }
       if (_editStartDateAndTime != null &&
           _editStartDateAndTime!.dateAndTime != null) {
@@ -209,7 +214,13 @@ class _EditTileState extends State<EditTile> {
               isProcrastinate: isProcrastinateTile,
               onInputChange: dataChange,
             );
-
+            String tileNote = this.editTilerEvent?.note ??
+                this.subEvent!.noteData?.note ??
+                '';
+            _editTileNote = EditTileNnote(
+              tileNote: tileNote,
+              onInputChange: dataChange,
+            );
             DateTime startTime =
                 this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
             _editStartDateAndTime = EditDateAndTime(
@@ -336,6 +347,12 @@ class _EditTileState extends State<EditTile> {
               inputChildWidgets.insert(1, splitWidget);
             }
 
+            if (_editTileNote != null) {
+              inputChildWidgets.add(Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: _editTileNote!));
+            }
+
             List<PlaybackOptions> playbackOptions = [
               PlaybackOptions.Procrastinate,
               PlaybackOptions.Now,
@@ -351,6 +368,8 @@ class _EditTileState extends State<EditTile> {
             }
             if ((this.subEvent!.isProcrastinate ?? false)) {
               playbackOptions.remove(PlaybackOptions.Procrastinate);
+              playbackOptions.remove(PlaybackOptions.PlayPause);
+              playbackOptions.remove(PlaybackOptions.Now);
             }
             PlayBack playBackButton = PlayBack(
               this.subEvent!,
@@ -382,7 +401,7 @@ class _EditTileState extends State<EditTile> {
             return Container(
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
-              child: Column(
+              child: ListView(
                 children: inputChildWidgets,
               ),
             );

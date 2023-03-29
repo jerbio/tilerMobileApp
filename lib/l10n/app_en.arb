@@ -119,5 +119,24 @@
     "workProfileHours": "Work Hours",
     "personalHours": "Personal Hours",
     "logout": "Logout",
-    "snoozeTime": "Snooze Time"
+    "snoozeTime": "Snooze Time",
+    "noteEllipsis": "Note...",
+    "youNeedToLeaveInDuration": "You need to leave in {duration}",
+    "@youNeedToLeaveInDuration": {
+      "description": "Description of time to depart",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+      "durationLate": "{duration} Late",
+      "@durationLate": {
+        "description": "Description of departure tardiness",
+        "placeholders": {
+          "duration": {
+            "type": "String",
+            "example": "5 Hours"
+          }
+        }}
 }

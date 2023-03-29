@@ -190,6 +190,10 @@ class TilerEvent extends TilerObj with TimeRange {
     return retValue;
   }
 
+  bool get isFromTiler {
+    return this.thirdpartyType == 'tiler';
+  }
+
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
 //     {
 //     "Error": {
