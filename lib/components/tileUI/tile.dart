@@ -95,8 +95,8 @@ class TileWidgetState extends State<TileWidget>
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
-    bool isEditable = !(this.widget.subEvent.isReadOnly ??
-        true && !this.widget.subEvent.isFromTiler);
+    bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
+        this.widget.subEvent.isFromTiler;
 
     List<Widget> allElements = [
       Container(

@@ -64,6 +64,7 @@
     "successfullyPaused":"Successfully Paused",
     "successfullyResumed":"Successfully Resumed",
     "successfullyCompleted":"Successfully Completed",
+    "completed":"Completed",
     "movedUpToNow":"Moving up to now",
     "pausing":"Pausing",
     "resuming":"Resuming",
@@ -138,5 +139,32 @@
             "type": "String",
             "example": "5 Hours"
           }
-        }}
+        }},
+        "elapsedDurationAgo": "Elapsed {duration} ago",
+        "@elapsedDurationAgo": {
+          "description": "Description of duration ago",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "5 Hours"
+            }
+          }},
+          "completedDurationAgo": "Completed {duration} ago",
+          "@completedDurationAgo": {
+            "description": "Description of duration ago",
+            "placeholders": {
+              "duration": {
+                "type": "String",
+                "example": "5 Hours"
+              }
+            }},
+          "durationLeft": "{duration} left",
+          "@durationLeft": {
+            "description": "Description of duration remaining",
+            "placeholders": {
+              "duration": {
+                "type": "String",
+                "example": "5 Hours"
+              }
+            }}
 }

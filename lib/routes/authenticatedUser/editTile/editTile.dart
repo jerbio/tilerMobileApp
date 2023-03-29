@@ -33,7 +33,7 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
-  EditTileNnote? _editTileNote;
+  EditTileNote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
@@ -217,7 +217,7 @@ class _EditTileState extends State<EditTile> {
             String tileNote = this.editTilerEvent?.note ??
                 this.subEvent!.noteData?.note ??
                 '';
-            _editTileNote = EditTileNnote(
+            _editTileNote = EditTileNote(
               tileNote: tileNote,
               onInputChange: dataChange,
             );
