@@ -10,6 +10,7 @@ import 'package:tiler_app/components/tileUI/loadingTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -17,7 +18,7 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../constants.dart';
+import '../../constants.dart' as Constants;
 
 class TileBatch extends StatefulWidget {
   static final TextStyle dayHeaderTextStyle = TextStyle(
@@ -234,10 +235,11 @@ class TileBatchState extends State<TileBatch> {
           eachTileIndex++) {
         TilerEvent eachTile = tileList[eachTileIndex];
         Widget eachTileWidget = AnimatedSwitcher(
-            duration: const Duration(milliseconds: 500),
-            transitionBuilder: (Widget child, Animation<double> animation) {
-              return ScaleTransition(scale: animation, child: child);
-            },
+            key: ValueKey(eachTile.id),
+            duration: const Duration(milliseconds: Constants.animationDuration),
+            // transitionBuilder: (Widget child, Animation<double> animation) {
+            //   return ScaleTransition(scale: animation, child: child);
+            // },
             child: TileWidget(eachTile));
         if ((isTransitionToNewTile ||
                 (this.widget.previousRenderedTiles != null &&
@@ -246,13 +248,16 @@ class TileBatchState extends State<TileBatch> {
           TilerEvent previousTile =
               this.widget.previousRenderedTiles![eachTileIndex];
           if (!previousTile.isEquivalent(eachTile)) {
-            Widget previousTileWidget =
-                TileWidget(this.widget.previousRenderedTiles![eachTileIndex]);
+            SubCalendarEvent previousTile = this
+                .widget
+                .previousRenderedTiles![eachTileIndex] as SubCalendarEvent;
+            Widget previousTileWidget = TileWidget(previousTile);
             eachTileWidget = AnimatedSwitcher(
+                key: ValueKey(eachTile.id! + previousTile.id!),
                 duration: const Duration(milliseconds: 500),
-                transitionBuilder: (Widget child, Animation<double> animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
+                // transitionBuilder: (Widget child, Animation<double> animation) {
+                //   return ScaleTransition(scale: animation, child: child);
+                // },
                 child: isTransitionToNewTile
                     ? TileWidget(eachTile)
                     : previousTileWidget);

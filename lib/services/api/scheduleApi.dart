@@ -144,7 +144,7 @@ class ScheduleApi extends AppApi {
     if (!this.preserveSubEventList) {
       adhocGeneratedSubEvents = <SubCalendarEvent>[];
     }
-    int randomCountLimit = 2;
+    int randomCountLimit = 3;
     int subEventCount = Random().nextInt(randomCountLimit);
     while (subEventCount < 1) {
       subEventCount = Random().nextInt(randomCountLimit);

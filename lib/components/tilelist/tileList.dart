@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -18,6 +19,7 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../constants.dart' as Constants;
 
 /// This renders the list of tiles on a given day
 class TileList extends StatefulWidget {
@@ -253,9 +255,13 @@ class _TileListState extends State<TileList> {
       bool isSame =
           isNewRenderedResponseSame(dayToTiles, previousRenderedResults);
 
+      if (isSame) {
+        previousRenderedResults = null;
+      }
       if (!isSame) {
-        // previousRenderedResults = null;
-        renderedTiles = dayToTiles;
+        Timer(Duration(milliseconds: Constants.animationDuration * 3), () {
+          renderedTiles = dayToTiles;
+        });
       }
 
       List<TilerEvent> todayTiles = dayToTiles.item2.item2;
@@ -362,9 +368,12 @@ class _TileListState extends State<TileList> {
       List<TileBatch> childTileBatchs = <TileBatch>[];
       childTileBatchs.addAll(preceedingDayTiles);
       List<Widget> beforeNowBatch = preceedingDayTiles
-          .map((tileBatch) => Container(
-                decoration: previousTileBatchDecoration,
-                child: tileBatch,
+          .map((tileBatch) => GestureDetector(
+                onTap: adHocmanualRefresh,
+                child: Container(
+                  decoration: previousTileBatchDecoration,
+                  child: tileBatch,
+                ),
               ))
           .toList();
       List<Widget> todayAndUpcomingBatch = [];
@@ -385,41 +394,44 @@ class _TileListState extends State<TileList> {
         }
       }
 
-      if (todayTiles.length > 0) {
-        List<TilerEvent> elapsedTiles = [];
-        List<TilerEvent> notElapsedTiles = [];
-        for (TilerEvent eachSubEvent in todayTiles) {
-          if (eachSubEvent.endTime!.millisecondsSinceEpoch >
-              currentTime.millisecondsSinceEpoch) {
-            notElapsedTiles.add(eachSubEvent);
-          } else {
-            elapsedTiles.add(eachSubEvent);
-          }
-        }
+      // if (todayTiles.length > 0) {
+      //   List<TilerEvent> elapsedTiles = [];
+      //   List<TilerEvent> notElapsedTiles = [];
+      //   for (TilerEvent eachSubEvent in todayTiles) {
+      //     if (eachSubEvent.endTime!.millisecondsSinceEpoch >
+      //         currentTime.millisecondsSinceEpoch) {
+      //       notElapsedTiles.add(eachSubEvent);
+      //     } else {
+      //       elapsedTiles.add(eachSubEvent);
+      //     }
+      //   }
 
-        if (elapsedTiles.isNotEmpty) {
-          elapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(Utility.getUuid.toString()),
-            tiles: elapsedTiles,
-            previousRenderedTiles: oldElapsedTiles,
-          );
-          beforeNowBatch.add(Container(child: elapsedTodayBatch));
-        }
+      //   if (elapsedTiles.isNotEmpty) {
+      //     elapsedTodayBatch = WithinNowBatch(
+      //       key: ValueKey(Utility.getUuid.toString()),
+      //       tiles: elapsedTiles,
+      //       previousRenderedTiles: oldElapsedTiles,
+      //     );
+      //     beforeNowBatch.add(Container(child: elapsedTodayBatch));
+      //   }
 
-        if (notElapsedTiles.isNotEmpty) {
-          Widget notElapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(Utility.getUuid.toString()),
-            tiles: notElapsedTiles,
-            previousRenderedTiles: oldNotElapsedTiles,
-          );
-          todayAndUpcomingBatch.add(notElapsedTodayBatch);
-        }
-      }
+      //   if (notElapsedTiles.isNotEmpty) {
+      //     Widget notElapsedTodayBatch = WithinNowBatch(
+      //       key: ValueKey(Utility.getUuid.toString()),
+      //       tiles: notElapsedTiles,
+      //       previousRenderedTiles: oldNotElapsedTiles,
+      //     );
+      //     todayAndUpcomingBatch.add(notElapsedTodayBatch);
+      //   }
+      // }
       childTileBatchs.addAll(upcomingDayTiles);
       todayAndUpcomingBatch
-          .addAll(upcomingDayTiles.map((tileBatch) => Container(
-                decoration: upcomingTileBatchDecoration,
-                child: tileBatch,
+          .addAll(upcomingDayTiles.map((tileBatch) => GestureDetector(
+                onTap: adHocmanualRefresh,
+                child: Container(
+                  decoration: upcomingTileBatchDecoration,
+                  child: tileBatch,
+                ),
               )));
       Key centerKey = ValueKey(Utility.getUuid.toString());
       retValue = Container(
@@ -453,6 +465,24 @@ class _TileListState extends State<TileList> {
     }
 
     return retValue;
+  }
+
+  adHocmanualRefresh() {
+    final currentState = this.context.read<ScheduleBloc>().state;
+    if (currentState is ScheduleLoadedState) {
+      final currentTimeline = this.timeLine;
+      final updatedTimeline = new Timeline(timeLine.startInMs!,
+          (timeLine.endInMs! + Utility.sevenDays.inMilliseconds));
+      setState(() {
+        oldTimeline = timeLine;
+        timeLine = updatedTimeline;
+      });
+      this.context.read<ScheduleBloc>().add(GetSchedule(
+          previousSubEvents: currentState.subEvents,
+          isAlreadyLoaded: true,
+          previousTimeline: currentTimeline,
+          scheduleTimeline: updatedTimeline));
+    }
   }
 
   void createNextTileNotification(SubCalendarEvent nextTile) {
