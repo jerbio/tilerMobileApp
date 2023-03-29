@@ -7,6 +7,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TimeScrubWidget extends StatefulWidget {
   late TimeRange timeline;
@@ -177,7 +178,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
               children: [
                 Icon(Icons.check_circle_outline_outlined),
                 Text(
-                  'Elpased $elapsedTime ago',
+                  AppLocalizations.of(context)!.elapsedDurationAgo(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
                 )
