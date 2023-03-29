@@ -9,6 +9,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileCarousel.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
@@ -30,6 +31,7 @@ class _TileDetailState extends State<TileDetail> {
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
+  EditTileNote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
@@ -112,6 +114,9 @@ class _TileDetailState extends State<TileDetail> {
       EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
+      }
+      if (_editTileNote != null) {
+        revisedEditTilerEvent.note = _editTileNote!.tileNote;
       }
       if (_editStartDateAndTime != null &&
           _editStartDateAndTime!.dateAndTime != null) {
@@ -216,6 +221,14 @@ class _TileDetailState extends State<TileDetail> {
               _editTileName!,
             ];
 
+            String tileNote = this.editTilerEvent?.note ??
+                this.calEvent!.noteData?.note ??
+                '';
+
+            _editTileNote = EditTileNote(
+              tileNote: tileNote,
+              onInputChange: dataChange,
+            );
             if (!isRigidTile &&
                 !isProcrastinateTile &&
                 !this.calEvent!.isRecurring!) {
@@ -287,6 +300,12 @@ class _TileDetailState extends State<TileDetail> {
                   ));
             }
 
+            if (_editTileNote != null) {
+              inputChildWidgets.add(Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: _editTileNote!));
+            }
+
             if (splitWidget != null) {
               inputChildWidgets.add(splitWidget);
             }
@@ -307,7 +326,7 @@ class _TileDetailState extends State<TileDetail> {
             return Container(
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
-              child: Column(
+              child: ListView(
                 children: inputChildWidgets,
               ),
             );

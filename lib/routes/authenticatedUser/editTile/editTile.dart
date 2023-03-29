@@ -14,6 +14,7 @@ import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -34,6 +35,10 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
+
+  EditTileNote? _editTileNote;
+  EditDateAndTime? _editStartDateAndTime;
+  EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
   EditDateAndTime? _editCalEndDateAndTime;
   StartEndDurationTimeline? _startEndDurationTimeline;
@@ -86,6 +91,15 @@ class _EditTileState extends State<EditTile> {
       EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
+      }
+
+      if (_editTileNote != null) {
+        revisedEditTilerEvent.note = _editTileNote!.tileNote;
+      }
+      if (_editStartDateAndTime != null &&
+          _editStartDateAndTime!.dateAndTime != null) {
+        revisedEditTilerEvent.startTime =
+            _editStartDateAndTime!.dateAndTime!.toUtc();
       }
 
       if (_startEndDurationTimeline != null) {
@@ -206,10 +220,23 @@ class _EditTileState extends State<EditTile> {
               onInputChange: dataChange,
             );
 
-            DateTime calStartTime = this.editTilerEvent?.calStartTime ??
-                this.subEvent!.calendarEventStartTime!;
-            _editCalStartDateAndTime = EditDateAndTime(
-              time: calStartTime,
+            String tileNote = this.editTilerEvent?.note ??
+                this.subEvent!.noteData?.note ??
+                '';
+            _editTileNote = EditTileNote(
+              tileNote: tileNote,
+              onInputChange: dataChange,
+            );
+            DateTime startTime =
+                this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
+            _editStartDateAndTime = EditDateAndTime(
+              time: startTime,
+              onInputChange: dataChange,
+            );
+            DateTime endTime =
+                this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
+            _editEndDateAndTime = EditDateAndTime(
+              time: endTime,
               onInputChange: dataChange,
             );
             if (this.subEvent!.calendarEventStartTime != null) {
@@ -300,6 +327,12 @@ class _EditTileState extends State<EditTile> {
               inputChildWidgets.insert(1, splitWidget);
             }
 
+            if (_editTileNote != null) {
+              inputChildWidgets.add(Container(
+                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                  child: _editTileNote!));
+            }
+
             List<PlaybackOptions> playbackOptions = [
               PlaybackOptions.Procrastinate,
               PlaybackOptions.Now,
@@ -315,6 +348,8 @@ class _EditTileState extends State<EditTile> {
             }
             if ((this.subEvent!.isProcrastinate ?? false)) {
               playbackOptions.remove(PlaybackOptions.Procrastinate);
+              playbackOptions.remove(PlaybackOptions.PlayPause);
+              playbackOptions.remove(PlaybackOptions.Now);
             }
             PlayBack playBackButton = PlayBack(
               this.subEvent!,
@@ -346,7 +381,7 @@ class _EditTileState extends State<EditTile> {
             return Container(
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
-              child: Column(
+              child: ListView(
                 children: inputChildWidgets,
               ),
             );

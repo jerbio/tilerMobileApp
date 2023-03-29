@@ -167,6 +167,8 @@ class TileWidgetState extends State<TileWidget>
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+    bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
+        this.widget.subEvent.isFromTiler;
 
     List<Widget> allElements = [
       Container(
@@ -188,11 +190,13 @@ class TileWidgetState extends State<TileWidget>
               child: Container(
                 alignment: Alignment.topRight,
                 margin: EdgeInsets.fromLTRB(0, 5, 20, 0),
-                child: Icon(
-                  Icons.edit_outlined,
-                  color: TileStyles.defaultTextColor,
-                  size: 20.0,
-                ),
+                child: isEditable
+                    ? Icon(
+                        Icons.edit_outlined,
+                        color: TileStyles.defaultTextColor,
+                        size: 20.0,
+                      )
+                    : null,
               ),
             )
           ],
@@ -200,14 +204,21 @@ class TileWidgetState extends State<TileWidget>
       )
     ];
 
-    // allElements.add(editTileButton);
-
     if (this.widget.subEvent.travelTimeBefore != null &&
-        this.widget.subEvent.travelTimeBefore! > 0) {
-      allElements.add(Container(
-          margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
-          child: TravelTimeBefore(
-              this.widget.subEvent.travelTimeBefore?.toInt() ?? 0, subEvent)));
+        this.widget.subEvent.travelTimeBefore! > 0 &&
+        this.widget.subEvent.isToday) {
+      Duration duration = Duration();
+      if (this.widget.subEvent.isCurrent) {
+        int durationTillTravel = (this.widget.subEvent.end! -
+                this.widget.subEvent.travelTimeBefore!.toInt()) -
+            Utility.msCurrentTime;
+        duration = Duration(milliseconds: durationTillTravel);
+      }
+      if (duration.inMilliseconds > 0) {
+        allElements.add(Container(
+            margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: TravelTimeBefore(duration, subEvent)));
+      }
     }
 
     if (widget.subEvent.address != null &&
