@@ -3,11 +3,11 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class EditTileNnote extends StatefulWidget {
+class EditTileNote extends StatefulWidget {
   String tileNote;
   Function? onInputChange;
   bool isProcrastinate;
-  EditTileNnote(
+  EditTileNote(
       {required this.tileNote,
       this.onInputChange,
       this.isProcrastinate = false});
@@ -20,7 +20,7 @@ class EditTileNnote extends StatefulWidget {
   _EditTileNoteState createState() => _EditTileNoteState();
 }
 
-class _EditTileNoteState extends State<EditTileNnote> {
+class _EditTileNoteState extends State<EditTileNote> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = Colors.white;
   late TextEditingController _controller = TextEditingController();
