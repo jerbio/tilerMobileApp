@@ -308,6 +308,12 @@ class EventNameSearchState extends SearchWidgetState {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              Text(AppLocalizations.of(context)!.deadline,
+                  style: TextStyle(
+                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+              Text(': ',
+                  style: TextStyle(
+                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
               Text(monthString,
                   style: TextStyle(
                       fontSize: 12, fontFamily: TileStyles.rubikFontName)),

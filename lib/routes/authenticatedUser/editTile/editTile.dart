@@ -171,250 +171,307 @@ class _EditTileState extends State<EditTile> {
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
-      child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
-        listener: (context, state) {
-          if (state is SubCalendarTileLoadedState) {
-            setState(() {
-              if (subEvent == null) {
-                subEvent = state.subEvent;
-                editTilerEvent = new EditTilerEvent();
-                editTilerEvent!.endTime = subEvent!.endTime!;
-                editTilerEvent!.startTime = subEvent!.startTime!;
-                editTilerEvent!.splitCount = subEvent!.split;
-                editTilerEvent!.name = subEvent!.name ?? '';
-                editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
-                editTilerEvent!.thirdPartyType = subEvent!.thirdpartyType;
-                editTilerEvent!.thirdPartyUserId = subEvent!.thirdPartyUserId;
-                editTilerEvent!.id = subEvent!.id;
-                if (subEvent!.noteData != null) {
-                  editTilerEvent!.note = subEvent!.noteData!.note;
+        child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
+          listener: (context, state) {
+            if (state is SubCalendarTileLoadedState) {
+              setState(() {
+                if (subEvent == null) {
+                  subEvent = state.subEvent;
+                  editTilerEvent = new EditTilerEvent();
+                  editTilerEvent!.endTime = subEvent!.endTime!;
+                  editTilerEvent!.startTime = subEvent!.startTime!;
+                  editTilerEvent!.splitCount = subEvent!.split;
+                  editTilerEvent!.name = subEvent!.name ?? '';
+                  editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
+                  editTilerEvent!.thirdPartyType = subEvent!.thirdpartyType;
+                  editTilerEvent!.thirdPartyUserId = subEvent!.thirdPartyUserId;
+                  editTilerEvent!.id = subEvent!.id;
+                  if (subEvent!.noteData != null) {
+                    editTilerEvent!.note = subEvent!.noteData!.note;
+                  }
+                  if (subEvent!.calendarEvent != null) {
+                    splitCount = subEvent!.calendarEvent!.split;
+                    splitCountController =
+                        TextEditingController(text: splitCount!.toString());
+                    splitCountController!.addListener(onInputCountChange);
+                    editTilerEvent!.splitCount = splitCount;
+                  }
                 }
-                if (subEvent!.calendarEvent != null) {
-                  splitCount = subEvent!.calendarEvent!.split;
-                  splitCountController =
-                      TextEditingController(text: splitCount!.toString());
-                  splitCountController!.addListener(onInputCountChange);
-                  editTilerEvent!.splitCount = splitCount;
-                }
+              });
+            }
+          },
+          child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
+            builder: (context, state) {
+              if (state is SubCalendarTilesInitialState ||
+                  state is SubCalendarTilesLoadingState ||
+                  this.subEvent == null) {
+                return PendingWidget();
               }
-            });
-          }
-        },
-        child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
-          builder: (context, state) {
-            if (state is SubCalendarTilesInitialState ||
-                state is SubCalendarTilesLoadingState ||
-                this.subEvent == null) {
-              return PendingWidget();
-            }
-            String tileName =
-                this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
-            _editTileName = EditTileName(
-              tileName: tileName,
-              isProcrastinate: isProcrastinateTile,
-              onInputChange: dataChange,
-            );
-            String tileNote = this.editTilerEvent?.note ??
-                this.subEvent!.noteData?.note ??
-                '';
-            _editTileNote = EditTileNote(
-              tileNote: tileNote,
-              onInputChange: dataChange,
-            );
-            DateTime startTime =
-                this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
-            _editStartDateAndTime = EditDateAndTime(
-              time: startTime,
-              onInputChange: dataChange,
-            );
-            DateTime endTime =
-                this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
-            _editEndDateAndTime = EditDateAndTime(
-              time: endTime,
-              onInputChange: dataChange,
-            );
-            if (this.subEvent!.calendarEventStartTime != null) {
-              DateTime calStartTime = this.editTilerEvent?.calStartTime ??
-                  this.subEvent!.calendarEventStartTime!;
-              _editCalStartDateAndTime = EditDateAndTime(
-                time: calStartTime,
+              TextStyle labelStyle = const TextStyle(
+                  color: Color.fromRGBO(31, 31, 31, 1),
+                  fontSize: 20,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w500);
+              final Color textBackgroundColor = TileStyles.textBackgroundColor;
+              String tileName =
+                  this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
+              _editTileName = EditTileName(
+                tileName: tileName,
+                isProcrastinate: isProcrastinateTile,
                 onInputChange: dataChange,
               );
-            }
-
-            if (this.subEvent!.calendarEventEndTime != null) {
-              DateTime calEndTime = this.editTilerEvent?.calEndTime ??
-                  this.subEvent!.calendarEventEndTime!;
-              _editCalEndDateAndTime = EditDateAndTime(
-                time: calEndTime,
+              String tileNote = this.editTilerEvent?.note ??
+                  this.subEvent!.noteData?.note ??
+                  '';
+              _editTileNote = EditTileNote(
+                tileNote: tileNote,
                 onInputChange: dataChange,
               );
-            }
+              DateTime startTime =
+                  this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
+              _editStartDateAndTime = EditDateAndTime(
+                time: startTime,
+                onInputChange: dataChange,
+              );
+              DateTime endTime =
+                  this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
+              _editEndDateAndTime = EditDateAndTime(
+                time: endTime,
+                onInputChange: dataChange,
+              );
+              if (this.subEvent!.calendarEventStartTime != null) {
+                DateTime calStartTime = this.editTilerEvent?.calStartTime ??
+                    this.subEvent!.calendarEventStartTime!;
+                _editCalStartDateAndTime = EditDateAndTime(
+                  time: calStartTime,
+                  onInputChange: dataChange,
+                );
+              }
 
-            var inputChildWidgets = <Widget>[
-              _editTileName!,
-              FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.start,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editStartDateAndTime!
-                      ],
-                    ),
-                  )),
-              FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.end,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editEndDateAndTime!
-                      ],
-                    ),
-                  )),
-            ];
+              if (this.subEvent!.calendarEventEndTime != null) {
+                DateTime calEndTime = this.editTilerEvent?.calEndTime ??
+                    this.subEvent!.calendarEventEndTime!;
+                _editCalEndDateAndTime = EditDateAndTime(
+                  time: calEndTime,
+                  onInputChange: dataChange,
+                );
+              }
+              final Color textBorderColor = Colors.white;
 
-            if (!isRigidTile && !isProcrastinateTile) {
-              Widget splitWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.split,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                          width: 50,
-                          child: TextField(
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            controller: splitCountController,
+              var inputChildWidgets = <Widget>[
+                FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: _editTileName!),
+                const Divider(
+                  height: 20,
+                  thickness: 1,
+                  indent: 20,
+                  endIndent: 20,
+                  color: Colors.black,
+                ),
+                FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.start,
+                                style: labelStyle),
                           ),
-                        )
-                      ],
-                    ),
-                  ));
-
-              if (_editCalEndDateAndTime != null) {
-                Widget deadlineWidget = FractionallySizedBox(
+                          _editStartDateAndTime!
+                        ],
+                      ),
+                    )),
+                FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Row(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            child: Text(AppLocalizations.of(context)!.deadline,
-                                style: TextStyle(
-                                    color: Color.fromRGBO(31, 31, 31, 1),
-                                    fontSize: 15,
-                                    fontFamily: TileStyles.rubikFontName,
-                                    fontWeight: FontWeight.w500)),
+                            child: Text(AppLocalizations.of(context)!.end,
+                                style: labelStyle),
                           ),
-                          _editCalEndDateAndTime!
+                          _editEndDateAndTime!
+                        ],
+                      ),
+                    )),
+              ];
+
+              if (!isRigidTile && !isProcrastinateTile) {
+                Widget splitWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                      child: Stack(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(0, 8, 0, 0),
+                            height: 50,
+                            child: Text(AppLocalizations.of(context)!.split,
+                                style: labelStyle),
+                          ),
+                          Positioned(
+                            top: 0,
+                            left: 60,
+                            child: Container(
+                              width: 100,
+                              height: 100,
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  isDense: true,
+                                  border: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(8.0),
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(8.0),
+                                    ),
+                                    borderSide: BorderSide(
+                                        color: textBorderColor, width: 2),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: const BorderRadius.all(
+                                      const Radius.circular(8.0),
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: textBorderColor,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                  fillColor: textBackgroundColor,
+                                ),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 20),
+                                keyboardType: TextInputType.number,
+                                controller: splitCountController,
+                              ),
+                            ),
+                          )
                         ],
                       ),
                     ));
-                inputChildWidgets.add(deadlineWidget);
+
+                if (_editCalEndDateAndTime != null) {
+                  Widget deadlineWidget = FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              child: Text(
+                                  AppLocalizations.of(context)!.deadline,
+                                  style: labelStyle),
+                            ),
+                            _editCalEndDateAndTime!
+                          ],
+                        ),
+                      ));
+                  inputChildWidgets.add(deadlineWidget);
+                }
+                inputChildWidgets.insert(1, splitWidget);
               }
-              inputChildWidgets.insert(1, splitWidget);
-            }
+              inputChildWidgets.add(const Divider(
+                height: 20,
+                thickness: 1,
+                indent: 20,
+                endIndent: 20,
+                color: Colors.black,
+              ));
+              if (_editTileNote != null) {
+                inputChildWidgets.add(Container(
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: _editTileNote!));
+              }
 
-            if (_editTileNote != null) {
-              inputChildWidgets.add(Container(
-                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: _editTileNote!));
-            }
+              List<PlaybackOptions> playbackOptions = [
+                PlaybackOptions.Procrastinate,
+                PlaybackOptions.Now,
+                PlaybackOptions.Delete,
+                PlaybackOptions.Complete
+              ];
+              if (((this.subEvent!.isComplete)) ||
+                  (!(this.subEvent!.isEnabled))) {
+                playbackOptions.remove(PlaybackOptions.Complete);
+                playbackOptions.remove(PlaybackOptions.Delete);
+                playbackOptions.remove(PlaybackOptions.Now);
+                playbackOptions.remove(PlaybackOptions.Procrastinate);
+              }
+              if ((this.subEvent!.isProcrastinate ?? false)) {
+                playbackOptions.remove(PlaybackOptions.Procrastinate);
+                playbackOptions.remove(PlaybackOptions.PlayPause);
+                playbackOptions.remove(PlaybackOptions.Now);
+              }
+              PlayBack playBackButton = PlayBack(
+                this.subEvent!,
+                forcedOption: playbackOptions,
+                callBack: (status, response) {
+                  final currentState = this.context.read<ScheduleBloc>().state;
+                  if (currentState is ScheduleEvaluationState) {
+                    this.context.read<ScheduleBloc>().add(GetSchedule(
+                          isAlreadyLoaded: true,
+                          previousSubEvents: currentState.subEvents,
+                          scheduleTimeline: currentState.lookupTimeline,
+                          previousTimeline: currentState.lookupTimeline,
+                        ));
+                  }
+                  if (currentState is ScheduleLoadedState) {
+                    this.context.read<ScheduleBloc>().add(GetSchedule(
+                          isAlreadyLoaded: true,
+                          previousSubEvents: currentState.subEvents,
+                          scheduleTimeline: currentState.lookupTimeline,
+                          previousTimeline: currentState.lookupTimeline,
+                        ));
+                  }
+                  Navigator.pop(context);
+                },
+              );
 
-            List<PlaybackOptions> playbackOptions = [
-              PlaybackOptions.Procrastinate,
-              PlaybackOptions.Now,
-              PlaybackOptions.Delete,
-              PlaybackOptions.Complete
-            ];
-            if (((this.subEvent!.isComplete)) ||
-                (!(this.subEvent!.isEnabled))) {
-              playbackOptions.remove(PlaybackOptions.Complete);
-              playbackOptions.remove(PlaybackOptions.Delete);
-              playbackOptions.remove(PlaybackOptions.Now);
-              playbackOptions.remove(PlaybackOptions.Procrastinate);
-            }
-            if ((this.subEvent!.isProcrastinate ?? false)) {
-              playbackOptions.remove(PlaybackOptions.Procrastinate);
-              playbackOptions.remove(PlaybackOptions.PlayPause);
-              playbackOptions.remove(PlaybackOptions.Now);
-            }
-            PlayBack playBackButton = PlayBack(
-              this.subEvent!,
-              forcedOption: playbackOptions,
-              callBack: (status, response) {
-                final currentState = this.context.read<ScheduleBloc>().state;
-                if (currentState is ScheduleEvaluationState) {
-                  this.context.read<ScheduleBloc>().add(GetSchedule(
-                        isAlreadyLoaded: true,
-                        previousSubEvents: currentState.subEvents,
-                        scheduleTimeline: currentState.lookupTimeline,
-                        previousTimeline: currentState.lookupTimeline,
-                      ));
-                }
-                if (currentState is ScheduleLoadedState) {
-                  this.context.read<ScheduleBloc>().add(GetSchedule(
-                        isAlreadyLoaded: true,
-                        previousSubEvents: currentState.subEvents,
-                        scheduleTimeline: currentState.lookupTimeline,
-                        previousTimeline: currentState.lookupTimeline,
-                      ));
-                }
-                Navigator.pop(context);
-              },
-            );
+              inputChildWidgets.add(playBackButton);
 
-            inputChildWidgets.add(playBackButton);
-
-            return Container(
-              margin: TileStyles.topMargin,
-              alignment: Alignment.topCenter,
-              child: ListView(
-                children: inputChildWidgets,
-              ),
-            );
-          },
+              return Container(
+                padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
+                margin: TileStyles.topMargin,
+                alignment: Alignment.topCenter,
+                child: ListView(
+                  children: inputChildWidgets,
+                ),
+              );
+            },
+          ),
         ),
-      ),
-      onCancel: () {
-        this
-            .context
-            .read<SubCalendarTileBloc>()
-            .add(ResetSubCalendarTileBlocEvent());
-      },
-      onProceed: this.onProceed,
-    );
+        onCancel: () {
+          this
+              .context
+              .read<SubCalendarTileBloc>()
+              .add(ResetSubCalendarTileBlocEvent());
+        },
+        onProceed: this.onProceed,
+        appBar: AppBar(
+          backgroundColor: TileStyles.primaryColor,
+          title: Text(
+            AppLocalizations.of(context)!.edit,
+            style: TextStyle(
+                color: TileStyles.enabledTextColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 22),
+          ),
+          centerTitle: true,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+        ));
   }
 }
