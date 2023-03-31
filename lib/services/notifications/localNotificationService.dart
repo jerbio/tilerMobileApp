@@ -202,7 +202,7 @@ class LocalNotificationService {
 
       await this.showScheduledNotification(
           id: NotificationIdTypes.nextTile.index,
-          title: title ?? tile.name!,
+          title: title ?? tile.name ?? 'Cleared out time block',
           body: durationString,
           detailFormat: notificationDetailFormat,
           duration: Duration(
