@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -192,6 +193,7 @@ class _SettingState extends State<Setting> {
     final formattedTimeOfDay =
         MaterialLocalizations.of(context).formatTimeOfDay(napTimeOfDay);
     Widget retValue = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(AppLocalizations.of(context)!.snoozeTime),
         OutlinedButton(
@@ -225,6 +227,7 @@ class _SettingState extends State<Setting> {
   @override
   Widget build(BuildContext context) {
     List<Widget> childElements = [];
+
     if (this.isAllRestrictionProfileLoaded) {
       Widget personalConfigButton = renderRestrictionProfile(
           restrictionProfile: personalRestrictionProfile,
@@ -248,15 +251,34 @@ class _SettingState extends State<Setting> {
     }
     Widget logoutButton = createLogOutButton();
     if (isTimeOfDayLoaded) {
-      Widget endOfDayWidget = createEndOfDay();
+      Widget endOfDayWidget =
+          Container(alignment: Alignment.center, child: createEndOfDay());
       childElements.add(endOfDayWidget);
+    }
+    if (!this.isAllRestrictionProfileLoaded || !isTimeOfDayLoaded) {
+      childElements.add(PendingWidget());
     }
 
     childElements.add(logoutButton);
     return CancelAndProceedTemplateWidget(
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.settings,
+          style: TextStyle(
+              color: TileStyles.enabledTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       onProceed: this.isProceedReady() ? proceedUpdate : null,
       child: Container(
           child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: childElements,
       )),
     );

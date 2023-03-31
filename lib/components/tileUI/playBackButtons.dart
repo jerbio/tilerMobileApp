@@ -465,14 +465,30 @@ class PlayBackState extends State<PlayBack> {
       }
     }
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(0, 0, 0, 30),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: playBackElements
-            .map((e) => Expanded(child: e))
-            .toList(), // Wrapping in expanded to ensure they are equally spaced
-      ),
+    const maxButtonPerRow = 3;
+    List<Widget> playBackRows = <Widget>[];
+    for (int i = 0; i < playBackElements.length;) {
+      List<Widget> rowElements = <Widget>[];
+      for (int j = 0;
+          j < maxButtonPerRow && i < playBackElements.length;
+          j++, i++) {
+        rowElements.add(playBackElements[i]);
+      }
+      if (rowElements.isNotEmpty) {
+        playBackRows.add(Container(
+          margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: rowElements,
+          ),
+        ));
+      }
+    }
+    Widget playBackColumn = Column(
+      children: playBackRows,
     );
+
+    return Container(
+        margin: const EdgeInsets.fromLTRB(0, 0, 0, 30), child: playBackColumn);
   }
 }

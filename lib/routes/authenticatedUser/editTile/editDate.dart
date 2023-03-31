@@ -59,6 +59,10 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
+    const textStyle = const TextStyle(
+        fontFamily: TileStyles.rubikFontName,
+        fontSize: 20,
+        color: const Color.fromRGBO(153, 153, 153, 1));
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
@@ -77,7 +81,7 @@ class _EditTileDateState extends State<EditTileDate> {
               Text(
                 DateFormat.yMMMd(locale).format(time),
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                style: textStyle,
               )
             ],
           ),

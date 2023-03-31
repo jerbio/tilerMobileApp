@@ -48,6 +48,7 @@ class EditDateAndTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color textBorderColor = Colors.white;
     _tileTime = EditTileTime(
       time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
@@ -57,13 +58,18 @@ class EditDateAndTime extends StatelessWidget {
       onInputChange: onDateChange,
     );
     return Container(
-      padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-      height: 35,
-      width:
-          (MediaQuery.of(context).size.width * TileStyles.tileWidthRatio - 75),
-      color: TileStyles.textBackgroundColor,
+      padding: EdgeInsets.fromLTRB(2, 0, 2, 0),
+      height: 60,
+      decoration: BoxDecoration(
+        color: TileStyles.textBackgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: textBorderColor,
+          width: 1.5,
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [_tileTime!, _tileDate!],
       ),
     );
