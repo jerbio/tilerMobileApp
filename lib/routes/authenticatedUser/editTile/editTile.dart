@@ -10,6 +10,8 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
@@ -33,11 +35,13 @@ class _EditTileState extends State<EditTile> {
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   EditTileName? _editTileName;
+
   EditTileNote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
   EditDateAndTime? _editCalEndDateAndTime;
+  StartEndDurationTimeline? _startEndDurationTimeline;
 
   @override
   void initState() {
@@ -88,6 +92,7 @@ class _EditTileState extends State<EditTile> {
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
+
       if (_editTileNote != null) {
         revisedEditTilerEvent.note = _editTileNote!.tileNote;
       }
@@ -97,10 +102,10 @@ class _EditTileState extends State<EditTile> {
             _editStartDateAndTime!.dateAndTime!.toUtc();
       }
 
-      if (_editEndDateAndTime != null &&
-          _editEndDateAndTime!.dateAndTime != null) {
-        revisedEditTilerEvent.endTime =
-            _editEndDateAndTime!.dateAndTime!.toUtc();
+      if (_startEndDurationTimeline != null) {
+        TimeRange timeRange = _startEndDurationTimeline!.timeRange;
+        revisedEditTilerEvent.startTime = timeRange.startTime;
+        revisedEditTilerEvent.endTime = timeRange.endTime;
       }
 
       if (_editCalStartDateAndTime != null &&
@@ -139,9 +144,9 @@ class _EditTileState extends State<EditTile> {
       if (isProcrastinateTile) {
         bool timeIsTheSame =
             editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.startTime!.toLocal().millisecondsSinceEpoch &&
+                    subEvent!.startTime.toLocal().millisecondsSinceEpoch &&
                 editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
-                    subEvent!.endTime!.toLocal().millisecondsSinceEpoch;
+                    subEvent!.endTime.toLocal().millisecondsSinceEpoch;
 
         bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
                 editTilerEvent!.startTime!) <
@@ -178,8 +183,8 @@ class _EditTileState extends State<EditTile> {
                 if (subEvent == null) {
                   subEvent = state.subEvent;
                   editTilerEvent = new EditTilerEvent();
-                  editTilerEvent!.endTime = subEvent!.endTime!;
-                  editTilerEvent!.startTime = subEvent!.startTime!;
+                  editTilerEvent!.endTime = subEvent!.endTime;
+                  editTilerEvent!.startTime = subEvent!.startTime;
                   editTilerEvent!.splitCount = subEvent!.split;
                   editTilerEvent!.name = subEvent!.name ?? '';
                   editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
@@ -207,6 +212,8 @@ class _EditTileState extends State<EditTile> {
                   this.subEvent == null) {
                 return PendingWidget();
               }
+
+              final Color textBorderColor = Colors.white;
               TextStyle labelStyle = const TextStyle(
                   color: Color.fromRGBO(31, 31, 31, 1),
                   fontSize: 20,
@@ -220,6 +227,7 @@ class _EditTileState extends State<EditTile> {
                 isProcrastinate: isProcrastinateTile,
                 onInputChange: dataChange,
               );
+
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
                   '';
@@ -256,7 +264,13 @@ class _EditTileState extends State<EditTile> {
                   onInputChange: dataChange,
                 );
               }
-              final Color textBorderColor = Colors.white;
+
+              _startEndDurationTimeline = StartEndDurationTimeline.fromTimeline(
+                timeRange: this.subEvent!,
+                onChange: (timeline) {
+                  dataChange();
+                },
+              );
 
               var inputChildWidgets = <Widget>[
                 FractionallySizedBox(
@@ -272,35 +286,8 @@ class _EditTileState extends State<EditTile> {
                 FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
                     child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(AppLocalizations.of(context)!.start,
-                                style: labelStyle),
-                          ),
-                          _editStartDateAndTime!
-                        ],
-                      ),
-                    )),
-                FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(AppLocalizations.of(context)!.end,
-                                style: labelStyle),
-                          ),
-                          _editEndDateAndTime!
-                        ],
-                      ),
-                    )),
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: _startEndDurationTimeline))
               ];
 
               if (!isRigidTile && !isProcrastinateTile) {

@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:switch_up/switch_up.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -12,7 +14,10 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
+
+import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -39,11 +44,14 @@ class AddTile extends StatefulWidget {
 }
 
 class AddTileState extends State<AddTile> {
+  Key switchUpKey = Key(Utility.getUuid);
   late AutoTile? autoTile;
+  bool isAppointment = false;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color iconColor = TileStyles.iconColor;
   final Color populatedTextColor = Colors.white;
+  final CarouselController tilerCarouselController = CarouselController();
   String tileNameText = '';
   String splitCountText = '';
   final LocationApi locationApi = LocationApi();
@@ -81,6 +89,7 @@ class AddTileState extends State<AddTile> {
   RepetitionData? _repetitionData;
   Color? _color;
   bool _isLocationManuallySet = false;
+  DateTime? _startTime;
   DateTime? _endTime;
 
   Function? onProceed;
@@ -210,6 +219,9 @@ class AddTileState extends State<AddTile> {
 
     int? count = int.tryParse(getSplitCount());
     if (count != null && count > 0) {
+      isCountReady = true;
+    }
+    if (isAppointment) {
       isCountReady = true;
     }
 
@@ -699,9 +711,13 @@ class AddTileState extends State<AddTile> {
     //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
     //   children: [reminderConfigButton, emojiConfigButton],
     // );
+    List<Widget> thirdRowConfigButtons = [repetitionConfigButton];
+    if (!this.isAppointment) {
+      thirdRowConfigButtons.add(timeRestrictionsConfigButton);
+    }
     Widget thirdRow = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [timeRestrictionsConfigButton, repetitionConfigButton],
+      children: thirdRowConfigButtons,
     );
 
     Widget retValue = Column(
@@ -725,9 +741,11 @@ class AddTileState extends State<AddTile> {
   }
 
   void onEndDateTap() async {
-    DateTime _endDate = this._endTime == null
-        ? Utility.todayTimeline().endTime.add(Utility.oneDay)
-        : this._endTime!;
+    DateTime _endDate =
+        this._endTime ?? Utility.todayTimeline().endTime.add(Utility.oneDay);
+    if (this._endTime == null) {
+      _endDate = DateTime(_endDate.year, _endDate.month, _endDate.day, 23, 59);
+    }
     DateTime firstDate = _endDate.add(Duration(days: -180));
     DateTime lastDate = _endDate.add(Duration(days: 180));
     final DateTime? revisedEndDate = await showDatePicker(
@@ -788,18 +806,26 @@ class AddTileState extends State<AddTile> {
       tile.RepeatType = _repetitionData!.frequency.name;
     }
 
+    DateTime startTime = DateTime.now();
+    startTime = DateTime(startTime.year, startTime.month, startTime.day, 0, 0);
+
+    if (this.isAppointment) {
+      tile.Rigid = true.toString();
+      startTime = this._startTime!;
+      _endTime = this._endTime!;
+    }
+
     tile.EndYear = _endTime?.year.toString();
     tile.EndMonth = _endTime?.month.toString();
     tile.EndDay = _endTime?.day.toString();
-    tile.EndHour = '23';
-    tile.EndMinute = '59';
+    tile.EndHour = _endTime?.hour.toString();
+    tile.EndMinute = _endTime?.minute.toString();
 
-    DateTime now = DateTime.now();
-    tile.StartYear = now.year.toString();
-    tile.StartMonth = now.month.toString();
-    tile.StartDay = now.day.toString();
-    tile.StartHour = '0';
-    tile.StartMinute = '0';
+    tile.StartYear = startTime.year.toString();
+    tile.StartMonth = startTime.month.toString();
+    tile.StartDay = startTime.day.toString();
+    tile.StartHour = startTime.hour.toString();
+    tile.StartMinute = startTime.minute.toString();
     tile.isEveryDay = false.toString();
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
@@ -964,13 +990,66 @@ class AddTileState extends State<AddTile> {
     return deadlineContainer;
   }
 
-  Widget generateSubmitTile() {
-    Widget submitContainer = Container(
-        child: ElevatedButton(
-      onPressed: this.onSubmitButtonTap,
-      child: Text('Submit Tile'),
-    ));
-    return submitContainer;
+  setAsAppointment() {
+    tilerCarouselController.animateToPage(1);
+    setState(() {
+      isAppointment = true;
+      switchUpKey = Key(Utility.getUuid);
+    });
+  }
+
+  setAsTile() {
+    tilerCarouselController.animateToPage(0);
+    setState(() {
+      isAppointment = false;
+      switchUpKey = Key(Utility.getUuid);
+    });
+  }
+
+  onTabTypeChange(value) {
+    onTileTypeChange();
+  }
+
+  onTileTypeChange() {
+    if (this.isAppointment) {
+      setAsTile();
+    } else {
+      setAsAppointment();
+    }
+  }
+
+  onCarouselPageChange() {}
+
+  Widget generateNewTileWidget(List<Widget> tileWidgets) {
+    Widget retValue = Container(
+      child: Column(children: tileWidgets),
+    );
+    return retValue;
+  }
+
+  Widget generateAppointmentWidget(List<Widget> tileWidgets) {
+    Widget retValue = Container(
+      child: Column(children: tileWidgets),
+    );
+    return retValue;
+  }
+
+  Widget toggleAppointmentWidget(List<Widget> tileWidgets) {
+    Widget retValue = Container(
+      child: Column(children: tileWidgets),
+    );
+    return retValue;
+  }
+
+  onTimeLineChange(TimeRange updatedTimeLine) {
+    pendingSendTextRequest?.cancel();
+    setState(() {
+      _startTime = updatedTimeLine.startTime;
+      _duration = updatedTimeLine.duration;
+      _endTime = updatedTimeLine.endTime;
+      _isDurationManuallySet = true;
+    });
+    isSubmissionReady();
   }
 
   @override
@@ -978,18 +1057,69 @@ class AddTileState extends State<AddTile> {
     Map? newTileParams = ModalRoute.of(context)?.settings.arguments as Map?;
     this.widget.newTileParams = newTileParams;
     List<Widget> childrenWidgets = [];
+    List<Widget> appointmentWidgets = [];
+    List<Widget> tileWidgets = [];
     Widget tileNameWidget = this.getTileNameWidget();
     Widget durationPicker = this.generateDurationPicker();
     Widget deadlinePicker = this.generateDeadline();
     Widget splitCountWidget = this.getSplitCountWidget();
-    Widget submitTileWidget = this.generateSubmitTile();
+
+    StartEndDurationTimeline startAndEndTime = StartEndDurationTimeline(
+      start: this._startTime ?? Utility.currentTime(),
+      duration: this._duration ?? Duration(),
+      onChange: onTimeLineChange,
+    );
     Widget extraConfigCollection = this.generateExtraConfigSelection();
-    childrenWidgets.add(tileNameWidget);
-    childrenWidgets.add(durationPicker);
-    childrenWidgets.add(deadlinePicker);
-    childrenWidgets.add(splitCountWidget);
+    tileWidgets.add(tileNameWidget);
+    tileWidgets.add(durationPicker);
+    tileWidgets.add(deadlinePicker);
+    tileWidgets.add(splitCountWidget);
+
+    appointmentWidgets.add(tileNameWidget);
+    appointmentWidgets.add(startAndEndTime);
+
+    Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
+    Widget appointmentWidget = generateAppointmentWidget(appointmentWidgets);
+
+    List<Widget> carouselItems = [tileWidgetWrapper, appointmentWidget];
+    List<String> tabButtons = [
+      AppLocalizations.of(context)!.tile,
+      AppLocalizations.of(context)!.appointment
+    ];
+
+    String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
+    Widget switchUp = SwitchUp(
+      key: switchUpKey,
+      items: tabButtons,
+      onChanged: onTabTypeChange,
+      value: switchUpvalue,
+    );
+
+    Widget tileTypeCarousel = CarouselSlider(
+        carouselController: tilerCarouselController,
+        items: carouselItems,
+        options: CarouselOptions(
+          height: 300,
+          aspectRatio: 16 / 9,
+          viewportFraction: 1,
+          initialPage: 0,
+          enableInfiniteScroll: false,
+          reverse: false,
+          onPageChanged: (pageNumber, carouselData) {
+            if (carouselData == CarouselPageChangedReason.manual) {
+              if (pageNumber == 0) {
+                setAsTile();
+              } else {
+                setAsAppointment();
+              }
+            }
+          },
+          scrollDirection: Axis.horizontal,
+        ));
+
+    childrenWidgets.add(tileTypeCarousel);
+    childrenWidgets.add(switchUp);
     childrenWidgets.add(extraConfigCollection);
-    // childrenWidgets.add(submitTileWidget);
 
     Function? showLoading;
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(

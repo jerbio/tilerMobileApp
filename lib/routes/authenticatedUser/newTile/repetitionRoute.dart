@@ -259,7 +259,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
     if (tileTimeline != null &&
         this.repetitionData != null &&
         this.repetitionData!.repetitionEnd != null) {
-      return tileTimeline!.endInMs! <
+      return tileTimeline!.end! <
           Utility.utcEpochMillisecondsFromDateTime(
               this.repetitionData!.repetitionEnd!);
     }

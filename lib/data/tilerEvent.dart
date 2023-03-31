@@ -23,48 +23,48 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isComplete = false;
   bool _isEnabled = true;
 
-  DateTime? _startTime;
-  DateTime? _endTime;
+  // DateTime? _startTime;
+  // DateTime? _endTime;
 
-  int? _startInMs;
+  // int? _startInMs;
+  // // ignore: unnecessary_getters_setters
+  // int? get start {
+  //   return _startInMs;
+  // }
+
+  // // ignore: unnecessary_getters_setters
+  // set start(int? value) {
+  //   _startInMs = value;
+  //   if (this._startInMs != null) {
+  //     _startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
+  //             isUtc: true)
+  //         .toLocal();
+  //   }
+  // }
+
+  // int? _endInMs;
+  // // ignore: unnecessary_getters_setters
+  // int? get end {
+  //   return _endInMs;
+  // }
+
   // ignore: unnecessary_getters_setters
-  int? get start {
-    return _startInMs;
-  }
+  // set end(int? value) {
+  //   _endInMs = value?.toInt();
+  //   if (this._endInMs != null) {
+  //     _endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
+  //             isUtc: true)
+  //         .toLocal();
+  //   }
+  // }
 
-  // ignore: unnecessary_getters_setters
-  set start(int? value) {
-    _startInMs = value;
-    if (this._startInMs != null) {
-      _startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
-              isUtc: true)
-          .toLocal();
-    }
-  }
+  // DateTime? get startTime {
+  //   return _startTime;
+  // }
 
-  int? _endInMs;
-  // ignore: unnecessary_getters_setters
-  int? get end {
-    return _endInMs;
-  }
-
-  // ignore: unnecessary_getters_setters
-  set end(int? value) {
-    _endInMs = value?.toInt();
-    if (this._endInMs != null) {
-      _endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
-              isUtc: true)
-          .toLocal();
-    }
-  }
-
-  DateTime? get startTime {
-    return _startTime;
-  }
-
-  DateTime? get endTime {
-    return _endTime;
-  }
+  // DateTime? get endTime {
+  //   return _endTime;
+  // }
 
   bool? get isReadOnly {
     return _isReadOnly;
