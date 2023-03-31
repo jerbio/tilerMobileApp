@@ -58,6 +58,7 @@ class DelayedScheduleLoadedState extends ScheduleLoadedState {
 }
 
 class ScheduleEvaluationState extends ScheduleState {
+  DateTime evaluationTime;
   String? message;
   final List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
@@ -67,6 +68,7 @@ class ScheduleEvaluationState extends ScheduleState {
       {required this.subEvents,
       required this.timelines,
       required this.lookupTimeline,
+      required this.evaluationTime,
       this.message});
 
   @override
