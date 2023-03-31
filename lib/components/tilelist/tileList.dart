@@ -67,39 +67,71 @@ class _TileListState extends State<TileList> {
     _scrollController.addListener(() {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
-      Timeline updatedTimeline;
+      List<SubCalendarEvent> renderedSubEvents = [];
+      List<Timeline> timeLines = [];
+      Timeline updatedTimeline = Utility.todayTimeline();
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
         final currentState = this.context.read<ScheduleBloc>().state;
+        updatedTimeline = new Timeline(timeLine.start!,
+            (timeLine.end! + Utility.sevenDays.inMilliseconds));
         if (currentState is ScheduleLoadedState) {
+          renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(timeLine.start!,
-              (timeLine.end! + Utility.sevenDays.inMilliseconds));
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
-              previousSubEvents: currentState.subEvents,
+              previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: updatedTimeline));
         }
-      } else if (_scrollController.position.pixels <= minScrollLimit &&
-          _scrollController.position.userScrollDirection.index == 1) {
-        final currentState = this.context.read<ScheduleBloc>().state;
-        if (currentState is ScheduleLoadedState) {
+
+        if (currentState is ScheduleEvaluationState) {
+          renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(
-              (timeLine.start!.toInt() - Utility.sevenDays.inMilliseconds)
-                  .toInt(),
-              timeLine.end!.toInt());
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
-              previousSubEvents: currentState.subEvents,
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+      } else if (_scrollController.position.pixels <= minScrollLimit &&
+          _scrollController.position.userScrollDirection.index == 1) {
+        final currentState = this.context.read<ScheduleBloc>().state;
+        updatedTimeline = new Timeline(
+            (timeLine.start!.toInt() - Utility.sevenDays.inMilliseconds)
+                .toInt(),
+            timeLine.end!.toInt());
+        if (currentState is ScheduleLoadedState) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+
+        if (currentState is ScheduleEvaluationState) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
