@@ -135,6 +135,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: state.subEvents,
           timelines: state.timelines,
           lookupTimeline: state.lookupTimeline,
+          evaluationTime: Utility.currentTime(),
           message: event.message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
@@ -155,6 +156,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         subEvents: event.renderedSubEvents,
         timelines: event.renderedTimelines,
         lookupTimeline: event.renderedScheduleTimeline,
+        evaluationTime: Utility.currentTime(),
         message: event.message));
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
