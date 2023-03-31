@@ -31,6 +31,14 @@ abstract class TimeRange {
     return this.end! < DateTime.now().millisecondsSinceEpoch.toDouble();
   }
 
+  DateTime get startTime {
+    return Utility.localDateTimeFromMs(this.start!.toInt());
+  }
+
+  DateTime get endTime {
+    return Utility.localDateTimeFromMs(this.end!.toInt());
+  }
+
   Duration get duration {
     if (this.start != null && this.end != null) {
       return Duration(milliseconds: (this.end!.toInt() - this.start!.toInt()));

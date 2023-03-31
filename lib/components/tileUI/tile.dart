@@ -3,7 +3,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/animatedLine.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
@@ -11,6 +13,7 @@ import 'package:tiler_app/components/tileUI/tileDate.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
@@ -19,6 +22,10 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
 
+///
+/// Class creates tile widget that handles rendering the tile UI for a given
+/// user tile.
+///
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
@@ -87,8 +94,73 @@ class TileWidgetState extends State<TileWidget>
     this.context.read<ScheduleBloc>().add(GetSchedule());
   }
 
-  @override
-  Widget build(BuildContext context) {
+  bool get isEditable {
+    return !(this.widget.subEvent.isReadOnly ?? true);
+  }
+
+  bool get isTardy {
+    return this.widget.subEvent.isTardy ?? false;
+  }
+
+  Widget renderTravelTime(Timeline travelTimeLine) {
+    String lottieAsset =
+        isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
+    String startString = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
+            travelTimeLine.start!.toInt())));
+    String endString = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(
+            DateTime.fromMillisecondsSinceEpoch(travelTimeLine.end!.toInt())));
+    Color? textColor =
+        isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
+    Widget retValue =
+        Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+      Container(
+          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+          height: 50,
+          width: 5,
+          child: AnimatedLine(
+            Duration(milliseconds: 0),
+            textColor,
+            reverse: true,
+          )),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+              child: Text(startString,
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Rubik',
+                      fontWeight: FontWeight.normal,
+                      color: textColor))),
+          Lottie.asset(lottieAsset, height: 85),
+          Container(
+              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: Text(endString,
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'Rubik',
+                      fontWeight: FontWeight.normal,
+                      color: textColor)))
+        ],
+      ),
+      Container(
+          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+          height: 50,
+          width: 5,
+          child: AnimatedLine(
+            Duration(milliseconds: 0),
+            textColor,
+            reverse: true,
+          )),
+    ]);
+
+    return retValue;
+  }
+
+  Widget renderTileElement() {
     var subEvent = widget.subEvent;
     int redColor = subEvent.colorRed == null ? 127 : subEvent.colorRed!;
     int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
@@ -160,7 +232,6 @@ class TileWidgetState extends State<TileWidget>
       date: widget.subEvent.startTime!,
     ));
 
-    bool isTardy = this.widget.subEvent.isTardy ?? false;
     Widget tileTimeFrame = Container(
       margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -175,7 +246,9 @@ class TileWidgetState extends State<TileWidget>
                 borderRadius: BorderRadius.circular(8)),
             child: Icon(
               Icons.access_time_sharp,
-              color: isTardy ? Colors.pink : TileStyles.defaultTextColor,
+              color: isTardy
+                  ? TileStyles.lateTextColor
+                  : TileStyles.defaultTextColor,
               size: 20.0,
             ),
           ),
@@ -183,7 +256,9 @@ class TileWidgetState extends State<TileWidget>
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
-              textColor: isTardy ? Colors.pink : TileStyles.defaultTextColor,
+              textColor: isTardy
+                  ? TileStyles.lateTextColor
+                  : TileStyles.defaultTextColor,
             ),
           ),
         ],
@@ -280,6 +355,24 @@ class TileWidgetState extends State<TileWidget>
                         )),
                   ))),
         ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> columnChildren = [renderTileElement()];
+
+    if (this.widget.subEvent.travelTimeBefore != null &&
+        this.widget.subEvent.travelTimeBefore! > 0.0) {
+      Duration travelDuration = Duration(
+          milliseconds: this.widget.subEvent.travelTimeBefore!.toInt());
+      Timeline travelTimeLine = Timeline.fromDateTimeAndDuration(
+          this.widget.subEvent.startTime!.add(-travelDuration), travelDuration);
+      Widget travelTimeWidget = renderTravelTime(travelTimeLine);
+      columnChildren.insert(0, travelTimeWidget);
+    }
+    return Column(
+      children: columnChildren,
+    );
   }
 
   @override

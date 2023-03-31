@@ -1,9 +1,13 @@
 {
+    "whiteSpace": " ",
     "add": "Add",
     "setupCustomRestrictions": "Set up Custom restrictions",
     "customRestrictionTitle": "Custom restrictions",
     "customRestrictionHeader": "Set up Custom restrictions",
     "customRestrictionHeaderDescription": "Select when you would like to complete this task.",
+    "day": "Day",
+    "hour": "Hour",
+    "min": "Min",
     "monday": "Monday",
     "tuesday": "Tuesday",
     "wednesday": "Wednesday",
@@ -91,6 +95,8 @@
     "nextTileNotificationCategory": "Next Tile",
     "userSetReminderNotificationCategory": "User Set Reminder",
     "depatureTimeNotificationCategory": "Depature time",
+    "tile": "Tile",
+    "appointment": "Appointment",
     "startingAtTime": "Starts at {time}",
     "@startingAtTime": {
       "description": "Starts at time",
