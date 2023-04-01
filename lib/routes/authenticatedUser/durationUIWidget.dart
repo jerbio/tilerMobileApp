@@ -31,11 +31,13 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
         fontSize: 35,
         fontFamily: 'Rubik',
         fontWeight: FontWeight.w500);
+    const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 
     Widget dayBox = Container(
       child: Column(
         children: [
           Container(
+            margin: topSpacing,
             child: Text(
               days.toString(),
               style: unitTimeStyle,
@@ -50,6 +52,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
       child: Column(
         children: [
           Container(
+            margin: topSpacing,
             child: Text(
               hour.toString().padLeft(2, '0'),
               style: unitTimeStyle,
@@ -63,6 +66,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
       child: Column(
         children: [
           Container(
+            margin: topSpacing,
             child: Text(
               minute.toString().padLeft(2, '0'),
               style: unitTimeStyle,
@@ -76,9 +80,12 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
     Widget columnBox = Container(
       child: Column(
         children: [
-          Text(
-            ':',
-            style: unitTimeStyle,
+          Container(
+            margin: topSpacing,
+            child: Text(
+              ':',
+              style: unitTimeStyle,
+            ),
           ),
           Text(AppLocalizations.of(context)!.whiteSpace)
         ],
@@ -91,10 +98,24 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
       childWidgets.insert(0, dayBox);
     }
 
-    return Container(
-      child: Row(
-        children: childWidgets,
-      ),
+    return Column(
+      children: [
+        Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: Text(
+              AppLocalizations.of(context)!.duration,
+              style: TextStyle(
+                  color: Color.fromRGBO(30, 30, 30, 1),
+                  fontSize: 20,
+                  fontFamily: 'Rubik',
+                  fontWeight: FontWeight.w500),
+            )),
+        Container(
+          child: Row(
+            children: childWidgets,
+          ),
+        ),
+      ],
     );
   }
 }

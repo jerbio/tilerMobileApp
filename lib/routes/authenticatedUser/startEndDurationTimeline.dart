@@ -85,13 +85,26 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
   Widget build(BuildContext context) {
     return Container(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           TimeAndDate(time: this._start, onInputChange: onTimeChange),
+          Container(
+            height: 120,
+            margin: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            decoration: BoxDecoration(
+              border: Border(
+                left: BorderSide(color: Colors.black, width: 1.0),
+                right: BorderSide(color: Colors.black, width: 1.0),
+              ),
+            ),
+          ),
           GestureDetector(
             onTap: onDurationTap,
-            child: DurationUIWidget(
-                duration: _duration, key: Key(Utility.getUuid)),
+            child: Container(
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+              child: DurationUIWidget(
+                  duration: _duration, key: Key(Utility.getUuid)),
+            ),
           )
         ],
       ),

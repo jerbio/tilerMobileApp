@@ -64,7 +64,7 @@ class PickColorState extends State<PickColor> {
         title: Text(
           AppLocalizations.of(context)!.color,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

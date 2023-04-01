@@ -34,6 +34,7 @@ class _EditTileState extends State<EditTile> {
   Function? onProceed;
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
+  bool isPendingSubEventProcessing = false;
   EditTileName? _editTileName;
 
   EditTileNote? _editTileNote;
@@ -405,37 +406,58 @@ class _EditTileState extends State<EditTile> {
               PlayBack playBackButton = PlayBack(
                 this.subEvent!,
                 forcedOption: playbackOptions,
-                callBack: (status, response) {
-                  final currentState = this.context.read<ScheduleBloc>().state;
-                  if (currentState is ScheduleEvaluationState) {
-                    this.context.read<ScheduleBloc>().add(GetSchedule(
-                          isAlreadyLoaded: true,
-                          previousSubEvents: currentState.subEvents,
-                          scheduleTimeline: currentState.lookupTimeline,
-                          previousTimeline: currentState.lookupTimeline,
-                        ));
-                  }
-                  if (currentState is ScheduleLoadedState) {
-                    this.context.read<ScheduleBloc>().add(GetSchedule(
-                          isAlreadyLoaded: true,
-                          previousSubEvents: currentState.subEvents,
-                          scheduleTimeline: currentState.lookupTimeline,
-                          previousTimeline: currentState.lookupTimeline,
-                        ));
-                  }
-                  Navigator.pop(context);
+                callBack: (status, Future responseFuture) {
+                  setState(() {
+                    isPendingSubEventProcessing = true;
+                  });
+                  responseFuture.then((value) {
+                    if (!this.mounted) {
+                      return value;
+                    }
+                    setState(() {
+                      isPendingSubEventProcessing = false;
+                    });
+                    final currentState =
+                        this.context.read<ScheduleBloc>().state;
+                    if (currentState is ScheduleEvaluationState) {
+                      this.context.read<ScheduleBloc>().add(GetSchedule(
+                            isAlreadyLoaded: true,
+                            previousSubEvents: currentState.subEvents,
+                            scheduleTimeline: currentState.lookupTimeline,
+                            previousTimeline: currentState.lookupTimeline,
+                          ));
+                    }
+                    if (currentState is ScheduleLoadedState) {
+                      this.context.read<ScheduleBloc>().add(GetSchedule(
+                            isAlreadyLoaded: true,
+                            previousSubEvents: currentState.subEvents,
+                            scheduleTimeline: currentState.lookupTimeline,
+                            previousTimeline: currentState.lookupTimeline,
+                          ));
+                    }
+                    Navigator.pop(context);
+                    return value;
+                  });
                 },
               );
 
               inputChildWidgets.add(playBackButton);
 
-              return Container(
-                padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
-                margin: TileStyles.topMargin,
-                alignment: Alignment.topCenter,
-                child: ListView(
-                  children: inputChildWidgets,
-                ),
+              List<Widget> stackElements = <Widget>[
+                Container(
+                  padding: EdgeInsets.fromLTRB(30, 10, 30, 100),
+                  alignment: Alignment.topCenter,
+                  child: ListView(
+                    children: inputChildWidgets,
+                  ),
+                )
+              ];
+
+              if (isPendingSubEventProcessing) {
+                stackElements.add(PendingWidget());
+              }
+              return Stack(
+                children: stackElements,
               );
             },
           ),
@@ -452,7 +474,7 @@ class _EditTileState extends State<EditTile> {
           title: Text(
             AppLocalizations.of(context)!.edit,
             style: TextStyle(
-                color: TileStyles.enabledTextColor,
+                color: TileStyles.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

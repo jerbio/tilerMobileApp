@@ -2,10 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
 
 class PendingWidget extends StatelessWidget {
+  Decoration decoration = TileStyles.defaultBackground;
+  PendingWidget({backgroundDecoration}) {
+    if (backgroundDecoration != null && backgroundDecoration is Decoration) {
+      decoration = backgroundDecoration;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: TileStyles.defaultBackground,
+      decoration: this.decoration,
       child: Center(
           child: Stack(children: [
         Center(
