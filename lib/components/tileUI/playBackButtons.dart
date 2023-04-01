@@ -67,20 +67,18 @@ class PlayBackState extends State<PlayBack> {
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
     }
+    var request =
+        _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
 
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.PlayPause, request);
+    }
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
-        callBack: _subCalendarEventApi
-            .pauseTile((_subEvent ?? this.widget.subEvent).id!)
-            .then((value) {
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.PlayPause, value);
-          }
-          return value;
-        })));
+        callBack: request));
   }
 
   resumeTile() async {
@@ -104,19 +102,19 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.lookupTimeline;
     }
 
+    var request =
+        _subCalendarEventApi.resumeTile((_subEvent ?? this.widget.subEvent));
+
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.PlayPause, request);
+    }
+
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
-        callBack: _subCalendarEventApi
-            .resumeTile((_subEvent ?? this.widget.subEvent))
-            .then((value) {
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.PlayPause, value);
-          }
-          return value;
-        })));
+        callBack: request));
   }
 
   setAsNowTile() async {
@@ -140,17 +138,18 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.lookupTimeline;
     }
 
+    var requestFuture = _subCalendarEventApi.setAsNow((subTile));
+
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.Now, requestFuture);
+    }
+
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
-        callBack: _subCalendarEventApi.setAsNow((subTile)).then((value) {
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.Now, value);
-          }
-          return value;
-        })));
+        callBack: requestFuture));
   }
 
   completeTile() async {
@@ -174,17 +173,17 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.lookupTimeline;
     }
 
+    var requestFuture = _subCalendarEventApi.complete((subTile));
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.Complete, requestFuture);
+    }
+
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
-        callBack: _subCalendarEventApi.complete((subTile)).then((value) {
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.Complete, value);
-          }
-          return value;
-        })));
+        callBack: requestFuture));
   }
 
   deleteTile() async {
@@ -208,19 +207,18 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.lookupTimeline;
     }
 
+    var requestFuture =
+        _subCalendarEventApi.delete(subTile.id!, subTile.thirdpartyType!);
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
+    }
+
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
-        callBack: _subCalendarEventApi
-            .delete(subTile.id!, subTile.thirdpartyType!)
-            .then((value) {
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.Delete, value);
-          }
-          return value;
-        })));
+        callBack: requestFuture));
   }
 
   procrastinate() async {
@@ -254,19 +252,18 @@ class PlayBackState extends State<PlayBack> {
             lookupTimeline = scheduleState.lookupTimeline;
           }
 
+          var requestFuture = _subCalendarEventApi.procrastinate(
+              populatedDuration, subTile.id!);
+          if (this.widget.callBack != null) {
+            this.widget.callBack!(PlaybackOptions.Procrastinate, requestFuture);
+          }
+
           context.read<ScheduleBloc>().add(EvaluateSchedule(
               renderedSubEvents: renderedSubEvents,
               renderedTimelines: timeLines,
               renderedScheduleTimeline: lookupTimeline,
               isAlreadyLoaded: true,
-              callBack: _subCalendarEventApi
-                  .procrastinate(populatedDuration, subTile.id!)
-                  .then((value) {
-                if (this.widget.callBack != null) {
-                  this.widget.callBack!(PlaybackOptions.Procrastinate, value);
-                }
-                return value;
-              })));
+              callBack: requestFuture));
         }
       }
     });

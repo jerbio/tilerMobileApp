@@ -51,7 +51,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
         break;
       case 1:
         {
-          Navigator.pushNamed(context, '/AddTile');
+          // Navigator.pushNamed(context, '/AddTile');
         }
         break;
       case 2:
@@ -388,15 +388,17 @@ class AuthorizedRouteState extends State<StatefulWidget>
           decoration: BoxDecoration(
               gradient: LinearGradient(
                   begin: Alignment.topLeft,
-                  end: Alignment.topRight,
+                  end: Alignment.bottomRight,
                   colors: [
-                Color.fromRGBO(239, 48, 84, 1),
-                Color.fromRGBO(179, 194, 242, 1),
+                Colors.white,
+                Colors.white,
+                Colors.white,
               ])),
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.search, color: Colors.white),
+                icon: Icon(Icons.search,
+                    color: TileStyles.primaryColorDarkHSL.toColor()),
                 label: '',
               ),
               BottomNavigationBarItem(
@@ -405,7 +407,10 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     color: Color.fromRGBO(0, 0, 0, 0),
                   ),
                   label: ''),
-              BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.settings,
+                      color: TileStyles.primaryColorDarkHSL.toColor()),
+                  label: ''),
             ],
             unselectedItemColor: Colors.white,
             selectedItemColor: Colors.black,
@@ -434,14 +439,11 @@ class AuthorizedRouteState extends State<StatefulWidget>
               backgroundColor: Colors.white,
               onPressed: () {
                 displayDialog(MediaQuery.of(context).size);
-                // setState(() {
-                //   isAddButtonClicked = true;
-                // });
               },
               child: Icon(
                 Icons.add,
                 size: 35,
-                color: Color.fromRGBO(60, 0, 21, 1),
+                color: TileStyles.primaryColorDarkHSL.toColor(),
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

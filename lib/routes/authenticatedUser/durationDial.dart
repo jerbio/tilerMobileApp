@@ -45,7 +45,7 @@ class DurationDialState extends State<DurationDial> {
           title: Text(
             AppLocalizations.of(context)!.duration,
             style: TextStyle(
-                color: TileStyles.enabledTextColor,
+                color: TileStyles.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

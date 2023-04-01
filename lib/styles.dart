@@ -24,6 +24,7 @@ class TileStyles {
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
+  static Color appBarTextColor = Colors.white;
 
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
@@ -44,9 +45,9 @@ class TileStyles {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.1),
-        Colors.white.withOpacity(0.1),
-        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.1),
+        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+        Colors.white.withOpacity(0.5),
+        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
       ]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(

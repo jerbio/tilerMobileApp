@@ -69,7 +69,7 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
           title: Text(
             AppLocalizations.of(context)!.duration,
             style: TextStyle(
-                color: TileStyles.enabledTextColor,
+                color: TileStyles.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

@@ -158,7 +158,7 @@ class _TileDetailState extends State<TileDetail> {
         title: Text(
           AppLocalizations.of(context)!.edit,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

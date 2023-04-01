@@ -42,7 +42,7 @@ class RestrictionTimeLine extends TilerObj {
     if (_duration == null) {
       return false;
     }
-    return _duration!.inMilliseconds > 0;
+    return true;
   }
 
   RestrictionTimeLine copyWith({

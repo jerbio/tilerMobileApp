@@ -192,22 +192,26 @@ class _SettingState extends State<Setting> {
         this.endOfDay?.timeOfDay ?? Utility.defaultEndOfDay;
     final formattedTimeOfDay =
         MaterialLocalizations.of(context).formatTimeOfDay(napTimeOfDay);
-    Widget retValue = Row(
+    Widget retValue = Column(
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(AppLocalizations.of(context)!.snoozeTime),
-        OutlinedButton(
-            onPressed: () {},
-            child: EditTileTime(
-              time: napTimeOfDay,
-              onInputChange: (updatedTimeOfDay) {
-                if (this.endOfDay != null) {
-                  setState(() {
-                    this.endOfDay!.timeOfDay = updatedTimeOfDay;
-                  });
-                }
-              },
-            ))
+        Container(
+          width: 120,
+          height: 50,
+          alignment: Alignment.center,
+          child: EditTileTime(
+            time: napTimeOfDay,
+            onInputChange: (updatedTimeOfDay) {
+              if (this.endOfDay != null) {
+                setState(() {
+                  this.endOfDay!.timeOfDay = updatedTimeOfDay;
+                });
+              }
+            },
+          ),
+        )
       ],
     );
     return retValue;
@@ -266,7 +270,7 @@ class _SettingState extends State<Setting> {
         title: Text(
           AppLocalizations.of(context)!.settings,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),
@@ -277,7 +281,7 @@ class _SettingState extends State<Setting> {
       onProceed: this.isProceedReady() ? proceedUpdate : null,
       child: Container(
           child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: childElements,
       )),
