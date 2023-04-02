@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:math' as math;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/styles.dart';
 
 class CancelAndProceedTemplateWidget extends StatefulWidget {
@@ -12,6 +13,7 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? onProceed;
   Function? loadingFinished;
   Function? isProceedAllowed;
+  bool hideButtons = false;
 
   Widget? child;
   PreferredSizeWidget? appBar;
@@ -21,7 +23,8 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
       this.onProceed,
       this.child,
       this.isProceedAllowed,
-      this.appBar});
+      this.appBar,
+      this.hideButtons = false});
 
   @override
   CancelAndProceedTemplateWidgetState createState() =>
@@ -154,49 +157,14 @@ class CancelAndProceedTemplateWidgetState
       );
     }
 
-    bottomButtons.add(cancelButton);
-    if (proceedButton != null) {
-      bottomButtons.add(proceedButton);
-    }
-    if (isKeyboardShown) {
-      bottomButtons = [];
-    }
-
-    if (showLoading) {
-      bottomButtons = [
-        Container(
-          width: (MediaQuery.of(context).size.width),
-          height: 50,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              TileStyles.primaryColor,
-              TileStyles.primaryColorLightHSL.toColor()
-            ],
-          )),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SpinKitFoldingCube(
-                color: Colors.white,
-                size: 20.0,
-              ),
-              Padding(
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                child: Text(AppLocalizations.of(context)!.loading,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Rubik',
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white)),
-              ),
-            ],
-          ),
-        )
-      ];
+    if (!this.widget.hideButtons && !showLoading) {
+      bottomButtons.add(cancelButton);
+      if (proceedButton != null) {
+        bottomButtons.add(proceedButton);
+      }
+      if (isKeyboardShown) {
+        bottomButtons = [];
+      }
     }
 
     List<Widget> stackWidgets = [];
@@ -205,20 +173,7 @@ class CancelAndProceedTemplateWidgetState
     }
 
     if (showLoading) {
-      stackWidgets.add(Container(
-          width: (MediaQuery.of(context).size.width),
-          height: (MediaQuery.of(context).size.height),
-          child: new Center(
-              child: new ClipRect(
-                  child: new BackdropFilter(
-            filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
-            child: new Container(
-              width: (MediaQuery.of(context).size.width),
-              height: (MediaQuery.of(context).size.height),
-              decoration: new BoxDecoration(
-                  color: Colors.grey.shade200.withOpacity(0.5)),
-            ),
-          )))));
+      stackWidgets.add(PendingWidget());
     }
 
     stackWidgets.add(Align(
