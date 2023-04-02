@@ -304,6 +304,14 @@ class TileWidgetState extends State<TileWidget>
         ));
       }
     }
+    if (this.widget.subEvent.isRigid ?? false) {
+      allElements.add(Container(
+          child: Icon(
+        Icons.lock_outline,
+        color: Color.fromRGBO(31, 31, 31, .7),
+        size: 30,
+      )));
+    }
 
     return AnimatedSize(
         duration: Duration(milliseconds: 250),
@@ -366,7 +374,7 @@ class TileWidgetState extends State<TileWidget>
       Duration travelDuration = Duration(
           milliseconds: this.widget.subEvent.travelTimeBefore!.toInt());
       Timeline travelTimeLine = Timeline.fromDateTimeAndDuration(
-          this.widget.subEvent.startTime!.add(-travelDuration), travelDuration);
+          this.widget.subEvent.startTime.add(-travelDuration), travelDuration);
       Widget travelTimeWidget = renderTravelTime(travelTimeLine);
       columnChildren.insert(0, travelTimeWidget);
     }
