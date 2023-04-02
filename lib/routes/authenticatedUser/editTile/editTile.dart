@@ -43,6 +43,7 @@ class _EditTileState extends State<EditTile> {
   EditDateAndTime? _editCalStartDateAndTime;
   EditDateAndTime? _editCalEndDateAndTime;
   StartEndDurationTimeline? _startEndDurationTimeline;
+  bool hideButtons = false;
 
   @override
   void initState() {
@@ -177,6 +178,7 @@ class _EditTileState extends State<EditTile> {
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
+        hideButtons: hideButtons,
         child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
           listener: (context, state) {
             if (state is SubCalendarTileLoadedState) {
@@ -409,6 +411,7 @@ class _EditTileState extends State<EditTile> {
                 callBack: (status, Future responseFuture) {
                   setState(() {
                     isPendingSubEventProcessing = true;
+                    hideButtons = true;
                   });
                   responseFuture.then((value) {
                     if (!this.mounted) {
@@ -416,6 +419,7 @@ class _EditTileState extends State<EditTile> {
                     }
                     setState(() {
                       isPendingSubEventProcessing = false;
+                      hideButtons = false;
                     });
                     final currentState =
                         this.context.read<ScheduleBloc>().state;
