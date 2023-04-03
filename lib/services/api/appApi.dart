@@ -114,7 +114,7 @@ abstract class AppApi {
 
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
       {bool injectLocation = true, bool analyze = true}) async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;

@@ -172,5 +172,6 @@
                 "type": "String",
                 "example": "5 Hours"
               }
-            }}
+            }},
+            "issuesConnectingToTiler": "Issues connecting to Tiler"
 }

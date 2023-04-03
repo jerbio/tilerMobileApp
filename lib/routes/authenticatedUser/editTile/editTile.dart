@@ -487,4 +487,12 @@ class _EditTileState extends State<EditTile> {
           automaticallyImplyLeading: false,
         ));
   }
+
+  @override
+  void dispose() {
+    if (splitCountController != null) {
+      splitCountController!.dispose();
+    }
+    super.dispose();
+  }
 }

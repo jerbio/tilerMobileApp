@@ -63,9 +63,9 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
 
-    rowSymbolElements.add(completeWidget);
+    // rowSymbolElements.add(completeWidget);
     rowSymbolElements.add(warnWidget);
-    rowSymbolElements.add(sleepWidget);
+    // rowSymbolElements.add(sleepWidget);
     Widget retValue = Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: rowSymbolElements,

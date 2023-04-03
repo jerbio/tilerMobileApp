@@ -55,7 +55,7 @@ class TileNameApi extends AppApi {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
 
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
 
       final queryParameters = {

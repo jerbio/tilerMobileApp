@@ -514,7 +514,7 @@ class EventNameSearchState extends SearchWidgetState {
                       fontFamily: 'Rubik',
                       fontWeight: FontWeight.w500),
                   contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                  fillColor: TileStyles.textBackgroundColor,
+                  fillColor: TileStyles.primaryContrastColor,
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(15.0),

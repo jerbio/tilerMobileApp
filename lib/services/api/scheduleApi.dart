@@ -26,7 +26,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       DateTime dateTime = DateTime.now();
@@ -77,7 +77,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
       String tileName) async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       DateTime dateTime = DateTime.now();
@@ -158,7 +158,8 @@ class ScheduleApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Did not send request";
     bool userIsAuthenticated = true;
-    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -216,7 +217,8 @@ class ScheduleApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;
-    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
