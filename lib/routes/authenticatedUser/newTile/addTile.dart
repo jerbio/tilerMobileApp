@@ -899,7 +899,7 @@ class AddTileState extends State<AddTile> {
         print(subEvent.name);
       }
       if (this.widget.newTileParams != null) {
-        this.widget.newTileParams!['newTile'] = newlyAddedTile;
+        this.widget.newTileParams!['newTile'] = newlyAddedTile.item1;
       }
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {

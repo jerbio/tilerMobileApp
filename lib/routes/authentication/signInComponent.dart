@@ -177,7 +177,7 @@ class SignInComponentState extends State<SignInComponent> {
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.person),
-        contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
@@ -197,7 +197,7 @@ class SignInComponentState extends State<SignInComponent> {
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.email),
-        contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
@@ -251,7 +251,7 @@ class SignInComponentState extends State<SignInComponent> {
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.lock),
-        contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
@@ -371,10 +371,11 @@ class SignInComponentState extends State<SignInComponent> {
         autofillHints: [AutofillHints.newPassword],
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.confirmPassword,
+          labelText: AppLocalizations.of(context)!.confirmPassword,
           filled: true,
           isDense: true,
           prefixIcon: Icon(Icons.lock),
-          contentPadding: EdgeInsets.fromLTRB(10, 20, 0, 0),
+          contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           fillColor: Color.fromRGBO(255, 255, 255, .75),
         ),
       );

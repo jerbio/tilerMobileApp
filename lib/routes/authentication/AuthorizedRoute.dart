@@ -271,7 +271,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                       if (newSubEventParams != null) {
                         print('Newly created tile');
                         print(newTileParams);
-                        var subEvent = newSubEventParams.item1;
+                        var subEvent = newSubEventParams;
                         int redColor = subEvent.colorRed == null
                             ? 125
                             : subEvent.colorRed!;

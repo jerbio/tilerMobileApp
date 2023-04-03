@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -16,6 +17,7 @@ import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import '../../../constants.dart' as Constants;
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -23,6 +25,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class TileList extends StatefulWidget {
   SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
+  static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
   @override
@@ -30,6 +33,7 @@ class TileList extends StatefulWidget {
 }
 
 class _TileListState extends State<TileList> {
+  Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
       DateTime.now().add(Duration(days: -3)), Duration(days: 7));
   Timeline? oldTimeline;
@@ -139,6 +143,63 @@ class _TileListState extends State<TileList> {
       }
       localNotificationService.initialize(this.context);
     });
+  }
+
+  void handleRenderingOfNewTile(SubCalendarEvent subEvent) {
+    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
+    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
+    double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
+    var nameColor = Color.fromRGBO(redColor, greenColor, blueColor, opacity);
+
+    var hslColor = HSLColor.fromColor(nameColor);
+    Color bgroundColor =
+        hslColor.withLightness(hslColor.lightness).toColor().withOpacity(0.7);
+    showModalBottomSheet<void>(
+      context: context,
+      constraints: BoxConstraints(
+        maxWidth: 400,
+      ),
+      builder: (BuildContext context) {
+        var future = new Future.delayed(
+            const Duration(milliseconds: Constants.autoHideInMs));
+        future.asStream().listen((input) {
+          Navigator.pop(context);
+        });
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: 250,
+          width: 300,
+          decoration: BoxDecoration(
+            color: bgroundColor,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                NewTileSheet(subEvent: subEvent),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  handleParamLoading() {
+    Map? contextParams = ModalRoute.of(context)?.settings.arguments as Map?;
+    this.contextParams = contextParams ?? {};
+
+    if (this.contextParams!.containsKey(TileList.routeName) &&
+        this.contextParams![TileList.routeName] != null) {
+      Map consumables = this.contextParams![TileList.routeName];
+      if (consumables.containsKey('newTile') &&
+          consumables['newTile'] != null) {
+        handleRenderingOfNewTile(consumables['newTile']);
+        consumables['newTile'] = null;
+      }
+    }
   }
 
   Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> mapTilesToDays(
@@ -301,7 +362,7 @@ class _TileListState extends State<TileList> {
         List<TilerEvent> elapsedTiles = [];
         List<TilerEvent> notElapsedTiles = [];
         for (TilerEvent eachSubEvent in todayTiles) {
-          if (eachSubEvent.endTime!.millisecondsSinceEpoch >
+          if (eachSubEvent.endTime.millisecondsSinceEpoch >
               currentTime.millisecondsSinceEpoch) {
             notElapsedTiles.add(eachSubEvent);
           } else {
@@ -455,6 +516,7 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
+    handleParamLoading();
     return BlocListener<ScheduleBloc, ScheduleState>(
       listener: (context, state) {
         if (state is ScheduleLoadingState) {

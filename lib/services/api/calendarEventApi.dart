@@ -44,7 +44,7 @@ class CalendarEventApi extends AppApi {
   Future<CalendarEvent> delete(String eventId, String thirdPartyId) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       error.message = "Did not send request";
       String url = Constants.tilerDomain;
@@ -144,7 +144,7 @@ class CalendarEventApi extends AppApi {
     String tilerDomain = Constants.tilerDomain;
     // String url = tilerDomain + 'api/SubCalendarEvent';
     // return getAdHocSubEventId(id);
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;

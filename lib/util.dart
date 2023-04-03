@@ -625,12 +625,15 @@ extension ListEnhance on List {
     throw new Exception('Cannot get a random entry from an empty list');
   }
 
-  List getRandomize() {
+  List getRandomize({int? seed}) {
     List retValue = [];
     List listCopy = this.toList();
-
+    Random randomizer = Utility.randomizer;
+    if (seed != null) {
+      randomizer = Random(seed);
+    }
     while (listCopy.length > 0) {
-      int index = Utility.randomizer.nextInt(listCopy.length);
+      int index = randomizer.nextInt(listCopy.length);
       retValue.add(listCopy[index]);
       listCopy.removeAt(index);
     }

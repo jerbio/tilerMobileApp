@@ -16,7 +16,7 @@ import '../../constants.dart' as Constants;
 class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> getSubEvent(String id) async {
     // return getAdHocSubEventId(id);
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
@@ -49,7 +49,7 @@ class SubCalendarEventApi extends AppApi {
     }
     // return getAdHocSubEventId(id);
     if (ids.length <= batchSize) {
-      if (await this.authentication.isUserAuthenticated()) {
+      if ((await this.authentication.isUserAuthenticated()).item1) {
         await this.authentication.reLoadCredentialsCache();
         String tilerDomain = Constants.tilerDomain;
         String url = tilerDomain;
@@ -216,7 +216,7 @@ class SubCalendarEventApi extends AppApi {
   Future<CalendarEvent> delete(String eventId, String thirdPartyId) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       error.message = "Did not send request";
       String url = Constants.tilerDomain;
@@ -263,7 +263,8 @@ class SubCalendarEventApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Did not procrastinate tile";
     bool userIsAuthenticated = true;
-    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       if (this.authentication.cachedCredentials != null) {

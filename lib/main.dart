@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -21,6 +22,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
+import 'package:tuple/tuple.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
@@ -48,10 +50,32 @@ void main() {
 
 class TilerApp extends StatelessWidget {
   bool isAuthenticated = false;
-  Future<bool> authenticateUser() async {
+  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
     Authentication authentication = new Authentication();
-    isAuthenticated = await authentication.isUserAuthenticated();
-    return isAuthenticated;
+    var authenticationResult = await authentication.isUserAuthenticated();
+    return authenticationResult;
+  }
+
+  void showMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+
+  void showErrorMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.red,
+        fontSize: 16.0);
   }
 
   Widget renderPending() {
@@ -118,12 +142,19 @@ class TilerApp extends StatelessWidget {
             Locale('en', ''), // English, no country code
             Locale('es', ''), // Spanish, no country code
           ],
-          home: FutureBuilder<bool>(
-              future: authenticateUser(),
-              builder: (context, AsyncSnapshot<bool> snapshot) {
+          home: FutureBuilder<Tuple2<bool, String>>(
+              future: authenticateUser(context),
+              builder: (context, AsyncSnapshot<Tuple2<bool, String>> snapshot) {
                 Widget retValue;
                 if (snapshot.hasData) {
-                  if (isAuthenticated) {
+                  if (!snapshot.data!.item1 &&
+                      snapshot.data!.item2 == Constants.cannotVerifyError) {
+                    showErrorMessage(
+                        AppLocalizations.of(context)!.issuesConnectingToTiler);
+                    return renderPending();
+                  }
+
+                  if (snapshot.data!.item1) {
                     retValue = AuthorizedRoute();
                   } else {
                     retValue = SignInRoute();

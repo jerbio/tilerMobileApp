@@ -16,16 +16,7 @@ var autoTileParams = [
   },
   {
     'id': Utility.getUuid,
-    'descriptions': ['Pillow fort', 'Build a fort'],
-    'durations': [Utility.thirtyMin, Utility.oneHour],
-    'relevance': 4,
-    'assets': [
-      'assets/images/regenerativeArt/pictimely_build_a_pillow_fort_d77bbb89-2e18-4e70-a547-a78d9b9eee83.png'
-    ]
-  },
-  {
-    'id': Utility.getUuid,
-    'descriptions': ['House renovation project', 'Learn magic trick'],
+    'descriptions': ['House renovation project'],
     'relevance': 5,
     'durations': [
       Utility.thirtyMin,
@@ -35,20 +26,8 @@ var autoTileParams = [
       Duration(hours: 6),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_cute_photo_of_woman_and_man_working_together_looking__49c9615b-3c01-4914-aa4c-be6aaeba779d.png'
-    ]
-  },
-  {
-    'id': Utility.getUuid,
-    'descriptions': ['Origami', 'Paper art'],
-    'durations': [
-      Utility.thirtyMin,
-      Utility.oneHour,
-      Duration(hours: 2),
-    ],
-    'relevance': 5,
-    'assets': [
-      'assets/images/regenerativeArt/pictimely_Do_some_origami_43731a0a-393c-434e-ab3e-1c5bb10143b2.png'
+      'assets/images/regenerativeArt/pictimely_cute_photo_of_woman_and_man_working_together_looking__49c9615b-3c01-4914-aa4c-be6aaeba779d.png',
+      'assets/images/regenerativeArt/pictimely_people_working_on_home_renovation_project_together_45fb172b-3105-45e0-bc2b-adf7dd5963f6.png'
     ]
   },
   {
@@ -75,7 +54,6 @@ var autoTileParams = [
     'durations': [
       Duration(hours: 2),
       Duration(hours: 4),
-      Duration(hours: 6),
     ],
     'relevance': 4,
     'assets': [
@@ -96,7 +74,8 @@ var autoTileParams = [
       Duration(hours: 4),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png'
+      'assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png',
+      'assets/images/regenerativeArt/pictimely_people_working_on_home_renovation_project_together_45fb172b-3105-45e0-bc2b-adf7dd5963f6.png'
     ]
   },
   {
@@ -131,22 +110,10 @@ var autoTileParams = [
     'relevance': 5,
     'durations': [
       Duration(hours: 2),
-      Duration(hours: 4),
+      Duration(hours: 1),
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_plant_indoor_garden_fb195907-8fd8-4c03-b998-61eb0d000f5f.png'
-    ]
-  },
-  {
-    'id': Utility.getUuid,
-    'descriptions': ['Make a T-shirt'],
-    'relevance': 5,
-    'durations': [
-      Duration(hours: 2),
-      Duration(hours: 4),
-    ],
-    'assets': [
-      'assets/images/regenerativeArt/pictimely_make_a_tshirt_05b6d04b-a565-4683-bbf8-6e208acee019.png'
     ]
   },
   {
@@ -175,20 +142,6 @@ var autoTileParams = [
   },
   {
     'id': Utility.getUuid,
-    'descriptions': ['Listen to music', 'Listen to your favorite artist'],
-    'relevance': 3,
-    'durations': [
-      Duration(minutes: 5),
-      Duration(minutes: 15),
-      Duration(minutes: 30),
-      Duration(hours: 1),
-    ],
-    'assets': [
-      'assets/images/regenerativeArt/pictimely_people_trying_to_find_something_to_do_while_listening_7fcfd84e-fde9-44b1-8835-470d9ff7036d.png'
-    ]
-  },
-  {
-    'id': Utility.getUuid,
     'descriptions': ['Redesign room', 'Rearrange home'],
     'relevance': 2,
     'durations': [
@@ -199,6 +152,30 @@ var autoTileParams = [
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_decorate_a_room_05c28f1e-30fb-44f9-9738-30fe5decab93.png'
+    ]
+  },
+  {
+    'id': Utility.getUuid,
+    'descriptions': ['Laundry'],
+    'relevance': 2,
+    'durations': [
+      Duration(minutes: 30),
+      Duration(hours: 1),
+    ],
+    'assets': [
+      'assets/images/regenerativeArt/pictimely_finishing_laundry_washing_machine_pressing_iron_or_st_5edd658e-47fa-4ac4-8466-09ad60cb40d2.png'
+    ]
+  },
+  {
+    'id': Utility.getUuid,
+    'descriptions': ['Dinner', 'Coffee with a friend'],
+    'relevance': 2,
+    'durations': [
+      Duration(minutes: 30),
+      Duration(hours: 1),
+    ],
+    'assets': [
+      'assets/images/regenerativeArt/pictimely_barista_coffee_hanging_out_with_friends_at_a_coffee_s_0727cbe5-5c3b-4dd1-956f-7aa51dbdbd2b.png'
     ]
   }
 ];
