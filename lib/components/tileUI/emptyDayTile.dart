@@ -25,8 +25,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
     int daySeed =
         Utility.getDayIndex(this.widget.deadline ?? Utility.currentTime());
-    int durationInMs =
-        autoTilesByDuration.keys.toList().getRandomize(seed: daySeed).first;
+    int durationInMs = autoTilesByDuration.keys.toList().getRandomize().first;
     List<AutoTile> autoTilesWithDuplicateCategory =
         autoTilesByDuration[durationInMs]!
             .getRandomize(seed: daySeed)
