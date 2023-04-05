@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -33,6 +35,9 @@ class TileList extends StatefulWidget {
 }
 
 class _TileListState extends State<TileList> {
+  final Duration autorefresh = const Duration(minutes: 2);
+  StreamSubscription? autoRefreshList;
+  DateTime lastUpdate = Utility.currentTime();
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
       DateTime.now().add(Duration(days: -3)), Duration(days: 7));
@@ -85,6 +90,7 @@ class _TileListState extends State<TileList> {
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
+            lastUpdate = Utility.currentTime();
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: renderedSubEvents,
@@ -99,6 +105,7 @@ class _TileListState extends State<TileList> {
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
+            lastUpdate = Utility.currentTime();
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: renderedSubEvents,
@@ -119,6 +126,7 @@ class _TileListState extends State<TileList> {
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
+            lastUpdate = Utility.currentTime();
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: renderedSubEvents,
@@ -133,6 +141,7 @@ class _TileListState extends State<TileList> {
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
+            lastUpdate = Utility.currentTime();
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
               previousSubEvents: renderedSubEvents,
@@ -185,21 +194,6 @@ class _TileListState extends State<TileList> {
         );
       },
     );
-  }
-
-  handleParamLoading() {
-    Map? contextParams = ModalRoute.of(context)?.settings.arguments as Map?;
-    this.contextParams = contextParams ?? {};
-
-    if (this.contextParams!.containsKey(TileList.routeName) &&
-        this.contextParams![TileList.routeName] != null) {
-      Map consumables = this.contextParams![TileList.routeName];
-      if (consumables.containsKey('newTile') &&
-          consumables['newTile'] != null) {
-        handleRenderingOfNewTile(consumables['newTile']);
-        consumables['newTile'] = null;
-      }
-    }
   }
 
   Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> mapTilesToDays(
@@ -516,22 +510,81 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    handleParamLoading();
-    return BlocListener<ScheduleBloc, ScheduleState>(
-      listener: (context, state) {
-        if (state is ScheduleLoadingState) {
-          if (state.message != null) {
-            Fluttertoast.showToast(
-                msg: state.message!,
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.SNACKBAR,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
+          if (state is ScheduleLoadingState) {
+            if (state.message != null) {
+              Fluttertoast.showToast(
+                  msg: state.message!,
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.SNACKBAR,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.black45,
+                  textColor: Colors.white,
+                  fontSize: 16.0);
+            }
           }
-        }
-      },
+        }),
+        BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
+          listener: (context, state) {
+            if (state is NewSubCalendarTilesLoadedState) {
+              if (state.subEvent != null) {
+                SubCalendarEvent subEvent = state.subEvent!;
+                int redColor =
+                    subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+                int blueColor =
+                    subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
+                int greenColor =
+                    subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
+                double opacity =
+                    subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
+                var nameColor =
+                    Color.fromRGBO(redColor, greenColor, blueColor, opacity);
+
+                var hslColor = HSLColor.fromColor(nameColor);
+                Color bgroundColor = hslColor
+                    .withLightness(hslColor.lightness)
+                    .toColor()
+                    .withOpacity(0.7);
+                showModalBottomSheet<void>(
+                  context: context,
+                  constraints: BoxConstraints(
+                    maxWidth: 400,
+                  ),
+                  builder: (BuildContext context) {
+                    var future = new Future.delayed(
+                        const Duration(milliseconds: Constants.autoHideInMs));
+                    future.asStream().listen((input) {
+                      Navigator.pop(context);
+                    });
+                    return Container(
+                      padding: const EdgeInsets.all(20),
+                      height: 250,
+                      width: 300,
+                      decoration: BoxDecoration(
+                        color: bgroundColor,
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            NewTileSheet(subEvent: subEvent),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              }
+            }
+          },
+        ),
+        // BlocListener<BlocC, BlocCState>(
+        //   listener: (context, state) {},
+        // ),
+      ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           if (state is ScheduleLoadedState) {
