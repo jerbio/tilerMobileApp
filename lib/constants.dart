@@ -1,4 +1,4 @@
-const bool isProduction = true;
+const bool isProduction = false;
 const bool isDebug = !isProduction;
 const bool isRemote = false;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';

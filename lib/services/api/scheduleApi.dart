@@ -75,6 +75,41 @@ class ScheduleApi extends AppApi {
     return retValue;
   }
 
+  Future<dynamic> getDaySummary(Timeline timeLine) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      DateTime dateTime = DateTime.now();
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = this.authentication.cachedCredentials!.username;
+        final queryParameters = {
+          'UserName': username,
+          'StartRange': timeLine.start!.toInt().toString(),
+          'EndRange': timeLine.end!.toInt().toString(),
+          'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+          'MobileApp': true.toString()
+        };
+        Uri uri =
+            Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
+
+        var header = this.getHeaders();
+
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult)) {
+              return jsonResult['Content'];
+            }
+          }
+        }
+      }
+    }
+    var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
+    return retValue;
+  }
+
   Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
       String tileName) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
