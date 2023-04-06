@@ -493,11 +493,6 @@ class EventNameSearchState extends SearchWidgetState {
           },
           child: BlocBuilder<ScheduleBloc, ScheduleState>(
               builder: (context, scheduleState) {
-            if (scheduleState is ScheduleLoadingState) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                Navigator.pop(context);
-              });
-            }
             String hintText = AppLocalizations.of(context)!.tileName;
             this.widget.onChanged = this._onInputFieldChange;
             this.widget.resultMargin = EdgeInsets.fromLTRB(0, 70, 0, 0);
