@@ -83,6 +83,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: timeline,
           isAlreadyLoaded: true,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
       await getSubTiles(updateTimeline).then((value) {
         emit(ScheduleLoadedState(
@@ -98,6 +99,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: [],
           timelines: [],
           isAlreadyLoaded: false,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
 
       await getSubTiles(updateTimeline).then((value) {
@@ -115,7 +117,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: state.lookupTimeline,
           isAlreadyLoaded: true,
-          connectionState: ConnectionState.waiting));
+          connectionState: ConnectionState.waiting,
+          evaluationTime: Utility.currentTime()));
 
       await getSubTiles(updateTimeline).then((value) async {
         emit(ScheduleLoadedState(

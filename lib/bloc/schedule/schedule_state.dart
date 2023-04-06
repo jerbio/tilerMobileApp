@@ -11,6 +11,7 @@ abstract class ScheduleState extends Equatable {
 class ScheduleInitialState extends ScheduleState {}
 
 class ScheduleLoadingState extends ScheduleState {
+  DateTime evaluationTime;
   List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
   Timeline? previousLookupTimeline;
@@ -23,6 +24,7 @@ class ScheduleLoadingState extends ScheduleState {
       this.timelines = const <Timeline>[],
       required this.isAlreadyLoaded,
       required this.connectionState,
+      required this.evaluationTime,
       this.previousLookupTimeline,
       this.message});
 

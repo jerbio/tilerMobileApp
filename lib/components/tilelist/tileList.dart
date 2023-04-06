@@ -106,6 +106,22 @@ class _TileListState extends State<TileList> {
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
         }
+
+        if (currentState is ScheduleLoadingState &&
+            !currentState.evaluationTime.isAfter(
+                currentState.evaluationTime.add(Duration(minutes: 1)))) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
       } else if (_scrollController.position.pixels <= minScrollLimit &&
           _scrollController.position.userScrollDirection.index == 1) {
         final currentState = this.context.read<ScheduleBloc>().state;
@@ -128,6 +144,22 @@ class _TileListState extends State<TileList> {
         }
 
         if (currentState is ScheduleEvaluationState) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+
+        if (currentState is ScheduleLoadingState &&
+            !currentState.evaluationTime.isAfter(
+                currentState.evaluationTime.add(Duration(minutes: 1)))) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
