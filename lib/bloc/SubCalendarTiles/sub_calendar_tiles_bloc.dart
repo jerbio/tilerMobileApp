@@ -17,6 +17,7 @@ class SubCalendarTileBloc
     on<GetSubCalendarTileBlocEvent>(_onLoadSubCalendarTile);
     on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
     on<GetListOfSubCalendarTilesBlocEvent>(_onLoadListOfSubCalendarTiles);
+    on<NewSubCalendarTileBlocEvent>(_onNewSubTileCreatedState);
   }
 
   void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event,
@@ -41,6 +42,12 @@ class SubCalendarTileBloc
         .then((value) {
       emit(SubCalendarTileLoadedState(subEvent: value));
     });
+  }
+
+  void _onNewSubTileCreatedState(NewSubCalendarTileBlocEvent event,
+      Emitter<SubCalendarTileState> emit) async {
+    final state = this.state;
+    emit(NewSubCalendarTilesLoadedState(subEvent: event.subEvent));
   }
 
   void _onLoadListOfSubCalendarTiles(GetListOfSubCalendarTilesBlocEvent event,
