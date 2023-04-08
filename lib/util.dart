@@ -36,10 +36,18 @@ class Utility {
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
-  static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
-  static DateTime currentTime() {
-    return DateTime.now();
+
+  static DateTime currentTime({bool minuteLimitAccuracy = true}) {
+    DateTime time = DateTime.now();
+    if (minuteLimitAccuracy) {
+      DateTime retValue =
+          DateTime(time.year, time.month, time.day, time.hour, time.minute);
+      time = retValue;
+    }
+    return time;
   }
+
+  static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
 
   static final Position _defaultPosition = new Position(
       longitude: 7777,
@@ -137,13 +145,101 @@ class Utility {
         .toLocal();
   }
 
-  static utcEpochMillisecondsFromDateTime(DateTime dateTime) {
+  static int utcEpochMillisecondsFromDateTime(DateTime dateTime) {
     return dateTime.toLocal().toUtc().millisecondsSinceEpoch;
   }
 
   static get initialScheduleTimeline {
     return Timeline.fromDateTimeAndDuration(
         Utility.currentTime().add(Duration(days: -3)), Duration(days: 7));
+  }
+
+  static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
+      Timeline timeLine,
+      {bool forceInterFerringWithNowTile = true}) {
+    int subEventCount = Random().nextInt(20);
+    while (subEventCount < 1) {
+      subEventCount = Random().nextInt(20);
+    }
+
+    List<Timeline> sleepTimeLines = [];
+    List<SubCalendarEvent> refreshedSubEvents = [];
+    if (forceInterFerringWithNowTile) {
+      SubCalendarEvent adHocInterferringWithNowTile = new SubCalendarEvent(
+          name: Utility.randomName,
+          start: Utility.msCurrentTime.toInt() -
+              Utility.oneMin.inMilliseconds.toInt(),
+          end: Utility.msCurrentTime.toInt() +
+              Utility.oneMin.inMilliseconds.toInt(),
+          address: Utility.randomName,
+          addressDescription: Utility.randomName);
+      adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
+      adHocInterferringWithNowTile.colorGreen = Random().nextInt(255);
+      adHocInterferringWithNowTile.colorRed = Random().nextInt(255);
+      adHocInterferringWithNowTile.id = Utility.getUuid;
+      refreshedSubEvents.add(adHocInterferringWithNowTile);
+    }
+
+    int maxDuration = Duration.millisecondsPerHour * 3;
+    for (int i = 0; i < subEventCount; i++) {
+      int durationMs = Random().nextInt(maxDuration);
+      while (durationMs < 1) {
+        durationMs = Random().nextInt(maxDuration);
+      }
+      int startLimit =
+          timeLine.start! - durationMs - Utility.oneMin.inMilliseconds;
+      int endLimit = timeLine.end! + durationMs - Utility.oneMin.inMilliseconds;
+      int durationLimit = endLimit - startLimit;
+      int durationInSec = durationLimit ~/
+          1000; // we need to use seconds because of the random.nextInt of requiring an integer
+      int start = startLimit + ((Random().nextInt(durationInSec)) * 1000);
+      int end = start + durationMs;
+      int dayCount =
+          (durationLimit / Utility.oneDay.inMilliseconds).toDouble().ceil();
+
+      DateTime? startDayTime = timeLine.startTime;
+      DateTime? endDayTime = timeLine.endTime;
+      if (startDayTime != null && endDayTime != null) {
+        startDayTime = new DateTime(
+            startDayTime.year, startDayTime.month, startDayTime.day, 0, 0, 0);
+        endDayTime = new DateTime(
+            endDayTime.year, endDayTime.month, endDayTime.day, 0, 0, 0);
+
+        Timeline timeLine = new Timeline(
+            startDayTime.millisecondsSinceEpoch.toInt(),
+            startDayTime
+                .add(Duration(hours: 6))
+                .millisecondsSinceEpoch
+                .toInt());
+        sleepTimeLines.add(timeLine);
+
+        while (startDayTime!.millisecondsSinceEpoch <
+            endDayTime.millisecondsSinceEpoch) {
+          startDayTime = startDayTime.add(Utility.oneDay);
+          timeLine = new Timeline(
+              startDayTime.millisecondsSinceEpoch.toInt(),
+              startDayTime
+                  .add(Duration(hours: 6))
+                  .millisecondsSinceEpoch
+                  .toInt());
+          sleepTimeLines.add(timeLine);
+        }
+      }
+      SubCalendarEvent subEvent = new SubCalendarEvent(
+          name: Utility.randomName,
+          start: start.toInt(),
+          end: end.toInt(),
+          address: Utility.randomName,
+          addressDescription: Utility.randomName);
+      subEvent.colorBlue = Random().nextInt(255);
+      subEvent.colorGreen = Random().nextInt(255);
+      subEvent.colorRed = Random().nextInt(255);
+      subEvent.id = Utility.getUuid;
+      refreshedSubEvents.add(subEvent);
+    }
+
+    return new Tuple2<List<Timeline>, List<SubCalendarEvent>>(
+        sleepTimeLines, refreshedSubEvents);
   }
 
   static String toHuman(Duration duration,
@@ -529,12 +625,15 @@ extension ListEnhance on List {
     throw new Exception('Cannot get a random entry from an empty list');
   }
 
-  List getRandomize() {
+  List getRandomize({int? seed}) {
     List retValue = [];
     List listCopy = this.toList();
-
+    Random randomizer = Utility.randomizer;
+    if (seed != null) {
+      randomizer = Random(seed);
+    }
     while (listCopy.length > 0) {
-      int index = Utility.randomizer.nextInt(listCopy.length);
+      int index = randomizer.nextInt(listCopy.length);
       retValue.add(listCopy[index]);
       listCopy.removeAt(index);
     }

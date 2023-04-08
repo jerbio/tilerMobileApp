@@ -14,3 +14,4 @@ const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
 const int animationDuration = 500;
 const String requestDelimiter = ',';
+const String cannotVerifyError = 'Cannot verify error';

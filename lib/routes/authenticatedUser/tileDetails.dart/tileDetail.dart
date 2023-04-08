@@ -153,6 +153,19 @@ class _TileDetailState extends State<TileDetail> {
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
       onProceed: this.onProceed,
+      appBar: AppBar(
+        backgroundColor: TileStyles.primaryColor,
+        title: Text(
+          AppLocalizations.of(context)!.edit,
+          style: TextStyle(
+              color: TileStyles.appBarTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
+        ),
+        centerTitle: true,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
       child: BlocListener<CalendarTileBloc, CalendarTileState>(
         listener: (context, state) {
           if (state is CalendarTileLoaded) {
@@ -218,7 +231,9 @@ class _TileDetailState extends State<TileDetail> {
             Widget? splitWidget;
 
             var inputChildWidgets = <Widget>[
-              _editTileName!,
+              FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: _editTileName!),
             ];
 
             String tileNote = this.editTilerEvent?.note ??
@@ -264,8 +279,9 @@ class _TileDetailState extends State<TileDetail> {
                   widthFactor: TileStyles.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           child: Text(AppLocalizations.of(context)!.start,
@@ -283,8 +299,9 @@ class _TileDetailState extends State<TileDetail> {
                   widthFactor: TileStyles.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
+                    child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                           child: Text(AppLocalizations.of(context)!.end,
@@ -318,12 +335,18 @@ class _TileDetailState extends State<TileDetail> {
 
             if (calEvent!.subEvents != null &&
                 calEvent!.subEvents!.length > 0) {
-              inputChildWidgets.add(TileCarousel(
-                  subEventIds:
-                      calEvent!.subEvents!.map((e) => e.id!).toList()));
+              inputChildWidgets.add(FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: TileCarousel(
+                        subEventIds:
+                            calEvent!.subEvents!.map((e) => e.id!).toList()),
+                  )));
             }
 
             return Container(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
               margin: TileStyles.topMargin,
               alignment: Alignment.topCenter,
               child: ListView(

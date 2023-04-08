@@ -58,7 +58,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
         title: Text(
           AppLocalizations.of(context)!.procrastinate,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

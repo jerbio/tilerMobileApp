@@ -157,7 +157,7 @@ class _ForecastPreviewState extends State<ForecastPreview> {
         title: Text(
           AppLocalizations.of(context)!.forecast,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

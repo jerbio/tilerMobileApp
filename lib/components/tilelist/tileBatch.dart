@@ -4,12 +4,14 @@ import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/daySummary.dart';
 import 'package:tiler_app/components/tileUI/chillNow.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/loadingTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
+import 'package:tiler_app/data/dayData.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
@@ -32,6 +34,7 @@ class TileBatch extends StatefulWidget {
   String? header;
   String? footer;
   int? dayIndex;
+  DayData? dayData;
   ConnectionState? connectionState;
 
   TileBatch(
@@ -42,6 +45,7 @@ class TileBatch extends StatefulWidget {
       this.sleepTimeline,
       this.connectionState,
       this.previousRenderedTiles,
+      this.dayData,
       Key? key})
       : super(key: key);
 
@@ -57,8 +61,19 @@ class TileBatchState extends State<TileBatch> {
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
       new Map<String, Tuple2<TilerEvent, RemovalType>>();
   List<Widget> childrenColumnWidgets = [];
-
   Timeline? sleepTimeline;
+  DayData? _dayData;
+
+  @override
+  void initState() {
+    super.initState();
+    if (this.widget.dayIndex != null) {
+      _dayData = DayData.generateRandomDayData(this.widget.dayIndex!);
+    }
+    if (this.widget.dayData != null) {
+      _dayData = this.widget.dayData!;
+    }
+  }
 
   void updateSubEvents(List<TilerEvent> updatedTiles) {
     Map<String, TilerEvent> currentTiles = new Map.from(tiles);
@@ -132,7 +147,7 @@ class TileBatchState extends State<TileBatch> {
           print('---sleep TL 1 -- ' + sleepTimeline!.startTime.toString() + '');
           postSleepTiles = new HashSet();
           sleepTileEvent = new Timeline(
-              widget.sleepTimeline!.startInMs!, widget.sleepTimeline!.endInMs!);
+              widget.sleepTimeline!.start!, widget.sleepTimeline!.end!);
 
           List<TimeRange> contiguousSleep = allTiles.where((tile) {
             bool isInterfering = sleepTileEvent.isInterfering(tile);
@@ -203,21 +218,12 @@ class TileBatchState extends State<TileBatch> {
       isInitialized = true;
     }
     childrenColumnWidgets = [];
-    if (widget.header != null) {
-      Container headerContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
-        alignment: Alignment.centerLeft,
-        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
-      );
-      SizedBox topHeaderMargin = SizedBox(
-        height: 10,
-      );
-      childrenColumnWidgets.add(topHeaderMargin);
-      childrenColumnWidgets.add(headerContainer);
-      SizedBox bottomHeaderMargin = SizedBox(
-        height: 10,
-      );
-      childrenColumnWidgets.add(bottomHeaderMargin);
+    if (_dayData != null) {
+      this._dayData!.nonViableTiles = tiles.values
+          .where(
+              (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
+          .toList();
+      childrenColumnWidgets.add(DaySummary(dayData: this._dayData!));
     }
 
     Widget? sleepWidget;
@@ -291,23 +297,6 @@ class TileBatchState extends State<TileBatch> {
       ));
     }
 
-    if (widget.footer != null) {
-      Container footerContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
-        alignment: Alignment.centerLeft,
-        child: Text(widget.footer!, style: TileBatch.dayHeaderTextStyle),
-      );
-      SizedBox topFooterMargin = SizedBox(
-        height: 10,
-      );
-      childrenColumnWidgets.add(topFooterMargin);
-      childrenColumnWidgets.add(footerContainer);
-      SizedBox bottomFooterMargin = SizedBox(
-        height: 10,
-      );
-      childrenColumnWidgets.add(bottomFooterMargin);
-    }
-
     if (sleepWidget != null && sleepTimeline != null) {
       if (childrenColumnWidgets.contains(sleepWidget)) {
         print('---sleep TL 4 -- ' +
@@ -334,8 +323,6 @@ class TileBatchState extends State<TileBatch> {
     }
     return Container(
       width: (MediaQuery.of(context).size.width * 0.90),
-      margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-      padding: EdgeInsets.fromLTRB(0, 50, 0, 100),
       decoration: BoxDecoration(
         color: Colors.white70,
         borderRadius: BorderRadius.circular(35),

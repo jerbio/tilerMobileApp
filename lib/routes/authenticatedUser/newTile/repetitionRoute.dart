@@ -259,7 +259,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
     if (tileTimeline != null &&
         this.repetitionData != null &&
         this.repetitionData!.repetitionEnd != null) {
-      return tileTimeline!.endInMs! <
+      return tileTimeline!.end! <
           Utility.utcEpochMillisecondsFromDateTime(
               this.repetitionData!.repetitionEnd!);
     }
@@ -373,7 +373,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         title: Text(
           AppLocalizations.of(context)!.repetition,
           style: TextStyle(
-              color: TileStyles.enabledTextColor,
+              color: TileStyles.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

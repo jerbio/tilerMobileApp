@@ -144,7 +144,14 @@ class CustomTimeRestrictionRouteState
         border: Border(bottom: BorderSide(color: TileStyles.disabledColor)));
     if (dayOfWeekRestriction.isSelected) {
       timeBoxDecoration =
-          BoxDecoration(color: HSLColor.fromAHSL(0.12, 198, 1, 0.33).toColor());
+          BoxDecoration(color: TileStyles.primaryColorLightHSL.toColor());
+
+      if (!dayOfWeekRestriction
+          .toRestrictionDay()
+          .restrictionTimeLine!
+          .isValid) {
+        timeBoxDecoration = BoxDecoration(color: TileStyles.accentColor);
+      }
     }
 
     Widget retValue = Row(
@@ -226,6 +233,43 @@ class CustomTimeRestrictionRouteState
     return retValue;
   }
 
+  onProceed() {
+    List<RestrictionDay?> daySelections = this
+        .mapOfWeekDayToDayRestriction
+        .values
+        .map((dayRestriction) => dayRestriction.isSelected
+            ? dayRestriction.toRestrictionDay()
+            : null)
+        .toList();
+    List<RestrictionDay?> nonNullRestrictionDays = daySelections
+        .where((restrictionDay) => restrictionDay != null)
+        .toList();
+    if (this.paramArgs != null) {
+      this.paramArgs!.remove('restrictionProfile');
+      if (nonNullRestrictionDays.isNotEmpty) {
+        RestrictionProfile restrictionProfile =
+            RestrictionProfile(daySelection: daySelections);
+        this.paramArgs!['restrictionProfile'] = restrictionProfile;
+      }
+    }
+  }
+
+  bool isProceedReady() {
+    bool retValue = true;
+
+    List<_DayOfWeekRestriction> dayRestrictions = this
+        .mapOfWeekDayToDayRestriction
+        .values
+        .where((dayRestriction) =>
+            dayRestriction != null && dayRestriction.isSelected)
+        .toList();
+    if (dayRestrictions.isNotEmpty) {
+      retValue = !dayRestrictions.any((dayRestriction) =>
+          !dayRestriction.toRestrictionDay().restrictionTimeLine!.isValid);
+    }
+    return retValue;
+  }
+
   @override
   Widget build(BuildContext context) {
     Map restrictionProfileParams =
@@ -236,26 +280,7 @@ class CustomTimeRestrictionRouteState
     }
 
     return CancelAndProceedTemplateWidget(
-        onProceed: () {
-          List<RestrictionDay?> daySelections = this
-              .mapOfWeekDayToDayRestriction
-              .values
-              .map((dayRestriction) => dayRestriction.isSelected
-                  ? dayRestriction.toRestrictionDay()
-                  : null)
-              .toList();
-          List<RestrictionDay?> nonNullRestrictionDays = daySelections
-              .where((restrictionDay) => restrictionDay != null)
-              .toList();
-          if (this.paramArgs != null) {
-            this.paramArgs!.remove('restrictionProfile');
-            if (nonNullRestrictionDays.isNotEmpty) {
-              RestrictionProfile restrictionProfile =
-                  RestrictionProfile(daySelection: daySelections);
-              this.paramArgs!['restrictionProfile'] = restrictionProfile;
-            }
-          }
-        },
+        onProceed: isProceedReady() ? onProceed : null,
         child: Scaffold(
           body: Stack(
             alignment: Alignment.center,

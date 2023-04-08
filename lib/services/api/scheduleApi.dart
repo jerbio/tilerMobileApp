@@ -26,7 +26,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       DateTime dateTime = DateTime.now();
@@ -35,8 +35,8 @@ class ScheduleApi extends AppApi {
         String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {
           'UserName': username,
-          'StartRange': timeLine.startInMs!.toInt().toString(),
-          'EndRange': timeLine.endInMs!.toInt().toString(),
+          'StartRange': timeLine.start!.toInt().toString(),
+          'EndRange': timeLine.end!.toInt().toString(),
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
           'MobileApp': true.toString()
         };
@@ -77,7 +77,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
       String tileName) async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
       DateTime dateTime = DateTime.now();
@@ -176,12 +176,10 @@ class ScheduleApi extends AppApi {
       while (durationMs < 1) {
         durationMs = Random().nextInt(maxDuration);
       }
-      int startLimit = timeLine.startInMs!.toInt() -
-          durationMs -
-          Utility.oneMin.inMilliseconds;
-      int endLimit = timeLine.endInMs!.toInt() +
-          durationMs -
-          Utility.oneMin.inMilliseconds;
+      int startLimit =
+          timeLine.start!.toInt() - durationMs - Utility.oneMin.inMilliseconds;
+      int endLimit =
+          timeLine.end!.toInt() + durationMs - Utility.oneMin.inMilliseconds;
       int durationLimit = endLimit - startLimit;
       int durationInSec = durationLimit ~/
           1000; // we need to use seconds because of the random.nextInt of requiring an integer
@@ -230,6 +228,7 @@ class ScheduleApi extends AppApi {
       subEvent.id = Utility.getUuid;
       refreshedSubEvents.add(subEvent);
     }
+
     this.adhocGeneratedSubEvents.addAll(refreshedSubEvents);
     List<SubCalendarEvent> subEvents = this.adhocGeneratedSubEvents.toList();
     Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> retFuture =
@@ -245,7 +244,8 @@ class ScheduleApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Did not send request";
     bool userIsAuthenticated = true;
-    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -303,7 +303,8 @@ class ScheduleApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;
-    userIsAuthenticated = await this.authentication.isUserAuthenticated();
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;

@@ -41,7 +41,7 @@ class _EditTileNameState extends State<EditTileName> {
     String procrastinateText =
         AppLocalizations.of(context)!.procrastinateBlockOut;
     return FractionallySizedBox(
-        widthFactor: 0.85,
+        widthFactor: 1,
         child: Container(
           width: 380,
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -53,7 +53,7 @@ class _EditTileNameState extends State<EditTileName> {
             enabled: !(this.widget.isProcrastinate),
             controller: this.widget.isProcrastinate ? null : _controller,
             style: TextStyle(
-                fontSize: 20,
+                fontSize: 22.5,
                 fontFamily: TileStyles.rubikFontName,
                 fontWeight: FontWeight.w500,
                 color: Color.fromRGBO(31, 31, 31, 1)),

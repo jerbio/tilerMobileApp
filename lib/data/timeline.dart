@@ -4,65 +4,43 @@ import 'package:tiler_app/util.dart';
 class Timeline with TimeRange {
   String? id = Utility.getUuid;
 
-  int? _startInMs;
-  int? _endInMs;
-
-  set startInMs(int? value) {
-    _startInMs = value;
-    this.start = _startInMs;
-  }
-
-  set endInMs(int? value) {
-    _endInMs = value;
-    this.end = _endInMs;
-  }
-
-  int? get startInMs {
-    return _startInMs;
-  }
-
-  int? get endInMs {
-    return _endInMs;
-  }
-
   DateTime get startTime {
-    return Utility.localDateTimeFromMs(this._startInMs!.toInt());
+    return Utility.localDateTimeFromMs(this.start!.toInt());
   }
 
   DateTime get endTime {
-    return Utility.localDateTimeFromMs(this._endInMs!.toInt());
+    return Utility.localDateTimeFromMs(this.end!.toInt());
   }
 
   Timeline(int? startInMs, int? endInMs) {
-    this.startInMs = startInMs;
-    this.endInMs = endInMs;
-    if (this.startInMs != null || this.endInMs != null) {
-      if (this.startInMs != null && this.endInMs != null) {
-        if (this.startInMs! > this.endInMs!) {
+    this.start = startInMs;
+    this.end = endInMs;
+    if (this.start != null || this.end != null) {
+      if (this.start != null && this.end != null) {
+        if (this.start! > this.end!) {
           throw new Exception('start time cannot be later than end');
         }
       } else {
-        if (this.startInMs != null) {
-          this.endInMs = this.startInMs;
+        if (this.start != null) {
+          this.end = this.start;
         } else {
-          this.startInMs = this.endInMs;
+          this.start = this.end;
         }
       }
     } else {
-      this.startInMs = 0;
-      this.endInMs = 0;
+      this.start = 0;
+      this.end = 0;
     }
   }
 
   toString() {
     String retValue = "";
-    if (this.startInMs != null && this.endInMs != null) {
-      retValue += (new DateTime.fromMillisecondsSinceEpoch(
-                  this.startInMs!.toInt(),
+    if (this.start != null && this.end != null) {
+      retValue += (new DateTime.fromMillisecondsSinceEpoch(this.start!.toInt(),
                   isUtc: true)
               .toString()) +
           ' - ' +
-          (new DateTime.fromMillisecondsSinceEpoch(this.endInMs!.toInt(),
+          (new DateTime.fromMillisecondsSinceEpoch(this.end!.toInt(),
                   isUtc: true)
               .toString());
     }
@@ -71,9 +49,9 @@ class Timeline with TimeRange {
   }
 
   Timeline.fromDateTime(DateTime startTime, DateTime endTime) {
-    this.startInMs = startTime.millisecondsSinceEpoch.toInt();
-    this.endInMs = endTime.millisecondsSinceEpoch.toInt();
-    assert(this.startInMs! <= this.endInMs!);
+    this.start = startTime.millisecondsSinceEpoch.toInt();
+    this.end = endTime.millisecondsSinceEpoch.toInt();
+    assert(this.start! <= this.end!);
   }
 
   Timeline.fromJson(Map<String, dynamic> json) {
@@ -88,18 +66,18 @@ class Timeline with TimeRange {
     }
 
     if (startString != null && endString != null) {
-      this.startInMs = int.parse(startString);
-      this.endInMs = int.parse(endString);
-      assert(this.startInMs! <= this.endInMs!);
+      this.start = int.parse(startString);
+      this.end = int.parse(endString);
+      assert(this.start! <= this.end!);
     } else {
-      this.startInMs = 0;
-      this.endInMs = 0;
+      this.start = 0;
+      this.end = 0;
     }
   }
 
   Timeline.fromDateTimeAndDuration(DateTime startTime, Duration duration) {
-    this.startInMs = startTime.millisecondsSinceEpoch.toInt();
-    this.endInMs = startTime.add(duration).millisecondsSinceEpoch.toInt();
-    assert(this.startInMs! <= this.endInMs!);
+    this.start = startTime.millisecondsSinceEpoch.toInt();
+    this.end = startTime.add(duration).millisecondsSinceEpoch.toInt();
+    assert(this.start! <= this.end!);
   }
 }

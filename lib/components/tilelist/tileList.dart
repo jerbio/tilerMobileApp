@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -17,6 +18,7 @@ import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import '../../../constants.dart' as Constants;
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
@@ -25,6 +27,7 @@ import '../../constants.dart' as Constants;
 class TileList extends StatefulWidget {
   SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
+  static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
   @override
@@ -71,39 +74,103 @@ class _TileListState extends State<TileList> {
     _scrollController.addListener(() {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
-      Timeline updatedTimeline;
+      List<SubCalendarEvent> renderedSubEvents = [];
+      List<Timeline> timeLines = [];
+      Timeline updatedTimeline = Utility.todayTimeline();
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
         final currentState = this.context.read<ScheduleBloc>().state;
+        updatedTimeline = new Timeline(timeLine.start!,
+            (timeLine.end! + Utility.sevenDays.inMilliseconds));
         if (currentState is ScheduleLoadedState) {
+          renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(timeLine.startInMs!,
-              (timeLine.endInMs! + Utility.sevenDays.inMilliseconds));
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
-              previousSubEvents: currentState.subEvents,
+              previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: updatedTimeline));
         }
-      } else if (_scrollController.position.pixels <= minScrollLimit &&
-          _scrollController.position.userScrollDirection.index == 1) {
-        final currentState = this.context.read<ScheduleBloc>().state;
-        if (currentState is ScheduleLoadedState) {
+
+        if (currentState is ScheduleEvaluationState) {
+          renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
-          updatedTimeline = new Timeline(
-              (timeLine.startInMs!.toInt() - Utility.sevenDays.inMilliseconds)
-                  .toInt(),
-              timeLine.endInMs!.toInt());
           setState(() {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetSchedule(
-              previousSubEvents: currentState.subEvents,
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+
+        if (currentState is ScheduleLoadingState &&
+            !currentState.evaluationTime.isAfter(
+                currentState.evaluationTime.add(Duration(minutes: 1)))) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+      } else if (_scrollController.position.pixels <= minScrollLimit &&
+          _scrollController.position.userScrollDirection.index == 1) {
+        final currentState = this.context.read<ScheduleBloc>().state;
+        updatedTimeline = new Timeline(
+            (timeLine.start!.toInt() - Utility.sevenDays.inMilliseconds)
+                .toInt(),
+            timeLine.end!.toInt());
+        if (currentState is ScheduleLoadedState) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+
+        if (currentState is ScheduleEvaluationState) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
+              isAlreadyLoaded: true,
+              previousTimeline: currentTimeline,
+              scheduleTimeline: this.timeLine));
+        }
+
+        if (currentState is ScheduleLoadingState &&
+            !currentState.evaluationTime.isAfter(
+                currentState.evaluationTime.add(Duration(minutes: 1)))) {
+          renderedSubEvents = currentState.subEvents;
+          final currentTimeline = this.timeLine;
+          setState(() {
+            oldTimeline = timeLine;
+            timeLine = updatedTimeline;
+          });
+          this.context.read<ScheduleBloc>().add(GetSchedule(
+              previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
@@ -127,8 +194,8 @@ class _TileListState extends State<TileList> {
           todaySubEvents.add(tile);
           continue;
         }
-        if (todayTimeline.startInMs != null && tile.end != null) {
-          if (todayTimeline.startInMs! > tile.end!) {
+        if (todayTimeline.start != null && tile.end != null) {
+          if (todayTimeline.start! > tile.end!) {
             referenceTime = tile.endTime;
           }
         }
@@ -280,10 +347,10 @@ class _TileListState extends State<TileList> {
         relevantTimeline = currentState.lookupTimeline;
       }
 
-      int startIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
-          relevantTimeline.startInMs!.toInt()));
-      int endIndex = Utility.getDayIndex(DateTime.fromMillisecondsSinceEpoch(
-          relevantTimeline.endInMs!.toInt()));
+      int startIndex = Utility.getDayIndex(
+          DateTime.fromMillisecondsSinceEpoch(relevantTimeline.start!.toInt()));
+      int endIndex = Utility.getDayIndex(
+          DateTime.fromMillisecondsSinceEpoch(relevantTimeline.end!.toInt()));
       int numberOfDays = (endIndex - startIndex) + 1;
       List<int> dayIndexes = List.generate(numberOfDays, (index) => index);
       dayIndexToTileDict.keys.toList();
@@ -378,6 +445,7 @@ class _TileListState extends State<TileList> {
           .toList();
       List<Widget> todayAndUpcomingBatch = [];
       DateTime currentTime = Utility.currentTime();
+
       List<TilerEvent>? oldElapsedTiles;
       List<TilerEvent>? oldNotElapsedTiles;
       if (previousRenderedResults != null &&
@@ -471,8 +539,8 @@ class _TileListState extends State<TileList> {
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
       final currentTimeline = this.timeLine;
-      final updatedTimeline = new Timeline(timeLine.startInMs!,
-          (timeLine.endInMs! + Utility.sevenDays.inMilliseconds));
+      final updatedTimeline = new Timeline(
+          timeLine.start!, (timeLine.end! + Utility.sevenDays.inMilliseconds));
       setState(() {
         oldTimeline = timeLine;
         timeLine = updatedTimeline;
@@ -490,7 +558,6 @@ class _TileListState extends State<TileList> {
         this.widget.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
       return;
     }
-    this.localNotificationService.cancelAllNotifications();
     this
         .localNotificationService
         .nextTileNotification(tile: nextTile, context: this.context);
@@ -507,11 +574,16 @@ class _TileListState extends State<TileList> {
             (eachTile.isViable == null || eachTile.isViable!))
         .toList();
 
+    this.localNotificationService.cancelAllNotifications();
     if (subSequentTiles.isNotEmpty) {
       SubCalendarEvent notificationTile = subSequentTiles.first;
       createNextTileNotification(notificationTile);
-    } else {
-      this.localNotificationService.cancelAllNotifications();
+      for (int i = 1; i < subSequentTiles.length; i++) {
+        SubCalendarEvent tile = subSequentTiles[i];
+        this
+            .localNotificationService
+            .nextTileNotification(tile: tile, context: this.context);
+      }
     }
   }
 
@@ -568,6 +640,63 @@ class _TileListState extends State<TileList> {
     handleNotifications(tiles);
     handleAutoRefresh(tiles);
   }
+
+  void handleRenderingOfNewTile(SubCalendarEvent subEvent) {
+    int redColor = subEvent.colorRed == null ? 125 : subEvent.colorRed!;
+    int blueColor = subEvent.colorBlue == null ? 125 : subEvent.colorBlue!;
+    int greenColor = subEvent.colorGreen == null ? 125 : subEvent.colorGreen!;
+    double opacity = subEvent.colorOpacity == null ? 1 : subEvent.colorOpacity!;
+    var nameColor = Color.fromRGBO(redColor, greenColor, blueColor, opacity);
+
+    var hslColor = HSLColor.fromColor(nameColor);
+    Color bgroundColor =
+        hslColor.withLightness(hslColor.lightness).toColor().withOpacity(0.7);
+    showModalBottomSheet<void>(
+      context: context,
+      constraints: BoxConstraints(
+        maxWidth: 400,
+      ),
+      builder: (BuildContext context) {
+        var future = new Future.delayed(
+            const Duration(milliseconds: Constants.autoHideInMs));
+        future.asStream().listen((input) {
+          Navigator.pop(context);
+        });
+        return Container(
+          padding: const EdgeInsets.all(20),
+          height: 250,
+          width: 300,
+          decoration: BoxDecoration(
+            color: bgroundColor,
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                NewTileSheet(subEvent: subEvent),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // handleParamLoading() {
+  //   Map? contextParams = ModalRoute.of(context)?.settings.arguments as Map?;
+  //   this.contextParams = contextParams ?? {};
+
+  //   if (this.contextParams!.containsKey(TileList.routeName) &&
+  //       this.contextParams![TileList.routeName] != null) {
+  //     Map consumables = this.contextParams![TileList.routeName];
+  //     if (consumables.containsKey('newTile') &&
+  //         consumables['newTile'] != null) {
+  //       handleRenderingOfNewTile(consumables['newTile']);
+  //       consumables['newTile'] = null;
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {

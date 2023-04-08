@@ -9,19 +9,25 @@ class TileStyles {
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
-  static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
-  static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
-  static Color enabledTextColor = Colors.white;
+  static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
+  static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
   static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
+  static Color primaryContrastColor = Colors.white;
+
+  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
   static HSLColor primaryColorLightHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness + 0.2);
-  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
+  static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
+  static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
+  static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
+  static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
+  static Color enabledTextColor = primaryColorDarkHSL.toColor();
+  static Color appBarTextColor = Colors.white;
+
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
   static const String rubikFontName = 'Rubik';
@@ -41,9 +47,9 @@ class TileStyles {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.1),
-        Colors.white.withOpacity(0.1),
-        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.1),
+        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+        Colors.white.withOpacity(0.5),
+        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
       ]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(

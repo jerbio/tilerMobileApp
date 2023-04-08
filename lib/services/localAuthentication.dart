@@ -1,8 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tuple/tuple.dart';
 
 import 'api/authorization.dart';
+import '../../constants.dart' as Constants;
 
 class Authentication {
   final storage = new FlutterSecureStorage();
@@ -69,14 +71,19 @@ class Authentication {
     return retValue;
   }
 
-  Future<bool> isUserAuthenticated() async {
+  Future<Tuple2<bool, String>> isUserAuthenticated() async {
     bool retValue = false;
+    String message = '';
     if (isCachedCredentialValid()) {
       retValue = true;
     } else {
-      await reLoadCredentialsCache();
-      retValue = isCachedCredentialValid();
+      await reLoadCredentialsCache().then((value) {
+        retValue = isCachedCredentialValid();
+      }).catchError((onError) {
+        retValue = false;
+        message = Constants.cannotVerifyError;
+      });
     }
-    return retValue;
+    return Tuple2<bool, String>(retValue, message);
   }
 }

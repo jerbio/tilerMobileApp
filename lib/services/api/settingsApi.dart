@@ -10,7 +10,7 @@ import '../../constants.dart' as Constants;
 
 class SettingsApi extends AppApi {
   Future<Map<String, RestrictionProfile>> getUserRestrictionProfile() async {
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       Map<String, dynamic> restrictedUpdatedParams =
           await injectRequestParams({}, includeLocationParams: false);
@@ -67,7 +67,7 @@ class SettingsApi extends AppApi {
   Future<StartOfDay> getUserStartOfDay() async {
     Map timeOfDayParams = {};
 
-    if (await this.authentication.isUserAuthenticated()) {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       Map<String, dynamic> restrictedUpdatedParams =
           await injectRequestParams({}, includeLocationParams: false);

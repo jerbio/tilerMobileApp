@@ -67,12 +67,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       List<SubCalendarEvent> subEvents = [];
 
       if (!timeline.isInterfering(updateTimeline)) {
-        int startInMs = updateTimeline.start! < timeline.startInMs!
+        int startInMs = updateTimeline.start! < timeline.start!
             ? updateTimeline.start!
-            : timeline.startInMs!;
-        int endInMs = updateTimeline.end! > timeline.endInMs!
+            : timeline.start!;
+        int endInMs = updateTimeline.end! > timeline.end!
             ? updateTimeline.end!
-            : timeline.endInMs!;
+            : timeline.end!;
 
         updateTimeline = Timeline.fromDateTime(
             DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
@@ -83,6 +83,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: timeline,
           isAlreadyLoaded: true,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
       await getSubTiles(updateTimeline).then((value) {
         emit(ScheduleLoadedState(
@@ -98,6 +99,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: [],
           timelines: [],
           isAlreadyLoaded: false,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
 
       await getSubTiles(updateTimeline).then((value) {
@@ -115,7 +117,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: state.lookupTimeline,
           isAlreadyLoaded: true,
-          connectionState: ConnectionState.waiting));
+          connectionState: ConnectionState.waiting,
+          evaluationTime: Utility.currentTime()));
 
       await getSubTiles(updateTimeline).then((value) async {
         emit(ScheduleLoadedState(
@@ -135,6 +138,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: state.subEvents,
           timelines: state.timelines,
           lookupTimeline: state.lookupTimeline,
+          evaluationTime: Utility.currentTime(),
           message: event.message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
@@ -155,6 +159,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         subEvents: event.renderedSubEvents,
         timelines: event.renderedTimelines,
         lookupTimeline: event.renderedScheduleTimeline,
+        evaluationTime: Utility.currentTime(),
         message: event.message));
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
