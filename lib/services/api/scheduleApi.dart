@@ -21,6 +21,8 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
       Timeline timeLine) async {
     // return await getAdHocSubEvents(timeLine);
+    // return await getAdHocSubEvents(Timeline.fromDateTimeAndDuration(
+    //     Utility.todayTimeline().endTime.add(Utility.oneDay), Utility.oneDay));
     return await getSubEventsInScheduleRequest(timeLine);
   }
 

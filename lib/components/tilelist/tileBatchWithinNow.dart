@@ -39,25 +39,16 @@ class WithinNowBatch extends TileBatch {
       return retValue;
     }
   }
-
-  Future updateTiles(List<TilerEvent> updatedTiles) async {
-    var state = await this.state;
-    state.updateSubEvents(updatedTiles);
-  }
 }
 
 class WithinNowBatchState extends TileBatchState {
-  void updateSubEvents(List<TilerEvent> updatedTiles) {
-    super.updateSubEvents(updatedTiles);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
       if (widget.tiles != null) {
         widget.tiles!.forEach((eachTile) {
           if (eachTile.id != null) {
-            tiles[eachTile.id!] = eachTile;
+            renderedTiles[eachTile.id!] = eachTile;
           }
         });
       }
@@ -75,8 +66,8 @@ class WithinNowBatchState extends TileBatchState {
       children.add(sleepWidget);
     }
 
-    if (tiles.length > 0) {
-      tiles.values.forEach((eachTile) {
+    if (renderedTiles.length > 0) {
+      renderedTiles.values.forEach((eachTile) {
         Widget eachTileWidget = TileWidget(eachTile);
         if (eachTile.end != null && eachTile.start != null) {
           if (eachTile.end!.toInt() < currentTimeInMs) {

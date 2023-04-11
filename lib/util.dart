@@ -157,9 +157,9 @@ class Utility {
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
-    int subEventCount = Random().nextInt(20);
+    int subEventCount = Random().nextInt(2);
     while (subEventCount < 1) {
-      subEventCount = Random().nextInt(20);
+      subEventCount = Random().nextInt(2);
     }
 
     List<Timeline> sleepTimeLines = [];
