@@ -377,10 +377,19 @@ class _TileListState extends State<TileList> {
       List<TileBatch> childTileBatchs = <TileBatch>[];
       childTileBatchs.addAll(preceedingDayTiles);
       List<Widget> beforeNowBatch = preceedingDayTiles
-          .map((tileBatch) => Container(
-                decoration: previousTileBatchDecoration,
-                child: tileBatch,
-              ))
+          .map<Widget>(
+            (tileBatch) =>
+                // GestureDetector(
+                //       onTap: () {
+                //         this.context.read<ScheduleBloc>().add(GetSchedule());
+                //       },
+                //       child:
+                Container(
+              decoration: previousTileBatchDecoration,
+              child: tileBatch,
+            ),
+            // )
+          )
           .toList();
       List<Widget> todayAndUpcomingBatch = [];
       DateTime currentTime = Utility.currentTime();
@@ -413,12 +422,20 @@ class _TileListState extends State<TileList> {
         }
       }
       childTileBatchs.addAll(upcomingDayTiles);
-      todayAndUpcomingBatch
-          .addAll(upcomingDayTiles.map((tileBatch) => Container(
-                decoration: upcomingTileBatchDecoration,
-                child: tileBatch,
-              )));
-      Key centerKey = ValueKey(Utility.getUuid.toString());
+      todayAndUpcomingBatch.addAll(upcomingDayTiles.map<Widget>(
+        (tileBatch) =>
+            // GestureDetector(
+            //       onTap: () {
+            //         this.context.read<ScheduleBloc>().add(GetSchedule());
+            //       },
+            //       child:
+            Container(
+          decoration: upcomingTileBatchDecoration,
+          child: tileBatch,
+        ),
+        // )
+      ));
+      Key centerKey = ValueKey('Utility.getUuid.toString()');
       retValue = Container(
           decoration: TileStyles.defaultBackground,
           child: CustomScrollView(
@@ -623,8 +640,11 @@ class _TileListState extends State<TileList> {
             if (!(state is DelayedScheduleLoadedState)) {
               handleNotificationsAndNextTile(state.subEvents);
             }
-            return renderSubCalendarTiles(
-                Tuple2(state.timelines, state.subEvents));
+            return Stack(
+              children: [
+                renderSubCalendarTiles(Tuple2(state.timelines, state.subEvents))
+              ],
+            );
           }
 
           if (state is ScheduleInitialState) {
@@ -642,8 +662,9 @@ class _TileListState extends State<TileList> {
             if (!state.isAlreadyLoaded) {
               return renderPending();
             }
-            return renderSubCalendarTiles(
-                Tuple2(state.timelines, state.subEvents));
+            return Stack(children: [
+              renderSubCalendarTiles(Tuple2(state.timelines, state.subEvents))
+            ]);
           }
 
           if (state is ScheduleEvaluationState) {
@@ -665,7 +686,7 @@ class _TileListState extends State<TileList> {
                             color: Colors.grey.shade200.withOpacity(0.5)),
                       ),
                     )))),
-                renderPending(message: state.message),
+                // renderPending(message: state.message),
               ],
             );
           }
