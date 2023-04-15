@@ -13,20 +13,35 @@ class ListModel<E> {
 
   AnimatedListState? get _animatedList => listKey.currentState;
 
-  void insert(int index, E item) {
+  void insert(int index, E item, {bool animate = true}) {
     _items.insert(index, item);
-    _animatedList!.insertItem(index);
+    if (_animatedList != null) {
+      if (animate) {
+        _animatedList!.insertItem(index);
+      } else {
+        _animatedList!.insertItem(index, duration: Duration.zero);
+      }
+    }
   }
 
-  E removeAt(int index) {
+  E removeAt(int index, {bool animate = true}) {
     final E removedItem = _items.removeAt(index);
     if (removedItem != null) {
-      _animatedList!.removeItem(
-        index,
-        (BuildContext context, Animation<double> animation) {
-          return removedItemBuilder(removedItem, context, animation);
-        },
-      );
+      if (_animatedList != null) {
+        if (animate) {
+          _animatedList!.removeItem(
+            index,
+            (BuildContext context, Animation<double> animation) {
+              return removedItemBuilder(removedItem, context, animation);
+            },
+          );
+        } else {
+          _animatedList!.removeItem(index,
+              (BuildContext context, Animation<double> animation) {
+            return removedItemBuilder(removedItem, context, animation);
+          }, duration: Duration.zero);
+        }
+      }
     }
     return removedItem;
   }
@@ -38,9 +53,9 @@ class ListModel<E> {
     return item;
   }
 
-  removeAndUpdate(int from, int to, E item) {
-    removeAt(from);
-    insert(to, item);
+  removeAndUpdate(int from, int to, E item, {bool animate = true}) {
+    E removedItem = removeAt(from, animate: animate);
+    insert(to, item, animate: animate);
   }
 
   int get length => _items.length;
