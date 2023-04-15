@@ -52,6 +52,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
       case 1:
         {
           // Navigator.pushNamed(context, '/AddTile');
+          displayDialog(MediaQuery.of(context).size);
         }
         break;
       case 2:
@@ -265,69 +266,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     Map<String, dynamic> newTileParams = {'newTile': null};
 
                     Navigator.pushNamed(context, '/AddTile',
-                            arguments: newTileParams)
-                        .whenComplete(() {
-                      var newSubEventParams = newTileParams['newTile'];
-                      if (newSubEventParams != null) {
-                        print('Newly created tile');
-                        print(newTileParams);
-                        var subEvent = newSubEventParams;
-                        int redColor = subEvent.colorRed == null
-                            ? 125
-                            : subEvent.colorRed!;
-                        int blueColor = subEvent.colorBlue == null
-                            ? 125
-                            : subEvent.colorBlue!;
-                        int greenColor = subEvent.colorGreen == null
-                            ? 125
-                            : subEvent.colorGreen!;
-                        double opacity = subEvent.colorOpacity == null
-                            ? 1
-                            : subEvent.colorOpacity!;
-                        var nameColor = Color.fromRGBO(
-                            redColor, greenColor, blueColor, opacity);
-
-                        var hslColor = HSLColor.fromColor(nameColor);
-                        Color bgroundColor = hslColor
-                            .withLightness(hslColor.lightness)
-                            .toColor()
-                            .withOpacity(0.7);
-                        showModalBottomSheet<void>(
-                          context: context,
-                          constraints: BoxConstraints(
-                            maxWidth: 400,
-                          ),
-                          builder: (BuildContext context) {
-                            var future = new Future.delayed(
-                                const Duration(milliseconds: autoHideInMs));
-                            future.asStream().listen((input) {
-                              Navigator.pop(context);
-                            });
-                            return Container(
-                              padding: const EdgeInsets.all(20),
-                              height: 250,
-                              width: 300,
-                              decoration: BoxDecoration(
-                                color: bgroundColor,
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    NewTileSheet(subEvent: subEvent),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((errorThrown) {
-                      print('we have error');
-                      print(errorThrown);
-                      return errorThrown;
-                    });
+                        arguments: newTileParams);
                   },
                   child: ListTile(
                     leading: Icon(

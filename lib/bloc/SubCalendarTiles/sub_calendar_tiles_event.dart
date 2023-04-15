@@ -17,6 +17,15 @@ class GetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   List<Object> get props => [subEventId];
 }
 
+class NewSubCalendarTileBlocEvent extends SubCalendarTileEvent {
+  SubCalendarEvent? subEvent;
+
+  NewSubCalendarTileBlocEvent({required this.subEvent});
+
+  @override
+  List<Object> get props => subEvent == null ? [] : [subEvent!];
+}
+
 class GetListOfSubCalendarTilesBlocEvent extends SubCalendarTileEvent {
   List<String> subEventIds;
   List<SubCalendarEvent>? subEvents;

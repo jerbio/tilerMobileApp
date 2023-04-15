@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:switch_up/switch_up.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -906,6 +907,12 @@ class AddTileState extends State<AddTile> {
       if (this.widget.newTileParams != null) {
         this.widget.newTileParams!['newTile'] = newlyAddedTile.item1;
       }
+
+      this
+          .context
+          .read<SubCalendarTileBloc>()
+          .emit(NewSubCalendarTilesLoadedState(subEvent: newlyAddedTile.item1));
+
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
         this.context.read<ScheduleBloc>().add(GetSchedule(
@@ -1126,7 +1133,6 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(switchUp);
     childrenWidgets.add(extraConfigCollection);
 
-    Function? showLoading;
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
