@@ -138,7 +138,7 @@ class _EditTileState extends State<EditTile> {
   }
 
   bool get isRigidTile {
-    return (this.subEvent!.isProcrastinate ?? false);
+    return (this.subEvent!.isRigid ?? false);
   }
 
   void updateProceed() {
