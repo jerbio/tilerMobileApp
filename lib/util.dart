@@ -37,6 +37,9 @@ class Utility {
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
 
+  static bool isDebugSet = false;
+  static bool isWithinNowSet = false;
+
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
     DateTime time = DateTime.now();
     if (minuteLimitAccuracy) {
@@ -99,18 +102,20 @@ class Utility {
   }
 
   static int getDayIndex(DateTime time) {
-    var spanInMicroSecond = time.microsecondsSinceEpoch -
-        Utility._beginningOfTime.microsecondsSinceEpoch;
-    int retValue = spanInMicroSecond ~/ Duration.microsecondsPerDay;
+    var spanInMicroSecond = time.dayDate.microsecondsSinceEpoch -
+        Utility._beginningOfTime.dayDate.microsecondsSinceEpoch;
+    int retValue =
+        (spanInMicroSecond.toDouble() / Duration.microsecondsPerDay.toDouble())
+            .round();
     return retValue;
   }
 
   static DateTime getTimeFromIndex(int dayIndex) {
     Duration totalDuration = Duration(days: dayIndex);
-    DateTime retValueShifted = Utility._beginningOfTime.add(totalDuration);
+    DateTime retValueShifted =
+        Utility._beginningOfTime.dayDate.add(totalDuration);
     DateTime retValue = DateTime(
-            retValueShifted.year, retValueShifted.month, retValueShifted.day)
-        .toLocal();
+        retValueShifted.year, retValueShifted.month, retValueShifted.day);
     return retValue;
   }
 
@@ -721,6 +726,10 @@ extension DateTimeHuman on DateTime {
     }
 
     return dayString;
+  }
+
+  DateTime get dayDate {
+    return DateTime(this.year, this.month, this.day);
   }
 
   //Returns the date in the format 03/08/2023 22:42:00

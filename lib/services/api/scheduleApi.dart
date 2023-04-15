@@ -82,7 +82,6 @@ class ScheduleApi extends AppApi {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;

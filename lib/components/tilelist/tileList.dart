@@ -248,17 +248,15 @@ class _TileListState extends State<TileList> {
         }
       }
 
-      if (referenceTime != null) {
-        var dayIndex = Utility.getDayIndex(referenceTime);
-        List<TilerEvent>? tilesForDay;
-        if (dayIndexToTiles.containsKey(dayIndex)) {
-          tilesForDay = dayIndexToTiles[dayIndex];
-        } else {
-          tilesForDay = [];
-          dayIndexToTiles[dayIndex] = tilesForDay;
-        }
-        tilesForDay!.add(tile);
+      var dayIndex = Utility.getDayIndex(referenceTime.dayDate);
+      List<TilerEvent>? tilesForDay;
+      if (dayIndexToTiles.containsKey(dayIndex)) {
+        tilesForDay = dayIndexToTiles[dayIndex];
+      } else {
+        tilesForDay = [];
+        dayIndexToTiles[dayIndex] = tilesForDay;
       }
+      tilesForDay!.add(tile);
     }
 
     Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> retValue =
@@ -407,7 +405,8 @@ class _TileListState extends State<TileList> {
 
         if (elapsedTiles.isNotEmpty) {
           elapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(Utility.getUuid.toString()),
+            key: ValueKey(
+                Utility.todayTimeline().toString() + "_within_elapsed_0"),
             tiles: elapsedTiles,
           );
           beforeNowBatch.add(Container(child: elapsedTodayBatch));
@@ -415,7 +414,8 @@ class _TileListState extends State<TileList> {
 
         if (notElapsedTiles.isNotEmpty) {
           Widget notElapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(Utility.getUuid.toString()),
+            key: ValueKey(
+                Utility.todayTimeline().toString() + "_within_upcoming_0"),
             tiles: notElapsedTiles,
           );
           todayAndUpcomingBatch.add(notElapsedTodayBatch);
@@ -423,13 +423,7 @@ class _TileListState extends State<TileList> {
       }
       childTileBatchs.addAll(upcomingDayTiles);
       todayAndUpcomingBatch.addAll(upcomingDayTiles.map<Widget>(
-        (tileBatch) =>
-            // GestureDetector(
-            //       onTap: () {
-            //         this.context.read<ScheduleBloc>().add(GetSchedule());
-            //       },
-            //       child:
-            Container(
+        (tileBatch) => Container(
           decoration: upcomingTileBatchDecoration,
           child: tileBatch,
         ),

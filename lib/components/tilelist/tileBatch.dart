@@ -54,7 +54,7 @@ class TileBatch extends StatefulWidget {
 
 class TileBatchState extends State<TileBatch> {
   String uniqueKey = Utility.getUuid;
-  bool isInitialized = false;
+  bool isInitialLoad = true;
   Map<String, TilerEvent> renderedTiles = new Map<String, TilerEvent>();
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
@@ -62,7 +62,7 @@ class TileBatchState extends State<TileBatch> {
   List<Widget> childrenColumnWidgets = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late ListModel<TilerEvent>? _list;
-  bool isInitialLoad = true;
+
   Timeline? sleepTimeline;
   DayData? _dayData;
   AnimatedList? animatedList;
@@ -145,6 +145,14 @@ class TileBatchState extends State<TileBatch> {
   @override
   Widget build(BuildContext context) {
     List<Timeline> chillTimeLines = [];
+    renderedTiles = {};
+    if (widget.tiles != null) {
+      widget.tiles!.forEach((eachTile) {
+        if (eachTile.id != null) {
+          renderedTiles[eachTile.id!] = eachTile;
+        }
+      });
+    }
 
     print('' +
         this.widget.dayIndex.toString() +
@@ -154,91 +162,6 @@ class TileBatchState extends State<TileBatch> {
         widget.tiles!.length.toString() +
         " " +
         uniqueKey);
-    if (!isInitialized) {
-      if (widget.tiles != null) {
-        var conflicts = Utility.getConflictingEvents(widget.tiles!);
-        List<TilerEvent> allTiles = [];
-        HashSet<TilerEvent> postSleepTiles = new HashSet();
-        allTiles.addAll(conflicts.item1);
-        allTiles.addAll(conflicts.item2);
-        allTiles.sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
-        Timeline sleepTileEvent;
-        DateTime? startOfSleep;
-        DateTime? endOfSleep;
-        if (sleepTimeline != null) {
-          print('---sleep TL 1 -- ' + sleepTimeline!.startTime.toString() + '');
-          postSleepTiles = new HashSet();
-          sleepTileEvent = new Timeline(
-              widget.sleepTimeline!.start!, widget.sleepTimeline!.end!);
-
-          List<TimeRange> contiguousSleep = allTiles.where((tile) {
-            bool isInterfering = sleepTileEvent.isInterfering(tile);
-            if (!isInterfering) {
-              postSleepTiles.add(tile);
-            }
-            if (startOfSleep == null ||
-                startOfSleep!.millisecondsSinceEpoch >
-                    tile.startTime.millisecondsSinceEpoch) {
-              startOfSleep = tile.startTime;
-            }
-
-            if (endOfSleep == null ||
-                endOfSleep!.millisecondsSinceEpoch <
-                    tile.endTime.millisecondsSinceEpoch) {
-              endOfSleep = tile.endTime;
-            }
-
-            startOfSleep = startOfSleep!.millisecondsSinceEpoch >
-                    sleepTileEvent.startTime.millisecondsSinceEpoch
-                ? sleepTileEvent.startTime
-                : startOfSleep!;
-            endOfSleep = endOfSleep!.millisecondsSinceEpoch <
-                    sleepTileEvent.endTime.millisecondsSinceEpoch
-                ? sleepTileEvent.endTime
-                : endOfSleep!;
-
-            return isInterfering;
-          }).toList();
-        } else {
-          postSleepTiles = HashSet.from(allTiles);
-        }
-        var sortedPostSleepTiles = postSleepTiles.toList();
-        sortedPostSleepTiles
-            .sort((tileA, tileB) => tileA.start!.compareTo(tileB.start!));
-
-        DateTime? refTimeEndTime;
-        int beginIndex = 0;
-        if (endOfSleep != null) {
-          refTimeEndTime = endOfSleep;
-        } else {
-          if (sortedPostSleepTiles.length > 0) {
-            refTimeEndTime = sortedPostSleepTiles[0].endTime;
-            beginIndex = 1;
-          }
-        }
-
-        for (int subEventIndex = beginIndex;
-            subEventIndex < sortedPostSleepTiles.length;
-            subEventIndex++) {
-          TilerEvent eachTilerEvent = sortedPostSleepTiles[subEventIndex];
-          if (refTimeEndTime!.millisecondsSinceEpoch <
-              eachTilerEvent.startTime.millisecondsSinceEpoch) {
-            Timeline chillTimeline = new Timeline.fromDateTime(
-                refTimeEndTime, eachTilerEvent.startTime);
-            chillTimeLines.add(chillTimeline);
-          }
-
-          refTimeEndTime = eachTilerEvent.endTime;
-        }
-
-        widget.tiles!.forEach((eachTile) {
-          if (eachTile.id != null) {
-            renderedTiles[eachTile.id!] = eachTile;
-          }
-        });
-      }
-      isInitialized = true;
-    }
     childrenColumnWidgets = [];
     if (_dayData != null) {
       this._dayData!.nonViableTiles = renderedTiles.values
@@ -299,6 +222,7 @@ class TileBatchState extends State<TileBatch> {
 
       childrenColumnWidgets.add(EmptyDayTile(
         deadline: endOfDayTime,
+        dayIndex: this.widget.dayIndex,
       ));
     }
 
@@ -357,7 +281,8 @@ class TileBatchState extends State<TileBatch> {
                 .toList());
             for (int i = 0; i < orderedTilerEvent.length; i++) {
               if (!_list![i].isStartAndEndEqual(orderedTilerEvent[i])) {
-                _list!.removeAndUpdate(i, i, orderedTilerEvent[i]);
+                _list!.removeAndUpdate(i, i, orderedTilerEvent[i],
+                    animate: false);
               }
             }
           }
@@ -365,6 +290,7 @@ class TileBatchState extends State<TileBatch> {
           List<String> listIds =
               _list!.toList().map<String>((e) => e.id!).toList();
           for (var removedTile in removedTiles) {
+            listIds = _list!.toList().map<String>((e) => e.id!).toList();
             int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
             if (toBeRemovedIndex != removedTile.item3) {
               if (toBeRemovedIndex >= 0) {
@@ -376,6 +302,8 @@ class TileBatchState extends State<TileBatch> {
           for (var removedTile in removedTiles) {
             orderedTiles!.remove(removedTile.item1.id);
           }
+
+          List finalOrederedTileValues = this.orderedTiles!.values.toList();
 
           Timer(Duration(milliseconds: 500), () {
             for (var insertedTile in insertedTiles) {
@@ -390,17 +318,18 @@ class TileBatchState extends State<TileBatch> {
               int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
               if (toMovedIndex != -1) {
                 _list!.removeAndUpdate(
-                    toMovedIndex, reorderedTile.item3!, reorderedTile.item1);
+                    toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
+                    animate: toMovedIndex != reorderedTile.item3);
               }
+            }
+            for (var eachTileTupleData in finalOrederedTileValues) {
+              this.orderedTiles![eachTileTupleData.item1.id!] = Tuple3(
+                  eachTileTupleData.item1,
+                  eachTileTupleData.item3,
+                  eachTileTupleData.item3);
             }
           });
 
-          for (var eachTileTupleData in this.orderedTiles!.values) {
-            this.orderedTiles![eachTileTupleData.item1.id!] = Tuple3(
-                eachTileTupleData.item1,
-                eachTileTupleData.item3,
-                eachTileTupleData.item3);
-          }
           if (this.orderedTiles!.isEmpty) {
             this.widget.tiles = [];
             setState(() {
