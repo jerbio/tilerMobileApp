@@ -35,8 +35,6 @@ var autoTileParams = [
     'descriptions': [
       'Dance party',
       'Flash mob',
-      'Bob to some music',
-      'Buga buga'
     ],
     'durations': [
       Utility.fifteenMin,

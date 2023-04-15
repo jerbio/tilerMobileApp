@@ -11,7 +11,8 @@ import '../../constants.dart' as Constants;
 
 class EmptyDayTile extends StatefulWidget {
   DateTime? deadline;
-  EmptyDayTile({this.deadline});
+  int? dayIndex;
+  EmptyDayTile({this.deadline, this.dayIndex});
   @override
   EmptyDayTileState createState() => EmptyDayTileState();
 }
@@ -23,9 +24,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     Map<int, List<AutoTile>> autoTilesByDuration =
         Utility.adHocAutoTilesByDuration;
 
-    int daySeed =
+    int daySeed = this.widget.dayIndex ??
         Utility.getDayIndex(this.widget.deadline ?? Utility.currentTime());
-    int durationInMs = autoTilesByDuration.keys.toList().getRandomize().first;
+    int durationInMs =
+        autoTilesByDuration.keys.toList().getRandomize(seed: daySeed).first;
     List<AutoTile> autoTilesWithDuplicateCategory =
         autoTilesByDuration[durationInMs]!
             .getRandomize(seed: daySeed)
