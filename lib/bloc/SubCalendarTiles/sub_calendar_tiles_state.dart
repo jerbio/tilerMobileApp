@@ -45,3 +45,11 @@ class ListOfSubCalendarTilesLoadingState extends SubCalendarTileState {
   @override
   List<Object> get props => subEventIds.toList();
 }
+
+class NewSubCalendarTilesLoadedState extends SubCalendarTileState {
+  final SubCalendarEvent? subEvent;
+  NewSubCalendarTilesLoadedState({required this.subEvent});
+
+  @override
+  List<Object> get props => subEvent == null ? [] : [subEvent!];
+}
