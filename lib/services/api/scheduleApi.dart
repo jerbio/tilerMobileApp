@@ -21,6 +21,8 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
       Timeline timeLine) async {
     // return await getAdHocSubEvents(timeLine);
+    // return await getAdHocSubEvents(Timeline.fromDateTimeAndDuration(
+    //     Utility.todayTimeline().endTime.add(Utility.oneDay), Utility.oneDay));
     return await getSubEventsInScheduleRequest(timeLine);
   }
 
@@ -80,7 +82,6 @@ class ScheduleApi extends AppApi {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;

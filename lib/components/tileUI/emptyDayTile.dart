@@ -11,7 +11,8 @@ import '../../constants.dart' as Constants;
 
 class EmptyDayTile extends StatefulWidget {
   DateTime? deadline;
-  EmptyDayTile({this.deadline});
+  int? dayIndex;
+  EmptyDayTile({this.deadline, this.dayIndex});
   @override
   EmptyDayTileState createState() => EmptyDayTileState();
 }
@@ -23,9 +24,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     Map<int, List<AutoTile>> autoTilesByDuration =
         Utility.adHocAutoTilesByDuration;
 
-    int daySeed =
+    int daySeed = this.widget.dayIndex ??
         Utility.getDayIndex(this.widget.deadline ?? Utility.currentTime());
-    int durationInMs = autoTilesByDuration.keys.toList().getRandomize().first;
+    int durationInMs =
+        autoTilesByDuration.keys.toList().getRandomize(seed: daySeed).first;
     List<AutoTile> autoTilesWithDuplicateCategory =
         autoTilesByDuration[durationInMs]!
             .getRandomize(seed: daySeed)
@@ -34,9 +36,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     Map<String, AutoTile> categoryIds = {};
     autoTiles = <AutoTile>[];
     for (var eachAutoTile in autoTilesWithDuplicateCategory) {
-      if (!categoryIds.containsKey(eachAutoTile.categoryId)) {
+      if (eachAutoTile.categoryId != null &&
+          !categoryIds.containsKey(eachAutoTile.categoryId)) {
         autoTiles.add(eachAutoTile);
-        categoryIds[eachAutoTile.categoryId] = eachAutoTile;
+        categoryIds[eachAutoTile.categoryId!] = eachAutoTile;
       }
     }
     super.initState();
@@ -73,71 +76,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
               child: GestureDetector(
                   onTap: () {
                     Map<String, dynamic> newTileParams = {'newTile': null};
-
                     Navigator.pushNamed(context, '/AddTile',
-                            arguments: newTileParams)
-                        .whenComplete(() {
-                      var newSubEventParams = newTileParams['newTile'];
-                      if (newSubEventParams != null) {
-                        print('Newly created tile');
-                        print(newTileParams);
-                        var subEvent = newSubEventParams;
-                        int redColor = subEvent.colorRed == null
-                            ? 125
-                            : subEvent.colorRed!;
-                        int blueColor = subEvent.colorBlue == null
-                            ? 125
-                            : subEvent.colorBlue!;
-                        int greenColor = subEvent.colorGreen == null
-                            ? 125
-                            : subEvent.colorGreen!;
-                        double opacity = subEvent.colorOpacity == null
-                            ? 1
-                            : subEvent.colorOpacity!;
-                        var nameColor = Color.fromRGBO(
-                            redColor, greenColor, blueColor, opacity);
-
-                        var hslColor = HSLColor.fromColor(nameColor);
-                        Color bgroundColor = hslColor
-                            .withLightness(hslColor.lightness)
-                            .toColor()
-                            .withOpacity(0.7);
-                        showModalBottomSheet<void>(
-                          context: context,
-                          constraints: BoxConstraints(
-                            maxWidth: 400,
-                          ),
-                          builder: (BuildContext context) {
-                            var future = new Future.delayed(const Duration(
-                                milliseconds: Constants.autoHideInMs));
-                            future.asStream().listen((input) {
-                              Navigator.pop(context);
-                            });
-                            return Container(
-                              padding: const EdgeInsets.all(20),
-                              height: 250,
-                              width: 300,
-                              decoration: BoxDecoration(
-                                color: bgroundColor,
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    NewTileSheet(subEvent: subEvent),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((errorThrown) {
-                      print('we have error');
-                      print(errorThrown);
-                      return errorThrown;
-                    });
+                        arguments: newTileParams);
                   },
                   child: Container(
                     height: (MediaQuery.of(context).size.height) * 0.55,
@@ -163,7 +103,9 @@ class EmptyDayTileState extends State<EmptyDayTile> {
             ),
           ),
           AppinioSwiper(
-            cards: autoTiles.map((autoTile) {
+            cards: autoTiles
+                .where((autoTile) => autoTile.image != null)
+                .map((autoTile) {
               return Container(
                 child: Column(
                   children: [
@@ -174,7 +116,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               topRight: Radius.circular(8),
                             ),
                             child: Image.asset(
-                              autoTile.image,
+                              autoTile.image!,
                               fit: BoxFit.cover,
                             ))),
                     FractionallySizedBox(
@@ -214,7 +156,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                     child: Text(
                                       autoTile.isLastCard
                                           ? '   '
-                                          : autoTile.duration.toHuman +
+                                          : (autoTile.duration?.toHuman ?? '') +
                                               ' (' +
                                               AppLocalizations.of(context)!
                                                   .swipeRightToTileIt +

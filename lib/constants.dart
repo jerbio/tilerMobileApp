@@ -1,6 +1,6 @@
 const bool isProduction = false;
 const bool isDebug = !isProduction;
-const bool isRemote = false;
+const bool isRemote = true;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
 const String devDomain = isRemote
     ? 'localhost-44388-x-if7.conveyor.cloud'
