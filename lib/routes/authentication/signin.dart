@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
@@ -32,6 +35,7 @@ class SignInRouteState extends State<SignInRoute> {
       while (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
+      context.read<ScheduleBloc>().add(LogInScheduleEvent());
       Navigator.pop(context);
       Navigator.push(
         context,

@@ -155,7 +155,8 @@ class TilerApp extends StatelessWidget {
                   }
 
                   if (snapshot.data!.item1) {
-                    retValue = AuthorizedRoute();
+                    context.read<ScheduleBloc>().add(LogInScheduleEvent());
+                    retValue = new AuthorizedRoute();
                   } else {
                     retValue = SignInRoute();
                   }

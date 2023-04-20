@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
@@ -223,6 +227,7 @@ class _SettingState extends State<Setting> {
           authentication.deauthenticateCredentials();
           Navigator.pushNamedAndRemoveUntil(
               context, '/LoggedOut', (route) => false);
+          this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
         },
         child: Text(AppLocalizations.of(context)!.logout));
     return retValue;
