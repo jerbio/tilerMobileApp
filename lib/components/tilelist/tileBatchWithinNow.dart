@@ -321,6 +321,18 @@ class WithinNowBatchState extends TileBatchState {
     processAnimatedList(_AnimatedListType.current, currentTiles);
     processAnimatedList(_AnimatedListType.upcoming, upcomningTiles);
 
+    if (currentTiles.length > 0) {
+      Container headerContainer = Container(
+        margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
+        alignment: Alignment.centerLeft,
+        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
+      );
+      if (this.currentAnimatedList != null) {
+        currentTileWidgets.add(this.currentAnimatedList!);
+      }
+      currentTileWidgets.add(headerContainer);
+    }
+
     if (widget.header != null && precedingTiles.length > 0) {
       Container headerContainer = Container(
         margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
@@ -347,12 +359,13 @@ class WithinNowBatchState extends TileBatchState {
     children.addAll(precedingTileWidgets);
     children.addAll(currentTileWidgets);
     children.addAll(upcomningTileWidgets);
+    bool initialLoad = this.isInitialLoad;
     handleAddOrRemovalOfTimeSectionTiles(
-        this.preceedingOrderedTiles, this._preceedingList);
+        this.preceedingOrderedTiles, this._preceedingList, initialLoad);
     handleAddOrRemovalOfTimeSectionTiles(
-        this.currentOrderedTiles, this._currentList);
+        this.currentOrderedTiles, this._currentList, initialLoad);
     handleAddOrRemovalOfTimeSectionTiles(
-        this.upcomingOrderedTiles, this._upcomingList);
+        this.upcomingOrderedTiles, this._upcomingList, initialLoad);
     return Container(
       child: Column(
         children: children,
@@ -362,7 +375,8 @@ class WithinNowBatchState extends TileBatchState {
 
   handleAddOrRemovalOfTimeSectionTiles(
       Map<String, Tuple3<TilerEvent, int?, int?>>? timeSectionTiles,
-      ListModel<TilerEvent>? _timeSectionListModel) {
+      ListModel<TilerEvent>? _timeSectionListModel,
+      bool isInitialLoadFlag) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (this.mounted) {
         if (timeSectionTiles != null && !pendingRendering) {
@@ -378,7 +392,7 @@ class WithinNowBatchState extends TileBatchState {
               removedTiles.add(eachTileTuple);
               continue;
             }
-            if (!isInitialLoad) {
+            if (!isInitialLoadFlag) {
               if (eachTileTuple.item2 != null) {
                 reorderedTiles.add(eachTileTuple);
               } else {
@@ -423,7 +437,6 @@ class WithinNowBatchState extends TileBatchState {
             timeSectionTiles.remove(removedTile.item1.id);
           }
 
-          List finalOrederedTileValues = timeSectionTiles.values.toList();
           Utility.isWithinNowSet = false;
           pendingRendering = true;
           Timer(Duration(milliseconds: 500), () {
@@ -450,13 +463,6 @@ class WithinNowBatchState extends TileBatchState {
             pendingRendering = false;
           });
 
-          for (var eachTileTupleData in finalOrederedTileValues) {
-            timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
-                eachTileTupleData.item1,
-                eachTileTupleData.item3,
-                eachTileTupleData.item3);
-          }
-
           if (timeSectionTiles.isEmpty) {
             this.widget.tiles = [];
             setState(() {
@@ -465,7 +471,18 @@ class WithinNowBatchState extends TileBatchState {
           }
         }
 
-        isInitialLoad = false;
+        if (isInitialLoadFlag && !pendingRendering) {
+          this.isInitialLoad = false;
+        }
+        if (timeSectionTiles != null) {
+          List finalOrederedTileValues = timeSectionTiles.values.toList();
+          for (var eachTileTupleData in finalOrederedTileValues) {
+            timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+                eachTileTupleData.item1,
+                eachTileTupleData.item3,
+                eachTileTupleData.item3);
+          }
+        }
       }
     });
   }
