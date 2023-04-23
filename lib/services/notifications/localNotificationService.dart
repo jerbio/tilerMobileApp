@@ -190,7 +190,7 @@ class LocalNotificationService {
       String durationString = AppLocalizations.of(context)!.startsInTenMinutes;
       if (tenMinFromStartMs < currentTime) {
         String startTimeString = MaterialLocalizations.of(context)
-            .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime!));
+            .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime));
         this.showNotification(
           id: NotificationIdTypes.nextTile.index,
           title: title ?? name,
@@ -200,13 +200,17 @@ class LocalNotificationService {
         return;
       }
 
+      Duration delayDuraion =
+          Duration(milliseconds: (tenMinFromStartMs - currentTime).toInt());
+      delayDuraion = delayDuraion.inMilliseconds == Duration.zero.inMilliseconds
+          ? Duration(seconds: 15)
+          : delayDuraion;
       await this.showScheduledNotification(
           id: NotificationIdTypes.nextTile.index,
           title: title ?? tile.name ?? 'Cleared out time block',
           body: durationString,
           detailFormat: notificationDetailFormat,
-          duration: Duration(
-              milliseconds: (tenMinFromStartMs - currentTime).toInt()));
+          duration: delayDuraion);
     }
   }
 

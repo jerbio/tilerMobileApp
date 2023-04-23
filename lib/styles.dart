@@ -4,6 +4,7 @@ class TileStyles {
   static final double tileWidth = 350;
   static final double tileHeight = 350;
   static final double tileWidthRatio = 0.85;
+  static final double tileIconSize = 12;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
   static final double proceedAndCancelButtonWidth = 60;
@@ -63,6 +64,9 @@ class TileStyles {
           HSLColor.fromAHSL(1, 350, 1, 0.7).toColor()
         ],
       ));
+  static final BoxDecoration tileIconContainerBoxDecoration = BoxDecoration(
+      color: Color.fromRGBO(31, 31, 31, 0.1),
+      borderRadius: BorderRadius.circular(8));
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(

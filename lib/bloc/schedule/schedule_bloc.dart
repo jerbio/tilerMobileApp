@@ -27,6 +27,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
       Timeline timeLine) async {
+    Utility.isDebugSet = true;
     return await scheduleApi.getSubEvents(timeLine);
   }
 

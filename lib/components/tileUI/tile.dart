@@ -237,17 +237,15 @@ class TileWidgetState extends State<TileWidget>
         children: [
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.1),
-                borderRadius: BorderRadius.circular(8)),
+            width: 25,
+            height: 25,
+            decoration: TileStyles.tileIconContainerBoxDecoration,
             child: Icon(
               Icons.access_time_sharp,
               color: isTardy
                   ? TileStyles.lateTextColor
                   : TileStyles.defaultTextColor,
-              size: 20.0,
+              size: TileStyles.tileIconSize,
             ),
           ),
           Padding(
@@ -329,7 +327,7 @@ class TileWidgetState extends State<TileWidget>
                         color: this.widget.subEvent.isViable!
                             ? Colors.white
                             : Colors.black,
-                        width: 5,
+                        width: this.widget.subEvent.isViable! ? 0 : 5,
                       ),
                       borderRadius:
                           BorderRadius.circular(TileStyles.borderRadius),

@@ -196,14 +196,17 @@ class EventNameSearchState extends SearchWidgetState {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.clear_rounded),
-                iconSize: 15,
-                onPressed: () => {deletionCallBack()},
+              Icon(
+                Icons.clear_rounded,
+                size: 20,
+                color: Colors.red,
+              ),
+              SizedBox.square(
+                dimension: 5,
               ),
               Text(
                 AppLocalizations.of(context)!.delete,
-                style: TextStyle(fontSize: 10),
+                style: TextStyle(fontSize: 15),
               )
             ],
           )),
@@ -236,14 +239,16 @@ class EventNameSearchState extends SearchWidgetState {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
-                icon: const Icon(Icons.check),
-                iconSize: 15,
+              Icon(
+                Icons.check,
+                size: 20,
                 color: Colors.green,
-                onPressed: () => {completionCallBack()},
+              ),
+              SizedBox.square(
+                dimension: 5,
               ),
               Text(AppLocalizations.of(context)!.complete,
-                  style: TextStyle(fontSize: 10))
+                  style: TextStyle(fontSize: 15))
             ],
           )),
     );
@@ -285,8 +290,11 @@ class EventNameSearchState extends SearchWidgetState {
                     ),
                   ),
                   onPressed: () => {setAsNowCallBack()}),
+              SizedBox.square(
+                dimension: 5,
+              ),
               Text(AppLocalizations.of(context)!.now,
-                  style: TextStyle(fontSize: 10))
+                  style: TextStyle(fontSize: 15))
             ],
           )),
     );
@@ -339,7 +347,7 @@ class EventNameSearchState extends SearchWidgetState {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       fontFamily: TileStyles.rubikFontName)))
         ]),
       );
@@ -372,9 +380,10 @@ class EventNameSearchState extends SearchWidgetState {
 
       searchActionButtons.add(deletionButton);
 
-      Widget iconContainer = FractionallySizedBox(
-          child: Align(
-              alignment: Alignment.bottomCenter,
+      Widget iconContainer = Align(
+          alignment: Alignment.bottomCenter,
+          child: FractionallySizedBox(
+              widthFactor: 0.95,
               child: Container(
                 margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
                 child: Row(
@@ -417,28 +426,19 @@ class EventNameSearchState extends SearchWidgetState {
     );
     childWidgets.add(editTileButton);
 
-    Key dismissibleKey = Key(tile.id!);
     Widget retValue = GestureDetector(
       onTap: () {},
       child: Container(
         height: 125,
         padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 5,
-              blurRadius: 5,
-              offset: Offset(0, 1),
-            ),
-          ],
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20)),
         ),
         child: Stack(
           children: childWidgets,
