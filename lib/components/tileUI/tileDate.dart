@@ -21,15 +21,14 @@ class _TileDateState extends State<TileDate> {
       child: Row(
         children: [
           Container(
-              width: 32,
-              height: 32,
+              width: 25,
+              height: 25,
+              decoration: TileStyles.tileIconContainerBoxDecoration,
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, 0.1),
-                  borderRadius: BorderRadius.circular(8)),
               child: Icon(
                 Icons.calendar_month,
                 color: TileStyles.defaultTextColor,
+                size: TileStyles.tileIconSize,
               )),
           Text(
             DateFormat.yMMMd(locale).format(this.widget.date),

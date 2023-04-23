@@ -123,7 +123,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       alignment: FractionalOffset.center,
                       widthFactor: 1,
                       child: Container(
-                        height: 100,
+                        height: 200,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.only(
                               bottomLeft: Radius.circular(10),
@@ -142,22 +142,35 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
+                            Flexible(
                                 child: Container(
-                                    padding: EdgeInsets.fromLTRB(20, 10, 0, 0),
+                                    padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
                                     child: Text(
                                       autoTile.description,
                                       style:
                                           TileStyles.fullScreenTextFieldStyle,
                                     ))),
-                            Expanded(
+                            Flexible(
                                 child: Container(
-                                    padding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                                    padding:
+                                        EdgeInsets.fromLTRB(20, 10, 20, 10),
                                     child: Text(
                                       autoTile.isLastCard
                                           ? '   '
-                                          : (autoTile.duration?.toHuman ?? '') +
-                                              ' (' +
+                                          : (autoTile.duration?.toHuman ?? ''),
+                                      style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                          fontFamily: TileStyles.rubikFontName,
+                                          fontWeight: FontWeight.w500),
+                                    ))),
+                            Flexible(
+                                child: Container(
+                                    padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                    child: Text(
+                                      autoTile.isLastCard
+                                          ? '   '
+                                          : '(' +
                                               AppLocalizations.of(context)!
                                                   .swipeRightToTileIt +
                                               ')',
@@ -166,7 +179,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                           fontSize: 16,
                                           fontFamily: TileStyles.rubikFontName,
                                           fontWeight: FontWeight.w500),
-                                    ))),
+                                    )))
                           ],
                         ),
                       ),
