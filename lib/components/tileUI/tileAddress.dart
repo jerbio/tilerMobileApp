@@ -44,16 +44,14 @@ class TileAddressState extends State<TileAddress> {
         child: Row(
           children: [
             Container(
-              width: 32,
-              height: 32,
+              width: 25,
+              height: 25,
+              decoration: TileStyles.tileIconContainerBoxDecoration,
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, 0.1),
-                  borderRadius: BorderRadius.circular(8)),
               child: Icon(
                 Icons.location_on_rounded,
                 color: TileStyles.defaultTextColor,
-                size: 20.0,
+                size: TileStyles.tileIconSize,
               ),
             ),
             addressString != null

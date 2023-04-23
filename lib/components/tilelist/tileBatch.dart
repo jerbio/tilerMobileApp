@@ -54,7 +54,7 @@ class TileBatch extends StatefulWidget {
 
 class TileBatchState extends State<TileBatch> {
   String uniqueKey = Utility.getUuid;
-  bool isInitialLoad = true;
+  late bool isInitialLoad;
   Map<String, TilerEvent> renderedTiles = new Map<String, TilerEvent>();
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
@@ -62,6 +62,7 @@ class TileBatchState extends State<TileBatch> {
   List<Widget> childrenColumnWidgets = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late ListModel<TilerEvent>? _list;
+  bool _pendingRendering = false;
 
   Timeline? sleepTimeline;
   DayData? _dayData;
@@ -70,6 +71,7 @@ class TileBatchState extends State<TileBatch> {
   @override
   void initState() {
     super.initState();
+    isInitialLoad = true;
     if (this.widget.dayIndex != null) {
       _dayData = DayData.generateRandomDayData(this.widget.dayIndex!);
     }
@@ -201,7 +203,6 @@ class TileBatchState extends State<TileBatch> {
       }
 
       childrenColumnWidgets.add(Container(
-        padding: EdgeInsets.all(20),
         child: animatedList!,
       ));
     }
@@ -250,7 +251,7 @@ class TileBatchState extends State<TileBatch> {
   handleAddOrRemovalOfTiles() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (this.mounted) {
-        if (this.orderedTiles != null) {
+        if (this.orderedTiles != null && !_pendingRendering) {
           List<Tuple3<TilerEvent, int?, int?>> changeDetectedTilerEvent = this
               .orderedTiles!
               .values
@@ -272,13 +273,12 @@ class TileBatchState extends State<TileBatch> {
               }
             }
           }
-
+          List<TilerEvent> orderedTilerEvent = Utility.orderTiles(this
+              .orderedTiles!
+              .values
+              .map<TilerEvent>((e) => e.item1)
+              .toList());
           if (changeDetectedTilerEvent.length == 0) {
-            List<TilerEvent> orderedTilerEvent = Utility.orderTiles(this
-                .orderedTiles!
-                .values
-                .map<TilerEvent>((e) => e.item1)
-                .toList());
             for (int i = 0; i < orderedTilerEvent.length; i++) {
               if (!_list![i].isStartAndEndEqual(orderedTilerEvent[i])) {
                 _list!.removeAndUpdate(i, i, orderedTilerEvent[i],
@@ -303,32 +303,28 @@ class TileBatchState extends State<TileBatch> {
             orderedTiles!.remove(removedTile.item1.id);
           }
 
-          List finalOrederedTileValues = this.orderedTiles!.values.toList();
-
-          Timer(Duration(milliseconds: 500), () {
-            for (var insertedTile in insertedTiles) {
-              _list!.insert(
-                insertedTile.item3!,
-                insertedTile.item1,
-              );
-            }
-
-            for (var reorderedTile in reorderedTiles) {
-              listIds = _list!.toList().map<String>((e) => e.id!).toList();
-              int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
-              if (toMovedIndex != -1) {
-                _list!.removeAndUpdate(
-                    toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
-                    animate: toMovedIndex != reorderedTile.item3);
+          if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
+            _pendingRendering = true;
+            Timer(Duration(milliseconds: 500), () {
+              for (var insertedTile in insertedTiles) {
+                _list!.insert(
+                  insertedTile.item3!,
+                  insertedTile.item1,
+                );
               }
-            }
-            for (var eachTileTupleData in finalOrederedTileValues) {
-              this.orderedTiles![eachTileTupleData.item1.id!] = Tuple3(
-                  eachTileTupleData.item1,
-                  eachTileTupleData.item3,
-                  eachTileTupleData.item3);
-            }
-          });
+
+              for (var reorderedTile in reorderedTiles) {
+                listIds = _list!.toList().map<String>((e) => e.id!).toList();
+                int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
+                if (toMovedIndex != -1) {
+                  _list!.removeAndUpdate(
+                      toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
+                      animate: toMovedIndex != reorderedTile.item3);
+                }
+              }
+              _pendingRendering = false;
+            });
+          }
 
           if (this.orderedTiles!.isEmpty) {
             this.widget.tiles = [];
@@ -338,7 +334,18 @@ class TileBatchState extends State<TileBatch> {
           }
         }
 
-        isInitialLoad = false;
+        if (isInitialLoad && !_pendingRendering) {
+          this.isInitialLoad = false;
+        }
+        if (this.orderedTiles != null) {
+          List finalOrderedTileValues = this.orderedTiles!.values.toList();
+          for (var eachTileTupleData in finalOrderedTileValues) {
+            this.orderedTiles![eachTileTupleData.item1.id!] = Tuple3(
+                eachTileTupleData.item1,
+                eachTileTupleData.item3,
+                eachTileTupleData.item3);
+          }
+        }
       }
     });
   }

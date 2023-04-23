@@ -176,9 +176,18 @@ class TileWidgetState extends State<TileWidget>
         child: Stack(
           children: [
             FractionallySizedBox(
-                widthFactor: 0.9, child: TileName(widget.subEvent)),
+                widthFactor: 0.9,
+                child: TileName(
+                  widget.subEvent,
+                  textStyle: TextStyle(
+                      fontSize: 15,
+                      fontFamily: TileStyles.rubikFontName,
+                      fontWeight: FontWeight.w500,
+                      color: Color.fromRGBO(31, 31, 31, 1)),
+                )),
             GestureDetector(
               onTap: () {
+                Utility.isDebugSet = false;
                 if (isEditable) {
                   Navigator.push(
                       context,
@@ -229,7 +238,7 @@ class TileWidgetState extends State<TileWidget>
       allElements.insert(1, adrressWidget);
     }
     allElements.add(TileDate(
-      date: widget.subEvent.startTime!,
+      date: widget.subEvent.startTime,
     ));
 
     Widget tileTimeFrame = Container(
@@ -239,17 +248,15 @@ class TileWidgetState extends State<TileWidget>
         children: [
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.1),
-                borderRadius: BorderRadius.circular(8)),
+            width: 25,
+            height: 25,
+            decoration: TileStyles.tileIconContainerBoxDecoration,
             child: Icon(
               Icons.access_time_sharp,
               color: isTardy
                   ? TileStyles.lateTextColor
                   : TileStyles.defaultTextColor,
-              size: 20.0,
+              size: TileStyles.tileIconSize,
             ),
           ),
           Padding(
@@ -331,7 +338,7 @@ class TileWidgetState extends State<TileWidget>
                         color: this.widget.subEvent.isViable!
                             ? Colors.white
                             : Colors.black,
-                        width: 5,
+                        width: this.widget.subEvent.isViable! ? 0 : 5,
                       ),
                       borderRadius:
                           BorderRadius.circular(TileStyles.borderRadius),
