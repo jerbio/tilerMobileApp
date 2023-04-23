@@ -170,34 +170,32 @@ class TileWidgetState extends State<TileWidget>
     bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
         this.widget.subEvent.isFromTiler;
 
+    Widget editButton = IconButton(
+        icon: Icon(
+          Icons.edit_outlined,
+          color: TileStyles.defaultTextColor,
+          size: 20.0,
+        ),
+        onPressed: () {
+          if (isEditable) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        EditTile(tileId: this.widget.subEvent.id!)));
+          }
+        });
+
     List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
         child: Stack(
           children: [
-            FractionallySizedBox(
-                widthFactor: 0.9, child: TileName(widget.subEvent)),
-            GestureDetector(
-              onTap: () {
-                if (isEditable) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              EditTile(tileId: this.widget.subEvent.id!)));
-                }
-              },
-              child: Container(
-                alignment: Alignment.topRight,
-                margin: EdgeInsets.fromLTRB(0, 5, 20, 0),
-                child: isEditable
-                    ? Icon(
-                        Icons.edit_outlined,
-                        color: TileStyles.defaultTextColor,
-                        size: 20.0,
-                      )
-                    : null,
-              ),
+            TileName(widget.subEvent),
+            Positioned(
+              top: -10,
+              right: 8,
+              child: isEditable ? editButton : SizedBox.shrink(),
             )
           ],
         ),
@@ -229,7 +227,7 @@ class TileWidgetState extends State<TileWidget>
       allElements.insert(1, adrressWidget);
     }
     allElements.add(TileDate(
-      date: widget.subEvent.startTime!,
+      date: widget.subEvent.startTime,
     ));
 
     Widget tileTimeFrame = Container(
