@@ -8,9 +8,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
   TextStyle? textStyle;
-  TileName(this.subEvent, {this.textStyle}) {
-    assert(this.subEvent != null);
-  }
+  TileName(this.subEvent, {this.textStyle});
   @override
   TileNameState createState() => TileNameState();
 }
@@ -67,12 +65,12 @@ class TileNameState extends State<TileName> {
         children: [
           Container(
             alignment: Alignment.center,
-            width: 32,
-            height: 32,
-            margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+            width: 25,
+            height: 25,
+            margin: const EdgeInsets.fromLTRB(0, 0, 12, 0),
             decoration: BoxDecoration(
               color: nameColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Stack(children: <Widget>[
               Center(

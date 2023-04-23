@@ -465,6 +465,7 @@ class _TileListState extends State<TileList> {
 
   void createNextTileNotification(SubCalendarEvent nextTile) {
     if (this.widget.notificationSubEvent != null &&
+        this.widget.notificationSubEvent!.id == nextTile.id &&
         this.widget.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
       return;
     }
@@ -483,17 +484,10 @@ class _TileListState extends State<TileList> {
             eachTile.start! > currentTime &&
             (eachTile.isViable == null || eachTile.isViable!))
         .toList();
-
     this.localNotificationService.cancelAllNotifications();
     if (subSequentTiles.isNotEmpty) {
       SubCalendarEvent notificationTile = subSequentTiles.first;
       createNextTileNotification(notificationTile);
-      for (int i = 1; i < subSequentTiles.length; i++) {
-        SubCalendarEvent tile = subSequentTiles[i];
-        this
-            .localNotificationService
-            .nextTileNotification(tile: tile, context: this.context);
-      }
     }
   }
 
