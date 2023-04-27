@@ -61,6 +61,7 @@ class SignInComponentState extends State<SignInComponent> {
           authenticationData.isValid.toString();
       if (!authenticationData.isValid) {
         if (authenticationData.errorMessage != null) {
+          print("error sign in ${authenticationData.errorMessage!}");
           showErrorMessage(authenticationData.errorMessage!);
           return;
         }
