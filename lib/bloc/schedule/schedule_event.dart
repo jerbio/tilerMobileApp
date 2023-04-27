@@ -101,3 +101,16 @@ class DelayedReloadLocalScheduleEvent extends ScheduleEvent {
       required this.lookupTimeline,
       required this.duration});
 }
+
+class LogOutScheduleEvent extends ScheduleEvent {
+  LogOutScheduleEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LogInScheduleEvent extends ScheduleEvent {
+  LogInScheduleEvent();
+  @override
+  List<Object> get props => [];
+}

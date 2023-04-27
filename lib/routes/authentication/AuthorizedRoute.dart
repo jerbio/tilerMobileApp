@@ -22,11 +22,12 @@ import '../../constants.dart';
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
 class AuthorizedRoute extends StatefulWidget {
+  AuthorizedRoute();
   @override
   AuthorizedRouteState createState() => AuthorizedRouteState();
 }
 
-class AuthorizedRouteState extends State<StatefulWidget>
+class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();

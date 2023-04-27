@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -73,6 +76,7 @@ class SignInComponentState extends State<SignInComponent> {
       while (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
+      context.read<ScheduleBloc>().add(LogInScheduleEvent());
       Navigator.pop(context);
       Navigator.push(
         context,

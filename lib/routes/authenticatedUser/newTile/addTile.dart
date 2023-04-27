@@ -154,20 +154,10 @@ class AddTileState extends State<AddTile> {
         isSubmissionReady();
       }
     });
-    tileNameController.addListener(() {
-      // isSubmissionReady();
-      if (tileNameText != tileNameController.text) {
-        if (tileNameController.text.length >
-            Constants.autoCompleteTriggerCharacterCount) {
-          Function callAutoResult = generateSuggestionCallToServer();
-          callAutoResult();
-        }
-        setState(() {
-          tileNameText = tileNameController.text;
-        });
-        isSubmissionReady();
-      }
-    });
+    tileNameController.addListener(onTileNameInput);
+    if (tileNameController.text.isNotEmpty) {
+      onTileNameInput();
+    }
 
     locationApi
         .getSpecificLocationByNickName(Location.homeLocationNickName)
@@ -203,6 +193,21 @@ class AddTileState extends State<AddTile> {
 
   void _onProceedTap() {
     return this.onSubmitButtonTap();
+  }
+
+  void onTileNameInput() {
+    // isSubmissionReady();
+    if (tileNameText != tileNameController.text) {
+      if (tileNameController.text.length >
+          Constants.autoCompleteTriggerCharacterCount) {
+        Function callAutoResult = generateSuggestionCallToServer();
+        callAutoResult();
+      }
+      setState(() {
+        tileNameText = tileNameController.text;
+      });
+      isSubmissionReady();
+    }
   }
 
   isSubmissionReady() {

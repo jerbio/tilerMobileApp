@@ -10,6 +10,8 @@ abstract class ScheduleState extends Equatable {
 
 class ScheduleInitialState extends ScheduleState {}
 
+class ScheduleLoggedOutState extends ScheduleState {}
+
 class ScheduleLoadingState extends ScheduleState {
   DateTime evaluationTime;
   List<SubCalendarEvent> subEvents;
