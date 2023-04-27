@@ -23,6 +23,7 @@ import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tuple/tuple.dart';
+import 'components/tileUI/summaryPage.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
@@ -53,6 +54,7 @@ class TilerApp extends StatelessWidget {
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
     Authentication authentication = new Authentication();
     var authenticationResult = await authentication.isUserAuthenticated();
+    // print("authernication result is $authenticationResult");
     return authenticationResult;
   }
 
@@ -152,15 +154,21 @@ class TilerApp extends StatelessWidget {
                     showErrorMessage(
                         AppLocalizations.of(context)!.issuesConnectingToTiler);
                     return renderPending();
+                    // return  SummaryPage();
                   }
 
                   if (snapshot.data!.item1) {
-                    retValue = AuthorizedRoute();
+                    retValue 
+                    // =SummaryPage();
+                    = AuthorizedRoute();
                   } else {
                     retValue = SignInRoute();
                   }
                 } else {
-                  retValue = renderPending();
+                  // print("retuning pending rendering");
+                  retValue 
+                  //  =SummaryPage();
+                  = renderPending();
                 }
                 return retValue;
               }),
