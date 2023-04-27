@@ -655,7 +655,7 @@ extension StringEnhance on String {
 
 extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
-    return this.tilerDayOfWeek % Utility.daysInAweek;
+    return this.weekday % Utility.daysInAweek;
   }
 }
 
@@ -730,6 +730,10 @@ extension DateTimeHuman on DateTime {
 
   DateTime get dayDate {
     return DateTime(this.year, this.month, this.day);
+  }
+
+  int get universalDayIndex {
+    return Utility.getDayIndex(this);
   }
 
   //Returns the date in the format 03/08/2023 22:42:00
