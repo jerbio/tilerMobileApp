@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -162,6 +163,40 @@ class CalendarEventApi extends AppApi {
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             return CalendarEvent.fromJson(jsonResult['Content']);
+          }
+        }
+      }
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
+  Future<List<NextTileSuggestion>> getNextTileSuggestion(String id) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      final queryParameters = {
+        'EventID': id,
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/CalendarEvent/Suggestions', updatedParams);
+      var header = this.getHeaders();
+      if (header != null) {
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            List<NextTileSuggestion> retValue = [];
+            if (jsonResult['Content'].length > 0) {
+              retValue = jsonResult['Content']
+                  .map<NextTileSuggestion>(
+                      (e) => NextTileSuggestion.fromJson(e))
+                  .toList();
+            }
+            return retValue;
           }
         }
       }

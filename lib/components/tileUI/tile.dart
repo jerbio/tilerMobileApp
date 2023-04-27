@@ -170,34 +170,32 @@ class TileWidgetState extends State<TileWidget>
     bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
         this.widget.subEvent.isFromTiler;
 
+    Widget editButton = IconButton(
+        icon: Icon(
+          Icons.edit_outlined,
+          color: TileStyles.defaultTextColor,
+          size: 20.0,
+        ),
+        onPressed: () {
+          if (isEditable) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        EditTile(tileId: this.widget.subEvent.id!)));
+          }
+        });
+
     List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
         child: Stack(
           children: [
-            FractionallySizedBox(
-                widthFactor: 0.9, child: TileName(widget.subEvent)),
-            GestureDetector(
-              onTap: () {
-                if (isEditable) {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              EditTile(tileId: this.widget.subEvent.id!)));
-                }
-              },
-              child: Container(
-                alignment: Alignment.topRight,
-                margin: EdgeInsets.fromLTRB(0, 5, 20, 0),
-                child: isEditable
-                    ? Icon(
-                        Icons.edit_outlined,
-                        color: TileStyles.defaultTextColor,
-                        size: 20.0,
-                      )
-                    : null,
-              ),
+            TileName(widget.subEvent),
+            Positioned(
+              top: -10,
+              right: 8,
+              child: isEditable ? editButton : SizedBox.shrink(),
             )
           ],
         ),
@@ -229,7 +227,7 @@ class TileWidgetState extends State<TileWidget>
       allElements.insert(1, adrressWidget);
     }
     allElements.add(TileDate(
-      date: widget.subEvent.startTime!,
+      date: widget.subEvent.startTime,
     ));
 
     Widget tileTimeFrame = Container(
@@ -239,17 +237,15 @@ class TileWidgetState extends State<TileWidget>
         children: [
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.1),
-                borderRadius: BorderRadius.circular(8)),
+            width: 25,
+            height: 25,
+            decoration: TileStyles.tileIconContainerBoxDecoration,
             child: Icon(
               Icons.access_time_sharp,
               color: isTardy
                   ? TileStyles.lateTextColor
                   : TileStyles.defaultTextColor,
-              size: 20.0,
+              size: TileStyles.tileIconSize,
             ),
           ),
           Padding(
@@ -331,7 +327,7 @@ class TileWidgetState extends State<TileWidget>
                         color: this.widget.subEvent.isViable!
                             ? Colors.white
                             : Colors.black,
-                        width: 5,
+                        width: this.widget.subEvent.isViable! ? 0 : 5,
                       ),
                       borderRadius:
                           BorderRadius.circular(TileStyles.borderRadius),

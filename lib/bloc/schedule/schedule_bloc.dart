@@ -16,6 +16,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
     on<GetSchedule>(_onGetSchedule);
+    on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
+    on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<DelayedGetSchedule>(_onDelayedGetSchedule);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
     on<DelayedReloadLocalScheduleEvent>(_onDelayedReloadLocalScheduleEvent);
@@ -25,6 +27,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
       Timeline timeLine) async {
+    Utility.isDebugSet = true;
     return await scheduleApi.getSubEvents(timeLine);
   }
 
@@ -53,6 +56,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: event.timelines,
           lookupTimeline: event.lookupTimeline));
     });
+  }
+
+  void _onLoggedOutScheduleEvent(
+      LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
+    emit(ScheduleLoggedOutState());
+  }
+
+  void _onInitialLogInScheduleEvent(
+      LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
+    emit(ScheduleInitialState());
   }
 
   Future<void> _onGetSchedule(

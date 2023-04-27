@@ -75,6 +75,7 @@ abstract class AppApi {
 
   Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
+    Utility.isDebugSet = false;
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;

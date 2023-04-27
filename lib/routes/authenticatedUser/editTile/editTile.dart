@@ -9,12 +9,15 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/NextTileSuggestionWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -34,6 +37,7 @@ class _EditTileState extends State<EditTile> {
   Function? onProceed;
   int? splitCount;
   SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
+  CalendarEventApi calendarEventApi = new CalendarEventApi();
   bool isPendingSubEventProcessing = false;
   EditTileName? _editTileName;
 
@@ -44,6 +48,7 @@ class _EditTileState extends State<EditTile> {
   EditDateAndTime? _editCalEndDateAndTime;
   StartEndDurationTimeline? _startEndDurationTimeline;
   bool hideButtons = false;
+  List<NextTileSuggestion>? nextTileSuggestions;
 
   @override
   void initState() {
@@ -52,6 +57,12 @@ class _EditTileState extends State<EditTile> {
         .context
         .read<SubCalendarTileBloc>()
         .add(GetSubCalendarTileBlocEvent(subEventId: this.widget.tileId));
+
+    calendarEventApi.getNextTileSuggestion(this.widget.tileId).then((value) {
+      setState(() {
+        nextTileSuggestions = value;
+      });
+    });
   }
 
   void onInputCountChange() {
@@ -138,7 +149,9 @@ class _EditTileState extends State<EditTile> {
   }
 
   bool get isRigidTile {
-    return (this.subEvent!.isRigid ?? false);
+    return (this.subEvent!.calendarEvent?.isRigid ??
+        this.subEvent!.isRigid ??
+        false);
   }
 
   void updateProceed() {
@@ -173,6 +186,24 @@ class _EditTileState extends State<EditTile> {
     setState(() {
       onProceed = null;
     });
+  }
+
+  Widget renderNextTileSuggestionContainer() {
+    Widget retValue = SizedBox.shrink();
+    if (this.nextTileSuggestions != null &&
+        this.nextTileSuggestions!.length > 0) {
+      retValue = Container(
+        child: Row(
+          children: this
+              .nextTileSuggestions!
+              .map((e) => Expanded(
+                  child: NextTileSuggestionWidget(nextTileSuggestion: e)))
+              .toList(),
+        ),
+      );
+    }
+
+    return retValue;
   }
 
   @override
@@ -446,6 +477,7 @@ class _EditTileState extends State<EditTile> {
               );
 
               inputChildWidgets.add(playBackButton);
+              inputChildWidgets.add(renderNextTileSuggestionContainer());
 
               List<Widget> stackElements = <Widget>[
                 Container(

@@ -4,15 +4,15 @@ import 'package:tiler_app/util.dart';
 class AutoTile {
   String id = Utility.getUuid;
   String description;
-  String image;
-  Duration duration;
+  String? image;
+  Duration? duration;
   Location? location;
-  String categoryId;
+  String? categoryId;
   bool isLastCard;
   AutoTile(
       {required this.description,
-      required this.image,
-      required this.duration,
-      required this.categoryId,
+      this.image,
+      this.duration,
+      this.categoryId,
       this.isLastCard = false});
 }
