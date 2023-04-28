@@ -190,7 +190,7 @@ class TileBatchState extends State<TileBatch> {
           shrinkWrap: true,
           itemBuilder: _buildItem,
           key: _listKey,
-          physics: const NeverScrollableScrollPhysics(),
+          // physics: const NeverScrollableScrollPhysics(),
           initialItemCount: initialItems.length,
         );
         _list = ListModel<TilerEvent>(
@@ -201,6 +201,8 @@ class TileBatchState extends State<TileBatch> {
       }
 
       childrenColumnWidgets.add(Container(
+        color: Colors.pink,
+        height: MediaQuery.of(context).size.height,
         child: animatedList!,
       ));
     }

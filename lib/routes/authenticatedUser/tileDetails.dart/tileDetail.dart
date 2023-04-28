@@ -98,7 +98,7 @@ class _TileDetailState extends State<TileDetail> {
         .then((value) {
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetSchedule(
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: currentState.subEvents,
               scheduleTimeline: currentState.lookupTimeline,

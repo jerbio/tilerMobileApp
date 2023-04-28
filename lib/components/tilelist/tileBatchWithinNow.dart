@@ -377,6 +377,8 @@ class WithinNowBatchState extends TileBatchState {
     handleAddOrRemovalOfTimeSectionTiles(this.upcomingOrderedTiles,
         this._upcomingList, initialLoad, pendingRendering);
     return Container(
+      color: Colors.yellow,
+      height: MediaQuery.of(context).size.height,
       child: Column(
         children: children,
       ),

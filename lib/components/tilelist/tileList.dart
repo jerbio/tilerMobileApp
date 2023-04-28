@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
@@ -40,7 +42,7 @@ class _TileListState extends State<TileList> {
   DateTime lastUpdate = Utility.currentTime();
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
-      DateTime.now().add(Duration(days: -3)), Duration(days: 7));
+      Utility.currentTime().dayDate.add(Duration(days: -3)), Duration(days: 7));
   Timeline? oldTimeline;
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
@@ -68,6 +70,9 @@ class _TileListState extends State<TileList> {
       ),
     ],
   );
+  Map<int, Widget> dayIndexToWidget = {};
+  Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
+  final CarouselController tileListDayCarouselController = CarouselController();
 
   @override
   void initState() {
@@ -92,7 +97,7 @@ class _TileListState extends State<TileList> {
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -107,7 +112,7 @@ class _TileListState extends State<TileList> {
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -123,7 +128,7 @@ class _TileListState extends State<TileList> {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -144,7 +149,7 @@ class _TileListState extends State<TileList> {
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -159,7 +164,7 @@ class _TileListState extends State<TileList> {
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -175,7 +180,7 @@ class _TileListState extends State<TileList> {
             oldTimeline = timeLine;
             timeLine = updatedTimeline;
           });
-          this.context.read<ScheduleBloc>().add(GetSchedule(
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
@@ -374,22 +379,17 @@ class _TileListState extends State<TileList> {
 
       List<TileBatch> childTileBatchs = <TileBatch>[];
       childTileBatchs.addAll(preceedingDayTiles);
-      List<Widget> beforeNowBatch = preceedingDayTiles
-          .map<Widget>(
-            (tileBatch) =>
-                // GestureDetector(
-                //       onTap: () {
-                //         this.context.read<ScheduleBloc>().add(GetSchedule());
-                //       },
-                //       child:
-                Container(
-              decoration: previousTileBatchDecoration,
-              child: tileBatch,
-            ),
-            // )
-          )
-          .toList();
-      List<Widget> todayAndUpcomingBatch = [];
+      Map<int, Widget> dayIndexToWidget = {};
+      preceedingDayTiles.forEach((tileBatch) {
+        Widget widget = Container(
+          decoration: previousTileBatchDecoration,
+          child: tileBatch,
+        );
+        if (tileBatch.dayIndex != null) {
+          dayIndexToWidget[tileBatch.dayIndex!] = widget;
+        }
+      });
+
       DateTime currentTime = Utility.currentTime();
       if (todayTiles.length > 0) {
         List<TilerEvent> elapsedTiles = [];
@@ -402,59 +402,151 @@ class _TileListState extends State<TileList> {
             elapsedTiles.add(eachSubEvent);
           }
         }
-
+        List<TileBatch> todayTileBatches = <TileBatch>[];
         if (elapsedTiles.isNotEmpty) {
           elapsedTodayBatch = WithinNowBatch(
             key: ValueKey(
                 Utility.todayTimeline().toString() + "_within_elapsed_0"),
             tiles: elapsedTiles,
           );
-          beforeNowBatch.add(Container(child: elapsedTodayBatch));
+          todayTileBatches.add(elapsedTodayBatch);
         }
 
         if (notElapsedTiles.isNotEmpty) {
-          Widget notElapsedTodayBatch = WithinNowBatch(
+          WithinNowBatch notElapsedTodayBatch = WithinNowBatch(
             key: ValueKey(
                 Utility.todayTimeline().toString() + "_within_upcoming_0"),
             tiles: notElapsedTiles,
           );
-          todayAndUpcomingBatch.add(notElapsedTodayBatch);
+          todayTileBatches.add(notElapsedTodayBatch);
         }
+
+        childTileBatchs.addAll(todayTileBatches);
+        dayIndexToWidget[currentTime.universalDayIndex] = Column(
+          children: todayTileBatches,
+        );
+      } else {
+        DateTime currentTime = Utility.currentTime();
+        TileBatch tileBatch =
+            TileBatch(dayIndex: currentTime.universalDayIndex);
+        Widget widget = Container(
+          decoration: previousTileBatchDecoration,
+          child: tileBatch,
+        );
+        dayIndexToWidget[currentTime.universalDayIndex] = widget;
+        childTileBatchs.add(tileBatch);
       }
       childTileBatchs.addAll(upcomingDayTiles);
-      todayAndUpcomingBatch.addAll(upcomingDayTiles.map<Widget>(
-        (tileBatch) => Container(
-          decoration: upcomingTileBatchDecoration,
-          child: tileBatch,
-        ),
-        // )
-      ));
-      Key centerKey = ValueKey('Utility.getUuid.toString()');
-      retValue = Container(
-          decoration: TileStyles.defaultBackground,
-          child: CustomScrollView(
-            center: centerKey,
-            controller: _scrollController,
-            slivers: <Widget>[
-              SliverList(
-                key: ValueKey(Utility.getUuid.toString()),
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return beforeNowBatch[(beforeNowBatch.length - index) - 1];
-                  },
-                  childCount: beforeNowBatch.length,
-                ),
-              ),
-              SliverList(
-                key: centerKey,
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    return todayAndUpcomingBatch[index];
-                  },
-                  childCount: todayAndUpcomingBatch.length,
-                ),
-              ),
-            ],
+      upcomingDayTiles.forEach(
+        (tileBatch) {
+          {
+            Widget widget = Container(
+              decoration: upcomingTileBatchDecoration,
+              child: tileBatch,
+            );
+            if (tileBatch.dayIndex != null) {
+              dayIndexToWidget[tileBatch.dayIndex!] = widget;
+            }
+          }
+        },
+      );
+
+      List<int> sortedDayIndex = dayIndexToWidget.keys.toList();
+      sortedDayIndex.sort();
+
+      int currentDayIndex = Utility.currentTime().universalDayIndex;
+      var uiManagedDateState = this.context.read<UiDateManagerBloc>().state;
+      if (uiManagedDateState is UiDateManagerUpdated) {
+        currentDayIndex = uiManagedDateState.currentDate.universalDayIndex;
+      }
+      if (uiManagedDateState is UiDateManagerInitial) {
+        currentDayIndex = uiManagedDateState.currentDate.universalDayIndex;
+      }
+
+      int itemCounter = 0;
+      int initialCarouselIndex = -1;
+      List<Widget> carouselItems = sortedDayIndex.map<Widget>((dayIndex) {
+        if (initialCarouselIndex < 0 && currentDayIndex == dayIndex) {
+          initialCarouselIndex = itemCounter;
+        }
+        dayIndexToCarouselIndex[dayIndex] =
+            Tuple2(itemCounter, dayIndexToWidget[dayIndex]!);
+        ++itemCounter;
+        return dayIndexToWidget[dayIndex]!;
+      }).toList();
+
+      if (initialCarouselIndex < 0 && carouselItems.length > 0) {
+        initialCarouselIndex = 0;
+      }
+
+      retValue = CarouselSlider(
+          carouselController: tileListDayCarouselController,
+          items: carouselItems,
+          options: CarouselOptions(
+            height: MediaQuery.of(context).size.height,
+            viewportFraction: 1,
+            initialPage: initialCarouselIndex,
+            enableInfiniteScroll: false,
+            reverse: false,
+            onPageChanged: (pageNumber, carouselData) {
+              int? dayIndexOfTileBatch;
+              Tuple2<int, Widget>? tileBatchTupleData;
+
+              this.dayIndexToCarouselIndex.forEach((key, value) {
+                if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
+                  dayIndexOfTileBatch = key;
+                  tileBatchTupleData = value;
+                }
+              });
+
+              if (carouselData == CarouselPageChangedReason.manual &&
+                  dayIndexOfTileBatch != null &&
+                  tileBatchTupleData != null) {
+                var currentState = this.context.read<UiDateManagerBloc>().state;
+                DateTime previousTime = Utility.currentTime().dayDate;
+                DateTime currentTime =
+                    Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
+                if (currentState is UiDateManagerInitial) {
+                  previousTime = currentState.currentDate;
+                }
+                if (currentState is UiDateManagerUpdated) {
+                  previousTime = currentState.currentDate;
+                }
+                if (previousTime.millisecondsSinceEpoch !=
+                    currentTime.millisecondsSinceEpoch) {
+                  this.context.read<UiDateManagerBloc>().add(DateChange(
+                      selectedDate: currentTime,
+                      previousSelectedDate: previousTime));
+                }
+                List<int> allDayIndexes = dayIndexToCarouselIndex.keys.toList();
+                allDayIndexes.sort();
+
+                if (pageNumber == 1) {
+                  int earliestDayIndex = allDayIndexes.first - 1;
+                  if (earliestDayIndex < 0) {
+                    earliestDayIndex = 0;
+                  }
+                  reloadSchedule(
+                      Utility.getTimeFromIndex(earliestDayIndex)
+                          .dayDate
+                          .add(Duration(days: -7)),
+                      forceRenderingPage: false);
+                }
+
+                if (pageNumber > carouselItems.length - 3) {
+                  int latestDayIndex = allDayIndexes.last + 1;
+                  if (latestDayIndex < 0) {
+                    latestDayIndex = 0;
+                  }
+                  reloadSchedule(
+                      Utility.getTimeFromIndex(latestDayIndex)
+                          .dayDate
+                          .add(Duration(days: 7)),
+                      forceRenderingPage: false);
+                }
+              }
+            },
+            scrollDirection: Axis.horizontal,
           ));
     } else {
       retValue = ListView(children: []);
@@ -545,6 +637,47 @@ class _TileListState extends State<TileList> {
     handleAutoRefresh(tiles);
   }
 
+  reloadSchedule(DateTime dateManageCurrentDate,
+      {bool forceRenderingPage = true}) {
+    var scheduleSubEventState = this.context.read<ScheduleBloc>().state;
+    List<SubCalendarEvent> subEvents = [];
+    Timeline todayTimeLine = Utility.todayTimeline();
+    DateTime startDateTime = todayTimeLine.startTime;
+    DateTime endDateTime = todayTimeLine.endTime;
+    Timeline previousTimeline =
+        Timeline.fromDateTime(todayTimeLine.startTime, todayTimeLine.endTime);
+    if (scheduleSubEventState is ScheduleLoadedState) {
+      subEvents = scheduleSubEventState.subEvents;
+      startDateTime = scheduleSubEventState.lookupTimeline.startTime;
+      endDateTime = scheduleSubEventState.lookupTimeline.endTime;
+      previousTimeline =
+          Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+    }
+    if (scheduleSubEventState is ScheduleEvaluationState) {
+      subEvents = scheduleSubEventState.subEvents;
+      startDateTime = scheduleSubEventState.lookupTimeline.startTime;
+      endDateTime = scheduleSubEventState.lookupTimeline.endTime;
+      previousTimeline =
+          Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+    }
+
+    if (startDateTime.millisecondsSinceEpoch >
+        dateManageCurrentDate.millisecondsSinceEpoch) {
+      startDateTime = dateManageCurrentDate;
+    }
+
+    if (endDateTime.millisecondsSinceEpoch <
+        dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
+      endDateTime = dateManageCurrentDate;
+    }
+
+    this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+        previousSubEvents: subEvents,
+        previousTimeline: previousTimeline,
+        isAlreadyLoaded: !forceRenderingPage,
+        scheduleTimeline: Timeline.fromDateTime(startDateTime, endDateTime)));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -618,9 +751,22 @@ class _TileListState extends State<TileList> {
             }
           },
         ),
-        // BlocListener<BlocC, BlocCState>(
-        //   listener: (context, state) {},
-        // ),
+        BlocListener<UiDateManagerBloc, UiDateManagerState>(
+          listener: (context, state) {
+            if (state is UiDateManagerUpdated) {
+              if (dayIndexToCarouselIndex
+                  .containsKey(state.currentDate.universalDayIndex)) {
+                tileListDayCarouselController.animateToPage(
+                    dayIndexToCarouselIndex[
+                            state.currentDate.universalDayIndex]!
+                        .item1);
+                return;
+              }
+
+              reloadSchedule(state.currentDate.add(Duration(days: -7)));
+            }
+          },
+        ),
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
@@ -636,7 +782,7 @@ class _TileListState extends State<TileList> {
           }
 
           if (state is ScheduleInitialState) {
-            context.read<ScheduleBloc>().add(GetSchedule(
+            context.read<ScheduleBloc>().add(GetScheduleEvent(
                 scheduleTimeline: timeLine,
                 isAlreadyLoaded: false,
                 previousSubEvents: List<SubCalendarEvent>.empty()));

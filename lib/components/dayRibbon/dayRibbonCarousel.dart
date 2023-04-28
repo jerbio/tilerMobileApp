@@ -1,12 +1,14 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
 class DayRibbonCarousel extends StatefulWidget {
-  int numberOfDays = 6;
+  int numberOfDays = 7;
   DateTime _initialDate = Utility.currentTime().dayDate;
   Function? onDateChange;
   DayRibbonCarousel(DateTime? initialDate, {this.onDateChange}) {
@@ -36,10 +38,31 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     numberOfDays = this.widget.numberOfDays;
   }
 
-  onDateButtonTapped(DateTime date) {
+  updateSelectedDate(DateTime date) {
     setState(() {
-      this.selectedDate = date;
+      this.selectedDate = date.dayDate;
     });
+  }
+
+  onDateButtonTapped(DateTime date) {
+    DateTime previousDate = this.selectedDate;
+    DateTime currentDate = date;
+    updateSelectedDate(date);
+    final currentState = this.context.read<UiDateManagerBloc>().state;
+
+    if (currentState is UiDateManagerUpdated) {
+      previousDate = currentState.currentDate;
+    }
+
+    if (currentState is UiDateManagerInitial) {
+      previousDate = currentState.currentDate;
+    }
+
+    if (currentDate.millisecondsSinceEpoch !=
+        previousDate.millisecondsSinceEpoch) {
+      this.context.read<UiDateManagerBloc>().add(
+          DateChange(previousSelectedDate: previousDate, selectedDate: date));
+    }
   }
 
   Tuple3<Widget, Timeline?, Set<int>?> generateWidgetBatch(DateTime dateTime) {
@@ -109,6 +132,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           timelineEnd = dayButtonDateTime;
         }
       }
+      batchTimeline = Timeline.fromDateTime(timelineStart, timelineEnd);
     }
 
     return Tuple3<Widget, Timeline?, Set<int>?>(
@@ -123,65 +147,89 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         batchDayIndexes);
   }
 
+  handleDateChange(UiDateManagerUpdated state) {
+    if (universalIndexToBatch
+        .containsKey(state.currentDate.universalDayIndex)) {
+      dayRibbonCarouselController.animateToPage(
+          universalIndexToBatch[state.currentDate.universalDayIndex]!.item1);
+      if (state.currentDate.dayDate.millisecondsSinceEpoch !=
+          this.selectedDate.dayDate.millisecondsSinceEpoch) {
+        updateSelectedDate(state.currentDate);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    int beginDelta = this.batchCount - (this.batchCount ~/ 2);
-    if (beginDelta < 0) {
-      beginDelta = 0;
-    }
-
-    int currentDateDayIndex = this.anchorDate.universalDayIndex;
-    int beginDayIndex = currentDateDayIndex - (beginDelta * this.numberOfDays);
-    if (beginDayIndex < 0) {
-      beginDayIndex = 0;
-    }
-
-    int intialCarouselIndex = -1;
-    List<Widget> carouselDayRibbonBatch = [];
-    for (int i = 0, j = 0; j < batchCount; j++) {
-      int batchDayIndex = beginDayIndex + i;
-      if (intialCarouselIndex < 0 && batchDayIndex > currentDateDayIndex) {
-        intialCarouselIndex = j - 1;
-      }
-      var tileBatchInfo =
-          generateWidgetBatch(Utility.getTimeFromIndex(batchDayIndex));
-      carouselDayRibbonBatch.add(tileBatchInfo.item1);
-      if (tileBatchInfo.item2 != null) {
-        Tuple2<int, Timeline> batchInfo = Tuple2(j, tileBatchInfo.item2!);
-        if (tileBatchInfo.item3 != null) {
-          for (var dayIndex in tileBatchInfo.item3!) {
-            universalIndexToBatch[dayIndex] = batchInfo;
-          }
-        }
-        dayBatchIndexToBatch[j] = batchInfo;
-      }
-      i += this.numberOfDays;
-    }
-
-    if (intialCarouselIndex < 0) {
-      intialCarouselIndex = 0;
-    }
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: CarouselSlider(
-          carouselController: dayRibbonCarouselController,
-          items: carouselDayRibbonBatch,
-          options: CarouselOptions(
-            viewportFraction: 1,
-            initialPage: intialCarouselIndex,
-            enableInfiniteScroll: false,
-            reverse: false,
-            onPageChanged: (pageNumber, carouselData) {
-              if (carouselData == CarouselPageChangedReason.manual) {
-                // if (pageNumber == 0) {
-                //   setAsTile();
-                // } else {
-                //   setAsAppointment();
-                // }
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<UiDateManagerBloc, UiDateManagerState>(
+            listener: (context, state) {
+              if (state is UiDateManagerUpdated) {
+                handleDateChange(state);
               }
             },
-            scrollDirection: Axis.horizontal,
-          )),
-    );
+          ),
+        ],
+        child: BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+            builder: ((context, state) {
+          int beginDelta = this.batchCount - (this.batchCount ~/ 2);
+          if (beginDelta < 0) {
+            beginDelta = 0;
+          }
+
+          int currentDateDayIndex = this.anchorDate.universalDayIndex;
+          int beginDayIndex =
+              currentDateDayIndex - (beginDelta * this.numberOfDays);
+          if (beginDayIndex < 0) {
+            beginDayIndex = 0;
+          }
+
+          int initialCarouselIndex = -1;
+          List<Widget> carouselDayRibbonBatch = [];
+          for (int i = 0, j = 0; j < batchCount; j++) {
+            int batchDayIndex = beginDayIndex + i;
+            if (initialCarouselIndex < 0 &&
+                batchDayIndex > currentDateDayIndex) {
+              initialCarouselIndex = j - 1;
+            }
+            var tileBatchInfo =
+                generateWidgetBatch(Utility.getTimeFromIndex(batchDayIndex));
+            carouselDayRibbonBatch.add(tileBatchInfo.item1);
+            if (tileBatchInfo.item2 != null) {
+              Tuple2<int, Timeline> batchInfo = Tuple2(j, tileBatchInfo.item2!);
+              if (tileBatchInfo.item3 != null) {
+                for (var dayIndex in tileBatchInfo.item3!) {
+                  universalIndexToBatch[dayIndex] = batchInfo;
+                }
+              }
+              dayBatchIndexToBatch[j] = batchInfo;
+            }
+            i += this.numberOfDays;
+          }
+
+          if (initialCarouselIndex < 0) {
+            initialCarouselIndex = 0;
+          }
+          return CarouselSlider(
+              carouselController: dayRibbonCarouselController,
+              items: carouselDayRibbonBatch,
+              options: CarouselOptions(
+                viewportFraction: 1,
+                initialPage: initialCarouselIndex,
+                enableInfiniteScroll: false,
+                reverse: false,
+                // onPageChanged: (pageNumber, carouselData) {
+                //   if (carouselData == CarouselPageChangedReason.manual) {
+                //     // if (pageNumber == 0) {
+                //     //   setAsTile();
+                //     // } else {
+                //     //   setAsAppointment();
+                //     // }
+                //   }
+                // },
+                scrollDirection: Axis.horizontal,
+              ));
+        })));
   }
 }

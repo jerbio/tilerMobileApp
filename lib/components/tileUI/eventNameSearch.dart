@@ -60,7 +60,7 @@ class EventNameSearchState extends SearchWidgetState {
       String message = AppLocalizations.of(context)!.movingUp;
       Function generateCallBack = () {
         return this.calendarEventApi.setAsNow(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetSchedule());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
@@ -103,7 +103,7 @@ class EventNameSearchState extends SearchWidgetState {
       String message = AppLocalizations.of(context)!.deleting;
       Function generateCallBack = () {
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetSchedule());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
@@ -142,7 +142,7 @@ class EventNameSearchState extends SearchWidgetState {
       String message = AppLocalizations.of(context)!.completing;
       Function generateCallBack = () {
         return this.calendarEventApi.complete(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetSchedule());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(

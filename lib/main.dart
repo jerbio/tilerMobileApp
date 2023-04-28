@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
@@ -105,7 +106,8 @@ class TilerApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => SubCalendarTileBloc()),
           BlocProvider(create: (context) => ScheduleBloc()),
-          BlocProvider(create: (context) => CalendarTileBloc())
+          BlocProvider(create: (context) => CalendarTileBloc()),
+          BlocProvider(create: (context) => UiDateManagerBloc())
         ],
         child: MaterialApp(
           title: 'Tiler',

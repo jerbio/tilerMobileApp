@@ -91,7 +91,7 @@ class TileWidgetState extends State<TileWidget>
   }
 
   void callScheduleRefresh() {
-    this.context.read<ScheduleBloc>().add(GetSchedule());
+    this.context.read<ScheduleBloc>().add(GetScheduleEvent());
   }
 
   bool get isEditable {

@@ -7,10 +7,10 @@ abstract class UiDateManagerEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class SelectedDate extends UiDateManagerEvent {
+class DateChange extends UiDateManagerEvent {
   DateTime? previousSelectedDate;
   DateTime selectedDate;
-  SelectedDate({required this.selectedDate, this.previousSelectedDate});
+  DateChange({required this.selectedDate, this.previousSelectedDate});
 
   @override
   List<Object> get props => [];
