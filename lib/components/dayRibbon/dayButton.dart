@@ -43,6 +43,7 @@ class _DayButtonState extends State<DayButton> {
         }
       },
       child: Container(
+        height: 80,
         color: this.widget.isSelected ? Colors.amber : null,
         child: Column(
           children: childWidgets,

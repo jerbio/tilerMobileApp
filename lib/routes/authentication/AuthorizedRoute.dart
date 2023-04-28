@@ -189,7 +189,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       final currentState =
                           this.context.read<ScheduleBloc>().state;
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -208,7 +208,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           textColor: Colors.white,
                           fontSize: 16.0);
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -238,16 +238,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                         var scheduleBloc =
                             this.context.read<ScheduleBloc>().state;
                         if (scheduleBloc is ScheduleLoadedState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: scheduleBloc.subEvents,
-                              scheduleTimeline: scheduleBloc.lookupTimeline,
-                              isAlreadyLoaded: true));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: scheduleBloc.subEvents,
+                                  scheduleTimeline: scheduleBloc.lookupTimeline,
+                                  isAlreadyLoaded: true));
                         }
                         if (scheduleBloc is ScheduleInitialState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: [],
-                              scheduleTimeline: Utility.initialScheduleTimeline,
-                              isAlreadyLoaded: false));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: [],
+                                  scheduleTimeline:
+                                      Utility.initialScheduleTimeline,
+                                  isAlreadyLoaded: false));
                         }
                       });
                     },

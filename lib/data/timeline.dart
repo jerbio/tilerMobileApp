@@ -54,6 +54,12 @@ class Timeline with TimeRange {
     assert(this.start! <= this.end!);
   }
 
+  Timeline.fromTimeRange(TimeRange timeRange) {
+    this.start = timeRange.start;
+    this.end = timeRange.end;
+    assert(this.start! <= this.end!);
+  }
+
   Timeline.fromJson(Map<String, dynamic> json) {
     String? startString;
     String? endString;
