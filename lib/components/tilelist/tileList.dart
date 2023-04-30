@@ -47,31 +47,15 @@ class _TileListState extends State<TileList> {
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;
-  BoxDecoration previousTileBatchDecoration = BoxDecoration(
-    color: Colors.white,
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.5),
-        spreadRadius: 5,
-        blurRadius: 7,
-        offset: const Offset(0, 3), // changes position of shadow
-      ),
-    ],
-  );
+  BoxDecoration previousTileBatchDecoration =
+      BoxDecoration(color: Colors.white);
 
-  BoxDecoration upcomingTileBatchDecoration = BoxDecoration(
-    color: Colors.white,
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.5),
-        spreadRadius: 5,
-        blurRadius: 7,
-        offset: const Offset(0, -3), // changes position of shadow
-      ),
-    ],
-  );
+  BoxDecoration upcomingTileBatchDecoration =
+      BoxDecoration(color: Colors.white);
+  Key carouselKey = ValueKey(Utility.getUuid);
   Map<int, Widget> dayIndexToWidget = {};
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
+  List<Widget> carouselItems = [];
   final CarouselController tileListDayCarouselController = CarouselController();
 
   @override
@@ -82,7 +66,7 @@ class _TileListState extends State<TileList> {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
       List<SubCalendarEvent> renderedSubEvents = [];
-      List<Timeline> timeLines = [];
+
       Timeline updatedTimeline = Utility.todayTimeline();
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
@@ -273,7 +257,6 @@ class _TileListState extends State<TileList> {
 
   Widget renderSubCalendarTiles(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
-    WithinNowBatch elapsedTodayBatch;
     Map<int, TileBatch> preceedingDayTilesDict = new Map<int, TileBatch>();
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
     Widget retValue = Container();
@@ -379,9 +362,9 @@ class _TileListState extends State<TileList> {
 
       List<TileBatch> childTileBatchs = <TileBatch>[];
       childTileBatchs.addAll(preceedingDayTiles);
-      Map<int, Widget> dayIndexToWidget = {};
       preceedingDayTiles.forEach((tileBatch) {
         Widget widget = Container(
+          height: MediaQuery.of(context).size.height - 400,
           decoration: previousTileBatchDecoration,
           child: tileBatch,
         );
@@ -403,28 +386,17 @@ class _TileListState extends State<TileList> {
           }
         }
         List<TileBatch> todayTileBatches = <TileBatch>[];
-        if (elapsedTiles.isNotEmpty) {
-          elapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(
-                Utility.todayTimeline().toString() + "_within_elapsed_0"),
-            tiles: elapsedTiles,
-          );
-          todayTileBatches.add(elapsedTodayBatch);
-        }
-
-        if (notElapsedTiles.isNotEmpty) {
-          WithinNowBatch notElapsedTodayBatch = WithinNowBatch(
-            key: ValueKey(
-                Utility.todayTimeline().toString() + "_within_upcoming_0"),
-            tiles: notElapsedTiles,
-          );
-          todayTileBatches.add(notElapsedTodayBatch);
-        }
-
-        childTileBatchs.addAll(todayTileBatches);
-        dayIndexToWidget[currentTime.universalDayIndex] = Column(
-          children: todayTileBatches,
+        WithinNowBatch todayBatch = WithinNowBatch(
+          key: ValueKey(
+              Utility.todayTimeline().toString() + "_within_upcoming_0"),
+          tiles: [...elapsedTiles, ...notElapsedTiles],
         );
+        todayTileBatches.add(todayBatch);
+        childTileBatchs.addAll(todayTileBatches);
+        dayIndexToWidget[currentTime.universalDayIndex] = Container(
+            child: ListView(
+          children: todayTileBatches,
+        ));
       } else {
         DateTime currentTime = Utility.currentTime();
         TileBatch tileBatch =
@@ -441,6 +413,7 @@ class _TileListState extends State<TileList> {
         (tileBatch) {
           {
             Widget widget = Container(
+              height: MediaQuery.of(context).size.height,
               decoration: upcomingTileBatchDecoration,
               child: tileBatch,
             );
@@ -465,9 +438,15 @@ class _TileListState extends State<TileList> {
 
       int itemCounter = 0;
       int initialCarouselIndex = -1;
-      List<Widget> carouselItems = sortedDayIndex.map<Widget>((dayIndex) {
+      bool isCarouselKeyRefreshed = false;
+      carouselItems = sortedDayIndex.map<Widget>((dayIndex) {
         if (initialCarouselIndex < 0 && currentDayIndex == dayIndex) {
           initialCarouselIndex = itemCounter;
+        }
+        if (!isCarouselKeyRefreshed &&
+            !dayIndexToCarouselIndex.containsKey(dayIndex)) {
+          carouselKey = ValueKey(Utility.getUuid);
+          isCarouselKeyRefreshed = true;
         }
         dayIndexToCarouselIndex[dayIndex] =
             Tuple2(itemCounter, dayIndexToWidget[dayIndex]!);
@@ -480,6 +459,7 @@ class _TileListState extends State<TileList> {
       }
 
       retValue = CarouselSlider(
+          key: carouselKey,
           carouselController: tileListDayCarouselController,
           items: carouselItems,
           options: CarouselOptions(

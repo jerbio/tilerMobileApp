@@ -189,12 +189,13 @@ class TileWidgetState extends State<TileWidget>
     List<Widget> allElements = [
       Container(
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+        padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
         child: Stack(
           children: [
             TileName(widget.subEvent),
             Positioned(
               top: -10,
-              right: 8,
+              right: -10,
               child: isEditable ? editButton : SizedBox.shrink(),
             )
           ],

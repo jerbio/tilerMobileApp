@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +11,6 @@ import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/dayData.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -168,7 +165,9 @@ class TileBatchState extends State<TileBatch> {
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
-      childrenColumnWidgets.add(DaySummary(dayData: this._dayData!));
+      childrenColumnWidgets.add(Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+          child: DaySummary(dayData: this._dayData!)));
     }
 
     Widget? sleepWidget;
@@ -190,7 +189,6 @@ class TileBatchState extends State<TileBatch> {
           shrinkWrap: true,
           itemBuilder: _buildItem,
           key: _listKey,
-          // physics: const NeverScrollableScrollPhysics(),
           initialItemCount: initialItems.length,
         );
         _list = ListModel<TilerEvent>(
@@ -201,8 +199,7 @@ class TileBatchState extends State<TileBatch> {
       }
 
       childrenColumnWidgets.add(Container(
-        color: Colors.pink,
-        height: MediaQuery.of(context).size.height,
+        height: MediaQuery.of(context).size.height - 261,
         child: animatedList!,
       ));
     }

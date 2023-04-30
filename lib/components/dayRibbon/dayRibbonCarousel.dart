@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayButton.dart';
@@ -8,7 +9,7 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
 class DayRibbonCarousel extends StatefulWidget {
-  int numberOfDays = 7;
+  int numberOfDays = 5;
   DateTime _initialDate = Utility.currentTime().dayDate;
   Function? onDateChange;
   DayRibbonCarousel(DateTime? initialDate, {this.onDateChange}) {
@@ -211,25 +212,21 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           if (initialCarouselIndex < 0) {
             initialCarouselIndex = 0;
           }
-          return CarouselSlider(
-              carouselController: dayRibbonCarouselController,
-              items: carouselDayRibbonBatch,
-              options: CarouselOptions(
-                viewportFraction: 1,
-                initialPage: initialCarouselIndex,
-                enableInfiniteScroll: false,
-                reverse: false,
-                // onPageChanged: (pageNumber, carouselData) {
-                //   if (carouselData == CarouselPageChangedReason.manual) {
-                //     // if (pageNumber == 0) {
-                //     //   setAsTile();
-                //     // } else {
-                //     //   setAsAppointment();
-                //     // }
-                //   }
-                // },
-                scrollDirection: Axis.horizontal,
-              ));
+          return Container(
+            color: Colors.white,
+            width: MediaQuery.of(context).size.width,
+            height: 130,
+            child: CarouselSlider(
+                carouselController: dayRibbonCarouselController,
+                items: carouselDayRibbonBatch,
+                options: CarouselOptions(
+                  viewportFraction: 1,
+                  initialPage: initialCarouselIndex,
+                  enableInfiniteScroll: false,
+                  reverse: false,
+                  scrollDirection: Axis.horizontal,
+                )),
+          );
         })));
   }
 }

@@ -77,7 +77,7 @@ class TileStyles {
       hintStyle: TextStyle(
           color: Color.fromRGBO(180, 180, 180, 1),
           fontSize: textFontSize,
-          fontFamily: 'Rubik',
+          fontFamily: TileStyles.rubikFontName,
           fontWeight: FontWeight.w500),
       contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
       fillColor: textBackgroundColor,

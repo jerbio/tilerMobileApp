@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
+import 'package:tiler_app/data/dayData.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
@@ -294,6 +296,9 @@ class WithinNowBatchState extends TileBatchState {
       });
     }
     List<Widget> children = [];
+    children.add(Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+        child: DaySummary(dayData: DayData())));
     int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
@@ -365,9 +370,20 @@ class WithinNowBatchState extends TileBatchState {
       }
       upcomningTileWidgets.insert(0, footerContainer);
     }
-    children.addAll(precedingTileWidgets);
-    children.addAll(currentTileWidgets);
-    children.addAll(upcomningTileWidgets);
+    Widget scrollableItems = Container(
+      height: MediaQuery.of(context).size.height - 200,
+      width: MediaQuery.of(context).size.width,
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 200),
+      child: ListView(
+        children: [
+          ...precedingTileWidgets,
+          ...currentTileWidgets,
+          ...upcomningTileWidgets
+        ],
+      ),
+    );
+
+    children.add(scrollableItems);
     bool initialLoad = this.isInitialLoad;
     bool pendingRendering = this._pendingRendering;
     handleAddOrRemovalOfTimeSectionTiles(this.preceedingOrderedTiles,
@@ -376,9 +392,9 @@ class WithinNowBatchState extends TileBatchState {
         this._currentList, initialLoad, pendingRendering);
     handleAddOrRemovalOfTimeSectionTiles(this.upcomingOrderedTiles,
         this._upcomingList, initialLoad, pendingRendering);
+
     return Container(
-      color: Colors.yellow,
-      height: MediaQuery.of(context).size.height,
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 300),
       child: Column(
         children: children,
       ),
