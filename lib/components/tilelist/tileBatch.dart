@@ -67,13 +67,18 @@ class TileBatchState extends State<TileBatch> {
   void initState() {
     super.initState();
     isInitialLoad = true;
-    if (this.widget.dayIndex != null) {
-      _dayData = DayData.generateRandomDayData(this.widget.dayIndex!);
+    if (dayData == null && this.widget.dayIndex != null) {
+      _dayData = DayData();
+      _dayData!.dayIndex = this.widget.dayIndex;
     }
     if (this.widget.dayData != null) {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
+  }
+
+  DayData? get dayData {
+    return this._dayData;
   }
 
   void updateSleepTimelines(Timeline timeline) {
@@ -160,14 +165,14 @@ class TileBatchState extends State<TileBatch> {
         " " +
         uniqueKey);
     childrenColumnWidgets = [];
-    if (_dayData != null) {
-      this._dayData!.nonViableTiles = renderedTiles.values
+    if (dayData != null) {
+      this.dayData!.nonViableTiles = renderedTiles.values
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
       childrenColumnWidgets.add(Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayData: this._dayData!)));
+          child: DaySummary(dayData: this.dayData!)));
     }
 
     Widget? sleepWidget;
