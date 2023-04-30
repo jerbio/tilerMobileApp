@@ -472,13 +472,9 @@ class _TileListState extends State<TileList> {
       return;
     }
 
-    String endTime = MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay.fromDateTime(concludingTile.endTime));
-
     String notificationMessage = AppLocalizations.of(context)!.concludesAtTime(
         (concludingTile.name ??
-            AppLocalizations.of(context)!.procrastinateBlockOut),
-        endTime);
+            AppLocalizations.of(context)!.procrastinateBlockOut));
 
     this.localNotificationService.concludingTileNotification(
         tile: concludingTile,
@@ -500,22 +496,46 @@ class _TileListState extends State<TileList> {
   }
 
   void handleNotifications(List<SubCalendarEvent> tiles) {
-    List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
-    double currentTime = Utility.msCurrentTime.toDouble();
-    List<SubCalendarEvent> subSequentTiles = orderedTiles
-        .map((eachTile) => eachTile as SubCalendarEvent)
-        .where((eachTile) =>
-            eachTile.end! > currentTime &&
-            (eachTile.isViable == null || eachTile.isViable!))
-        .toList();
+    double currentTimeMs = Utility.msCurrentTime.toDouble();
+    List<TilerEvent> orderedByStartTiles =
+        tiles.where((eachTile) => eachTile.start! > currentTimeMs).toList();
+    orderedByStartTiles = Utility.orderTiles(orderedByStartTiles);
+    List<TilerEvent> orderedByEndTiles =
+        tiles.where((eachTile) => eachTile.end! > currentTimeMs).toList();
+    orderedByEndTiles.sort((tileA, tileB) {
+      int retValue = tileA.end! - tileB.end!;
+      return retValue.toInt();
+    });
+
+    TilerEvent? earliestByStartSubTile;
+    if (orderedByStartTiles.isNotEmpty) {
+      earliestByStartSubTile = orderedByStartTiles.first;
+    }
+
+    TilerEvent? earliestByEndSubTile;
+    if (orderedByEndTiles.isNotEmpty) {
+      earliestByEndSubTile = orderedByEndTiles.first;
+    }
+
     this.localNotificationService.cancelAllNotifications();
-    if (subSequentTiles.isNotEmpty) {
-      SubCalendarEvent notificationTile = subSequentTiles.first;
-      if (notificationTile.startTime.millisecondsSinceEpoch > currentTime) {
-        createNextTileNotification(notificationTile);
-      } else {
-        createConclusionTileNotification(notificationTile);
+
+    if (earliestByStartSubTile != null && earliestByEndSubTile != null) {
+      if (earliestByStartSubTile.start! < earliestByEndSubTile.end!) {
+        createNextTileNotification(earliestByStartSubTile as SubCalendarEvent);
+        return;
       }
+      createConclusionTileNotification(
+          earliestByEndSubTile as SubCalendarEvent);
+      return;
+    }
+
+    if (earliestByStartSubTile != null) {
+      createNextTileNotification(earliestByStartSubTile as SubCalendarEvent);
+      return;
+    }
+    if (earliestByEndSubTile != null) {
+      createConclusionTileNotification(
+          earliestByEndSubTile as SubCalendarEvent);
     }
   }
 
@@ -646,9 +666,6 @@ class _TileListState extends State<TileList> {
             }
           },
         ),
-        // BlocListener<BlocC, BlocCState>(
-        //   listener: (context, state) {},
-        // ),
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
