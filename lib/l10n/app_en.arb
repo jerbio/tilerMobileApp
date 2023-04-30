@@ -106,7 +106,17 @@
           "example": "5:14 PM"
         }
       }},
+      "endsAtTime": "Ends at {time}",
+      "@endsAtTime": {
+        "description": "Ends at time",
+        "placeholders": {
+          "time": {
+            "type": "String",
+            "example": "5:14 PM"
+          }
+        }},
     "startsInTenMinutes": "Starts in ten minutes",
+    "endsInTenMinutes": "Ends in five minutes",
     "startsInDuration": "Starts in {duration}",
     "@startsInDuration": {
       "description": "Description of time till start",
@@ -116,14 +126,10 @@
           "example": "5 Hours"
         }
       }},
-    "concludesAtTime": "🏁 {tileName} concludes at {time}",
+    "concludesAtTime": "🏁 {tileName} concludes soon",
     "@concludesAtTime": {
       "description": "Description of time of conclusion",
       "placeholders": {
-        "time": {
-          "type": "String",
-          "example": "5:00 AM"
-        },
         "tileName": {
           "type": "String",
           "example": "Build tiler"
