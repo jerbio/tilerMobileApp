@@ -8,6 +8,7 @@ import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
@@ -19,13 +20,21 @@ import '../../constants.dart';
 class WithinNowBatch extends TileBatch {
   TileWidget? _currentWidget;
   WithinNowBatchState? _state;
+  DayData? dayData;
 
   WithinNowBatch(
       {String? header = '',
       String? footer = 'Upcoming',
       List<TilerEvent>? tiles,
+      DayData? dayData,
       Key? key})
-      : super(header: header, footer: footer, key: key, tiles: tiles);
+      : super(
+            header: header,
+            footer: footer,
+            key: key,
+            tiles: tiles,
+            dayData: dayData,
+            dayIndex: Utility.currentTime().universalDayIndex);
 
   @override
   WithinNowBatchState createState() {
@@ -296,9 +305,19 @@ class WithinNowBatchState extends TileBatchState {
       });
     }
     List<Widget> children = [];
+    if (dayData != null) {
+      this.dayData!.nonViableTiles = renderedTiles.values
+          .where(
+              (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
+          .toList();
+      childrenColumnWidgets.add(Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+          child: DaySummary(dayData: this.dayData!)));
+    }
+
     children.add(Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-        child: DaySummary(dayData: DayData())));
+        child: DaySummary(dayData: this.dayData ?? DayData())));
     int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
