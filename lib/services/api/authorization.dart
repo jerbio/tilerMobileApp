@@ -8,7 +8,6 @@ class Authorization extends AppApi {
   Future<AuthenticationData> getAuthenticationInfo(
       String userName, String password) async {
     String tilerDomain = Constants.tilerDomain;
-    // print("domain use $tilerDomain");
     String url = tilerDomain;
     final queryParameters = {
       'username': userName,
@@ -26,7 +25,7 @@ class Authorization extends AppApi {
         headers: {"Content-Type": "text/plain"},
         body: requestBody,
         encoding: Encoding.getByName("utf-8"));
-// print("response of get credential is ${response.body}");
+
     AuthenticationData retValue = AuthenticationData.noCredentials();
     if (response.statusCode == 200) {
       var jsonResult = jsonDecode(response.body);

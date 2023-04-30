@@ -109,14 +109,7 @@ class SubCalendarEvent extends TilerEvent {
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
-      if (json.containsKey('start') &&
-        json['start'] != null) {
-      start = json['start'];
-    }
-    if (json.containsKey('end') &&
-        json['end'] != null) {
-      end = json['end'];
-    }
+
     if (json.containsKey('travelTimeBefore') &&
         json['travelTimeBefore'] != null) {
       travelTimeBefore = double.parse(json['travelTimeBefore'].toString());

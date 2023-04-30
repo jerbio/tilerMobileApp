@@ -54,7 +54,7 @@ class TilerApp extends StatelessWidget {
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
     Authentication authentication = new Authentication();
     var authenticationResult = await authentication.isUserAuthenticated();
-    // print("authernication result is $authenticationResult");
+
     return authenticationResult;
   }
 
@@ -153,8 +153,7 @@ class TilerApp extends StatelessWidget {
                       snapshot.data!.item2 == Constants.cannotVerifyError) {
                     showErrorMessage(
                         AppLocalizations.of(context)!.issuesConnectingToTiler);
-                    return renderPending();
-                    // return  SummaryPage();
+                    return renderPending();   
                   }
 
                   if (snapshot.data!.item1) {
@@ -164,9 +163,9 @@ class TilerApp extends StatelessWidget {
                     retValue = SignInRoute();
                   }
                 } else {
-                  // print("retuning pending rendering");
+             
                   retValue 
-                  //  =SummaryPage();
+            
                   = renderPending();
                 }
                 return retValue;

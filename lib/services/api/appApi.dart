@@ -56,12 +56,9 @@ abstract class AppApi {
 
   getHeaders() {
     if (authentication.cachedCredentials != null &&
-        !authentication.cachedCredentials!.isExpired()) {
-       
+        !authentication.cachedCredentials!.isExpired()) {    
       var cachedCredentials = authentication.cachedCredentials!;
       String token = cachedCredentials.accessToken;
-  
-         print("token is $token");
       var header = {
         HttpHeaders.contentTypeHeader: 'application/json',
         HttpHeaders.authorizationHeader: 'Bearer ' + token,
