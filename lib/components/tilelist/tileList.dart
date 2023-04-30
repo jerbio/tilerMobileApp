@@ -569,11 +569,15 @@ class _TileListState extends State<TileList> {
 
   void handleNotifications(List<SubCalendarEvent> tiles) {
     double currentTimeMs = Utility.msCurrentTime.toDouble();
-    List<TilerEvent> orderedByStartTiles =
-        tiles.where((eachTile) => eachTile.start! > currentTimeMs).toList();
+    List<TilerEvent> orderedByStartTiles = tiles
+        .where((eachTile) =>
+            (eachTile.isViable ?? true) && eachTile.start! > currentTimeMs)
+        .toList();
     orderedByStartTiles = Utility.orderTiles(orderedByStartTiles);
-    List<TilerEvent> orderedByEndTiles =
-        tiles.where((eachTile) => eachTile.end! > currentTimeMs).toList();
+    List<TilerEvent> orderedByEndTiles = tiles
+        .where((eachTile) =>
+            (eachTile.isViable ?? true) && eachTile.end! > currentTimeMs)
+        .toList();
     orderedByEndTiles.sort((tileA, tileB) {
       int retValue = tileA.end! - tileB.end!;
       return retValue.toInt();
