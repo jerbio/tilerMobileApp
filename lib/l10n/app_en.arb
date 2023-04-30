@@ -116,6 +116,19 @@
           "example": "5 Hours"
         }
       }},
+    "concludesAtTime": "🏁 {tileName} concludes at {time}",
+    "@concludesAtTime": {
+      "description": "Description of time of conclusion",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "5:00 AM"
+        },
+        "tileName": {
+          "type": "String",
+          "example": "Build tiler"
+        }
+      }},
     "@Add": {
       "description": "The conventional newborn programmer greeting"
     },

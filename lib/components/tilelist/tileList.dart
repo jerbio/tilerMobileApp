@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
@@ -25,7 +26,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// This renders the list of tiles on a given day
 class TileList extends StatefulWidget {
-  SubCalendarEvent? notificationSubEvent;
   final ScheduleApi scheduleApi = new ScheduleApi();
   static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
@@ -35,6 +35,8 @@ class TileList extends StatefulWidget {
 }
 
 class _TileListState extends State<TileList> {
+  SubCalendarEvent? notificationSubEvent;
+  SubCalendarEvent? concludingSubEvent;
   final Duration autorefresh = const Duration(minutes: 2);
   StreamSubscription? autoRefreshList;
   DateTime lastUpdate = Utility.currentTime();
@@ -463,16 +465,38 @@ class _TileListState extends State<TileList> {
     return retValue;
   }
 
+  void createConclusionTileNotification(SubCalendarEvent concludingTile) {
+    if (this.concludingSubEvent != null &&
+        this.concludingSubEvent!.id == concludingTile.id &&
+        this.concludingSubEvent!.isStartAndEndEqual(concludingTile)) {
+      return;
+    }
+
+    String endTime = MaterialLocalizations.of(context)
+        .formatTimeOfDay(TimeOfDay.fromDateTime(concludingTile.endTime));
+
+    String notificationMessage = AppLocalizations.of(context)!.concludesAtTime(
+        (concludingTile.name ??
+            AppLocalizations.of(context)!.procrastinateBlockOut),
+        endTime);
+
+    this.localNotificationService.concludingTileNotification(
+        tile: concludingTile,
+        context: this.context,
+        title: notificationMessage);
+    this.concludingSubEvent = concludingTile;
+  }
+
   void createNextTileNotification(SubCalendarEvent nextTile) {
-    if (this.widget.notificationSubEvent != null &&
-        this.widget.notificationSubEvent!.id == nextTile.id &&
-        this.widget.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
+    if (this.notificationSubEvent != null &&
+        this.notificationSubEvent!.id == nextTile.id &&
+        this.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
       return;
     }
     this
         .localNotificationService
         .nextTileNotification(tile: nextTile, context: this.context);
-    this.widget.notificationSubEvent = nextTile;
+    this.notificationSubEvent = nextTile;
   }
 
   void handleNotifications(List<SubCalendarEvent> tiles) {
@@ -481,13 +505,17 @@ class _TileListState extends State<TileList> {
     List<SubCalendarEvent> subSequentTiles = orderedTiles
         .map((eachTile) => eachTile as SubCalendarEvent)
         .where((eachTile) =>
-            eachTile.start! > currentTime &&
+            eachTile.end! > currentTime &&
             (eachTile.isViable == null || eachTile.isViable!))
         .toList();
     this.localNotificationService.cancelAllNotifications();
     if (subSequentTiles.isNotEmpty) {
       SubCalendarEvent notificationTile = subSequentTiles.first;
-      createNextTileNotification(notificationTile);
+      if (notificationTile.startTime.millisecondsSinceEpoch > currentTime) {
+        createNextTileNotification(notificationTile);
+      } else {
+        createConclusionTileNotification(notificationTile);
+      }
     }
   }
 
