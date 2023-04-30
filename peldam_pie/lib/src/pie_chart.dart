@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pie_chart/pie_chart.dart';
 
+import '../style.dart';
 import 'chart_painter.dart';
 import 'legend.dart';
 import 'utils.dart';
