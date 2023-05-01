@@ -15,8 +15,7 @@ class SubCalendarEvent extends TilerEvent {
   bool? isTardy;
   bool? isViable = true;
   bool? _isAllDay;
-  // double? start;
-  // double? end;
+
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
         (this.addressDescription != null &&
@@ -109,7 +108,6 @@ class SubCalendarEvent extends TilerEvent {
   static T? cast<T>(x) => x is T ? x : null;
 
   SubCalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
-
     if (json.containsKey('travelTimeBefore') &&
         json['travelTimeBefore'] != null) {
       travelTimeBefore = double.parse(json['travelTimeBefore'].toString());

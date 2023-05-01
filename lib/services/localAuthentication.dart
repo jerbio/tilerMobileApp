@@ -78,7 +78,6 @@ class Authentication {
       retValue = true;
     } else {
       await reLoadCredentialsCache().then((value) {
-        print("value of reloaded cache is $value");
         retValue = isCachedCredentialValid();
       }).catchError((onError) {
         retValue = false;
