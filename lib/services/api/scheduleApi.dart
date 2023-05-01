@@ -56,8 +56,7 @@ class ScheduleApi extends AppApi {
         var header = this.getHeaders();
 
         if (header != null) {
-          print("${this.authentication.cachedCredentials!.username}");
-          var response = await http.get(uri, headers: header);
+        var response = await http.get(uri, headers: header);
           var jsonResult = jsonDecode(response.body);
           if (isJsonResponseOk(jsonResult)) {
             if (isContentInResponse(jsonResult) &&
@@ -200,7 +199,7 @@ class ScheduleApi extends AppApi {
         if (header != null) {
           var response = await http.post(uri,
               headers: header, body: jsonEncode(injectedParameters));
-          print("body of add tiler is ${response.body}");
+   
           var jsonResult = jsonDecode(response.body);
           error.message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
