@@ -1,21 +1,16 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
-import 'package:tiler_app/components/tileUI/chillNow.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
-import 'package:tiler_app/components/tileUI/loadingTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
 import 'package:tiler_app/data/dayData.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -72,13 +67,18 @@ class TileBatchState extends State<TileBatch> {
   void initState() {
     super.initState();
     isInitialLoad = true;
-    if (this.widget.dayIndex != null) {
-      _dayData = DayData.generateRandomDayData(this.widget.dayIndex!);
+    if (dayData == null && this.widget.dayIndex != null) {
+      _dayData = DayData();
+      _dayData!.dayIndex = this.widget.dayIndex;
     }
     if (this.widget.dayData != null) {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
+  }
+
+  DayData? get dayData {
+    return this._dayData;
   }
 
   void updateSleepTimelines(Timeline timeline) {
@@ -165,12 +165,14 @@ class TileBatchState extends State<TileBatch> {
         " " +
         uniqueKey);
     childrenColumnWidgets = [];
-    if (_dayData != null) {
-      this._dayData!.nonViableTiles = renderedTiles.values
+    if (dayData != null) {
+      this.dayData!.nonViableTiles = renderedTiles.values
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
-      childrenColumnWidgets.add(DaySummary(dayData: this._dayData!));
+      childrenColumnWidgets.add(Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+          child: DaySummary(dayData: this.dayData!)));
     }
 
     Widget? sleepWidget;
@@ -192,7 +194,6 @@ class TileBatchState extends State<TileBatch> {
           shrinkWrap: true,
           itemBuilder: _buildItem,
           key: _listKey,
-          physics: const NeverScrollableScrollPhysics(),
           initialItemCount: initialItems.length,
         );
         _list = ListModel<TilerEvent>(
@@ -203,6 +204,7 @@ class TileBatchState extends State<TileBatch> {
       }
 
       childrenColumnWidgets.add(Container(
+        height: MediaQuery.of(context).size.height - 261,
         child: animatedList!,
       ));
     }

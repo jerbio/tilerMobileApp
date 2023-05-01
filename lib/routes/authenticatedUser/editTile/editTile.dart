@@ -88,7 +88,7 @@ class _EditTileState extends State<EditTile> {
         .then((value) {
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetSchedule(
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: currentState.subEvents,
               scheduleTimeline: currentState.lookupTimeline,
@@ -455,7 +455,7 @@ class _EditTileState extends State<EditTile> {
                     final currentState =
                         this.context.read<ScheduleBloc>().state;
                     if (currentState is ScheduleEvaluationState) {
-                      this.context.read<ScheduleBloc>().add(GetSchedule(
+                      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                             isAlreadyLoaded: true,
                             previousSubEvents: currentState.subEvents,
                             scheduleTimeline: currentState.lookupTimeline,
@@ -463,7 +463,7 @@ class _EditTileState extends State<EditTile> {
                           ));
                     }
                     if (currentState is ScheduleLoadedState) {
-                      this.context.read<ScheduleBloc>().add(GetSchedule(
+                      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                             isAlreadyLoaded: true,
                             previousSubEvents: currentState.subEvents,
                             scheduleTimeline: currentState.lookupTimeline,

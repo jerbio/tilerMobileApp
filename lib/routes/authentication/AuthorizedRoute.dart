@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -188,7 +189,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       final currentState =
                           this.context.read<ScheduleBloc>().state;
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -207,7 +208,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           textColor: Colors.white,
                           fontSize: 16.0);
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -237,16 +238,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                         var scheduleBloc =
                             this.context.read<ScheduleBloc>().state;
                         if (scheduleBloc is ScheduleLoadedState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: scheduleBloc.subEvents,
-                              scheduleTimeline: scheduleBloc.lookupTimeline,
-                              isAlreadyLoaded: true));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: scheduleBloc.subEvents,
+                                  scheduleTimeline: scheduleBloc.lookupTimeline,
+                                  isAlreadyLoaded: true));
                         }
                         if (scheduleBloc is ScheduleInitialState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: [],
-                              scheduleTimeline: Utility.initialScheduleTimeline,
-                              isAlreadyLoaded: false));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: [],
+                                  scheduleTimeline:
+                                      Utility.initialScheduleTimeline,
+                                  isAlreadyLoaded: false));
                         }
                       });
                     },
@@ -307,6 +311,20 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      Container(
+          margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+          decoration: BoxDecoration(
+            // color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                // spreadRadius: 5,
+                blurRadius: 7,
+                offset: const Offset(0, 7),
+              ),
+            ],
+          ),
+          child: DayRibbonCarousel(Utility.currentTime())),
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
@@ -367,9 +385,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
-      body: Container(
-        child: Stack(
-          children: widgetChildren,
+      body: SafeArea(
+        child: Container(
+          child: Stack(
+            children: widgetChildren,
+          ),
         ),
       ),
       bottomNavigationBar: bottomNavigator,
