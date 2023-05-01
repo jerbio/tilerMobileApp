@@ -15,9 +15,9 @@ class _DaySummaryState extends State<DaySummary> {
   Widget renderDayMetricInfo() {
     List<Widget> rowSymbolElements = <Widget>[];
     const textStyle = const TextStyle(
-        fontSize: 25, color: const Color.fromRGBO(153, 153, 153, 1));
+        fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
     Widget completeWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -33,7 +33,7 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget warnWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -49,7 +49,7 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget sleepWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -67,9 +67,12 @@ class _DaySummaryState extends State<DaySummary> {
     // rowSymbolElements.add(completeWidget);
     rowSymbolElements.add(warnWidget);
     // rowSymbolElements.add(sleepWidget);
-    Widget retValue = Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: rowSymbolElements,
+    Widget retValue = Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: rowSymbolElements,
+      ),
     );
     return retValue;
   }
@@ -99,26 +102,15 @@ Navigator.push(context, MaterialPageRoute(builder: (context)=>SummaryPage()));
                   fontWeight: FontWeight.w700)),
         ),
       );
-      childElements.insert(0, dayDateText);
+      childElements.add(dayDateText);
     }
 
     Container retValue = Container(
-      height: 150,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-            bottomRight: Radius.circular(25), bottomLeft: Radius.circular(25)),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
+      height: 120,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: childElements,
       ),
     );
