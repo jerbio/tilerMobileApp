@@ -4,6 +4,7 @@ import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -173,8 +174,8 @@ class _TileDetailState extends State<TileDetail> {
               if (calEvent == null) {
                 calEvent = state.calEvent;
                 editTilerEvent = new EditTilerEvent();
-                editTilerEvent!.endTime = calEvent!.endTime!;
-                editTilerEvent!.startTime = calEvent!.startTime!;
+                editTilerEvent!.endTime = calEvent!.endTime;
+                editTilerEvent!.startTime = calEvent!.startTime;
                 editTilerEvent!.splitCount = calEvent!.split;
                 editTilerEvent!.name = calEvent!.name ?? '';
                 editTilerEvent!.thirdPartyId = calEvent!.thirdpartyId;
@@ -214,13 +215,13 @@ class _TileDetailState extends State<TileDetail> {
             );
 
             DateTime startTime =
-                this.editTilerEvent?.startTime ?? this.calEvent!.startTime!;
+                this.editTilerEvent?.startTime ?? this.calEvent!.startTime;
             _editStartDateAndTime = EditDateAndTime(
               time: startTime,
               onInputChange: dataChange,
             );
             DateTime endTime =
-                this.editTilerEvent?.endTime ?? this.calEvent!.endTime!;
+                this.editTilerEvent?.endTime ?? this.calEvent!.endTime;
             _editEndDateAndTime = EditDateAndTime(
               time: endTime,
               onInputChange: dataChange,
@@ -344,6 +345,7 @@ class _TileDetailState extends State<TileDetail> {
                             calEvent!.subEvents!.map((e) => e.id!).toList()),
                   )));
             }
+            inputChildWidgets.add(TileProgress(calendarEvent: calEvent!));
 
             return Container(
               padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
