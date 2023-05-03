@@ -69,6 +69,8 @@
     "successfullyResumed":"Successfully Resumed",
     "successfullyCompleted":"Successfully Completed",
     "completed":"Completed",
+    "deleted":"Deleted",
+    "scheduled":"Scheduled",
     "movedUpToNow":"Moving up to now",
     "pausing":"Pausing",
     "resuming":"Resuming",
