@@ -19,7 +19,6 @@ import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -96,6 +95,7 @@ class AddTileState extends State<AddTile> {
   Function? onProceed;
 
   RestrictionProfile? _restrictionProfile;
+  bool _isRestictionProfileManuallySet = false;
   ScheduleApi scheduleApi = ScheduleApi();
   SettingsApi settingsApi = SettingsApi();
   StreamSubscription? pendingSendTextRequest;
@@ -261,11 +261,15 @@ class AddTileState extends State<AddTile> {
             .then((remoteTileResponse) {
           Duration? _durationResponse;
           Location? _locationResponse;
+          RestrictionProfile? _restrictionProfileResponse;
           if (remoteTileResponse.item1.isNotEmpty) {
             _durationResponse = remoteTileResponse.item1.last;
           }
           if (remoteTileResponse.item2.isNotEmpty) {
             _locationResponse = remoteTileResponse.item2.last;
+          }
+          if (remoteTileResponse.item3.isEnabled) {
+            _restrictionProfileResponse = remoteTileResponse.item3;
           }
 
           setState(() {
@@ -278,6 +282,9 @@ class AddTileState extends State<AddTile> {
                 _location!.isDefault = false;
                 _location!.isNull = false;
               }
+            }
+            if (!_isRestictionProfileManuallySet) {
+              _restrictionProfile = _restrictionProfileResponse;
             }
           });
           isSubmissionReady();
@@ -648,6 +655,7 @@ class AddTileState extends State<AddTile> {
                 arguments: restrictionParams)
             .whenComplete(() {
           RestrictionProfile? populatedRestrictionProfile;
+          _isRestictionProfileManuallySet = true;
           if (restrictionParams.containsKey('routeRestrictionProfile')) {
             populatedRestrictionProfile =
                 restrictionParams['routeRestrictionProfile']

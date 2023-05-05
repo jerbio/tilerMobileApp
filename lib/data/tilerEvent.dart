@@ -14,7 +14,6 @@ class TilerEvent extends TilerObj with TimeRange {
   String thirdPartyUserId = '';
   String? searchdDescription;
   int? split;
-  TilerEvent? calendarEvent;
   NoteData? noteData;
   bool _isReadOnly = false;
   bool _isProcrastinate = false;
