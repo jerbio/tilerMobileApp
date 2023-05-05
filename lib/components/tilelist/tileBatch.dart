@@ -161,7 +161,7 @@ class TileBatchState extends State<TileBatch> {
         " " +
         Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
         " " +
-        widget.tiles!.length.toString() +
+        (widget.tiles ?? []).length.toString() +
         " " +
         uniqueKey);
     childrenColumnWidgets = [];
@@ -223,10 +223,12 @@ class TileBatchState extends State<TileBatch> {
         }
       }
 
-      childrenColumnWidgets.add(EmptyDayTile(
-        deadline: endOfDayTime,
-        dayIndex: this.widget.dayIndex,
-      ));
+      childrenColumnWidgets.add(Container(
+          height: MediaQuery.of(context).size.height - 261,
+          child: EmptyDayTile(
+            deadline: endOfDayTime,
+            dayIndex: this.widget.dayIndex,
+          )));
     }
 
     if (sleepWidget != null && sleepTimeline != null) {
