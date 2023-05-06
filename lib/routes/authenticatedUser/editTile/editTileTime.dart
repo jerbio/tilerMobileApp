@@ -29,8 +29,7 @@ class _EditTileTimeState extends State<EditTileTime> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = const TextStyle(
-        fontSize: 20, color: const Color.fromRGBO(153, 153, 153, 1));
+    const textStyle = TileStyles.editTimeOrDateTimeStyle;
     final localizations = MaterialLocalizations.of(context);
     final formattedTimeOfDay = localizations.formatTimeOfDay(time);
     return GestureDetector(
@@ -56,8 +55,11 @@ class _EditTileTimeState extends State<EditTileTime> {
           children: [
             Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
-                child:
-                    Icon(Icons.access_time_sharp, color: TileStyles.iconColor)),
+                child: Icon(
+                  Icons.access_time_sharp,
+                  color: TileStyles.iconColor,
+                  size: 25,
+                )),
             Container(
                 child: Text(
               formattedTimeOfDay,
