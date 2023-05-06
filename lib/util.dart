@@ -767,3 +767,10 @@ extension DateTimeHuman on DateTime {
     return retValue;
   }
 }
+
+extension ColorExtension on Color {
+  Color withLightness(double lightness) {
+    HSLColor hslColor = HSLColor.fromColor(this);
+    return hslColor.withLightness(lightness).toColor();
+  }
+}
