@@ -19,6 +19,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -247,10 +248,11 @@ class _EditTileState extends State<EditTile> {
                 return PendingWidget();
               }
 
-              final Color textBorderColor = Colors.white;
+              final Color textBorderColor =
+                  TileStyles.primaryColorLightHSL.toColor();
               TextStyle labelStyle = const TextStyle(
                   color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 20,
+                  fontSize: 30,
                   fontFamily: TileStyles.rubikFontName,
                   fontWeight: FontWeight.w500);
               final Color textBackgroundColor = TileStyles.textBackgroundColor;
@@ -262,6 +264,11 @@ class _EditTileState extends State<EditTile> {
                 onInputChange: dataChange,
               );
 
+              BoxDecoration containerClusterStyle = BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+              );
+              var inputChildWidgets = <Widget>[];
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
                   '';
@@ -270,13 +277,13 @@ class _EditTileState extends State<EditTile> {
                 onInputChange: dataChange,
               );
               DateTime startTime =
-                  this.editTilerEvent?.startTime ?? this.subEvent!.startTime!;
+                  this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
               _editStartDateAndTime = EditDateAndTime(
                 time: startTime,
                 onInputChange: dataChange,
               );
               DateTime endTime =
-                  this.editTilerEvent?.endTime ?? this.subEvent!.endTime!;
+                  this.editTilerEvent?.endTime ?? this.subEvent!.endTime;
               _editEndDateAndTime = EditDateAndTime(
                 time: endTime,
                 onInputChange: dataChange,
@@ -306,17 +313,12 @@ class _EditTileState extends State<EditTile> {
                 },
               );
 
-              var inputChildWidgets = <Widget>[
+              List<Widget> nameAndSplitCluster = <Widget>[
                 FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
-                    child: _editTileName!),
-                const Divider(
-                  height: 20,
-                  thickness: 1,
-                  indent: 20,
-                  endIndent: 20,
-                  color: Colors.black,
-                ),
+                    child: _editTileName!)
+              ];
+              List<Widget> durationAndDeadlineCluster = <Widget>[
                 FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
                     child: Container(
@@ -328,7 +330,8 @@ class _EditTileState extends State<EditTile> {
                 Widget splitWidget = FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
                     child: Container(
-                      margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                      height: 80,
+                      margin: EdgeInsets.fromLTRB(30, 30, 0, 20),
                       child: Stack(
                         children: [
                           Container(
@@ -338,8 +341,19 @@ class _EditTileState extends State<EditTile> {
                                 style: labelStyle),
                           ),
                           Positioned(
+                              top: 45,
+                              child: Container(
+                                child: Text(
+                                    AppLocalizations.of(context)!.timeBlocks,
+                                    style: const TextStyle(
+                                        color: Color.fromRGBO(150, 150, 150, 1),
+                                        fontSize: 20,
+                                        fontFamily: TileStyles.rubikFontName,
+                                        fontWeight: FontWeight.w300)),
+                              )),
+                          Positioned(
                             top: 0,
-                            left: 60,
+                            right: 5,
                             child: Container(
                               width: 100,
                               height: 100,
@@ -347,42 +361,49 @@ class _EditTileState extends State<EditTile> {
                                 decoration: InputDecoration(
                                   filled: true,
                                   isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(
-                                      const Radius.circular(8.0),
-                                    ),
+                                  fillColor: Colors.transparent,
+                                  border: UnderlineInputBorder(
+                                    borderSide:
+                                        BorderSide(color: Colors.transparent),
                                   ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(
-                                      const Radius.circular(8.0),
-                                    ),
-                                    borderSide: BorderSide(
-                                        color: textBorderColor, width: 2),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: const BorderRadius.all(
-                                      const Radius.circular(8.0),
-                                    ),
-                                    borderSide: BorderSide(
-                                      color: textBorderColor,
-                                      width: 1.5,
-                                    ),
-                                  ),
+                                  focusedBorder: UnderlineInputBorder(
+                                      borderSide:
+                                          BorderSide(color: textBorderColor)),
+                                  enabledBorder: UnderlineInputBorder(
+                                      borderSide: BorderSide(
+                                          color: textBorderColor
+                                              .withLightness(0.8))),
                                   contentPadding:
                                       EdgeInsets.fromLTRB(20, 5, 20, 0),
-                                  fillColor: textBackgroundColor,
                                 ),
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 20),
+                                style: TextStyle(fontSize: 30),
                                 keyboardType: TextInputType.number,
                                 controller: splitCountController,
                               ),
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ));
-
+                inputChildWidgets.add(Container(
+                    decoration: containerClusterStyle,
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                            bottom: -20,
+                            right: -20,
+                            child: SvgPicture.asset(
+                              'assets/iconScout/block.svg',
+                              height: 150,
+                              colorFilter: ColorFilter.mode(
+                                  Color.fromRGBO(0, 0, 0, 0.05),
+                                  BlendMode.srcIn),
+                            )),
+                        splitWidget,
+                      ],
+                    )));
                 if (_editCalEndDateAndTime != null) {
                   Widget deadlineWidget = FractionallySizedBox(
                       widthFactor: TileStyles.tileWidthRatio,
@@ -401,21 +422,61 @@ class _EditTileState extends State<EditTile> {
                           ],
                         ),
                       ));
-                  inputChildWidgets.add(deadlineWidget);
+                  durationAndDeadlineCluster.add(deadlineWidget);
                 }
-                inputChildWidgets.insert(1, splitWidget);
               }
-              inputChildWidgets.add(const Divider(
-                height: 20,
-                thickness: 1,
-                indent: 20,
-                endIndent: 20,
-                color: Colors.black,
-              ));
+              Widget nameAndSplitClusterWrapper = Container(
+                decoration: containerClusterStyle,
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
+                padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                child: Column(children: nameAndSplitCluster),
+              );
+
+              inputChildWidgets.insert(0, nameAndSplitClusterWrapper);
+
+              Widget durationClusterWrapper = Container(
+                  decoration: containerClusterStyle,
+                  padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                  child: Stack(children: [
+                    Positioned(
+                        bottom: -20,
+                        right: -20,
+                        child: SvgPicture.asset(
+                          'assets/iconScout/deadline.svg',
+                          height: 150,
+                          colorFilter: ColorFilter.mode(
+                              Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),
+                        )),
+                    Container(
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: durationAndDeadlineCluster,
+                      ),
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
+                    )
+                  ]));
+
+              inputChildWidgets.add(durationClusterWrapper);
+
               if (_editTileNote != null) {
                 inputChildWidgets.add(Container(
-                    margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: _editTileNote!));
+                    decoration: containerClusterStyle,
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    child: Stack(alignment: Alignment.center, children: [
+                      Positioned(
+                          bottom: -20,
+                          right: -20,
+                          child: SvgPicture.asset(
+                            'assets/iconScout/notes.svg',
+                            height: 150,
+                            colorFilter: ColorFilter.mode(
+                                Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),
+                          )),
+                      Container(
+                        child: _editTileNote!,
+                        margin: EdgeInsets.fromLTRB(0, 30, 0, 10),
+                      )
+                    ])));
               }
 
               List<PlaybackOptions> playbackOptions = [
@@ -436,52 +497,64 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions.remove(PlaybackOptions.PlayPause);
                 playbackOptions.remove(PlaybackOptions.Now);
               }
-              PlayBack playBackButton = PlayBack(
-                this.subEvent!,
-                forcedOption: playbackOptions,
-                callBack: (status, Future responseFuture) {
-                  setState(() {
-                    isPendingSubEventProcessing = true;
-                    hideButtons = true;
-                  });
-                  responseFuture.then((value) {
-                    if (!this.mounted) {
-                      return value;
-                    }
+              Widget playBackButtonWrapper = Container(
+                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                decoration: containerClusterStyle,
+                child: PlayBack(
+                  this.subEvent!,
+                  forcedOption: playbackOptions,
+                  callBack: (status, Future responseFuture) {
                     setState(() {
-                      isPendingSubEventProcessing = false;
-                      hideButtons = false;
+                      isPendingSubEventProcessing = true;
+                      hideButtons = true;
                     });
-                    final currentState =
-                        this.context.read<ScheduleBloc>().state;
-                    if (currentState is ScheduleEvaluationState) {
-                      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                            isAlreadyLoaded: true,
-                            previousSubEvents: currentState.subEvents,
-                            scheduleTimeline: currentState.lookupTimeline,
-                            previousTimeline: currentState.lookupTimeline,
-                          ));
-                    }
-                    if (currentState is ScheduleLoadedState) {
-                      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                            isAlreadyLoaded: true,
-                            previousSubEvents: currentState.subEvents,
-                            scheduleTimeline: currentState.lookupTimeline,
-                            previousTimeline: currentState.lookupTimeline,
-                          ));
-                    }
-                    Navigator.pop(context);
-                    return value;
-                  });
-                },
+                    responseFuture.then((value) {
+                      if (!this.mounted) {
+                        return value;
+                      }
+                      setState(() {
+                        isPendingSubEventProcessing = false;
+                        hideButtons = false;
+                      });
+                      final currentState =
+                          this.context.read<ScheduleBloc>().state;
+                      if (currentState is ScheduleEvaluationState) {
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                      }
+                      if (currentState is ScheduleLoadedState) {
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                      }
+                      Navigator.pop(context);
+                      return value;
+                    });
+                  },
+                ),
               );
 
-              inputChildWidgets.add(playBackButton);
-              inputChildWidgets.add(renderNextTileSuggestionContainer());
+              inputChildWidgets.add(playBackButtonWrapper);
+
+              Widget nextTileSuggestionWrapper = Container(
+                  decoration: containerClusterStyle,
+                  child: renderNextTileSuggestionContainer());
+
+              inputChildWidgets.add(nextTileSuggestionWrapper);
 
               List<Widget> stackElements = <Widget>[
                 Container(
-                  padding: EdgeInsets.fromLTRB(30, 10, 30, 100),
+                  color: TileStyles.primaryColorLightHSL
+                      .toColor()
+                      .withLightness(0.95),
+                  padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
                   alignment: Alignment.topCenter,
                   child: ListView(
                     children: inputChildWidgets,
