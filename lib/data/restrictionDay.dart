@@ -66,7 +66,7 @@ class RestrictionTimeLine extends TilerObj {
   }
 
   factory RestrictionTimeLine.fromMap(Map<String, dynamic> map) {
-    String timzeZone = 'utc';
+    String timzeZone = 'Atlantic/Reykjavik';
     if (map.containsKey('timeZone') &&
         map['timeZone'] != null &&
         map['timeZone'].isNotEmpty) {

@@ -59,10 +59,7 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = const TextStyle(
-        fontFamily: TileStyles.rubikFontName,
-        fontSize: 20,
-        color: const Color.fromRGBO(153, 153, 153, 1));
+    const textStyle = TileStyles.editTimeOrDateTimeStyle;
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
@@ -77,6 +74,7 @@ class _EditTileDateState extends State<EditTileDate> {
                   child: Icon(
                     Icons.calendar_month,
                     color: TileStyles.iconColor,
+                    size: 25,
                   )),
               Text(
                 DateFormat.yMMMd(locale).format(time),

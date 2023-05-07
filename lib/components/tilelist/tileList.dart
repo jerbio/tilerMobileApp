@@ -694,13 +694,20 @@ class _TileListState extends State<TileList> {
     }
 
     if (startDateTime.millisecondsSinceEpoch >
-        dateManageCurrentDate.millisecondsSinceEpoch) {
-      startDateTime = dateManageCurrentDate;
-    }
+            dateManageCurrentDate.millisecondsSinceEpoch ||
+        endDateTime.millisecondsSinceEpoch <
+            dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
+      int dayDelta = previousTimeline.duration.inDays;
+      int daySplit = (dayDelta.toDouble() / 2).round();
 
-    if (endDateTime.millisecondsSinceEpoch <
-        dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
-      endDateTime = dateManageCurrentDate;
+      startDateTime =
+          dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
+      endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: daySplit));
+
+      if (daySplit == 0) {
+        startDateTime = dateManageCurrentDate.dayDate;
+        endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: 1));
+      }
     }
 
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -795,7 +802,7 @@ class _TileListState extends State<TileList> {
                 return;
               }
 
-              reloadSchedule(state.currentDate.add(Duration(days: -7)));
+              reloadSchedule(state.currentDate);
             }
           },
         ),

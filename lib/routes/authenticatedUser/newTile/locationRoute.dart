@@ -17,7 +17,7 @@ class LocationRoute extends StatefulWidget {
 
 class LocationRouteState extends State<LocationRoute> {
   final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
-  final Color textBorderColor = Colors.white;
+  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
   Location? selectedLocation;
   TextEditingController? locationNickNameController;
   TextEditingController? locationAddressController;
@@ -164,27 +164,15 @@ class LocationRouteState extends State<LocationRoute> {
           filled: true,
           isDense: true,
           contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-          fillColor: textBackgroundColor,
-          border: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(50.0),
-            ),
+          fillColor: Colors.transparent,
+          border: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.transparent),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
-            ),
-            borderSide: BorderSide(color: textBorderColor, width: 2),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
-            ),
-            borderSide: BorderSide(
-              color: textBorderColor,
-              width: 1.5,
-            ),
-          )),
+          focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: textBorderColor, width: 1)),
+          enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(
+                  color: textBorderColor.withLightness(0.8), width: 1))),
       controller: locationAddressController,
     );
 
@@ -213,27 +201,17 @@ class LocationRouteState extends State<LocationRoute> {
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                    fillColor: textBackgroundColor,
-                    border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(50.0),
-                      ),
+                    fillColor: Colors.transparent,
+                    border: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.transparent),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(8.0),
-                      ),
-                      borderSide: BorderSide(color: textBorderColor, width: 2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(8.0),
-                      ),
-                      borderSide: BorderSide(
-                        color: textBorderColor,
-                        width: 1.5,
-                      ),
-                    ),
+                    focusedBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: textBorderColor, width: 1)),
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(
+                            color: textBorderColor.withLightness(0.8),
+                            width: 1)),
                   ),
                 ),
               ))),
@@ -287,7 +265,7 @@ class LocationRouteState extends State<LocationRoute> {
               )));
     }
     Widget rowOfDefaults = Container(
-      margin: EdgeInsets.fromLTRB(0, 160, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 180, 0, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: defaultLocationFields,

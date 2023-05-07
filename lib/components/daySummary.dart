@@ -83,20 +83,19 @@ class _DaySummaryState extends State<DaySummary> {
 
     if (this.widget.dayData.dayIndex != null) {
       Widget dayDateText = GestureDetector(
-        onTap: (){
- if( Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).humanDate.contains("Today")){
-
-Navigator.push(context, MaterialPageRoute(builder: (context)=>SummaryPage()));
- }
-
+        onTap: () {
+          if (Utility.getTimeFromIndex(this.widget.dayData.dayIndex!)
+              .humanDate
+              .contains("Today")) {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => SummaryPage()));
+          }
         },
         child: Container(
-          margin: EdgeInsets.fromLTRB(30, 20, 20, 40),
-          alignment: Alignment.topRight,
           child: Text(
               Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).humanDate,
               style: TextStyle(
-                  fontSize: 40,
+                  fontSize: 30,
                   fontFamily: TileStyles.rubikFontName,
                   color: TileStyles.primaryColorDarkHSL.toColor(),
                   fontWeight: FontWeight.w700)),
