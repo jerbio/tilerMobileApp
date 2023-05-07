@@ -85,6 +85,7 @@
     "end":"End",
     "deadline": "Deadline",
     "split":"Split",
+    "timeBlocks":"Time blocks",
     "swipeRightToTileIt":"Swipe Right to tile it",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "daily":"Daily",

@@ -7,6 +7,7 @@ import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/combination.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'dart:convert';
 
 import 'package:tuple/tuple.dart';
@@ -56,7 +57,7 @@ class ScheduleApi extends AppApi {
         var header = this.getHeaders();
 
         if (header != null) {
-        var response = await http.get(uri, headers: header);
+          var response = await http.get(uri, headers: header);
           var jsonResult = jsonDecode(response.body);
           if (isJsonResponseOk(jsonResult)) {
             if (isContentInResponse(jsonResult) &&
@@ -85,8 +86,9 @@ class ScheduleApi extends AppApi {
     return retValue;
   }
 
-  Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
-      String tileName) async {
+  Future<
+      Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+          List<String>>> getAutoResult(String tileName) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -108,8 +110,10 @@ class ScheduleApi extends AppApi {
             if (isContentInResponse(jsonResult)) {
               List<Duration> durations = [];
               List<Location> locations = [];
-              Tuple2<List<Duration>, List<Location>> retValue =
-                  new Tuple2(durations, locations);
+              List<String> timeOfDaySections = [];
+              RestrictionProfile restrictionProfile =
+                  RestrictionProfile.noRestriction();
+
               if (jsonResult['Content'].containsKey('duration')) {
                 List<double> durationInMs = [];
                 for (var eachDuration in jsonResult['Content']['duration']) {
@@ -134,14 +138,47 @@ class ScheduleApi extends AppApi {
                   locations.add(Location.fromJson(eachLocation));
                 }
               }
+              if (jsonResult['Content'].containsKey('restrictionProfile')) {
+                if (jsonResult['Content']['restrictionProfile'] != null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['restrictionProfile']);
+                }
+              }
+              if (jsonResult['Content'].containsKey('timeOfDay')) {
+                if (jsonResult['Content']['timeOfDay']['restrictionProfile'] !=
+                    null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['timeOfDay']['restrictionProfile']);
+                }
+                if (jsonResult['Content']['timeOfDay']
+                    .containsKey('daySections')) {
+                  for (var eachDaySection in jsonResult['Content']['timeOfDay']
+                      ['daySections']) {
+                    if (eachDaySection != null &&
+                        eachDaySection.toLowerCase() == 'anytime') {
+                      restrictionProfile = RestrictionProfile.noRestriction();
+                      timeOfDaySections = [];
+                      break;
+                    }
+                    if (eachDaySection != null) {
+                      timeOfDaySections.add(eachDaySection);
+                    }
+                  }
+                }
+              }
 
+              Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+                      List<String>> retValue =
+                  new Tuple4(durations, locations, restrictionProfile,
+                      timeOfDaySections);
               return retValue;
             }
           }
         }
       }
     }
-    return new Tuple2([], []);
+    RestrictionProfile restrictionProfile = RestrictionProfile.noRestriction();
+    return new Tuple4([], [], restrictionProfile, []);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
@@ -199,7 +236,7 @@ class ScheduleApi extends AppApi {
         if (header != null) {
           var response = await http.post(uri,
               headers: header, body: jsonEncode(injectedParameters));
-   
+
           var jsonResult = jsonDecode(response.body);
           error.message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
@@ -373,7 +410,6 @@ class ScheduleApi extends AppApi {
                   overview.add(item);
                 }
               });
-        
             }
 
             final locationCombination =
