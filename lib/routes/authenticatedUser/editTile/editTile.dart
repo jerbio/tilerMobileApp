@@ -52,6 +52,12 @@ class _EditTileState extends State<EditTile> {
   bool hideButtons = false;
   List<NextTileSuggestion>? nextTileSuggestions;
 
+  TextStyle labelStyle = const TextStyle(
+      color: Color.fromRGBO(31, 31, 31, 1),
+      fontSize: 25,
+      fontFamily: TileStyles.rubikFontName,
+      fontWeight: FontWeight.w500);
+
   @override
   void initState() {
     super.initState();
@@ -194,8 +200,20 @@ class _EditTileState extends State<EditTile> {
     Widget retValue = SizedBox.shrink();
     if (this.nextTileSuggestions != null &&
         this.nextTileSuggestions!.length > 0) {
-      return NextTileSuggestionCarouselWidget(
-          nextTileSuggestions: this.nextTileSuggestions!);
+      return Column(
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
+            alignment: Alignment.topLeft,
+            child: Text(
+              AppLocalizations.of(context)!.suggestions,
+              style: this.labelStyle,
+            ),
+          ),
+          NextTileSuggestionCarouselWidget(
+              nextTileSuggestions: this.nextTileSuggestions!),
+        ],
+      );
     }
 
     return retValue;
@@ -244,11 +262,7 @@ class _EditTileState extends State<EditTile> {
 
               final Color textBorderColor =
                   TileStyles.primaryColorLightHSL.toColor();
-              TextStyle labelStyle = const TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 25,
-                  fontFamily: TileStyles.rubikFontName,
-                  fontWeight: FontWeight.w500);
+
               final Color textBackgroundColor = TileStyles.textBackgroundColor;
               String tileName =
                   this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
@@ -261,6 +275,14 @@ class _EditTileState extends State<EditTile> {
               BoxDecoration containerClusterStyle = BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 5),
+                  ),
+                ],
               );
               var inputChildWidgets = <Widget>[];
               String tileNote = this.editTilerEvent?.note ??
