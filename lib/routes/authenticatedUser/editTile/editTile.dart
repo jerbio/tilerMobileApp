@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -12,7 +13,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/NextTileSuggestionWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
@@ -193,15 +194,8 @@ class _EditTileState extends State<EditTile> {
     Widget retValue = SizedBox.shrink();
     if (this.nextTileSuggestions != null &&
         this.nextTileSuggestions!.length > 0) {
-      retValue = Container(
-        child: Row(
-          children: this
-              .nextTileSuggestions!
-              .map((e) => Expanded(
-                  child: NextTileSuggestionWidget(nextTileSuggestion: e)))
-              .toList(),
-        ),
-      );
+      return NextTileSuggestionCarouselWidget(
+          nextTileSuggestions: this.nextTileSuggestions!);
     }
 
     return retValue;
@@ -252,7 +246,7 @@ class _EditTileState extends State<EditTile> {
                   TileStyles.primaryColorLightHSL.toColor();
               TextStyle labelStyle = const TextStyle(
                   color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 30,
+                  fontSize: 25,
                   fontFamily: TileStyles.rubikFontName,
                   fontWeight: FontWeight.w500);
               final Color textBackgroundColor = TileStyles.textBackgroundColor;
@@ -312,6 +306,7 @@ class _EditTileState extends State<EditTile> {
                   dataChange();
                 },
               );
+              _startEndDurationTimeline!.headerTextStyle = labelStyle;
 
               List<Widget> nameAndSplitCluster = <Widget>[
                 FractionallySizedBox(
@@ -498,7 +493,7 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions.remove(PlaybackOptions.Now);
               }
               Widget playBackButtonWrapper = Container(
-                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
                 decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,
@@ -541,13 +536,17 @@ class _EditTileState extends State<EditTile> {
                 ),
               );
 
+              if (this.nextTileSuggestions != null &&
+                  this.nextTileSuggestions!.length > 0) {
+                Widget nextTileSuggestionWrapper = Container(
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                    decoration: containerClusterStyle,
+                    child: renderNextTileSuggestionContainer());
+                inputChildWidgets.add(nextTileSuggestionWrapper);
+              }
+
               inputChildWidgets.add(playBackButtonWrapper);
-
-              Widget nextTileSuggestionWrapper = Container(
-                  decoration: containerClusterStyle,
-                  child: renderNextTileSuggestionContainer());
-
-              inputChildWidgets.add(nextTileSuggestionWrapper);
 
               List<Widget> stackElements = <Widget>[
                 Container(

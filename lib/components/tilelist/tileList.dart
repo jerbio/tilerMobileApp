@@ -799,7 +799,24 @@ class _TileListState extends State<TileList> {
                     dayIndexToCarouselIndex[
                             state.currentDate.universalDayIndex]!
                         .item1);
-                return;
+                var scheduleBlocState = this.context.read<ScheduleBloc>().state;
+                bool dontReloadSchedule = true;
+                if (scheduleBlocState is ScheduleLoadedState) {
+                  dontReloadSchedule = scheduleBlocState.lookupTimeline
+                      .isDateTimeWithin(state.currentDate);
+                }
+
+                if (scheduleBlocState is ScheduleEvaluationState) {
+                  dontReloadSchedule = false;
+                }
+
+                if (scheduleBlocState is ScheduleInitialState ||
+                    scheduleBlocState is ScheduleLoadingState) {
+                  dontReloadSchedule = false;
+                }
+                if (dontReloadSchedule) {
+                  return;
+                }
               }
 
               reloadSchedule(state.currentDate);

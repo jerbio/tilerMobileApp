@@ -285,6 +285,7 @@ class TileBatchState extends State<TileBatch> {
           if (changeDetectedTilerEvent.length == 0) {
             for (int i = 0; i < orderedTilerEvent.length; i++) {
               if (!_list![i].isStartAndEndEqual(orderedTilerEvent[i])) {
+                print('tilebatch 0 removeAndUpdate');
                 _list!.removeAndUpdate(i, i, orderedTilerEvent[i],
                     animate: false);
               }
@@ -311,6 +312,7 @@ class TileBatchState extends State<TileBatch> {
             _pendingRendering = true;
             Timer(Duration(milliseconds: 500), () {
               for (var insertedTile in insertedTiles) {
+                print('tilebatch insert');
                 _list!.insert(
                   insertedTile.item3!,
                   insertedTile.item1,
@@ -321,6 +323,7 @@ class TileBatchState extends State<TileBatch> {
                 listIds = _list!.toList().map<String>((e) => e.id!).toList();
                 int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
                 if (toMovedIndex != -1) {
+                  print('tilebatch 1 removeAndUpdate');
                   _list!.removeAndUpdate(
                       toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
                       animate: toMovedIndex != reorderedTile.item3);

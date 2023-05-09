@@ -485,7 +485,6 @@ class PlayBackState extends State<PlayBack> {
       children: playBackRows,
     );
 
-    return Container(
-        margin: const EdgeInsets.fromLTRB(0, 0, 0, 30), child: playBackColumn);
+    return Container(child: playBackColumn);
   }
 }
