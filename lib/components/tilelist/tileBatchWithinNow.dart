@@ -457,6 +457,7 @@ class WithinNowBatchState extends TileBatchState {
             for (int i = 0; i < orderedTilerEvent.length; i++) {
               if (!_timeSectionListModel![i]
                   .isStartAndEndEqual(orderedTilerEvent[i])) {
+                print('withinNow 0 removeAndUpdate');
                 _timeSectionListModel.removeAndUpdate(
                     i, i, orderedTilerEvent[i],
                     animate: false);
@@ -491,6 +492,7 @@ class WithinNowBatchState extends TileBatchState {
             Timer(Duration(milliseconds: 500), () {
               Utility.isWithinNowSet = true;
               for (var insertedTile in insertedTiles) {
+                print('withinNow insert');
                 _timeSectionListModel.insert(
                   insertedTile.item3!,
                   insertedTile.item1,
@@ -504,6 +506,7 @@ class WithinNowBatchState extends TileBatchState {
                     .toList();
                 int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
                 if (toMovedIndex != -1) {
+                  print('withinNow 1 removeAndUpdate');
                   _timeSectionListModel.removeAndUpdate(
                       toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
                       animate: toMovedIndex != reorderedTile.item3);

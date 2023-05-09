@@ -1096,7 +1096,8 @@ class AddTileState extends State<AddTile> {
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);
-    appointmentWidgets.add(startAndEndTime);
+    appointmentWidgets.add(FractionallySizedBox(
+        widthFactor: 0.85, child: Container(child: startAndEndTime)));
 
     Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
     Widget appointmentWidget = generateAppointmentWidget(appointmentWidgets);
