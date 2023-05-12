@@ -51,6 +51,8 @@ class TileBatchState extends State<TileBatch> {
   String uniqueKey = Utility.getUuid;
   late bool isInitialLoad;
   Map<String, TilerEvent> renderedTiles = new Map<String, TilerEvent>();
+  Map<String, TilerEvent>? pendingRenderedTiles;
+  Map<String, TilerEvent> latestBuildTiles = new Map<String, TilerEvent>();
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
       new Map<String, Tuple2<TilerEvent, RemovalType>>();
@@ -146,6 +148,7 @@ class TileBatchState extends State<TileBatch> {
 
   @override
   Widget build(BuildContext context) {
+    const double heightMargin = 300;
     List<Timeline> chillTimeLines = [];
     renderedTiles = {};
     if (widget.tiles != null) {
@@ -204,7 +207,7 @@ class TileBatchState extends State<TileBatch> {
       }
 
       childrenColumnWidgets.add(Container(
-        height: MediaQuery.of(context).size.height - 261,
+        height: MediaQuery.of(context).size.height - heightMargin,
         child: animatedList!,
       ));
     }
@@ -215,20 +218,25 @@ class TileBatchState extends State<TileBatch> {
       this.orderedTiles = null;
       DateTime? endOfDayTime;
       if (this.widget.dayIndex != null) {
-        DateTime evaluatedEndOfTIme =
+        DateTime evaluatedEndOfTime =
             Utility.getTimeFromIndex(this.widget.dayIndex!).endOfDay;
-        if (Utility.utcEpochMillisecondsFromDateTime(evaluatedEndOfTIme) >
+        if (Utility.utcEpochMillisecondsFromDateTime(evaluatedEndOfTime) >
             Utility.msCurrentTime) {
-          endOfDayTime = evaluatedEndOfTIme;
+          endOfDayTime = evaluatedEndOfTime;
         }
       }
 
-      childrenColumnWidgets.add(Container(
-          height: MediaQuery.of(context).size.height - 261,
-          child: EmptyDayTile(
-            deadline: endOfDayTime,
-            dayIndex: this.widget.dayIndex,
-          )));
+      childrenColumnWidgets.add(Flex(
+        direction: Axis.vertical,
+        children: [
+          Container(
+              height: MediaQuery.of(context).size.height - heightMargin,
+              child: EmptyDayTile(
+                deadline: endOfDayTime,
+                dayIndex: this.widget.dayIndex,
+              ))
+        ],
+      ));
     }
 
     if (sleepWidget != null && sleepTimeline != null) {
@@ -242,14 +250,9 @@ class TileBatchState extends State<TileBatch> {
       }
     }
     handleAddOrRemovalOfTiles();
-    return Flex(direction: Axis.vertical, children: [
-      Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: childrenColumnWidgets,
-      ),
-      // )
-    ]);
+    return Column(
+      children: childrenColumnWidgets,
+    );
   }
 
   handleAddOrRemovalOfTiles() {
