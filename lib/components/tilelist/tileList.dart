@@ -793,8 +793,10 @@ class _TileListState extends State<TileList> {
         BlocListener<UiDateManagerBloc, UiDateManagerState>(
           listener: (context, state) {
             if (state is UiDateManagerUpdated) {
+              bool forceRenderingPage = true;
               if (dayIndexToCarouselIndex
                   .containsKey(state.currentDate.universalDayIndex)) {
+                forceRenderingPage = false;
                 tileListDayCarouselController.animateToPage(
                     dayIndexToCarouselIndex[
                             state.currentDate.universalDayIndex]!
@@ -819,7 +821,8 @@ class _TileListState extends State<TileList> {
                 }
               }
 
-              reloadSchedule(state.currentDate);
+              reloadSchedule(state.currentDate,
+                  forceRenderingPage: forceRenderingPage);
             }
           },
         ),

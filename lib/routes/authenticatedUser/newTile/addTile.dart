@@ -126,17 +126,18 @@ class AddTileState extends State<AddTile> {
             if (remoteTileResponse.item2.isNotEmpty) {
               _locationResponse = remoteTileResponse.item2.last;
             }
-
-            setState(() {
-              if (!_isLocationManuallySet) {
-                _location = _locationResponse;
-                if (_locationResponse != null) {
-                  _location!.isDefault = false;
-                  _location!.isNull = false;
+            if (mounted) {
+              setState(() {
+                if (!_isLocationManuallySet) {
+                  _location = _locationResponse;
+                  if (_locationResponse != null) {
+                    _location!.isDefault = false;
+                    _location!.isNull = false;
+                  }
                 }
-              }
-            });
-            isSubmissionReady();
+              });
+              isSubmissionReady();
+            }
           });
         });
 
@@ -271,29 +272,31 @@ class AddTileState extends State<AddTile> {
           if (remoteTileResponse.item3.isEnabled) {
             _restrictionProfileResponse = remoteTileResponse.item3;
           }
-
-          setState(() {
-            if (!_isDurationManuallySet) {
-              _duration = _durationResponse;
-            }
-            if (!_isLocationManuallySet) {
-              _location = _locationResponse;
-              if (_locationResponse != null) {
-                _location!.isDefault = false;
-                _location!.isNull = false;
+          if (mounted) {
+            setState(() {
+              if (!_isDurationManuallySet) {
+                _duration = _durationResponse;
               }
-            }
-            if (!_isRestictionProfileManuallySet) {
-              _restrictionProfile = _restrictionProfileResponse;
-            }
-          });
-          isSubmissionReady();
+              if (!_isLocationManuallySet) {
+                _location = _locationResponse;
+                if (_locationResponse != null) {
+                  _location!.isDefault = false;
+                  _location!.isNull = false;
+                }
+              }
+              if (!_isRestictionProfileManuallySet) {
+                _restrictionProfile = _restrictionProfileResponse;
+              }
+            });
+            isSubmissionReady();
+          }
         });
       });
-
-      setState(() {
-        pendingSendTextRequest = streamSubScription;
-      });
+      if (mounted) {
+        setState(() {
+          pendingSendTextRequest = streamSubScription;
+        });
+      }
     };
 
     return retValue;
