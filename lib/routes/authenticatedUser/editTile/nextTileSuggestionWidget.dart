@@ -46,7 +46,9 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
                       alignment: Alignment.bottomRight,
                       child: Text(
                         suggestionNumber.toString(),
-                        style: TextStyle(fontSize: 70, color: Colors.black12),
+                        style: TextStyle(
+                            fontSize: 90,
+                            color: Color.fromRGBO(10, 10, 10, 0.05)),
                       ),
                     )
                   : SizedBox.shrink(),
