@@ -44,8 +44,11 @@ class _NextTileSuggestionCarouselState
                 enlargeCenterPage: true,
               ),
               items: orderedTileSuggestions
-                  .map((e) => Expanded(
-                      child: NextTileSuggestionWidget(nextTileSuggestion: e)))
+                  .map((e) => Flex(direction: Axis.vertical, children: [
+                        Expanded(
+                            child:
+                                NextTileSuggestionWidget(nextTileSuggestion: e))
+                      ]))
                   .toList(),
             ),
             Container(
