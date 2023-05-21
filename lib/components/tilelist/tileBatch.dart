@@ -201,7 +201,8 @@ class TileBatchState extends State<TileBatch> {
         );
         _list = ListModel<TilerEvent>(
           listKey: _listKey,
-          initialItems: initialItems.map<TilerEvent>((e) => e.item1),
+          initialItems: Utility.orderTiles(
+              initialItems.map<TilerEvent>((e) => e.item1).toList()),
           removedItemBuilder: _buildRemovedItem,
         );
       }
@@ -335,7 +336,6 @@ class TileBatchState extends State<TileBatch> {
               _pendingRendering = false;
             });
           }
-
           if (this.orderedTiles!.isEmpty) {
             this.widget.tiles = [];
             setState(() {

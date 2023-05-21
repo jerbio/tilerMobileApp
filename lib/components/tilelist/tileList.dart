@@ -390,9 +390,16 @@ class _TileListState extends State<TileList> {
         List<TileBatch> todayTileBatches = <TileBatch>[];
         WithinNowBatch todayBatch = WithinNowBatch(
           key: ValueKey(
-              Utility.todayTimeline().toString() + "_within_upcoming_0"),
+              // Utility.todayTimeline().toString() +
+              "_within_upcoming_0"),
           tiles: [...elapsedTiles, ...notElapsedTiles],
         );
+
+        // TileBatch todayBatch = TileBatch(
+        //   dayIndex: currentTime.universalDayIndex,
+        //   tiles: [...elapsedTiles, ...notElapsedTiles],
+        // );
+
         todayTileBatches.add(todayBatch);
         childTileBatchs.addAll(todayTileBatches);
         dayIndexToWidget[currentTime.universalDayIndex] = Container(
