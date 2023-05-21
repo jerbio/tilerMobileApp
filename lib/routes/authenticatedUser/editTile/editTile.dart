@@ -61,6 +61,7 @@ class _EditTileState extends State<EditTile> {
   @override
   void initState() {
     super.initState();
+    print("Edit sub event with id ${this.widget.tileId}");
     this
         .context
         .read<SubCalendarTileBloc>()

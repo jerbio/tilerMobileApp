@@ -14,6 +14,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart';
 
@@ -59,18 +60,21 @@ class WithinNowBatch extends TileBatch {
 enum _AnimatedListType { preceeding, current, upcoming }
 
 class WithinNowBatchState extends TileBatchState {
+  final String upcomingAdHocTileId = 'upcoming-tile-section-header-id';
   final GlobalKey<AnimatedListState> _preceedingListKey =
-      GlobalKey<AnimatedListState>();
+      GlobalKey<AnimatedListState>(debugLabel: 'preceedinglistKey');
   late ListModel<TilerEvent>? _preceedingList;
+  ScrollController preceedingAnimatedListScrollController =
+      new ScrollController();
   AnimatedList? preceedingAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? preceedingOrderedTiles;
   final GlobalKey<AnimatedListState> _currentListKey =
-      GlobalKey<AnimatedListState>();
+      GlobalKey<AnimatedListState>(debugLabel: '_currentListKey');
   late ListModel<TilerEvent>? _currentList;
   AnimatedList? currentAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? currentOrderedTiles;
   final GlobalKey<AnimatedListState> _upcomingListKey =
-      GlobalKey<AnimatedListState>();
+      GlobalKey<AnimatedListState>(debugLabel: '_upcomingListKey');
   late ListModel<TilerEvent>? _upcomingList;
   AnimatedList? upcomingAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? upcomingOrderedTiles;
@@ -88,6 +92,21 @@ class WithinNowBatchState extends TileBatchState {
 
   Widget _buildRemovedItem(
       TilerEvent item, BuildContext context, Animation<double> animation) {
+    var tile = item;
+    if (isTileAdHocUpcoming(tile)) {
+      return FadeTransition(
+        opacity: animation,
+        child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
+              alignment: Alignment.centerLeft,
+              child: Text(AppLocalizations.of(context)!.upcoming,
+                  style: TileBatch.dayHeaderTextStyle),
+            )),
+      );
+    }
+
     return SizeTransition(
       sizeFactor: animation,
       child: Align(alignment: Alignment.topCenter, child: TileWidget(item)),
@@ -116,12 +135,29 @@ class WithinNowBatchState extends TileBatchState {
 
   Widget _preceedingBuildItem(
       BuildContext context, int index, Animation<double> animation) {
+    var tile = _preceedingList![index];
+    if (isTileAdHocUpcoming(tile)) {
+      return FadeTransition(
+        opacity: animation,
+        child: Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
+              alignment: Alignment.centerLeft,
+              child: Text(AppLocalizations.of(context)!.upcoming,
+                  style: TileBatch.dayHeaderTextStyle),
+            )),
+      );
+    }
+
     return SizeTransition(
       sizeFactor: animation,
-      child: Align(
-          alignment: Alignment.topCenter,
-          child: TileWidget(_preceedingList![index])),
+      child: Align(alignment: Alignment.topCenter, child: TileWidget(tile)),
     );
+  }
+
+  bool isTileAdHocUpcoming(TilerEvent tilerEvent) {
+    return tilerEvent.id == upcomingAdHocTileId;
   }
 
   processEmptyAnimatedList(
@@ -208,6 +244,8 @@ class WithinNowBatchState extends TileBatchState {
       case _AnimatedListType.current:
         evaluatePopulatedTileDelta(_AnimatedListType.current, collection);
         if (this.currentAnimatedList == null) {
+          print(
+              'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& currentAnimatedList');
           var initialItems = this
               .currentOrderedTiles!
               .values
@@ -233,6 +271,8 @@ class WithinNowBatchState extends TileBatchState {
       case _AnimatedListType.preceeding:
         evaluatePopulatedTileDelta(_AnimatedListType.preceeding, collection);
         if (this.preceedingAnimatedList == null) {
+          print(
+              'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& preceedingAnimatedList');
           var initialItems = this
               .preceedingOrderedTiles!
               .values
@@ -248,6 +288,7 @@ class WithinNowBatchState extends TileBatchState {
           );
           this.preceedingAnimatedList = AnimatedList(
             shrinkWrap: true,
+            controller: preceedingAnimatedListScrollController,
             itemBuilder: _preceedingBuildItem,
             key: this._preceedingListKey,
             physics: const NeverScrollableScrollPhysics(),
@@ -258,6 +299,8 @@ class WithinNowBatchState extends TileBatchState {
       case _AnimatedListType.upcoming:
         evaluatePopulatedTileDelta(_AnimatedListType.upcoming, collection);
         if (this.upcomingAnimatedList == null) {
+          print(
+              'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& upcomingAnimatedList');
           var initialItems = this
               .upcomingOrderedTiles!
               .values
@@ -287,21 +330,32 @@ class WithinNowBatchState extends TileBatchState {
   processAnimatedList(
       _AnimatedListType _animatedListType, List<TilerEvent> collection) {
     Map<String, Tuple3<TilerEvent, int?, int?>>? timeSectionTiles;
-    if (collection.isEmpty) {
-      processEmptyAnimatedList(_animatedListType, collection);
-    } else {
+    // if (collection.isEmpty) {
+    //   processEmptyAnimatedList(_animatedListType, collection);
+    // } else
+    {
       processPopulatedAnimatedList(_animatedListType, collection);
     }
   }
 
+  bool internalBreak = false;
   @override
   Widget build(BuildContext context) {
     latestBuildTiles = {};
     renderedTiles = this.pendingRenderedTiles ?? {};
+    SubCalendarEvent? upcomingTile = SubCalendarEvent();
+    upcomingTile.id = upcomingAdHocTileId;
+    int currentTimeinMs = Utility.currentTime().millisecondsSinceEpoch;
+    upcomingTile.start = currentTimeinMs;
+    upcomingTile.end = currentTimeinMs;
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
         if (eachTile.id != null) {
           latestBuildTiles[eachTile.id!] = eachTile;
+        }
+        if (eachTile.start! >= currentTimeinMs && upcomingTile != null) {
+          latestBuildTiles[upcomingTile!.id!] = upcomingTile!;
+          upcomingTile = null;
         }
       });
     }
@@ -327,10 +381,6 @@ class WithinNowBatchState extends TileBatchState {
     int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
-    List<TilerEvent> currentTiles = [];
-    List<Widget> currentTileWidgets = [];
-    List<TilerEvent> upcomningTiles = [];
-    List<Widget> upcomningTileWidgets = [];
 
     if (this.widget.sleepTimeline != null) {
       Timeline sleepTimeline = this.widget.sleepTimeline!;
@@ -339,61 +389,16 @@ class WithinNowBatchState extends TileBatchState {
     }
 
     if (renderedTiles.length > 0) {
-      renderedTiles.values.forEach((eachTile) {
-        if (eachTile.end != null && eachTile.start != null) {
-          if (eachTile.end!.toInt() < currentTimeInMs) {
-            precedingTiles.add(eachTile);
-          }
-
-          if (eachTile.end!.toInt() > currentTimeInMs &&
-              eachTile.start!.toInt() <= currentTimeInMs) {
-            currentTiles.add(eachTile);
-          }
-
-          if (eachTile.start!.toInt() > currentTimeInMs) {
-            upcomningTiles.add(eachTile);
-          }
-        }
+      var orderedRenderedTiles =
+          Utility.orderTiles(renderedTiles.values.toList());
+      orderedRenderedTiles.forEach((eachTile) {
+        precedingTiles.add(eachTile);
       });
     }
     processAnimatedList(_AnimatedListType.preceeding, precedingTiles);
-    processAnimatedList(_AnimatedListType.current, currentTiles);
-    processAnimatedList(_AnimatedListType.upcoming, upcomningTiles);
 
-    if (currentTiles.length > 0) {
-      Container headerContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
-        alignment: Alignment.centerLeft,
-        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
-      );
-      if (this.currentAnimatedList != null) {
-        currentTileWidgets.add(this.currentAnimatedList!);
-      }
-      currentTileWidgets.add(headerContainer);
-    }
-
-    if (widget.header != null && precedingTiles.length > 0) {
-      Container headerContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
-        alignment: Alignment.centerLeft,
-        child: Text(widget.header!, style: TileBatch.dayHeaderTextStyle),
-      );
-      if (this.preceedingAnimatedList != null) {
-        precedingTileWidgets.add(this.preceedingAnimatedList!);
-      }
-      precedingTileWidgets.add(headerContainer);
-    }
-
-    if (widget.footer != null && upcomningTiles.length > 0) {
-      Container footerContainer = Container(
-        margin: EdgeInsets.fromLTRB(30, 40, 0, 20),
-        alignment: Alignment.centerLeft,
-        child: Text(widget.footer!, style: TileBatch.dayHeaderTextStyle),
-      );
-      if (this.upcomingAnimatedList != null) {
-        upcomningTileWidgets.add(this.upcomingAnimatedList!);
-      }
-      upcomningTileWidgets.insert(0, footerContainer);
+    if (this.preceedingAnimatedList != null) {
+      precedingTileWidgets.add(this.preceedingAnimatedList!);
     }
     Widget scrollableItems = Container(
       height: MediaQuery.of(context).size.height - 200,
@@ -402,8 +407,6 @@ class WithinNowBatchState extends TileBatchState {
       child: ListView(
         children: [
           ...precedingTileWidgets,
-          ...currentTileWidgets,
-          ...upcomningTileWidgets
         ],
       ),
     );
@@ -416,22 +419,26 @@ class WithinNowBatchState extends TileBatchState {
         this._preceedingList,
         initialLoad,
         beforeProcessingPendingRenderingFlag);
-    handleAddOrRemovalOfTimeSectionTiles(this.currentOrderedTiles,
-        this._currentList, initialLoad, beforeProcessingPendingRenderingFlag);
-    handleAddOrRemovalOfTimeSectionTiles(this.upcomingOrderedTiles,
-        this._upcomingList, initialLoad, beforeProcessingPendingRenderingFlag);
     if (!beforeProcessingPendingRenderingFlag && this._pendingRendering) {
       this.pendingRenderedTiles = Map.from(this.renderedTiles);
     }
 
     if (!this._pendingRendering && this.pendingRenderedTiles != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            this.pendingRenderedTiles = null;
-          });
-        }
+      Timer(Duration(milliseconds: 1000), () {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              this.pendingRenderedTiles = null;
+            });
+          }
+        });
       });
+    }
+    if (Utility.isDebugSet) {
+      Utility.isDebugSet = false;
+      internalBreak = true;
+    } else {
+      internalBreak = false;
     }
     return Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 300),
@@ -446,112 +453,106 @@ class WithinNowBatchState extends TileBatchState {
       ListModel<TilerEvent>? _timeSectionListModel,
       bool isInitialLoadFlag,
       bool pendingRendering) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // if (this.mounted)
-    {
-      if (timeSectionTiles != null && !pendingRendering) {
-        List<Tuple3<TilerEvent, int?, int?>> changeDetectedTilerEvent =
-            timeSectionTiles.values
-                .where((element) => element.item2 != element.item3)
+    if (timeSectionTiles != null && !pendingRendering) {
+      List<Tuple3<TilerEvent, int?, int?>> changeDetectedTilerEvent =
+          timeSectionTiles.values
+              .where((element) => element.item2 != element.item3)
+              .toList();
+      List<Tuple3<TilerEvent, int?, int?>> removedTiles = [];
+      List<Tuple3<TilerEvent, int?, int?>> reorderedTiles = [];
+      List<Tuple3<TilerEvent, int?, int?>> insertedTiles = [];
+      for (var eachTileTuple in changeDetectedTilerEvent) {
+        if (eachTileTuple.item3 == null && eachTileTuple.item2 != null) {
+          removedTiles.add(eachTileTuple);
+          continue;
+        }
+        if (!isInitialLoadFlag) {
+          if (eachTileTuple.item2 != null) {
+            reorderedTiles.add(eachTileTuple);
+          } else {
+            insertedTiles.add(eachTileTuple);
+          }
+        }
+      }
+
+      if (changeDetectedTilerEvent.length == 0) {
+        List<TilerEvent> orderedTilerEvent = Utility.orderTiles(
+            timeSectionTiles.values.map<TilerEvent>((e) => e.item1).toList());
+        for (int i = 0; i < orderedTilerEvent.length; i++) {
+          if (!_timeSectionListModel![i]
+              .isStartAndEndEqual(orderedTilerEvent[i])) {
+            print('withinNow 0 removeAndUpdate');
+            _timeSectionListModel.removeAndUpdate(i, i, orderedTilerEvent[i],
+                animate: false);
+          }
+        }
+      }
+
+      List<String> listIds =
+          _timeSectionListModel!.toList().map<String>((e) => e.id!).toList();
+      for (var removedTile in removedTiles) {
+        listIds =
+            _timeSectionListModel.toList().map<String>((e) => e.id!).toList();
+        int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
+        if (toBeRemovedIndex != removedTile.item3) {
+          if (toBeRemovedIndex >= 0) {
+            print('withinNow 0 removeAt');
+            _timeSectionListModel.removeAt(toBeRemovedIndex);
+          }
+        }
+      }
+
+      for (var removedTile in removedTiles) {
+        timeSectionTiles.remove(removedTile.item1.id);
+      }
+
+      Utility.isWithinNowSet = false;
+      if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
+        this._pendingRendering = true;
+        Timer(Duration(milliseconds: 500), () {
+          Utility.isWithinNowSet = true;
+          print('Delayed UI update');
+          for (var insertedTile in insertedTiles) {
+            print('withinNow insert');
+            _timeSectionListModel.insert(
+              insertedTile.item3!,
+              insertedTile.item1,
+            );
+          }
+
+          for (var reorderedTile in reorderedTiles) {
+            listIds = _timeSectionListModel
+                .toList()
+                .map<String>((e) => e.id!)
                 .toList();
-        List<Tuple3<TilerEvent, int?, int?>> removedTiles = [];
-        List<Tuple3<TilerEvent, int?, int?>> reorderedTiles = [];
-        List<Tuple3<TilerEvent, int?, int?>> insertedTiles = [];
-        for (var eachTileTuple in changeDetectedTilerEvent) {
-          if (eachTileTuple.item3 == null && eachTileTuple.item2 != null) {
-            removedTiles.add(eachTileTuple);
-            continue;
-          }
-          if (!isInitialLoadFlag) {
-            if (eachTileTuple.item2 != null) {
-              reorderedTiles.add(eachTileTuple);
-            } else {
-              insertedTiles.add(eachTileTuple);
+            int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
+            if (toMovedIndex != -1) {
+              print('withinNow 1 removeAndUpdate');
+              _timeSectionListModel.removeAndUpdate(
+                  toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
+                  animate: toMovedIndex != reorderedTile.item3);
             }
           }
-        }
-
-        if (changeDetectedTilerEvent.length == 0) {
-          List<TilerEvent> orderedTilerEvent = Utility.orderTiles(
-              timeSectionTiles.values.map<TilerEvent>((e) => e.item1).toList());
-          for (int i = 0; i < orderedTilerEvent.length; i++) {
-            if (!_timeSectionListModel![i]
-                .isStartAndEndEqual(orderedTilerEvent[i])) {
-              print('withinNow 0 removeAndUpdate');
-              _timeSectionListModel.removeAndUpdate(i, i, orderedTilerEvent[i],
-                  animate: false);
-            }
+          if (mounted) {
+            setState(() {
+              this._pendingRendering = false;
+            });
           }
-        }
-
-        List<String> listIds =
-            _timeSectionListModel!.toList().map<String>((e) => e.id!).toList();
-        for (var removedTile in removedTiles) {
-          listIds =
-              _timeSectionListModel.toList().map<String>((e) => e.id!).toList();
-          int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
-          if (toBeRemovedIndex != removedTile.item3) {
-            if (toBeRemovedIndex >= 0) {
-              _timeSectionListModel.removeAt(toBeRemovedIndex);
-            }
-          }
-        }
-
-        for (var removedTile in removedTiles) {
-          timeSectionTiles.remove(removedTile.item1.id);
-        }
-
-        Utility.isWithinNowSet = false;
-        if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
-          this._pendingRendering = true;
-          Timer(Duration(milliseconds: 500), () {
-            Utility.isWithinNowSet = true;
-            for (var insertedTile in insertedTiles) {
-              print('withinNow insert');
-              _timeSectionListModel.insert(
-                insertedTile.item3!,
-                insertedTile.item1,
-              );
-            }
-
-            for (var reorderedTile in reorderedTiles) {
-              listIds = _timeSectionListModel
-                  .toList()
-                  .map<String>((e) => e.id!)
-                  .toList();
-              int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
-              if (toMovedIndex != -1) {
-                print('withinNow 1 removeAndUpdate');
-                _timeSectionListModel.removeAndUpdate(
-                    toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
-                    animate: toMovedIndex != reorderedTile.item3);
-              }
-            }
-            this._pendingRendering = false;
-          });
-        }
-
-        // if (timeSectionTiles.isEmpty) {
-        //   this.widget.tiles = [];
-        //   setState(() {
-        //     this.renderedTiles = {};
-        //   });
-        // }
-      }
-
-      if (isInitialLoadFlag && !pendingRendering) {
-        this.isInitialLoad = false;
-      }
-      if (timeSectionTiles != null) {
-        List finalOrederedTileValues = timeSectionTiles.values.toList();
-        for (var eachTileTupleData in finalOrederedTileValues) {
-          timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
-              eachTileTupleData.item1,
-              eachTileTupleData.item3,
-              eachTileTupleData.item3);
-        }
+        });
       }
     }
-    // });
+
+    if (isInitialLoadFlag && !pendingRendering) {
+      this.isInitialLoad = false;
+    }
+    if (timeSectionTiles != null) {
+      List finalOrederedTileValues = timeSectionTiles.values.toList();
+      for (var eachTileTupleData in finalOrederedTileValues) {
+        timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+            eachTileTupleData.item1,
+            eachTileTupleData.item3,
+            eachTileTupleData.item3);
+      }
+    }
   }
 }

@@ -41,7 +41,7 @@ class Utility {
   static bool isWithinNowSet = false;
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
-    DateTime time = DateTime.now();
+    DateTime time = DateTime(2023, 5, 17, 22, 35, 0);
     if (minuteLimitAccuracy) {
       DateTime retValue =
           DateTime(time.year, time.month, time.day, time.hour, time.minute);
@@ -70,9 +70,9 @@ class Utility {
       EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
     bool retValue =
         editTilerEvent.startTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.startTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.startTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.endTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.name == tilerEvent.name &&
             editTilerEvent.splitCount == tilerEvent.split;
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
