@@ -7,6 +7,7 @@ class TileStyles {
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
+  static final double widthRatio = 0.85;
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;

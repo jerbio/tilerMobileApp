@@ -276,14 +276,6 @@ class _EditTileState extends State<EditTile> {
               BoxDecoration containerClusterStyle = BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(TileStyles.borderRadius),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 5),
-                  ),
-                ],
               );
               var inputChildWidgets = <Widget>[];
               String tileNote = this.editTilerEvent?.note ??
