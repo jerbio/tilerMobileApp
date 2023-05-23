@@ -186,8 +186,6 @@ class TileBatchState extends State<TileBatch> {
     evaluateTileDelta(this.widget.tiles);
     if (renderedTiles.length > 0) {
       if (this.animatedList == null || this.pendingRenderedTiles == null) {
-        print(
-            'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& preceedingAnimatedList');
         bool onlyNewEntriesPopulated = isAllNewEntries(this.orderedTiles!);
         var initialItems = this.orderedTiles!.values.where((element) {
           if (onlyNewEntriesPopulated) {

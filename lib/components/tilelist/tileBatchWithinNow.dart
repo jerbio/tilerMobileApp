@@ -170,8 +170,6 @@ class WithinNowBatchState extends TileBatchState {
     evaluatePopulatedTileDelta(_AnimatedListType.preceeding, collection);
     if (this.preceedingAnimatedList == null ||
         this.pendingRenderedTiles == null) {
-      print(
-          'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& preceedingAnimatedList');
       bool onlyNewEntriesPopulated =
           isAllNewEntries(this.preceedingOrderedTiles!);
       var initialItems = this.preceedingOrderedTiles!.values.where((element) {

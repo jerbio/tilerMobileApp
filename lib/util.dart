@@ -41,7 +41,7 @@ class Utility {
   static bool isWithinNowSet = false;
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
-    DateTime time = DateTime(2023, 5, 17, 22, 35, 0);
+    DateTime time = DateTime.now();
     if (minuteLimitAccuracy) {
       DateTime retValue =
           DateTime(time.year, time.month, time.day, time.hour, time.minute);

@@ -265,7 +265,9 @@ class _SettingState extends State<Setting> {
       childElements.add(endOfDayWidget);
     }
     if (!this.isAllRestrictionProfileLoaded || !isTimeOfDayLoaded) {
-      childElements.add(PendingWidget());
+      childElements.add(PendingWidget(
+        backgroundDecoration: BoxDecoration(color: Colors.transparent),
+      ));
     }
 
     childElements.add(logoutButton);
