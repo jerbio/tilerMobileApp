@@ -68,12 +68,7 @@ class WithinNowBatchState extends TileBatchState {
       new ScrollController();
   AnimatedList? preceedingAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? preceedingOrderedTiles;
-  AnimatedList? currentAnimatedList;
-  Map<String, Tuple3<TilerEvent, int?, int?>>? currentOrderedTiles;
-  AnimatedList? upcomingAnimatedList;
-  Map<String, Tuple3<TilerEvent, int?, int?>>? upcomingOrderedTiles;
 
-  Map<String, TilerEvent>? previousOrderedTiles;
   bool _pendingRendering = false;
   @override
   void initState() {
@@ -132,50 +127,13 @@ class WithinNowBatchState extends TileBatchState {
     return tilerEvent.id == upcomingAdHocTileId;
   }
 
-  processEmptyAnimatedList(
-      _AnimatedListType _animatedListType, List<TilerEvent> collection) {
-    switch (_animatedListType) {
-      case _AnimatedListType.current:
-        this.currentAnimatedList = null;
-        this.currentOrderedTiles = null;
-        break;
-      case _AnimatedListType.preceeding:
-        this.preceedingAnimatedList = null;
-        this._preceedingList = null;
-        this.preceedingOrderedTiles = null;
-        break;
-      case _AnimatedListType.upcoming:
-        this.upcomingAnimatedList = null;
-        this.upcomingOrderedTiles = null;
-        break;
-      default:
-    }
-  }
-
   evaluatePopulatedTileDelta(
       _AnimatedListType _animatedListType, Iterable<TilerEvent>? tiles) {
     Map<String, Tuple3<TilerEvent, int?, int?>>? timeSectionTiles;
-    switch (_animatedListType) {
-      case _AnimatedListType.current:
-        if (this.currentOrderedTiles == null) {
-          this.currentOrderedTiles = {};
-        }
-        timeSectionTiles = this.currentOrderedTiles;
-        break;
-      case _AnimatedListType.preceeding:
-        if (this.preceedingOrderedTiles == null) {
-          this.preceedingOrderedTiles = {};
-        }
-        timeSectionTiles = this.preceedingOrderedTiles;
-        break;
-      case _AnimatedListType.upcoming:
-        if (this.upcomingOrderedTiles == null) {
-          this.upcomingOrderedTiles = {};
-        }
-        timeSectionTiles = this.upcomingOrderedTiles;
-        break;
-      default:
+    if (this.preceedingOrderedTiles == null) {
+      this.preceedingOrderedTiles = {};
     }
+    timeSectionTiles = this.preceedingOrderedTiles;
 
     if (tiles == null) {
       tiles = <TilerEvent>[];
@@ -189,7 +147,6 @@ class WithinNowBatchState extends TileBatchState {
     for (var eachTile in timeSectionTiles!.values) {
       allFoundTiles[eachTile.item1.id!] = eachTile.item1;
     }
-    Set.from(timeSectionTiles.values.map<TilerEvent>((e) => e.item1));
 
     for (int i = 0; i < orderedByTimeTiles.length; i++) {
       TilerEvent eachTile = orderedByTimeTiles[i];
@@ -265,6 +222,9 @@ class WithinNowBatchState extends TileBatchState {
     int currentTimeinMs = Utility.currentTime().millisecondsSinceEpoch;
     upcomingTile.start = currentTimeinMs;
     upcomingTile.end = Utility.todayTimeline().end;
+    if (upcomingTile.end! < upcomingTile.start!) {
+      upcomingTile.start = upcomingTile.end;
+    }
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
         if (eachTile.id != null) {
@@ -343,7 +303,6 @@ class WithinNowBatchState extends TileBatchState {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {
-              this.previousOrderedTiles = this.pendingRenderedTiles;
               this.pendingRenderedTiles = null;
             });
           }
@@ -419,11 +378,9 @@ class WithinNowBatchState extends TileBatchState {
         timeSectionTiles.remove(removedTile.item1.id);
       }
 
-      Utility.isWithinNowSet = false;
       if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
         this._pendingRendering = true;
         Timer(Duration(milliseconds: 500), () {
-          Utility.isWithinNowSet = true;
           print('Delayed UI update');
           for (var insertedTile in insertedTiles) {
             print('withinNow insert');

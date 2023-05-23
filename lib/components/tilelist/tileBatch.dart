@@ -128,7 +128,6 @@ class TileBatchState extends State<TileBatch> {
     for (var eachTile in orderedTiles!.values) {
       allFoundTiles[eachTile.item1.id!] = eachTile.item1;
     }
-    Set.from(orderedTiles!.values.map<TilerEvent>((e) => e.item1));
 
     for (int i = 0; i < orderedByTimeTiles.length; i++) {
       TilerEvent eachTile = orderedByTimeTiles[i];
@@ -149,7 +148,6 @@ class TileBatchState extends State<TileBatch> {
   @override
   Widget build(BuildContext context) {
     const double heightMargin = 300;
-    List<Timeline> chillTimeLines = [];
     renderedTiles = {};
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
@@ -187,12 +185,26 @@ class TileBatchState extends State<TileBatch> {
 
     evaluateTileDelta(this.widget.tiles);
     if (renderedTiles.length > 0) {
-      if (animatedList == null) {
-        var initialItems = this
-            .orderedTiles!
-            .values
-            .where((element) => element.item3 != null)
-            .toList();
+      if (this.animatedList == null || this.pendingRenderedTiles == null) {
+        print(
+            'NEW ANIMATED LIST GENERATED &&&&&&&&&&&&&&&&&& preceedingAnimatedList');
+        bool onlyNewEntriesPopulated = isAllNewEntries(this.orderedTiles!);
+        var initialItems = this.orderedTiles!.values.where((element) {
+          if (onlyNewEntriesPopulated) {
+            return element.item3 != null;
+          }
+          return element.item2 != null;
+        }).toList();
+
+        initialItems.sort((tupleA, tupleB) {
+          if (tupleA.item1.start == tupleB.item1.start) {
+            if (tupleA.item1.end == tupleB.item1.end!) {
+              return tupleA.item1.id!.compareTo(tupleB.item1.id!);
+            }
+            return tupleA.item1.end!.compareTo(tupleB.item1.end!);
+          }
+          return tupleA.item1.start!.compareTo(tupleB.item1.start!);
+        });
         animatedList = AnimatedList(
           shrinkWrap: true,
           itemBuilder: _buildItem,
@@ -250,113 +262,134 @@ class TileBatchState extends State<TileBatch> {
             uniqueKey);
       }
     }
-    handleAddOrRemovalOfTiles();
+    bool beforeProcessingPendingRenderingFlag = this._pendingRendering;
+    if (this.pendingRenderedTiles == null) {
+      handleAddOrRemovalOfTimeSectionTiles(
+          this.orderedTiles, this._list, beforeProcessingPendingRenderingFlag);
+      if (!beforeProcessingPendingRenderingFlag && this._pendingRendering) {
+        this.pendingRenderedTiles = Map.from(this.renderedTiles);
+      }
+    }
+
+    if (!this._pendingRendering && this.pendingRenderedTiles != null) {
+      Timer(Duration(milliseconds: 1000), () {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              this.pendingRenderedTiles = null;
+            });
+          }
+        });
+      });
+    }
     return Column(
       children: childrenColumnWidgets,
     );
   }
 
-  handleAddOrRemovalOfTiles() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (this.mounted) {
-        if (this.orderedTiles != null && !_pendingRendering) {
-          List<Tuple3<TilerEvent, int?, int?>> changeDetectedTilerEvent = this
-              .orderedTiles!
-              .values
+  bool isAllNewEntries(
+      Map<String, Tuple3<TilerEvent, int?, int?>> timeSectionTiles) {
+    return !timeSectionTiles.values.any((element) => element.item2 != null);
+  }
+
+  handleAddOrRemovalOfTimeSectionTiles(
+      Map<String, Tuple3<TilerEvent, int?, int?>>? timeSectionTiles,
+      ListModel<TilerEvent>? _timeSectionListModel,
+      bool pendingRendering) {
+    if (timeSectionTiles != null && !pendingRendering) {
+      List<Tuple3<TilerEvent, int?, int?>> changeInTilerEventOrdering =
+          timeSectionTiles.values
               .where((element) => element.item2 != element.item3)
               .toList();
-          List<Tuple3<TilerEvent, int?, int?>> removedTiles = [];
-          List<Tuple3<TilerEvent, int?, int?>> reorderedTiles = [];
-          List<Tuple3<TilerEvent, int?, int?>> insertedTiles = [];
-          for (var eachTileTuple in changeDetectedTilerEvent) {
-            if (eachTileTuple.item3 == null && eachTileTuple.item2 != null) {
-              removedTiles.add(eachTileTuple);
-              continue;
-            }
-            if (!isInitialLoad) {
-              if (eachTileTuple.item2 != null) {
-                reorderedTiles.add(eachTileTuple);
-              } else {
-                insertedTiles.add(eachTileTuple);
-              }
-            }
-          }
-          List<TilerEvent> orderedTilerEvent = Utility.orderTiles(this
-              .orderedTiles!
-              .values
-              .map<TilerEvent>((e) => e.item1)
-              .toList());
-          if (changeDetectedTilerEvent.length == 0) {
-            for (int i = 0; i < orderedTilerEvent.length; i++) {
-              if (!_list![i].isStartAndEndEqual(orderedTilerEvent[i])) {
-                print('tilebatch 0 removeAndUpdate');
-                _list!.removeAndUpdate(i, i, orderedTilerEvent[i],
-                    animate: false);
-              }
-            }
-          }
+      bool allNewEntries = isAllNewEntries(timeSectionTiles);
+      if (allNewEntries) {
+        List finalOrederedTileValues = timeSectionTiles.values.toList();
+        for (var eachTileTupleData in finalOrederedTileValues) {
+          timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+              eachTileTupleData.item1,
+              eachTileTupleData.item3,
+              eachTileTupleData.item3);
+        }
+        return;
+      }
 
-          List<String> listIds =
-              _list!.toList().map<String>((e) => e.id!).toList();
-          for (var removedTile in removedTiles) {
-            listIds = _list!.toList().map<String>((e) => e.id!).toList();
-            int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
-            if (toBeRemovedIndex != removedTile.item3) {
-              if (toBeRemovedIndex >= 0) {
-                _list!.removeAt(toBeRemovedIndex);
-              }
-            }
-          }
-
-          for (var removedTile in removedTiles) {
-            orderedTiles!.remove(removedTile.item1.id);
-          }
-
-          if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
-            _pendingRendering = true;
-            Timer(Duration(milliseconds: 500), () {
-              for (var insertedTile in insertedTiles) {
-                print('tilebatch insert');
-                _list!.insert(
-                  insertedTile.item3!,
-                  insertedTile.item1,
-                );
-              }
-
-              for (var reorderedTile in reorderedTiles) {
-                listIds = _list!.toList().map<String>((e) => e.id!).toList();
-                int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
-                if (toMovedIndex != -1) {
-                  print('tilebatch 1 removeAndUpdate');
-                  _list!.removeAndUpdate(
-                      toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
-                      animate: toMovedIndex != reorderedTile.item3);
-                }
-              }
-              _pendingRendering = false;
-            });
-          }
-          if (this.orderedTiles!.isEmpty) {
-            this.widget.tiles = [];
-            setState(() {
-              this.renderedTiles = {};
-            });
-          }
+      List<Tuple3<TilerEvent, int?, int?>> removedTiles = [];
+      List<Tuple3<TilerEvent, int?, int?>> reorderedTiles = [];
+      List<Tuple3<TilerEvent, int?, int?>> insertedTiles = [];
+      for (var eachTileTuple in changeInTilerEventOrdering) {
+        if (eachTileTuple.item3 == null && eachTileTuple.item2 != null) {
+          removedTiles.add(eachTileTuple);
+          continue;
         }
 
-        if (isInitialLoad && !_pendingRendering) {
-          this.isInitialLoad = false;
+        if (eachTileTuple.item2 != null) {
+          reorderedTiles.add(eachTileTuple);
+        } else {
+          insertedTiles.add(eachTileTuple);
         }
-        if (this.orderedTiles != null) {
-          List finalOrderedTileValues = this.orderedTiles!.values.toList();
-          for (var eachTileTupleData in finalOrderedTileValues) {
-            this.orderedTiles![eachTileTupleData.item1.id!] = Tuple3(
-                eachTileTupleData.item1,
-                eachTileTupleData.item3,
-                eachTileTupleData.item3);
+      }
+
+      List<String> listIds =
+          _timeSectionListModel!.toList().map<String>((e) => e.id!).toList();
+      for (var removedTile in removedTiles) {
+        listIds =
+            _timeSectionListModel.toList().map<String>((e) => e.id!).toList();
+        int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
+        if (toBeRemovedIndex != removedTile.item3) {
+          if (toBeRemovedIndex >= 0) {
+            print('tileBatch 0 removeAt');
+            _timeSectionListModel.removeAt(toBeRemovedIndex);
           }
         }
       }
-    });
+
+      for (var removedTile in removedTiles) {
+        timeSectionTiles.remove(removedTile.item1.id);
+      }
+
+      Utility.isWithinNowSet = false;
+      if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
+        this._pendingRendering = true;
+        Timer(Duration(milliseconds: 500), () {
+          Utility.isWithinNowSet = true;
+          print('tileBatch Delayed UI update');
+          for (var insertedTile in insertedTiles) {
+            print('tileBatch insert');
+            _timeSectionListModel.insert(
+              insertedTile.item3!,
+              insertedTile.item1,
+            );
+          }
+
+          for (var reorderedTile in reorderedTiles) {
+            listIds = _timeSectionListModel
+                .toList()
+                .map<String>((e) => e.id!)
+                .toList();
+            int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
+            if (toMovedIndex != -1) {
+              print('tileBatch 1 removeAndUpdate');
+              _timeSectionListModel.removeAndUpdate(
+                  toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
+                  animate: toMovedIndex != reorderedTile.item3);
+            }
+          }
+          if (mounted) {
+            setState(() {
+              this._pendingRendering = false;
+            });
+          }
+        });
+      }
+    }
+    if (timeSectionTiles != null) {
+      List finalOrederedTileValues = timeSectionTiles.values.toList();
+      for (var eachTileTupleData in finalOrederedTileValues) {
+        timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+            eachTileTupleData.item1,
+            eachTileTupleData.item3,
+            eachTileTupleData.item3);
+      }
+    }
   }
 }
