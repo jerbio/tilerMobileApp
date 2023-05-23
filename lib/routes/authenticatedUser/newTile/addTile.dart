@@ -89,7 +89,7 @@ class AddTileState extends State<AddTile> {
   RepetitionData? _repetitionData;
   Color? _color;
   bool _isLocationManuallySet = false;
-  DateTime? _startTime;
+  DateTime? _startTime = Utility.currentTime();
   DateTime? _endTime;
 
   Function? onProceed;
@@ -111,7 +111,7 @@ class AddTileState extends State<AddTile> {
       tileNameController =
           TextEditingController(text: this.widget.autoTile!.description);
       _duration = this.widget.autoTile!.duration;
-
+      _startTime = this.widget.autoTile!.startTime ?? Utility.currentTime();
       if (_location == null) {
         var future = new Future.delayed(
             const Duration(milliseconds: Constants.onTextChangeDelayInMs));
