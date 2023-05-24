@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -78,13 +79,27 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
       DateTime timelineStart = Utility.getTimeFromIndex(zeroDayIndex);
       DateTime timelineEnd = Utility.getTimeFromIndex(zeroDayIndex);
       batchDayIndexes = Set();
-      dayRibbonWidgets.add(DayButton(
+      DayButton middleDayButton = DayButton(
         dateTime: Utility.getTimeFromIndex(zeroDayIndex),
         showMonth: dateTime.day == 1,
         onTapped: onDateButtonTapped,
         isSelected:
             this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
-      ));
+      );
+      dayRibbonWidgets.add(dateTime.isToday
+          ? Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: TileStyles.primaryColorLightHSL.toColor(),
+                    width: 2,
+                  ),
+                ),
+              ),
+              child: middleDayButton,
+            )
+          : middleDayButton);
       batchDayIndexes.add(zeroDayIndex);
       int currentDayIndex = zeroDayIndex + 1;
       for (int i = 0;
@@ -113,15 +128,21 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           i < subEventAfterCount && dayRibbonWidgets.length < this.numberOfDays;
           ++i, --currentDayIndex) {
         DateTime dayButtonDateTime = Utility.getTimeFromIndex(currentDayIndex);
+        DayButton dayButton = DayButton(
+          dateTime: dayButtonDateTime,
+          showMonth: dayButtonDateTime.day == 1,
+          onTapped: onDateButtonTapped,
+          isSelected: this.selectedDate.universalDayIndex ==
+              dayButtonDateTime.universalDayIndex,
+        );
         dayRibbonWidgets.insert(
             0,
-            DayButton(
-              dateTime: dayButtonDateTime,
-              showMonth: dayButtonDateTime.day == 1,
-              onTapped: onDateButtonTapped,
-              isSelected: this.selectedDate.universalDayIndex ==
-                  dayButtonDateTime.universalDayIndex,
-            ));
+            dayButtonDateTime.isToday
+                ? Container(
+                    color: Colors.amber,
+                    child: dayButton,
+                  )
+                : dayButton);
         batchDayIndexes.add(dayButtonDateTime.universalDayIndex);
 
         if (dayButtonDateTime.millisecondsSinceEpoch <

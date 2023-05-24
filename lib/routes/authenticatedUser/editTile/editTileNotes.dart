@@ -21,8 +21,8 @@ class EditTileNote extends StatefulWidget {
 }
 
 class _EditTileNoteState extends State<EditTileNote> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = Colors.white;
+  final Color textBackgroundColor = Colors.white;
+  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -61,8 +61,8 @@ class _EditTileNoteState extends State<EditTileNote> {
               hintText: AppLocalizations.of(context)!.noteEllipsis,
               filled: true,
               isDense: true,
+              fillColor: Colors.transparent,
               contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-              fillColor: textBackgroundColor,
               border: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(
                   const Radius.circular(8.0),
@@ -80,7 +80,7 @@ class _EditTileNoteState extends State<EditTileNote> {
                 ),
                 borderSide: BorderSide(
                   color: textBorderColor,
-                  width: 1.5,
+                  width: 1,
                 ),
               ),
             ),

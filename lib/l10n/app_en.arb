@@ -87,6 +87,7 @@
     "end":"End",
     "deadline": "Deadline",
     "split":"Split",
+    "timeBlocks":"Time blocks",
     "swipeRightToTileIt":"Swipe Right to tile it",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "daily":"Daily",
@@ -149,6 +150,8 @@
     "logout": "Logout",
     "snoozeTime": "Snooze Time",
     "noteEllipsis": "Note...",
+    "tapToCreateNewTile": "Tap to create a new tile",
+    "suggestions": "Suggestions",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",

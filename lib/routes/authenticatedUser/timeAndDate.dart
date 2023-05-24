@@ -104,21 +104,11 @@ class _TimeAndDateState extends State<TimeAndDate> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Text(
-              AppLocalizations.of(context)!.start,
-              style: TextStyle(
-                  color: Color.fromRGBO(30, 30, 30, 1),
-                  fontSize: 20,
-                  fontFamily: 'Rubik',
-                  fontWeight: FontWeight.w500),
-            )),
-        RenderTimePicker(),
-        RenderDatePicker(),
-      ],
+    return Container(
+      alignment: Alignment.center,
+      child: Column(
+        children: [RenderTimePicker(), RenderDatePicker()],
+      ),
     );
   }
 }
