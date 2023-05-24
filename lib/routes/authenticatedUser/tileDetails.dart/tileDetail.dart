@@ -7,7 +7,6 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
@@ -55,9 +54,9 @@ class _TileDetailState extends State<TileDetail> {
       if (isProcrastinateTile) {
         bool timeIsTheSame =
             editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
-                    calEvent!.startTime!.toLocal().millisecondsSinceEpoch &&
+                    calEvent!.startTime.toLocal().millisecondsSinceEpoch &&
                 editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
-                    calEvent!.endTime!.toLocal().millisecondsSinceEpoch;
+                    calEvent!.endTime.toLocal().millisecondsSinceEpoch;
 
         bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
                 editTilerEvent!.startTime!) <
@@ -345,7 +344,6 @@ class _TileDetailState extends State<TileDetail> {
                             calEvent!.subEvents!.map((e) => e.id!).toList()),
                   )));
             }
-            inputChildWidgets.add(TileProgress(calendarEvent: calEvent!));
 
             return Container(
               padding: EdgeInsets.fromLTRB(0, 0, 0, 100),

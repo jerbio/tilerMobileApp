@@ -20,7 +20,7 @@ class Indicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
       children: <Widget>[
         Container(
           width: size,
@@ -53,14 +53,27 @@ class TileProgress extends StatefulWidget {
   State<StatefulWidget> createState() => _TileProgressState();
 }
 
-enum tileStatus { Complete, Delete, Scheduled }
+enum TileStatus { Complete, Delete, Scheduled }
 
 class _TileProgressState extends State<TileProgress> {
+  int completeCount = 0;
+  int tiledCount = 0;
+  int deletedCount = 0;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    completeCount = this.widget.calendarEvent.completeCount ?? 0;
+    deletedCount = this.widget.calendarEvent.deleteCount ?? 0;
+    tiledCount =
+        this.widget.calendarEvent.split! - (completeCount) - (deletedCount);
+  }
+
   int touchedIndex = -1;
-  final Map<tileStatus, Color> colorMapping = {
-    tileStatus.Complete: Colors.green,
-    tileStatus.Delete: Colors.redAccent,
-    tileStatus.Scheduled: Colors.blueAccent,
+  final Map<TileStatus, Color> colorMapping = {
+    TileStatus.Complete: Color.fromRGBO(3, 206, 164, 1),
+    TileStatus.Delete: Color.fromRGBO(230, 57, 70, 1),
+    TileStatus.Scheduled: Color.fromRGBO(52, 89, 149, 1),
   };
 
   List<PieChartSectionData> showingSections() {
@@ -71,8 +84,8 @@ class _TileProgressState extends State<TileProgress> {
         switch (i) {
           case 0:
             return PieChartSectionData(
-              color: colorMapping[tileStatus.Complete],
-              value: (this.widget.calendarEvent.completeCount ?? 0).toDouble(),
+              color: colorMapping[TileStatus.Complete],
+              value: (completeCount).toDouble(),
               title: '',
               radius: 45,
               titlePositionPercentageOffset: 0.55,
@@ -82,28 +95,25 @@ class _TileProgressState extends State<TileProgress> {
             );
           case 1:
             return PieChartSectionData(
-              color: colorMapping[tileStatus.Delete],
-              value: (this.widget.calendarEvent.deleteCount ?? 0).toDouble(),
+              color: colorMapping[TileStatus.Scheduled],
+              value: tiledCount.toDouble(),
               title: '',
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? const BorderSide(color: Colors.greenAccent, width: 6)
-                  : BorderSide(color: Colors.greenAccent.withOpacity(0)),
+                  ? const BorderSide(color: Colors.blueAccent, width: 6)
+                  : BorderSide(color: Colors.blueAccent.withOpacity(0)),
             );
           case 2:
             return PieChartSectionData(
-              color: colorMapping[tileStatus.Scheduled],
-              value: (this.widget.calendarEvent.split! -
-                      (this.widget.calendarEvent.completeCount ?? 0) -
-                      (this.widget.calendarEvent.deleteCount ?? 0))
-                  .toDouble(),
+              color: colorMapping[TileStatus.Delete],
+              value: (deletedCount).toDouble(),
               title: '',
               radius: 45,
-              titlePositionPercentageOffset: 0.6,
+              titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? const BorderSide(color: Colors.greenAccent, width: 6)
-                  : BorderSide(color: Colors.greenAccent.withOpacity(0)),
+                  ? const BorderSide(color: Colors.redAccent, width: 6)
+                  : BorderSide(color: Colors.redAccent.withOpacity(0)),
             );
           default:
             throw Error();
@@ -115,47 +125,9 @@ class _TileProgressState extends State<TileProgress> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.3,
+      aspectRatio: 1 / 1.2,
       child: Column(
         children: <Widget>[
-          const SizedBox(
-            height: 28,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              Indicator(
-                color: colorMapping[tileStatus.Complete]!,
-                text: AppLocalizations.of(context)!.completed,
-                isSquare: false,
-                size: touchedIndex == 0 ? 18 : 16,
-                textColor: touchedIndex == 0
-                    ? colorMapping[tileStatus.Complete]
-                    : Colors.purple,
-              ),
-              Indicator(
-                color: colorMapping[tileStatus.Delete]!,
-                text: AppLocalizations.of(context)!.deleted,
-                isSquare: false,
-                size: touchedIndex == 1 ? 18 : 16,
-                textColor: touchedIndex == 1
-                    ? colorMapping[tileStatus.Delete]
-                    : Colors.purple,
-              ),
-              Indicator(
-                color: colorMapping[tileStatus.Scheduled]!,
-                text: AppLocalizations.of(context)!.scheduled,
-                isSquare: false,
-                size: touchedIndex == 2 ? 18 : 16,
-                textColor: touchedIndex == 2
-                    ? colorMapping[tileStatus.Scheduled]
-                    : Colors.purple,
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 18,
-          ),
           Expanded(
             child: AspectRatio(
               aspectRatio: 1,
@@ -183,10 +155,52 @@ class _TileProgressState extends State<TileProgress> {
                   centerSpaceRadius: 40,
                   sections: showingSections(),
                 ),
-                swapAnimationDuration: Duration(milliseconds: 150), // Optional
-                swapAnimationCurve: Curves.linear, // O
+                swapAnimationDuration: Duration(milliseconds: 1000), // Optional
+                swapAnimationCurve: Curves.bounceInOut, // O
               ),
             ),
+          ),
+          Container(
+            padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+            child: Wrap(
+              spacing: 10,
+              runSpacing: 5,
+              children: <Widget>[
+                Indicator(
+                  color: colorMapping[TileStatus.Complete]!,
+                  text: AppLocalizations.of(context)!
+                      .completedCount(completeCount.toString()),
+                  isSquare: false,
+                  size: touchedIndex == 0 ? 18 : 16,
+                  textColor: touchedIndex == 0
+                      ? colorMapping[TileStatus.Complete]
+                      : Colors.black,
+                ),
+                Indicator(
+                  color: colorMapping[TileStatus.Scheduled]!,
+                  text: AppLocalizations.of(context)!
+                      .tiledCount(tiledCount.toString()),
+                  isSquare: false,
+                  size: touchedIndex == 1 ? 18 : 16,
+                  textColor: touchedIndex == 1
+                      ? colorMapping[TileStatus.Scheduled]
+                      : Colors.black,
+                ),
+                Indicator(
+                  color: colorMapping[TileStatus.Delete]!,
+                  text: AppLocalizations.of(context)!
+                      .deletedCount(deletedCount.toString()),
+                  isSquare: false,
+                  size: touchedIndex == 2 ? 18 : 16,
+                  textColor: touchedIndex == 2
+                      ? colorMapping[TileStatus.Delete]
+                      : Colors.black,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 80,
           ),
         ],
       ),
