@@ -9,6 +9,8 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/components/tileUI/tileProgress.dart';
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -264,6 +266,8 @@ class _EditTileState extends State<EditTile> {
               final Color textBorderColor =
                   TileStyles.primaryColorLightHSL.toColor();
 
+              Widget? tileProgressWidget;
+
               final Color textBackgroundColor = TileStyles.textBackgroundColor;
               String tileName =
                   this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
@@ -396,6 +400,7 @@ class _EditTileState extends State<EditTile> {
                         ],
                       ),
                     ));
+
                 inputChildWidgets.add(Container(
                     decoration: containerClusterStyle,
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -411,7 +416,7 @@ class _EditTileState extends State<EditTile> {
                                   Color.fromRGBO(0, 0, 0, 0.05),
                                   BlendMode.srcIn),
                             )),
-                        splitWidget,
+                        splitWidget
                       ],
                     )));
                 if (_editCalEndDateAndTime != null) {
@@ -434,6 +439,37 @@ class _EditTileState extends State<EditTile> {
                       ));
                   durationAndDeadlineCluster.add(deadlineWidget);
                 }
+                tileProgressWidget = Container(
+                    decoration: containerClusterStyle,
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                            bottom: -20,
+                            right: -20,
+                            child: SvgPicture.asset(
+                              'assets/iconScout/chart.svg',
+                              height: 150,
+                              colorFilter: ColorFilter.mode(
+                                  Color.fromRGBO(0, 0, 0, 0.05),
+                                  BlendMode.srcIn),
+                            )),
+                        Column(children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              AppLocalizations.of(context)!.progress,
+                              style: this.labelStyle,
+                            ),
+                          ),
+                          TileProgress(
+                              calendarEvent: this.subEvent!.calendarEvent!
+                                  as CalendarEvent),
+                        ])
+                      ],
+                    ));
               }
               Widget nameAndSplitClusterWrapper = Container(
                 decoration: containerClusterStyle,
@@ -562,6 +598,9 @@ class _EditTileState extends State<EditTile> {
               }
 
               inputChildWidgets.add(playBackButtonWrapper);
+              if (tileProgressWidget != null) {
+                inputChildWidgets.add(tileProgressWidget);
+              }
 
               List<Widget> stackElements = <Widget>[
                 Container(
