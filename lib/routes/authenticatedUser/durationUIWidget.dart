@@ -7,7 +7,9 @@ import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
 
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
-  DurationUIWidget({required this.duration, Key? key}) : super(key: key);
+  List<Duration>? presetDurations;
+  DurationUIWidget({required this.duration, presetDurations, Key? key})
+      : super(key: key);
   @override
   State createState() => _DurationUIWidgetState();
 }
@@ -100,16 +102,6 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
 
     return Column(
       children: [
-        Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Text(
-              AppLocalizations.of(context)!.duration,
-              style: TextStyle(
-                  color: Color.fromRGBO(30, 30, 30, 1),
-                  fontSize: 20,
-                  fontFamily: 'Rubik',
-                  fontWeight: FontWeight.w500),
-            )),
         Container(
           child: Row(
             children: childWidgets,

@@ -70,9 +70,9 @@ class Utility {
       EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
     bool retValue =
         editTilerEvent.startTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.startTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.startTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.endTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.name == tilerEvent.name &&
             editTilerEvent.splitCount == tilerEvent.split;
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
@@ -765,5 +765,12 @@ extension DateTimeHuman on DateTime {
     DateTime retValue = DateTime(this.year, this.month, this.day, 23, 59);
     retValue.add(durationTillSaturday);
     return retValue;
+  }
+}
+
+extension ColorExtension on Color {
+  Color withLightness(double lightness) {
+    HSLColor hslColor = HSLColor.fromColor(this);
+    return hslColor.withLightness(lightness).toColor();
   }
 }

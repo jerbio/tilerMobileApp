@@ -390,9 +390,16 @@ class _TileListState extends State<TileList> {
         List<TileBatch> todayTileBatches = <TileBatch>[];
         WithinNowBatch todayBatch = WithinNowBatch(
           key: ValueKey(
-              Utility.todayTimeline().toString() + "_within_upcoming_0"),
+              // Utility.todayTimeline().toString() +
+              "_within_upcoming_0"),
           tiles: [...elapsedTiles, ...notElapsedTiles],
         );
+
+        // TileBatch todayBatch = TileBatch(
+        //   dayIndex: currentTime.universalDayIndex,
+        //   tiles: [...elapsedTiles, ...notElapsedTiles],
+        // );
+
         todayTileBatches.add(todayBatch);
         childTileBatchs.addAll(todayTileBatches);
         dayIndexToWidget[currentTime.universalDayIndex] = Container(
@@ -694,13 +701,20 @@ class _TileListState extends State<TileList> {
     }
 
     if (startDateTime.millisecondsSinceEpoch >
-        dateManageCurrentDate.millisecondsSinceEpoch) {
-      startDateTime = dateManageCurrentDate;
-    }
+            dateManageCurrentDate.millisecondsSinceEpoch ||
+        endDateTime.millisecondsSinceEpoch <
+            dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
+      int dayDelta = previousTimeline.duration.inDays;
+      int daySplit = (dayDelta.toDouble() / 2).round();
 
-    if (endDateTime.millisecondsSinceEpoch <
-        dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
-      endDateTime = dateManageCurrentDate;
+      startDateTime =
+          dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
+      endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: daySplit));
+
+      if (daySplit == 0) {
+        startDateTime = dateManageCurrentDate.dayDate;
+        endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: 1));
+      }
     }
 
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -786,16 +800,36 @@ class _TileListState extends State<TileList> {
         BlocListener<UiDateManagerBloc, UiDateManagerState>(
           listener: (context, state) {
             if (state is UiDateManagerUpdated) {
+              bool forceRenderingPage = true;
               if (dayIndexToCarouselIndex
                   .containsKey(state.currentDate.universalDayIndex)) {
+                forceRenderingPage = false;
                 tileListDayCarouselController.animateToPage(
                     dayIndexToCarouselIndex[
                             state.currentDate.universalDayIndex]!
                         .item1);
-                return;
+                var scheduleBlocState = this.context.read<ScheduleBloc>().state;
+                bool dontReloadSchedule = true;
+                if (scheduleBlocState is ScheduleLoadedState) {
+                  dontReloadSchedule = scheduleBlocState.lookupTimeline
+                      .isDateTimeWithin(state.currentDate);
+                }
+
+                if (scheduleBlocState is ScheduleEvaluationState) {
+                  dontReloadSchedule = false;
+                }
+
+                if (scheduleBlocState is ScheduleInitialState ||
+                    scheduleBlocState is ScheduleLoadingState) {
+                  dontReloadSchedule = false;
+                }
+                if (dontReloadSchedule) {
+                  return;
+                }
               }
 
-              reloadSchedule(state.currentDate.add(Duration(days: -7)));
+              reloadSchedule(state.currentDate,
+                  forceRenderingPage: forceRenderingPage);
             }
           },
         ),

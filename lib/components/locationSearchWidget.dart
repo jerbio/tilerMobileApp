@@ -242,10 +242,10 @@ class LocationSearchState extends SearchWidgetState {
 
   @override
   Widget build(BuildContext context) {
-    var hslLightColor = HSLColor.fromColor(Color.fromRGBO(0, 194, 237, 1));
-    hslLightColor = hslLightColor.withLightness(hslLightColor.lightness + 0.4);
-    var hslDarkColor = HSLColor.fromColor(Color.fromRGBO(0, 119, 170, 1));
-    hslDarkColor = hslDarkColor.withLightness(hslDarkColor.lightness + 0.4);
+    Color hslLightColor =
+        TileStyles.primaryColorLightHSL.toColor().withLightness(0.9);
+    var hslDarkColor =
+        TileStyles.primaryColorDarkHSL.toColor().withLightness(0.9);
     String hintText = AppLocalizations.of(context)!.address;
     this.widget.onChanged = this._onInputFieldChange;
     if (this.widget.textField == null) {
@@ -261,11 +261,11 @@ class LocationSearchState extends SearchWidgetState {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-          hslLightColor.toColor(),
-          hslLightColor.toColor(),
-          hslLightColor.toColor(),
-          hslDarkColor.toColor(),
-          hslDarkColor.toColor()
+          hslLightColor,
+          hslLightColor,
+          hslLightColor,
+          hslDarkColor,
+          hslDarkColor,
         ]));
     this.widget.resultMargin = EdgeInsets.fromLTRB(0, 60, 0, 20);
     return super.build(context);

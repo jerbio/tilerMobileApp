@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
 
 class EditTileName extends StatefulWidget {
   String tileName;
@@ -22,7 +23,7 @@ class EditTileName extends StatefulWidget {
 
 class _EditTileNameState extends State<EditTileName> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = Colors.white;
+  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -62,27 +63,15 @@ class _EditTileNameState extends State<EditTileName> {
               filled: true,
               isDense: true,
               contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-              fillColor: textBackgroundColor,
-              border: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
+              fillColor: Colors.transparent,
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.transparent),
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                borderSide: BorderSide(color: textBorderColor, width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                borderSide: BorderSide(
-                  color: textBorderColor,
-                  width: 1.5,
-                ),
-              ),
+              focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: textBorderColor, width: 1)),
+              enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(
+                      color: textBorderColor.withLightness(0.8), width: 1)),
             ),
           ),
         ));

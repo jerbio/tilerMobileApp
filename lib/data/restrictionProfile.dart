@@ -69,6 +69,11 @@ class RestrictionProfile extends TilerObj {
     }
   }
 
+  RestrictionProfile.noRestriction() {
+    isEnabled = false;
+    daySelection = List.filled(7, null);
+  }
+
   RestrictionProfile.everyDay(RestrictionTimeLine restrictionTimeLine) {
     for (int i = 0; i < 7; i++) {
       RestrictionDay restrictionDay =

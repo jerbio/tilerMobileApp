@@ -7,6 +7,7 @@ class TileStyles {
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
+  static final double widthRatio = 0.85;
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
@@ -39,6 +40,9 @@ class TileStyles {
       fontSize: textFontSize,
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
+
+  static const TextStyle editTimeOrDateTimeStyle =
+      TextStyle(fontSize: 18, color: const Color.fromRGBO(40, 40, 40, 1));
   static Color textBackgroundColor = Color.fromRGBO(239, 48, 84, .05);
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);

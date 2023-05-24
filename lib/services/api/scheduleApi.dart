@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'dart:convert';
 
 import 'package:tuple/tuple.dart';
@@ -77,8 +78,9 @@ class ScheduleApi extends AppApi {
     return retValue;
   }
 
-  Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
-      String tileName) async {
+  Future<
+      Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+          List<String>>> getAutoResult(String tileName) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
@@ -100,8 +102,10 @@ class ScheduleApi extends AppApi {
             if (isContentInResponse(jsonResult)) {
               List<Duration> durations = [];
               List<Location> locations = [];
-              Tuple2<List<Duration>, List<Location>> retValue =
-                  new Tuple2(durations, locations);
+              List<String> timeOfDaySections = [];
+              RestrictionProfile restrictionProfile =
+                  RestrictionProfile.noRestriction();
+
               if (jsonResult['Content'].containsKey('duration')) {
                 List<double> durationInMs = [];
                 for (var eachDuration in jsonResult['Content']['duration']) {
@@ -126,14 +130,47 @@ class ScheduleApi extends AppApi {
                   locations.add(Location.fromJson(eachLocation));
                 }
               }
+              if (jsonResult['Content'].containsKey('restrictionProfile')) {
+                if (jsonResult['Content']['restrictionProfile'] != null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['restrictionProfile']);
+                }
+              }
+              if (jsonResult['Content'].containsKey('timeOfDay')) {
+                if (jsonResult['Content']['timeOfDay']['restrictionProfile'] !=
+                    null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['timeOfDay']['restrictionProfile']);
+                }
+                if (jsonResult['Content']['timeOfDay']
+                    .containsKey('daySections')) {
+                  for (var eachDaySection in jsonResult['Content']['timeOfDay']
+                      ['daySections']) {
+                    if (eachDaySection != null &&
+                        eachDaySection.toLowerCase() == 'anytime') {
+                      restrictionProfile = RestrictionProfile.noRestriction();
+                      timeOfDaySections = [];
+                      break;
+                    }
+                    if (eachDaySection != null) {
+                      timeOfDaySections.add(eachDaySection);
+                    }
+                  }
+                }
+              }
 
+              Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+                      List<String>> retValue =
+                  new Tuple4(durations, locations, restrictionProfile,
+                      timeOfDaySections);
               return retValue;
             }
           }
         }
       }
     }
-    return new Tuple2([], []);
+    RestrictionProfile restrictionProfile = RestrictionProfile.noRestriction();
+    return new Tuple4([], [], restrictionProfile, []);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
