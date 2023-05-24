@@ -225,7 +225,8 @@ class WithinNowBatchState extends TileBatchState {
     }
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
-        if (eachTile.id != null) {
+        if (eachTile.id != null &&
+            (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
           latestBuildTiles[eachTile.id!] = eachTile;
         }
         if (eachTile.start! >= currentTimeinMs && upcomingTile != null) {
@@ -240,8 +241,10 @@ class WithinNowBatchState extends TileBatchState {
     }
 
     List<Widget> children = [];
-    if (dayData != null) {
-      this.dayData!.nonViableTiles = renderedTiles.values
+    if (dayData != null && this.widget.tiles != null) {
+      this.dayData!.nonViableTiles = this
+          .widget
+          .tiles!
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
@@ -253,7 +256,6 @@ class WithinNowBatchState extends TileBatchState {
     children.add(Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
         child: DaySummary(dayData: this.dayData ?? DayData())));
-    int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
 
