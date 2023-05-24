@@ -151,7 +151,8 @@ class TileBatchState extends State<TileBatch> {
     renderedTiles = {};
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
-        if (eachTile.id != null) {
+        if (eachTile.id != null &&
+            (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
           renderedTiles[eachTile.id!] = eachTile;
         }
       });
@@ -166,8 +167,10 @@ class TileBatchState extends State<TileBatch> {
         " " +
         uniqueKey);
     childrenColumnWidgets = [];
-    if (dayData != null) {
-      this.dayData!.nonViableTiles = renderedTiles.values
+    if (dayData != null && this.widget.tiles != null) {
+      this.dayData!.nonViableTiles = this
+          .widget
+          .tiles!
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
@@ -183,7 +186,7 @@ class TileBatchState extends State<TileBatch> {
       childrenColumnWidgets.add(sleepWidget);
     }
 
-    evaluateTileDelta(this.widget.tiles);
+    evaluateTileDelta(renderedTiles.values);
     if (renderedTiles.length > 0) {
       if (this.animatedList == null || this.pendingRenderedTiles == null) {
         bool onlyNewEntriesPopulated = isAllNewEntries(this.orderedTiles!);

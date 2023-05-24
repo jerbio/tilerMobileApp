@@ -552,8 +552,9 @@ class _TileListState extends State<TileList> {
     }
 
     String notificationMessage = AppLocalizations.of(context)!.concludesAtTime(
-        (concludingTile.name ??
-            AppLocalizations.of(context)!.procrastinateBlockOut));
+        (concludingTile.isProcrastinate ?? false
+            ? AppLocalizations.of(context)!.procrastinateBlockOut
+            : concludingTile.name!));
 
     this.localNotificationService.concludingTileNotification(
         tile: concludingTile,
