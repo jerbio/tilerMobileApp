@@ -226,8 +226,8 @@ class LocalNotificationService {
       final currentTime = Utility.msCurrentTime;
 
       final tileEndTimeMs = tile.end!.toInt();
-      final tenMinFromEndMs =
-          tileEndTimeMs - (Utility.oneMin.inMilliseconds * 10);
+      final fiveMinFromEndMs =
+          tileEndTimeMs - (Utility.oneMin.inMilliseconds * 5);
 
       String name = tile.name == null || tile.name!.isEmpty
           ? ((tile.isProcrastinate ?? false)
@@ -235,7 +235,7 @@ class LocalNotificationService {
               : "")
           : tile.name!;
       String durationString = AppLocalizations.of(context)!.endsInTenMinutes;
-      if (tenMinFromEndMs < currentTime) {
+      if (fiveMinFromEndMs < currentTime) {
         String startTimeString = MaterialLocalizations.of(context)
             .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime));
         this.showNotification(
@@ -248,7 +248,7 @@ class LocalNotificationService {
       }
 
       Duration delayDuraion =
-          Duration(milliseconds: (tenMinFromEndMs - currentTime).toInt());
+          Duration(milliseconds: (fiveMinFromEndMs - currentTime).toInt());
       delayDuraion =
           delayDuraion.inMilliseconds <= Utility.oneMin.inMilliseconds
               ? Duration(seconds: 15)

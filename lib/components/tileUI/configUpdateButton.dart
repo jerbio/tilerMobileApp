@@ -42,30 +42,30 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
   Widget build(BuildContext context) {
     List<Widget> childWidgets = [];
     if (this.widget.prefixIcon != null) {
-      childWidgets.add(this.widget.prefixIcon!);
+      childWidgets.add(Container(
+          margin: EdgeInsets.fromLTRB(5, 12, 5, 0),
+          child: this.widget.prefixIcon!));
     }
     String textButtonString = this.widget.text;
-    Widget textButton = Flexible(
-      child: TextButton(
-        style: TextButton.styleFrom(
-          textStyle: TextStyle(
-              overflow: TextOverflow.ellipsis,
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-              color: this.widget.textColor),
-          foregroundColor: this.widget.textColor,
-        ),
-        onPressed: () async {
-          if (this.widget.onPress != null) {
-            await this.widget.onPress!();
-          }
-        },
-        child: Text(
-          textButtonString,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontFamily: TileStyles.rubikFontName,
-          ),
+    Widget textButton = TextButton(
+      style: TextButton.styleFrom(
+        textStyle: TextStyle(
+            overflow: TextOverflow.ellipsis,
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            color: this.widget.textColor),
+        foregroundColor: this.widget.textColor,
+      ),
+      onPressed: () async {
+        if (this.widget.onPress != null) {
+          await this.widget.onPress!();
+        }
+      },
+      child: Text(
+        textButtonString,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontFamily: TileStyles.rubikFontName,
         ),
       ),
     );
@@ -78,12 +78,12 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
         },
         child: Container(
             constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width / 2 - 20),
+                minWidth: (MediaQuery.of(context).size.width * 0.30)),
             decoration: this.widget.decoration,
-            margin: EdgeInsets.all(10),
-            padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            // margin: EdgeInsets.all(10),
+            padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+            child: Wrap(
+              alignment: WrapAlignment.center,
               children: childWidgets,
             )));
 

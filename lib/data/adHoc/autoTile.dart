@@ -8,11 +8,13 @@ class AutoTile {
   Duration? duration;
   Location? location;
   String? categoryId;
+  DateTime? startTime;
   bool isLastCard;
   AutoTile(
       {required this.description,
       this.image,
       this.duration,
       this.categoryId,
-      this.isLastCard = false});
+      this.isLastCard = false,
+      this.startTime});
 }

@@ -69,6 +69,8 @@
     "successfullyResumed":"Successfully Resumed",
     "successfullyCompleted":"Successfully Completed",
     "completed":"Completed",
+    "deleted":"Deleted",
+    "scheduled":"Scheduled",
     "movedUpToNow":"Moving up to now",
     "pausing":"Pausing",
     "resuming":"Resuming",
@@ -148,6 +150,9 @@
     "logout": "Logout",
     "snoozeTime": "Snooze Time",
     "noteEllipsis": "Note...",
+    "tapToCreateNewTile": "Tap to create a new tile",
+    "suggestions": "Suggestions",
+    "progress": "Progress",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",
@@ -193,5 +198,32 @@
                 "example": "5 Hours"
               }
             }},
-            "issuesConnectingToTiler": "Issues connecting to Tiler"
+            "issuesConnectingToTiler": "Issues connecting to Tiler",
+          "completedCount": "Completed ({count})",
+          "@completedCount": {
+            "description": "Completed tile count",
+            "placeholders": {
+              "count": {
+                "type": "String",
+                "example": "5"
+              }
+            }},
+            "deletedCount": "Deleted ({count})",
+            "@deletedCount": {
+              "description": "Deleted tile count",
+              "placeholders": {
+                "count": {
+                  "type": "String",
+                  "example": "5"
+                }
+              }},
+              "tiledCount": "Tiles left ({count})",
+              "@tiledCount": {
+                "description": "Tiles left count",
+                "placeholders": {
+                  "count": {
+                    "type": "String",
+                    "example": "5"
+                  }
+                }}
 }

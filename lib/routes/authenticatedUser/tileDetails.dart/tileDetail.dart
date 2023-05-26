@@ -4,9 +4,9 @@ import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
@@ -54,9 +54,9 @@ class _TileDetailState extends State<TileDetail> {
       if (isProcrastinateTile) {
         bool timeIsTheSame =
             editTilerEvent!.startTime!.toLocal().millisecondsSinceEpoch ==
-                    calEvent!.startTime!.toLocal().millisecondsSinceEpoch &&
+                    calEvent!.startTime.toLocal().millisecondsSinceEpoch &&
                 editTilerEvent!.endTime!.toLocal().millisecondsSinceEpoch ==
-                    calEvent!.endTime!.toLocal().millisecondsSinceEpoch;
+                    calEvent!.endTime.toLocal().millisecondsSinceEpoch;
 
         bool isValidTimeFrame = Utility.utcEpochMillisecondsFromDateTime(
                 editTilerEvent!.startTime!) <
@@ -173,8 +173,8 @@ class _TileDetailState extends State<TileDetail> {
               if (calEvent == null) {
                 calEvent = state.calEvent;
                 editTilerEvent = new EditTilerEvent();
-                editTilerEvent!.endTime = calEvent!.endTime!;
-                editTilerEvent!.startTime = calEvent!.startTime!;
+                editTilerEvent!.endTime = calEvent!.endTime;
+                editTilerEvent!.startTime = calEvent!.startTime;
                 editTilerEvent!.splitCount = calEvent!.split;
                 editTilerEvent!.name = calEvent!.name ?? '';
                 editTilerEvent!.thirdPartyId = calEvent!.thirdpartyId;
@@ -214,13 +214,13 @@ class _TileDetailState extends State<TileDetail> {
             );
 
             DateTime startTime =
-                this.editTilerEvent?.startTime ?? this.calEvent!.startTime!;
+                this.editTilerEvent?.startTime ?? this.calEvent!.startTime;
             _editStartDateAndTime = EditDateAndTime(
               time: startTime,
               onInputChange: dataChange,
             );
             DateTime endTime =
-                this.editTilerEvent?.endTime ?? this.calEvent!.endTime!;
+                this.editTilerEvent?.endTime ?? this.calEvent!.endTime;
             _editEndDateAndTime = EditDateAndTime(
               time: endTime,
               onInputChange: dataChange,

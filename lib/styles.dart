@@ -7,6 +7,7 @@ class TileStyles {
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
+  static final double widthRatio = 0.85;
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
@@ -46,15 +47,17 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static final BoxDecoration defaultBackground = BoxDecoration(
-      gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-        Colors.white.withOpacity(0.5),
-        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
-      ]));
+  static final BoxDecoration defaultBackground =
+      BoxDecoration(color: Colors.transparent
+          // gradient: LinearGradient(
+          //     begin: Alignment.topCenter,
+          //     end: Alignment.bottomCenter,
+          //     colors: [
+          //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+          //   Colors.white.withOpacity(0.5),
+          //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
+          // ])
+          );
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),

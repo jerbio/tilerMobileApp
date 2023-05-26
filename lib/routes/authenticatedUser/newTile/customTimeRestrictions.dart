@@ -153,7 +153,7 @@ class CustomTimeRestrictionRouteState
         timeBoxDecoration = BoxDecoration(color: TileStyles.accentColor);
       }
     }
-
+    final localizations = MaterialLocalizations.of(context);
     Widget retValue = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -172,7 +172,7 @@ class CustomTimeRestrictionRouteState
           },
         ),
         Container(
-          width: 140,
+          width: 160,
           child:
               Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             GestureDetector(
@@ -193,14 +193,18 @@ class CustomTimeRestrictionRouteState
                   }
                 },
                 child: Container(
-                    width: 45,
+                    width: 60,
                     height: 45,
                     decoration: timeBoxDecoration,
                     child: Center(
-                      child: Text(
-                          '${doubleZeroFormatter.format(dayOfWeekRestriction.start.hour)}:${doubleZeroFormatter.format(dayOfWeekRestriction.start.minute)}'),
+                      child: Text(localizations
+                          .formatTimeOfDay(dayOfWeekRestriction.start)),
                     ))),
-            Center(child: Text('-')),
+            Center(
+                child: Text(
+              ' - ',
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.w300),
+            )),
             GestureDetector(
               onTap: () async {
                 var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
@@ -219,12 +223,12 @@ class CustomTimeRestrictionRouteState
                 }
               },
               child: Container(
-                  width: 45,
+                  width: 60,
                   height: 45,
                   decoration: timeBoxDecoration,
                   child: Center(
-                      child: Text(
-                          '${doubleZeroFormatter.format(dayOfWeekRestriction.end.hour)}:${doubleZeroFormatter.format(dayOfWeekRestriction.end.minute)}'))),
+                      child: Text(localizations
+                          .formatTimeOfDay(dayOfWeekRestriction.end)))),
             ),
           ]),
         )
