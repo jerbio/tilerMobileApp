@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,11 +9,13 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/components/tileUI/tileProgress.dart';
+import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/NextTileSuggestionWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
@@ -51,9 +54,16 @@ class _EditTileState extends State<EditTile> {
   bool hideButtons = false;
   List<NextTileSuggestion>? nextTileSuggestions;
 
+  TextStyle labelStyle = const TextStyle(
+      color: Color.fromRGBO(31, 31, 31, 1),
+      fontSize: 25,
+      fontFamily: TileStyles.rubikFontName,
+      fontWeight: FontWeight.w500);
+
   @override
   void initState() {
     super.initState();
+    print("Edit sub event with id ${this.widget.tileId}");
     this
         .context
         .read<SubCalendarTileBloc>()
@@ -193,14 +203,19 @@ class _EditTileState extends State<EditTile> {
     Widget retValue = SizedBox.shrink();
     if (this.nextTileSuggestions != null &&
         this.nextTileSuggestions!.length > 0) {
-      retValue = Container(
-        child: Row(
-          children: this
-              .nextTileSuggestions!
-              .map((e) => Expanded(
-                  child: NextTileSuggestionWidget(nextTileSuggestion: e)))
-              .toList(),
-        ),
+      return Column(
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
+            alignment: Alignment.topLeft,
+            child: Text(
+              AppLocalizations.of(context)!.suggestions,
+              style: this.labelStyle,
+            ),
+          ),
+          NextTileSuggestionCarouselWidget(
+              nextTileSuggestions: this.nextTileSuggestions!),
+        ],
       );
     }
 
@@ -250,11 +265,9 @@ class _EditTileState extends State<EditTile> {
 
               final Color textBorderColor =
                   TileStyles.primaryColorLightHSL.toColor();
-              TextStyle labelStyle = const TextStyle(
-                  color: Color.fromRGBO(31, 31, 31, 1),
-                  fontSize: 30,
-                  fontFamily: TileStyles.rubikFontName,
-                  fontWeight: FontWeight.w500);
+
+              Widget? tileProgressWidget;
+
               final Color textBackgroundColor = TileStyles.textBackgroundColor;
               String tileName =
                   this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
@@ -312,6 +325,7 @@ class _EditTileState extends State<EditTile> {
                   dataChange();
                 },
               );
+              _startEndDurationTimeline!.headerTextStyle = labelStyle;
 
               List<Widget> nameAndSplitCluster = <Widget>[
                 FractionallySizedBox(
@@ -386,6 +400,7 @@ class _EditTileState extends State<EditTile> {
                         ],
                       ),
                     ));
+
                 inputChildWidgets.add(Container(
                     decoration: containerClusterStyle,
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -401,7 +416,7 @@ class _EditTileState extends State<EditTile> {
                                   Color.fromRGBO(0, 0, 0, 0.05),
                                   BlendMode.srcIn),
                             )),
-                        splitWidget,
+                        splitWidget
                       ],
                     )));
                 if (_editCalEndDateAndTime != null) {
@@ -424,6 +439,37 @@ class _EditTileState extends State<EditTile> {
                       ));
                   durationAndDeadlineCluster.add(deadlineWidget);
                 }
+                tileProgressWidget = Container(
+                    decoration: containerClusterStyle,
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                            bottom: -20,
+                            right: -20,
+                            child: SvgPicture.asset(
+                              'assets/iconScout/chart.svg',
+                              height: 150,
+                              colorFilter: ColorFilter.mode(
+                                  Color.fromRGBO(0, 0, 0, 0.05),
+                                  BlendMode.srcIn),
+                            )),
+                        Column(children: [
+                          Container(
+                            margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
+                            alignment: Alignment.topLeft,
+                            child: Text(
+                              AppLocalizations.of(context)!.progress,
+                              style: this.labelStyle,
+                            ),
+                          ),
+                          TileProgress(
+                              calendarEvent: this.subEvent!.calendarEvent!
+                                  as CalendarEvent),
+                        ])
+                      ],
+                    ));
               }
               Widget nameAndSplitClusterWrapper = Container(
                 decoration: containerClusterStyle,
@@ -498,7 +544,7 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions.remove(PlaybackOptions.Now);
               }
               Widget playBackButtonWrapper = Container(
-                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
                 decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,
@@ -541,13 +587,20 @@ class _EditTileState extends State<EditTile> {
                 ),
               );
 
+              if (this.nextTileSuggestions != null &&
+                  this.nextTileSuggestions!.length > 0) {
+                Widget nextTileSuggestionWrapper = Container(
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+                    decoration: containerClusterStyle,
+                    child: renderNextTileSuggestionContainer());
+                inputChildWidgets.add(nextTileSuggestionWrapper);
+              }
+
               inputChildWidgets.add(playBackButtonWrapper);
-
-              Widget nextTileSuggestionWrapper = Container(
-                  decoration: containerClusterStyle,
-                  child: renderNextTileSuggestionContainer());
-
-              inputChildWidgets.add(nextTileSuggestionWrapper);
+              if (tileProgressWidget != null) {
+                inputChildWidgets.add(tileProgressWidget);
+              }
 
               List<Widget> stackElements = <Widget>[
                 Container(

@@ -70,9 +70,9 @@ class Utility {
       EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
     bool retValue =
         editTilerEvent.startTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.startTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.startTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.endTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.name == tilerEvent.name &&
             editTilerEvent.splitCount == tilerEvent.split;
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
