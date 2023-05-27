@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/summaryPage.dart';
 import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -17,7 +18,6 @@ class _DaySummaryState extends State<DaySummary> {
     const textStyle = const TextStyle(
         fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
     Widget completeWidget = Container(
-      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -33,7 +33,6 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget warnWidget = Container(
-      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -49,7 +48,6 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget sleepWidget = Container(
-      // margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -64,9 +62,7 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
 
-    // rowSymbolElements.add(completeWidget);
     rowSymbolElements.add(warnWidget);
-    // rowSymbolElements.add(sleepWidget);
     Widget retValue = Container(
       margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
@@ -84,12 +80,18 @@ class _DaySummaryState extends State<DaySummary> {
     if (this.widget.dayData.dayIndex != null) {
       Widget dayDateText = GestureDetector(
         onTap: () {
-          if (Utility.getTimeFromIndex(this.widget.dayData.dayIndex!)
-              .humanDate
-              .contains("Today")) {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => SummaryPage()));
-          }
+          DateTime start =
+              Utility.getTimeFromIndex(this.widget.dayData.dayIndex!);
+          DateTime end =
+              Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).endOfDay;
+          Timeline timeline = Timeline(
+              start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SummaryPage(
+                        timeline: timeline,
+                      )));
         },
         child: Container(
           child: Text(

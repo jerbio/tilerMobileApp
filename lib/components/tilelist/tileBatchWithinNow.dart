@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/daySummary.dart';
+import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
