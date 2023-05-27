@@ -1,13 +1,10 @@
-import 'dart:math';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/combination.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'dart:convert';
 
 import 'package:tuple/tuple.dart';
@@ -36,11 +33,11 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
-    print("today is ${DateTime.now().millisecondsSinceEpoch}");
+    print("today is ${Utility.currentTime().millisecondsSinceEpoch}");
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
+      DateTime dateTime = Utility.currentTime();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = this.authentication.cachedCredentials!.username;
@@ -343,12 +340,43 @@ class ScheduleApi extends AppApi {
     });
   }
 
+  Future<TimelineSummary?> getTimelineSummary(Timeline timeline) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+
+      DateTime dateTime = Utility.currentTime();
+      final queryParameters = {
+        'StartRange': timeline.start!.toInt().toString(),
+        'EndRange': timeline.end!.toInt().toString(),
+        'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString()
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Schedule/timelineSummary', updatedParams);
+      var header = this.getHeaders();
+      if (header != null) {
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            return TimelineSummary.fromJson(jsonResult['Content']);
+          }
+        }
+      }
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
   Future<Analysis?> getAnalysis() async {
     try {
       if ((await this.authentication.isUserAuthenticated()).item1) {
         await this.authentication.reLoadCredentialsCache();
         String tilerDomain = Constants.tilerDomain;
-        DateTime dateTime = DateTime.now();
         String url = tilerDomain;
         if (this.authentication.cachedCredentials != null) {
           String? username = this.authentication.cachedCredentials!.username;

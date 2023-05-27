@@ -247,7 +247,7 @@ class EventNameSearchState extends SearchWidgetState {
               SizedBox.square(
                 dimension: 5,
               ),
-              Text(AppLocalizations.of(context)!.complete,
+              Text(AppLocalizations.of(context)!.done,
                   style: TextStyle(fontSize: 15))
             ],
           )),

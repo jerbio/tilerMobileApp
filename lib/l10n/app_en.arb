@@ -57,7 +57,7 @@
     "noMatchWasFound":"No match was found",
     "noLocation":"No location",
     "clearedColon":"Cleared: ",
-    "complete":"Done",
+    "complete":"Complete",
     "delete":"Delete",
     "cancel":"Cancel",
     "now":"Now",
@@ -162,68 +162,80 @@
           "example": "5 Hours"
         }
       }},
-      "durationLate": "{duration} Late",
-      "@durationLate": {
-        "description": "Description of departure tardiness",
-        "placeholders": {
-          "duration": {
-            "type": "String",
-            "example": "5 Hours"
-          }
-        }},
-        "elapsedDurationAgo": "Elapsed {duration} ago",
-        "@elapsedDurationAgo": {
-          "description": "Description of duration ago",
-          "placeholders": {
-            "duration": {
-              "type": "String",
-              "example": "5 Hours"
-            }
-          }},
-          "completedDurationAgo": "Completed {duration} ago",
-          "@completedDurationAgo": {
-            "description": "Description of duration ago",
-            "placeholders": {
-              "duration": {
-                "type": "String",
-                "example": "5 Hours"
-              }
-            }},
-          "durationLeft": "{duration} left",
-          "@durationLeft": {
-            "description": "Description of duration remaining",
-            "placeholders": {
-              "duration": {
-                "type": "String",
-                "example": "5 Hours"
-              }
-            }},
-            "issuesConnectingToTiler": "Issues connecting to Tiler",
-          "completedCount": "Completed ({count})",
-          "@completedCount": {
-            "description": "Completed tile count",
-            "placeholders": {
-              "count": {
-                "type": "String",
-                "example": "5"
-              }
-            }},
-            "deletedCount": "Deleted ({count})",
-            "@deletedCount": {
-              "description": "Deleted tile count",
-              "placeholders": {
-                "count": {
-                  "type": "String",
-                  "example": "5"
-                }
-              }},
-              "tiledCount": "Tiles left ({count})",
-              "@tiledCount": {
-                "description": "Tiles left count",
-                "placeholders": {
-                  "count": {
-                    "type": "String",
-                    "example": "5"
-                  }
-                }}
+    "durationLate": "{duration} Late",
+    "@durationLate": {
+      "description": "Description of departure tardiness",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "elapsedDurationAgo": "Elapsed {duration} ago",
+    "@elapsedDurationAgo": {
+      "description": "Description of duration ago",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "completedDurationAgo": "Completed {duration} ago",
+    "@completedDurationAgo": {
+      "description": "Description of duration ago",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "durationLeft": "{duration} left",
+    "@durationLeft": {
+      "description": "Description of duration remaining",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "issuesConnectingToTiler": "Issues connecting to Tiler",
+    "completedCount": "Completed ({count})",
+    "@completedCount": {
+      "description": "Completed tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "deletedCount": "Deleted ({count})",
+    "@deletedCount": {
+      "description": "Deleted tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "tiledCount": "Tiles left ({count})",
+    "@tiledCount": {
+      "description": "Tiles left count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "countTile": "{count} Tiles",
+    "@countTile": {
+      "description": "Tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5 tiles"
+        }
+      }},
+    "unSchedule": "Unscheduled",
+    "done": "Done"
+      
 }

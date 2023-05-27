@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/data/noteData.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
@@ -127,6 +128,16 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('isComplete')) {
       _isComplete = json['isComplete'];
     }
+  }
+
+  Color? get color {
+    if (this.colorRed != null &&
+        this.colorGreen != null &&
+        this.colorGreen != null) {
+      return Color.fromRGBO(
+          this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
+    }
+    return null;
   }
 
   toString() {
