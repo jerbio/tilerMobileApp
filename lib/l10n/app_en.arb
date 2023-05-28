@@ -235,7 +235,17 @@
           "example": "5 tiles"
         }
       }},
-    "unSchedule": "Unscheduled",
-    "done": "Done"
+    "unScheduled": "Unscheduled",
+    "allScheduled": "All Scheduled",
+    "getOnIt": "Get on it",
+    "done": "Done",
+    "late": "Late",
+    "onTime": "On time",
+    "analysis": "Analysis",
+    "noDataAvailable": "No data available",
+    "sleep": "Sleep",
+    "overview": "Overview",
+    "driveTime": "Drive Time"
+
       
 }
