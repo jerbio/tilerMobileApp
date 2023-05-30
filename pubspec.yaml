@@ -63,6 +63,10 @@ dependencies:
   pie_chart:
     path: thirdParty/pie
   fl_chart: ^0.62.0
+  google_sign_in: ^6.1.2
+  font_awesome_flutter: ^10.4.0
+  flutter_dotenv: ^5.0.2
+  change_app_package_name: ^1.1.0
 
 dev_dependencies:
   build_runner: ^2.1.4

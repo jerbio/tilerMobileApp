@@ -1,11 +1,13 @@
 import 'dart:ui';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -64,7 +66,6 @@ class SignInComponentState extends State<SignInComponent> {
           authenticationData.isValid.toString();
       if (!authenticationData.isValid) {
         if (authenticationData.errorMessage != null) {
-   
           showErrorMessage(authenticationData.errorMessage!);
           return;
         }
@@ -146,6 +147,15 @@ class SignInComponentState extends State<SignInComponent> {
           credentialManagerHeight = 350,
           credentialButtonHeight = 150
         });
+  }
+
+  Future signInToGoogle() async {
+    var googleUser = await GoogleSignInApi.login();
+    if (googleUser != null) {
+      var googleAuthentication = await googleUser!.authentication;
+      var authHeaders = await googleUser.authHeaders;
+      print(authHeaders);
+    }
   }
 
   @override
@@ -304,11 +314,19 @@ class SignInComponentState extends State<SignInComponent> {
             ),
             child: Icon(Icons.arrow_forward),
           ),
-          Text('Sign In')
+          Text(AppLocalizations.of(context)!.signIn)
         ],
       ),
       onPressed: adHocSignin,
     );
+
+    var googleSignInButton = ElevatedButton.icon(
+        onPressed: signInToGoogle,
+        icon: FaIcon(
+          FontAwesomeIcons.google,
+          color: Colors.white,
+        ),
+        label: Text(AppLocalizations.of(context)!.signUpWithGoogle));
 
     var backToSignInButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
@@ -360,7 +378,11 @@ class SignInComponentState extends State<SignInComponent> {
       onPressed: registerUser,
     );
 
-    var buttons = [signUpButton, signInButton];
+    var buttons = [
+      signUpButton,
+      // googleSignInButton,
+      signInButton
+    ];
 
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
@@ -390,7 +412,11 @@ class SignInComponentState extends State<SignInComponent> {
         confirmPasswordTextField,
         usernameTextField
       ];
-      buttons = [backToSignInButton, registerUserButton];
+      buttons = [
+        backToSignInButton,
+        // googleSignInButton,
+        registerUserButton
+      ];
     }
     return Form(
         key: _formKey,
