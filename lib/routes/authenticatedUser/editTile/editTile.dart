@@ -392,7 +392,8 @@ class _EditTileState extends State<EditTile> {
                                 ),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(fontSize: 30),
-                                keyboardType: TextInputType.number,
+                                keyboardType: TextInputType.numberWithOptions(
+                                    signed: true, decimal: true),
                                 controller: splitCountController,
                               ),
                             ),
