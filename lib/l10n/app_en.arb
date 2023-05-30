@@ -245,7 +245,9 @@
     "noDataAvailable": "No data available",
     "sleep": "Sleep",
     "overview": "Overview",
-    "driveTime": "Drive Time"
+    "driveTime": "Drive Time",
+    "signUpWithGoogle": "Sign Up with Google",
+    "signIn": "Sign In"
 
       
 }
