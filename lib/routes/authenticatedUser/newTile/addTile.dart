@@ -369,7 +369,8 @@ class AddTileState extends State<AddTile> {
                     width: 60,
                     child: TextField(
                       controller: splitCountController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.numberWithOptions(
+                          signed: true, decimal: true),
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.digitsOnly
                       ],

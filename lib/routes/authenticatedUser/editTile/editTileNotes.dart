@@ -48,6 +48,7 @@ class _EditTileNoteState extends State<EditTileNote> {
           child: TextFormField(
             minLines: 5,
             maxLines: 10,
+            textInputAction: TextInputAction.done,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
             enabled: !(this.widget.isProcrastinate),
