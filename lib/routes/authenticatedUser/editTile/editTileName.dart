@@ -49,6 +49,7 @@ class _EditTileNameState extends State<EditTileName> {
           child: TextFormField(
             minLines: 1,
             maxLines: 5,
+            textInputAction: TextInputAction.done,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
             enabled: !(this.widget.isProcrastinate),
