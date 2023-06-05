@@ -11,6 +11,13 @@ import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:oauth2/oauth2.dart' as oauth2;
+import '../../constants.dart' as Constants;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+import 'package:tuple/tuple.dart';
+
 import 'AuthorizedRoute.dart';
 
 class SignInComponent extends StatefulWidget {
@@ -155,6 +162,39 @@ class SignInComponentState extends State<SignInComponent> {
       var googleAuthentication = await googleUser!.authentication;
       var authHeaders = await googleUser.authHeaders;
       print(authHeaders);
+
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      Uri uri = Uri.https(url, 'account/MobileExternalLogin');
+
+      //       [Required]
+      // public string AccessToken { get; set; }
+      // public string RefreshToken { get; set; }
+      // public string ThirdPartyType { get;set; }
+      var response = await http.post(uri,
+          body: jsonEncode({
+            'Email': googleUser.email,
+            'AccessToken': googleAuthentication.accessToken,
+            'ThirdPartyType': 'Google'
+          }));
+
+      var jsonResult = jsonDecode(response.body);
+
+      // final oauth2.AuthorizationCodeGrant authClient =
+      //     oauth2.AuthorizationCodeGrant(
+      //   'your_client_id',
+      //   'your_client_secret',
+      //   Uri.parse('your_redirect_uri'),
+      // );
+
+      // final oauth2.Credentials credentials =
+      //     await authClient.handleAuthorizationCode(
+      //   googleAuth.serverAuthCode,
+      // );
+
+      // // Get the refresh token
+      // final String refreshToken = credentials.refreshToken;
+      // print('Refresh Token: $refreshToken');
     }
   }
 
@@ -378,11 +418,7 @@ class SignInComponentState extends State<SignInComponent> {
       onPressed: registerUser,
     );
 
-    var buttons = [
-      signUpButton,
-      // googleSignInButton,
-      signInButton
-    ];
+    var buttons = [signUpButton, googleSignInButton, signInButton];
 
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
@@ -412,11 +448,7 @@ class SignInComponentState extends State<SignInComponent> {
         confirmPasswordTextField,
         usernameTextField
       ];
-      buttons = [
-        backToSignInButton,
-        // googleSignInButton,
-        registerUserButton
-      ];
+      buttons = [backToSignInButton, googleSignInButton, registerUserButton];
     }
     return Form(
         key: _formKey,
