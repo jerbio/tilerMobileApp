@@ -49,6 +49,50 @@ class Authorization extends AppApi {
     }
   }
 
+  Future<AuthenticationData> getAThirdPartyuthentication(
+      String userName, String password) async {
+    String tilerDomain = Constants.tilerDomain;
+    String url = tilerDomain;
+    final queryParameters = {
+      'username': userName,
+      'password': password,
+      'grant_type': 'password'
+    };
+
+    var requestBody = 'username=' +
+        userName +
+        '&password=' +
+        password +
+        '&grant_type=password';
+    Uri uri = Uri.https(url, 'account/token', queryParameters);
+    http.Response response = await http.post(uri,
+        headers: {"Content-Type": "text/plain"},
+        body: requestBody,
+        encoding: Encoding.getByName("utf-8"));
+
+    AuthenticationData retValue = AuthenticationData.noCredentials();
+    if (response.statusCode == 200) {
+      var jsonResult = jsonDecode(response.body);
+      var retValue = AuthenticationData.initializedWithRestData(
+        jsonResult['access_token'],
+        jsonResult['token_type'],
+        jsonResult['expires_in'],
+      );
+      retValue.username = userName;
+      retValue.password = password;
+      return retValue;
+    } else {
+      var jsonResult = jsonDecode(response.body);
+      if (jsonResult.containsKey('error') &&
+          jsonResult.containsKey('error_description') &&
+          jsonResult['error_description'] != null &&
+          jsonResult['error_description'].isNotEmpty) {
+        retValue.errorMessage = jsonResult['error_description'];
+      }
+      return retValue;
+    }
+  }
+
   Future<AuthenticationData> registerUser(String email, String password,
       String userName, String confirmPassword, String? firstname) async {
     String tilerDomain = Constants.tilerDomain;
@@ -94,6 +138,7 @@ class Authorization extends AppApi {
 }
 
 class AuthenticationData {
+  late final String provider;
   late final String accessToken;
   late final String tokenType;
   late int expirationTime;
@@ -114,7 +159,8 @@ class AuthenticationData {
   }
 
   AuthenticationData.initializedWithLocalStorage(this.accessToken,
-      this.tokenType, this.expirationTime, this.username, this.password) {
+      this.tokenType, this.expirationTime, this.username, this.password,
+      {provider = 'tiler'}) {
     assert(this.accessToken != null);
     assert(this.tokenType != null);
     assert(this.expirationTime != null);
@@ -145,7 +191,8 @@ class AuthenticationData {
       'tokenType': tokenType,
       'expiresIn': expirationTime,
       'username': username,
-      'password': password
+      'password': password,
+      'provider': provider
     };
   }
 
@@ -155,6 +202,7 @@ class AuthenticationData {
         json['tokenType'],
         json['expiresIn'],
         json['username'],
-        json['password']);
+        json['password'],
+        provider: (json.containsKey('provider') ? json['provider'] : 'tiler'));
   }
 }

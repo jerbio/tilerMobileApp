@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/services/api/googleSignInApi.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/util.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:oauth2/oauth2.dart' as oauth2;
@@ -156,13 +158,71 @@ class SignInComponentState extends State<SignInComponent> {
         });
   }
 
+  Future<Map<String, dynamic>> getRefreshToken(String clientId,
+      String clientSecret, String serverAuthCode, List<String> scopes) async {
+    final String refreshTokenEndpoint = 'https://oauth2.googleapis.com/token';
+
+    final Map<String, dynamic> requestBody = {
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'grant_type': 'authorization_code',
+      'code': serverAuthCode,
+      'redirect_uri':
+          'https://localhost-44388-x-if7.conveyor.cloud/signin-google',
+      'scope': scopes.join(' '),
+    };
+
+    final http.Response response = await http.post(
+      Uri.parse(refreshTokenEndpoint),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: requestBody,
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      return responseData;
+      // final String refreshToken = responseData['refresh_token'];
+      // return refreshToken;
+    } else {
+      throw Exception('Failed to get refresh token');
+    }
+  }
+
   Future signInToGoogle() async {
+    ScheduleApi scheduleApi = new ScheduleApi();
+    scheduleApi.getSubEvents(Utility.todayTimeline()).then((values) {
+      print(values);
+    });
+
+    return;
+
     var googleUser = await GoogleSignInApi.login();
     if (googleUser != null) {
       var googleAuthentication = await googleUser!.authentication;
       var authHeaders = await googleUser.authHeaders;
       print(authHeaders);
 
+      String clientId =
+          '518133740160-i5ie6s4h802048gujtmui1do8h2lqlfj.apps.googleusercontent.com';
+      String clientSecret = 'NKRal5rA8NM5qHnmiigU6kWh';
+
+      String? refreshToken;
+      String? accessToken = googleAuthentication.accessToken;
+      if (googleUser.serverAuthCode != null) {
+        refreshToken = googleAuthentication.idToken!;
+        final List<String> requestedScopes = [
+          'https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/calendar.events.readonly',
+          "https://www.googleapis.com/auth/calendar.readonly",
+          "https://www.googleapis.com/auth/calendar.events",
+          'https://www.googleapis.com/auth/userinfo.email'
+        ];
+        Map serverResponse = await getRefreshToken(clientId, clientSecret,
+            googleUser.serverAuthCode!, requestedScopes);
+
+        refreshToken = serverResponse['refresh_token'];
+        accessToken = serverResponse['access_token'];
+      }
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       Uri uri = Uri.https(url, 'account/MobileExternalLogin');
@@ -171,14 +231,61 @@ class SignInComponentState extends State<SignInComponent> {
       // public string AccessToken { get; set; }
       // public string RefreshToken { get; set; }
       // public string ThirdPartyType { get;set; }
+
+      Map<String, dynamic> injectedParameters = {
+        'Email': googleUser.email,
+        'AccessToken': accessToken,
+        'DisplayName': googleUser.displayName,
+        'ProviderKey': googleUser.id,
+        'ThirdPartyType': 'Google',
+        'RefreshToken': refreshToken
+      };
+
+      // var response = await http.post(uri, body: jsonEncode(injectedParameters));
+
       var response = await http.post(uri,
-          body: jsonEncode({
-            'Email': googleUser.email,
-            'AccessToken': googleAuthentication.accessToken,
-            'ThirdPartyType': 'Google'
-          }));
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: injectedParameters,
+          encoding: Encoding.getByName("utf-8"));
+      // var response = await http.post(uri, body: jsonEncode(injectedParameters));
 
       var jsonResult = jsonDecode(response.body);
+
+      // token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6Ikplcm9tZSAiLCJlbWFpbCI6ImozcjBtMzVwYW1AZ21haWwuY29tIiwibmJmIjoxNjg2MTIwNDA3LCJleHAiOjE2ODYxMjQwMDcsImlhdCI6MTY4NjEyMDQwN30.iYGMYCKURbLcP4VdfhB2J2aI_kocCaRLYCUwgr-TEIM'
+
+      String token = jsonResult['access_token'];
+      Constants.adhocToken = token;
+
+      // if (jsonResult != null) {
+      //   showMessage(AppLocalizations.of(context)!.signingIn);
+      //   Authorization authorization = new Authorization();
+      //   AuthenticationData authenticationData =
+      //       await authorization.getAuthenticationInfo(
+      //           userNameEditingController.text, passwordEditingController.text);
+
+      //   String isValidSignIn = "Authentication data is valid:" +
+      //       authenticationData.isValid.toString();
+      //   if (!authenticationData.isValid) {
+      //     if (authenticationData.errorMessage != null) {
+      //       showErrorMessage(authenticationData.errorMessage!);
+      //       return;
+      //     }
+      //   }
+
+      //   TextInput.finishAutofillContext();
+      //   Authentication localAuthentication = new Authentication();
+      //   await localAuthentication.saveCredentials(authenticationData);
+      //   while (Navigator.canPop(context)) {
+      //     Navigator.pop(context);
+      //   }
+      //   context.read<ScheduleBloc>().add(LogInScheduleEvent());
+      //   Navigator.pop(context);
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+      //   );
+      //   print(isValidSignIn);
+      // }
 
       // final oauth2.AuthorizationCodeGrant authClient =
       //     oauth2.AuthorizationCodeGrant(
