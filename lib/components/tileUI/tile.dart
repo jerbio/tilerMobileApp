@@ -55,6 +55,7 @@ class TileWidgetState extends State<TileWidget>
   @override
   void initState() {
     if (this.widget.subEvent.isCurrentTimeWithin) {
+      // this auto refreshes when tiles are getting close to the end time
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (this.mounted) {
           int timeLeft = this.widget.subEvent.end! - Utility.msCurrentTime;
@@ -91,7 +92,9 @@ class TileWidgetState extends State<TileWidget>
   }
 
   void callScheduleRefresh() {
-    this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+    if (this.mounted) {
+      this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+    }
   }
 
   bool get isEditable {

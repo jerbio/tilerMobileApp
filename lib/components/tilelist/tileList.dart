@@ -39,7 +39,7 @@ class TileList extends StatefulWidget {
 class _TileListState extends State<TileList> {
   SubCalendarEvent? notificationSubEvent;
   SubCalendarEvent? concludingSubEvent;
-  final Duration autorefresh = const Duration(minutes: 2);
+  final Duration autorefreshDuration = const Duration(minutes: 2);
   StreamSubscription? autoRefreshList;
   DateTime lastUpdate = Utility.currentTime();
   Map? contextParams;
@@ -68,7 +68,6 @@ class _TileListState extends State<TileList> {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
       List<SubCalendarEvent> renderedSubEvents = [];
-
       Timeline updatedTimeline = Utility.todayTimeline();
       if (_scrollController.position.pixels >= maxScrollLimit &&
           _scrollController.position.userScrollDirection.index == 2) {
@@ -175,6 +174,47 @@ class _TileListState extends State<TileList> {
       }
       localNotificationService.initialize(this.context);
     });
+    autoRefreshTileList(autorefreshDuration);
+  }
+
+  void autoRefreshTileList(Duration duration) {
+    Future onTileExpiredCallBack =
+        Future.delayed(duration, callScheduleRefresh);
+    // ignore: cancel_subscriptions
+    autoRefreshList = onTileExpiredCallBack.asStream().listen((_) {});
+  }
+
+  void callScheduleRefresh() {
+    if (this.mounted) {
+      final currentState = this.context.read<ScheduleBloc>().state;
+      if (currentState is ScheduleEvaluationState) {
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+            ));
+      }
+
+      if (currentState is ScheduleLoadedState) {
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+            ));
+      }
+
+      if (currentState is ScheduleLoadingState) {
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.previousLookupTimeline,
+              previousTimeline: currentState.previousLookupTimeline,
+            ));
+      }
+    }
+    autoRefreshTileList(Duration(minutes: 4));
   }
 
   void handleRenderingOfNewTile(SubCalendarEvent subEvent) {
