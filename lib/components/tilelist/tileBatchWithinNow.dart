@@ -15,6 +15,8 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import '../../constants.dart';
 
@@ -277,14 +279,46 @@ class WithinNowBatchState extends TileBatchState {
     if (this.preceedingAnimatedList != null) {
       precedingTileWidgets.add(this.preceedingAnimatedList!);
     }
-    Widget scrollableItems = Container(
-      height: MediaQuery.of(context).size.height - 200,
-      width: MediaQuery.of(context).size.width,
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 200),
-      child: ListView(
-        children: [
-          ...precedingTileWidgets,
-        ],
+    Widget scrollableItems = RefreshIndicator(
+      onRefresh: () async {
+        final currentState = this.context.read<ScheduleBloc>().state;
+
+        if (currentState is ScheduleEvaluationState) {
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.lookupTimeline,
+                previousTimeline: currentState.lookupTimeline,
+              ));
+        }
+
+        if (currentState is ScheduleLoadedState) {
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.lookupTimeline,
+                previousTimeline: currentState.lookupTimeline,
+              ));
+        }
+
+        if (currentState is ScheduleLoadingState) {
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.previousLookupTimeline,
+                previousTimeline: currentState.previousLookupTimeline,
+              ));
+        }
+      },
+      child: Container(
+        height: MediaQuery.of(context).size.height - 200,
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 200),
+        child: ListView(
+          children: [
+            ...precedingTileWidgets,
+          ],
+        ),
       ),
     );
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -15,6 +16,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../constants.dart';
 
@@ -187,6 +189,7 @@ class TileBatchState extends State<TileBatch> {
     }
 
     evaluateTileDelta(renderedTiles.values);
+    late Widget dayContent;
     if (renderedTiles.length > 0) {
       if (this.animatedList == null || this.pendingRenderedTiles == null) {
         bool onlyNewEntriesPopulated = isAllNewEntries(this.orderedTiles!);
@@ -219,11 +222,10 @@ class TileBatchState extends State<TileBatch> {
           removedItemBuilder: _buildRemovedItem,
         );
       }
-
-      childrenColumnWidgets.add(Container(
+      dayContent = Container(
         height: MediaQuery.of(context).size.height - heightMargin,
         child: animatedList!,
-      ));
+      );
     }
 
     if (renderedTiles.length == 0) {
@@ -240,7 +242,7 @@ class TileBatchState extends State<TileBatch> {
         }
       }
 
-      childrenColumnWidgets.add(Flex(
+      dayContent = Flex(
         direction: Axis.vertical,
         children: [
           Container(
@@ -250,8 +252,40 @@ class TileBatchState extends State<TileBatch> {
                 dayIndex: this.widget.dayIndex,
               ))
         ],
-      ));
+      );
     }
+
+    childrenColumnWidgets.add(RefreshIndicator(
+        onRefresh: () async {
+          final currentState = this.context.read<ScheduleBloc>().state;
+          if (currentState is ScheduleEvaluationState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                  isAlreadyLoaded: true,
+                  previousSubEvents: currentState.subEvents,
+                  scheduleTimeline: currentState.lookupTimeline,
+                  previousTimeline: currentState.lookupTimeline,
+                ));
+          }
+
+          if (currentState is ScheduleLoadedState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                  isAlreadyLoaded: true,
+                  previousSubEvents: currentState.subEvents,
+                  scheduleTimeline: currentState.lookupTimeline,
+                  previousTimeline: currentState.lookupTimeline,
+                ));
+          }
+
+          if (currentState is ScheduleLoadingState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                  isAlreadyLoaded: true,
+                  previousSubEvents: currentState.subEvents,
+                  scheduleTimeline: currentState.previousLookupTimeline,
+                  previousTimeline: currentState.previousLookupTimeline,
+                ));
+          }
+        },
+        child: dayContent));
 
     if (sleepWidget != null && sleepTimeline != null) {
       if (childrenColumnWidgets.contains(sleepWidget)) {
