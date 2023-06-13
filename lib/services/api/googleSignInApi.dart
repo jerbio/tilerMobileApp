@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../../constants.dart' as Constants;
 
 const List<String> scopes = <String>[
-  // 'https://www.googleapis.com/auth/contacts.readonly',
   'email',
   'https://www.googleapis.com/auth/calendar',
   'https://www.googleapis.com/auth/calendar.events.readonly',

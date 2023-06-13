@@ -83,8 +83,6 @@ class AuthorizationApi extends AppApi {
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = jsonDecode(response.body);
         return responseData;
-        // final String refreshToken = responseData['refresh_token'];
-        // return refreshToken;
       } else {
         throw Exception('Failed to authenticate user account');
       }
