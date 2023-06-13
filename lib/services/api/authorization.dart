@@ -1,100 +1,22 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/googleSignInApi.dart';
+import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
+import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-class Authorization extends AppApi {
-  Future<AuthenticationData> getAuthenticationInfo(
-      String userName, String password) async {
-    String tilerDomain = Constants.tilerDomain;
-    String url = tilerDomain;
-    final queryParameters = {
-      'username': userName,
-      'password': password,
-      'grant_type': 'password'
-    };
-
-    var requestBody = 'username=' +
-        userName +
-        '&password=' +
-        password +
-        '&grant_type=password';
-    Uri uri = Uri.https(url, 'account/token', queryParameters);
-    http.Response response = await http.post(uri,
-        headers: {"Content-Type": "text/plain"},
-        body: requestBody,
-        encoding: Encoding.getByName("utf-8"));
-
-    AuthenticationData retValue = AuthenticationData.noCredentials();
-    if (response.statusCode == 200) {
-      var jsonResult = jsonDecode(response.body);
-      var retValue = AuthenticationData.initializedWithRestData(
-        jsonResult['access_token'],
-        jsonResult['token_type'],
-        jsonResult['expires_in'],
-      );
-      retValue.username = userName;
-      retValue.password = password;
-      return retValue;
-    } else {
-      var jsonResult = jsonDecode(response.body);
-      if (jsonResult.containsKey('error') &&
-          jsonResult.containsKey('error_description') &&
-          jsonResult['error_description'] != null &&
-          jsonResult['error_description'].isNotEmpty) {
-        retValue.errorMessage = jsonResult['error_description'];
-      }
-      return retValue;
-    }
-  }
-
-  Future<AuthenticationData> getAThirdPartyuthentication(
-      String userName, String password) async {
-    String tilerDomain = Constants.tilerDomain;
-    String url = tilerDomain;
-    final queryParameters = {
-      'username': userName,
-      'password': password,
-      'grant_type': 'password'
-    };
-
-    var requestBody = 'username=' +
-        userName +
-        '&password=' +
-        password +
-        '&grant_type=password';
-    Uri uri = Uri.https(url, 'account/token', queryParameters);
-    http.Response response = await http.post(uri,
-        headers: {"Content-Type": "text/plain"},
-        body: requestBody,
-        encoding: Encoding.getByName("utf-8"));
-
-    AuthenticationData retValue = AuthenticationData.noCredentials();
-    if (response.statusCode == 200) {
-      var jsonResult = jsonDecode(response.body);
-      var retValue = AuthenticationData.initializedWithRestData(
-        jsonResult['access_token'],
-        jsonResult['token_type'],
-        jsonResult['expires_in'],
-      );
-      retValue.username = userName;
-      retValue.password = password;
-      return retValue;
-    } else {
-      var jsonResult = jsonDecode(response.body);
-      if (jsonResult.containsKey('error') &&
-          jsonResult.containsKey('error_description') &&
-          jsonResult['error_description'] != null &&
-          jsonResult['error_description'].isNotEmpty) {
-        retValue.errorMessage = jsonResult['error_description'];
-      }
-      return retValue;
-    }
-  }
-
-  Future<AuthenticationData> registerUser(String email, String password,
-      String userName, String confirmPassword, String? firstname) async {
+class AuthorizationApi extends AppApi {
+  Future<UserPasswordAuthenticationData> registerUser(
+      String email,
+      String password,
+      String userName,
+      String confirmPassword,
+      String? firstname) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
     String queryFirstName = firstname == null ? email : firstname;
@@ -113,12 +35,14 @@ class Authorization extends AppApi {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(queryParameters),
         encoding: Encoding.getByName('utf-8'));
-    AuthenticationData retValue = AuthenticationData.noCredentials();
+    UserPasswordAuthenticationData retValue =
+        UserPasswordAuthenticationData.noCredentials();
 
     if (response.statusCode == 200) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
-        return await getAuthenticationInfo(queryUserName, password);
+        return await UserPasswordAuthenticationData.getAuthenticationInfo(
+            queryUserName, password);
       }
 
       retValue.errorMessage = errorMessage(jsonResult);
@@ -135,74 +59,98 @@ class Authorization extends AppApi {
       return retValue;
     }
   }
-}
 
-class AuthenticationData {
-  late final String provider;
-  late final String accessToken;
-  late final String tokenType;
-  late int expirationTime;
-  final int instantiationTime = (new DateTime.now()).millisecondsSinceEpoch;
-  bool isDefault = false;
-  String? username;
-  String? password;
-  bool isValid = false;
-  late final String? errorMessage;
+  Future<AuthenticationData?> signInToGoogle() async {
+    Future<Map<String, dynamic>> getRefreshToken(String clientId,
+        String clientSecret, String serverAuthCode, List<String> scopes) async {
+      final String refreshTokenEndpoint = 'https://oauth2.googleapis.com/token';
 
-  AuthenticationData.initializedWithRestData(
-      this.accessToken, this.tokenType, this.expirationTime) {
-    assert(this.accessToken != null);
-    assert(this.tokenType != null);
-    assert(this.expirationTime != null);
-    this.expirationTime = this.instantiationTime + (this.expirationTime * 1000);
-    this.isValid = !isExpired();
-  }
+      final Map<String, dynamic> requestBody = {
+        'client_id': clientId,
+        'client_secret': clientSecret,
+        'grant_type': 'authorization_code',
+        'code': serverAuthCode,
+        'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
+        'scope': scopes.join(' '),
+      };
 
-  AuthenticationData.initializedWithLocalStorage(this.accessToken,
-      this.tokenType, this.expirationTime, this.username, this.password,
-      {provider = 'tiler'}) {
-    assert(this.accessToken != null);
-    assert(this.tokenType != null);
-    assert(this.expirationTime != null);
-    assert(this.username != null);
-    assert(this.password != null);
+      final http.Response response = await http.post(
+        Uri.parse(refreshTokenEndpoint),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: requestBody,
+      );
 
-    this.isValid = !isExpired();
-  }
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        return responseData;
+        // final String refreshToken = responseData['refresh_token'];
+        // return refreshToken;
+      } else {
+        throw Exception('Failed to authenticate user account');
+      }
+    }
 
-  AuthenticationData.noCredentials() {
-    isDefault = true;
-    this.accessToken = "";
-    tokenType = "";
-    expirationTime = -1;
-  }
+    var googleUser = await GoogleSignInApi.login();
+    if (googleUser != null) {
+      var googleAuthentication = await googleUser.authentication;
+      var authHeaders = await googleUser.authHeaders;
+      print(authHeaders);
 
-  bool isExpired() {
-    var now = new DateTime.now().millisecondsSinceEpoch;
-    int expiryTime = this.expirationTime;
+      String clientId = dotenv.env[Constants.googleClientIdKey]!;
+      String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
 
-    bool retValue = now >= expiryTime;
-    return retValue;
-  }
+      String? refreshToken;
+      String? accessToken = googleAuthentication.accessToken;
+      if (googleUser.serverAuthCode != null) {
+        refreshToken = googleAuthentication.idToken!;
+        final List<String> requestedScopes = [
+          'https://www.googleapis.com/auth/calendar',
+          'https://www.googleapis.com/auth/calendar.events.readonly',
+          "https://www.googleapis.com/auth/calendar.readonly",
+          "https://www.googleapis.com/auth/calendar.events",
+          'https://www.googleapis.com/auth/userinfo.email'
+        ];
+        Map serverResponse = await getRefreshToken(clientId, clientSecret,
+            googleUser.serverAuthCode!, requestedScopes);
 
-  toJson() {
-    return {
-      'accessToken': accessToken,
-      'tokenType': tokenType,
-      'expiresIn': expirationTime,
-      'username': username,
-      'password': password,
-      'provider': provider
-    };
-  }
+        refreshToken = serverResponse['refresh_token'];
+        accessToken = serverResponse['access_token'];
+      }
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      Uri uri = Uri.https(url, 'account/MobileExternalLogin');
+      String providerName = 'Google';
+      Map<String, dynamic> parameters = {
+        'Email': googleUser.email,
+        'AccessToken': accessToken,
+        'DisplayName': googleUser.displayName,
+        'ProviderKey': googleUser.id,
+        'ThirdPartyType': providerName,
+        'RefreshToken': refreshToken
+      };
 
-  factory AuthenticationData.fromLocalStorage(Map<String, dynamic> json) {
-    return AuthenticationData.initializedWithLocalStorage(
-        json['accessToken'],
-        json['tokenType'],
-        json['expiresIn'],
-        json['username'],
-        json['password'],
-        provider: (json.containsKey('provider') ? json['provider'] : 'tiler'));
+      var response = await http.post(uri,
+          headers: {"Content-Type": "application/x-www-form-urlencoded"},
+          body: parameters,
+          encoding: Encoding.getByName("utf-8"));
+
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          ThirdPartyAuthenticationData retValue =
+              await ThirdPartyAuthenticationData.getThirdPartyuthentication(
+                  accessToken!,
+                  refreshToken!,
+                  googleUser.email,
+                  providerName,
+                  googleUser.id);
+          return retValue;
+        }
+        String tilerErrorMessage = errorMessage(jsonResult);
+        TilerError tilerError = TilerError(message: tilerErrorMessage);
+        throw tilerError;
+      }
+    }
+    throw TilerError();
   }
 }

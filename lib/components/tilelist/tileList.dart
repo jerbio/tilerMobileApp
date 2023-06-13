@@ -429,16 +429,9 @@ class _TileListState extends State<TileList> {
         }
         List<TileBatch> todayTileBatches = <TileBatch>[];
         WithinNowBatch todayBatch = WithinNowBatch(
-          key: ValueKey(
-              // Utility.todayTimeline().toString() +
-              "_within_upcoming_0"),
+          key: ValueKey("_within_upcoming_0"),
           tiles: [...elapsedTiles, ...notElapsedTiles],
         );
-
-        // TileBatch todayBatch = TileBatch(
-        //   dayIndex: currentTime.universalDayIndex,
-        //   tiles: [...elapsedTiles, ...notElapsedTiles],
-        // );
 
         todayTileBatches.add(todayBatch);
         childTileBatchs.addAll(todayTileBatches);
@@ -448,8 +441,10 @@ class _TileListState extends State<TileList> {
         ));
       } else {
         DateTime currentTime = Utility.currentTime();
-        TileBatch tileBatch =
-            TileBatch(dayIndex: currentTime.universalDayIndex);
+        TileBatch tileBatch = TileBatch(
+          dayIndex: currentTime.universalDayIndex,
+          tiles: [],
+        );
         Widget widget = Container(
           decoration: previousTileBatchDecoration,
           child: tileBatch,

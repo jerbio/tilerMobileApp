@@ -34,51 +34,52 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
     print("today is ${Utility.currentTime().millisecondsSinceEpoch}");
-    // if ((await this.authentication.isUserAuthenticated()).item1) {
-    //   await this.authentication.reLoadCredentialsCache();
-    String tilerDomain = Constants.tilerDomain;
-    DateTime dateTime = Utility.currentTime();
-    String url = tilerDomain;
-    // if (this.authentication.cachedCredentials != null) {
-    // String? username = this.authentication.cachedCredentials!.username;
-    String? username = 'j3r0m3.5pam@gmail.com';
-    final queryParameters = {
-      'UserName': username,
-      'StartRange': timeLine.start!.toInt().toString(),
-      'EndRange': timeLine.end!.toInt().toString(),
-      'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
-      'MobileApp': true.toString()
-    };
-    Uri uri = Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      DateTime dateTime = Utility.currentTime();
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = '';
+        // String? username = 'j3r0m3.5pam@gmail.com';
+        final queryParameters = {
+          'UserName': username,
+          'StartRange': timeLine.start!.toInt().toString(),
+          'EndRange': timeLine.end!.toInt().toString(),
+          'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+          'MobileApp': true.toString()
+        };
+        Uri uri =
+            Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
 
-    var header = this.getHeaders();
+        var header = this.getHeaders();
 
-    if (header != null) {
-      var response = await http.get(uri, headers: header);
-      var jsonResult = jsonDecode(response.body);
-      if (isJsonResponseOk(jsonResult)) {
-        if (isContentInResponse(jsonResult) &&
-            jsonResult['Content'].containsKey('subCalendarEvents')) {
-          List subEventJson = jsonResult['Content']['subCalendarEvents'];
-          List sleepTimelinesJson = [];
-          print("Got more data " + subEventJson.length.toString());
+        if (header != null) {
+          var response = await http.get(uri, headers: header);
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult) &&
+                jsonResult['Content'].containsKey('subCalendarEvents')) {
+              List subEventJson = jsonResult['Content']['subCalendarEvents'];
+              List sleepTimelinesJson = [];
+              print("Got more data " + subEventJson.length.toString());
 
-          List<Timeline> sleepTimelines = sleepTimelinesJson
-              .map((timelinesJson) => Timeline.fromJson(timelinesJson))
-              .toList();
+              List<Timeline> sleepTimelines = sleepTimelinesJson
+                  .map((timelinesJson) => Timeline.fromJson(timelinesJson))
+                  .toList();
 
-          List<SubCalendarEvent> subEvents = subEventJson
-              .map((eachSubEventJson) =>
-                  SubCalendarEvent.fromJson(eachSubEventJson))
-              .toList();
-          Tuple2<List<Timeline>, List<SubCalendarEvent>> retValue =
-              new Tuple2(sleepTimelines, subEvents);
-          return retValue;
+              List<SubCalendarEvent> subEvents = subEventJson
+                  .map((eachSubEventJson) =>
+                      SubCalendarEvent.fromJson(eachSubEventJson))
+                  .toList();
+              Tuple2<List<Timeline>, List<SubCalendarEvent>> retValue =
+                  new Tuple2(sleepTimelines, subEvents);
+              return retValue;
+            }
+          }
         }
       }
     }
-    // }
-    // }
     var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
     return retValue;
   }
@@ -91,7 +92,7 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final queryParameters = {'UserName': username, 'Name': tileName};
         Map<String, dynamic> updatedQueryParameters =
             await this.injectRequestParams(queryParameters);
@@ -208,7 +209,7 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
         var restrictedWeekData;
@@ -268,7 +269,7 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final procrastinateParameters = {
           'UserName': username,
           'DurationInMs': duration.inMilliseconds.toString()
@@ -379,7 +380,7 @@ class ScheduleApi extends AppApi {
         String tilerDomain = Constants.tilerDomain;
         String url = tilerDomain;
         if (this.authentication.cachedCredentials != null) {
-          String? username = this.authentication.cachedCredentials!.username;
+          String? username = '';
           final queryParameters = {
             'UserName': username,
           };
