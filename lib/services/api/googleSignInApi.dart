@@ -1,4 +1,7 @@
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import '../../constants.dart' as Constants;
 
 const List<String> scopes = <String>[
   // 'https://www.googleapis.com/auth/contacts.readonly',
@@ -12,8 +15,7 @@ const List<String> scopes = <String>[
 
 class GoogleSignInApi {
   static final _googleSignIn = GoogleSignIn(
-      clientId:
-          '518133740160-i5ie6s4h802048gujtmui1do8h2lqlfj.apps.googleusercontent.com',
+      clientId: dotenv.env[Constants.googleClientIdKey],
       scopes: scopes,
       forceCodeForRefreshToken: true);
 

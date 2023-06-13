@@ -24,7 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tuple/tuple.dart';
-import 'components/tileUI/summaryPage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
@@ -43,18 +43,20 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
+Future main() async {
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
+  await dotenv.load(fileName: ".env");
   runApp(TilerApp());
 }
 
 class TilerApp extends StatelessWidget {
   bool isAuthenticated = false;
+  Authentication? authentication;
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
-    Authentication authentication = new Authentication();
-    var authenticationResult = await authentication.isUserAuthenticated();
+    authentication = new Authentication();
+    var authenticationResult = await authentication!.isUserAuthenticated();
     return authenticationResult;
   }
 
@@ -150,17 +152,21 @@ class TilerApp extends StatelessWidget {
               builder: (context, AsyncSnapshot<Tuple2<bool, String>> snapshot) {
                 Widget retValue;
                 if (snapshot.hasData) {
-                  if (!snapshot.data!.item1 &&
-                      snapshot.data!.item2 == Constants.cannotVerifyError) {
-                    showErrorMessage(
-                        AppLocalizations.of(context)!.issuesConnectingToTiler);
-                    return renderPending();
+                  if (!snapshot.data!.item1) {
+                    if (snapshot.data!.item2 == Constants.cannotVerifyError) {
+                      showErrorMessage(AppLocalizations.of(context)!
+                          .issuesConnectingToTiler);
+                      return renderPending();
+                    }
+                    authentication?.deauthenticateCredentials();
+                    retValue = SignInRoute();
                   }
 
                   if (snapshot.data!.item1) {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
                     retValue = new AuthorizedRoute();
                   } else {
+                    authentication?.deauthenticateCredentials();
                     retValue = SignInRoute();
                   }
                 } else {

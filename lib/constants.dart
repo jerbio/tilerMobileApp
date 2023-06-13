@@ -1,13 +1,11 @@
 const bool isProduction = false;
 const bool isDebug = !isProduction;
-const bool isRemote = false;
+const bool isRemote = true;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
-const String devDomain = 'localhost-44388-x-if7.conveyor.cloud';
-// const String devDomain = isRemote
-//     ? 'localhost-44388-x-if7.conveyor.cloud'
-//     : 'tilerfront.conveyor.cloud';
-// const String devDomain =
-//     isDebug ? 'tilerfront.conveyor.cloud' : 'tilerfront.conveyor.cloud';
+// const String devDomain = 'localhost-44388-x-if7.conveyor.cloud';
+const String devDomain = isRemote
+    ? 'localhost-44388-x-if7.conveyor.cloud'
+    : 'tilerfront.conveyor.cloud';
 const String tilerDomain = isProduction ? prodDomain : devDomain;
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 500;
@@ -18,3 +16,6 @@ const int animationDuration = 200;
 const String requestDelimiter = ',';
 const String cannotVerifyError = 'Cannot verify error';
 String adhocToken = '';
+
+String googleClientIdKey = 'GOOGLE_CLIENT_ID';
+String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';

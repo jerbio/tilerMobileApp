@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:tiler_app/routes/authentication/signInComponent.dart';
+import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
-import '../../services/api/authorization.dart';
 import 'AuthorizedRoute.dart';
 
 class SignInRoute extends StatefulWidget {
@@ -22,9 +22,8 @@ class SignInRouteState extends State<SignInRoute> {
   final userNameEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
   void adHocSignin() async {
-    Authorization authorization = new Authorization();
-    AuthenticationData authenticationData =
-        await authorization.getAuthenticationInfo(
+    UserPasswordAuthenticationData authenticationData =
+        await UserPasswordAuthenticationData.getAuthenticationInfo(
             userNameEditingController.text, passwordEditingController.text);
 
     String isValidSignIn =
