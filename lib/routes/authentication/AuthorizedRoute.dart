@@ -87,16 +87,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   Widget generatePredictiveAdd() {
-    double topValue = MediaQuery.of(this.context).size.height / 4;
-    var future = new Future.delayed(const Duration(milliseconds: 1000), () {
-      topValue = topValue * 2;
-    });
-
-    double autoAddTileBottom = MediaQuery.of(context).viewInsets.bottom;
-    if (_iskeyboardVisible()) {
-      autoAddTileBottom -= 300;
-    }
-
     Widget containerWrapper = GestureDetector(
         onTap: () {
           setState(() {

@@ -149,7 +149,7 @@ class TileBatchState extends State<TileBatch> {
 
   @override
   Widget build(BuildContext context) {
-    const double heightMargin = 300;
+    const double heightMargin = 262;
     renderedTiles = {};
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
