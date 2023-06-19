@@ -47,7 +47,9 @@ class _SummaryPage extends State<SummaryPage> {
       timelineSummary = value;
       if (analysis == null) {
         isLoadingTimelineSummary = false;
-        setState(() {});
+        setState(() {
+          isLoadingTimelineSummary = false;
+        });
         return;
       }
 
@@ -91,51 +93,51 @@ class _SummaryPage extends State<SummaryPage> {
       timelineSummary = null;
     });
 
-    scheduleApi.getAnalysis().then((value) {
-      analysis = value;
-      if (analysis == null) {
-        isLoadingAnalysis = false;
-        setState(() {});
-        return;
-      }
+    // scheduleApi.getAnalysis().then((value) {
+    //   analysis = value;
+    //   if (analysis == null) {
+    //     isLoadingAnalysis = false;
+    //     setState(() {});
+    //     return;
+    //   }
 
-      final timeslines = analysis!.sleep!;
-      sleeplines = timeslines;
+    //   final timeslines = analysis!.sleep!;
+    //   sleeplines = timeslines;
 
-      timeslines.forEach((element) {
-        shots.add(flchart.FlSpot(
-          element.startTime.weekday.toDouble(),
-          element.duration.inMinutes.toDouble(),
-        ));
+    //   timeslines.forEach((element) {
+    //     shots.add(flchart.FlSpot(
+    //       element.startTime.weekday.toDouble(),
+    //       element.duration.inMinutes.toDouble(),
+    //     ));
 
-        print(
-            "value is  ${element.duration.inMinutes.toDouble()} weekday ${element.startTime.weekday.toDouble()}");
+    //     print(
+    //         "value is  ${element.duration.inMinutes.toDouble()} weekday ${element.startTime.weekday.toDouble()}");
 
-        print("total lenght of shots is ${shots.length}");
-      });
+    //     print("total lenght of shots is ${shots.length}");
+    //   });
 
-      final overviewlist = analysis!.overview!;
-      overviewItems = overviewlist;
-      overviewlist.forEach((element) {
-        Map<String, double> other = {
-          element.name!.toUpperCase(): element.duration!.toDouble()
-        };
-        dataOverView.addAll(other);
-      });
-      final drivetimelist = analysis!.drivesTime!;
+    //   final overviewlist = analysis!.overview!;
+    //   overviewItems = overviewlist;
+    //   overviewlist.forEach((element) {
+    //     Map<String, double> other = {
+    //       element.name!.toUpperCase(): element.duration!.toDouble()
+    //     };
+    //     dataOverView.addAll(other);
+    //   });
+    //   final drivetimelist = analysis!.drivesTime!;
 
-      driveTimes = drivetimelist;
+    //   driveTimes = drivetimelist;
 
-      drivetimelist.forEach((element) {
-        Map<String, double> other = {
-          element.name!: element.duration!.toDouble()
-        };
-        dataDriveTime.addAll(other);
-      });
+    //   drivetimelist.forEach((element) {
+    //     Map<String, double> other = {
+    //       element.name!: element.duration!.toDouble()
+    //     };
+    //     dataDriveTime.addAll(other);
+    //   });
 
-      isLoadingAnalysis = false;
-      setState(() {});
-    });
+    //   isLoadingAnalysis = false;
+    //   setState(() {});
+    // });
   }
 
   Widget renderDate(TilerEvent subCalendarEventTile) {
@@ -534,285 +536,6 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
-  Widget renderSleepData() {
-    return Column(
-      children: [
-        Text(
-          AppLocalizations.of(context)!.sleep,
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-        ),
-        Container(
-          height: 300,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(10))),
-          child: (isLoadingAnalysis)
-              ? CircularProgressIndicator(
-                  color: Colors.blue,
-                )
-              : (shots.isEmpty)
-                  ? Container(
-                      child: Center(
-                          child: Text(
-                              AppLocalizations.of(context)!.noDataAvailable)),
-                    )
-                  : Stack(
-                      children: [
-                        Positioned(
-                          left: 20,
-                          top: 80,
-                          child: Container(
-                              height: 180,
-                              width: MediaQuery.of(context).size.width * 0.8,
-                              child: (shots.isEmpty)
-                                  ? Container(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Center(
-                                        child: Text(
-                                            AppLocalizations.of(context)!
-                                                .noDataAvailable),
-                                      ),
-                                    )
-                                  : _LineChart(
-                                      isShowingMainData: true,
-                                      spots: shots,
-                                    )),
-                        ),
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                              margin: EdgeInsets.only(left: 0, right: 20),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12)),
-                              width: MediaQuery.of(context).size.width,
-                              height: 100,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 12,
-                                  ),
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xffFAFAFA),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Image.asset(
-                                          "assets/images/image8.png"),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 12,
-                                  ),
-                                  Container(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Today",
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                              color: Color(0xff1F1F1F),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w400),
-                                        ),
-                                        Text(
-                                          "8h 8m",
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                              color: Color(0xff1F1F1F),
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(child: SizedBox()),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.2,
-                                    child: Text(
-                                      "8% more than last week!",
-                                      maxLines: 2,
-                                      style: TextStyle(
-                                          color: Color(0xff1F1F1F),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 60,
-                                  )
-                                ],
-                              )),
-                        ),
-                      ],
-                    ),
-        ),
-      ],
-    );
-  }
-
-  Widget renderDriveData() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      alignment: Alignment.center,
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: Column(
-        children: [
-          Container(
-            alignment: Alignment.topLeft,
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Text(
-              AppLocalizations.of(context)!.driveTime,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-            ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 300,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  top: 20,
-                  child: Container(
-                      height: 280,
-                      width: MediaQuery.of(context).size.width - 30,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: (dataDriveTime.isEmpty)
-                            ? Container(
-                                width: MediaQuery.of(context).size.width,
-                                child: Center(
-                                  child: Text(AppLocalizations.of(context)!
-                                      .noDataAvailable),
-                                ),
-                              )
-                            : PieChart(
-                                dataMap: dataDriveTime,
-                                animationDuration: Duration(milliseconds: 800),
-                                chartLegendSpacing: 32,
-                                chartRadius:
-                                    MediaQuery.of(context).size.width / 3.2,
-                                initialAngleInDegree: 0,
-                                chartType: ChartType.disc,
-                                ringStrokeWidth: 6,
-                                centerText: "",
-                                legendOptions: LegendOptions(
-                                  showLegendsInRow: false,
-                                  legendPosition: LegendPosition.right,
-                                  showLegends: true,
-                                  legendShape: BoxShape.rectangle,
-                                  legendTextStyle: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      overflow: TextOverflow.ellipsis,
-                                      fontSize: 12),
-                                ),
-                                chartValuesOptions: ChartValuesOptions(
-                                  showChartValueBackground: true,
-                                  showChartValues: false,
-                                  showChartValuesInPercentage: false,
-                                  showChartValuesOutside: false,
-                                  decimalPlaces: 1,
-                                ),
-                              ),
-                      )),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget renderAnalysisData() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      alignment: Alignment.center,
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-              alignment: Alignment.topLeft,
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Text(
-                AppLocalizations.of(context)!.analysis,
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-              )),
-          Container(
-            height: 200,
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Stack(
-              children: [
-                Container(
-                  height: 180,
-                  width: MediaQuery.of(context).size.width - 30,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: (dataOverView.isEmpty)
-                        ? Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(
-                              child: Text(AppLocalizations.of(context)!
-                                  .noDataAvailable),
-                            ),
-                          )
-                        : PieChart(
-                            dataMap: dataOverView,
-                            animationDuration: Duration(milliseconds: 800),
-                            chartLegendSpacing: 30,
-                            chartRadius:
-                                MediaQuery.of(context).size.width / 3.2,
-                            initialAngleInDegree: 0,
-                            chartType: ChartType.ring,
-                            ringStrokeWidth: 6,
-                            centerText: AppLocalizations.of(context)!.overview,
-                            legendOptions: LegendOptions(
-                              showLegendsInRow: false,
-                              legendPosition: LegendPosition.right,
-                              showLegends: true,
-                              legendShape: BoxShape.rectangle,
-                              legendTextStyle: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            chartValuesOptions: ChartValuesOptions(
-                              showChartValueBackground: true,
-                              showChartValues: false,
-                              showChartValuesInPercentage: false,
-                              showChartValuesOutside: false,
-                              decimalPlaces: 1,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -822,7 +545,7 @@ class _SummaryPage extends State<SummaryPage> {
           height: double.infinity,
           color: TileStyles.primaryColorLightHSL.toColor(),
           child: SingleChildScrollView(
-            child: (isLoadingAnalysis || isLoadingTimelineSummary)
+            child: (isLoadingTimelineSummary)
                 ? Container(
                     height: MediaQuery.of(context).size.height,
                     child: Center(

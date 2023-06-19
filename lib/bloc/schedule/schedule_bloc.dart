@@ -68,9 +68,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     emit(ScheduleInitialState());
   }
 
-  // Future<void> _onIncrementGetSchedule(
-  //     IncrementGetScheduleEvent event, Emitter<ScheduleState> emit) async {}
-
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;

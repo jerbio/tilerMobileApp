@@ -9,6 +9,7 @@ class DayData {
   List<TilerEvent>? deletedTiles;
   List<TilerEvent>? completeTiles;
   List<TilerEvent>? nonViableTiles;
+  List<TilerEvent>? tardyTiles;
   TilerEvent? sleepTile;
   TilerEvent? wakeTile;
   Duration? sleepDuration;
