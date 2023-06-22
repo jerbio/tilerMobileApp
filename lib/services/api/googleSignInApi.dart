@@ -1,25 +1,21 @@
+// import 'dart:io';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../constants.dart' as Constants;
 
-const List<String> scopes = <String>[
-  // 'https://www.googleapis.com/auth/contacts.readonly',
-  'email',
-  'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/calendar.events.readonly',
-  "https://www.googleapis.com/auth/calendar.readonly",
-  "https://www.googleapis.com/auth/calendar.events",
-  'https://www.googleapis.com/auth/userinfo.email'
-];
+List<String> scopes = Constants.googleApiScopes;
 
 class GoogleSignInApi {
-  static final _googleSignIn = GoogleSignIn(
+  static final googleSignIn = GoogleSignIn(
       clientId: dotenv.env[Constants.googleClientIdKey],
       scopes: scopes,
+      // serverClientId: 'https://${Constants.tilerDomain}/signin-google',
       forceCodeForRefreshToken: true);
 
   static Future<GoogleSignInAccount?> login() {
-    return _googleSignIn.signIn();
+    // return _googleSignIn.signInSilently();
+    return googleSignIn.signIn();
   }
 }
