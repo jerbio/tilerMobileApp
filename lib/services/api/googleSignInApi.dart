@@ -8,14 +8,12 @@ import '../../constants.dart' as Constants;
 List<String> scopes = Constants.googleApiScopes;
 
 class GoogleSignInApi {
-  static final googleSignIn = GoogleSignIn(
+  static final _googleSignIn = GoogleSignIn(
       clientId: dotenv.env[Constants.googleClientIdKey],
       scopes: scopes,
-      // serverClientId: 'https://${Constants.tilerDomain}/signin-google',
       forceCodeForRefreshToken: true);
 
   static Future<GoogleSignInAccount?> login() {
-    // return _googleSignIn.signInSilently();
-    return googleSignIn.signIn();
+    return _googleSignIn.signIn();
   }
 }
