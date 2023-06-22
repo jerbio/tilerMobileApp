@@ -1,4 +1,6 @@
-const bool isProduction = false;
+import 'dart:io';
+
+const bool isProduction = true;
 const bool isDebug = !isProduction;
 const bool isRemote = true;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
@@ -17,5 +19,19 @@ const String requestDelimiter = ',';
 const String cannotVerifyError = 'Cannot verify error';
 String adhocToken = '';
 
-String googleClientIdKey = 'GOOGLE_CLIENT_ID';
+const Duration retryLoginDuration = Duration(seconds: 2);
+const int retryLoginCount = 150;
+
+String googleClientDefaultKey = 'GOOGLE_CLIENT_ID_DEFAULT';
+String googleClientIdKey =
+    Platform.isIOS ? 'GOOGLE_CLIENT_ID_IOS' : 'GOOGLE_CLIENT_ID_DEFAULT';
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
+
+final List<String> googleApiScopes = [
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/calendar.events.readonly',
+  "https://www.googleapis.com/auth/calendar.readonly",
+  "https://www.googleapis.com/auth/calendar.events",
+  'https://www.googleapis.com/auth/userinfo.email'
+];

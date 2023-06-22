@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleExecutable</key>
@@ -18,30 +20,62 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.518133740160-c7i0gj4m2oett0iqjcq5s3rgm1l3gg2a</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.tiler.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tilerapp</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tilerapp</string>
+		<string>sms</string>
+		<string>tel</string>
+		<string>http</string>
+    	<string>https</string>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>TilerActivityLocationKey</key>
+		<string>This is because the Tiler needs to know where the user is in order to provide accurate and relevant information about task, events and activities in the user's area. 
+For example, if the app is designed to provide information about local events and activities, it may need to use the user's location to determine which events and activities are relevant to the user. In order to do this, the app will need to access the user's location data in order to determine their current location.
+Additionally, Tiler may need to access the user's location data in order to provide features such as driving directions or recommendations for nearby restaurants or attractions. In these cases, the app will need to access the user's location in order to provide accurate and useful information.
+Overall, location permissions are essential for an app that dynamically updates a calendar based on the user's location, as they allow the app to access the user's location data and provide relevant and accurate information to the user.</string>
+	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This is because the Tiler needs to know where the user is in order to provide accurate and relevant information about task, events and activities in the user's area. 
 For example, if the app is designed to provide information about local events and activities, it may need to use the user's location to determine which events and activities are relevant to the user. In order to do this, the app will need to access the user's location data in order to determine their current location.
 Additionally, Tiler may need to access the user's location data in order to provide features such as driving directions or recommendations for nearby restaurants or attractions. In these cases, the app will need to access the user's location in order to provide accurate and useful information.
 Overall, location permissions are essential for an app that dynamically updates a calendar based on the user's location, as they allow the app to access the user's location data and provide relevant and accurate information to the user.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
-	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
-	<dict>
-	<key>TilerActivityLocationKey</key>
-	<string>This is because the Tiler needs to know where the user is in order to provide accurate and relevant information about task, events and activities in the user's area. 
-For example, if the app is designed to provide information about local events and activities, it may need to use the user's location to determine which events and activities are relevant to the user. In order to do this, the app will need to access the user's location data in order to determine their current location.
-Additionally, Tiler may need to access the user's location data in order to provide features such as driving directions or recommendations for nearby restaurants or attractions. In these cases, the app will need to access the user's location in order to provide accurate and useful information.
-Overall, location permissions are essential for an app that dynamically updates a calendar based on the user's location, as they allow the app to access the user's location data and provide relevant and accurate information to the user.</string>
-	</dict>
-	
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
@@ -57,9 +91,5 @@ Overall, location permissions are essential for an app that dynamically updates 
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
-	<true/>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 </dict>
 </plist>
