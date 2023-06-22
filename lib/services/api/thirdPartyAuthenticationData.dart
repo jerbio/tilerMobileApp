@@ -28,6 +28,7 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
     this.expirationTime = expirationTime;
     this.accessToken = accessToken;
     this.providerKey = providerKey;
+    this.provider = provider;
 
     assert(this.accessToken != null);
     assert(this.tokenType != null);

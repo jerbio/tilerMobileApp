@@ -171,18 +171,17 @@ class SignInComponentState extends State<SignInComponent> {
       if (authenticationData.isValid) {
         Authentication localAuthentication = new Authentication();
         await localAuthentication.saveCredentials(authenticationData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+        );
       }
     }
-
-    while (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
-    context.read<ScheduleBloc>().add(LogInScheduleEvent());
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => AuthorizedRoute()),
-    );
   }
 
   @override
