@@ -225,8 +225,6 @@ class AuthorizationApi extends AppApi {
         'scope': scopes.join(' '),
       };
 
-      print(requestBody);
-
       final http.Response response = await http.post(
         Uri.parse(refreshTokenEndpoint),
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
@@ -241,7 +239,13 @@ class AuthorizationApi extends AppApi {
       }
     }
 
+    if (GoogleSignInApi.googleUser != null) {
+      GoogleSignInApi.googleUser!.clearAuthCache();
+      await GoogleSignInApi.logout();
+    }
+
     var googleUser = await GoogleSignInApi.login();
+
     if (googleUser != null) {
       var googleAuthentication = await googleUser.authentication;
       var authHeaders = await googleUser.authHeaders;
@@ -259,25 +263,20 @@ class AuthorizationApi extends AppApi {
         refreshToken = serverResponse['refresh_token'];
         accessToken = serverResponse['access_token'];
       }
-      String tilerDomain = Constants.tilerDomain;
-      String url = tilerDomain;
-      Uri uri = Uri.https(url, 'account/MobileExternalLogin');
       String providerName = 'Google';
-      Map<String, dynamic> parameters = {
-        'Email': googleUser.email,
-        'AccessToken': accessToken,
-        'DisplayName': googleUser.displayName,
-        'ProviderKey': googleUser.id,
-        'ThirdPartyType': providerName,
-        'RefreshToken': refreshToken
-      };
-      return await getBearerToken(
-          accessToken: accessToken!,
-          email: googleUser.email,
-          providerId: googleUser.id,
-          refreshToken: refreshToken!,
-          displayName: googleUser.displayName!,
-          thirdpartyType: providerName);
+      try {
+        return await getBearerToken(
+            accessToken: accessToken!,
+            email: googleUser.email,
+            providerId: googleUser.id,
+            refreshToken: refreshToken!,
+            displayName: googleUser.displayName!,
+            thirdpartyType: providerName);
+      } catch (e) {
+        if (e is TilerError) {
+          throw e;
+        }
+      }
     }
     throw TilerError();
   }

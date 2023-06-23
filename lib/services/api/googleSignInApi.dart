@@ -13,7 +13,17 @@ class GoogleSignInApi {
       scopes: scopes,
       forceCodeForRefreshToken: true);
 
-  static Future<GoogleSignInAccount?> login() {
-    return _googleSignIn.signIn();
+  static GoogleSignInAccount? get googleUser {
+    return _googleUser;
+  }
+
+  static GoogleSignInAccount? _googleUser;
+  static Future<GoogleSignInAccount?> login() async {
+    _googleUser = await _googleSignIn.signIn();
+    return _googleUser;
+  }
+
+  static Future<GoogleSignInAccount?> logout() {
+    return _googleSignIn.signOut();
   }
 }

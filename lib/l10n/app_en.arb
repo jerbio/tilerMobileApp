@@ -247,7 +247,10 @@
     "overview": "Overview",
     "driveTime": "Drive Time",
     "signUpWithGoogle": "Sign Up with Google",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "invalidUsernameOrPassword": "Invalid username or password",
+    "noInternetConnection": "No internet connection"
 
       
 }
