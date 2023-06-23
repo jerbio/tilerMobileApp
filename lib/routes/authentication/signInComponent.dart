@@ -7,17 +7,13 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
-import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'AuthorizedRoute.dart';
 
@@ -28,7 +24,8 @@ class SignInComponent extends StatefulWidget {
 
 // Define a corresponding State class.
 // This class holds data related to the Form.
-class SignInComponentState extends State<SignInComponent> {
+class SignInComponentState extends State<SignInComponent>
+    with TickerProviderStateMixin {
   // Create a text controller. Later, use it to retrieve the
   // current value of the TextField.
   final _formKey = GlobalKey<FormState>();
@@ -39,6 +36,8 @@ class SignInComponentState extends State<SignInComponent> {
   bool isRegistrationScreen = false;
   double credentialManagerHeight = 350;
   double credentialButtonHeight = 150;
+  bool isPendingSigning = false;
+  bool isPendingRegistration = false;
 
   void showMessage(String message) {
     Fluttertoast.showToast(
@@ -65,32 +64,54 @@ class SignInComponentState extends State<SignInComponent> {
   void userNamePasswordSignIn() async {
     if (_formKey.currentState!.validate()) {
       showMessage(AppLocalizations.of(context)!.signingIn);
-      UserPasswordAuthenticationData authenticationData =
-          await UserPasswordAuthenticationData.getAuthenticationInfo(
-              userNameEditingController.text, passwordEditingController.text);
+      setState(() {
+        isPendingSigning = true;
+      });
+      try {
+        UserPasswordAuthenticationData authenticationData =
+            await UserPasswordAuthenticationData.getAuthenticationInfo(
+                userNameEditingController.text, passwordEditingController.text);
 
-      String isValidSignIn = "Authentication data is valid:" +
-          authenticationData.isValid.toString();
-      if (!authenticationData.isValid) {
-        if (authenticationData.errorMessage != null) {
-          showErrorMessage(authenticationData.errorMessage!);
-          return;
+        setState(() {
+          isPendingSigning = false;
+        });
+        String isValidSignIn = "Authentication data is valid:" +
+            authenticationData.isValid.toString();
+        if (!authenticationData.isValid) {
+          if (authenticationData.errorMessage != null) {
+            showErrorMessage(authenticationData.errorMessage!);
+            return;
+          }
+        }
+
+        setState(() {
+          isPendingSigning = false;
+        });
+        TextInput.finishAutofillContext();
+        Authentication localAuthentication = new Authentication();
+        await localAuthentication.saveCredentials(authenticationData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+        );
+        print(isValidSignIn);
+        setState(() {
+          isPendingSigning = false;
+        });
+      } catch (e) {
+        if (TilerError.isUnexpectedCharacter(e)) {
+          setState(() {
+            isPendingSigning = false;
+          });
+          showErrorMessage(
+              AppLocalizations.of(context)!.invalidUsernameOrPassword);
         }
       }
-
-      TextInput.finishAutofillContext();
-      Authentication localAuthentication = new Authentication();
-      await localAuthentication.saveCredentials(authenticationData);
-      while (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      context.read<ScheduleBloc>().add(LogInScheduleEvent());
-      Navigator.pop(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AuthorizedRoute()),
-      );
-      print(isValidSignIn);
     }
   }
 
@@ -100,36 +121,54 @@ class SignInComponentState extends State<SignInComponent> {
 
   void registerUser() async {
     if (_formKey.currentState!.validate()) {
-      showMessage(AppLocalizations.of(context)!.registeringUser);
-      AuthorizationApi authorization = new AuthorizationApi();
-      UserPasswordAuthenticationData authenticationData =
-          await authorization.registerUser(
-              emailEditingController.text,
-              passwordEditingController.text,
-              userNameEditingController.text,
-              confirmPasswordEditingController.text,
-              null);
+      try {
+        setState(() {
+          isPendingRegistration = true;
+        });
+        showMessage(AppLocalizations.of(context)!.registeringUser);
+        AuthorizationApi authorization = new AuthorizationApi();
+        UserPasswordAuthenticationData authenticationData =
+            await authorization.registerUser(
+                emailEditingController.text,
+                passwordEditingController.text,
+                userNameEditingController.text,
+                confirmPasswordEditingController.text,
+                null);
+        setState(() {
+          isPendingRegistration = false;
+        });
+        String isValidSignIn = "Authentication data is valid:" +
+            authenticationData.isValid.toString();
+        if (!authenticationData.isValid) {
+          if (authenticationData.errorMessage != null) {
+            showErrorMessage(authenticationData.errorMessage!);
+            return;
+          }
+        }
+        Authentication localAuthentication = new Authentication();
+        await localAuthentication.saveCredentials(authenticationData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+        );
 
-      String isValidSignIn = "Authentication data is valid:" +
-          authenticationData.isValid.toString();
-      if (!authenticationData.isValid) {
-        if (authenticationData.errorMessage != null) {
-          showErrorMessage(authenticationData.errorMessage!);
-          return;
+        print(isValidSignIn);
+      } catch (e) {
+        setState(() {
+          isPendingRegistration = false;
+        });
+        if (TilerError.isUnexpectedCharacter(e)) {
+          showErrorMessage(
+              AppLocalizations.of(context)!.issuesConnectingToTiler);
+          setState(() {
+            isPendingRegistration = false;
+          });
         }
       }
-      Authentication localAuthentication = new Authentication();
-      await localAuthentication.saveCredentials(authenticationData);
-      while (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      }
-      Navigator.pop(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => AuthorizedRoute()),
-      );
-
-      print(isValidSignIn);
     }
   }
 
@@ -157,16 +196,49 @@ class SignInComponentState extends State<SignInComponent> {
         });
   }
 
+  Widget createSignInPendingComponent(String message) {
+    return Container(
+        child: Center(
+            child: FadeTransition(
+      opacity: CurvedAnimation(
+        parent: AnimationController(
+          duration: const Duration(seconds: 1),
+          vsync: this,
+        )..repeat(reverse: true),
+        curve: Curves.easeIn,
+      ),
+      child: Row(children: [
+        CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+        Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: Text(
+              message,
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ))
+      ]),
+    )));
+  }
+
   Future signInToGoogle() async {
+    setState(() {
+      isPendingSigning = true;
+    });
     AuthorizationApi authorizationApi = AuthorizationApi();
     AuthenticationData? authenticationData = await authorizationApi
         .signInToGoogle()
         .then((value) => value)
         .catchError((onError) {
+      setState(() {
+        isPendingSigning = false;
+      });
       showErrorMessage(onError.message);
       return null;
     });
 
+    setState(() {
+      isPendingSigning = false;
+    });
     if (authenticationData != null) {
       if (authenticationData.isValid) {
         Authentication localAuthentication = new Authentication();
@@ -182,6 +254,9 @@ class SignInComponentState extends State<SignInComponent> {
         );
       }
     }
+    setState(() {
+      isPendingSigning = false;
+    });
   }
 
   @override
@@ -299,8 +374,8 @@ class SignInComponentState extends State<SignInComponent> {
     List<Widget> textFields = [usernameTextField, passwordTextField];
     var signUpButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Colors.transparent, // background
-          onPrimary: Colors.white,
+          backgroundColor: Colors.transparent, // background
+          foregroundColor: Colors.white,
           shadowColor: Colors.transparent // foreground
           ),
       child: Column(
@@ -316,15 +391,15 @@ class SignInComponentState extends State<SignInComponent> {
             ),
             child: Icon(Icons.person_add),
           ),
-          Text('Sign Up')
+          Text(AppLocalizations.of(context)!.signUp)
         ],
       ),
       onPressed: setAsRegistrationScreen,
     );
     var signInButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Colors.transparent, // background
-          onPrimary: Colors.white,
+          backgroundColor: Colors.transparent, // background
+          foregroundColor: Colors.white,
           shadowColor: Colors.transparent // foreground
           ),
       child: Column(
@@ -356,8 +431,8 @@ class SignInComponentState extends State<SignInComponent> {
 
     var backToSignInButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Colors.transparent, // background
-          onPrimary: Colors.white,
+          backgroundColor: Colors.transparent, // background
+          foregroundColor: Colors.white,
           shadowColor: Colors.transparent // foreground
           ),
       child: Column(
@@ -373,7 +448,7 @@ class SignInComponentState extends State<SignInComponent> {
             ),
             child: Icon(Icons.arrow_back),
           ),
-          Text('Sign In')
+          Text(AppLocalizations.of(context)!.signIn)
         ],
       ),
       onPressed: setAsSignInScreen,
@@ -381,8 +456,8 @@ class SignInComponentState extends State<SignInComponent> {
 
     var registerUserButton = ElevatedButton(
       style: ElevatedButton.styleFrom(
-          primary: Colors.transparent, // background
-          onPrimary: Colors.white,
+          backgroundColor: Colors.transparent, // background
+          foregroundColor: Colors.white,
           shadowColor: Colors.transparent // foreground
           ),
       child: Column(
@@ -398,13 +473,13 @@ class SignInComponentState extends State<SignInComponent> {
             ),
             child: Icon(Icons.arrow_forward),
           ),
-          Text('Register')
+          Text(AppLocalizations.of(context)!.signUp)
         ],
       ),
       onPressed: registerUser,
     );
 
-    var buttons = [signUpButton, googleSignInButton, signInButton];
+    List<Widget> buttons = [signUpButton, googleSignInButton, signInButton];
 
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
@@ -435,6 +510,22 @@ class SignInComponentState extends State<SignInComponent> {
         usernameTextField
       ];
       buttons = [backToSignInButton, googleSignInButton, registerUserButton];
+    }
+
+    if (this.isPendingSigning) {
+      buttons = [
+        Spacer(),
+        createSignInPendingComponent(AppLocalizations.of(context)!.signingIn),
+        Spacer(),
+      ];
+    }
+    if (this.isPendingRegistration) {
+      buttons = [
+        Spacer(),
+        createSignInPendingComponent(
+            AppLocalizations.of(context)!.registeringUser),
+        Spacer(),
+      ];
     }
     return Form(
         key: _formKey,
