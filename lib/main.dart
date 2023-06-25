@@ -132,7 +132,12 @@ class TilerApp extends StatelessWidget {
             '/ForecastPreview': (ctx) => ForecastPreview(),
             '/ForecastDuration': (ctx) => ForecastDuration(),
             '/Procrastinate': (ctx) => ProcrastinateAll(),
-            '/DurationDial': (ctx) => DurationDial(),
+            '/DurationDial': (ctx) => DurationDial(
+                  presetDurations: [
+                    Duration(minutes: 30),
+                    Duration(hours: 1),
+                  ],
+                ),
             '/repetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
