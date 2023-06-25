@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
@@ -10,9 +12,11 @@ import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:web_browser/web_browser.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:tiler_app/styles.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
@@ -101,6 +105,7 @@ class AuthorizationApi extends AppApi {
           Authentication localAuthentication = new Authentication();
           await localAuthentication.saveCredentials(retValue);
         }
+        FlutterWebBrowser.close();
 
         return retValue;
       }
@@ -123,17 +128,29 @@ class AuthorizationApi extends AppApi {
             await handleCallbackAndExchangeToken(uri);
       }
     });
+    ThirdPartyAuthenticationData? retValue;
     try {
-      final authorizationUrl = await getAuthorizationUrl();
-      if (await canLaunch(authorizationUrl)) {
-        Uri authorizationUri = Uri.parse(authorizationUrl);
-        await launchUrl(authorizationUri);
-      }
+      String authorizationUrl = await getAuthorizationUrl();
+      FlutterWebBrowser.openWebPage(
+        url: authorizationUrl,
+        customTabsOptions: const CustomTabsOptions(
+          colorScheme: CustomTabsColorScheme.dark,
+          shareState: CustomTabsShareState.off,
+          instantAppsEnabled: false,
+          showTitle: false,
+          urlBarHidingEnabled: true,
+        ),
+        safariVCOptions: const SafariViewControllerOptions(
+          preferredBarTintColor: TileStyles.primaryColor,
+          preferredControlTintColor: TileStyles.primaryContrastColor,
+          dismissButtonStyle: SafariViewControllerDismissButtonStyle.cancel,
+        ),
+      );
     } catch (error) {
       print(error);
       // Handle sign-in error
     }
-    ThirdPartyAuthenticationData? retValue;
+
     Function retryLogin = () async {
       Authentication localAuthentication = new Authentication();
       var thirdParty = await localAuthentication.readCredentials();

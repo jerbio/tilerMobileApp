@@ -33,11 +33,21 @@ class SignInComponentState extends State<SignInComponent>
   final passwordEditingController = TextEditingController();
   final emailEditingController = TextEditingController();
   final confirmPasswordEditingController = TextEditingController();
+  late AnimationController signinInAnimationController;
   bool isRegistrationScreen = false;
   double credentialManagerHeight = 350;
   double credentialButtonHeight = 150;
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
+
+  @override
+  void initState() {
+    super.initState();
+    signinInAnimationController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
 
   void showMessage(String message) {
     Fluttertoast.showToast(
@@ -201,10 +211,7 @@ class SignInComponentState extends State<SignInComponent>
         child: Center(
             child: FadeTransition(
       opacity: CurvedAnimation(
-        parent: AnimationController(
-          duration: const Duration(seconds: 1),
-          vsync: this,
-        )..repeat(reverse: true),
+        parent: signinInAnimationController,
         curve: Curves.easeIn,
       ),
       child: Row(children: [
@@ -221,9 +228,6 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
-    setState(() {
-      isPendingSigning = true;
-    });
     AuthorizationApi authorizationApi = AuthorizationApi();
     AuthenticationData? authenticationData = await authorizationApi
         .signInToGoogle()
@@ -236,9 +240,6 @@ class SignInComponentState extends State<SignInComponent>
       return null;
     });
 
-    setState(() {
-      isPendingSigning = false;
-    });
     if (authenticationData != null) {
       if (authenticationData.isValid) {
         Authentication localAuthentication = new Authentication();
@@ -265,6 +266,7 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.dispose();
     emailEditingController.dispose();
     confirmPasswordEditingController.dispose();
+    signinInAnimationController.dispose();
     super.dispose();
   }
 

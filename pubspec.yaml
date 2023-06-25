@@ -70,6 +70,8 @@ dependencies:
   change_app_package_name: ^1.1.0
   oauth2: ^2.0.2
   mockito: ^5.4.2
+  web_browser: ^0.5.0
+  flutter_web_browser: ^0.17.1
 
 dev_dependencies:
   build_runner: ^2.1.4

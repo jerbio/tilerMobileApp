@@ -13,8 +13,8 @@ class TileStyles {
       proceedAndCancelButtonWidth * 2;
   static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
-  static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
-  static Color primaryContrastColor = Colors.white;
+  static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
+  static const Color primaryContrastColor = Colors.white;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
