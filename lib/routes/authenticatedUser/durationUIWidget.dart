@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
-import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
+import 'package:tiler_app/styles.dart';
 
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
@@ -31,7 +29,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
     const unitTimeStyle = TextStyle(
         color: Color.fromRGBO(180, 180, 180, 1),
         fontSize: 35,
-        fontFamily: 'Rubik',
+        fontFamily: TileStyles.rubikFontName,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 
