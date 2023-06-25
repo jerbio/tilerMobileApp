@@ -247,7 +247,38 @@
     "overview": "Overview",
     "driveTime": "Drive Time",
     "signUpWithGoogle": "Sign Up with Google",
-    "signIn": "Sign In"
-
-      
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "invalidUsernameOrPassword": "Invalid username or password",
+    "noInternetConnection": "No internet connection",
+    "oneHour": "1 hour",
+    "countHours": "{count} hours",
+    "@countHours": {
+      "description": "X hours",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x hours"
+        }
+      }},
+    "oneMinute": "1 minute",
+    "countMinutes": "{count} minutes",
+    "@countMinutes": {
+      "description": "X minutes",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x minutes"
+        }
+      }},
+    "countDays": "{count} days",
+    "@countDays": {
+      "description": "X days",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x days"
+        }
+      }},
+    "custom": "Custom"
 }
