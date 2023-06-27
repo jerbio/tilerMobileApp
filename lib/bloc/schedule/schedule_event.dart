@@ -7,13 +7,13 @@ abstract class ScheduleEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetSchedule extends ScheduleEvent {
+class GetScheduleEvent extends ScheduleEvent {
   final List<SubCalendarEvent>? previousSubEvents;
   final Timeline? scheduleTimeline;
   final bool? isAlreadyLoaded;
   Timeline? previousTimeline;
   String? message;
-  GetSchedule(
+  GetScheduleEvent(
       {this.previousSubEvents,
       this.scheduleTimeline,
       this.isAlreadyLoaded,
@@ -100,4 +100,17 @@ class DelayedReloadLocalScheduleEvent extends ScheduleEvent {
       required this.timelines,
       required this.lookupTimeline,
       required this.duration});
+}
+
+class LogOutScheduleEvent extends ScheduleEvent {
+  LogOutScheduleEvent();
+
+  @override
+  List<Object> get props => [];
+}
+
+class LogInScheduleEvent extends ScheduleEvent {
+  LogInScheduleEvent();
+  @override
+  List<Object> get props => [];
 }

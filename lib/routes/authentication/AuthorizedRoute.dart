@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -22,11 +23,12 @@ import '../../constants.dart';
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
 class AuthorizedRoute extends StatefulWidget {
+  AuthorizedRoute();
   @override
   AuthorizedRouteState createState() => AuthorizedRouteState();
 }
 
-class AuthorizedRouteState extends State<StatefulWidget>
+class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
@@ -52,6 +54,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
       case 1:
         {
           // Navigator.pushNamed(context, '/AddTile');
+          displayDialog(MediaQuery.of(context).size);
         }
         break;
       case 2:
@@ -84,16 +87,6 @@ class AuthorizedRouteState extends State<StatefulWidget>
   }
 
   Widget generatePredictiveAdd() {
-    double topValue = MediaQuery.of(this.context).size.height / 4;
-    var future = new Future.delayed(const Duration(milliseconds: 1000), () {
-      topValue = topValue * 2;
-    });
-
-    double autoAddTileBottom = MediaQuery.of(context).viewInsets.bottom;
-    if (_iskeyboardVisible()) {
-      autoAddTileBottom -= 300;
-    }
-
     Widget containerWrapper = GestureDetector(
         onTap: () {
           setState(() {
@@ -186,7 +179,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                       final currentState =
                           this.context.read<ScheduleBloc>().state;
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -205,7 +198,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                           textColor: Colors.white,
                           fontSize: 16.0);
                       if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetSchedule(
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
                               isAlreadyLoaded: true,
                               previousSubEvents: currentState.subEvents,
                               scheduleTimeline: currentState.lookupTimeline,
@@ -235,16 +228,19 @@ class AuthorizedRouteState extends State<StatefulWidget>
                         var scheduleBloc =
                             this.context.read<ScheduleBloc>().state;
                         if (scheduleBloc is ScheduleLoadedState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: scheduleBloc.subEvents,
-                              scheduleTimeline: scheduleBloc.lookupTimeline,
-                              isAlreadyLoaded: true));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: scheduleBloc.subEvents,
+                                  scheduleTimeline: scheduleBloc.lookupTimeline,
+                                  isAlreadyLoaded: true));
                         }
                         if (scheduleBloc is ScheduleInitialState) {
-                          this.context.read<ScheduleBloc>().add(GetSchedule(
-                              previousSubEvents: [],
-                              scheduleTimeline: Utility.initialScheduleTimeline,
-                              isAlreadyLoaded: false));
+                          this.context.read<ScheduleBloc>().add(
+                              GetScheduleEvent(
+                                  previousSubEvents: [],
+                                  scheduleTimeline:
+                                      Utility.initialScheduleTimeline,
+                                  isAlreadyLoaded: false));
                         }
                       });
                     },
@@ -265,69 +261,7 @@ class AuthorizedRouteState extends State<StatefulWidget>
                     Map<String, dynamic> newTileParams = {'newTile': null};
 
                     Navigator.pushNamed(context, '/AddTile',
-                            arguments: newTileParams)
-                        .whenComplete(() {
-                      var newSubEventParams = newTileParams['newTile'];
-                      if (newSubEventParams != null) {
-                        print('Newly created tile');
-                        print(newTileParams);
-                        var subEvent = newSubEventParams;
-                        int redColor = subEvent.colorRed == null
-                            ? 125
-                            : subEvent.colorRed!;
-                        int blueColor = subEvent.colorBlue == null
-                            ? 125
-                            : subEvent.colorBlue!;
-                        int greenColor = subEvent.colorGreen == null
-                            ? 125
-                            : subEvent.colorGreen!;
-                        double opacity = subEvent.colorOpacity == null
-                            ? 1
-                            : subEvent.colorOpacity!;
-                        var nameColor = Color.fromRGBO(
-                            redColor, greenColor, blueColor, opacity);
-
-                        var hslColor = HSLColor.fromColor(nameColor);
-                        Color bgroundColor = hslColor
-                            .withLightness(hslColor.lightness)
-                            .toColor()
-                            .withOpacity(0.7);
-                        showModalBottomSheet<void>(
-                          context: context,
-                          constraints: BoxConstraints(
-                            maxWidth: 400,
-                          ),
-                          builder: (BuildContext context) {
-                            var future = new Future.delayed(
-                                const Duration(milliseconds: autoHideInMs));
-                            future.asStream().listen((input) {
-                              Navigator.pop(context);
-                            });
-                            return Container(
-                              padding: const EdgeInsets.all(20),
-                              height: 250,
-                              width: 300,
-                              decoration: BoxDecoration(
-                                color: bgroundColor,
-                              ),
-                              child: Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: <Widget>[
-                                    NewTileSheet(subEvent: subEvent),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((errorThrown) {
-                      print('we have error');
-                      print(errorThrown);
-                      return errorThrown;
-                    });
+                        arguments: newTileParams);
                   },
                   child: ListTile(
                     leading: Icon(
@@ -367,6 +301,20 @@ class AuthorizedRouteState extends State<StatefulWidget>
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      Container(
+          margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+          decoration: BoxDecoration(
+            // color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                // spreadRadius: 5,
+                blurRadius: 7,
+                offset: const Offset(0, 7),
+              ),
+            ],
+          ),
+          child: DayRibbonCarousel(Utility.currentTime())),
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
@@ -427,9 +375,11 @@ class AuthorizedRouteState extends State<StatefulWidget>
     return Scaffold(
       extendBody: true,
       backgroundColor: Colors.white,
-      body: Container(
-        child: Stack(
-          children: widgetChildren,
+      body: SafeArea(
+        child: Container(
+          child: Stack(
+            children: widgetChildren,
+          ),
         ),
       ),
       bottomNavigationBar: bottomNavigator,

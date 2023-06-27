@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/data/noteData.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import '../util.dart';
 
 class TilerEvent extends TilerObj with TimeRange {
-  // String? id;
   String? name;
   String? address;
   String? addressDescription;
@@ -15,56 +15,12 @@ class TilerEvent extends TilerObj with TimeRange {
   String thirdPartyUserId = '';
   String? searchdDescription;
   int? split;
-  TilerEvent? calendarEvent;
   NoteData? noteData;
   bool _isReadOnly = false;
   bool _isProcrastinate = false;
   bool _isRigid = false;
   bool _isComplete = false;
   bool _isEnabled = true;
-
-  // DateTime? _startTime;
-  // DateTime? _endTime;
-
-  // int? _startInMs;
-  // // ignore: unnecessary_getters_setters
-  // int? get start {
-  //   return _startInMs;
-  // }
-
-  // // ignore: unnecessary_getters_setters
-  // set start(int? value) {
-  //   _startInMs = value;
-  //   if (this._startInMs != null) {
-  //     _startTime = DateTime.fromMillisecondsSinceEpoch(this._startInMs!.toInt(),
-  //             isUtc: true)
-  //         .toLocal();
-  //   }
-  // }
-
-  // int? _endInMs;
-  // // ignore: unnecessary_getters_setters
-  // int? get end {
-  //   return _endInMs;
-  // }
-
-  // ignore: unnecessary_getters_setters
-  // set end(int? value) {
-  //   _endInMs = value?.toInt();
-  //   if (this._endInMs != null) {
-  //     _endTime = DateTime.fromMillisecondsSinceEpoch(this._endInMs!.toInt(),
-  //             isUtc: true)
-  //         .toLocal();
-  //   }
-  // }
-
-  // DateTime? get startTime {
-  //   return _startTime;
-  // }
-
-  // DateTime? get endTime {
-  //   return _endTime;
-  // }
 
   bool? get isReadOnly {
     return _isReadOnly;
@@ -174,6 +130,16 @@ class TilerEvent extends TilerObj with TimeRange {
     }
   }
 
+  Color? get color {
+    if (this.colorRed != null &&
+        this.colorGreen != null &&
+        this.colorGreen != null) {
+      return Color.fromRGBO(
+          this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
+    }
+    return null;
+  }
+
   toString() {
     String retValue = "";
     if (this.name != null) {
@@ -240,14 +206,6 @@ class TilerEvent extends TilerObj with TimeRange {
     // currentTile
     int revisedStart = currentTime - Utility.oneHour.inMilliseconds;
     int revisedEnd = currentTime + Utility.fifteenMin.inMilliseconds;
-
-    // nextTile
-    // int revisedStart = currentTime + Utility.fifteenMin.inMilliseconds;
-    // int revisedEnd = currentTime + Utility.oneHour.inMilliseconds;
-
-    // elapsedTile
-    // int revisedStart = currentTime - Utility.oneHour.inMilliseconds;
-    // int revisedEnd = currentTime - Utility.fifteenMin.inMilliseconds;
 
     retValue.start = revisedStart.toInt();
     retValue.end = revisedEnd.toInt();

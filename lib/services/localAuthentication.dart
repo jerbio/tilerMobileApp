@@ -1,6 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
+import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tuple/tuple.dart';
 
 import 'api/authorization.dart';
@@ -27,17 +30,13 @@ class Authentication {
   }
 
   Future reLoadCredentialsCache() async {
-    AuthenticationData? authenticationData = await readCredentials();
-    cachedCredentials = authenticationData;
-    if (cachedCredentials != null) {
-      if (cachedCredentials!.isExpired()) {
-        Authorization authorization = new Authorization();
-        if (cachedCredentials!.username != null &&
-            cachedCredentials!.username!.isNotEmpty &&
-            cachedCredentials!.password != null &&
-            cachedCredentials!.password!.isNotEmpty) {
-          authenticationData = await authorization.getAuthenticationInfo(
-              cachedCredentials!.username!, cachedCredentials!.password!);
+    try {
+      AuthenticationData? authenticationData = await readCredentials();
+      cachedCredentials = authenticationData;
+      if (cachedCredentials != null) {
+        if (cachedCredentials!.isExpired()) {
+          authenticationData =
+              await authenticationData!.reloadAuthenticationData();
           if (authenticationData.isValid) {
             cachedCredentials = authenticationData;
           } else {
@@ -45,6 +44,8 @@ class Authentication {
           }
         }
       }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -52,8 +53,15 @@ class Authentication {
     String? credentialJsonString = await storage.read(key: _credentialKey);
     AuthenticationData retValue;
     if (credentialJsonString != null && credentialJsonString.length > 0) {
-      retValue =
-          AuthenticationData.fromLocalStorage(jsonDecode(credentialJsonString));
+      Map jsonData = jsonDecode(credentialJsonString);
+      if (jsonData.containsKey('provider') &&
+          jsonData['provider']!.toLowerCase() != 'tiler') {
+        retValue = ThirdPartyAuthenticationData.fromLocalStorage(
+            jsonDecode(credentialJsonString));
+      } else {
+        retValue = UserPasswordAuthenticationData.fromLocalStorage(
+            jsonDecode(credentialJsonString));
+      }
     } else {
       return null;
     }

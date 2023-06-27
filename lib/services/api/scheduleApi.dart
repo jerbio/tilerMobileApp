@@ -1,5 +1,10 @@
-import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/analysis.dart';
+import 'package:tiler_app/data/combination.dart';
+import 'package:tiler_app/data/driveTime.dart';
+import 'package:tiler_app/data/overview_item.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'dart:convert';
 
 import 'package:tuple/tuple.dart';
@@ -21,18 +26,22 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
       Timeline timeLine) async {
     // return await getAdHocSubEvents(timeLine);
+    // return await getAdHocSubEvents(Timeline.fromDateTimeAndDuration(
+    //     Utility.todayTimeline().endTime.add(Utility.oneDay), Utility.oneDay));
     return await getSubEventsInScheduleRequest(timeLine);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
+    print("today is ${Utility.currentTime().millisecondsSinceEpoch}");
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
+      DateTime dateTime = Utility.currentTime();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
+        // String? username = 'j3r0m3.5pam@gmail.com';
         final queryParameters = {
           'UserName': username,
           'StartRange': timeLine.start!.toInt().toString(),
@@ -82,9 +91,8 @@ class ScheduleApi extends AppApi {
       DateTime dateTime = DateTime.now();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
         final queryParameters = {
-          'UserName': username,
+          'UserName': '',
           'StartRange': timeLine.start!.toInt().toString(),
           'EndRange': timeLine.end!.toInt().toString(),
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
@@ -110,15 +118,15 @@ class ScheduleApi extends AppApi {
     return retValue;
   }
 
-  Future<Tuple2<List<Duration>, List<Location>>> getAutoResult(
-      String tileName) async {
+  Future<
+      Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+          List<String>>> getAutoResult(String tileName) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final queryParameters = {'UserName': username, 'Name': tileName};
         Map<String, dynamic> updatedQueryParameters =
             await this.injectRequestParams(queryParameters);
@@ -134,8 +142,10 @@ class ScheduleApi extends AppApi {
             if (isContentInResponse(jsonResult)) {
               List<Duration> durations = [];
               List<Location> locations = [];
-              Tuple2<List<Duration>, List<Location>> retValue =
-                  new Tuple2(durations, locations);
+              List<String> timeOfDaySections = [];
+              RestrictionProfile restrictionProfile =
+                  RestrictionProfile.noRestriction();
+
               if (jsonResult['Content'].containsKey('duration')) {
                 List<double> durationInMs = [];
                 for (var eachDuration in jsonResult['Content']['duration']) {
@@ -160,14 +170,47 @@ class ScheduleApi extends AppApi {
                   locations.add(Location.fromJson(eachLocation));
                 }
               }
+              if (jsonResult['Content'].containsKey('restrictionProfile')) {
+                if (jsonResult['Content']['restrictionProfile'] != null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['restrictionProfile']);
+                }
+              }
+              if (jsonResult['Content'].containsKey('timeOfDay')) {
+                if (jsonResult['Content']['timeOfDay']['restrictionProfile'] !=
+                    null) {
+                  restrictionProfile = RestrictionProfile.fromJson(
+                      jsonResult['Content']['timeOfDay']['restrictionProfile']);
+                }
+                if (jsonResult['Content']['timeOfDay']
+                    .containsKey('daySections')) {
+                  for (var eachDaySection in jsonResult['Content']['timeOfDay']
+                      ['daySections']) {
+                    if (eachDaySection != null &&
+                        eachDaySection.toLowerCase() == 'anytime') {
+                      restrictionProfile = RestrictionProfile.noRestriction();
+                      timeOfDaySections = [];
+                      break;
+                    }
+                    if (eachDaySection != null) {
+                      timeOfDaySections.add(eachDaySection);
+                    }
+                  }
+                }
+              }
 
+              Tuple4<List<Duration>, List<Location>, RestrictionProfile,
+                      List<String>> retValue =
+                  new Tuple4(durations, locations, restrictionProfile,
+                      timeOfDaySections);
               return retValue;
             }
           }
         }
       }
     }
-    return new Tuple2([], []);
+    RestrictionProfile restrictionProfile = RestrictionProfile.noRestriction();
+    return new Tuple4([], [], restrictionProfile, []);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getAdHocSubEvents(
@@ -200,7 +243,7 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final newTileParameters = tile.toJson();
         newTileParameters['UserName'] = username;
         var restrictedWeekData;
@@ -225,6 +268,7 @@ class ScheduleApi extends AppApi {
         if (header != null) {
           var response = await http.post(uri,
               headers: header, body: jsonEncode(injectedParameters));
+
           var jsonResult = jsonDecode(response.body);
           error.message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
@@ -259,7 +303,7 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final procrastinateParameters = {
           'UserName': username,
           'DurationInMs': duration.inMilliseconds.toString()
@@ -329,5 +373,152 @@ class ScheduleApi extends AppApi {
         error.message = "Issues with reaching Tiler servers";
       }
     });
+  }
+
+  Future<TimelineSummary?> getTimelineSummary(Timeline timeline) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await this.authentication.reLoadCredentialsCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+
+      DateTime dateTime = Utility.currentTime();
+      final queryParameters = {
+        'StartRange': timeline.start!.toInt().toString(),
+        'EndRange': timeline.end!.toInt().toString(),
+        'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString()
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Schedule/timelineSummary', updatedParams);
+      var header = this.getHeaders();
+      if (header != null) {
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            return TimelineSummary.fromJson(jsonResult['Content']);
+          }
+        }
+      }
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
+  Future<Analysis?> getAnalysis() async {
+    try {
+      if ((await this.authentication.isUserAuthenticated()).item1) {
+        await this.authentication.reLoadCredentialsCache();
+        String tilerDomain = Constants.tilerDomain;
+        String url = tilerDomain;
+        if (this.authentication.cachedCredentials != null) {
+          String? username = '';
+          final queryParameters = {
+            'UserName': username,
+          };
+          Map<String, dynamic> updatedQueryParameters =
+              await this.injectRequestParams(queryParameters);
+          Uri uri = Uri.https(url, 'api/Analysis', updatedQueryParameters);
+
+          var header = this.getHeaders();
+
+          final response = await http.get(uri, headers: header);
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            final json = jsonDecode(response.body);
+
+            final todayDate = DateTime.now();
+            final newtodayDate =
+                DateTime(todayDate.year, todayDate.month, todayDate.day);
+
+            List<Timeline> sleepLines = [];
+            final value1 = json['Content']['locationBreakdown'];
+
+            List<String> keys = value1.keys.toList();
+
+            List<OverViewItem> overview = [];
+            if (keys.isNotEmpty) {
+              int otherDuration = 0;
+              keys.forEach((element) {
+                int totalDuration = 0;
+                final mm =
+                    List.from(json['Content']['locationBreakdown'][element])
+                        .map((e) => SubCalendarEvent.fromJson(e))
+                        .toList();
+                mm.forEach((element) {
+                  Duration duration = DateTime.fromMillisecondsSinceEpoch(
+                          element.end!)
+                      .difference(
+                          DateTime.fromMillisecondsSinceEpoch(element.start!));
+
+                  totalDuration = totalDuration + duration.inMilliseconds;
+                });
+                OverViewItem? item;
+                if (element.isNotEmpty) {
+                  item = OverViewItem(name: element, duration: totalDuration);
+                }
+
+                if (overview.length < 5) {
+                  if (item != null) overview.add(item);
+                } else {
+                  otherDuration = otherDuration + totalDuration;
+
+                  if (overview.length >= 5) {
+                    overview.removeLast();
+                  }
+                  final item =
+                      OverViewItem(name: "Others", duration: otherDuration);
+                  overview.add(item);
+                }
+              });
+            }
+
+            final locationCombination =
+                List.from(json['Content']['travelTime']['locationCombination'])
+                    .map((e) {
+              final item = Combination.fromJson(e);
+
+              double total = item.count! * item.duration!;
+              item.totalDuration = total;
+              return item;
+            }).toList();
+
+            List<DriveTime> allDriveTime = [];
+
+            locationCombination.forEach((element) {
+              String name =
+                  "${element.first!.description!} - ${element.second!.description!}";
+
+              DriveTime? item;
+
+              if (name.isNotEmpty) {
+                item = DriveTime(
+                    name: name, duration: element.totalDuration!.toInt());
+                allDriveTime.add(item);
+              }
+            });
+
+            List<String> sleepLinesKey =
+                json['Content']['sleep']['SleepTimeLines'].keys.toList();
+            sleepLinesKey.forEach((element) {
+              final value = Timeline.fromJson(json['Content']['sleep']
+                  ['SleepTimeLines'][element]['SleepTimeline']);
+              sleepLines.add(value);
+            });
+
+            final itemlast = Analysis(
+                drivesTime: allDriveTime,
+                overview: overview,
+                sleep: sleepLines);
+
+            return itemlast;
+          }
+        }
+      }
+    } catch (ex) {
+      return null;
+    }
   }
 }

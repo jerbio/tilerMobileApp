@@ -58,7 +58,8 @@ abstract class AppApi {
     if (authentication.cachedCredentials != null &&
         !authentication.cachedCredentials!.isExpired()) {
       var cachedCredentials = authentication.cachedCredentials!;
-      String token = cachedCredentials.accessToken;
+      String token = cachedCredentials.accessToken!;
+
       var header = {
         HttpHeaders.contentTypeHeader: 'application/json',
         HttpHeaders.authorizationHeader: 'Bearer ' + token,
@@ -72,6 +73,7 @@ abstract class AppApi {
 
   Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
+    Utility.isDebugSet = false;
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
@@ -121,7 +123,7 @@ abstract class AppApi {
       if (this.authentication.cachedCredentials != null) {
         Map<String, dynamic> requestParams = Map.from(queryParameters);
         if (!queryParameters.containsKey('UserName')) {
-          String? username = this.authentication.cachedCredentials!.username;
+          String? username = '';
           requestParams['UserName'] = username;
         }
         if (!queryParameters.containsKey('MobileApp')) {
