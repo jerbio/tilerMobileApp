@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
@@ -33,7 +34,7 @@ class LocationApi extends AppApi {
         return retValue;
       }
     }
-    throw NullThrownError();
+    throw TilerError();
   }
 
   Future<List<Location>> _createLocationFuture(Uri uri, var header) async {
@@ -82,7 +83,7 @@ class LocationApi extends AppApi {
           if (events != null) {
             return events;
           }
-          throw NullThrownError();
+          throw TilerError();
         }
 
         chainPending = this._createLocationFuture(uri, header);

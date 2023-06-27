@@ -169,7 +169,6 @@ class LocalNotificationService {
   Future<void> nextTileNotification(
       {required SubCalendarEvent tile,
       required BuildContext context,
-      String? body,
       String? title}) async {
     if (channelDetails != null) {
       Map<NotificationIdTypes, _NotificationDetailFormat>
@@ -190,7 +189,7 @@ class LocalNotificationService {
       String durationString = AppLocalizations.of(context)!.startsInTenMinutes;
       if (tenMinFromStartMs < currentTime) {
         String startTimeString = MaterialLocalizations.of(context)
-            .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime!));
+            .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime));
         this.showNotification(
           id: NotificationIdTypes.nextTile.index,
           title: title ?? name,
@@ -200,13 +199,66 @@ class LocalNotificationService {
         return;
       }
 
+      Duration delayDuraion =
+          Duration(milliseconds: (tenMinFromStartMs - currentTime).toInt());
+      delayDuraion =
+          delayDuraion.inMilliseconds <= Utility.oneMin.inMilliseconds
+              ? Duration(seconds: 15)
+              : delayDuraion;
       await this.showScheduledNotification(
           id: NotificationIdTypes.nextTile.index,
           title: title ?? tile.name ?? 'Cleared out time block',
           body: durationString,
           detailFormat: notificationDetailFormat,
-          duration: Duration(
-              milliseconds: (tenMinFromStartMs - currentTime).toInt()));
+          duration: delayDuraion);
+    }
+  }
+
+  Future<void> concludingTileNotification(
+      {required SubCalendarEvent tile,
+      required BuildContext context,
+      String? title}) async {
+    if (channelDetails != null) {
+      Map<NotificationIdTypes, _NotificationDetailFormat>
+          notificationDetailMap = channelDetails!;
+      _NotificationDetailFormat notificationDetailFormat =
+          notificationDetailMap[NotificationIdTypes.nextTile]!;
+      final currentTime = Utility.msCurrentTime;
+
+      final tileEndTimeMs = tile.end!.toInt();
+      final fiveMinFromEndMs =
+          tileEndTimeMs - (Utility.oneMin.inMilliseconds * 5);
+
+      String name = tile.name == null || tile.name!.isEmpty
+          ? ((tile.isProcrastinate ?? false)
+              ? AppLocalizations.of(context)!.procrastinateBlockOut
+              : "")
+          : tile.name!;
+      String durationString = AppLocalizations.of(context)!.endsInTenMinutes;
+      if (fiveMinFromEndMs < currentTime) {
+        String startTimeString = MaterialLocalizations.of(context)
+            .formatTimeOfDay(TimeOfDay.fromDateTime(tile.startTime));
+        this.showNotification(
+          id: NotificationIdTypes.nextTile.index,
+          title: title ?? name,
+          body: AppLocalizations.of(context)!.endsAtTime(startTimeString),
+          detailFormat: notificationDetailFormat,
+        );
+        return;
+      }
+
+      Duration delayDuraion =
+          Duration(milliseconds: (fiveMinFromEndMs - currentTime).toInt());
+      delayDuraion =
+          delayDuraion.inMilliseconds <= Utility.oneMin.inMilliseconds
+              ? Duration(seconds: 15)
+              : delayDuraion;
+      await this.showScheduledNotification(
+          id: NotificationIdTypes.nextTile.index,
+          title: title ?? tile.name ?? 'Cleared out time block',
+          body: durationString,
+          detailFormat: notificationDetailFormat,
+          duration: delayDuraion);
     }
   }
 

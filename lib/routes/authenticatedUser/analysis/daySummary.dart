@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/tileUI/summaryPage.dart';
 import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -14,9 +16,8 @@ class _DaySummaryState extends State<DaySummary> {
   Widget renderDayMetricInfo() {
     List<Widget> rowSymbolElements = <Widget>[];
     const textStyle = const TextStyle(
-        fontSize: 25, color: const Color.fromRGBO(153, 153, 153, 1));
+        fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
     Widget completeWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -32,7 +33,6 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget warnWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -48,7 +48,6 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
     Widget sleepWidget = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         children: [
           Icon(
@@ -63,12 +62,13 @@ class _DaySummaryState extends State<DaySummary> {
       ),
     );
 
-    // rowSymbolElements.add(completeWidget);
     rowSymbolElements.add(warnWidget);
-    // rowSymbolElements.add(sleepWidget);
-    Widget retValue = Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: rowSymbolElements,
+    Widget retValue = Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: rowSymbolElements,
+      ),
     );
     return retValue;
   }
@@ -78,37 +78,40 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> childElements = [renderDayMetricInfo()];
 
     if (this.widget.dayData.dayIndex != null) {
-      Widget dayDateText = Container(
-        margin: EdgeInsets.fromLTRB(30, 20, 20, 40),
-        alignment: Alignment.topRight,
-        child: Text(
-            Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).humanDate,
-            style: TextStyle(
-                fontSize: 40,
-                fontFamily: TileStyles.rubikFontName,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
-                fontWeight: FontWeight.w700)),
+      Widget dayDateText = GestureDetector(
+        onTap: () {
+          DateTime start =
+              Utility.getTimeFromIndex(this.widget.dayData.dayIndex!);
+          DateTime end =
+              Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).endOfDay;
+          Timeline timeline = Timeline(
+              start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SummaryPage(
+                        timeline: timeline,
+                      )));
+        },
+        child: Container(
+          child: Text(
+              Utility.getTimeFromIndex(this.widget.dayData.dayIndex!).humanDate,
+              style: TextStyle(
+                  fontSize: 30,
+                  fontFamily: TileStyles.rubikFontName,
+                  color: TileStyles.primaryColorDarkHSL.toColor(),
+                  fontWeight: FontWeight.w700)),
+        ),
       );
-      childElements.insert(0, dayDateText);
+      childElements.add(dayDateText);
     }
 
     Container retValue = Container(
-      height: 150,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(
-            bottomRight: Radius.circular(25), bottomLeft: Radius.circular(25)),
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
+      height: 120,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: childElements,
       ),
     );

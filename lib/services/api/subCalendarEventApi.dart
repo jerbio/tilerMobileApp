@@ -268,7 +268,7 @@ class SubCalendarEventApi extends AppApi {
     if (userIsAuthenticated) {
       await this.authentication.reLoadCredentialsCache();
       if (this.authentication.cachedCredentials != null) {
-        String? username = this.authentication.cachedCredentials!.username;
+        String? username = '';
         final procrastinateParameters = {
           'UserName': username,
           'DurationInMs': duration.inMilliseconds.toString(),

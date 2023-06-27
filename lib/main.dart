@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
@@ -23,6 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
@@ -41,18 +43,20 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
+Future main() async {
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
+  await dotenv.load(fileName: ".env");
   runApp(TilerApp());
 }
 
 class TilerApp extends StatelessWidget {
   bool isAuthenticated = false;
+  Authentication? authentication;
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
-    Authentication authentication = new Authentication();
-    var authenticationResult = await authentication.isUserAuthenticated();
+    authentication = new Authentication();
+    var authenticationResult = await authentication!.isUserAuthenticated();
     return authenticationResult;
   }
 
@@ -105,7 +109,8 @@ class TilerApp extends StatelessWidget {
         providers: [
           BlocProvider(create: (context) => SubCalendarTileBloc()),
           BlocProvider(create: (context) => ScheduleBloc()),
-          BlocProvider(create: (context) => CalendarTileBloc())
+          BlocProvider(create: (context) => CalendarTileBloc()),
+          BlocProvider(create: (context) => UiDateManagerBloc())
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -127,7 +132,12 @@ class TilerApp extends StatelessWidget {
             '/ForecastPreview': (ctx) => ForecastPreview(),
             '/ForecastDuration': (ctx) => ForecastDuration(),
             '/Procrastinate': (ctx) => ProcrastinateAll(),
-            '/DurationDial': (ctx) => DurationDial(),
+            '/DurationDial': (ctx) => DurationDial(
+                  presetDurations: [
+                    Duration(minutes: 30),
+                    Duration(hours: 1),
+                  ],
+                ),
             '/repetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
@@ -147,16 +157,21 @@ class TilerApp extends StatelessWidget {
               builder: (context, AsyncSnapshot<Tuple2<bool, String>> snapshot) {
                 Widget retValue;
                 if (snapshot.hasData) {
-                  if (!snapshot.data!.item1 &&
-                      snapshot.data!.item2 == Constants.cannotVerifyError) {
-                    showErrorMessage(
-                        AppLocalizations.of(context)!.issuesConnectingToTiler);
-                    return renderPending();
+                  if (!snapshot.data!.item1) {
+                    if (snapshot.data!.item2 == Constants.cannotVerifyError) {
+                      showErrorMessage(AppLocalizations.of(context)!
+                          .issuesConnectingToTiler);
+                      return renderPending();
+                    }
+                    authentication?.deauthenticateCredentials();
+                    retValue = SignInRoute();
                   }
 
                   if (snapshot.data!.item1) {
-                    retValue = AuthorizedRoute();
+                    context.read<ScheduleBloc>().add(LogInScheduleEvent());
+                    retValue = new AuthorizedRoute();
                   } else {
+                    authentication?.deauthenticateCredentials();
                     retValue = SignInRoute();
                   }
                 } else {

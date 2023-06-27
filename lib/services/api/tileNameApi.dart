@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
@@ -34,7 +35,7 @@ class TileNameApi extends AppApi {
         return retValue;
       }
     }
-    throw NullThrownError();
+    throw TilerError();
   }
 
   Future<List<TilerEvent>> _createEventFuture(Uri uri, var header) async {
@@ -78,7 +79,7 @@ class TileNameApi extends AppApi {
           if (events != null) {
             return events;
           }
-          throw NullThrownError();
+          throw TilerError();
         }
 
         chainPending = this._createEventFuture(uri, header);
@@ -87,6 +88,6 @@ class TileNameApi extends AppApi {
         return retValue;
       }
     }
-    throw NullThrownError();
+    throw TilerError();
   }
 }

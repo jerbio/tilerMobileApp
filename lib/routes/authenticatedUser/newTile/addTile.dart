@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:switch_up/switch_up.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -18,7 +19,6 @@ import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -89,12 +89,13 @@ class AddTileState extends State<AddTile> {
   RepetitionData? _repetitionData;
   Color? _color;
   bool _isLocationManuallySet = false;
-  DateTime? _startTime;
+  DateTime? _startTime = Utility.currentTime();
   DateTime? _endTime;
 
   Function? onProceed;
 
   RestrictionProfile? _restrictionProfile;
+  bool _isRestictionProfileManuallySet = false;
   ScheduleApi scheduleApi = ScheduleApi();
   SettingsApi settingsApi = SettingsApi();
   StreamSubscription? pendingSendTextRequest;
@@ -110,7 +111,7 @@ class AddTileState extends State<AddTile> {
       tileNameController =
           TextEditingController(text: this.widget.autoTile!.description);
       _duration = this.widget.autoTile!.duration;
-
+      _startTime = this.widget.autoTile!.startTime ?? Utility.currentTime();
       if (_location == null) {
         var future = new Future.delayed(
             const Duration(milliseconds: Constants.onTextChangeDelayInMs));
@@ -125,17 +126,18 @@ class AddTileState extends State<AddTile> {
             if (remoteTileResponse.item2.isNotEmpty) {
               _locationResponse = remoteTileResponse.item2.last;
             }
-
-            setState(() {
-              if (!_isLocationManuallySet) {
-                _location = _locationResponse;
-                if (_locationResponse != null) {
-                  _location!.isDefault = false;
-                  _location!.isNull = false;
+            if (mounted) {
+              setState(() {
+                if (!_isLocationManuallySet) {
+                  _location = _locationResponse;
+                  if (_locationResponse != null) {
+                    _location!.isDefault = false;
+                    _location!.isNull = false;
+                  }
                 }
-              }
-            });
-            isSubmissionReady();
+              });
+              isSubmissionReady();
+            }
           });
         });
 
@@ -153,20 +155,10 @@ class AddTileState extends State<AddTile> {
         isSubmissionReady();
       }
     });
-    tileNameController.addListener(() {
-      // isSubmissionReady();
-      if (tileNameText != tileNameController.text) {
-        if (tileNameController.text.length >
-            Constants.autoCompleteTriggerCharacterCount) {
-          Function callAutoResult = generateSuggestionCallToServer();
-          callAutoResult();
-        }
-        setState(() {
-          tileNameText = tileNameController.text;
-        });
-        isSubmissionReady();
-      }
-    });
+    tileNameController.addListener(onTileNameInput);
+    if (tileNameController.text.isNotEmpty) {
+      onTileNameInput();
+    }
 
     locationApi
         .getSpecificLocationByNickName(Location.homeLocationNickName)
@@ -202,6 +194,21 @@ class AddTileState extends State<AddTile> {
 
   void _onProceedTap() {
     return this.onSubmitButtonTap();
+  }
+
+  void onTileNameInput() {
+    // isSubmissionReady();
+    if (tileNameText != tileNameController.text) {
+      if (tileNameController.text.length >
+          Constants.autoCompleteTriggerCharacterCount) {
+        Function callAutoResult = generateSuggestionCallToServer();
+        callAutoResult();
+      }
+      setState(() {
+        tileNameText = tileNameController.text;
+      });
+      isSubmissionReady();
+    }
   }
 
   isSubmissionReady() {
@@ -255,32 +262,41 @@ class AddTileState extends State<AddTile> {
             .then((remoteTileResponse) {
           Duration? _durationResponse;
           Location? _locationResponse;
+          RestrictionProfile? _restrictionProfileResponse;
           if (remoteTileResponse.item1.isNotEmpty) {
             _durationResponse = remoteTileResponse.item1.last;
           }
           if (remoteTileResponse.item2.isNotEmpty) {
             _locationResponse = remoteTileResponse.item2.last;
           }
-
-          setState(() {
-            if (!_isDurationManuallySet) {
-              _duration = _durationResponse;
-            }
-            if (!_isLocationManuallySet) {
-              _location = _locationResponse;
-              if (_locationResponse != null) {
-                _location!.isDefault = false;
-                _location!.isNull = false;
+          if (remoteTileResponse.item3.isEnabled) {
+            _restrictionProfileResponse = remoteTileResponse.item3;
+          }
+          if (mounted) {
+            setState(() {
+              if (!_isDurationManuallySet) {
+                _duration = _durationResponse;
               }
-            }
-          });
-          isSubmissionReady();
+              if (!_isLocationManuallySet) {
+                _location = _locationResponse;
+                if (_locationResponse != null) {
+                  _location!.isDefault = false;
+                  _location!.isNull = false;
+                }
+              }
+              if (!_isRestictionProfileManuallySet) {
+                _restrictionProfile = _restrictionProfileResponse;
+              }
+            });
+            isSubmissionReady();
+          }
         });
       });
-
-      setState(() {
-        pendingSendTextRequest = streamSubScription;
-      });
+      if (mounted) {
+        setState(() {
+          pendingSendTextRequest = streamSubScription;
+        });
+      }
     };
 
     return retValue;
@@ -294,7 +310,7 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: 0.85,
+        widthFactor: TileStyles.widthRatio,
         child: Container(
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -340,7 +356,7 @@ class AddTileState extends State<AddTile> {
 
   Widget getSplitCountWidget() {
     Widget splitCountContainer = FractionallySizedBox(
-        widthFactor: 0.85,
+        widthFactor: TileStyles.widthRatio,
         child: Container(
             height: 60,
             child: Row(
@@ -353,7 +369,8 @@ class AddTileState extends State<AddTile> {
                     width: 60,
                     child: TextField(
                       controller: splitCountController,
-                      keyboardType: TextInputType.number,
+                      keyboardType: TextInputType.numberWithOptions(
+                          signed: true, decimal: true),
                       inputFormatters: <TextInputFormatter>[
                         FilteringTextInputFormatter.digitsOnly
                       ],
@@ -425,7 +442,7 @@ class AddTileState extends State<AddTile> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: FractionallySizedBox(
-            widthFactor: 0.85,
+            widthFactor: TileStyles.widthRatio,
             child: Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -642,6 +659,7 @@ class AddTileState extends State<AddTile> {
                 arguments: restrictionParams)
             .whenComplete(() {
           RestrictionProfile? populatedRestrictionProfile;
+          _isRestictionProfileManuallySet = true;
           if (restrictionParams.containsKey('routeRestrictionProfile')) {
             populatedRestrictionProfile =
                 restrictionParams['routeRestrictionProfile']
@@ -654,29 +672,6 @@ class AddTileState extends State<AddTile> {
         });
       },
     );
-    Widget emojiConfigButton = ConfigUpdateButton(
-        text: 'Emoji',
-        prefixIcon: Icon(
-          Icons.emoji_emotions,
-          color: iconColor,
-        ),
-        decoration: BoxDecoration(
-            color: Color.fromRGBO(31, 31, 31, 0.05),
-            borderRadius: BorderRadius.all(
-              const Radius.circular(10.0),
-            )),
-        textColor: iconColor,
-        onPress: () {
-          final scaffold = ScaffoldMessenger.of(context);
-          scaffold.showSnackBar(
-            SnackBar(
-              content: const Text('Emojis are disabled for now :('),
-              action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
-                  onPressed: scaffold.hideCurrentSnackBar),
-            ),
-          );
-        });
 
     Widget colorPickerConfigButton = ConfigUpdateButton(
       text: AppLocalizations.of(context)!.color,
@@ -703,25 +698,27 @@ class AddTileState extends State<AddTile> {
         });
       },
     );
-    Widget firstRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [locationConfigButton, colorPickerConfigButton],
-    );
-    // Widget secondRow = Row(
-    //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-    //   children: [reminderConfigButton, emojiConfigButton],
-    // );
-    List<Widget> thirdRowConfigButtons = [repetitionConfigButton];
-    if (!this.isAppointment) {
-      thirdRowConfigButtons.add(timeRestrictionsConfigButton);
-    }
-    Widget thirdRow = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: thirdRowConfigButtons,
-    );
 
-    Widget retValue = Column(
-      children: [firstRow, thirdRow],
+    List<Widget> wrapWidgets = [
+      locationConfigButton,
+      colorPickerConfigButton,
+      repetitionConfigButton
+    ];
+
+    if (!this.isAppointment) {
+      wrapWidgets.insert(1, timeRestrictionsConfigButton);
+    }
+
+    Widget retValue = Container(
+      margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+      child: Wrap(
+        direction: Axis.horizontal,
+        alignment: WrapAlignment.spaceAround,
+        spacing: 10.0,
+        runSpacing: 20.0,
+        children: wrapWidgets,
+      ),
     );
     return retValue;
   }
@@ -901,9 +898,15 @@ class AddTileState extends State<AddTile> {
       if (this.widget.newTileParams != null) {
         this.widget.newTileParams!['newTile'] = newlyAddedTile.item1;
       }
+
+      this
+          .context
+          .read<SubCalendarTileBloc>()
+          .emit(NewSubCalendarTilesLoadedState(subEvent: newlyAddedTile.item1));
+
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetSchedule(
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: currentState.subEvents,
               scheduleTimeline: currentState.lookupTimeline,
@@ -933,7 +936,7 @@ class AddTileState extends State<AddTile> {
       }
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetSchedule(
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: currentState.subEvents,
               scheduleTimeline: currentState.lookupTimeline,
@@ -952,7 +955,7 @@ class AddTileState extends State<AddTile> {
     Widget deadlineContainer = new GestureDetector(
         onTap: this.onEndDateTap,
         child: FractionallySizedBox(
-            widthFactor: 0.85,
+            widthFactor: TileStyles.widthRatio,
             child: Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -1076,7 +1079,9 @@ class AddTileState extends State<AddTile> {
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);
-    appointmentWidgets.add(startAndEndTime);
+    appointmentWidgets.add(FractionallySizedBox(
+        widthFactor: TileStyles.widthRatio,
+        child: Container(child: startAndEndTime)));
 
     Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
     Widget appointmentWidget = generateAppointmentWidget(appointmentWidgets);
@@ -1088,11 +1093,14 @@ class AddTileState extends State<AddTile> {
     ];
 
     String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
-    Widget switchUp = SwitchUp(
-      key: switchUpKey,
-      items: tabButtons,
-      onChanged: onTabTypeChange,
-      value: switchUpvalue,
+    Widget switchUp = Container(
+      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+      child: SwitchUp(
+        key: switchUpKey,
+        items: tabButtons,
+        onChanged: onTabTypeChange,
+        value: switchUpvalue,
+      ),
     );
 
     Widget tileTypeCarousel = CarouselSlider(
@@ -1121,7 +1129,6 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(switchUp);
     childrenWidgets.add(extraConfigCollection);
 
-    Function? showLoading;
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,

@@ -4,15 +4,17 @@ class TileStyles {
   static final double tileWidth = 350;
   static final double tileHeight = 350;
   static final double tileWidthRatio = 0.85;
+  static final double tileIconSize = 12;
   static final double borderRadius = 12;
   static final double inputWidthFactor = 0.85;
+  static final double widthRatio = 0.85;
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
   static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
-  static Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
-  static Color primaryContrastColor = Colors.white;
+  static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
+  static const Color primaryContrastColor = Colors.white;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
@@ -38,19 +40,24 @@ class TileStyles {
       fontSize: textFontSize,
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
+
+  static const TextStyle editTimeOrDateTimeStyle =
+      TextStyle(fontSize: 18, color: const Color.fromRGBO(40, 40, 40, 1));
   static Color textBackgroundColor = Color.fromRGBO(239, 48, 84, .05);
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static final BoxDecoration defaultBackground = BoxDecoration(
-      gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-        Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-        Colors.white.withOpacity(0.5),
-        Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
-      ]));
+  static final BoxDecoration defaultBackground =
+      BoxDecoration(color: Colors.transparent
+          // gradient: LinearGradient(
+          //     begin: Alignment.topCenter,
+          //     end: Alignment.bottomCenter,
+          //     colors: [
+          //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+          //   Colors.white.withOpacity(0.5),
+          //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
+          // ])
+          );
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
@@ -63,6 +70,9 @@ class TileStyles {
           HSLColor.fromAHSL(1, 350, 1, 0.7).toColor()
         ],
       ));
+  static final BoxDecoration tileIconContainerBoxDecoration = BoxDecoration(
+      color: Color.fromRGBO(31, 31, 31, 0.1),
+      borderRadius: BorderRadius.circular(8));
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(
@@ -73,7 +83,7 @@ class TileStyles {
       hintStyle: TextStyle(
           color: Color.fromRGBO(180, 180, 180, 1),
           fontSize: textFontSize,
-          fontFamily: 'Rubik',
+          fontFamily: TileStyles.rubikFontName,
           fontWeight: FontWeight.w500),
       contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
       fillColor: textBackgroundColor,

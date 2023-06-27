@@ -1,4 +1,4 @@
-package com.example.tiler_app
+package com.tiler.app.ai
 
 import io.flutter.embedding.android.FlutterActivity
 

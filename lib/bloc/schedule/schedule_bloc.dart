@@ -15,7 +15,9 @@ part 'schedule_state.dart';
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
-    on<GetSchedule>(_onGetSchedule);
+    on<GetScheduleEvent>(_onGetSchedule);
+    on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
+    on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<DelayedGetSchedule>(_onDelayedGetSchedule);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
     on<DelayedReloadLocalScheduleEvent>(_onDelayedReloadLocalScheduleEvent);
@@ -25,6 +27,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
       Timeline timeLine) async {
+    Utility.isDebugSet = true;
     return await scheduleApi.getSubEvents(timeLine);
   }
 
@@ -55,8 +58,21 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     });
   }
 
+  void _onLoggedOutScheduleEvent(
+      LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
+    emit(ScheduleLoggedOutState());
+  }
+
+  void _onInitialLogInScheduleEvent(
+      LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
+    emit(ScheduleInitialState());
+  }
+
+  // Future<void> _onIncrementGetSchedule(
+  //     IncrementGetScheduleEvent event, Emitter<ScheduleState> emit) async {}
+
   Future<void> _onGetSchedule(
-      GetSchedule event, Emitter<ScheduleState> emit) async {
+      GetScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
@@ -64,7 +80,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     if (state is ScheduleLoadedState) {
       Timeline timeline = state.lookupTimeline;
       updateTimeline = event.scheduleTimeline ?? state.lookupTimeline;
-      List<SubCalendarEvent> subEvents = [];
 
       if (!timeline.isInterfering(updateTimeline)) {
         int startInMs = updateTimeline.start! < timeline.start!
@@ -82,7 +97,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: List.from(state.subEvents),
           timelines: state.timelines,
           previousLookupTimeline: timeline,
-          isAlreadyLoaded: true,
+          isAlreadyLoaded: event.isAlreadyLoaded ?? true,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
       await getSubTiles(updateTimeline).then((value) {
         emit(ScheduleLoadedState(
@@ -97,7 +113,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(ScheduleLoadingState(
           subEvents: [],
           timelines: [],
-          isAlreadyLoaded: false,
+          isAlreadyLoaded: event.isAlreadyLoaded ?? false,
+          evaluationTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
 
       await getSubTiles(updateTimeline).then((value) {
@@ -115,7 +132,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: state.lookupTimeline,
           isAlreadyLoaded: true,
-          connectionState: ConnectionState.waiting));
+          connectionState: ConnectionState.waiting,
+          evaluationTime: Utility.currentTime()));
 
       await getSubTiles(updateTimeline).then((value) async {
         emit(ScheduleLoadedState(
@@ -139,7 +157,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           message: event.message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
-            GetSchedule(
+            GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: state.subEvents,
               previousTimeline: state.lookupTimeline,
@@ -161,7 +179,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
         await this._onGetSchedule(
-            GetSchedule(
+            GetScheduleEvent(
               isAlreadyLoaded: true,
               previousSubEvents: event.renderedSubEvents,
               previousTimeline: event.renderedScheduleTimeline,
@@ -185,7 +203,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
     await setTimeOutResult.item1.then((futureEvent) async {
       await this._onGetSchedule(
-          GetSchedule(
+          GetScheduleEvent(
             isAlreadyLoaded: true,
             previousSubEvents: event.previousSubEvents,
             previousTimeline: event.previousTimeline,

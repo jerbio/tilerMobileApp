@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:intl/intl.dart';
-import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
+import 'package:tiler_app/styles.dart';
 
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
-  DurationUIWidget({required this.duration, Key? key}) : super(key: key);
+  List<Duration>? presetDurations;
+  DurationUIWidget({required this.duration, presetDurations, Key? key})
+      : super(key: key);
   @override
   State createState() => _DurationUIWidgetState();
 }
@@ -29,7 +29,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
     const unitTimeStyle = TextStyle(
         color: Color.fromRGBO(180, 180, 180, 1),
         fontSize: 35,
-        fontFamily: 'Rubik',
+        fontFamily: TileStyles.rubikFontName,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 
@@ -100,16 +100,6 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
 
     return Column(
       children: [
-        Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Text(
-              AppLocalizations.of(context)!.duration,
-              style: TextStyle(
-                  color: Color.fromRGBO(30, 30, 30, 1),
-                  fontSize: 20,
-                  fontFamily: 'Rubik',
-                  fontWeight: FontWeight.w500),
-            )),
         Container(
           child: Row(
             children: childWidgets,

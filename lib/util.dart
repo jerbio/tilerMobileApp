@@ -37,6 +37,9 @@ class Utility {
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final Random randomizer = Random.secure();
 
+  static bool isDebugSet = false;
+  static bool isWithinNowSet = false;
+
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
     DateTime time = DateTime.now();
     if (minuteLimitAccuracy) {
@@ -67,9 +70,9 @@ class Utility {
       EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
     bool retValue =
         editTilerEvent.startTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.startTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.startTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.endTime!.toLocal().millisecondsSinceEpoch ==
-                tilerEvent.endTime!.toLocal().millisecondsSinceEpoch &&
+                tilerEvent.endTime.toLocal().millisecondsSinceEpoch &&
             editTilerEvent.name == tilerEvent.name &&
             editTilerEvent.splitCount == tilerEvent.split;
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
@@ -99,18 +102,20 @@ class Utility {
   }
 
   static int getDayIndex(DateTime time) {
-    var spanInMicroSecond = time.microsecondsSinceEpoch -
-        Utility._beginningOfTime.microsecondsSinceEpoch;
-    int retValue = spanInMicroSecond ~/ Duration.microsecondsPerDay;
+    var spanInMicroSecond = time.dayDate.microsecondsSinceEpoch -
+        Utility._beginningOfTime.dayDate.microsecondsSinceEpoch;
+    int retValue =
+        (spanInMicroSecond.toDouble() / Duration.microsecondsPerDay.toDouble())
+            .round();
     return retValue;
   }
 
   static DateTime getTimeFromIndex(int dayIndex) {
     Duration totalDuration = Duration(days: dayIndex);
-    DateTime retValueShifted = Utility._beginningOfTime.add(totalDuration);
+    DateTime retValueShifted =
+        Utility._beginningOfTime.dayDate.add(totalDuration);
     DateTime retValue = DateTime(
-            retValueShifted.year, retValueShifted.month, retValueShifted.day)
-        .toLocal();
+        retValueShifted.year, retValueShifted.month, retValueShifted.day);
     return retValue;
   }
 
@@ -157,9 +162,9 @@ class Utility {
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
-    int subEventCount = Random().nextInt(20);
+    int subEventCount = Random().nextInt(2);
     while (subEventCount < 1) {
-      subEventCount = Random().nextInt(20);
+      subEventCount = Random().nextInt(2);
     }
 
     List<Timeline> sleepTimeLines = [];
@@ -578,6 +583,25 @@ class Utility {
     return retValue;
     //Continue from here Jerome you need to write the function for detecting conflicting events and then creating the interferring list.
   }
+   static List<Timeline> getListofDays(DateTime startDate){
+List<Timeline> result=[];
+DateTime endDate=startDate.add(Duration(days: 7));
+do{
+
+
+       final   timeLine = new Timeline(
+              startDate.millisecondsSinceEpoch.toInt(),
+              startDate
+                  .add(Duration(hours: 6))
+                  .millisecondsSinceEpoch
+                  .toInt());
+          result.add(timeLine);
+  startDate = startDate.add(Utility.oneDay);
+}while(startDate.millisecondsSinceEpoch<endDate.millisecondsSinceEpoch);
+
+
+    return result;
+  }
 
   static int daysInAweek = 7;
   static Duration thirtyMin = new Duration(minutes: 30);
@@ -650,7 +674,7 @@ extension StringEnhance on String {
 
 extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
-    return this.tilerDayOfWeek % Utility.daysInAweek;
+    return this.weekday % Utility.daysInAweek;
   }
 }
 
@@ -667,6 +691,7 @@ extension DurationInMS on TimeOfDay {
     final format = DateFormat.jm(); //"6:00 AM"
     return format.format(dt);
   }
+ 
 }
 
 extension DateTimeHuman on DateTime {
@@ -723,6 +748,35 @@ extension DateTimeHuman on DateTime {
     return dayString;
   }
 
+String get dateDateWeek{
+ String dayString = '';
+    if (this.isToday) {
+      dayString = 'Today';
+    } else if (this.isYesterday) {
+      dayString = 'Yesterday';
+    } else if (this.isTomorrow) {
+      dayString = 'Tomorrow';
+    } else {
+      DateTime now = DateTime.now();
+      bool isSameYear = now.year == this.year;
+      if (isSameYear) {
+        dayString = DateFormat('d').format(this);
+      } else {
+        dayString = DateFormat('EEE, MMM d, ' 'yy').format(this);
+      }
+
+    }
+          return dayString;
+    }
+
+  DateTime get dayDate {
+    return DateTime(this.year, this.month, this.day);
+  }
+
+  int get universalDayIndex {
+    return Utility.getDayIndex(this);
+  }
+
   //Returns the date in the format 03/08/2023 22:42:00
   String get backEndFormat {
     String dayString =
@@ -752,5 +806,12 @@ extension DateTimeHuman on DateTime {
     DateTime retValue = DateTime(this.year, this.month, this.day, 23, 59);
     retValue.add(durationTillSaturday);
     return retValue;
+  }
+}
+
+extension ColorExtension on Color {
+  Color withLightness(double lightness) {
+    HSLColor hslColor = HSLColor.fromColor(this);
+    return hslColor.withLightness(lightness).toColor();
   }
 }

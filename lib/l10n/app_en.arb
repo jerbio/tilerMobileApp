@@ -69,6 +69,8 @@
     "successfullyResumed":"Successfully Resumed",
     "successfullyCompleted":"Successfully Completed",
     "completed":"Completed",
+    "deleted":"Deleted",
+    "scheduled":"Scheduled",
     "movedUpToNow":"Moving up to now",
     "pausing":"Pausing",
     "resuming":"Resuming",
@@ -85,6 +87,7 @@
     "end":"End",
     "deadline": "Deadline",
     "split":"Split",
+    "timeBlocks":"Time blocks",
     "swipeRightToTileIt":"Swipe Right to tile it",
     "failedToReviseScheduleRequest":"Failed to revise schedule request",
     "daily":"Daily",
@@ -106,7 +109,17 @@
           "example": "5:14 PM"
         }
       }},
+      "endsAtTime": "Ends at {time}",
+      "@endsAtTime": {
+        "description": "Ends at time",
+        "placeholders": {
+          "time": {
+            "type": "String",
+            "example": "5:14 PM"
+          }
+        }},
     "startsInTenMinutes": "Starts in ten minutes",
+    "endsInTenMinutes": "Ends in five minutes",
     "startsInDuration": "Starts in {duration}",
     "@startsInDuration": {
       "description": "Description of time till start",
@@ -114,6 +127,15 @@
         "duration": {
           "type": "String",
           "example": "5 Hours"
+        }
+      }},
+    "concludesAtTime": "🏁 {tileName} concludes soon",
+    "@concludesAtTime": {
+      "description": "Description of time of conclusion",
+      "placeholders": {
+        "tileName": {
+          "type": "String",
+          "example": "Build tiler"
         }
       }},
     "@Add": {
@@ -128,6 +150,9 @@
     "logout": "Logout",
     "snoozeTime": "Snooze Time",
     "noteEllipsis": "Note...",
+    "tapToCreateNewTile": "Tap to create a new tile",
+    "suggestions": "Suggestions",
+    "progress": "Progress",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",
@@ -137,41 +162,123 @@
           "example": "5 Hours"
         }
       }},
-      "durationLate": "{duration} Late",
-      "@durationLate": {
-        "description": "Description of departure tardiness",
-        "placeholders": {
-          "duration": {
-            "type": "String",
-            "example": "5 Hours"
-          }
-        }},
-        "elapsedDurationAgo": "Elapsed {duration} ago",
-        "@elapsedDurationAgo": {
-          "description": "Description of duration ago",
-          "placeholders": {
-            "duration": {
-              "type": "String",
-              "example": "5 Hours"
-            }
-          }},
-          "completedDurationAgo": "Completed {duration} ago",
-          "@completedDurationAgo": {
-            "description": "Description of duration ago",
-            "placeholders": {
-              "duration": {
-                "type": "String",
-                "example": "5 Hours"
-              }
-            }},
-          "durationLeft": "{duration} left",
-          "@durationLeft": {
-            "description": "Description of duration remaining",
-            "placeholders": {
-              "duration": {
-                "type": "String",
-                "example": "5 Hours"
-              }
-            }},
-            "issuesConnectingToTiler": "Issues connecting to Tiler"
+    "durationLate": "{duration} Late",
+    "@durationLate": {
+      "description": "Description of departure tardiness",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "elapsedDurationAgo": "Elapsed {duration} ago",
+    "@elapsedDurationAgo": {
+      "description": "Description of duration ago",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "completedDurationAgo": "Completed {duration} ago",
+    "@completedDurationAgo": {
+      "description": "Description of duration ago",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "durationLeft": "{duration} left",
+    "@durationLeft": {
+      "description": "Description of duration remaining",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "5 Hours"
+        }
+      }},
+    "issuesConnectingToTiler": "Issues connecting to Tiler",
+    "completedCount": "Completed ({count})",
+    "@completedCount": {
+      "description": "Completed tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "deletedCount": "Deleted ({count})",
+    "@deletedCount": {
+      "description": "Deleted tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "tiledCount": "Tiles left ({count})",
+    "@tiledCount": {
+      "description": "Tiles left count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5"
+        }
+      }},
+    "countTile": "{count} Tiles",
+    "@countTile": {
+      "description": "Tile count",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "5 tiles"
+        }
+      }},
+    "unScheduled": "Unscheduled",
+    "allScheduled": "All Scheduled",
+    "getOnIt": "Get on it",
+    "done": "Done",
+    "late": "Late",
+    "onTime": "On time",
+    "analysis": "Analysis",
+    "noDataAvailable": "No data available",
+    "sleep": "Sleep",
+    "overview": "Overview",
+    "driveTime": "Drive Time",
+    "signUpWithGoogle": "Sign Up with Google",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "invalidUsernameOrPassword": "Invalid username or password",
+    "noInternetConnection": "No internet connection",
+    "oneHour": "1 hour",
+    "countHours": "{count} hours",
+    "@countHours": {
+      "description": "X hours",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x hours"
+        }
+      }},
+    "oneMinute": "1 minute",
+    "countMinutes": "{count} minutes",
+    "@countMinutes": {
+      "description": "X minutes",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x minutes"
+        }
+      }},
+    "countDays": "{count} days",
+    "@countDays": {
+      "description": "X days",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "x days"
+        }
+      }},
+    "custom": "Custom"
 }
