@@ -7,10 +7,10 @@ abstract class ScheduleSummaryEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetScheduleDaySummary extends ScheduleSummaryEvent {
+class GetScheduleDaySummaryEvent extends ScheduleSummaryEvent {
   final Timeline timeline;
-  final List<DaySummary> daySummarys;
-  GetScheduleDaySummary({required this.daySummarys, required this.timeline});
+  // final List<DaySummary> daySummarys;
+  GetScheduleDaySummaryEvent({required this.timeline});
 
   @override
   List<Object> get props => [];
