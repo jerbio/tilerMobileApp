@@ -13,6 +13,8 @@ class DayData {
   TilerEvent? wakeTile;
   Duration? sleepDuration;
 
+  DayData();
+
   static DayData generateRandomDayData(int dayIndex) {
     List<SubCalendarEvent> subEvents = Utility.generateAdhocSubEvents(
             new Timeline.fromDateTimeAndDuration(
@@ -35,4 +37,6 @@ class DayData {
 
     return retValue;
   }
+
+  DayData.fromJson(Map<String, dynamic> json) {}
 }

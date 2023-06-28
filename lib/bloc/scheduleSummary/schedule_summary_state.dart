@@ -9,21 +9,12 @@ abstract class ScheduleSummaryState extends Equatable {
 
 class ScheduleSummaryInitial extends ScheduleSummaryState {}
 
-// class ScheduleDaySummaryLoading extends ScheduleSummaryState {}
-
 class ScheduleDaySummaryLoaded extends ScheduleSummaryState {
-  List<SubCalendarEvent> tardySubEvent;
-  List<SubCalendarEvent> nonViableSubEvent;
-  List<SubCalendarEvent> wakeSubEvent;
-  List<SubCalendarEvent> sleepSubEvent;
-  List<SubCalendarEvent> completeSubEvent;
-  List<SubCalendarEvent> deletedSubEvent;
+  DayData? dayData;
+  ScheduleDaySummaryLoaded({required this.dayData});
+}
 
-  ScheduleDaySummaryLoaded(
-      {required this.tardySubEvent,
-      required this.nonViableSubEvent,
-      required this.wakeSubEvent,
-      required this.sleepSubEvent,
-      required this.completeSubEvent,
-      required this.deletedSubEvent});
+class ScheduleDaySummaryLoading extends ScheduleSummaryState {
+  DayData? dayData;
+  ScheduleDaySummaryLoading({this.dayData});
 }
