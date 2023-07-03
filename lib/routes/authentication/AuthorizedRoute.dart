@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -14,11 +16,13 @@ import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 
 import '../../constants.dart';
 
@@ -34,15 +38,23 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
+  final AccessManager accessManager = AccessManager();
+  Tuple3<Position, bool, bool>? locationAccess;
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
+  bool isLocationRequestTriggered = false;
 
   @override
   void initState() {
     localNotificationService = LocalNotificationService();
     super.initState();
     localNotificationService.initialize(this.context);
+    accessManager.locationAccess().then((value) {
+      setState(() {
+        locationAccess = value;
+      });
+    });
   }
 
   void _onBottomNavigationTap(int index) {
@@ -318,8 +330,75 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
+  Widget renderLocationRequest() {
+    const lottieAsset = 'assets/lottie/car-on-the-road.json';
+    Widget retValue = Scaffold(
+      body: Center(
+        child: Container(
+          color: TileStyles.primaryColorLightHSL.toColor(),
+          alignment: Alignment.center,
+          width: MediaQuery.of(context).size.width * TileStyles.tileWidthRatio,
+          height:
+              MediaQuery.of(context).size.height * TileStyles.tileWidthRatio,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 300),
+                padding: EdgeInsets.all(10),
+                width: MediaQuery.of(context).size.width *
+                    TileStyles.tileWidthRatio,
+                child: Text(
+                    AppLocalizations.of(context)!.allowAccessDescription,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.white)),
+              ),
+              Container(
+                child: Lottie.asset(lottieAsset, height: 150),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
+                child: ElevatedButton(
+                    onPressed: () async {
+                      await accessManager
+                          .locationAccess(forceDeviceCheck: true)
+                          .then((value) {
+                        setState(() {
+                          locationAccess = value;
+                          isLocationRequestTriggered = true;
+                        });
+                      });
+                    },
+                    child:
+                        Text(AppLocalizations.of(context)!.allowLocationAccessQ,
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontFamily: TileStyles.rubikFontName,
+                              fontWeight: FontWeight.w400,
+                            ))),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+
+    return retValue;
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (!isLocationRequestTriggered &&
+        locationAccess != null &&
+        !locationAccess!.item2 &&
+        locationAccess!.item3) {
+      return renderLocationRequest();
+    }
+
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support

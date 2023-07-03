@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/services/storageManager.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -25,6 +26,7 @@ class Setting extends StatefulWidget {
 
 class _SettingState extends State<Setting> {
   Authentication authentication = Authentication();
+  SecureStorageManager secureStorageManager = SecureStorageManager();
   SettingsApi settingsApi = SettingsApi();
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
@@ -223,8 +225,9 @@ class _SettingState extends State<Setting> {
 
   Widget createLogOutButton() {
     Widget retValue = ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           authentication.deauthenticateCredentials();
+          await secureStorageManager.deleteAllStorageData();
           Navigator.pushNamedAndRemoveUntil(
               context, '/LoggedOut', (route) => false);
           this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
