@@ -135,6 +135,7 @@ flutter:
     - assets/lottie/abstract-waves-circles.json
     - assets/lottie/abstract-waves-lines.json
     - assets/lottie/abstract-waves-narrow-lines.json
+    - assets/lottie/car-on-the-road.json
     - assets/iconScout/block.svg
     - assets/iconScout/deadline.svg
     - assets/iconScout/notes.svg
