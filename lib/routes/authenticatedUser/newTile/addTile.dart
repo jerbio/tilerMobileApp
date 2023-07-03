@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:switch_up/switch_up.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -912,6 +913,7 @@ class AddTileState extends State<AddTile> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        refreshScheduleSummary(currentState.lookupTimeline);
       }
     }).onError((error, stackTrace) {
       if (error != null) {
@@ -942,10 +944,24 @@ class AddTileState extends State<AddTile> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        refreshScheduleSummary(currentState.lookupTimeline);
       }
     });
 
     return retValue;
+  }
+
+  void refreshScheduleSummary(Timeline? lookupTimeline) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
   }
 
   Widget generateDeadline() {

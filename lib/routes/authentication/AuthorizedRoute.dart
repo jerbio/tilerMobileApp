@@ -6,11 +6,13 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -104,6 +106,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return containerWrapper;
   }
 
+  void refreshScheduleSummary(Timeline? lookupTimeline) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
+  }
+
   void displayDialog(Size screenSize) {
     showGeneralDialog(
       barrierDismissible: true,
@@ -185,6 +200,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                               scheduleTimeline: currentState.lookupTimeline,
                               previousTimeline: currentState.lookupTimeline,
                             ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
                       }
                     }).catchError((onError) {
                       final currentState =
@@ -204,6 +220,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                               scheduleTimeline: currentState.lookupTimeline,
                               previousTimeline: currentState.lookupTimeline,
                             ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
                       }
                     });
                     Navigator.pop(context);
@@ -227,12 +244,14 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           .whenComplete(() {
                         var scheduleBloc =
                             this.context.read<ScheduleBloc>().state;
+                        Timeline? lookupTimeline;
                         if (scheduleBloc is ScheduleLoadedState) {
                           this.context.read<ScheduleBloc>().add(
                               GetScheduleEvent(
                                   previousSubEvents: scheduleBloc.subEvents,
                                   scheduleTimeline: scheduleBloc.lookupTimeline,
                                   isAlreadyLoaded: true));
+                          lookupTimeline = scheduleBloc.lookupTimeline;
                         }
                         if (scheduleBloc is ScheduleInitialState) {
                           this.context.read<ScheduleBloc>().add(
@@ -241,7 +260,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                                   scheduleTimeline:
                                       Utility.initialScheduleTimeline,
                                   isAlreadyLoaded: false));
+                          lookupTimeline = Utility.initialScheduleTimeline;
                         }
+
+                        refreshScheduleSummary(lookupTimeline);
                       });
                     },
                     child: ListTile(

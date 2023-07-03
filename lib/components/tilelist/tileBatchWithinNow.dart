@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
-import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -23,13 +24,13 @@ import '../../constants.dart';
 class WithinNowBatch extends TileBatch {
   TileWidget? _currentWidget;
   WithinNowBatchState? _state;
-  DayData? dayData;
+  TimelineSummary? dayData;
 
   WithinNowBatch(
       {String? header = '',
       String? footer = 'Upcoming',
       List<TilerEvent>? tiles,
-      DayData? dayData,
+      TimelineSummary? dayData,
       Key? key})
       : super(
             header: header,
@@ -244,7 +245,7 @@ class WithinNowBatchState extends TileBatchState {
 
     List<Widget> children = [];
     if (dayData != null && this.widget.tiles != null) {
-      this.dayData!.nonViableTiles = this
+      this.dayData!.nonViable = this
           .widget
           .tiles!
           .where(
@@ -252,12 +253,13 @@ class WithinNowBatchState extends TileBatchState {
           .toList();
       childrenColumnWidgets.add(Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayData: this.dayData!)));
+          child: DaySummary(dayTimelineSummary: this.dayData!)));
     }
 
     children.add(Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-        child: DaySummary(dayData: this.dayData ?? DayData())));
+        child:
+            DaySummary(dayTimelineSummary: this.dayData ?? TimelineSummary())));
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
 
@@ -290,6 +292,7 @@ class WithinNowBatchState extends TileBatchState {
                 scheduleTimeline: currentState.lookupTimeline,
                 previousTimeline: currentState.lookupTimeline,
               ));
+          refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
         }
 
         if (currentState is ScheduleLoadedState) {
@@ -299,6 +302,7 @@ class WithinNowBatchState extends TileBatchState {
                 scheduleTimeline: currentState.lookupTimeline,
                 previousTimeline: currentState.lookupTimeline,
               ));
+          refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
         }
 
         if (currentState is ScheduleLoadingState) {
@@ -308,6 +312,8 @@ class WithinNowBatchState extends TileBatchState {
                 scheduleTimeline: currentState.previousLookupTimeline,
                 previousTimeline: currentState.previousLookupTimeline,
               ));
+          refreshScheduleSummary(
+              lookupTimeline: currentState.previousLookupTimeline);
         }
       },
       child: Container(
@@ -350,6 +356,19 @@ class WithinNowBatchState extends TileBatchState {
         children: children,
       ),
     );
+  }
+
+  void refreshScheduleSummary({Timeline? lookupTimeline}) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
   }
 
   bool isAllNewEntries(

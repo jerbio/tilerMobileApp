@@ -84,38 +84,50 @@ class ScheduleApi extends AppApi {
     return retValue;
   }
 
-  Future<dynamic> getDaySummary(Timeline timeLine) async {
+  Future<Map<int, TimelineSummary>> getDaySummary(Timeline timeline) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       String tilerDomain = Constants.tilerDomain;
-      DateTime dateTime = DateTime.now();
       String url = tilerDomain;
-      if (this.authentication.cachedCredentials != null) {
-        final queryParameters = {
-          'UserName': '',
-          'StartRange': timeLine.start!.toInt().toString(),
-          'EndRange': timeLine.end!.toInt().toString(),
-          'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
-          'MobileApp': true.toString()
-        };
-        Uri uri =
-            Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
 
-        var header = this.getHeaders();
+      DateTime dateTime = Utility.currentTime();
+      final queryParameters = {
+        'StartRange': timeline.start!.toInt().toString(),
+        'EndRange': timeline.end!.toInt().toString(),
+        'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString()
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Schedule/daySummarys', updatedParams);
+      var header = this.getHeaders();
+      if (header != null) {
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map jsDayIndexToTimelineSummary = jsonResult['Content'];
+            Map<int, TimelineSummary> retValue = {};
 
-        if (header != null) {
-          var response = await http.get(uri, headers: header);
-          var jsonResult = jsonDecode(response.body);
-          if (isJsonResponseOk(jsonResult)) {
-            if (isContentInResponse(jsonResult)) {
-              return jsonResult['Content'];
+            for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
+              int jsDayIndex = int.parse(jsDayIndexString);
+              DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);
+              Map<String, dynamic> timelineSummaryJson =
+                  jsDayIndexToTimelineSummary[jsDayIndexString];
+              TimelineSummary timelineSummary =
+                  TimelineSummary.subCalendarEventFromJson(timelineSummaryJson);
+              timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
+              retValue[dateOfFirst.universalDayIndex] = timelineSummary;
             }
+
+            return retValue;
           }
         }
       }
+      throw TilerError();
     }
-    var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
-    return retValue;
+    throw TilerError();
   }
 
   Future<
@@ -398,7 +410,8 @@ class ScheduleApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
-            return TimelineSummary.fromJson(jsonResult['Content']);
+            return TimelineSummary.subCalendarEventFromJson(
+                jsonResult['Content']);
           }
         }
       }

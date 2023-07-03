@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
@@ -15,6 +16,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.dart';
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
@@ -105,6 +107,7 @@ class _EditTileState extends State<EditTile> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        refreshScheduleSummary(currentState.lookupTimeline);
       }
       return value;
     });
@@ -220,6 +223,21 @@ class _EditTileState extends State<EditTile> {
     }
 
     return retValue;
+  }
+
+  void refreshScheduleSummary(Timeline? lookupTimeline) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      lookupTimeline =
+          lookupTimeline == null ? Utility.todayTimeline() : lookupTimeline;
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
   }
 
   @override
@@ -572,6 +590,7 @@ class _EditTileState extends State<EditTile> {
                               scheduleTimeline: currentState.lookupTimeline,
                               previousTimeline: currentState.lookupTimeline,
                             ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
                       }
                       if (currentState is ScheduleLoadedState) {
                         this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -580,6 +599,7 @@ class _EditTileState extends State<EditTile> {
                               scheduleTimeline: currentState.lookupTimeline,
                               previousTimeline: currentState.lookupTimeline,
                             ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
                       }
                       Navigator.pop(context);
                       return value;

@@ -822,7 +822,7 @@ class _SummaryPage extends State<SummaryPage> {
           height: double.infinity,
           color: TileStyles.primaryColorLightHSL.toColor(),
           child: SingleChildScrollView(
-            child: (isLoadingAnalysis || isLoadingTimelineSummary)
+            child: (isLoadingTimelineSummary)
                 ? Container(
                     height: MediaQuery.of(context).size.height,
                     child: Center(
@@ -854,16 +854,28 @@ class _SummaryPage extends State<SummaryPage> {
                       // renderAnalysisData(),
                       this.timelineSummary == null
                           ? SizedBox.shrink()
-                          : renderCompleteTiles(
-                              this.timelineSummary!.complete ?? []),
+                          : renderCompleteTiles(<SubCalendarEvent>[
+                              ...((this.timelineSummary!.complete ?? [])
+                                  .map<SubCalendarEvent>((eachSubEvent) {
+                                return eachSubEvent as SubCalendarEvent;
+                              }))
+                            ]),
                       this.timelineSummary == null
                           ? SizedBox.shrink()
-                          : renderUnscheduledTiles(
-                              this.timelineSummary!.nonViable ?? []),
+                          : renderUnscheduledTiles(<SubCalendarEvent>[
+                              ...((this.timelineSummary!.nonViable ?? [])
+                                  .map<SubCalendarEvent>((eachSubEvent) {
+                                return eachSubEvent as SubCalendarEvent;
+                              }))
+                            ]),
                       this.timelineSummary == null
                           ? SizedBox.shrink()
-                          : renderTardyTiles(this.timelineSummary!.tardy ?? []),
-                      // renderDriveData(),
+                          : renderTardyTiles(<SubCalendarEvent>[
+                              ...((this.timelineSummary!.tardy ?? [])
+                                  .map<SubCalendarEvent>((eachSubEvent) {
+                                return eachSubEvent as SubCalendarEvent;
+                              }))
+                            ]),
                     ],
                   ),
           ),

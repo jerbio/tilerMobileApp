@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
@@ -83,6 +85,21 @@ class _TileDetailState extends State<TileDetail> {
     });
   }
 
+  void refreshScheduleSummary(Timeline? lookupTimeline) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      lookupTimeline =
+          lookupTimeline == null ? Utility.todayTimeline() : lookupTimeline;
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
+  }
+
   Future<CalendarEvent> calEventUpdate() {
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
@@ -104,6 +121,7 @@ class _TileDetailState extends State<TileDetail> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        refreshScheduleSummary(currentState.lookupTimeline);
       }
       return value;
     });

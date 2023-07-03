@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
@@ -87,6 +88,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: updatedTimeline));
+          refreshScheduleSummary(lookupTimeline: updatedTimeline);
         }
 
         if (currentState is ScheduleEvaluationState) {
@@ -102,6 +104,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
+          refreshScheduleSummary(lookupTimeline: this.timeLine);
         }
 
         if (currentState is ScheduleLoadingState &&
@@ -118,6 +121,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
+          refreshScheduleSummary(lookupTimeline: this.timeLine);
         }
       } else if (_scrollController.position.pixels <= minScrollLimit &&
           _scrollController.position.userScrollDirection.index == 1) {
@@ -139,6 +143,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
+          refreshScheduleSummary(lookupTimeline: this.timeLine);
         }
 
         if (currentState is ScheduleEvaluationState) {
@@ -154,6 +159,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
+          refreshScheduleSummary(lookupTimeline: this.timeLine);
         }
 
         if (currentState is ScheduleLoadingState &&
@@ -170,6 +176,7 @@ class _TileListState extends State<TileList> {
               isAlreadyLoaded: true,
               previousTimeline: currentTimeline,
               scheduleTimeline: this.timeLine));
+          refreshScheduleSummary(lookupTimeline: this.timeLine);
         }
       }
       localNotificationService.initialize(this.context);
@@ -187,6 +194,7 @@ class _TileListState extends State<TileList> {
   void callScheduleRefresh() {
     if (this.mounted) {
       final currentState = this.context.read<ScheduleBloc>().state;
+      Timeline? lookupTimeline;
       if (currentState is ScheduleEvaluationState) {
         this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
@@ -194,6 +202,8 @@ class _TileListState extends State<TileList> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        lookupTimeline = currentState.lookupTimeline;
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
       }
 
       if (currentState is ScheduleLoadedState) {
@@ -203,6 +213,8 @@ class _TileListState extends State<TileList> {
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,
             ));
+        lookupTimeline = currentState.lookupTimeline;
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
       }
 
       if (currentState is ScheduleLoadingState) {
@@ -212,6 +224,21 @@ class _TileListState extends State<TileList> {
               scheduleTimeline: currentState.previousLookupTimeline,
               previousTimeline: currentState.previousLookupTimeline,
             ));
+        lookupTimeline = currentState.previousLookupTimeline;
+        refreshScheduleSummary(
+            lookupTimeline: currentState.previousLookupTimeline);
+      }
+      final currentScheduleSummaryState =
+          this.context.read<ScheduleSummaryBloc>().state;
+
+      if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+          currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+          currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+        this.context.read<ScheduleSummaryBloc>().add(
+              GetScheduleDaySummaryEvent(
+                timeline: lookupTimeline,
+              ),
+            );
       }
     }
     autoRefreshTileList(Duration(minutes: 4));
@@ -658,6 +685,19 @@ class _TileListState extends State<TileList> {
     }
   }
 
+  void refreshScheduleSummary({Timeline? lookupTimeline}) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
+  }
+
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
     double currentTime = Utility.msCurrentTime.toDouble();
@@ -753,11 +793,13 @@ class _TileListState extends State<TileList> {
       }
     }
 
+    Timeline newTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeline,
         isAlreadyLoaded: !forceRenderingPage,
-        scheduleTimeline: Timeline.fromDateTime(startDateTime, endDateTime)));
+        scheduleTimeline: newTimeline));
+    refreshScheduleSummary(lookupTimeline: newTimeline);
   }
 
   @override
@@ -888,6 +930,7 @@ class _TileListState extends State<TileList> {
                 scheduleTimeline: timeLine,
                 isAlreadyLoaded: false,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
+            refreshScheduleSummary(lookupTimeline: timeLine);
             return renderPending();
           }
 
