@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/animatedLine.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
@@ -91,9 +92,25 @@ class TileWidgetState extends State<TileWidget>
     this.widget.subEvent = subEvent;
   }
 
+  void refreshScheduleSummary({Timeline? lookupTimeline}) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      lookupTimeline =
+          lookupTimeline == null ? Utility.todayTimeline() : lookupTimeline;
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
+  }
+
   void callScheduleRefresh() {
     if (this.mounted) {
       this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+      refreshScheduleSummary();
     }
   }
 

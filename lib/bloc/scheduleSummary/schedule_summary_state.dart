@@ -10,11 +10,13 @@ abstract class ScheduleSummaryState extends Equatable {
 class ScheduleSummaryInitial extends ScheduleSummaryState {}
 
 class ScheduleDaySummaryLoaded extends ScheduleSummaryState {
-  DayData? dayData;
-  ScheduleDaySummaryLoaded({required this.dayData});
+  Timeline? timeline;
+  List<TimelineSummary>? dayData;
+  ScheduleDaySummaryLoaded({required this.dayData, this.timeline});
 }
 
 class ScheduleDaySummaryLoading extends ScheduleSummaryState {
-  DayData? dayData;
-  ScheduleDaySummaryLoading({this.dayData});
+  Timeline? timeline;
+  List<TimelineSummary>? dayData;
+  ScheduleDaySummaryLoading({this.dayData, this.timeline});
 }

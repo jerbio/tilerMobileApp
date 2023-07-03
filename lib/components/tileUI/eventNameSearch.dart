@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -61,6 +62,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         return this.calendarEventApi.setAsNow(tileId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          refreshScheduleSummary();
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
@@ -104,6 +106,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          refreshScheduleSummary();
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
@@ -143,6 +146,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         return this.calendarEventApi.complete(tileId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          refreshScheduleSummary();
         }).onError((error, stackTrace) {
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
@@ -164,9 +168,23 @@ class EventNameSearchState extends SearchWidgetState {
           isAlreadyLoaded: true,
           message: message,
           callBack: generateCallBack()));
+      refreshScheduleSummary();
       Navigator.pop(context);
     };
     return retValue;
+  }
+
+  void refreshScheduleSummary({Timeline? lookupTimeline}) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
   }
 
   Widget createDeletionButton(TilerEvent tile) {

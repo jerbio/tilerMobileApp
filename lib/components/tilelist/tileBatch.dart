@@ -3,13 +3,14 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/tileRemovalType.dart';
-import 'package:tiler_app/data/dayData.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -31,7 +32,7 @@ class TileBatch extends StatefulWidget {
   String? header;
   String? footer;
   int? dayIndex;
-  DayData? dayData;
+  TimelineSummary? dayData;
   ConnectionState? connectionState;
 
   TileBatch(
@@ -64,7 +65,7 @@ class TileBatchState extends State<TileBatch> {
   bool _pendingRendering = false;
 
   Timeline? sleepTimeline;
-  DayData? _dayData;
+  TimelineSummary? _dayData;
   AnimatedList? animatedList;
 
   @override
@@ -72,7 +73,7 @@ class TileBatchState extends State<TileBatch> {
     super.initState();
     isInitialLoad = true;
     if (dayData == null && this.widget.dayIndex != null) {
-      _dayData = DayData();
+      _dayData = TimelineSummary();
       _dayData!.dayIndex = this.widget.dayIndex;
     }
     if (this.widget.dayData != null) {
@@ -81,7 +82,7 @@ class TileBatchState extends State<TileBatch> {
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
   }
 
-  DayData? get dayData {
+  TimelineSummary? get dayData {
     return this._dayData;
   }
 
@@ -147,6 +148,19 @@ class TileBatchState extends State<TileBatch> {
     }
   }
 
+  void refreshScheduleSummary({Timeline? lookupTimeline}) {
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     const double heightMargin = 262;
@@ -170,7 +184,7 @@ class TileBatchState extends State<TileBatch> {
         uniqueKey);
     childrenColumnWidgets = [];
     if (dayData != null && this.widget.tiles != null) {
-      this.dayData!.nonViableTiles = this
+      this.dayData!.nonViable = this
           .widget
           .tiles!
           .where(
@@ -178,7 +192,7 @@ class TileBatchState extends State<TileBatch> {
           .toList();
       childrenColumnWidgets.add(Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayData: this.dayData!)));
+          child: DaySummary(dayTimelineSummary: this.dayData!)));
     }
 
     Widget? sleepWidget;
@@ -265,6 +279,7 @@ class TileBatchState extends State<TileBatch> {
                   scheduleTimeline: currentState.lookupTimeline,
                   previousTimeline: currentState.lookupTimeline,
                 ));
+            refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadedState) {
@@ -274,6 +289,7 @@ class TileBatchState extends State<TileBatch> {
                   scheduleTimeline: currentState.lookupTimeline,
                   previousTimeline: currentState.lookupTimeline,
                 ));
+            refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadingState) {
@@ -283,6 +299,8 @@ class TileBatchState extends State<TileBatch> {
                   scheduleTimeline: currentState.previousLookupTimeline,
                   previousTimeline: currentState.previousLookupTimeline,
                 ));
+            refreshScheduleSummary(
+                lookupTimeline: currentState.previousLookupTimeline);
           }
         },
         child: dayContent));

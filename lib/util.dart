@@ -35,6 +35,7 @@ class Utility {
   ];
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
+  static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
   static final Random randomizer = Random.secure();
 
   static bool isDebugSet = false;
@@ -114,6 +115,15 @@ class Utility {
     Duration totalDuration = Duration(days: dayIndex);
     DateTime retValueShifted =
         Utility._beginningOfTime.dayDate.add(totalDuration);
+    DateTime retValue = DateTime(
+        retValueShifted.year, retValueShifted.month, retValueShifted.day);
+    return retValue;
+  }
+
+  static DateTime getTimeFromIndexForJS(int dayIndex) {
+    Duration totalDuration = Duration(days: dayIndex);
+    DateTime retValueShifted =
+        Utility._jsBeginningOfTime.dayDate.add(totalDuration);
     DateTime retValue = DateTime(
         retValueShifted.year, retValueShifted.month, retValueShifted.day);
     return retValue;
@@ -583,22 +593,16 @@ class Utility {
     return retValue;
     //Continue from here Jerome you need to write the function for detecting conflicting events and then creating the interferring list.
   }
-   static List<Timeline> getListofDays(DateTime startDate){
-List<Timeline> result=[];
-DateTime endDate=startDate.add(Duration(days: 7));
-do{
 
-
-       final   timeLine = new Timeline(
-              startDate.millisecondsSinceEpoch.toInt(),
-              startDate
-                  .add(Duration(hours: 6))
-                  .millisecondsSinceEpoch
-                  .toInt());
-          result.add(timeLine);
-  startDate = startDate.add(Utility.oneDay);
-}while(startDate.millisecondsSinceEpoch<endDate.millisecondsSinceEpoch);
-
+  static List<Timeline> getListofDays(DateTime startDate) {
+    List<Timeline> result = [];
+    DateTime endDate = startDate.add(Duration(days: 7));
+    do {
+      final timeLine = new Timeline(startDate.millisecondsSinceEpoch.toInt(),
+          startDate.add(Duration(hours: 6)).millisecondsSinceEpoch.toInt());
+      result.add(timeLine);
+      startDate = startDate.add(Utility.oneDay);
+    } while (startDate.millisecondsSinceEpoch < endDate.millisecondsSinceEpoch);
 
     return result;
   }
@@ -691,7 +695,6 @@ extension DurationInMS on TimeOfDay {
     final format = DateFormat.jm(); //"6:00 AM"
     return format.format(dt);
   }
- 
 }
 
 extension DateTimeHuman on DateTime {
@@ -748,8 +751,8 @@ extension DateTimeHuman on DateTime {
     return dayString;
   }
 
-String get dateDateWeek{
- String dayString = '';
+  String get dateDateWeek {
+    String dayString = '';
     if (this.isToday) {
       dayString = 'Today';
     } else if (this.isYesterday) {
@@ -764,10 +767,9 @@ String get dateDateWeek{
       } else {
         dayString = DateFormat('EEE, MMM d, ' 'yy').format(this);
       }
-
     }
-          return dayString;
-    }
+    return dayString;
+  }
 
   DateTime get dayDate {
     return DateTime(this.year, this.month, this.day);
