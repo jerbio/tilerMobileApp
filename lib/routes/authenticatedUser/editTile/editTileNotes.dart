@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
@@ -48,7 +50,9 @@ class _EditTileNoteState extends State<EditTileNote> {
           child: TextFormField(
             minLines: 5,
             maxLines: 10,
-            textInputAction: TextInputAction.done,
+            textInputAction: Platform.isAndroid
+                ? TextInputAction.newline
+                : TextInputAction.done,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
             enabled: !(this.widget.isProcrastinate),
