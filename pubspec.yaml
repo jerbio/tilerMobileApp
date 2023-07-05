@@ -61,8 +61,6 @@ dependencies:
   flutter_svg: ^2.0.5
   lottie: ^2.2.0
   scrollable_positioned_list: ^0.3.5
-  pie_chart:
-    path: thirdParty/pie
   fl_chart: ^0.62.0
   google_sign_in: ^6.1.2
   font_awesome_flutter: ^10.4.0
