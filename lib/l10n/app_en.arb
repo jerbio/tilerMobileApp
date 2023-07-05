@@ -280,5 +280,7 @@
           "example": "x days"
         }
       }},
-    "custom": "Custom"
+    "custom": "Custom",
+    "allowAccessDescription": "Tiler needs your location to help schedule tiles more efficiently. \nYour data remains private and is only used for this purpose.",
+    "allowLocationAccessQ": "Allow location access?"
 }
