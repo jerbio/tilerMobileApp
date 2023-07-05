@@ -225,76 +225,92 @@ class AuthorizationApi extends AppApi {
   }
 
   Future<AuthenticationData?> processAndroidGoogleLogin() async {
-    String clientId = dotenv.env[Constants.googleClientIdKey]!;
-    String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
-    final requestedScopes = Constants.googleApiScopes;
-    Future<Map<String, dynamic>> getRefreshToken(String clientId,
-        String clientSecret, String serverAuthCode, List<String> scopes) async {
-      final String refreshTokenEndpoint = 'https://oauth2.googleapis.com/token';
+    try {
+      String clientId = dotenv.env[Constants.googleClientIdKey]!;
+      String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
+      final requestedScopes = Constants.googleApiScopes;
+      Future<Map<String, dynamic>> getRefreshToken(
+          String clientId,
+          String clientSecret,
+          String serverAuthCode,
+          List<String> scopes) async {
+        final String refreshTokenEndpoint =
+            'https://oauth2.googleapis.com/token';
 
-      final Map<String, dynamic> requestBody = {
-        'access_type': 'offline',
-        'client_id': clientId,
-        'client_secret': clientSecret,
-        'grant_type': 'authorization_code',
-        'code': serverAuthCode,
-        'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
-        'scope': scopes.join(' '),
-      };
+        final Map<String, dynamic> requestBody = {
+          'access_type': 'offline',
+          'client_id': clientId,
+          'client_secret': clientSecret,
+          'grant_type': 'authorization_code',
+          'code': serverAuthCode,
+          'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
+          'scope': scopes.join(' '),
+        };
 
-      final http.Response response = await http.post(
-        Uri.parse(refreshTokenEndpoint),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: requestBody,
-      );
+        final http.Response response = await http.post(
+          Uri.parse(refreshTokenEndpoint),
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: requestBody,
+        );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        return responseData;
-      } else {
-        throw Exception('Failed to authenticate user account');
-      }
-    }
-
-    if (GoogleSignInApi.googleUser != null) {
-      GoogleSignInApi.googleUser!.clearAuthCache();
-      await GoogleSignInApi.logout();
-    }
-
-    var googleUser = await GoogleSignInApi.login();
-
-    if (googleUser != null) {
-      var googleAuthentication = await googleUser.authentication;
-      var authHeaders = await googleUser.authHeaders;
-      print(authHeaders);
-
-      String? refreshToken;
-      String? accessToken = googleAuthentication.accessToken;
-      String? serverAuthCode =
-          googleUser.serverAuthCode ?? googleAuthentication.idToken;
-      if (serverAuthCode != null) {
-        refreshToken = googleAuthentication.idToken!;
-        Map serverResponse = await getRefreshToken(
-            clientId, clientSecret, serverAuthCode, requestedScopes);
-
-        refreshToken = serverResponse['refresh_token'];
-        accessToken = serverResponse['access_token'];
-      }
-      String providerName = 'Google';
-      try {
-        return await getBearerToken(
-            accessToken: accessToken!,
-            email: googleUser.email,
-            providerId: googleUser.id,
-            refreshToken: refreshToken!,
-            displayName: googleUser.displayName!,
-            thirdpartyType: providerName);
-      } catch (e) {
-        if (e is TilerError) {
-          throw e;
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> responseData = jsonDecode(response.body);
+          return responseData;
+        } else {
+          throw Exception('Failed to authenticate user account');
         }
       }
+
+      if (GoogleSignInApi.googleUser != null) {
+        GoogleSignInApi.googleUser!.clearAuthCache();
+        await GoogleSignInApi.logout();
+      }
+
+      var googleUser = await GoogleSignInApi.login()
+          .then((value) => value)
+          .catchError((onError) {
+        print("ERROR GoogleSignInApi.login" + onError.toString());
+        print(onError);
+      });
+
+      print('Signed in googleUser');
+      print(googleUser);
+
+      if (googleUser != null) {
+        var googleAuthentication = await googleUser.authentication;
+        var authHeaders = await googleUser.authHeaders;
+        print(authHeaders);
+
+        String? refreshToken;
+        String? accessToken = googleAuthentication.accessToken;
+        String? serverAuthCode =
+            googleUser.serverAuthCode ?? googleAuthentication.idToken;
+        if (serverAuthCode != null) {
+          refreshToken = googleAuthentication.idToken!;
+          Map serverResponse = await getRefreshToken(
+              clientId, clientSecret, serverAuthCode, requestedScopes);
+
+          refreshToken = serverResponse['refresh_token'];
+          accessToken = serverResponse['access_token'];
+        }
+        String providerName = 'Google';
+        try {
+          return await getBearerToken(
+              accessToken: accessToken!,
+              email: googleUser.email,
+              providerId: googleUser.id,
+              refreshToken: refreshToken!,
+              displayName: googleUser.displayName!,
+              thirdpartyType: providerName);
+        } catch (e) {
+          if (e is TilerError) {
+            throw e;
+          }
+        }
+      }
+      throw TilerError();
+    } catch (e) {
+      print(e);
     }
-    throw TilerError();
   }
 }

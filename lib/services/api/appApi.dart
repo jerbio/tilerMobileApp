@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/util.dart';
 import '../localAuthentication.dart';
 
@@ -14,6 +15,7 @@ abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';
   static const int batchCount = 10;
   Authentication authentication = new Authentication();
+  AccessManager accessManager = AccessManager();
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
             jsonResult['Error'].containsKey('Code')) &&
@@ -78,20 +80,9 @@ abstract class AppApi {
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
     if (includeLocationParams) {
-      try {
-        Position initialPosition = position;
-        isLocationVerified = true;
-        position =
-            await Utility.determineDevicePosition().catchError((onError) {
-          isLocationVerified = false;
-          print('Tiler app: failed to pull device location.');
-          print(onError);
-          return initialPosition;
-        });
-      } catch (e) {
-        print('Tiler app error in getting location');
-        print(e);
-      }
+      var locationAccessResult = await accessManager.locationAccess();
+      isLocationVerified = locationAccessResult.item2;
+      position = locationAccessResult.item1;
     }
     if (!requestParams.containsKey('TimeZoneOffset')) {
       requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
