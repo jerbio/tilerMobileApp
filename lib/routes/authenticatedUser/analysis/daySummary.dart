@@ -117,7 +117,8 @@ class _DaySummaryState extends State<DaySummary> {
         listeners: [
           BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
             listener: (context, state) {
-              if (state is ScheduleDaySummaryLoaded) {
+              if (state is ScheduleDaySummaryLoaded &&
+                  state.requestId == null) {
                 if (state.dayData != null && dayData != null) {
                   TimelineSummary? latestDayData = state.dayData!
                       .where((timelineSummary) =>
@@ -129,7 +130,8 @@ class _DaySummaryState extends State<DaySummary> {
                   });
                 }
               }
-              if (state is ScheduleDaySummaryLoading) {
+              if (state is ScheduleDaySummaryLoading &&
+                  state.requestId == null) {
                 setState(() {
                   pendingFlag = true;
                 });
@@ -139,7 +141,7 @@ class _DaySummaryState extends State<DaySummary> {
         ],
         child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
           builder: (context, state) {
-            if (state is ScheduleDaySummaryLoaded) {
+            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
               TimelineSummary? latestDayData = state.dayData!
                   .where((timelineSummary) =>
                       timelineSummary.dayIndex == dayData?.dayIndex)

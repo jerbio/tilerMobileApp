@@ -50,7 +50,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     localNotificationService = LocalNotificationService();
     super.initState();
     localNotificationService.initialize(this.context);
-    accessManager.locationAccess().then((value) {
+    accessManager.locationAccess(statusCheck: true).then((value) {
       setState(() {
         locationAccess = value;
       });
@@ -392,6 +392,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
+    // return renderLocationRequest();
     if (!isLocationRequestTriggered &&
         locationAccess != null &&
         !locationAccess!.item2 &&

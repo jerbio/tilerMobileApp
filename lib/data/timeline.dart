@@ -42,7 +42,11 @@ class Timeline with TimeRange {
           ' - ' +
           (new DateTime.fromMillisecondsSinceEpoch(this.end!.toInt(),
                   isUtc: true)
-              .toString());
+              .toString()) +
+          ' ## ' +
+          (this.duration.inDays > 1
+              ? this.duration.inDays.toString() + ' days'
+              : this.duration.toString());
     }
 
     return retValue;
