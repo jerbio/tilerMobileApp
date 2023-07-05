@@ -24,6 +24,15 @@ class _DaySummaryState extends State<DaySummary> {
     dayData = this.widget.dayTimelineSummary;
   }
 
+  bool get isPending {
+    bool retValue = false;
+    retValue = retValue ||
+        this.context.read<ScheduleSummaryBloc>().state
+            is ScheduleDaySummaryLoading;
+    retValue = pendingFlag || retValue;
+    return retValue;
+  }
+
   Widget renderDayMetricInfo() {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
@@ -37,7 +46,7 @@ class _DaySummaryState extends State<DaySummary> {
         ));
     const textStyle = const TextStyle(
         fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
-    Widget? completeWidget = pendingFlag ? pendingShimmer : null;
+    Widget? completeWidget = isPending ? pendingShimmer : null;
     if ((dayData?.complete?.length ?? 0) > 0) {
       completeWidget = Container(
         child: Row(
@@ -59,7 +68,7 @@ class _DaySummaryState extends State<DaySummary> {
       rowSymbolElements
           .add(Container(margin: iconMargin, child: completeWidget));
     }
-    Widget? warnWidget = pendingFlag ? pendingShimmer : null;
+    Widget? warnWidget = isPending ? pendingShimmer : null;
     if ((dayData?.nonViable?.length ?? 0) > 0) {
       warnWidget = Container(
         child: Row(
@@ -80,7 +89,7 @@ class _DaySummaryState extends State<DaySummary> {
     if (warnWidget != null) {
       rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
     }
-    Widget? sleepWidget = pendingFlag ? pendingShimmer : null;
+    Widget? sleepWidget = isPending ? pendingShimmer : null;
     if ((dayData?.sleepDuration?.inHours ?? 0) > 0) {
       sleepWidget = Container(
         child: Row(
