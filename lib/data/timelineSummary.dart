@@ -39,6 +39,13 @@ class TimelineSummary {
     return retValue;
   }
 
+  DateTime? get date {
+    if (this.dayIndex != null) {
+      return Utility.getTimeFromIndex(dayIndex!);
+    }
+    return null;
+  }
+
   TimelineSummary.subCalendarEventFromJson(Map<String, dynamic> json) {
     if (json.containsKey('timeline') && json['timeline'] != null) {
       timeline = Timeline.fromJson(json['timeline']);
