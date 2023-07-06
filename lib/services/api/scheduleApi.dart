@@ -41,7 +41,6 @@ class ScheduleApi extends AppApi {
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
         String? username = '';
-        // String? username = 'j3r0m3.5pam@gmail.com';
         final queryParameters = {
           'UserName': username,
           'StartRange': timeLine.start!.toInt().toString(),

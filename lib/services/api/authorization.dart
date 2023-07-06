@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -12,6 +13,7 @@ import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/util.dart';
 import 'package:web_browser/web_browser.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
@@ -73,15 +75,24 @@ class AuthorizationApi extends AppApi {
   Future<ThirdPartyAuthenticationData?> iosSignIn() async {
     final List<String> requestedScopes = Constants.googleApiScopes;
     String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
+    String timeZone = await FlutterTimezone.getLocalTimezone();
+    String timeZoneOffset = Utility.getTimeZoneOffset().toString();
     String nonParsedURI =
         'https://${Constants.tilerDomain}/account/googleMobileSignIn';
     String redirectUri = Uri.encodeComponent(nonParsedURI);
+    Map<String, dynamic> timeZoneData = {
+      'timeZone': timeZone,
+      'timeZoneOffset': timeZoneOffset
+    };
+
+    String encodedTimeZoneData = jsonEncode(timeZoneData);
 
     Future<String> getAuthorizationUrl() async {
       final authUrl = Uri.parse('https://accounts.google.com/o/oauth2/auth?'
           'client_id=$clientId&'
           'redirect_uri=$redirectUri&'
           'response_type=code&'
+          'state=$encodedTimeZoneData&'
           'scope=${requestedScopes.join(' ')}');
 
       return authUrl.toString();
@@ -188,7 +199,8 @@ class AuthorizationApi extends AppApi {
       required String refreshToken,
       required String displayName,
       required String providerId,
-      required String thirdpartyType}) async {
+      required String thirdpartyType,
+      required String timeZone}) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
     Uri uri = Uri.https(url, 'account/MobileExternalLogin');
@@ -198,6 +210,8 @@ class AuthorizationApi extends AppApi {
       'AccessToken': accessToken,
       'DisplayName': displayName,
       'ProviderKey': providerId,
+      'TimeZone': timeZone,
+      'TimeZoneOffset': Utility.getTimeZoneOffset().toString(),
       'ThirdPartyType': thirdpartyType,
       'RefreshToken': refreshToken
     };
@@ -295,12 +309,14 @@ class AuthorizationApi extends AppApi {
         }
         String providerName = 'Google';
         try {
+          String timeZone = await FlutterTimezone.getLocalTimezone();
           return await getBearerToken(
               accessToken: accessToken!,
               email: googleUser.email,
               providerId: googleUser.id,
               refreshToken: refreshToken!,
               displayName: googleUser.displayName!,
+              timeZone: timeZone,
               thirdpartyType: providerName);
         } catch (e) {
           if (e is TilerError) {
