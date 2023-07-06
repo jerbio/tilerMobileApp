@@ -15,7 +15,7 @@ class AccessManager {
     const isAccessPermitedKey = 'accessAllowed';
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
-    const Duration thirtyMins = Duration(minutes: 30);
+    const Duration thirtyMins = Duration(minutes: 1);
     DateTime timeOfNextCheck = Utility.currentTime().add(thirtyMins);
     Tuple2<bool, DateTime> accessStatus = new Tuple2(false, timeOfNextCheck);
     bool isLocationVerified = false;
