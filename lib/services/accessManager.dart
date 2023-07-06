@@ -16,8 +16,10 @@ class AccessManager {
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
     const Duration thirtyMins = Duration(minutes: 1);
-    DateTime timeOfNextCheck = Utility.currentTime().add(thirtyMins);
-    Tuple2<bool, DateTime> accessStatus = new Tuple2(false, timeOfNextCheck);
+    int currentTime = Utility.msCurrentTime;
+    DateTime timeOfNextCheck =
+        DateTime.fromMillisecondsSinceEpoch(currentTime).add(thirtyMins);
+    Tuple2<bool, DateTime>? accessStatus;
     bool isLocationVerified = false;
     Map<String, dynamic>? loadedLocationInfo =
         await _secureStorageManager.getLocationAccess();
@@ -39,8 +41,17 @@ class AccessManager {
     }
 
     Map<String, Object> locationData = {};
-    int currentTime = Utility.msCurrentTime;
     int referenceTimeForNextCheck = currentTime;
+
+    if (accessStatus == null) {
+      if (!forceDeviceCheck) {
+        return Tuple3(retValue, false,
+            true); //item3 is true because we evaluate that since we haven't stored it we have no access
+      }
+      //If we need to force the hardware check on gps then we need to set the time check as earlier than now. This might be a hack.
+      accessStatus = Tuple2(false,
+          DateTime.fromMillisecondsSinceEpoch(currentTime).add(-thirtyMins));
+    }
 
     if (statusCheck) {
       return Tuple3(
