@@ -6,7 +6,7 @@ List<String> scopes = Constants.googleApiScopes;
 
 class GoogleSignInApi {
   static final _googleSignIn = GoogleSignIn(
-      clientId: dotenv.env[Constants.googleClientIdKey],
+      serverClientId: dotenv.env[Constants.googleClientIdKey],
       scopes: scopes,
       forceCodeForRefreshToken: true);
 

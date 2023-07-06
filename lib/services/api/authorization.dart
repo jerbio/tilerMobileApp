@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -12,6 +13,7 @@ import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/util.dart';
 import 'package:web_browser/web_browser.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
@@ -73,15 +75,24 @@ class AuthorizationApi extends AppApi {
   Future<ThirdPartyAuthenticationData?> iosSignIn() async {
     final List<String> requestedScopes = Constants.googleApiScopes;
     String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
+    String timeZone = await FlutterTimezone.getLocalTimezone();
+    String timeZoneOffset = Utility.getTimeZoneOffset().toString();
     String nonParsedURI =
         'https://${Constants.tilerDomain}/account/googleMobileSignIn';
     String redirectUri = Uri.encodeComponent(nonParsedURI);
+    Map<String, dynamic> timeZoneData = {
+      'timeZone': timeZone,
+      'timeZoneOffset': timeZoneOffset
+    };
+
+    String encodedTimeZoneData = jsonEncode(timeZoneData);
 
     Future<String> getAuthorizationUrl() async {
       final authUrl = Uri.parse('https://accounts.google.com/o/oauth2/auth?'
           'client_id=$clientId&'
           'redirect_uri=$redirectUri&'
           'response_type=code&'
+          'state=$encodedTimeZoneData&'
           'scope=${requestedScopes.join(' ')}');
 
       return authUrl.toString();
@@ -188,7 +199,8 @@ class AuthorizationApi extends AppApi {
       required String refreshToken,
       required String displayName,
       required String providerId,
-      required String thirdpartyType}) async {
+      required String thirdpartyType,
+      required String timeZone}) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
     Uri uri = Uri.https(url, 'account/MobileExternalLogin');
@@ -198,6 +210,8 @@ class AuthorizationApi extends AppApi {
       'AccessToken': accessToken,
       'DisplayName': displayName,
       'ProviderKey': providerId,
+      'TimeZone': timeZone,
+      'TimeZoneOffset': Utility.getTimeZoneOffset().toString(),
       'ThirdPartyType': thirdpartyType,
       'RefreshToken': refreshToken
     };
@@ -225,76 +239,94 @@ class AuthorizationApi extends AppApi {
   }
 
   Future<AuthenticationData?> processAndroidGoogleLogin() async {
-    String clientId = dotenv.env[Constants.googleClientIdKey]!;
-    String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
-    final requestedScopes = Constants.googleApiScopes;
-    Future<Map<String, dynamic>> getRefreshToken(String clientId,
-        String clientSecret, String serverAuthCode, List<String> scopes) async {
-      final String refreshTokenEndpoint = 'https://oauth2.googleapis.com/token';
+    try {
+      String clientId = dotenv.env[Constants.googleClientIdKey]!;
+      String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
+      final requestedScopes = Constants.googleApiScopes;
+      Future<Map<String, dynamic>> getRefreshToken(
+          String clientId,
+          String clientSecret,
+          String serverAuthCode,
+          List<String> scopes) async {
+        final String refreshTokenEndpoint =
+            'https://oauth2.googleapis.com/token';
 
-      final Map<String, dynamic> requestBody = {
-        'access_type': 'offline',
-        'client_id': clientId,
-        'client_secret': clientSecret,
-        'grant_type': 'authorization_code',
-        'code': serverAuthCode,
-        'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
-        'scope': scopes.join(' '),
-      };
+        final Map<String, dynamic> requestBody = {
+          'access_type': 'offline',
+          'client_id': clientId,
+          'client_secret': clientSecret,
+          'grant_type': 'authorization_code',
+          'code': serverAuthCode,
+          'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
+          'scope': scopes.join(' '),
+        };
 
-      final http.Response response = await http.post(
-        Uri.parse(refreshTokenEndpoint),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: requestBody,
-      );
+        final http.Response response = await http.post(
+          Uri.parse(refreshTokenEndpoint),
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: requestBody,
+        );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = jsonDecode(response.body);
-        return responseData;
-      } else {
-        throw Exception('Failed to authenticate user account');
-      }
-    }
-
-    if (GoogleSignInApi.googleUser != null) {
-      GoogleSignInApi.googleUser!.clearAuthCache();
-      await GoogleSignInApi.logout();
-    }
-
-    var googleUser = await GoogleSignInApi.login();
-
-    if (googleUser != null) {
-      var googleAuthentication = await googleUser.authentication;
-      var authHeaders = await googleUser.authHeaders;
-      print(authHeaders);
-
-      String? refreshToken;
-      String? accessToken = googleAuthentication.accessToken;
-      String? serverAuthCode =
-          googleUser.serverAuthCode ?? googleAuthentication.idToken;
-      if (serverAuthCode != null) {
-        refreshToken = googleAuthentication.idToken!;
-        Map serverResponse = await getRefreshToken(
-            clientId, clientSecret, serverAuthCode, requestedScopes);
-
-        refreshToken = serverResponse['refresh_token'];
-        accessToken = serverResponse['access_token'];
-      }
-      String providerName = 'Google';
-      try {
-        return await getBearerToken(
-            accessToken: accessToken!,
-            email: googleUser.email,
-            providerId: googleUser.id,
-            refreshToken: refreshToken!,
-            displayName: googleUser.displayName!,
-            thirdpartyType: providerName);
-      } catch (e) {
-        if (e is TilerError) {
-          throw e;
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> responseData = jsonDecode(response.body);
+          return responseData;
+        } else {
+          throw Exception('Failed to authenticate user account');
         }
       }
+
+      if (GoogleSignInApi.googleUser != null) {
+        GoogleSignInApi.googleUser!.clearAuthCache();
+        await GoogleSignInApi.logout();
+      }
+
+      var googleUser = await GoogleSignInApi.login()
+          .then((value) => value)
+          .catchError((onError) {
+        print("ERROR GoogleSignInApi.login" + onError.toString());
+        print(onError);
+      });
+
+      print('Signed in googleUser');
+      print(googleUser);
+
+      if (googleUser != null) {
+        var googleAuthentication = await googleUser.authentication;
+        var authHeaders = await googleUser.authHeaders;
+        print(authHeaders);
+
+        String? refreshToken;
+        String? accessToken = googleAuthentication.accessToken;
+        String? serverAuthCode =
+            googleUser.serverAuthCode ?? googleAuthentication.idToken;
+        if (serverAuthCode != null) {
+          refreshToken = googleAuthentication.idToken!;
+          Map serverResponse = await getRefreshToken(
+              clientId, clientSecret, serverAuthCode, requestedScopes);
+
+          refreshToken = serverResponse['refresh_token'];
+          accessToken = serverResponse['access_token'];
+        }
+        String providerName = 'Google';
+        try {
+          String timeZone = await FlutterTimezone.getLocalTimezone();
+          return await getBearerToken(
+              accessToken: accessToken!,
+              email: googleUser.email,
+              providerId: googleUser.id,
+              refreshToken: refreshToken!,
+              displayName: googleUser.displayName!,
+              timeZone: timeZone,
+              thirdpartyType: providerName);
+        } catch (e) {
+          if (e is TilerError) {
+            throw e;
+          }
+        }
+      }
+      throw TilerError();
+    } catch (e) {
+      print(e);
     }
-    throw TilerError();
   }
 }
