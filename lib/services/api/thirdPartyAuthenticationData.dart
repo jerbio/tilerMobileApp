@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class ThirdPartyAuthenticationData extends AuthenticationData {
@@ -60,12 +62,15 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
       String providerKey) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
+    String timeZone = await FlutterTimezone.getLocalTimezone();
     final queryParameters = {
       'AccessToken': accessToken,
       'RefreshToken': refreshToken,
       'providerKey': providerKey,
       'Email': email,
       'ThirdPartyType': provider,
+      'TimeZone': timeZone,
+      'TimeZoneOffset': Utility.getTimeZoneOffset().toString(),
       'grant_type': 'ThirdPartyAuthentication',
     };
 

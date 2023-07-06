@@ -1,5 +1,5 @@
 import 'package:lottie/lottie.dart';
-import 'package:pie_chart/pie_chart.dart';
+// import 'package:pie_chart/pie_chart.dart';
 import 'package:fl_chart/fl_chart.dart' as flchart;
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -664,154 +664,154 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
-  Widget renderDriveData() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      alignment: Alignment.center,
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: Column(
-        children: [
-          Container(
-            alignment: Alignment.topLeft,
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            child: Text(
-              AppLocalizations.of(context)!.driveTime,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
-            ),
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: 300,
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Stack(
-              children: [
-                Positioned(
-                  left: 0,
-                  top: 20,
-                  child: Container(
-                      height: 280,
-                      width: MediaQuery.of(context).size.width - 30,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: (dataDriveTime.isEmpty)
-                            ? Container(
-                                width: MediaQuery.of(context).size.width,
-                                child: Center(
-                                  child: Text(AppLocalizations.of(context)!
-                                      .noDataAvailable),
-                                ),
-                              )
-                            : PieChart(
-                                dataMap: dataDriveTime,
-                                animationDuration: Duration(milliseconds: 800),
-                                chartLegendSpacing: 32,
-                                chartRadius:
-                                    MediaQuery.of(context).size.width / 3.2,
-                                initialAngleInDegree: 0,
-                                chartType: ChartType.disc,
-                                ringStrokeWidth: 6,
-                                centerText: "",
-                                legendOptions: LegendOptions(
-                                  showLegendsInRow: false,
-                                  legendPosition: LegendPosition.right,
-                                  showLegends: true,
-                                  legendShape: BoxShape.rectangle,
-                                  legendTextStyle: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      overflow: TextOverflow.ellipsis,
-                                      fontSize: 12),
-                                ),
-                                chartValuesOptions: ChartValuesOptions(
-                                  showChartValueBackground: true,
-                                  showChartValues: false,
-                                  showChartValuesInPercentage: false,
-                                  showChartValuesOutside: false,
-                                  decimalPlaces: 1,
-                                ),
-                              ),
-                      )),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget renderDriveData() {
+  //   return Container(
+  //     margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+  //     alignment: Alignment.center,
+  //     width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+  //     child: Column(
+  //       children: [
+  //         Container(
+  //           alignment: Alignment.topLeft,
+  //           padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+  //           child: Text(
+  //             AppLocalizations.of(context)!.driveTime,
+  //             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+  //           ),
+  //         ),
+  //         Container(
+  //           width: MediaQuery.of(context).size.width,
+  //           height: 300,
+  //           decoration: BoxDecoration(
+  //               color: Colors.white,
+  //               borderRadius: BorderRadius.all(Radius.circular(10))),
+  //           child: Stack(
+  //             children: [
+  //               Positioned(
+  //                 left: 0,
+  //                 top: 20,
+  //                 child: Container(
+  //                     height: 280,
+  //                     width: MediaQuery.of(context).size.width - 30,
+  //                     child: SingleChildScrollView(
+  //                       scrollDirection: Axis.horizontal,
+  //                       child: (dataDriveTime.isEmpty)
+  //                           ? Container(
+  //                               width: MediaQuery.of(context).size.width,
+  //                               child: Center(
+  //                                 child: Text(AppLocalizations.of(context)!
+  //                                     .noDataAvailable),
+  //                               ),
+  //                             )
+  //                           : PieChart(
+  //                               dataMap: dataDriveTime,
+  //                               animationDuration: Duration(milliseconds: 800),
+  //                               chartLegendSpacing: 32,
+  //                               chartRadius:
+  //                                   MediaQuery.of(context).size.width / 3.2,
+  //                               initialAngleInDegree: 0,
+  //                               chartType: ChartType.disc,
+  //                               ringStrokeWidth: 6,
+  //                               centerText: "",
+  //                               legendOptions: LegendOptions(
+  //                                 showLegendsInRow: false,
+  //                                 legendPosition: LegendPosition.right,
+  //                                 showLegends: true,
+  //                                 legendShape: BoxShape.rectangle,
+  //                                 legendTextStyle: TextStyle(
+  //                                     fontWeight: FontWeight.w400,
+  //                                     overflow: TextOverflow.ellipsis,
+  //                                     fontSize: 12),
+  //                               ),
+  //                               chartValuesOptions: ChartValuesOptions(
+  //                                 showChartValueBackground: true,
+  //                                 showChartValues: false,
+  //                                 showChartValuesInPercentage: false,
+  //                                 showChartValuesOutside: false,
+  //                                 decimalPlaces: 1,
+  //                               ),
+  //                             ),
+  //                     )),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
-  Widget renderAnalysisData() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      alignment: Alignment.center,
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-              alignment: Alignment.topLeft,
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Text(
-                AppLocalizations.of(context)!.analysis,
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-              )),
-          Container(
-            height: 200,
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Stack(
-              children: [
-                Container(
-                  height: 180,
-                  width: MediaQuery.of(context).size.width - 30,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: (dataOverView.isEmpty)
-                        ? Container(
-                            width: MediaQuery.of(context).size.width,
-                            child: Center(
-                              child: Text(AppLocalizations.of(context)!
-                                  .noDataAvailable),
-                            ),
-                          )
-                        : PieChart(
-                            dataMap: dataOverView,
-                            animationDuration: Duration(milliseconds: 800),
-                            chartLegendSpacing: 30,
-                            chartRadius:
-                                MediaQuery.of(context).size.width / 3.2,
-                            initialAngleInDegree: 0,
-                            chartType: ChartType.ring,
-                            ringStrokeWidth: 6,
-                            centerText: AppLocalizations.of(context)!.overview,
-                            legendOptions: LegendOptions(
-                              showLegendsInRow: false,
-                              legendPosition: LegendPosition.right,
-                              showLegends: true,
-                              legendShape: BoxShape.rectangle,
-                              legendTextStyle: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 12),
-                            ),
-                            chartValuesOptions: ChartValuesOptions(
-                              showChartValueBackground: true,
-                              showChartValues: false,
-                              showChartValuesInPercentage: false,
-                              showChartValuesOutside: false,
-                              decimalPlaces: 1,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+  // Widget renderAnalysisData() {
+  //   return Container(
+  //     margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+  //     alignment: Alignment.center,
+  //     width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.center,
+  //       children: [
+  //         Container(
+  //             alignment: Alignment.topLeft,
+  //             padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+  //             child: Text(
+  //               AppLocalizations.of(context)!.analysis,
+  //               style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+  //             )),
+  //         Container(
+  //           height: 200,
+  //           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+  //           decoration: BoxDecoration(
+  //               color: Colors.white,
+  //               borderRadius: BorderRadius.all(Radius.circular(10))),
+  //           child: Stack(
+  //             children: [
+  //               Container(
+  //                 height: 180,
+  //                 width: MediaQuery.of(context).size.width - 30,
+  //                 child: SingleChildScrollView(
+  //                   scrollDirection: Axis.horizontal,
+  //                   child: (dataOverView.isEmpty)
+  //                       ? Container(
+  //                           width: MediaQuery.of(context).size.width,
+  //                           child: Center(
+  //                             child: Text(AppLocalizations.of(context)!
+  //                                 .noDataAvailable),
+  //                           ),
+  //                         )
+  //                       : PieChart(
+  //                           dataMap: dataOverView,
+  //                           animationDuration: Duration(milliseconds: 800),
+  //                           chartLegendSpacing: 30,
+  //                           chartRadius:
+  //                               MediaQuery.of(context).size.width / 3.2,
+  //                           initialAngleInDegree: 0,
+  //                           chartType: ChartType.ring,
+  //                           ringStrokeWidth: 6,
+  //                           centerText: AppLocalizations.of(context)!.overview,
+  //                           legendOptions: LegendOptions(
+  //                             showLegendsInRow: false,
+  //                             legendPosition: LegendPosition.right,
+  //                             showLegends: true,
+  //                             legendShape: BoxShape.rectangle,
+  //                             legendTextStyle: TextStyle(
+  //                                 fontWeight: FontWeight.bold, fontSize: 12),
+  //                           ),
+  //                           chartValuesOptions: ChartValuesOptions(
+  //                             showChartValueBackground: true,
+  //                             showChartValues: false,
+  //                             showChartValuesInPercentage: false,
+  //                             showChartValuesOutside: false,
+  //                             decimalPlaces: 1,
+  //                           ),
+  //                         ),
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
