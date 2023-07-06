@@ -11,7 +11,7 @@ class AccessManager {
   ///Item2 is a boolean and true if the location was verified from the actual gps device
   ///Item3 is a boolean and true if the call was a fresh attempt at reaching the gps device as opposed to a retry
   Future<Tuple3<Position, bool, bool>> locationAccess(
-      {bool forceDeviceCheck = false}) async {
+      {bool forceDeviceCheck = false, bool statusCheck = false}) async {
     const isAccessPermitedKey = 'accessAllowed';
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
@@ -41,6 +41,15 @@ class AccessManager {
     Map<String, Object> locationData = {};
     int currentTime = Utility.msCurrentTime;
     int referenceTimeForNextCheck = currentTime;
+
+    if (statusCheck) {
+      return Tuple3(
+          retValue,
+          accessStatus.item1,
+          accessStatus.item2.millisecondsSinceEpoch <
+              referenceTimeForNextCheck);
+    }
+
     if (forceDeviceCheck ||
         accessStatus.item1 ||
         accessStatus.item2.millisecondsSinceEpoch < referenceTimeForNextCheck) {
@@ -54,7 +63,7 @@ class AccessManager {
         print(onError);
         return retValue;
       });
-      locationData[isAccessPermitedKey] = accessStatus.item1;
+      locationData[isAccessPermitedKey] = isLocationVerified;
       locationData[timeOfLastAccessKey] = referenceTimeForNextCheck;
     } else {
       timeOfNextCheck =

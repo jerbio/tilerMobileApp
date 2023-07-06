@@ -12,11 +12,14 @@ class ScheduleSummaryInitial extends ScheduleSummaryState {}
 class ScheduleDaySummaryLoaded extends ScheduleSummaryState {
   Timeline? timeline;
   List<TimelineSummary>? dayData;
-  ScheduleDaySummaryLoaded({required this.dayData, this.timeline});
+  String? requestId;
+  ScheduleDaySummaryLoaded(
+      {required this.dayData, this.timeline, this.requestId});
 }
 
 class ScheduleDaySummaryLoading extends ScheduleSummaryState {
   Timeline? timeline;
   List<TimelineSummary>? dayData;
-  ScheduleDaySummaryLoading({this.dayData, this.timeline});
+  String? requestId;
+  ScheduleDaySummaryLoading({this.dayData, this.timeline, this.requestId});
 }
