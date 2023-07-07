@@ -91,25 +91,26 @@ class _DaySummaryState extends State<DaySummary> {
     if (warnWidget != null) {
       rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
     }
-    Widget? sleepWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.sleepDuration?.inHours ?? 0) > 0) {
-      sleepWidget = Container(
+    Widget? tardyWidget = isPending ? pendingShimmer : null;
+    if ((dayData?.tardy?.length ?? 0) > 0) {
+      tardyWidget = Container(
         child: Row(
           children: [
             Icon(
-              Icons.king_bed,
+              Icons.car_crash_outlined,
+              color: Colors.amberAccent,
               size: 30.0,
             ),
             Text(
-              (dayData?.sleepDuration?.inHours ?? 0).toString(),
+              (dayData?.tardy?.length ?? 0).toString(),
               style: textStyle,
             )
           ],
         ),
       );
     }
-    if (sleepWidget != null) {
-      rowSymbolElements.add(Container(margin: iconMargin, child: sleepWidget));
+    if (tardyWidget != null) {
+      rowSymbolElements.add(Container(margin: iconMargin, child: tardyWidget));
     }
 
     Widget retValue = Container(
