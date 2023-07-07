@@ -375,11 +375,35 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     },
                     child:
                         Text(AppLocalizations.of(context)!.allowLocationAccessQ,
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 25,
                               fontFamily: TileStyles.rubikFontName,
                               fontWeight: FontWeight.w400,
                             ))),
+              ),
+              Container(
+                margin: EdgeInsets.fromLTRB(0, 400, 0, 0),
+                child: ElevatedButton(
+                    style:
+                        ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                    onPressed: () async {
+                      await accessManager
+                          .locationAccess(denyAccess: false)
+                          .then((value) {
+                        setState(() {
+                          locationAccess = value;
+                          isLocationRequestTriggered = true;
+                        });
+                      });
+                    },
+                    child: Text(AppLocalizations.of(context)!.deny,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.w400,
+                        ))),
               )
             ],
           ),
