@@ -37,10 +37,12 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.accentColor.withAlpha(100),
-        highlightColor: Colors.grey.withAlpha(100),
+        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
+        highlightColor: Colors.white.withAlpha(100),
         child: Container(
-          color: Colors.green,
+          decoration: BoxDecoration(
+              color: Color.fromRGBO(31, 31, 31, 0.8),
+              borderRadius: BorderRadius.circular(8)),
           width: 30.0,
           height: 30.0,
         ));
@@ -74,8 +76,8 @@ class _DaySummaryState extends State<DaySummary> {
         child: Row(
           children: [
             Icon(
-              Icons.warning_amber,
-              color: TileStyles.warningAmber,
+              Icons.error,
+              color: Colors.redAccent,
               size: 30.0,
             ),
             Text(
