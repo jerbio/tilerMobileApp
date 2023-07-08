@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,6 +32,7 @@ class _SettingState extends State<Setting> {
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
   StartOfDay? endOfDay;
+  String? localTimeZone;
   bool isTimeOfDayLoaded = false;
   bool isAllRestrictionProfileLoaded = false;
 
@@ -72,6 +74,9 @@ class _SettingState extends State<Setting> {
     }
 
     if (this.endOfDay != null) {
+      if (localTimeZone != null) {
+        this.endOfDay!.timeZone = localTimeZone!;
+      }
       Future endOfDayUpdateFuture =
           settingsApi.updateStartOfDay(this.endOfDay!);
 
@@ -191,13 +196,16 @@ class _SettingState extends State<Setting> {
         isTimeOfDayLoaded = true;
       });
     });
+    FlutterTimezone.getLocalTimezone().then((value) {
+      setState(() {
+        localTimeZone = value;
+      });
+    });
   }
 
   Widget createEndOfDay() {
     TimeOfDay napTimeOfDay =
         this.endOfDay?.timeOfDay ?? Utility.defaultEndOfDay;
-    final formattedTimeOfDay =
-        MaterialLocalizations.of(context).formatTimeOfDay(napTimeOfDay);
     Widget retValue = Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
