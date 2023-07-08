@@ -37,10 +37,12 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.accentColor.withAlpha(100),
-        highlightColor: Colors.grey.withAlpha(100),
+        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
+        highlightColor: Colors.white.withAlpha(100),
         child: Container(
-          color: Colors.green,
+          decoration: BoxDecoration(
+              color: Color.fromRGBO(31, 31, 31, 0.8),
+              borderRadius: BorderRadius.circular(8)),
           width: 30.0,
           height: 30.0,
         ));
@@ -74,8 +76,8 @@ class _DaySummaryState extends State<DaySummary> {
         child: Row(
           children: [
             Icon(
-              Icons.warning_amber,
-              color: TileStyles.warningAmber,
+              Icons.error,
+              color: Colors.redAccent,
               size: 30.0,
             ),
             Text(
@@ -89,25 +91,26 @@ class _DaySummaryState extends State<DaySummary> {
     if (warnWidget != null) {
       rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
     }
-    Widget? sleepWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.sleepDuration?.inHours ?? 0) > 0) {
-      sleepWidget = Container(
+    Widget? tardyWidget = isPending ? pendingShimmer : null;
+    if ((dayData?.tardy?.length ?? 0) > 0) {
+      tardyWidget = Container(
         child: Row(
           children: [
             Icon(
-              Icons.king_bed,
+              Icons.car_crash_outlined,
+              color: Colors.amberAccent,
               size: 30.0,
             ),
             Text(
-              (dayData?.sleepDuration?.inHours ?? 0).toString(),
+              (dayData?.tardy?.length ?? 0).toString(),
               style: textStyle,
             )
           ],
         ),
       );
     }
-    if (sleepWidget != null) {
-      rowSymbolElements.add(Container(margin: iconMargin, child: sleepWidget));
+    if (tardyWidget != null) {
+      rowSymbolElements.add(Container(margin: iconMargin, child: tardyWidget));
     }
 
     Widget retValue = Container(

@@ -134,7 +134,11 @@ class _SummaryPage extends State<SummaryPage> {
       });
 
       isLoadingAnalysis = false;
-      setState(() {});
+      if (mounted) {
+        setState(() {
+          isLoadingAnalysis = false;
+        });
+      }
     });
   }
 
@@ -534,135 +538,135 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
-  Widget renderSleepData() {
-    return Column(
-      children: [
-        Text(
-          AppLocalizations.of(context)!.sleep,
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
-        ),
-        Container(
-          height: 300,
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.all(Radius.circular(10))),
-          child: (isLoadingAnalysis)
-              ? CircularProgressIndicator(
-                  color: Colors.blue,
-                )
-              : (shots.isEmpty)
-                  ? Container(
-                      child: Center(
-                          child: Text(
-                              AppLocalizations.of(context)!.noDataAvailable)),
-                    )
-                  : Stack(
-                      children: [
-                        Positioned(
-                          left: 20,
-                          top: 80,
-                          child: Container(
-                              height: 180,
-                              width: MediaQuery.of(context).size.width * 0.8,
-                              child: (shots.isEmpty)
-                                  ? Container(
-                                      width: MediaQuery.of(context).size.width,
-                                      child: Center(
-                                        child: Text(
-                                            AppLocalizations.of(context)!
-                                                .noDataAvailable),
-                                      ),
-                                    )
-                                  : _LineChart(
-                                      isShowingMainData: true,
-                                      spots: shots,
-                                    )),
-                        ),
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          child: Container(
-                              margin: EdgeInsets.only(left: 0, right: 20),
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12)),
-                              width: MediaQuery.of(context).size.width,
-                              height: 100,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    width: 12,
-                                  ),
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xffFAFAFA),
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(20)),
-                                    ),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Image.asset(
-                                          "assets/images/image8.png"),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 12,
-                                  ),
-                                  Container(
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Today",
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                              color: Color(0xff1F1F1F),
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w400),
-                                        ),
-                                        Text(
-                                          "8h 8m",
-                                          maxLines: 2,
-                                          style: TextStyle(
-                                              color: Color(0xff1F1F1F),
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(child: SizedBox()),
-                                  Container(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.2,
-                                    child: Text(
-                                      "8% more than last week!",
-                                      maxLines: 2,
-                                      style: TextStyle(
-                                          color: Color(0xff1F1F1F),
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w400),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 60,
-                                  )
-                                ],
-                              )),
-                        ),
-                      ],
-                    ),
-        ),
-      ],
-    );
-  }
+  // Widget renderSleepData() {
+  //   return Column(
+  //     children: [
+  //       Text(
+  //         AppLocalizations.of(context)!.sleep,
+  //         style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+  //       ),
+  //       Container(
+  //         height: 300,
+  //         decoration: BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.all(Radius.circular(10))),
+  //         child: (isLoadingAnalysis)
+  //             ? CircularProgressIndicator(
+  //                 color: Colors.blue,
+  //               )
+  //             : (shots.isEmpty)
+  //                 ? Container(
+  //                     child: Center(
+  //                         child: Text(
+  //                             AppLocalizations.of(context)!.noDataAvailable)),
+  //                   )
+  //                 : Stack(
+  //                     children: [
+  //                       Positioned(
+  //                         left: 20,
+  //                         top: 80,
+  //                         child: Container(
+  //                             height: 180,
+  //                             width: MediaQuery.of(context).size.width * 0.8,
+  //                             child: (shots.isEmpty)
+  //                                 ? Container(
+  //                                     width: MediaQuery.of(context).size.width,
+  //                                     child: Center(
+  //                                       child: Text(
+  //                                           AppLocalizations.of(context)!
+  //                                               .noDataAvailable),
+  //                                     ),
+  //                                   )
+  //                                 : _LineChart(
+  //                                     isShowingMainData: true,
+  //                                     spots: shots,
+  //                                   )),
+  //                       ),
+  //                       Positioned(
+  //                         top: 0,
+  //                         left: 0,
+  //                         child: Container(
+  //                             margin: EdgeInsets.only(left: 0, right: 20),
+  //                             decoration: BoxDecoration(
+  //                                 color: Colors.white,
+  //                                 borderRadius: BorderRadius.circular(12)),
+  //                             width: MediaQuery.of(context).size.width,
+  //                             height: 100,
+  //                             child: Row(
+  //                               mainAxisAlignment: MainAxisAlignment.start,
+  //                               crossAxisAlignment: CrossAxisAlignment.center,
+  //                               children: [
+  //                                 SizedBox(
+  //                                   width: 12,
+  //                                 ),
+  //                                 Container(
+  //                                   width: 50,
+  //                                   height: 50,
+  //                                   decoration: BoxDecoration(
+  //                                     color: Color(0xffFAFAFA),
+  //                                     borderRadius:
+  //                                         BorderRadius.all(Radius.circular(20)),
+  //                                   ),
+  //                                   child: Padding(
+  //                                     padding: const EdgeInsets.all(8.0),
+  //                                     child: Image.asset(
+  //                                         "assets/images/image8.png"),
+  //                                   ),
+  //                                 ),
+  //                                 SizedBox(
+  //                                   width: 12,
+  //                                 ),
+  //                                 Container(
+  //                                   child: Column(
+  //                                     mainAxisAlignment:
+  //                                         MainAxisAlignment.center,
+  //                                     crossAxisAlignment:
+  //                                         CrossAxisAlignment.start,
+  //                                     children: [
+  //                                       Text(
+  //                                         "Today",
+  //                                         maxLines: 2,
+  //                                         style: TextStyle(
+  //                                             color: Color(0xff1F1F1F),
+  //                                             fontSize: 13,
+  //                                             fontWeight: FontWeight.w400),
+  //                                       ),
+  //                                       Text(
+  //                                         "8h 8m",
+  //                                         maxLines: 2,
+  //                                         style: TextStyle(
+  //                                             color: Color(0xff1F1F1F),
+  //                                             fontSize: 20,
+  //                                             fontWeight: FontWeight.bold),
+  //                                       ),
+  //                                     ],
+  //                                   ),
+  //                                 ),
+  //                                 Expanded(child: SizedBox()),
+  //                                 Container(
+  //                                   width:
+  //                                       MediaQuery.of(context).size.width * 0.2,
+  //                                   child: Text(
+  //                                     "8% more than last week!",
+  //                                     maxLines: 2,
+  //                                     style: TextStyle(
+  //                                         color: Color(0xff1F1F1F),
+  //                                         fontSize: 13,
+  //                                         fontWeight: FontWeight.w400),
+  //                                   ),
+  //                                 ),
+  //                                 SizedBox(
+  //                                   width: 60,
+  //                                 )
+  //                               ],
+  //                             )),
+  //                       ),
+  //                     ],
+  //                   ),
+  //       ),
+  //     ],
+  //   );
+  // }
 
   // Widget renderDriveData() {
   //   return Container(

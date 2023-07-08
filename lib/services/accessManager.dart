@@ -11,7 +11,9 @@ class AccessManager {
   ///Item2 is a boolean and true if the location was verified from the actual gps device
   ///Item3 is a boolean and true if the call was a fresh attempt at reaching the gps device as opposed to a retry
   Future<Tuple3<Position, bool, bool>> locationAccess(
-      {bool forceDeviceCheck = false, bool statusCheck = false}) async {
+      {bool forceDeviceCheck = false,
+      bool statusCheck = false,
+      bool denyAccess = false}) async {
     const isAccessPermitedKey = 'accessAllowed';
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
@@ -61,9 +63,23 @@ class AccessManager {
               referenceTimeForNextCheck);
     }
 
-    if (forceDeviceCheck ||
-        accessStatus.item1 ||
-        accessStatus.item2.millisecondsSinceEpoch < referenceTimeForNextCheck) {
+    if (denyAccess) {
+      isLocationVerified = false;
+      referenceTimeForNextCheck =
+          DateTime.fromMillisecondsSinceEpoch(currentTime)
+              .add(Utility.oneDay)
+              .millisecondsSinceEpoch;
+      locationData[isAccessPermitedKey] = false;
+      locationData[timeOfLastAccessKey] = referenceTimeForNextCheck;
+      await _secureStorageManager.writeLocationAccess(locationData);
+      return Tuple3(retValue, isLocationVerified, false);
+    }
+
+    if (!denyAccess &&
+        (forceDeviceCheck ||
+            accessStatus.item1 ||
+            accessStatus.item2.millisecondsSinceEpoch <
+                referenceTimeForNextCheck)) {
       retValue = await Utility.determineDevicePosition().then((value) {
         isLocationVerified = true;
         return value;
