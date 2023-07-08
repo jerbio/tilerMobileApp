@@ -134,7 +134,11 @@ class _SummaryPage extends State<SummaryPage> {
       });
 
       isLoadingAnalysis = false;
-      setState(() {});
+      if (mounted) {
+        setState(() {
+          isLoadingAnalysis = false;
+        });
+      }
     });
   }
 
