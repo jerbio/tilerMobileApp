@@ -63,6 +63,7 @@ class TileBatchState extends State<TileBatch> {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late ListModel<TilerEvent>? _list;
   bool _pendingRendering = false;
+  double _emptyDayOpacity = 0;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -259,14 +260,27 @@ class TileBatchState extends State<TileBatch> {
       dayContent = Flex(
         direction: Axis.vertical,
         children: [
-          Container(
-              height: MediaQuery.of(context).size.height - heightMargin,
-              child: EmptyDayTile(
-                deadline: endOfDayTime,
-                dayIndex: this.widget.dayIndex,
-              ))
+          AnimatedOpacity(
+            opacity: _emptyDayOpacity,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+                height: MediaQuery.of(context).size.height - heightMargin,
+                child: EmptyDayTile(
+                  deadline: endOfDayTime,
+                  dayIndex: this.widget.dayIndex,
+                )),
+          )
         ],
       );
+      if (_emptyDayOpacity == 0) {
+        Timer(Duration(milliseconds: 200), () {
+          if (mounted) {
+            setState(() {
+              _emptyDayOpacity = 1;
+            });
+          }
+        });
+      }
     }
 
     childrenColumnWidgets.add(RefreshIndicator(
