@@ -26,8 +26,8 @@ var autoTileParams = [
       Duration(hours: 6),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_cute_photo_of_woman_and_man_working_together_looking__49c9615b-3c01-4914-aa4c-be6aaeba779d.png',
-      'assets/images/regenerativeArt/pictimely_people_working_on_home_renovation_project_together_45fb172b-3105-45e0-bc2b-adf7dd5963f6.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_renovating_their_home_699323d1-6938-4a45-9ec9-01ae9bbef757.png',
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_working_on_their_home_89d45464-6ce9-4623-b0c4-dcbe9bee8a96.png'
     ]
   },
   {
@@ -43,7 +43,7 @@ var autoTileParams = [
     ],
     'relevance': 4,
     'assets': [
-      'assets/images/regenerativeArt/pictimely_feeling_idle_excited_at_a_dance_party_2efb40a6-7b44-49d9-a038-50f197bb506a.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_taking_dance_lessons_with_d_d3c2a283-1c7a-4391-b960-de2f5087d487.png'
     ]
   },
   {
@@ -55,7 +55,7 @@ var autoTileParams = [
     ],
     'relevance': 4,
     'assets': [
-      'assets/images/regenerativeArt/pictimely_Have_a_movie_marathon_e574a17c-3c4a-439b-8c94-7ae1771495f4.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_diverse_people_watching_movie_with__2aca0b05-74a4-49ea-a7c3-07b8542cd627.png'
     ]
   },
   {
@@ -73,7 +73,7 @@ var autoTileParams = [
     ],
     'assets': [
       'assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png',
-      'assets/images/regenerativeArt/pictimely_people_working_on_home_renovation_project_together_45fb172b-3105-45e0-bc2b-adf7dd5963f6.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_working_on_their_home_89d45464-6ce9-4623-b0c4-dcbe9bee8a96.png'
     ]
   },
   {
@@ -135,7 +135,7 @@ var autoTileParams = [
       Duration(hours: 1),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_go_for_a_walk_at_different_time_of_the_day_and_differ_e708108b-c576-4e27-a01c-dce2a88c7599.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_going_on_relaxing_walk_b08a6746-c6f7-4937-86fa-445978011119.png'
     ]
   },
   {
@@ -161,7 +161,7 @@ var autoTileParams = [
       Duration(hours: 1),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_finishing_laundry_washing_machine_pressing_iron_or_st_5edd658e-47fa-4ac4-8466-09ad60cb40d2.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_diverse_people_doing_laundry_f83ffa56-27d2-4556-9bbb-175a92ec9b85.png'
     ]
   },
   {
@@ -173,7 +173,7 @@ var autoTileParams = [
       Duration(hours: 1),
     ],
     'assets': [
-      'assets/images/regenerativeArt/pictimely_barista_coffee_hanging_out_with_friends_at_a_coffee_s_0727cbe5-5c3b-4dd1-956f-7aa51dbdbd2b.png'
+      'assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_meeting_up_with_friends_fcf525d6-df39-4b54-887d-fc5afd8c1caa.png'
     ]
   }
 ];
