@@ -130,6 +130,7 @@ flutter:
     - assets/rive/
     - assets/lottie/blackCars.json
     - assets/lottie/redCars.json
+    - assets/lottie/redCars.json
     - assets/lottie/abstract-waves-circles.json
     - assets/lottie/abstract-waves-lines.json
     - assets/lottie/abstract-waves-narrow-lines.json
