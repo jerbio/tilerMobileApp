@@ -370,7 +370,7 @@ class PlayBackState extends State<PlayBack> {
                   color: Color.fromRGBO(31, 31, 31, .1),
                   borderRadius: BorderRadius.circular(25)),
             )),
-        Text(AppLocalizations.of(context)!.procrastinate,
+        Text(AppLocalizations.of(context)!.defer,
             style: TextStyle(fontSize: 12))
       ],
     );

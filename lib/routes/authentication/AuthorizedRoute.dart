@@ -281,7 +281,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     child: ListTile(
                       leading: Image.asset('assets/images/move_forward.png'),
                       title: Text(
-                        AppLocalizations.of(context)!.procrastinate,
+                        AppLocalizations.of(context)!.deferAll,
                         style: TextStyle(
                             fontSize: 20,
                             fontFamily: TileStyles.rubikFontName,
