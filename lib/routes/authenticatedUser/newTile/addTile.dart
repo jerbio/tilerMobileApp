@@ -95,6 +95,7 @@ class AddTileState extends State<AddTile> {
 
   Function? onProceed;
 
+  String? _restrictionProfileName;
   RestrictionProfile? _restrictionProfile;
   bool _isRestictionProfileManuallySet = false;
   ScheduleApi scheduleApi = ScheduleApi();
@@ -244,13 +245,80 @@ class AddTileState extends State<AddTile> {
     }
   }
 
+  String? getTimeOfDaySectionString(List<String>? timeOfDayString) {
+    const String morning = "morning";
+    const String afternoon = "afternoon";
+    const String evening = "evening";
+    const String night = "night";
+
+    if (timeOfDayString == null || timeOfDayString.isEmpty) {
+      return null;
+    }
+
+    if (timeOfDayString.length == 1) {
+      switch (timeOfDayString[0].toLowerCase()) {
+        case morning:
+          return AppLocalizations.of(context)!.morning;
+        case afternoon:
+          return AppLocalizations.of(context)!.afternoon;
+        case evening:
+          return AppLocalizations.of(context)!.evening;
+        case night:
+          return AppLocalizations.of(context)!.night;
+        default:
+          return null;
+      }
+    }
+    if (timeOfDayString.length == 2) {
+      if (timeOfDayString
+              .where((element) =>
+                  element.toLowerCase() == morning ||
+                  element.toLowerCase() == afternoon)
+              .length ==
+          2) {
+        return AppLocalizations.of(context)!.morningAndAfternoon;
+      }
+      if (timeOfDayString
+              .where((element) =>
+                  element.toLowerCase() == afternoon ||
+                  element.toLowerCase() == evening)
+              .length ==
+          2) {
+        return AppLocalizations.of(context)!.afternoonAndEvening;
+      }
+
+      if (timeOfDayString
+              .where((element) =>
+                  element.toLowerCase() == morning ||
+                  element.toLowerCase() == evening)
+              .length ==
+          2) {
+        return AppLocalizations.of(context)!.night;
+      }
+
+      if (timeOfDayString
+              .where((element) =>
+                  element.toLowerCase() == night ||
+                  element.toLowerCase() == evening)
+              .length ==
+          2) {
+        return AppLocalizations.of(context)!.night;
+      }
+    }
+
+    return null;
+  }
+
   Function generateSuggestionCallToServer() {
     if (pendingSendTextRequest != null) {
       pendingSendTextRequest!.cancel();
     }
 
     Function retValue = () async {
-      if (_isDurationManuallySet && _isLocationManuallySet) {
+      if (_isDurationManuallySet && _isLocationManuallySet ||
+          (this.widget.autoTile != null &&
+              this.widget.autoTile!.duration != null &&
+              this.widget.autoTile!.location != null)) {
         return;
       }
       var future = new Future.delayed(
@@ -287,6 +355,8 @@ class AddTileState extends State<AddTile> {
               }
               if (!_isRestictionProfileManuallySet) {
                 _restrictionProfile = _restrictionProfileResponse;
+                _restrictionProfileName =
+                    getTimeOfDaySectionString(remoteTileResponse.item4);
               }
             });
             isSubmissionReady();
@@ -638,7 +708,8 @@ class AddTileState extends State<AddTile> {
           );
         });
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
-      text: AppLocalizations.of(context)!.restriction,
+      text:
+          _restrictionProfileName ?? AppLocalizations.of(context)!.restriction,
       prefixIcon: Icon(
         Icons.switch_left,
         color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
@@ -668,6 +739,7 @@ class AddTileState extends State<AddTile> {
             restrictionParams.remove('routeRestrictionProfile');
             setState(() {
               _restrictionProfile = populatedRestrictionProfile;
+              _restrictionProfileName = null;
             });
           }
         });

@@ -17,7 +17,8 @@
     "sunday": "Sunday",
     "duration": "Duration",
     "addTile": "Add Tile",
-    "procrastinate": "Defer",
+    "defer": "Defer",
+    "deferAll": "Defer All",
     "procrastinating": "Procrastinating",
     "forecast": "Forecast",
     "whenQ": "When?",
@@ -283,5 +284,12 @@
     "custom": "Custom",
     "allowAccessDescription": "Tiler collects location data to enable efficient scheduling of tiles and appointments even when the app is closed or not in use. \nYour data remains private and is only used for this purpose.",
     "allowLocationAccessQ": "Allow location access?",
-    "deny": "Deny?"
-}
+    "deny": "Deny?",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "night": "Night",
+    "morningAndAfternoon": "Morning & Afternoon",
+    "afternoonAndEvening": "Afternoon & Evening",
+    "lateEvening": "Late Evening"
+  }
