@@ -5,7 +5,9 @@ class EditTileTime extends StatefulWidget {
   TimeOfDay time;
   _EditTileTimeState? _state;
   Function? onInputChange;
-  EditTileTime({required this.time, this.onInputChange});
+  bool isReadOnly = false;
+  EditTileTime(
+      {required this.time, this.onInputChange, this.isReadOnly = false});
 
   @override
   State<EditTileTime> createState() {
@@ -34,6 +36,9 @@ class _EditTileTimeState extends State<EditTileTime> {
     final formattedTimeOfDay = localizations.formatTimeOfDay(time);
     return GestureDetector(
       onTap: () {
+        if (this.widget.isReadOnly) {
+          return;
+        }
         Future<TimeOfDay?> selectedTime = showTimePicker(
           initialTime: time,
           context: context,

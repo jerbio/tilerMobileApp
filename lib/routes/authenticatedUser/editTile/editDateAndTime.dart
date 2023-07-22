@@ -10,14 +10,18 @@ class EditDateAndTime extends StatelessWidget {
   EditTileTime? _tileTime;
   EditTileDate? _tileDate;
   Function? onInputChange;
-  EditDateAndTime({required this.time, this.onInputChange}) {
+  bool isReadOnly = false;
+  EditDateAndTime(
+      {required this.time, this.onInputChange, this.isReadOnly = false}) {
     _tileTime = EditTileTime(
       time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
+      isReadOnly: this.isReadOnly,
     );
     _tileDate = EditTileDate(
       time: time.toLocal(),
       onInputChange: onDateChange,
+      isReadOnly: this.isReadOnly,
     );
   }
 
@@ -35,12 +39,18 @@ class EditDateAndTime extends StatelessWidget {
   }
 
   onTimeChange(TimeOfDay timeOfDayUpdate) {
+    if (this.isReadOnly) {
+      return;
+    }
     if (onInputChange != null) {
       onInputChange!();
     }
   }
 
   onDateChange(DateTime dateUpdate) {
+    if (this.isReadOnly) {
+      return;
+    }
     if (onInputChange != null) {
       onInputChange!();
     }
@@ -52,10 +62,12 @@ class EditDateAndTime extends StatelessWidget {
     _tileTime = EditTileTime(
       time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
+      isReadOnly: this.isReadOnly,
     );
     _tileDate = EditTileDate(
       time: time.toLocal(),
       onInputChange: onDateChange,
+      isReadOnly: this.isReadOnly,
     );
     return Container(
       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
@@ -67,6 +79,9 @@ class EditDateAndTime extends StatelessWidget {
             width: 1,
           ),
         ),
+        color: !this.isReadOnly
+            ? Colors.transparent
+            : TileStyles.disabledBackgroundColor,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

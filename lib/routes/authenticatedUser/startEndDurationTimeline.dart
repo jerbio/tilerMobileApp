@@ -5,6 +5,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationUIWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -12,17 +13,22 @@ class StartEndDurationTimeline extends StatefulWidget {
   late DateTime start;
   late Duration duration;
   late TimeRange _timeline;
+  bool isReadOnly = false;
   TextStyle? headerTextStyle;
   Function? onChange;
   StartEndDurationTimeline(
       {required this.start,
       required this.duration,
+      this.isReadOnly = false,
       this.onChange,
       this.headerTextStyle}) {
     _timeline = Timeline.fromDateTimeAndDuration(this.start, this.duration);
   }
-  StartEndDurationTimeline.fromTimeline(
-      {required TimeRange timeRange, Function? onChange}) {
+  StartEndDurationTimeline.fromTimeline({
+    required TimeRange timeRange,
+    Function? onChange,
+    this.isReadOnly = false,
+  }) {
     this.start = Utility.localDateTimeFromMs(timeRange.start!);
     this.duration = timeRange.duration;
     this.onChange = onChange;
@@ -65,6 +71,9 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
   }
 
   onDurationTap() {
+    if (this.widget.isReadOnly) {
+      return;
+    }
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -110,8 +119,14 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                   )),
               Container(
                   alignment: Alignment.topLeft,
+                  color: !this.widget.isReadOnly
+                      ? Colors.transparent
+                      : TileStyles.disabledBackgroundColor,
                   child: TimeAndDate(
-                      time: this._start, onInputChange: onTimeChange)),
+                    time: this._start,
+                    onInputChange: onTimeChange,
+                    isReadOnly: this.widget.isReadOnly,
+                  )),
             ],
           ),
           GestureDetector(
@@ -130,6 +145,9 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                       )),
                   Container(
                     alignment: Alignment.center,
+                    color: !this.widget.isReadOnly
+                        ? Colors.transparent
+                        : TileStyles.disabledBackgroundColor,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

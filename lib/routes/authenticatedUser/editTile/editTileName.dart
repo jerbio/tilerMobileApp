@@ -9,11 +9,13 @@ import 'package:tiler_app/util.dart';
 class EditTileName extends StatefulWidget {
   String tileName;
   Function? onInputChange;
+  bool isReadOnly = false;
   bool isProcrastinate;
   EditTileName(
       {required this.tileName,
       this.onInputChange,
-      this.isProcrastinate = false});
+      this.isProcrastinate = false,
+      this.isReadOnly = false});
 
   String get name {
     return tileName;
@@ -56,7 +58,8 @@ class _EditTileNameState extends State<EditTileName> {
                 : TextInputAction.done,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
-            enabled: !(this.widget.isProcrastinate),
+            enabled:
+                !(this.widget.isProcrastinate) && !(this.widget.isReadOnly),
             controller: this.widget.isProcrastinate ? null : _controller,
             style: TextStyle(
                 fontSize: 22.5,
