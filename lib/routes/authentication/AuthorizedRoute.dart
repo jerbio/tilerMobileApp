@@ -428,19 +428,21 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     List<Widget> widgetChildren = [
       TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
       Container(
-          margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-          decoration: BoxDecoration(
-            // color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                // spreadRadius: 5,
-                blurRadius: 7,
-                offset: const Offset(0, 7),
-              ),
-            ],
-          ),
-          child: DayRibbonCarousel(Utility.currentTime())),
+        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              blurRadius: 7,
+              offset: const Offset(0, 7),
+            ),
+          ],
+        ),
+        child: DayRibbonCarousel(
+          Utility.currentTime().dayDate,
+          autoUpdateAnchorDate: true,
+        ),
+      ),
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
