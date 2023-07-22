@@ -706,19 +706,19 @@ class _TileListState extends State<TileList> {
         .map((eachTile) => eachTile as SubCalendarEvent)
         .toList();
 
-    if (subSequentTiles.isNotEmpty) {
-      SubCalendarEvent notificationTile = subSequentTiles.first;
-      final scheduleState = this.context.read<ScheduleBloc>().state;
-      if (scheduleState is ScheduleLoadedState) {
-        this.context.read<ScheduleBloc>().add(DelayedGetSchedule(
-            delayDuration: notificationTile.durationTillEnd,
-            isAlreadyLoaded: true,
-            previousSubEvents: scheduleState.subEvents,
-            previousTimeline: scheduleState.lookupTimeline,
-            scheduleTimeline: scheduleState.lookupTimeline,
-            renderedTimelines: scheduleState.timelines));
-      }
-    }
+    // if (subSequentTiles.isNotEmpty) {
+    //   SubCalendarEvent notificationTile = subSequentTiles.first;
+    //   final scheduleState = this.context.read<ScheduleBloc>().state;
+    //   if (scheduleState is ScheduleLoadedState) {
+    //     this.context.read<ScheduleBloc>().add(DelayedGetSchedule(
+    //         delayDuration: notificationTile.durationTillEnd,
+    //         isAlreadyLoaded: true,
+    //         previousSubEvents: scheduleState.subEvents,
+    //         previousTimeline: scheduleState.lookupTimeline,
+    //         scheduleTimeline: scheduleState.lookupTimeline,
+    //         renderedTimelines: scheduleState.timelines));
+    //   }
+    // }
   }
 
   Widget renderPending({String? message}) {
