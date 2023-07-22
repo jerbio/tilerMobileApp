@@ -9,10 +9,12 @@ class EditTileNote extends StatefulWidget {
   String tileNote;
   Function? onInputChange;
   bool isProcrastinate;
+  bool isReadOnly = false;
   EditTileNote(
       {required this.tileNote,
       this.onInputChange,
-      this.isProcrastinate = false});
+      this.isProcrastinate = false,
+      this.isReadOnly = false});
 
   String get note {
     return tileNote;
@@ -55,7 +57,8 @@ class _EditTileNoteState extends State<EditTileNote> {
                 : TextInputAction.done,
             initialValue:
                 this.widget.isProcrastinate ? procrastinateText : null,
-            enabled: !(this.widget.isProcrastinate),
+            enabled:
+                !(this.widget.isProcrastinate) && !(this.widget.isReadOnly),
             controller: this.widget.isProcrastinate ? null : _controller,
             style: TextStyle(
                 fontSize: 20,

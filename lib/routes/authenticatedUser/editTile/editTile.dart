@@ -292,6 +292,7 @@ class _EditTileState extends State<EditTile> {
               _editTileName = EditTileName(
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
+                isReadOnly: !this.subEvent!.isActive,
                 onInputChange: dataChange,
               );
 
@@ -306,6 +307,7 @@ class _EditTileState extends State<EditTile> {
               _editTileNote = EditTileNote(
                 tileNote: tileNote,
                 onInputChange: dataChange,
+                isReadOnly: !this.subEvent!.isActive,
               );
               DateTime startTime =
                   this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
@@ -334,11 +336,13 @@ class _EditTileState extends State<EditTile> {
                 _editCalEndDateAndTime = EditDateAndTime(
                   time: calEndTime,
                   onInputChange: dataChange,
+                  isReadOnly: !this.subEvent!.isActive,
                 );
               }
 
               _startEndDurationTimeline = StartEndDurationTimeline.fromTimeline(
                 timeRange: this.subEvent!,
+                isReadOnly: !this.subEvent!.isActive,
                 onChange: (timeline) {
                   dataChange();
                 },
@@ -393,6 +397,7 @@ class _EditTileState extends State<EditTile> {
                                 decoration: InputDecoration(
                                   filled: true,
                                   isDense: true,
+                                  enabled: this.subEvent!.isActive,
                                   fillColor: Colors.transparent,
                                   border: UnderlineInputBorder(
                                     borderSide:
@@ -617,8 +622,9 @@ class _EditTileState extends State<EditTile> {
                     child: renderNextTileSuggestionContainer());
                 inputChildWidgets.add(nextTileSuggestionWrapper);
               }
-
-              inputChildWidgets.add(playBackButtonWrapper);
+              if (subEvent!.isActive) {
+                inputChildWidgets.add(playBackButtonWrapper);
+              }
               if (tileProgressWidget != null) {
                 inputChildWidgets.add(tileProgressWidget);
               }
@@ -639,6 +645,13 @@ class _EditTileState extends State<EditTile> {
               if (isPendingSubEventProcessing) {
                 stackElements.add(PendingWidget());
               }
+              // if (subEvent != null && !subEvent!.isActive) {
+              //   stackElements.add(Container(
+              //     color: Colors.black38,
+              //     width: double.infinity,
+              //     height: double.infinity,
+              //   ));
+              // }
               return Stack(
                 children: stackElements,
               );

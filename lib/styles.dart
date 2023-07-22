@@ -26,6 +26,7 @@ class TileStyles {
   static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
+  static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
   static Color appBarTextColor = Colors.white;

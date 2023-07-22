@@ -9,7 +9,9 @@ class EditTileDate extends StatefulWidget {
   DateTime time;
   _EditTileDateState? _state;
   Function? onInputChange;
-  EditTileDate({required this.time, this.onInputChange});
+  bool isReadOnly = false;
+  EditTileDate(
+      {required this.time, this.onInputChange, this.isReadOnly = false});
 
   @override
   State<EditTileDate> createState() {
@@ -32,6 +34,10 @@ class _EditTileDateState extends State<EditTileDate> {
   }
 
   void onEndDateTap() async {
+    if (this.widget.isReadOnly) {
+      return;
+    }
+
     DateTime _endDate = time;
     DateTime firstDate = _endDate.add(Duration(days: -14));
     DateTime lastDate = _endDate.add(Duration(days: 90));

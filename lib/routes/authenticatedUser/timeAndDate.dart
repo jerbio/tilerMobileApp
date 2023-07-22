@@ -8,10 +8,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 class TimeAndDate extends StatefulWidget {
   DateTime time = Utility.currentTime();
   Function? onInputChange;
+  bool isReadOnly = false;
   TimeAndDate({
     required this.time,
     Key? key,
     this.onInputChange,
+    this.isReadOnly = false,
   }) : super(key: key);
   @override
   State<StatefulWidget> createState() => _TimeAndDateState();
@@ -31,6 +33,9 @@ class _TimeAndDateState extends State<TimeAndDate> {
         localizations.formatTimeOfDay(TimeOfDay.fromDateTime(dateTime));
     return GestureDetector(
       onTap: () {
+        if (this.widget.isReadOnly) {
+          return;
+        }
         Future<TimeOfDay?> selectedTime = showTimePicker(
           initialTime: TimeOfDay.fromDateTime(dateTime),
           context: context,
@@ -61,6 +66,9 @@ class _TimeAndDateState extends State<TimeAndDate> {
   }
 
   void onDateTap() async {
+    if (this.widget.isReadOnly) {
+      return;
+    }
     DateTime _endDate = dateTime;
     DateTime firstDate = _endDate.add(Duration(days: -14));
     DateTime lastDate = _endDate.add(Duration(days: 90));
