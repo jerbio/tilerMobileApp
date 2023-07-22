@@ -645,13 +645,6 @@ class _EditTileState extends State<EditTile> {
               if (isPendingSubEventProcessing) {
                 stackElements.add(PendingWidget());
               }
-              // if (subEvent != null && !subEvent!.isActive) {
-              //   stackElements.add(Container(
-              //     color: Colors.black38,
-              //     width: double.infinity,
-              //     height: double.infinity,
-              //   ));
-              // }
               return Stack(
                 children: stackElements,
               );

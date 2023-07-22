@@ -804,6 +804,15 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
+    if (!this._todayTimeLine.isStartAndEndEqual(Utility.todayTimeline())) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            this._todayTimeLine = Utility.todayTimeline();
+          });
+        }
+      });
+    }
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
@@ -962,7 +971,6 @@ class _TileListState extends State<TileList> {
                             color: Colors.grey.shade200.withOpacity(0.5)),
                       ),
                     )))),
-                // renderPending(message: state.message),
               ],
             );
           }

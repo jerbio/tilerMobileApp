@@ -216,6 +216,14 @@ class WithinNowBatchState extends TileBatchState {
   bool internalBreak = false;
   @override
   Widget build(BuildContext context) {
+    print('Within now ' +
+        this.widget.dayIndex.toString() +
+        " " +
+        Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
+        " " +
+        (widget.tiles ?? []).length.toString() +
+        " " +
+        uniqueKey);
     latestBuildTiles = {};
     renderedTiles = this.pendingRenderedTiles ?? {};
     SubCalendarEvent? upcomingTile = SubCalendarEvent();
@@ -421,7 +429,6 @@ class WithinNowBatchState extends TileBatchState {
         int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
         if (toBeRemovedIndex != removedTile.item3) {
           if (toBeRemovedIndex >= 0) {
-            print('withinNow 0 removeAt');
             _timeSectionListModel.removeAt(toBeRemovedIndex);
           }
         }
@@ -434,9 +441,7 @@ class WithinNowBatchState extends TileBatchState {
       if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
         this._pendingRendering = true;
         Timer(Duration(milliseconds: 500), () {
-          print('Delayed UI update');
           for (var insertedTile in insertedTiles) {
-            print('withinNow insert');
             _timeSectionListModel.insert(
               insertedTile.item3!,
               insertedTile.item1,
@@ -450,7 +455,6 @@ class WithinNowBatchState extends TileBatchState {
                 .toList();
             int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
             if (toMovedIndex != -1) {
-              print('withinNow 1 removeAndUpdate');
               _timeSectionListModel.removeAndUpdate(
                   toMovedIndex, reorderedTile.item3!, reorderedTile.item1,
                   animate: toMovedIndex != reorderedTile.item3);
