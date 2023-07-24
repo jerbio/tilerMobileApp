@@ -25,6 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -37,6 +38,7 @@ class EditTile extends StatefulWidget {
 }
 
 class _EditTileState extends State<EditTile> {
+  WhatIfApi whatIfApi = new WhatIfApi();
   SubCalendarEvent? subEvent;
   TextEditingController? splitCountController;
   EditTilerEvent? editTilerEvent;
@@ -78,12 +80,46 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
-  void onInputCountChange() {
-    dataChange();
+  bool isScheduleReady(EditTilerEvent? editTilerEvent) {
+    return editTilerEvent != null &&
+        editTilerEvent.startTime != null &&
+        editTilerEvent.endTime != null &&
+        editTilerEvent.calStartTime != null &&
+        editTilerEvent.calEndTime != null;
   }
 
-  void onOtherCountChange() {
-    dataChange();
+  void onScheduleTimelineChange() {
+    if (editTilerEvent != null && isScheduleReady(editTilerEvent)) {
+      int beforeSplitCount = editTilerEvent!.splitCount ?? 1;
+      Timeline beforeStartToEnd = Timeline.fromDateTime(
+          editTilerEvent!.startTime!, editTilerEvent!.endTime!);
+      Timeline beforeCalStartToEnd = Timeline.fromDateTime(
+          editTilerEvent!.calStartTime!, editTilerEvent!.calEndTime!);
+      dataChange();
+      int afterSplitCount = editTilerEvent!.splitCount ?? 1;
+      Timeline afterStartToEnd = Timeline.fromDateTime(
+          editTilerEvent!.startTime!, editTilerEvent!.endTime!);
+      Timeline afterCalStartToEnd = Timeline.fromDateTime(
+          editTilerEvent!.calStartTime!, editTilerEvent!.calEndTime!);
+      if ((this.onProceed != null) &&
+          isScheduleReady(editTilerEvent) &&
+          editTilerEvent!.splitCount != null &&
+          (beforeSplitCount != afterSplitCount ||
+              !beforeStartToEnd.isStartAndEndEqual(afterStartToEnd) ||
+              !beforeCalStartToEnd.isStartAndEndEqual(afterCalStartToEnd))) {
+        whatIfApi.updateSubEvent(editTilerEvent!).then((value) {
+          print(value);
+        }).catchError((onError) {
+          print(onError);
+        });
+      }
+    } else {
+      dataChange();
+    }
+  }
+
+  void onInputCountChange() {
+    onScheduleTimelineChange();
   }
 
   Future<SubCalendarEvent> subEventUpdate() {
@@ -313,20 +349,20 @@ class _EditTileState extends State<EditTile> {
                   this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
               _editStartDateAndTime = EditDateAndTime(
                 time: startTime,
-                onInputChange: dataChange,
+                onInputChange: onScheduleTimelineChange,
               );
               DateTime endTime =
                   this.editTilerEvent?.endTime ?? this.subEvent!.endTime;
               _editEndDateAndTime = EditDateAndTime(
                 time: endTime,
-                onInputChange: dataChange,
+                onInputChange: onScheduleTimelineChange,
               );
               if (this.subEvent!.calendarEventStartTime != null) {
                 DateTime calStartTime = this.editTilerEvent?.calStartTime ??
                     this.subEvent!.calendarEventStartTime!;
                 _editCalStartDateAndTime = EditDateAndTime(
                   time: calStartTime,
-                  onInputChange: dataChange,
+                  onInputChange: onScheduleTimelineChange,
                 );
               }
 
@@ -335,7 +371,7 @@ class _EditTileState extends State<EditTile> {
                     this.subEvent!.calendarEventEndTime!;
                 _editCalEndDateAndTime = EditDateAndTime(
                   time: calEndTime,
-                  onInputChange: dataChange,
+                  onInputChange: onScheduleTimelineChange,
                   isReadOnly: !this.subEvent!.isActive,
                 );
               }
@@ -344,7 +380,7 @@ class _EditTileState extends State<EditTile> {
                 timeRange: this.subEvent!,
                 isReadOnly: !this.subEvent!.isActive,
                 onChange: (timeline) {
-                  dataChange();
+                  onScheduleTimelineChange();
                 },
               );
               _startEndDurationTimeline!.headerTextStyle = labelStyle;
