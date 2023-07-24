@@ -67,6 +67,7 @@ class Utility {
     return (-currentTime().timeZoneOffset.inMinutes);
   }
 
+  static T? cast<T>(x) => x is T ? x : null;
   static bool isEditTileEventEquivalentToTileEvent(
       EditTilerEvent editTilerEvent, TilerEvent tilerEvent) {
     bool retValue =

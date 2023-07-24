@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -7,6 +8,7 @@ import 'package:http/http.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
 
 import '../../constants.dart' as Constants;
@@ -14,6 +16,7 @@ import '../../constants.dart' as Constants;
 abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';
   static const int batchCount = 10;
+  List<Tuple3<StreamSubscription, Future, String>>? pendingFuture;
   Authentication authentication = new Authentication();
   AccessManager accessManager = AccessManager();
   bool isJsonResponseOk(Map jsonResult) {
