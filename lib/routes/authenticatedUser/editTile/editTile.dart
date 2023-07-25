@@ -80,7 +80,7 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
-  bool isScheduleReady(EditTilerEvent? editTilerEvent) {
+  bool isScheduleTimelineReady(EditTilerEvent? editTilerEvent) {
     return editTilerEvent != null &&
         editTilerEvent.startTime != null &&
         editTilerEvent.endTime != null &&
@@ -89,7 +89,7 @@ class _EditTileState extends State<EditTile> {
   }
 
   void onScheduleTimelineChange() {
-    if (editTilerEvent != null && isScheduleReady(editTilerEvent)) {
+    if (editTilerEvent != null && isScheduleTimelineReady(editTilerEvent)) {
       int beforeSplitCount = editTilerEvent!.splitCount ?? 1;
       Timeline beforeStartToEnd = Timeline.fromDateTime(
           editTilerEvent!.startTime!, editTilerEvent!.endTime!);
@@ -102,7 +102,7 @@ class _EditTileState extends State<EditTile> {
       Timeline afterCalStartToEnd = Timeline.fromDateTime(
           editTilerEvent!.calStartTime!, editTilerEvent!.calEndTime!);
       if ((this.onProceed != null) &&
-          isScheduleReady(editTilerEvent) &&
+          isScheduleTimelineReady(editTilerEvent) &&
           editTilerEvent!.splitCount != null &&
           (beforeSplitCount != afterSplitCount ||
               !beforeStartToEnd.isStartAndEndEqual(afterStartToEnd) ||
