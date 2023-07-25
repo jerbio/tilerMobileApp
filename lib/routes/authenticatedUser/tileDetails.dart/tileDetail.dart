@@ -29,6 +29,7 @@ class TileDetail extends StatefulWidget {
 class _TileDetailState extends State<TileDetail> {
   CalendarEvent? calEvent;
   EditTilerEvent? editTilerEvent;
+  Duration? _duration;
   int? splitCount;
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   TextEditingController? splitCountController;
@@ -83,6 +84,82 @@ class _TileDetailState extends State<TileDetail> {
     setState(() {
       onProceed = null;
     });
+  }
+
+  Widget generateDurationPicker() {
+    final Color textBackgroundColor = TileStyles.textBackgroundColor;
+    final Color textBorderColor = TileStyles.textBorderColor;
+    final Color iconColor = TileStyles.iconColor;
+    final void Function()? setDuration = () async {
+      Map<String, dynamic> durationParams = {'duration': _duration};
+      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+          .whenComplete(() {
+        print('done with pop');
+        print(durationParams['duration']);
+        Duration? populatedDuration = durationParams['duration'] as Duration?;
+        setState(() {
+          if (populatedDuration != null) {
+            _duration = populatedDuration;
+          }
+        });
+        dataChange();
+      });
+    };
+    String textButtonString = AppLocalizations.of(context)!.duration;
+    if (_duration != null && _duration!.inMinutes > 1) {
+      textButtonString = "";
+      int hour = _duration!.inHours.floor();
+      int minute = _duration!.inMinutes.remainder(60);
+      if (hour > 0) {
+        textButtonString = '${hour}h';
+        if (minute > 0) {
+          textButtonString = '${textButtonString} : ${minute}m';
+        }
+      } else {
+        if (minute > 0) {
+          textButtonString = '${minute}m';
+        }
+      }
+    }
+    Widget retValue = new GestureDetector(
+        onTap: setDuration,
+        child: FractionallySizedBox(
+            widthFactor: TileStyles.widthRatio,
+            child: Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                decoration: BoxDecoration(
+                    color: textBackgroundColor,
+                    borderRadius: const BorderRadius.all(
+                      const Radius.circular(8.0),
+                    ),
+                    border: Border.all(
+                      color: textBorderColor,
+                      width: 1.5,
+                    )),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Icon(Icons.timelapse_outlined, color: iconColor),
+                    Container(
+                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                        child: TextButton(
+                          style: TextButton.styleFrom(
+                            textStyle: const TextStyle(
+                              fontSize: 20,
+                            ),
+                          ),
+                          onPressed: setDuration,
+                          child: Text(
+                            textButtonString,
+                            style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                            ),
+                          ),
+                        ))
+                  ],
+                ))));
+    return retValue;
   }
 
   void refreshScheduleSummary(Timeline? lookupTimeline) {
@@ -212,6 +289,7 @@ class _TileDetailState extends State<TileDetail> {
                   splitCountController!.addListener(onInputCountChange);
                   editTilerEvent!.splitCount = splitCount;
                 }
+                _duration = calEvent!.durationPerTile;
               }
             });
           }
@@ -344,6 +422,9 @@ class _TileDetailState extends State<TileDetail> {
             if (splitWidget != null) {
               inputChildWidgets.add(splitWidget);
             }
+
+            inputChildWidgets.add(generateDurationPicker());
+
             if (tileStartWidget != null) {
               inputChildWidgets.add(tileStartWidget);
             }

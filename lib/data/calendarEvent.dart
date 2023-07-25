@@ -3,6 +3,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 
 class CalendarEvent extends TilerEvent {
   List<SubCalendarEvent>? subEvents;
+  Duration? durationPerTile;
   int? completeCount;
   int? deleteCount;
 
@@ -22,6 +23,13 @@ class CalendarEvent extends TilerEvent {
 
     if (json.containsKey('deletionCount') && json['deletionCount'] != null) {
       deleteCount = TilerEvent.cast<int>(json['deletionCount'])!.toInt();
+    }
+
+    if (json.containsKey('eachTileDuration') &&
+        json['eachTileDuration'] != null) {
+      durationPerTile = Duration(
+          milliseconds:
+              TilerEvent.cast<double>(json['eachTileDuration'])!.toInt());
     }
   }
 }
