@@ -57,11 +57,22 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
     });
   }
 
+  onEndTimeChange(DateTime time) {
+    if (time.isBefore(this.widget.startTime)) {
+      return;
+    }
+    setState(() {
+      _end = time;
+      _duration = _end.difference(this.widget.startTime);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     TimeAndDate timeAndDate = TimeAndDate(
       time: this._end,
       key: Key(Utility.getUuid),
+      onInputChange: onEndTimeChange,
     );
     return CancelAndProceedTemplateWidget(
         appBar: AppBar(
