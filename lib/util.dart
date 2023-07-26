@@ -609,6 +609,7 @@ class Utility {
   }
 
   static int daysInAweek = 7;
+  static Duration thirtySeconds = new Duration(seconds: 30);
   static Duration thirtyMin = new Duration(minutes: 30);
   static Duration fifteenMin = new Duration(minutes: 15);
   static Duration oneHour = new Duration(hours: 1);
