@@ -63,12 +63,10 @@ class DelayedScheduleLoadedState extends ScheduleLoadedState {
 
 class FailedScheduleLoadedState extends ScheduleLoadedState {
   DateTime evaluationTime;
-  StreamSubscription pendingDelayedScheduleRetrieval;
   FailedScheduleLoadedState({
     subEvents = const <SubCalendarEvent>[],
     required timelines,
     required lookupTimeline,
-    required this.pendingDelayedScheduleRetrieval,
     required this.evaluationTime,
   }) : super(
             subEvents: subEvents,
