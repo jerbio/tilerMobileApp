@@ -13,6 +13,7 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? onProceed;
   Function? loadingFinished;
   Function? isProceedAllowed;
+  Widget? bottomWidget;
   bool hideButtons = false;
 
   Widget? child;
@@ -24,6 +25,7 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
       this.child,
       this.isProceedAllowed,
       this.appBar,
+      this.bottomWidget,
       this.hideButtons = false});
 
   @override
@@ -162,6 +164,11 @@ class CancelAndProceedTemplateWidgetState
       if (proceedButton != null) {
         bottomButtons.add(proceedButton);
       }
+
+      if (this.widget.bottomWidget != null) {
+        bottomButtons.insert(1, this.widget.bottomWidget!);
+      }
+
       if (isKeyboardShown) {
         bottomButtons = [];
       }

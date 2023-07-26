@@ -142,7 +142,7 @@ class _SummaryPage extends State<SummaryPage> {
     });
   }
 
-  Widget renderDate(TilerEvent subCalendarEventTile) {
+  Widget renderDate(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = Container(
       padding: EdgeInsets.fromLTRB(10, 5, 5, 5),
       width: 110,
@@ -164,7 +164,9 @@ class _SummaryPage extends State<SummaryPage> {
           ),
           Container(
             child: Text(
-              subCalendarEventTile.startTime.humanDate,
+              (subCalendarEventTile.calendarEventEndTime ??
+                      subCalendarEventTile.startTime)
+                  .humanDate,
               style: TextStyle(
                 fontSize: 12,
                 color: Color.fromRGBO(31, 31, 31, 0.8),
@@ -179,7 +181,7 @@ class _SummaryPage extends State<SummaryPage> {
     return retValue;
   }
 
-  Widget renderTile(TilerEvent subCalendarEventTile) {
+  Widget renderTile(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = OutlinedButton(
       style: OutlinedButton.styleFrom(
           side: BorderSide(

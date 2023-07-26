@@ -16,13 +16,17 @@ class PendingWidget extends StatelessWidget {
           child: Stack(children: [
         Center(
             child: SizedBox(
-          child: CircularProgressIndicator(),
+          child: Center(child: CircularProgressIndicator()),
           height: 200.0,
           width: 200.0,
         )),
         Center(
-            child: Image.asset('assets/images/tiler_logo_black.png',
-                fit: BoxFit.cover, scale: 7)),
+            child: Image.asset(
+          'assets/images/tiler_logo_black.png',
+          fit: BoxFit.cover,
+          scale: 7,
+          alignment: Alignment.center,
+        )),
       ])),
     );
   }
