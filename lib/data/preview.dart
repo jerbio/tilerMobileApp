@@ -93,7 +93,7 @@ class Sleep {
         String lostSleepKey = 'LostSleep';
         if (json[dayKey][jsTime.toString()].containsKey(lostSleepKey)) {
           retValue.lostSleepDuration = Duration(
-              milliseconds: Utility.cast<int>(
+              milliseconds: Utility.cast<double>(
                       json[dayKey][jsTime.toString()][lostSleepKey])!
                   .toInt());
         }

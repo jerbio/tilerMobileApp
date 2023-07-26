@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:lottie/lottie.dart';
 
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -14,7 +15,9 @@ import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
+import 'package:tiler_app/data/preview.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.dart';
@@ -48,6 +51,7 @@ class _EditTileState extends State<EditTile> {
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   bool isPendingSubEventProcessing = false;
   EditTileName? _editTileName;
+  Widget? bottomWidget;
 
   EditTileNote? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
@@ -57,6 +61,8 @@ class _EditTileState extends State<EditTile> {
   StartEndDurationTimeline? _startEndDurationTimeline;
   bool hideButtons = false;
   List<NextTileSuggestion>? nextTileSuggestions;
+  Preview? beforePreview;
+  Preview? afterPreview;
 
   TextStyle labelStyle = const TextStyle(
       color: Color.fromRGBO(31, 31, 31, 1),
@@ -88,6 +94,346 @@ class _EditTileState extends State<EditTile> {
         editTilerEvent.calEndTime != null;
   }
 
+  Widget renderTardyTiles(List<SubCalendarEvent> tiles) {
+    Widget tardyHeader = Container(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      alignment: Alignment.centerLeft,
+      child: Text(AppLocalizations.of(context)!.late,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            fontFamily: TileStyles.rubikFontName,
+          )),
+    );
+
+    if (tiles.isEmpty) {
+      return Align(
+        alignment: Alignment.center,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+          child: Column(
+            children: [
+              tardyHeader,
+              Container(
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Container(
+                    alignment: Alignment.center,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Lottie.asset(
+                            'assets/lottie/abstract-waves-circles.json',
+                            height: 100),
+                        Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color.fromRGBO(255, 255, 255, 0.25),
+                                    Color.fromRGBO(255, 255, 255, 0.9),
+                                  ])),
+                          width: MediaQuery.of(context).size.width *
+                              TileStyles.widthRatio,
+                          height: 100,
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(AppLocalizations.of(context)!.onTime,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 50,
+                                fontFamily: TileStyles.rubikFontName,
+                              )),
+                        ),
+                      ],
+                    )),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget tardyBodyHeader = Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+                color: Color.fromRGBO(31, 31, 31, 0.05),
+                borderRadius: BorderRadius.circular(20)),
+            child: Icon(Icons.warning, color: Colors.amberAccent),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+            child: Text(
+              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
+              style: TextStyle(
+                fontSize: 25,
+                fontFamily: TileStyles.rubikFontName,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+        child: Column(
+          children: [
+            tardyHeader,
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(10)),
+              child: Column(children: [
+                tardyBodyHeader,
+                Column(
+                  children: [renderListOfTiles(tiles)],
+                )
+              ]),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget renderListOfTiles(List<SubCalendarEvent> tiles) {
+    return Column(
+      children: tiles.map<Widget>((e) => renderTile(e)).toList(),
+    );
+  }
+
+  Widget renderTile(SubCalendarEvent subCalendarEventTile) {
+    Widget retValue = OutlinedButton(
+      style: OutlinedButton.styleFrom(
+          side: BorderSide(
+            color: Colors.transparent,
+          ),
+          padding: EdgeInsets.all(0)),
+      onPressed: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    EditTile(tileId: subCalendarEventTile.id!)));
+      },
+      child: Container(
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                    height: 20,
+                    width: 20,
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    decoration: BoxDecoration(
+                        color: subCalendarEventTile.color ?? Colors.transparent,
+                        borderRadius: BorderRadius.circular(5))),
+                Container(
+                  height: 20,
+                  width: MediaQuery.of(context).size.width *
+                          TileStyles.widthRatio -
+                      190,
+                  child: Text(
+                    subCalendarEventTile.name!,
+                    style: TextStyle(
+                      fontFamily: TileStyles.rubikFontName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [renderDate(subCalendarEventTile)],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    return retValue;
+  }
+
+  Widget renderDate(SubCalendarEvent subCalendarEventTile) {
+    Widget retValue = Container(
+      padding: EdgeInsets.fromLTRB(10, 5, 5, 5),
+      width: 110,
+      height: 30,
+      decoration: BoxDecoration(
+          color: Color.fromRGBO(31, 31, 31, 0.05),
+          borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
+            child: Icon(
+              Icons.calendar_month,
+              size: 15,
+              color: Color.fromRGBO(31, 31, 31, 0.8),
+            ),
+          ),
+          Container(
+            child: Text(
+              (subCalendarEventTile.calendarEventEndTime ??
+                      subCalendarEventTile.startTime)
+                  .humanDate,
+              style: TextStyle(
+                fontSize: 12,
+                color: Color.fromRGBO(31, 31, 31, 0.8),
+                fontFamily: TileStyles.rubikFontName,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return retValue;
+  }
+
+  Widget renderUnscheduledTiles(List<SubCalendarEvent> tiles) {
+    Widget unscheduledHeader = Container(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      alignment: Alignment.centerLeft,
+      child: Text(AppLocalizations.of(context)!.unScheduled,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            fontFamily: TileStyles.rubikFontName,
+          )),
+    );
+
+    if (tiles.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    Widget unscheduledBodyHeader = Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+                color: Color.fromRGBO(31, 31, 31, 0.05),
+                borderRadius: BorderRadius.circular(20)),
+            child: Icon(Icons.error, color: Colors.redAccent),
+          ),
+          Container(
+            margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+            child: Text(
+              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
+              style: TextStyle(
+                fontSize: 25,
+                fontFamily: TileStyles.rubikFontName,
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+        child: Column(
+          children: [
+            unscheduledHeader,
+            Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(10)),
+              child: Column(children: [
+                unscheduledBodyHeader,
+                Column(
+                  children: [renderListOfTiles(tiles)],
+                )
+              ]),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  updatePreviewWidget() {
+    setState(() {
+      bottomWidget = ElevatedButton(
+          onPressed: () {
+            if (afterPreview == null) {
+              clearPreviewButton();
+              return;
+            }
+            List<SubCalendarEvent> tardySubEvents = [];
+            if (afterPreview != null && afterPreview!.tardies != null) {
+              tardySubEvents = afterPreview!.tardies!.subEvents
+                  .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
+                  .toList();
+            }
+
+            List<SubCalendarEvent> unScheduledSubEvents = [];
+            if (afterPreview != null && afterPreview!.nonViable != null) {
+              unScheduledSubEvents =
+                  afterPreview!.nonViable!.map<SubCalendarEvent>((e) {
+                return e as SubCalendarEvent;
+              }).toList();
+            }
+            if (tardySubEvents.isEmpty && unScheduledSubEvents.isEmpty) {
+              clearPreviewButton();
+              return;
+            }
+
+            showModalBottomSheet<void>(
+              context: context,
+              builder: (BuildContext context) {
+                return Container(
+                  height: 300,
+                  color: Colors.amber,
+                  child: Center(
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                      children: <Widget>[
+                        renderTardyTiles(tardySubEvents),
+                        renderUnscheduledTiles(unScheduledSubEvents)
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          child: Text(AppLocalizations.of(context)!.prediction));
+    });
+  }
+
+  clearPreviewButton() {
+    setState(() {
+      bottomWidget = null;
+    });
+  }
+
   void onScheduleTimelineChange() {
     if (editTilerEvent != null && isScheduleTimelineReady(editTilerEvent)) {
       int beforeSplitCount = editTilerEvent!.splitCount ?? 1;
@@ -108,13 +454,25 @@ class _EditTileState extends State<EditTile> {
               !beforeStartToEnd.isStartAndEndEqual(afterStartToEnd) ||
               !beforeCalStartToEnd.isStartAndEndEqual(afterCalStartToEnd))) {
         whatIfApi.updateSubEvent(editTilerEvent!).then((value) {
-          print(value);
+          if (value == null) {
+            clearPreviewButton();
+            return;
+          }
+          setState(() {
+            beforePreview = value.item1;
+            afterPreview = value.item2;
+          });
+          updatePreviewWidget();
         }).catchError((onError) {
+          clearPreviewButton();
           print(onError);
         });
       }
     } else {
       dataChange();
+      if (this.onProceed == null) {
+        clearPreviewButton();
+      }
     }
   }
 
@@ -694,6 +1052,7 @@ class _EditTileState extends State<EditTile> {
               .add(ResetSubCalendarTileBlocEvent());
         },
         onProceed: this.onProceed,
+        bottomWidget: this.bottomWidget,
         appBar: AppBar(
           backgroundColor: TileStyles.primaryColor,
           title: Text(

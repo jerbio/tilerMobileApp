@@ -291,5 +291,6 @@
     "night": "Night",
     "morningAndAfternoon": "Morning & Afternoon",
     "afternoonAndEvening": "Afternoon & Evening",
-    "lateEvening": "Late Evening"
+    "lateEvening": "Late Evening",
+    "prediction": "Prediction"
   }
