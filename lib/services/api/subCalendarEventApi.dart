@@ -17,7 +17,7 @@ class SubCalendarEventApi extends AppApi {
   Future<SubCalendarEvent> getSubEvent(String id) async {
     // return getAdHocSubEventId(id);
     if ((await this.authentication.isUserAuthenticated()).item1) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       final queryParameters = {
@@ -28,15 +28,17 @@ class SubCalendarEventApi extends AppApi {
           includeLocationParams: false);
       Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
       var header = this.getHeaders();
-      if (header != null) {
-        var response = await http.get(uri, headers: header);
-        var jsonResult = jsonDecode(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            return SubCalendarEvent.fromJson(jsonResult['Content']);
-          }
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          return SubCalendarEvent.fromJson(jsonResult['Content']);
         }
       }
+
       throw TilerError();
     }
     throw TilerError();
@@ -50,7 +52,7 @@ class SubCalendarEventApi extends AppApi {
     // return getAdHocSubEventId(id);
     if (ids.length <= batchSize) {
       if ((await this.authentication.isUserAuthenticated()).item1) {
-        await this.authentication.reLoadCredentialsCache();
+        await checkAndReplaceCredentialCache();
         String tilerDomain = Constants.tilerDomain;
         String url = tilerDomain;
         final queryParameters = {
@@ -61,21 +63,23 @@ class SubCalendarEventApi extends AppApi {
             includeLocationParams: false);
         Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
         var header = this.getHeaders();
-        if (header != null) {
-          var response = await http.get(uri, headers: header);
-          var jsonResult = jsonDecode(response.body);
-          if (isJsonResponseOk(jsonResult)) {
-            if (isContentInResponse(jsonResult)) {
-              if (jsonResult['Content'] is List) {
-                return jsonResult['Content']
-                    .map<SubCalendarEvent>((eachSubEventJson) =>
-                        SubCalendarEvent.fromJson(eachSubEventJson))
-                    .toList();
-              }
-              return [SubCalendarEvent.fromJson(jsonResult['Content'])];
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            if (jsonResult['Content'] is List) {
+              return jsonResult['Content']
+                  .map<SubCalendarEvent>((eachSubEventJson) =>
+                      SubCalendarEvent.fromJson(eachSubEventJson))
+                  .toList();
             }
+            return [SubCalendarEvent.fromJson(jsonResult['Content'])];
           }
         }
+
         throw TilerError();
       }
       throw TilerError();
@@ -217,41 +221,40 @@ class SubCalendarEventApi extends AppApi {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
     if ((await this.authentication.isUserAuthenticated()).item1) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
       error.message = "Did not send request";
       String url = Constants.tilerDomain;
 
       Uri uri = Uri.https(url, 'api/Schedule/Event');
       var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var deleteSubEventParameters = {
+        'ID': eventId,
+        'EventID': eventId,
+        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'ThirdPartyEventID': thirdPartyId,
+        'ThirdPartyType': thirdPartyId,
+        'MobileApp': true.toString()
+      };
 
-      if (header != null) {
-        var deleteSubEventParameters = {
-          'ID': eventId,
-          'EventID': eventId,
-          'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
-          'ThirdPartyEventID': thirdPartyId,
-          'ThirdPartyType': thirdPartyId,
-          'MobileApp': true.toString()
-        };
-
-        var injectedDeleteSubEventParameters =
-            await injectRequestParams(deleteSubEventParameters);
-        var response = await http.delete(uri,
-            headers: header,
-            body: json.encode(injectedDeleteSubEventParameters));
-        var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            var deleteCalendarEventJson = jsonResult['Content'];
-            return CalendarEvent.fromJson(deleteCalendarEventJson);
+      var injectedDeleteSubEventParameters =
+          await injectRequestParams(deleteSubEventParameters);
+      var response = await http.delete(uri,
+          headers: header, body: json.encode(injectedDeleteSubEventParameters));
+      var jsonResult = jsonDecode(response.body);
+      error.message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          var deleteCalendarEventJson = jsonResult['Content'];
+          return CalendarEvent.fromJson(deleteCalendarEventJson);
+        } else {
+          if (isTilerRequestError(jsonResult)) {
+            var errorJson = jsonResult['Error'];
+            error = TilerError.fromJson(errorJson);
           } else {
-            if (isTilerRequestError(jsonResult)) {
-              var errorJson = jsonResult['Error'];
-              error = TilerError.fromJson(errorJson);
-            } else {
-              error.message = "Issues with reaching TIler servers";
-            }
+            error.message = "Issues with reaching TIler servers";
           }
         }
       }
@@ -266,7 +269,7 @@ class SubCalendarEventApi extends AppApi {
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
     if (userIsAuthenticated) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
       if (this.authentication.cachedCredentials != null) {
         String? username = '';
         final procrastinateParameters = {

@@ -17,20 +17,21 @@ class SettingsApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetRestrictionProfile');
       var header = this.getHeaders();
-      if (header != null) {
-        var response = await http.get(uri, headers: header);
-        var jsonResult = jsonDecode(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            Map<String, RestrictionProfile> retValue = {};
-            if (jsonResult['Content'] is Map) {
-              for (var restrictionType in jsonResult['Content'].keys) {
-                retValue[restrictionType] = RestrictionProfile.fromJson(
-                    jsonResult['Content'][restrictionType]);
-              }
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, RestrictionProfile> retValue = {};
+          if (jsonResult['Content'] is Map) {
+            for (var restrictionType in jsonResult['Content'].keys) {
+              retValue[restrictionType] = RestrictionProfile.fromJson(
+                  jsonResult['Content'][restrictionType]);
             }
-            return retValue;
           }
+          return retValue;
         }
       }
     }
@@ -68,23 +69,24 @@ class SettingsApi extends AppApi {
     Map timeOfDayParams = {};
 
     if ((await this.authentication.isUserAuthenticated()).item1) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
       Map<String, dynamic> restrictedUpdatedParams =
           await injectRequestParams({}, includeLocationParams: false);
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetStartOfDay');
       var header = this.getHeaders();
-      if (header != null) {
-        var response = await http.get(uri, headers: header);
-        var jsonResult = jsonDecode(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            Map<String, dynamic> jsonMap = jsonResult['Content'];
-            StartOfDayConfig startOfDayConfig =
-                StartOfDayConfig.fromJson(jsonMap);
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> jsonMap = jsonResult['Content'];
+          StartOfDayConfig startOfDayConfig =
+              StartOfDayConfig.fromJson(jsonMap);
 
-            return startOfDayConfig.toStartOfDay();
-          }
+          return startOfDayConfig.toStartOfDay();
         }
       }
     }

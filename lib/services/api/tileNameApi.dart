@@ -57,7 +57,7 @@ class TileNameApi extends AppApi {
     String url = tilerDomain;
 
     if ((await this.authentication.isUserAuthenticated()).item1) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
 
       final queryParameters = {
         'Data': name,
@@ -67,26 +67,26 @@ class TileNameApi extends AppApi {
 
       Uri uri = Uri.https(url, 'api/CalendarEvent/Name', queryParameters);
       var header = this.getHeaders();
-
-      if (header != null) {
-        if (chainPending != null) {
-          var param = {
-            'header': header,
-            'uri': uri,
-          };
-          this.nextRequestParams.add(param);
-          List<TilerEvent>? events = await chainPending;
-          if (events != null) {
-            return events;
-          }
-          throw TilerError();
-        }
-
-        chainPending = this._createEventFuture(uri, header);
-        List<TilerEvent> retValue = await chainPending!;
-        chainPending = null;
-        return retValue;
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
       }
+      if (chainPending != null) {
+        var param = {
+          'header': header,
+          'uri': uri,
+        };
+        this.nextRequestParams.add(param);
+        List<TilerEvent>? events = await chainPending;
+        if (events != null) {
+          return events;
+        }
+        throw TilerError();
+      }
+
+      chainPending = this._createEventFuture(uri, header);
+      List<TilerEvent> retValue = await chainPending!;
+      chainPending = null;
+      return retValue;
     }
     throw TilerError();
   }

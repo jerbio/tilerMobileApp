@@ -30,6 +30,14 @@ abstract class AppApi {
     return retValue;
   }
 
+  ///Function checks if the cached credential is valid and if not it reloads it
+  checkAndReplaceCredentialCache() async {
+    if (this.authentication.cachedCredentials == null ||
+        !this.authentication.cachedCredentials!.isValid) {
+      await this.authentication.reLoadCredentialsCache();
+    }
+  }
+
   bool isTilerRequestError(Map jsonResult) {
     bool retValue = jsonResult.containsKey('Error') &&
         jsonResult['Error'].containsKey('Code') &&
@@ -108,7 +116,7 @@ abstract class AppApi {
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
       {bool injectLocation = true, bool analyze = true}) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
-      await this.authentication.reLoadCredentialsCache();
+      await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {

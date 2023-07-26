@@ -102,7 +102,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             subEvents: value.item2,
             timelines: value.item1,
             lookupTimeline: updateTimeline));
+      }).catchError((onError) {
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: List.from(state.subEvents),
+            timelines: state.timelines,
+            lookupTimeline: updateTimeline));
       });
+      ;
       return;
     }
 
@@ -118,6 +125,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         emit(ScheduleLoadedState(
             subEvents: value.item2,
             timelines: value.item1,
+            lookupTimeline: updateTimeline));
+      }).catchError((onError) {
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: [],
+            timelines: [],
             lookupTimeline: updateTimeline));
       });
       return;
@@ -137,6 +150,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             subEvents: value.item2,
             timelines: value.item1,
             lookupTimeline: updateTimeline));
+      }).catchError((onError) {
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: state.subEvents,
+            timelines: state.timelines,
+            lookupTimeline: updateTimeline));
       });
       return;
     }
@@ -145,20 +164,44 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onReviseSchedule(
       ReviseScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
+    List<SubCalendarEvent>? subEvents;
+    List<Timeline>? timelines;
+    Timeline? lookupTimeline;
+    String? message;
+
     if (state is ScheduleLoadedState) {
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      lookupTimeline = state.lookupTimeline;
+      message = event.message;
+    }
+
+    if (state is ScheduleEvaluationState) {
+      Duration durationSinceLastCall =
+          Utility.currentTime().difference(state.evaluationTime);
+      if (durationSinceLastCall.inSeconds < Utility.thirtySeconds.inSeconds) {
+        return;
+      }
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      lookupTimeline = state.lookupTimeline;
+      message = event.message;
+    }
+
+    if (subEvents != null && timelines != null && lookupTimeline != null) {
       emit(ScheduleEvaluationState(
-          subEvents: state.subEvents,
-          timelines: state.timelines,
-          lookupTimeline: state.lookupTimeline,
+          subEvents: subEvents,
+          timelines: timelines,
+          lookupTimeline: lookupTimeline,
           evaluationTime: Utility.currentTime(),
-          message: event.message));
+          message: message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
-              previousSubEvents: state.subEvents,
-              previousTimeline: state.lookupTimeline,
-              scheduleTimeline: state.lookupTimeline,
+              previousSubEvents: subEvents,
+              previousTimeline: lookupTimeline,
+              scheduleTimeline: lookupTimeline,
             ),
             emit);
       });
