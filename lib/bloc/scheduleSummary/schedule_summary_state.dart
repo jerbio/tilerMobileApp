@@ -9,6 +9,8 @@ abstract class ScheduleSummaryState extends Equatable {
 
 class ScheduleSummaryInitial extends ScheduleSummaryState {}
 
+class LoggedOutScheduleSummaryState extends ScheduleSummaryState {}
+
 class ScheduleDaySummaryLoaded extends ScheduleSummaryState {
   Timeline? timeline;
   List<TimelineSummary>? dayData;

@@ -45,5 +45,6 @@ class SecureStorageManager {
 
   Future deleteAllStorageData() async {
     await _storage.delete(key: _accessControlKey);
+    await _storage.delete(key: _locationAccessKey);
   }
 }

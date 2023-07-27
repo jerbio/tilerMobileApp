@@ -60,6 +60,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLoggedOutScheduleEvent(
       LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
+    scheduleApi = ScheduleApi();
     emit(ScheduleLoggedOutState());
   }
 

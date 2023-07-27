@@ -13,12 +13,10 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   CalendarTileBloc() : super(CalendarTileInitial()) {
     on<CalendarTileAsNowEvent>(_onSetAsNowCalendarTileEvent);
-
     on<DeleteCalendarTileEvent>(_onDeleteCalendarTileEvent);
-
     on<CompleteCalendarTileEvent>(_onCompleteCalendarTileEvent);
-
     on<GetCalendarTileEvent>(_onGetCalendarTileEvent);
+    on<LogOutCalendarTileEvent>(_onLogOutCalendarTileEvent);
   }
 
   _onSetAsNowCalendarTileEvent(
@@ -53,5 +51,11 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
     await calendarEventApi.getCalEvent(event.calEventId).then((value) async {
       emit(CalendarTileLoaded(calEvent: value));
     });
+  }
+
+  _onLogOutCalendarTileEvent(
+      LogOutCalendarTileEvent event, Emitter<CalendarTileState> emit) async {
+    calendarEventApi = new CalendarEventApi();
+    emit(CalendarTileLoggedOutState());
   }
 }

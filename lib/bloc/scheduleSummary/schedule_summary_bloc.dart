@@ -16,6 +16,7 @@ class ScheduleSummaryBloc
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleSummaryBloc() : super(ScheduleSummaryInitial()) {
     on<GetScheduleDaySummaryEvent>(_onGetDayData);
+    on<LogOutScheduleDaySummaryEvent>(_onLogOutScheduleDaySummaryEvent);
   }
 
   Future<void> _onGetDayData(GetScheduleDaySummaryEvent event,
@@ -57,5 +58,11 @@ class ScheduleSummaryBloc
           dayData: value.values.toList(),
           requestId: event.requestId));
     });
+  }
+
+  FutureOr<void> _onLogOutScheduleDaySummaryEvent(
+      LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {
+    scheduleApi = new ScheduleApi();
+    emit(LoggedOutScheduleSummaryState());
   }
 }
