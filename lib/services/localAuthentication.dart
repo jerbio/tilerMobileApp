@@ -24,7 +24,7 @@ class Authentication {
     await storage.delete(key: _credentialKey);
   }
 
-  void deauthenticateCredentials() async {
+  Future deauthenticateCredentials() async {
     await deleteCredentials();
     cachedCredentials = null;
   }

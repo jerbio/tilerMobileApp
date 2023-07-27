@@ -67,3 +67,10 @@ class ResetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   @override
   List<Object> get props => [];
 }
+
+class LogOutSubCalendarTileBlocEvent extends SubCalendarTileEvent {
+  const LogOutSubCalendarTileBlocEvent();
+
+  @override
+  List<Object> get props => [];
+}

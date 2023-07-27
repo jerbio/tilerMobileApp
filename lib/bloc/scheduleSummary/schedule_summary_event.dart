@@ -16,3 +16,10 @@ class GetScheduleDaySummaryEvent extends ScheduleSummaryEvent {
   @override
   List<Object> get props => [];
 }
+
+class LogOutScheduleDaySummaryEvent extends ScheduleSummaryEvent {
+  LogOutScheduleDaySummaryEvent();
+
+  @override
+  List<Object> get props => [];
+}

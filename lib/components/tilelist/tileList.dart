@@ -565,7 +565,7 @@ class _TileListState extends State<TileList> {
                 }
                 if (previousTime.millisecondsSinceEpoch !=
                     currentTime.millisecondsSinceEpoch) {
-                  this.context.read<UiDateManagerBloc>().add(DateChange(
+                  this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
                       selectedDate: currentTime,
                       previousSelectedDate: previousTime));
                 }
