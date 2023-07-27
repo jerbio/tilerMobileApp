@@ -378,6 +378,25 @@ class _EditTileState extends State<EditTile> {
   }
 
   updatePreviewWidget() {
+    List<SubCalendarEvent> tardySubEvents = [];
+    if (afterPreview != null && afterPreview!.tardies != null) {
+      tardySubEvents = afterPreview!.tardies!.subEvents
+          .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
+          .toList();
+    }
+
+    List<SubCalendarEvent> unScheduledSubEvents = [];
+    if (afterPreview != null && afterPreview!.nonViable != null) {
+      unScheduledSubEvents =
+          afterPreview!.nonViable!.map<SubCalendarEvent>((e) {
+        return e as SubCalendarEvent;
+      }).toList();
+    }
+    if (tardySubEvents.isEmpty && unScheduledSubEvents.isEmpty) {
+      clearPreviewButton();
+      return;
+    }
+
     setState(() {
       bottomWidget = ElevatedButton(
           onPressed: () {
@@ -385,39 +404,31 @@ class _EditTileState extends State<EditTile> {
               clearPreviewButton();
               return;
             }
-            List<SubCalendarEvent> tardySubEvents = [];
-            if (afterPreview != null && afterPreview!.tardies != null) {
-              tardySubEvents = afterPreview!.tardies!.subEvents
-                  .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
-                  .toList();
-            }
-
-            List<SubCalendarEvent> unScheduledSubEvents = [];
-            if (afterPreview != null && afterPreview!.nonViable != null) {
-              unScheduledSubEvents =
-                  afterPreview!.nonViable!.map<SubCalendarEvent>((e) {
-                return e as SubCalendarEvent;
-              }).toList();
-            }
-            if (tardySubEvents.isEmpty && unScheduledSubEvents.isEmpty) {
-              clearPreviewButton();
-              return;
-            }
 
             showModalBottomSheet<void>(
               context: context,
               builder: (BuildContext context) {
+                Widget tardyTiles = tardySubEvents.isNotEmpty
+                    ? Container(
+                        // color: Colors.red,
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child: renderTardyTiles(tardySubEvents))
+                    : SizedBox.shrink();
+                Widget unscheduledTiles = unScheduledSubEvents.isNotEmpty
+                    ? Container(
+                        // color: Colors.green,
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                        child: renderUnscheduledTiles(unScheduledSubEvents),
+                      )
+                    : SizedBox.shrink();
                 return Container(
                   height: 300,
-                  color: Colors.amber,
+                  color: Color.fromRGBO(150, 150, 150, 0.3),
                   child: Center(
                     child: ListView(
                       scrollDirection: Axis.horizontal,
                       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      children: <Widget>[
-                        renderTardyTiles(tardySubEvents),
-                        renderUnscheduledTiles(unScheduledSubEvents)
-                      ],
+                      children: <Widget>[tardyTiles, unscheduledTiles],
                     ),
                   ),
                 );
