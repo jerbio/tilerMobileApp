@@ -434,6 +434,12 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
+  showPendingPreview() {
+    setState(() {
+      bottomWidget = PendingWidget();
+    });
+  }
+
   void onScheduleTimelineChange() {
     if (editTilerEvent != null && isScheduleTimelineReady(editTilerEvent)) {
       int beforeSplitCount = editTilerEvent!.splitCount ?? 1;
@@ -453,6 +459,7 @@ class _EditTileState extends State<EditTile> {
           (beforeSplitCount != afterSplitCount ||
               !beforeStartToEnd.isStartAndEndEqual(afterStartToEnd) ||
               !beforeCalStartToEnd.isStartAndEndEqual(afterCalStartToEnd))) {
+        showPendingPreview();
         whatIfApi.updateSubEvent(editTilerEvent!).then((value) {
           if (value == null) {
             clearPreviewButton();
