@@ -66,8 +66,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
 
     if (currentDate.millisecondsSinceEpoch !=
         previousDate.millisecondsSinceEpoch) {
-      this.context.read<UiDateManagerBloc>().add(
-          DateChange(previousSelectedDate: previousDate, selectedDate: date));
+      this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
+          previousSelectedDate: previousDate, selectedDate: date));
     }
   }
 

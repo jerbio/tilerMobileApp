@@ -9,6 +9,10 @@ abstract class SubCalendarTileState extends Equatable {
 
 class SubCalendarTilesInitialState extends SubCalendarTileState {}
 
+class SubCalendarTilesLogOutState extends SubCalendarTilesInitialState {}
+
+class SubCalendarTilesLoggedOutState extends SubCalendarTilesInitialState {}
+
 class SubCalendarTilesLoadingState extends SubCalendarTileState {
   final String subEventId;
 
