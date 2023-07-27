@@ -14,8 +14,12 @@ import '../../constants.dart' as Constants;
 abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';
   static const int batchCount = 10;
-  Authentication authentication = new Authentication();
-  AccessManager accessManager = AccessManager();
+  late Authentication authentication;
+  late AccessManager accessManager;
+  AppApi() {
+    authentication = new Authentication();
+    accessManager = AccessManager();
+  }
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
             jsonResult['Error'].containsKey('Code')) &&

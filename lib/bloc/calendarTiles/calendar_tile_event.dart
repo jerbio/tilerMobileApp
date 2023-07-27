@@ -28,3 +28,7 @@ class CompleteCalendarTileEvent extends CalendarTileEvent {
   final String calEventId;
   CompleteCalendarTileEvent({required this.calEventId});
 }
+
+class LogOutCalendarTileEvent extends CalendarTileEvent {
+  LogOutCalendarTileEvent();
+}

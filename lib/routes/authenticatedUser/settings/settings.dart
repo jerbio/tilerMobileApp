@@ -3,7 +3,10 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -234,11 +237,20 @@ class _SettingState extends State<Setting> {
   Widget createLogOutButton() {
     Widget retValue = ElevatedButton(
         onPressed: () async {
-          authentication.deauthenticateCredentials();
+          await authentication.deauthenticateCredentials();
           await secureStorageManager.deleteAllStorageData();
           Navigator.pushNamedAndRemoveUntil(
               context, '/LoggedOut', (route) => false);
           this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
+          this
+              .context
+              .read<SubCalendarTileBloc>()
+              .add(LogOutSubCalendarTileBlocEvent());
+          this
+              .context
+              .read<UiDateManagerBloc>()
+              .add(LogOutUiDateManagerEvent());
+          this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
         },
         child: Text(AppLocalizations.of(context)!.logout));
     return retValue;

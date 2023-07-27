@@ -19,3 +19,9 @@ class UiDateManagerUpdated extends UiDateManagerState {
   @override
   List<Object> get props => [currentDate, previousDate];
 }
+
+class LoggedOutUiDateManagerUpdated extends UiDateManagerState {
+  LoggedOutUiDateManagerUpdated();
+  @override
+  List<Object> get props => [];
+}

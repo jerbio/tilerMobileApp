@@ -18,6 +18,7 @@ class SubCalendarTileBloc
     on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
     on<GetListOfSubCalendarTilesBlocEvent>(_onLoadListOfSubCalendarTiles);
     on<NewSubCalendarTileBlocEvent>(_onNewSubTileCreatedState);
+    on<LogOutSubCalendarTileBlocEvent>(_onLogOutSubTileCreatedState);
   }
 
   void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event,
@@ -66,5 +67,11 @@ class SubCalendarTileBloc
     await subCalendarEventApi.getSubEvents(event.subEventIds).then((value) {
       emit(ListOfSubCalendarTileLoadedState(subEvents: value.toList()));
     });
+  }
+
+  void _onLogOutSubTileCreatedState(LogOutSubCalendarTileBlocEvent event,
+      Emitter<SubCalendarTileState> emit) async {
+    subCalendarEventApi = SubCalendarEventApi();
+    emit(SubCalendarTilesLogOutState());
   }
 }
