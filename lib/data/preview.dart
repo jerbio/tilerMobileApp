@@ -70,6 +70,7 @@ class Sleep {
           .keys
           .map<int>((timeAsJsString) => int.parse(timeAsJsString))
           .toList() as List<int>;
+      epochJSTimes.sort();
       String maxSleepTimelineKey = 'MaximumSleepTimeLine';
       maximumSleepTimeline = epochJSTimes
           .where((jsTime) =>
@@ -122,6 +123,7 @@ class Tardy {
           .keys
           .map<int>((timeAsJsString) => int.parse(timeAsJsString))
           .toList() as List<int>;
+      epochJSTimes.sort();
       dayPreviews = epochJSTimes
           .map<DayPreview>((eachEpochJSTime) => DayPreview.fromTime(
               eachEpochJSTime,
