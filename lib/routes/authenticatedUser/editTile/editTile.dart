@@ -98,7 +98,11 @@ class _EditTileState extends State<EditTile> {
     Widget tardyHeader = Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
       alignment: Alignment.centerLeft,
-      child: Text(AppLocalizations.of(context)!.late,
+      child: Text(
+          tiles.isEmpty
+              ? AppLocalizations.of(context)!.late
+              : AppLocalizations.of(context)!
+                  .lateDate(tiles.first.startTime!.humanDate),
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
@@ -211,8 +215,11 @@ class _EditTileState extends State<EditTile> {
   }
 
   Widget renderListOfTiles(List<SubCalendarEvent> tiles) {
-    return Column(
-      children: tiles.map<Widget>((e) => renderTile(e)).toList(),
+    return Container(
+      height: 100,
+      child: ListView(
+        children: tiles.map<Widget>((e) => renderTile(e)).toList(),
+      ),
     );
   }
 
@@ -224,11 +231,7 @@ class _EditTileState extends State<EditTile> {
           ),
           padding: EdgeInsets.all(0)),
       onPressed: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    EditTile(tileId: subCalendarEventTile.id!)));
+        return;
       },
       child: Container(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -364,12 +367,8 @@ class _EditTileState extends State<EditTile> {
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
                   color: Colors.white, borderRadius: BorderRadius.circular(10)),
-              child: Column(children: [
-                unscheduledBodyHeader,
-                Column(
-                  children: [renderListOfTiles(tiles)],
-                )
-              ]),
+              child: Column(
+                  children: [unscheduledBodyHeader, renderListOfTiles(tiles)]),
             )
           ],
         ),
@@ -379,18 +378,35 @@ class _EditTileState extends State<EditTile> {
 
   updatePreviewWidget() {
     List<SubCalendarEvent> tardySubEvents = [];
-    if (afterPreview != null && afterPreview!.tardies != null) {
-      tardySubEvents = afterPreview!.tardies!.subEvents
+    if (afterPreview != null &&
+        afterPreview!.tardies != null &&
+        afterPreview!.tardies!.dayPreviews != null &&
+        afterPreview!.tardies!.dayPreviews!.isNotEmpty &&
+        afterPreview!.tardies!.dayPreviews!.first.subEvents != null) {
+      tardySubEvents = afterPreview!.tardies!.dayPreviews!.first.subEvents!
           .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
           .toList();
     }
 
     List<SubCalendarEvent> unScheduledSubEvents = [];
-    if (afterPreview != null && afterPreview!.nonViable != null) {
-      unScheduledSubEvents =
-          afterPreview!.nonViable!.map<SubCalendarEvent>((e) {
-        return e as SubCalendarEvent;
-      }).toList();
+    if (afterPreview != null &&
+        afterPreview!.nonViable != null &&
+        afterPreview!.nonViable!.isNotEmpty) {
+      Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
+      int? firstDayIndex;
+      for (TilerEvent eachSubEvent in afterPreview!.nonViable!) {
+        DateTime referenceEndTime =
+            (eachSubEvent as SubCalendarEvent).calendarEventEndTime ??
+                (eachSubEvent).endTime;
+        int dayIndex = referenceEndTime.universalDayIndex;
+        if (firstDayIndex == null || firstDayIndex > dayIndex) {
+          firstDayIndex = dayIndex;
+        }
+        List<SubCalendarEvent> subEvents = dayIndexToSubEvents[dayIndex] ??= [];
+        subEvents.add(eachSubEvent);
+      }
+
+      unScheduledSubEvents = dayIndexToSubEvents[firstDayIndex!]!;
     }
     if (tardySubEvents.isEmpty && unScheduledSubEvents.isEmpty) {
       clearPreviewButton();
@@ -410,13 +426,11 @@ class _EditTileState extends State<EditTile> {
               builder: (BuildContext context) {
                 Widget tardyTiles = tardySubEvents.isNotEmpty
                     ? Container(
-                        // color: Colors.red,
                         padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                         child: renderTardyTiles(tardySubEvents))
                     : SizedBox.shrink();
                 Widget unscheduledTiles = unScheduledSubEvents.isNotEmpty
                     ? Container(
-                        // color: Colors.green,
                         padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
                         child: renderUnscheduledTiles(unScheduledSubEvents),
                       )

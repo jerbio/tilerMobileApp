@@ -271,12 +271,21 @@
           "type": "String",
           "example": "x minutes"
         }
-      }},
+    }},
     "countDays": "{count} days",
     "@countDays": {
       "description": "X days",
       "placeholders": {
         "count": {
+          "type": "String",
+          "example": "x days"
+        }
+    }},
+    "lateDate": "Late ({date})",
+    "@lateDate": {
+      "description": "Late (date)",
+      "placeholders": {
+        "date": {
           "type": "String",
           "example": "x days"
         }
