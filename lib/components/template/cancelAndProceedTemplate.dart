@@ -44,52 +44,58 @@ class CancelAndProceedTemplateWidgetState
   Widget build(BuildContext context) {
     bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
-    Widget cancelButton = Container(
-      width: TileStyles.proceedAndCancelButtonWidth,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              TileStyles.primaryColor,
-              HSLColor.fromColor(TileStyles.primaryColor)
-                  .withLightness(
-                      HSLColor.fromColor(TileStyles.primaryColor).lightness +
-                          0.3)
-                  .toColor()
-            ],
-          )),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          elevation: 0.0,
-          primary: Colors.transparent,
-          onPrimary: Colors.transparent,
-          shadowColor: Colors.transparent, // foreground
-        ),
-        child: Center(
-            child: Container(
-          margin: EdgeInsets.fromLTRB(10, 0, 50, 50),
-          child: Transform.rotate(
-            angle: math.pi / 4,
-            child: IconButton(
-              icon: Icon(
-                Icons.add,
-                color: Colors.white,
-              ),
-              onPressed: null,
-            ),
+    Widget cancelButton = Align(
+      alignment: Alignment.bottomRight,
+      child: Container(
+        alignment: Alignment.centerRight,
+        // margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        width: TileStyles.proceedAndCancelButtonWidth,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topRight: Radius.circular(10),
+                bottomRight: Radius.circular(10)),
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                TileStyles.primaryColor,
+                HSLColor.fromColor(TileStyles.primaryColor)
+                    .withLightness(
+                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
+                            0.3)
+                    .toColor()
+              ],
+            )),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            elevation: 0.0,
+            primary: Colors.transparent,
+            onPrimary: Colors.transparent,
+            shadowColor: Colors.transparent, // foreground
           ),
-        )),
-        onPressed: () {
-          if (this.widget.onCancel != null) {
-            Navigator.pop(context);
-            this.widget.onCancel!();
-          } else {
-            Navigator.pop(context);
-          }
-        },
+          child: Center(
+              child: Container(
+            margin: EdgeInsets.fromLTRB(10, 0, 50, 50),
+            child: Transform.rotate(
+              angle: math.pi / 4,
+              child: IconButton(
+                icon: Icon(
+                  Icons.add,
+                  color: Colors.white,
+                ),
+                onPressed: null,
+              ),
+            ),
+          )),
+          onPressed: () {
+            if (this.widget.onCancel != null) {
+              Navigator.pop(context);
+              this.widget.onCancel!();
+            } else {
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
     );
     List<Widget> bottomButtons = [];
@@ -163,10 +169,18 @@ class CancelAndProceedTemplateWidgetState
       bottomButtons.add(cancelButton);
       if (proceedButton != null) {
         bottomButtons.add(proceedButton);
+      } else {
+        bottomButtons.add(SizedBox.shrink());
       }
 
       if (this.widget.bottomWidget != null) {
-        bottomButtons.insert(1, this.widget.bottomWidget!);
+        bottomButtons.insert(
+            1,
+            Container(
+                padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
+                width: MediaQuery.of(context).size.width -
+                    2 * TileStyles.proceedAndCancelButtonWidth,
+                child: this.widget.bottomWidget!));
       }
 
       if (isKeyboardShown) {

@@ -415,41 +415,45 @@ class _EditTileState extends State<EditTile> {
 
     setState(() {
       bottomWidget = ElevatedButton(
-          onPressed: () {
-            if (afterPreview == null) {
-              clearPreviewButton();
-              return;
-            }
+        onPressed: () {
+          if (afterPreview == null) {
+            clearPreviewButton();
+            return;
+          }
 
-            showModalBottomSheet<void>(
-              context: context,
-              builder: (BuildContext context) {
-                Widget tardyTiles = tardySubEvents.isNotEmpty
-                    ? Container(
-                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                        child: renderTardyTiles(tardySubEvents))
-                    : SizedBox.shrink();
-                Widget unscheduledTiles = unScheduledSubEvents.isNotEmpty
-                    ? Container(
-                        padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                        child: renderUnscheduledTiles(unScheduledSubEvents),
-                      )
-                    : SizedBox.shrink();
-                return Container(
-                  height: 300,
-                  color: Color.fromRGBO(150, 150, 150, 0.3),
-                  child: Center(
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
+          showModalBottomSheet<void>(
+            context: context,
+            builder: (BuildContext context) {
+              Widget tardyTiles = tardySubEvents.isNotEmpty
+                  ? Container(
                       padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
-                      children: <Widget>[tardyTiles, unscheduledTiles],
-                    ),
+                      child: renderTardyTiles(tardySubEvents))
+                  : SizedBox.shrink();
+              Widget unscheduledTiles = unScheduledSubEvents.isNotEmpty
+                  ? Container(
+                      padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                      child: renderUnscheduledTiles(unScheduledSubEvents),
+                    )
+                  : SizedBox.shrink();
+              return Container(
+                height: 300,
+                color: Color.fromRGBO(150, 150, 150, 0.3),
+                child: Center(
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.fromLTRB(10, 10, 10, 10),
+                    children: <Widget>[tardyTiles, unscheduledTiles],
                   ),
-                );
-              },
-            );
-          },
-          child: Text(AppLocalizations.of(context)!.prediction));
+                ),
+              );
+            },
+          );
+        },
+        child: Text(AppLocalizations.of(context)!.prediction,
+            style: TextStyle(
+              fontSize: 20,
+            )),
+      );
     });
   }
 
@@ -461,7 +465,9 @@ class _EditTileState extends State<EditTile> {
 
   showPendingPreview() {
     setState(() {
-      bottomWidget = PendingWidget();
+      bottomWidget = PendingWidget(
+        imageAsset: 'assets/iconScout/loading-red.json',
+      );
     });
   }
 

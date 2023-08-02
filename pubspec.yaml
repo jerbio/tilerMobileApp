@@ -138,6 +138,7 @@ flutter:
     - assets/iconScout/deadline.svg
     - assets/iconScout/notes.svg
     - assets/iconScout/chart.svg
+    - assets/iconScout/loading-red.json
     - assets/icons/svg/google-outline---filled(24x24)@1x.svg
     # - images/a_dot_ham.jpeg
   generate: true
