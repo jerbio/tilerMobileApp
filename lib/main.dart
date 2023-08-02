@@ -24,6 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
@@ -117,6 +118,7 @@ class TilerApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Tiler',
           theme: ThemeData(
+            fontFamily: TileStyles.rubikFontName,
             primarySwatch: MaterialColor(0xFF880E4F, color),
             visualDensity: VisualDensity.adaptivePlatformDensity,
           ),

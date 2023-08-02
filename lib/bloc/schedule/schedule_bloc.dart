@@ -72,6 +72,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
+    print("Get Schedule State");
+    print(state);
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
 
@@ -110,7 +112,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             timelines: state.timelines,
             lookupTimeline: updateTimeline));
       });
-      ;
       return;
     }
 
