@@ -108,8 +108,8 @@ class _TileListState extends State<TileList> {
         }
 
         if (currentState is ScheduleLoadingState &&
-            !currentState.evaluationTime.isAfter(
-                currentState.evaluationTime.add(Duration(minutes: 1)))) {
+            !currentState.loadingTime
+                .isAfter(currentState.loadingTime.add(Duration(minutes: 1)))) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
@@ -163,8 +163,8 @@ class _TileListState extends State<TileList> {
         }
 
         if (currentState is ScheduleLoadingState &&
-            !currentState.evaluationTime.isAfter(
-                currentState.evaluationTime.add(Duration(minutes: 1)))) {
+            !currentState.loadingTime
+                .isAfter(currentState.loadingTime.add(Duration(minutes: 1)))) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
@@ -463,9 +463,10 @@ class _TileListState extends State<TileList> {
         todayTileBatches.add(todayBatch);
         childTileBatchs.addAll(todayTileBatches);
         dayIndexToWidget[currentTime.universalDayIndex] = Container(
-            child: ListView(
-          children: todayTileBatches,
-        ));
+          child: ListView(
+            children: todayTileBatches,
+          ),
+        );
       } else {
         DateTime currentTime = Utility.currentTime();
         TileBatch tileBatch = TileBatch(
@@ -473,7 +474,6 @@ class _TileListState extends State<TileList> {
           tiles: [],
         );
         Widget widget = Container(
-          decoration: previousTileBatchDecoration,
           child: tileBatch,
         );
         dayIndexToWidget[currentTime.universalDayIndex] = widget;
@@ -485,7 +485,6 @@ class _TileListState extends State<TileList> {
           {
             Widget widget = Container(
               height: MediaQuery.of(context).size.height,
-              decoration: upcomingTileBatchDecoration,
               child: tileBatch,
             );
             if (tileBatch.dayIndex != null) {

@@ -13,7 +13,7 @@ class ScheduleInitialState extends ScheduleState {}
 class ScheduleLoggedOutState extends ScheduleState {}
 
 class ScheduleLoadingState extends ScheduleState {
-  DateTime evaluationTime;
+  DateTime loadingTime;
   List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
   Timeline? previousLookupTimeline;
@@ -26,7 +26,7 @@ class ScheduleLoadingState extends ScheduleState {
       this.timelines = const <Timeline>[],
       required this.isAlreadyLoaded,
       required this.connectionState,
-      required this.evaluationTime,
+      required this.loadingTime,
       this.previousLookupTimeline,
       this.message});
 

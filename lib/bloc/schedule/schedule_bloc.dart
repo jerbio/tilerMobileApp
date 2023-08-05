@@ -13,6 +13,7 @@ part 'schedule_event.dart';
 part 'schedule_state.dart';
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
+  final Duration _retryScheduleLoadingDuration = Duration(seconds: 45);
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
     on<GetScheduleEvent>(_onGetSchedule);
@@ -98,7 +99,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: state.timelines,
           previousLookupTimeline: timeline,
           isAlreadyLoaded: event.isAlreadyLoaded ?? true,
-          evaluationTime: Utility.currentTime(),
+          loadingTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
       await getSubTiles(updateTimeline).then((value) {
         emit(ScheduleLoadedState(
@@ -120,7 +121,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           subEvents: [],
           timelines: [],
           isAlreadyLoaded: event.isAlreadyLoaded ?? false,
-          evaluationTime: Utility.currentTime(),
+          loadingTime: Utility.currentTime(),
           connectionState: ConnectionState.waiting));
 
       await getSubTiles(updateTimeline).then((value) {
@@ -145,7 +146,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           previousLookupTimeline: state.lookupTimeline,
           isAlreadyLoaded: true,
           connectionState: ConnectionState.waiting,
-          evaluationTime: Utility.currentTime()));
+          loadingTime: Utility.currentTime()));
 
       await getSubTiles(updateTimeline).then((value) async {
         emit(ScheduleLoadedState(
@@ -160,6 +161,34 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             lookupTimeline: updateTimeline));
       });
       return;
+    }
+
+    if (state is ScheduleLoadingState) {
+      if (Utility.currentTime().difference(state.loadingTime).inMilliseconds >=
+          _retryScheduleLoadingDuration.inMilliseconds) {
+        List<SubCalendarEvent> subEvents = state.subEvents;
+        List<Timeline> timelines = state.timelines;
+        emit(ScheduleLoadingState(
+            subEvents: subEvents,
+            timelines: timelines,
+            isAlreadyLoaded: state.isAlreadyLoaded,
+            loadingTime: Utility.currentTime(),
+            connectionState: ConnectionState.waiting));
+
+        await getSubTiles(updateTimeline).then((value) {
+          emit(ScheduleLoadedState(
+              subEvents: value.item2,
+              timelines: value.item1,
+              lookupTimeline: updateTimeline));
+        }).catchError((onError) {
+          emit(FailedScheduleLoadedState(
+              evaluationTime: Utility.currentTime(),
+              subEvents: [],
+              timelines: [],
+              lookupTimeline: updateTimeline));
+        });
+        return;
+      }
     }
   }
 
