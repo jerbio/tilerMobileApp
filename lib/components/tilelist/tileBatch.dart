@@ -228,6 +228,7 @@ class TileBatchState extends State<TileBatch> {
           shrinkWrap: true,
           itemBuilder: _buildItem,
           key: _listKey,
+          physics: const NeverScrollableScrollPhysics(),
           initialItemCount: initialItems.length,
         );
         _list = ListModel<TilerEvent>(
@@ -238,8 +239,17 @@ class TileBatchState extends State<TileBatch> {
         );
       }
       dayContent = Container(
-        height: MediaQuery.of(context).size.height - heightMargin,
-        child: animatedList!,
+        height: MediaQuery.of(context).size.height - 320,
+        width: MediaQuery.of(context).size.width,
+        child: ListView(
+          children: [
+            animatedList!,
+            // this is needed to ensure there is spacing between animated list and the bottom of the screen
+            MediaQuery.of(context).orientation == Orientation.landscape
+                ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
+                : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles
+          ],
+        ),
       );
     }
 

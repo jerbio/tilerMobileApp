@@ -11,6 +11,7 @@ class GetScheduleEvent extends ScheduleEvent {
   final List<SubCalendarEvent>? previousSubEvents;
   final Timeline? scheduleTimeline;
   final bool? isAlreadyLoaded;
+  bool forceRefresh = false;
   Timeline? previousTimeline;
   String? message;
   GetScheduleEvent(
@@ -18,7 +19,8 @@ class GetScheduleEvent extends ScheduleEvent {
       this.scheduleTimeline,
       this.isAlreadyLoaded,
       this.previousTimeline,
-      this.message});
+      this.message,
+      this.forceRefresh = false});
 
   @override
   List<Object> get props => [];
