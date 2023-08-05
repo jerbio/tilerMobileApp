@@ -502,8 +502,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     return Scaffold(
       extendBody: true,
-      backgroundColor: Colors.white,
       body: SafeArea(
+        bottom: false,
         child: Container(
           child: Stack(
             children: widgetChildren,

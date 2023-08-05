@@ -433,7 +433,7 @@ class _TileListState extends State<TileList> {
       childTileBatchs.addAll(preceedingDayTiles);
       preceedingDayTiles.forEach((tileBatch) {
         Widget widget = Container(
-          height: MediaQuery.of(context).size.height - 400,
+          height: MediaQuery.of(context).size.height,
           decoration: previousTileBatchDecoration,
           child: tileBatch,
         );
