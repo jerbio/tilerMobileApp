@@ -244,7 +244,6 @@ class TileBatchState extends State<TileBatch> {
         child: ListView(
           children: [
             animatedList!,
-            // this is needed to ensure there is spacing between animated list and the bottom of the screen
             MediaQuery.of(context).orientation == Orientation.landscape
                 ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
                 : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles

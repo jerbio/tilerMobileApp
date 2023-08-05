@@ -466,8 +466,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                Colors.yellow,
-                Colors.yellow,
+                Colors.white,
+                Colors.white,
                 Colors.white,
               ])),
           child: BottomNavigationBar(
