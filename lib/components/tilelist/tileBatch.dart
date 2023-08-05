@@ -239,7 +239,7 @@ class TileBatchState extends State<TileBatch> {
         );
       }
       dayContent = Container(
-        height: MediaQuery.of(context).size.height - 320,
+        height: MediaQuery.of(context).size.height - 228,
         width: MediaQuery.of(context).size.width,
         child: ListView(
           children: [
@@ -297,11 +297,11 @@ class TileBatchState extends State<TileBatch> {
           final currentState = this.context.read<ScheduleBloc>().state;
           if (currentState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.lookupTimeline,
-                  previousTimeline: currentState.lookupTimeline,
-                ));
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.lookupTimeline,
+                previousTimeline: currentState.lookupTimeline,
+                forceRefresh: true));
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
