@@ -110,4 +110,9 @@ class TileStyles {
       ),
     );
   }
+
+  static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
+      SizedBox(height: 200);
+  static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
+      SizedBox(height: 150);
 }
