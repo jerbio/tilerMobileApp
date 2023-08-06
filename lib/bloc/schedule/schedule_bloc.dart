@@ -13,7 +13,7 @@ part 'schedule_event.dart';
 part 'schedule_state.dart';
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
-  final Duration _retryScheduleLoadingDuration = Duration(seconds: 45);
+  final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
     on<GetScheduleEvent>(_onGetSchedule);

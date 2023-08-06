@@ -1,31 +1,19 @@
 import 'dart:convert';
 
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
+import 'package:tiler_app/services/storageManager.dart';
 import 'package:tuple/tuple.dart';
 
-import 'api/authorization.dart';
 import '../../constants.dart' as Constants;
 
 class Authentication {
-  final storage = new FlutterSecureStorage();
-  final _credentialKey = 'credentials';
   AuthenticationData? cachedCredentials;
-
-  Future saveCredentials(AuthenticationData credentials) async {
-    String credentialJsonString = jsonEncode(credentials.toJson());
-    await storage.write(key: _credentialKey, value: credentialJsonString);
-    cachedCredentials = credentials;
-  }
-
-  Future deleteCredentials() async {
-    await storage.delete(key: _credentialKey);
-  }
+  SecureStorageManager storageManager = SecureStorageManager();
 
   Future deauthenticateCredentials() async {
-    await deleteCredentials();
+    await storageManager.deleteCredentials();
     cachedCredentials = null;
   }
 
@@ -50,7 +38,7 @@ class Authentication {
   }
 
   Future<AuthenticationData?> readCredentials() async {
-    String? credentialJsonString = await storage.read(key: _credentialKey);
+    String? credentialJsonString = await storageManager.readCredentials();
     AuthenticationData retValue;
     if (credentialJsonString != null && credentialJsonString.length > 0) {
       Map jsonData = jsonDecode(credentialJsonString);
@@ -77,6 +65,11 @@ class Authentication {
     }
 
     return retValue;
+  }
+
+  saveCredentials(AuthenticationData credentials) async {
+    storageManager.saveCredentials(credentials);
+    cachedCredentials = credentials;
   }
 
   Future<Tuple2<bool, String>> isUserAuthenticated() async {
