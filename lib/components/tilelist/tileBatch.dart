@@ -307,21 +307,21 @@ class TileBatchState extends State<TileBatch> {
 
           if (currentState is ScheduleLoadedState) {
             this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.lookupTimeline,
-                  previousTimeline: currentState.lookupTimeline,
-                ));
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.lookupTimeline,
+                previousTimeline: currentState.lookupTimeline,
+                forceRefresh: true));
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadingState) {
             this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.previousLookupTimeline,
-                  previousTimeline: currentState.previousLookupTimeline,
-                ));
+                isAlreadyLoaded: true,
+                previousSubEvents: currentState.subEvents,
+                scheduleTimeline: currentState.previousLookupTimeline,
+                previousTimeline: currentState.previousLookupTimeline,
+                forceRefresh: true));
             refreshScheduleSummary(
                 lookupTimeline: currentState.previousLookupTimeline);
           }

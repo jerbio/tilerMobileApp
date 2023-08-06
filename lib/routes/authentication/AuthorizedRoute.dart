@@ -14,6 +14,7 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/accessManager.dart';
@@ -39,7 +40,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
-  Tuple3<Position, bool, bool>? locationAccess;
+  Tuple3<Position, bool, bool>? locationAccess = Tuple3(
+      Position(
+        longitude: Location.fromDefault().longitude!,
+        latitude: Location.fromDefault().latitude!,
+        timestamp: Utility.currentTime(),
+        heading: 0,
+        accuracy: 0,
+        altitude: 0,
+        speed: 0,
+        speedAccuracy: 0,
+      ),
+      false,
+      true);
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
@@ -417,6 +430,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   @override
   Widget build(BuildContext context) {
     // return renderLocationRequest();
+
+    print('isLocationRequestTriggered $isLocationRequestTriggered');
+    print('locationAccess $locationAccess');
     if (!isLocationRequestTriggered &&
         locationAccess != null &&
         !locationAccess!.item2 &&
