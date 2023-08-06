@@ -325,9 +325,8 @@ class WithinNowBatchState extends TileBatchState {
         }
       },
       child: Container(
-        height: MediaQuery.of(context).size.height - 200,
+        height: MediaQuery.of(context).size.height - daySummaryToHeightBuffer,
         width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 200),
         child: ListView(
           children: [
             ...precedingTileWidgets,
@@ -363,7 +362,6 @@ class WithinNowBatchState extends TileBatchState {
     }
 
     return Container(
-      padding: EdgeInsets.fromLTRB(0, 0, 0, 300),
       child: Column(
         children: children,
       ),
