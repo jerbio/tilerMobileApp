@@ -463,9 +463,7 @@ class _TileListState extends State<TileList> {
         todayTileBatches.add(todayBatch);
         childTileBatchs.addAll(todayTileBatches);
         dayIndexToWidget[currentTime.universalDayIndex] = Container(
-          child: ListView(
-            children: todayTileBatches,
-          ),
+          child: todayBatch,
         );
       } else {
         DateTime currentTime = Utility.currentTime();

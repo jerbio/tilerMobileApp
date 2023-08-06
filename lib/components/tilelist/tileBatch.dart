@@ -64,6 +64,7 @@ class TileBatchState extends State<TileBatch> {
   late ListModel<TilerEvent>? _list;
   bool _pendingRendering = false;
   double _emptyDayOpacity = 0;
+  final double daySummaryToHeightBuffer = 213.0;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -239,7 +240,7 @@ class TileBatchState extends State<TileBatch> {
         );
       }
       dayContent = Container(
-        height: MediaQuery.of(context).size.height - 228,
+        height: MediaQuery.of(context).size.height - daySummaryToHeightBuffer,
         width: MediaQuery.of(context).size.width,
         child: ListView(
           children: [
