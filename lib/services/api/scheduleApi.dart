@@ -33,7 +33,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
-    print("Get sub event for timeline ${timeLine.toString()}");
+    print("|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
 
