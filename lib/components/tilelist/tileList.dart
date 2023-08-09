@@ -40,12 +40,13 @@ class TileList extends StatefulWidget {
 class _TileListState extends State<TileList> {
   SubCalendarEvent? notificationSubEvent;
   SubCalendarEvent? concludingSubEvent;
-  final Duration autorefreshDuration = const Duration(minutes: 2);
+  final Duration autorefreshDuration = const Duration(minutes: 5);
   StreamSubscription? autoRefreshList;
   DateTime lastUpdate = Utility.currentTime();
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
-      Utility.currentTime().dayDate.add(Duration(days: -3)), Duration(days: 7));
+      Utility.currentTime().dayDate.add(Duration(days: -7)),
+      Duration(days: 14));
   Timeline? oldTimeline;
   Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
@@ -363,7 +364,10 @@ class _TileListState extends State<TileList> {
           DateTime.fromMillisecondsSinceEpoch(relevantTimeline.start!.toInt()));
       int endIndex = Utility.getDayIndex(
           DateTime.fromMillisecondsSinceEpoch(relevantTimeline.end!.toInt()));
-      int numberOfDays = (endIndex - startIndex) + 1;
+      int numberOfDays = (endIndex - startIndex);
+      if (numberOfDays <= 0) {
+        numberOfDays = 1;
+      }
       List<int> dayIndexes = List.generate(numberOfDays, (index) => index);
       dayIndexToTileDict.keys.toList();
       dayIndexes.sort();
@@ -577,11 +581,11 @@ class _TileListState extends State<TileList> {
                   reloadSchedule(
                       Utility.getTimeFromIndex(earliestDayIndex)
                           .dayDate
-                          .add(Duration(days: -7)),
+                          .add(Duration(days: -12)),
                       forceRenderingPage: false);
                 }
 
-                if (pageNumber > carouselItems.length - 3) {
+                if (pageNumber > carouselItems.length - 5) {
                   int latestDayIndex = allDayIndexes.last + 1;
                   if (latestDayIndex < 0) {
                     latestDayIndex = 0;
@@ -589,7 +593,7 @@ class _TileListState extends State<TileList> {
                   reloadSchedule(
                       Utility.getTimeFromIndex(latestDayIndex)
                           .dayDate
-                          .add(Duration(days: 7)),
+                          .add(Duration(days: 12)),
                       forceRenderingPage: false);
                 }
               }
