@@ -415,6 +415,7 @@ class ScheduleApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
+          print(jsonResult);
           return TimelineSummary.subCalendarEventFromJson(
               jsonResult['Content']);
         }

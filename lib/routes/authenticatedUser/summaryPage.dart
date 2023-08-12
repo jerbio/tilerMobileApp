@@ -45,6 +45,9 @@ class _SummaryPage extends State<SummaryPage> {
     setState(() {});
     scheduleApi.getTimelineSummary(this.widget.timeline).then((value) {
       timelineSummary = value;
+      if (timelineSummary != null && timelineSummary!.timeline == null) {
+        timelineSummary!.timeline = this.widget.timeline;
+      }
       if (analysis == null) {
         isLoadingTimelineSummary = false;
         setState(() {});
@@ -821,6 +824,27 @@ class _SummaryPage extends State<SummaryPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isFuture = false;
+
+    if (this.timelineSummary != null) {
+      if (!isFuture && this.timelineSummary!.date != null) {
+        isFuture = this
+            .timelineSummary!
+            .date!
+            .isAfter(Utility.todayTimeline().endTime);
+      }
+
+      if (!isFuture && this.timelineSummary!.timeline != null) {
+        isFuture = this
+            .timelineSummary!
+            .timeline!
+            .endTime
+            .isAfter(Utility.todayTimeline().endTime);
+      }
+    }
+
+    print(' isFuture: ' + isFuture.toString());
+
     return SafeArea(
       child: Scaffold(
         body: Container(
@@ -858,7 +882,7 @@ class _SummaryPage extends State<SummaryPage> {
                         ),
                       ),
                       // renderAnalysisData(),
-                      this.timelineSummary == null
+                      this.timelineSummary == null || isFuture
                           ? SizedBox.shrink()
                           : renderCompleteTiles(<SubCalendarEvent>[
                               ...((this.timelineSummary!.complete ?? [])
