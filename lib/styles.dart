@@ -30,6 +30,7 @@ class TileStyles {
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
   static Color appBarTextColor = Colors.white;
+  static Color nonViableBackgroundColor = Color.fromRGBO(150, 150, 150, 1);
 
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
   static double textFontSize = 25;
