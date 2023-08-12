@@ -18,6 +18,7 @@ class TileSummary extends StatefulWidget {
 
 class _TileSummaryState extends State<TileSummary> {
   late SubCalendarEvent subEvent;
+  final double iconSize = 25;
   @override
   void initState() {
     super.initState();
@@ -29,8 +30,9 @@ class _TileSummaryState extends State<TileSummary> {
     int redColor = subEvent.colorRed == null ? 127 : subEvent.colorRed!;
     int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
-    var tileBackGroundColor =
-        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+    var tileBackGroundColor = (subEvent.isViable ?? true)
+        ? Color.fromRGBO(redColor, greenColor, blueColor, 0.2)
+        : TileStyles.nonViableBackgroundColor;
     int currentMsTime = Utility.msCurrentTime;
     late String temporalTextStatus = '';
     Duration duration = Duration();
@@ -54,6 +56,10 @@ class _TileSummaryState extends State<TileSummary> {
 
     if (this.subEvent.isComplete) {
       temporalTextStatus = AppLocalizations.of(context)!.completed;
+    }
+
+    if (!this.subEvent.isEnabled) {
+      temporalTextStatus = AppLocalizations.of(context)!.deleted;
     }
 
     return Container(
@@ -98,8 +104,8 @@ class _TileSummaryState extends State<TileSummary> {
                   children: [
                     Container(
                       margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                      width: 32,
-                      height: 32,
+                      width: iconSize,
+                      height: iconSize,
                       decoration: BoxDecoration(
                           color: Color.fromRGBO(31, 31, 31, 0.1),
                           borderRadius: BorderRadius.circular(8)),
@@ -130,8 +136,8 @@ class _TileSummaryState extends State<TileSummary> {
                           children: [
                             Container(
                               margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                              width: 32,
-                              height: 32,
+                              width: iconSize,
+                              height: iconSize,
                               decoration: BoxDecoration(
                                   color: Color.fromRGBO(31, 31, 31, 0.1),
                                   borderRadius: BorderRadius.circular(8)),
@@ -151,30 +157,56 @@ class _TileSummaryState extends State<TileSummary> {
                                 ))
                           ],
                         )
-                      : Row(
-                          children: [
-                            Container(
-                              margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                  color: Color.fromRGBO(31, 31, 31, 0.1),
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: Icon(
-                                Icons.timelapse,
-                                size: 20.0,
-                              ),
-                            ),
-                            Padding(
-                                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                                child: Text(
-                                  temporalTextStatus,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 15, fontFamily: 'Rubik'),
-                                ))
-                          ],
-                        ))
+                      : !this.subEvent.isEnabled
+                          ? Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                  width: iconSize,
+                                  height: iconSize,
+                                  decoration: BoxDecoration(
+                                      color: Color.fromRGBO(31, 31, 31, 0.1),
+                                      borderRadius: BorderRadius.circular(8)),
+                                  child: Icon(
+                                    Icons.cancel_outlined,
+                                    color: Colors.redAccent,
+                                    size: 20.0,
+                                  ),
+                                ),
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                    child: Text(
+                                      temporalTextStatus,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 15, fontFamily: 'Rubik'),
+                                    ))
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                  width: iconSize,
+                                  height: iconSize,
+                                  decoration: BoxDecoration(
+                                      color: Color.fromRGBO(31, 31, 31, 0.1),
+                                      borderRadius: BorderRadius.circular(8)),
+                                  child: Icon(
+                                    Icons.timelapse,
+                                    size: 20.0,
+                                  ),
+                                ),
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                                    child: Text(
+                                      temporalTextStatus,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                          fontSize: 15, fontFamily: 'Rubik'),
+                                    ))
+                              ],
+                            ))
             ],
           ),
         ],

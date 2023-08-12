@@ -12,9 +12,8 @@ class SecureStorageManager {
 
   Future<Map<String, dynamic>?> getAccessObject() async {
     Map<String, dynamic>? accessDataObj;
-    print("read access , getAccessObject");
+
     bool hasAccess = await _storage.containsKey(key: _accessControlKey);
-    print("read access flag , $hasAccess");
     if (!hasAccess) {
       return null;
     }
@@ -28,7 +27,7 @@ class SecureStorageManager {
     }
 
     String? accessDataString = await _storage.read(key: _accessControlKey);
-    print("read access , getAccessObject $accessDataString");
+
     if (accessDataString != null) {
       accessDataObj = jsonDecode(accessDataString);
     }
@@ -79,7 +78,6 @@ class SecureStorageManager {
 
   Future<String?> readCredentials() async {
     String? retValue = await _storage.read(key: _credentialKey);
-    print("read access , readCredentials $retValue");
     return retValue;
   }
 }
