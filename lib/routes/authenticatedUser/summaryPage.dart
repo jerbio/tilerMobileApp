@@ -10,7 +10,6 @@ import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';

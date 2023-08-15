@@ -92,6 +92,7 @@ class AddTileState extends State<AddTile> {
   bool _isLocationManuallySet = false;
   DateTime? _startTime = Utility.currentTime();
   DateTime? _endTime;
+  bool _isAutoRevisable = true;
 
   Function? onProceed;
 
@@ -1163,7 +1164,22 @@ class AddTileState extends State<AddTile> {
     Widget extraConfigCollection = this.generateExtraConfigSelection();
     tileWidgets.add(tileNameWidget);
     tileWidgets.add(durationPicker);
-    tileWidgets.add(deadlinePicker);
+    tileWidgets.add(Container(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(width: 40, height: 100, child: deadlinePicker),
+          ConfigUpdateButton(
+            text: AppLocalizations.of(context)!.softDeadline,
+            onPress: () {
+              setState(() {
+                _isAutoRevisable = !_isAutoRevisable;
+              });
+            },
+          )
+        ],
+      ),
+    ));
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);
