@@ -773,6 +773,21 @@ class AddTileState extends State<AddTile> {
       },
     );
 
+    Widget softDeadlineWidget = ConfigUpdateButton(
+      decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
+      textColor: _isAutoRevisable ? populatedTextColor : iconColor,
+      prefixIcon: Icon(
+        Icons.check,
+        color: _isAutoRevisable ? populatedTextColor : iconColor,
+      ),
+      text: AppLocalizations.of(context)!.softDeadline,
+      onPress: () {
+        setState(() {
+          _isAutoRevisable = !_isAutoRevisable;
+        });
+      },
+    );
+
     List<Widget> wrapWidgets = [
       locationConfigButton,
       colorPickerConfigButton,
@@ -781,6 +796,7 @@ class AddTileState extends State<AddTile> {
 
     if (!this.isAppointment) {
       wrapWidgets.insert(1, timeRestrictionsConfigButton);
+      wrapWidgets.add(softDeadlineWidget);
     }
 
     Widget retValue = Container(
@@ -900,6 +916,7 @@ class AddTileState extends State<AddTile> {
     tile.isEveryDay = false.toString();
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
+    tile.AutoReviseDeadline = this._isAutoRevisable.toString();
 
     var randomColor = _color ??
         HSLColor.fromAHSL(
@@ -1164,22 +1181,7 @@ class AddTileState extends State<AddTile> {
     Widget extraConfigCollection = this.generateExtraConfigSelection();
     tileWidgets.add(tileNameWidget);
     tileWidgets.add(durationPicker);
-    tileWidgets.add(Container(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Container(width: 40, height: 100, child: deadlinePicker),
-          ConfigUpdateButton(
-            text: AppLocalizations.of(context)!.softDeadline,
-            onPress: () {
-              setState(() {
-                _isAutoRevisable = !_isAutoRevisable;
-              });
-            },
-          )
-        ],
-      ),
-    ));
+    tileWidgets.add(deadlinePicker);
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);

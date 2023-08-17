@@ -155,6 +155,7 @@ class NewTile {
   String? isWorkWeek;
   String? isEveryDay;
   String? RestrictionProfileId;
+  String? AutoReviseDeadline;
 
   RestrictionWeekConfig? RestrictiveWeek;
 

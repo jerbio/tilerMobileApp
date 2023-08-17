@@ -13,13 +13,15 @@ RestrictionWeekConfig _$RestrictionWeekConfigFromJson(
           ?.map((e) =>
               RestrictionWeekDayConfig.fromJson(e as Map<String, dynamic>))
           .toList()
-      ..isEnabled = json['isEnabled'] as String;
+      ..isEnabled = json['isEnabled'] as String
+      ..timeZone = json['timeZone'] as String;
 
 Map<String, dynamic> _$RestrictionWeekConfigToJson(
         RestrictionWeekConfig instance) =>
     <String, dynamic>{
       'WeekDayOption': instance.WeekDayOption?.map((e) => e.toJson()).toList(),
       'isEnabled': instance.isEnabled,
+      'timeZone': instance.timeZone,
     };
 
 RestrictionWeekDayConfig _$RestrictionWeekDayConfigFromJson(
