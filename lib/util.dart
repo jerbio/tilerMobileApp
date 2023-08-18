@@ -8,6 +8,7 @@ import 'package:tiler_app/data/adHoc/autoData.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/blobEvent.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tuple/tuple.dart';
@@ -97,9 +98,13 @@ class Utility {
   }
 
   static bool isEditTileEventEquivalentToCalendarEvent(
-      EditTilerEvent editTilerEvent, CalendarEvent calendarEvent) {
-    bool retValue =
-        isEditTileEventEquivalentToTileEvent(editTilerEvent, calendarEvent);
+      EditCalendarEvent editCalendarEvent, CalendarEvent calendarEvent) {
+    bool retValue = isEditTileEventEquivalentToTileEvent(
+            editCalendarEvent, calendarEvent) &&
+        calendarEvent.isAutoReviseDeadline ==
+            editCalendarEvent.isAutoReviseDeadline;
+    retValue &=
+        calendarEvent.isAutoDeadline == editCalendarEvent.isAutoDeadline;
     return retValue;
   }
 
