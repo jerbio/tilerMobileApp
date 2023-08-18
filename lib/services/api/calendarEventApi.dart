@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -84,7 +85,7 @@ class CalendarEventApi extends AppApi {
     throw error;
   }
 
-  Future<CalendarEvent> updateCalEvent(EditTilerEvent calEvent) async {
+  Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent) async {
     TilerError error = new TilerError();
     error.message = "Did not update tile";
     var queryParameters = {
@@ -97,6 +98,8 @@ class CalendarEventApi extends AppApi {
       'ThirdPartyUserID': calEvent.thirdPartyUserId.toString(),
       'ThirdPartyType': calEvent.thirdPartyType.toString(),
       'Notes': calEvent.note.toString(),
+      'IsAutoDeadline': calEvent.isAutoDeadline?.toString(),
+      'IsAutoReviseDeadline': calEvent.isAutoReviseDeadline?.toString(),
     };
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {

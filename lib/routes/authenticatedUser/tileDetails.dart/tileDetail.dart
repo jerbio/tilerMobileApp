@@ -7,6 +7,7 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
@@ -28,7 +29,7 @@ class TileDetail extends StatefulWidget {
 
 class _TileDetailState extends State<TileDetail> {
   CalendarEvent? calEvent;
-  EditTilerEvent? editTilerEvent;
+  EditCalendarEvent? editTilerEvent;
   int? splitCount;
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   TextEditingController? splitCountController;
@@ -129,7 +130,7 @@ class _TileDetailState extends State<TileDetail> {
 
   void dataChange() {
     if (editTilerEvent != null) {
-      EditTilerEvent revisedEditTilerEvent = editTilerEvent!;
+      EditCalendarEvent revisedEditTilerEvent = editTilerEvent!;
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
@@ -190,7 +191,7 @@ class _TileDetailState extends State<TileDetail> {
             setState(() {
               if (calEvent == null) {
                 calEvent = state.calEvent;
-                editTilerEvent = new EditTilerEvent();
+                editTilerEvent = new EditCalendarEvent();
                 editTilerEvent!.endTime = calEvent!.endTime;
                 editTilerEvent!.startTime = calEvent!.startTime;
                 editTilerEvent!.splitCount = calEvent!.split;
@@ -201,6 +202,9 @@ class _TileDetailState extends State<TileDetail> {
                 editTilerEvent!.id = calEvent!.id;
                 editTilerEvent!.calStartTime = Utility.currentTime();
                 editTilerEvent!.calEndTime = Utility.currentTime();
+                editTilerEvent!.isAutoReviseDeadline =
+                    calEvent!.isAutoReviseDeadline;
+                editTilerEvent!.isAutoDeadline = calEvent!.isAutoDeadline;
                 editTilerEvent!.note = '';
                 if (calEvent!.noteData != null) {
                   editTilerEvent!.note = calEvent!.noteData!.note;
@@ -247,6 +251,7 @@ class _TileDetailState extends State<TileDetail> {
             Widget? tileStartWidget;
             Widget? tileEndWidget;
             Widget? splitWidget;
+            Widget? softDeadlineWidget;
 
             var inputChildWidgets = <Widget>[
               FractionallySizedBox(
@@ -262,77 +267,113 @@ class _TileDetailState extends State<TileDetail> {
               tileNote: tileNote,
               onInputChange: dataChange,
             );
-            if (!isRigidTile &&
-                !isProcrastinateTile &&
-                !this.calEvent!.isRecurring!) {
-              splitWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.split,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                          width: 50,
-                          child: TextField(
-                            textAlign: TextAlign.center,
-                            keyboardType: TextInputType.number,
-                            controller: splitCountController,
+            if (!isRigidTile && !isProcrastinateTile) {
+              if (this.editTilerEvent!.isAutoReviseDeadline != null) {
+                softDeadlineWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Text(
+                                AppLocalizations.of(context)!.softDeadline,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
                           ),
-                        )
-                      ],
-                    ),
-                  ));
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                            width: 50,
+                            child: Switch(
+                              value: this.editTilerEvent!.isAutoReviseDeadline!,
+                              activeColor: TileStyles.primaryColor,
+                              onChanged: (bool value) {
+                                setState(() {
+                                  this.editTilerEvent!.isAutoReviseDeadline =
+                                      value;
+                                  dataChange();
+                                });
+                              },
+                            ),
+                          )
+                        ],
+                      ),
+                    ));
+              }
+              if (!this.calEvent!.isRecurring!) {
+                splitWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.split,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          Container(
+                            margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                            width: 50,
+                            child: TextField(
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              controller: splitCountController,
+                            ),
+                          )
+                        ],
+                      ),
+                    ));
 
-              tileStartWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.start,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editStartDateAndTime!
-                      ],
-                    ),
-                  ));
-              tileEndWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          child: Text(AppLocalizations.of(context)!.end,
-                              style: TextStyle(
-                                  color: Color.fromRGBO(31, 31, 31, 1),
-                                  fontSize: 15,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                        _editEndDateAndTime!
-                      ],
-                    ),
-                  ));
+                tileStartWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.start,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          _editStartDateAndTime!
+                        ],
+                      ),
+                    ));
+                tileEndWidget = FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            child: Text(AppLocalizations.of(context)!.end,
+                                style: TextStyle(
+                                    color: Color.fromRGBO(31, 31, 31, 1),
+                                    fontSize: 15,
+                                    fontFamily: TileStyles.rubikFontName,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                          _editEndDateAndTime!
+                        ],
+                      ),
+                    ));
+              }
             }
 
             if (_editTileNote != null) {
@@ -343,6 +384,9 @@ class _TileDetailState extends State<TileDetail> {
 
             if (splitWidget != null) {
               inputChildWidgets.add(splitWidget);
+            }
+            if (softDeadlineWidget != null) {
+              inputChildWidgets.add(softDeadlineWidget);
             }
             if (tileStartWidget != null) {
               inputChildWidgets.add(tileStartWidget);

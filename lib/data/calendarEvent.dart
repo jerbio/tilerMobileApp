@@ -5,6 +5,8 @@ class CalendarEvent extends TilerEvent {
   List<SubCalendarEvent>? subEvents;
   int? completeCount;
   int? deleteCount;
+  bool? isAutoReviseDeadline;
+  bool? isAutoDeadline;
 
   CalendarEvent.fromJson(Map<String, dynamic> json) : super.fromJson(json) {
     if (json.containsKey('subEvents') && json['subEvents'] != null) {
@@ -22,6 +24,14 @@ class CalendarEvent extends TilerEvent {
 
     if (json.containsKey('deletionCount') && json['deletionCount'] != null) {
       deleteCount = TilerEvent.cast<int>(json['deletionCount'])!.toInt();
+    }
+    if (json.containsKey('isAutoReviseDeadline') &&
+        json['isAutoReviseDeadline'] != null) {
+      isAutoReviseDeadline =
+          TilerEvent.cast<bool>(json['isAutoReviseDeadline'])!;
+    }
+    if (json.containsKey('isAutoDeadline') && json['isAutoDeadline'] != null) {
+      isAutoDeadline = TilerEvent.cast<bool>(json['isAutoDeadline'])!;
     }
   }
 }
