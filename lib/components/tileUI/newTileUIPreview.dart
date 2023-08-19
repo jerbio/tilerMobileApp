@@ -9,7 +9,7 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class NewTileSheet extends StatefulWidget {
-  late SubCalendarEvent subEvent;
+  final SubCalendarEvent subEvent;
   NewTileSheet({required this.subEvent});
   _NewTileSheetState createState() => _NewTileSheetState();
 }
@@ -47,7 +47,7 @@ class _NewTileSheetState extends State<NewTileSheet> {
                     ),
                   ),
                   Text(
-                    this.widget.subEvent.startTime!.humanDate,
+                    this.widget.subEvent.startTime.humanDate,
                     style: TextStyle(
                         fontSize: 15,
                         fontFamily: 'Rubik',

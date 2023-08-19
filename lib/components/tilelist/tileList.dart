@@ -18,6 +18,7 @@ import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
@@ -859,23 +860,38 @@ class _TileListState extends State<TileList> {
                   builder: (BuildContext context) {
                     var future = new Future.delayed(
                         const Duration(milliseconds: Constants.autoHideInMs));
-                    future.asStream().listen((input) {
+                    var cancellableFuture = future.asStream().listen((input) {
                       Navigator.pop(context);
                     });
-                    return Container(
-                      padding: const EdgeInsets.all(20),
-                      height: 250,
-                      width: 300,
-                      decoration: BoxDecoration(
-                        color: bgroundColor,
-                      ),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            NewTileSheet(subEvent: subEvent),
-                          ],
+                    return ElevatedButton(
+                      onPressed: () {
+                        cancellableFuture.cancel();
+                        Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        TileDetail(tileId: subEvent.id!)))
+                            .whenComplete(() => Navigator.pop(context));
+                      },
+                      style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.all(0),
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        height: 250,
+                        width: 300,
+                        decoration: BoxDecoration(
+                          color: bgroundColor,
+                        ),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              NewTileSheet(subEvent: subEvent),
+                            ],
+                          ),
                         ),
                       ),
                     );
