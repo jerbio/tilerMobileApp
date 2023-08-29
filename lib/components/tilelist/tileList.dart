@@ -49,7 +49,6 @@ class _TileListState extends State<TileList> {
       Utility.currentTime().dayDate.add(Duration(days: -7)),
       Duration(days: 14));
   Timeline? oldTimeline;
-  Timeline _todayTimeLine = Utility.todayTimeline();
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;
   BoxDecoration previousTileBatchDecoration =
@@ -184,6 +183,10 @@ class _TileListState extends State<TileList> {
       localNotificationService.initialize(this.context);
     });
     autoRefreshTileList(autorefreshDuration);
+  }
+
+  Timeline get _todayTimeLine {
+    return Utility.todayTimeline();
   }
 
   void autoRefreshTileList(Duration duration) {
@@ -806,15 +809,6 @@ class _TileListState extends State<TileList> {
 
   @override
   Widget build(BuildContext context) {
-    if (!this._todayTimeLine.isStartAndEndEqual(Utility.todayTimeline())) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            this._todayTimeLine = Utility.todayTimeline();
-          });
-        }
-      });
-    }
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
@@ -860,12 +854,13 @@ class _TileListState extends State<TileList> {
                   builder: (BuildContext context) {
                     var future = new Future.delayed(
                         const Duration(milliseconds: Constants.autoHideInMs));
-                    var cancellableFuture = future.asStream().listen((input) {
+                    var hideNewSheeTileFutrue =
+                        future.asStream().listen((input) {
                       Navigator.pop(context);
                     });
                     return ElevatedButton(
                       onPressed: () {
-                        cancellableFuture.cancel();
+                        hideNewSheeTileFutrue.cancel();
                         Navigator.push(
                                 context,
                                 MaterialPageRoute(
