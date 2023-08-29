@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -9,6 +10,7 @@ import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
@@ -20,7 +22,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 
 class TileDetail extends StatefulWidget {
-  String tileId;
+  final String tileId;
   TileDetail({required this.tileId});
 
   @override
@@ -29,6 +31,7 @@ class TileDetail extends StatefulWidget {
 
 class _TileDetailState extends State<TileDetail> {
   CalendarEvent? calEvent;
+  List<SubCalendarEvent>? subEvents;
   EditCalendarEvent? editTilerEvent;
   int? splitCount;
   CalendarEventApi calendarEventApi = new CalendarEventApi();
@@ -38,6 +41,7 @@ class _TileDetailState extends State<TileDetail> {
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
+  String requestId = Utility.getUuid;
 
   @override
   void initState() {
@@ -46,6 +50,9 @@ class _TileDetailState extends State<TileDetail> {
         .context
         .read<CalendarTileBloc>()
         .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
+    this.context.read<SubCalendarTileBloc>().add(
+        GetListOfCalendarTilesSubTilesBlocEvent(
+            calEventId: this.widget.tileId, requestId: requestId));
   }
 
   void onInputCountChange() {
@@ -170,255 +177,270 @@ class _TileDetailState extends State<TileDetail> {
 
   @override
   Widget build(BuildContext context) {
-    return CancelAndProceedTemplateWidget(
-      onProceed: this.onProceed,
-      appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.edit,
-          style: TextStyle(
-              color: TileStyles.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      child: BlocListener<CalendarTileBloc, CalendarTileState>(
-        listener: (context, state) {
-          if (state is CalendarTileLoaded) {
-            setState(() {
-              if (calEvent == null) {
-                calEvent = state.calEvent;
-                editTilerEvent = new EditCalendarEvent();
-                editTilerEvent!.endTime = calEvent!.endTime;
-                editTilerEvent!.startTime = calEvent!.startTime;
-                editTilerEvent!.splitCount = calEvent!.split;
-                editTilerEvent!.name = calEvent!.name ?? '';
-                editTilerEvent!.thirdPartyId = calEvent!.thirdpartyId;
-                editTilerEvent!.thirdPartyType = calEvent!.thirdpartyType;
-                editTilerEvent!.thirdPartyUserId = calEvent!.thirdPartyUserId;
-                editTilerEvent!.id = calEvent!.id;
-                editTilerEvent!.calStartTime = Utility.currentTime();
-                editTilerEvent!.calEndTime = Utility.currentTime();
-                editTilerEvent!.isAutoReviseDeadline =
-                    calEvent!.isAutoReviseDeadline;
-                editTilerEvent!.isAutoDeadline = calEvent!.isAutoDeadline;
-                editTilerEvent!.note = '';
-                if (calEvent!.noteData != null) {
-                  editTilerEvent!.note = calEvent!.noteData!.note;
-                }
-                if (calEvent!.split != null) {
-                  splitCount = calEvent!.split;
-                  splitCountController =
-                      TextEditingController(text: splitCount!.toString());
-                  splitCountController!.addListener(onInputCountChange);
-                  editTilerEvent!.splitCount = splitCount;
-                }
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<CalendarTileBloc, CalendarTileState>(
+            listener: (context, state) {
+              if (state is CalendarTileLoaded) {
+                setState(() {
+                  if (calEvent == null) {
+                    calEvent = state.calEvent;
+                    editTilerEvent = new EditCalendarEvent();
+                    editTilerEvent!.endTime = calEvent!.endTime;
+                    editTilerEvent!.startTime = calEvent!.startTime;
+                    editTilerEvent!.splitCount = calEvent!.split;
+                    editTilerEvent!.name = calEvent!.name ?? '';
+                    editTilerEvent!.thirdPartyId = calEvent!.thirdpartyId;
+                    editTilerEvent!.thirdPartyType = calEvent!.thirdpartyType;
+                    editTilerEvent!.thirdPartyUserId =
+                        calEvent!.thirdPartyUserId;
+                    editTilerEvent!.id = calEvent!.id;
+                    editTilerEvent!.calStartTime = Utility.currentTime();
+                    editTilerEvent!.calEndTime = Utility.currentTime();
+                    editTilerEvent!.isAutoReviseDeadline =
+                        calEvent!.isAutoReviseDeadline;
+                    editTilerEvent!.isAutoDeadline = calEvent!.isAutoDeadline;
+                    editTilerEvent!.note = '';
+                    if (calEvent!.noteData != null) {
+                      editTilerEvent!.note = calEvent!.noteData!.note;
+                    }
+                    if (calEvent!.split != null) {
+                      splitCount = calEvent!.split;
+                      splitCountController =
+                          TextEditingController(text: splitCount!.toString());
+                      splitCountController!.addListener(onInputCountChange);
+                      editTilerEvent!.splitCount = splitCount;
+                    }
+                  }
+                });
               }
-            });
-          }
-        },
-        child: BlocBuilder<CalendarTileBloc, CalendarTileState>(
-          builder: (context, state) {
-            if (state is CalendarTileInitial ||
-                state is CalendarTileLoading ||
-                this.calEvent == null) {
-              return PendingWidget();
+            },
+          ),
+          BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
+              listener: (context, state) {
+            print('->->->ListOfSubCalendarTileLoadedState is called');
+            if (state is ListOfSubCalendarTileLoadedState) {
+              if (state.requestId == requestId) {
+                setState(() {
+                  subEvents = state.subEvents;
+                });
+              }
             }
-            String tileName =
-                this.editTilerEvent?.name ?? this.calEvent!.name ?? '';
-            _editTileName = EditTileName(
-              tileName: tileName,
-              isProcrastinate: isProcrastinateTile,
-              onInputChange: dataChange,
-            );
+          })
+        ],
+        child: CancelAndProceedTemplateWidget(
+          onProceed: this.onProceed,
+          appBar: AppBar(
+            backgroundColor: TileStyles.primaryColor,
+            title: Text(
+              AppLocalizations.of(context)!.edit,
+              style: TextStyle(
+                  color: TileStyles.appBarTextColor,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 22),
+            ),
+            centerTitle: true,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+          ),
+          child: BlocBuilder<CalendarTileBloc, CalendarTileState>(
+            builder: (context, state) {
+              if (state is CalendarTileInitial ||
+                  state is CalendarTileLoading ||
+                  this.calEvent == null) {
+                return PendingWidget();
+              }
+              String tileName =
+                  this.editTilerEvent?.name ?? this.calEvent!.name ?? '';
+              _editTileName = EditTileName(
+                tileName: tileName,
+                isProcrastinate: isProcrastinateTile,
+                onInputChange: dataChange,
+              );
 
-            DateTime startTime =
-                this.editTilerEvent?.startTime ?? this.calEvent!.startTime;
-            _editStartDateAndTime = EditDateAndTime(
-              time: startTime,
-              onInputChange: dataChange,
-            );
-            DateTime endTime =
-                this.editTilerEvent?.endTime ?? this.calEvent!.endTime;
-            _editEndDateAndTime = EditDateAndTime(
-              time: endTime,
-              onInputChange: dataChange,
-            );
+              DateTime startTime =
+                  this.editTilerEvent?.startTime ?? this.calEvent!.startTime;
+              _editStartDateAndTime = EditDateAndTime(
+                time: startTime,
+                onInputChange: dataChange,
+              );
+              DateTime endTime =
+                  this.editTilerEvent?.endTime ?? this.calEvent!.endTime;
+              _editEndDateAndTime = EditDateAndTime(
+                time: endTime,
+                onInputChange: dataChange,
+              );
 
-            Widget? tileStartWidget;
-            Widget? tileEndWidget;
-            Widget? splitWidget;
-            Widget? softDeadlineWidget;
+              Widget? tileStartWidget;
+              Widget? tileEndWidget;
+              Widget? splitWidget;
+              Widget? softDeadlineWidget;
 
-            var inputChildWidgets = <Widget>[
-              FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: _editTileName!),
-            ];
-
-            String tileNote = this.editTilerEvent?.note ??
-                this.calEvent!.noteData?.note ??
-                '';
-
-            _editTileNote = EditTileNote(
-              tileNote: tileNote,
-              onInputChange: dataChange,
-            );
-            if (!isRigidTile && !isProcrastinateTile) {
-              if (this.editTilerEvent!.isAutoReviseDeadline != null) {
-                softDeadlineWidget = FractionallySizedBox(
+              var inputChildWidgets = <Widget>[
+                FractionallySizedBox(
                     widthFactor: TileStyles.tileWidthRatio,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            child: Text(
-                                AppLocalizations.of(context)!.softDeadline,
-                                style: TextStyle(
-                                    color: Color.fromRGBO(31, 31, 31, 1),
-                                    fontSize: 15,
-                                    fontFamily: TileStyles.rubikFontName,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                            width: 50,
-                            child: Switch(
-                              value: this.editTilerEvent!.isAutoReviseDeadline!,
-                              activeColor: TileStyles.primaryColor,
-                              onChanged: (bool value) {
-                                setState(() {
-                                  this.editTilerEvent!.isAutoReviseDeadline =
-                                      value;
-                                  dataChange();
-                                });
-                              },
+                    child: _editTileName!),
+              ];
+
+              String tileNote = this.editTilerEvent?.note ??
+                  this.calEvent!.noteData?.note ??
+                  '';
+
+              _editTileNote = EditTileNote(
+                tileNote: tileNote,
+                onInputChange: dataChange,
+              );
+              if (!isRigidTile && !isProcrastinateTile) {
+                if (this.editTilerEvent!.isAutoReviseDeadline != null) {
+                  softDeadlineWidget = FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(
+                                  AppLocalizations.of(context)!.softDeadline,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
                             ),
-                          )
-                        ],
-                      ),
-                    ));
-              }
-              if (!this.calEvent!.isRecurring!) {
-                splitWidget = FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            child: Text(AppLocalizations.of(context)!.split,
-                                style: TextStyle(
-                                    color: Color.fromRGBO(31, 31, 31, 1),
-                                    fontSize: 15,
-                                    fontFamily: TileStyles.rubikFontName,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                            width: 50,
-                            child: TextField(
-                              textAlign: TextAlign.center,
-                              keyboardType: TextInputType.number,
-                              controller: splitCountController,
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                              width: 50,
+                              child: Switch(
+                                value:
+                                    this.editTilerEvent!.isAutoReviseDeadline!,
+                                activeColor: TileStyles.primaryColor,
+                                onChanged: (bool value) {
+                                  setState(() {
+                                    this.editTilerEvent!.isAutoReviseDeadline =
+                                        value;
+                                    dataChange();
+                                  });
+                                },
+                              ),
+                            )
+                          ],
+                        ),
+                      ));
+                }
+                if (!this.calEvent!.isRecurring!) {
+                  splitWidget = FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.split,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
                             ),
-                          )
-                        ],
-                      ),
-                    ));
+                            Container(
+                              margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
+                              width: 50,
+                              child: TextField(
+                                textAlign: TextAlign.center,
+                                keyboardType: TextInputType.number,
+                                controller: splitCountController,
+                              ),
+                            )
+                          ],
+                        ),
+                      ));
 
-                tileStartWidget = FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(AppLocalizations.of(context)!.start,
-                                style: TextStyle(
-                                    color: Color.fromRGBO(31, 31, 31, 1),
-                                    fontSize: 15,
-                                    fontFamily: TileStyles.rubikFontName,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                          _editStartDateAndTime!
-                        ],
-                      ),
-                    ));
-                tileEndWidget = FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text(AppLocalizations.of(context)!.end,
-                                style: TextStyle(
-                                    color: Color.fromRGBO(31, 31, 31, 1),
-                                    fontSize: 15,
-                                    fontFamily: TileStyles.rubikFontName,
-                                    fontWeight: FontWeight.w500)),
-                          ),
-                          _editEndDateAndTime!
-                        ],
-                      ),
-                    ));
+                  tileStartWidget = FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.start,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            _editStartDateAndTime!
+                          ],
+                        ),
+                      ));
+                  tileEndWidget = FractionallySizedBox(
+                      widthFactor: TileStyles.tileWidthRatio,
+                      child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              child: Text(AppLocalizations.of(context)!.end,
+                                  style: TextStyle(
+                                      color: Color.fromRGBO(31, 31, 31, 1),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                            _editEndDateAndTime!
+                          ],
+                        ),
+                      ));
+                }
               }
-            }
 
-            if (_editTileNote != null) {
-              inputChildWidgets.add(Container(
-                  margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                  child: _editTileNote!));
-            }
-
-            if (splitWidget != null) {
-              inputChildWidgets.add(splitWidget);
-            }
-            if (softDeadlineWidget != null) {
-              inputChildWidgets.add(softDeadlineWidget);
-            }
-            if (tileStartWidget != null) {
-              inputChildWidgets.add(tileStartWidget);
-            }
-            if (tileEndWidget != null) {
-              inputChildWidgets.add(tileEndWidget);
-            }
-
-            if (calEvent!.subEvents != null &&
-                calEvent!.subEvents!.length > 0) {
-              inputChildWidgets.add(FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
+              if (_editTileNote != null) {
+                inputChildWidgets.add(Container(
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: TileCarousel(
-                        subEventIds:
-                            calEvent!.subEvents!.map((e) => e.id!).toList()),
-                  )));
-            }
+                    child: _editTileNote!));
+              }
 
-            return Container(
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
-              margin: TileStyles.topMargin,
-              alignment: Alignment.topCenter,
-              child: ListView(
-                children: inputChildWidgets,
-              ),
-            );
-          },
-        ),
-      ),
-    );
+              if (splitWidget != null) {
+                inputChildWidgets.add(splitWidget);
+              }
+              if (softDeadlineWidget != null) {
+                inputChildWidgets.add(softDeadlineWidget);
+              }
+              if (tileStartWidget != null) {
+                inputChildWidgets.add(tileStartWidget);
+              }
+              if (tileEndWidget != null) {
+                inputChildWidgets.add(tileEndWidget);
+              }
+
+              if (subEvents != null && subEvents!.length > 0) {
+                inputChildWidgets.add(FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                      margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: TileCarousel(
+                        subEvents: subEvents,
+                      ),
+                    )));
+              }
+
+              return Container(
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
+                margin: TileStyles.topMargin,
+                alignment: Alignment.topCenter,
+                child: ListView(
+                  children: inputChildWidgets,
+                ),
+              );
+            },
+          ),
+        ));
   }
 
   @override

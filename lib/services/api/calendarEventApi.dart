@@ -3,6 +3,7 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'dart:convert';
 
@@ -159,6 +160,44 @@ class CalendarEventApi extends AppApi {
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           return CalendarEvent.fromJson(jsonResult['Content']);
+        }
+      }
+
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
+  Future<List<SubCalendarEvent>> getSubEvents(String id,
+      {int? index, int? batchSize}) async {
+    String tilerDomain = Constants.tilerDomain;
+    // String url = tilerDomain + 'api/SubCalendarEvent';
+    // return getAdHocSubEventId(id);
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      final queryParameters = {
+        'EventID': id,
+        'BatchSize': batchSize,
+        'Index': index
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/CalendarEvent/subEvents', updatedParams);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          return jsonResult['Content']
+              .map<SubCalendarEvent>(
+                  (eachSubEvent) => SubCalendarEvent.fromJson(eachSubEvent))
+              .toList();
         }
       }
 

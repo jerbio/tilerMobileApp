@@ -33,14 +33,14 @@ class _TileCarouselState extends State<TileCarousel> {
   Map<
       int,
       Tuple3<ItemScrollController, ItemPositionsListener,
-          List<SubCalendarEvent>>>? dayIndexToScrollItems;
+          List<SubCalendarEvent>>>? dayIndexToScrollItems = {};
   @override
   void initState() {
     super.initState();
     this
         .context
         .read<SubCalendarTileBloc>()
-        .emit(SubCalendarTilesInitialState());
+        .add(ResetSubCalendarTileBlocEvent());
     subEvents = this.widget.subEvents;
     if (this.widget.subEvents == null &&
         this.widget.subEventIds != null &&
@@ -51,8 +51,10 @@ class _TileCarouselState extends State<TileCarousel> {
       return;
     }
     if (this.widget.subEvents != null) {
-      this.context.read<SubCalendarTileBloc>().emit(
-          ListOfSubCalendarTileLoadedState(subEvents: this.widget.subEvents!));
+      this.context.read<SubCalendarTileBloc>().add(
+          ListOfSubCalendarTileBlocEvent(subEvents: this.widget.subEvents!));
+      dayIndexToScrollItems =
+          populateDayIndexToScrollItems(this.widget.subEvents!);
       return;
     }
   }
@@ -75,29 +77,43 @@ class _TileCarouselState extends State<TileCarousel> {
     ));
   }
 
+  Map<
+      int,
+      Tuple3<ItemScrollController, ItemPositionsListener,
+          List<SubCalendarEvent>>> populateDayIndexToScrollItems(
+      Iterable<SubCalendarEvent> subEvents) {
+    Map<
+        int,
+        Tuple3<ItemScrollController, ItemPositionsListener,
+            List<SubCalendarEvent>>> dayIndexToSubEvents = {};
+    subEvents.forEach((eachSubEvent) {
+      int dayIndex = Utility.getDayIndex(eachSubEvent.startTime!);
+      List<SubCalendarEvent> daySubEvents = [];
+      if (dayIndexToSubEvents.containsKey(dayIndex)) {
+        daySubEvents = dayIndexToSubEvents[dayIndex]!.item3;
+      } else {
+        Tuple3<ItemScrollController, ItemPositionsListener,
+                List<SubCalendarEvent>> dayTupleData =
+            Tuple3(ItemScrollController(), ItemPositionsListener.create(),
+                daySubEvents);
+        dayIndexToSubEvents[dayIndex] = dayTupleData;
+      }
+      daySubEvents.add(eachSubEvent);
+    });
+
+    return dayIndexToSubEvents;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
       listener: (context, state) {
         if (state is ListOfSubCalendarTileLoadedState) {
           Map<
-              int,
-              Tuple3<ItemScrollController, ItemPositionsListener,
-                  List<SubCalendarEvent>>> dayIndexToSubEvents = {};
-          state.subEvents.forEach((eachSubEvent) {
-            int dayIndex = Utility.getDayIndex(eachSubEvent.startTime!);
-            List<SubCalendarEvent> daySubEvents = [];
-            if (dayIndexToSubEvents.containsKey(dayIndex)) {
-              daySubEvents = dayIndexToSubEvents[dayIndex]!.item3;
-            } else {
-              Tuple3<ItemScrollController, ItemPositionsListener,
-                      List<SubCalendarEvent>> dayTupleData =
-                  Tuple3(ItemScrollController(), ItemPositionsListener.create(),
-                      daySubEvents);
-              dayIndexToSubEvents[dayIndex] = dayTupleData;
-            }
-            daySubEvents.add(eachSubEvent);
-          });
+                  int,
+                  Tuple3<ItemScrollController, ItemPositionsListener,
+                      List<SubCalendarEvent>>> dayIndexToSubEvents =
+              populateDayIndexToScrollItems(state.subEvents);
 
           return setState(() {
             subEvents = state.subEvents;

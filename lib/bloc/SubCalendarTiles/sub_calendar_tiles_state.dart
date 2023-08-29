@@ -15,8 +15,8 @@ class SubCalendarTilesLoggedOutState extends SubCalendarTilesInitialState {}
 
 class SubCalendarTilesLoadingState extends SubCalendarTileState {
   final String subEventId;
-
-  SubCalendarTilesLoadingState({required this.subEventId});
+  final String? requestId;
+  SubCalendarTilesLoadingState({required this.subEventId, this.requestId});
 
   @override
   List<Object> get props => [subEventId];
@@ -24,7 +24,8 @@ class SubCalendarTilesLoadingState extends SubCalendarTileState {
 
 class SubCalendarTileLoadedState extends SubCalendarTileState {
   final SubCalendarEvent subEvent;
-  SubCalendarTileLoadedState({required this.subEvent});
+  final String? requestId;
+  SubCalendarTileLoadedState({required this.subEvent, this.requestId});
 
   @override
   List<Object> get props => [subEvent];
@@ -32,7 +33,8 @@ class SubCalendarTileLoadedState extends SubCalendarTileState {
 
 class ListOfSubCalendarTileLoadedState extends SubCalendarTileState {
   final List<SubCalendarEvent> subEvents;
-  ListOfSubCalendarTileLoadedState({required this.subEvents}) {
+  final String? requestId;
+  ListOfSubCalendarTileLoadedState({required this.subEvents, this.requestId}) {
     print(this.subEvents);
   }
 
@@ -42,9 +44,10 @@ class ListOfSubCalendarTileLoadedState extends SubCalendarTileState {
 
 class ListOfSubCalendarTilesLoadingState extends SubCalendarTileState {
   final List<String> subEventIds;
-  List<SubCalendarEvent>? subEvents;
+  final List<SubCalendarEvent>? subEvents;
+  final String? requestId;
   ListOfSubCalendarTilesLoadingState(
-      {required this.subEventIds, this.subEvents});
+      {required this.subEventIds, this.subEvents, this.requestId});
 
   @override
   List<Object> get props => subEventIds.toList();
