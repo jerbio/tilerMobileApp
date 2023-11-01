@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -74,14 +73,20 @@ class LocationRouteState extends State<LocationRoute> {
     };
   }
 
-  Widget renderNickNameDefaultButton(Location location, {Icon? icon}) {
+  Widget renderNickNameDefaultButton(Location location,
+      {IconData? iconData, bool isEnabled = true, bool isSelected = false}) {
     String locationText = location.description!.capitalize();
     Icon defaultLocationIcon = Icon(
-      Icons.location_pin,
-      size: 25,
+      iconData ?? Icons.location_pin,
+      color: isEnabled ? (isSelected ? Colors.white : null) : Colors.green,
     );
-    Widget retValue = GestureDetector(
-      onTap: () {
+
+    Widget retValue = ElevatedButton.icon(
+      onPressed: () {
+        if (!isEnabled) {
+          return;
+        }
+
         TextEditingController locationNickNameControllerUpdate =
             TextEditingController(text: location.description ?? '');
         TextEditingController locationAddressControllerUpdate =
@@ -96,29 +101,13 @@ class LocationRouteState extends State<LocationRoute> {
           locationNickNameController = locationNickNameControllerUpdate;
         });
       },
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(
-              const Radius.circular(5.0),
-            ),
-            border: Border.all(
-                color: TileStyles.primaryColorDarkHSL.toColor(), width: 1)),
-        padding: EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            icon ?? defaultLocationIcon,
-            Container(
-              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: Text(
-                locationText,
-                style: TileStyles.fullScreenTextFieldStyle,
-                overflow: TextOverflow.ellipsis,
-              ),
-            )
-          ],
-        ),
-      ),
+      style: isEnabled
+          ? (isSelected
+              ? TileStyles.selectedButtonStyle
+              : TileStyles.enabledButtonStyle)
+          : TileStyles.disabledButtonStyle,
+      icon: defaultLocationIcon,
+      label: Text(locationText),
     );
 
     return retValue;
@@ -248,21 +237,23 @@ class LocationRouteState extends State<LocationRoute> {
     }
     if (workLocation != null) {
       defaultLocationFields.add(renderNickNameDefaultButton(workLocation,
-          icon: Icon(
-            Icons.work,
-            size: 25,
-            color: TileStyles.primaryColorDarkHSL.toColor(),
-          )));
+          iconData: Icons.work,
+          isEnabled: workLocation.isNotNullAndNotDefault,
+          isSelected: workLocation.description == null
+              ? false
+              : workLocation.description!.toLowerCase() ==
+                  (locationNickNameController!.text).toLowerCase()));
     }
     if (homeLocation != null) {
       defaultLocationFields.insert(
           0,
           renderNickNameDefaultButton(homeLocation,
-              icon: Icon(
-                Icons.home,
-                size: 25,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
-              )));
+              iconData: Icons.home,
+              isEnabled: homeLocation.isNotNullAndNotDefault,
+              isSelected: homeLocation.description == null
+                  ? false
+                  : homeLocation.description!.toLowerCase() ==
+                      (locationNickNameController!.text).toLowerCase()));
     }
     Widget rowOfDefaults = Container(
       margin: EdgeInsets.fromLTRB(0, 180, 0, 0),

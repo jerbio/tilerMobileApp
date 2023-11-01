@@ -140,11 +140,16 @@ class CustomTimeRestrictionRouteState
   }
 
   Widget generateEachDayWidget(_DayOfWeekRestriction dayOfWeekRestriction) {
+    var borderRadius = BorderRadius.all(
+      const Radius.circular(10.0),
+    );
     BoxDecoration timeBoxDecoration = BoxDecoration(
+        borderRadius: borderRadius,
         border: Border(bottom: BorderSide(color: TileStyles.disabledColor)));
     if (dayOfWeekRestriction.isSelected) {
-      timeBoxDecoration =
-          BoxDecoration(color: TileStyles.primaryColorLightHSL.toColor());
+      timeBoxDecoration = BoxDecoration(
+          borderRadius: borderRadius,
+          color: TileStyles.primaryColorLightHSL.toColor());
 
       if (!dayOfWeekRestriction
           .toRestrictionDay()
@@ -193,7 +198,8 @@ class CustomTimeRestrictionRouteState
                   }
                 },
                 child: Container(
-                    width: 60,
+                    padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+                    width: 70,
                     height: 45,
                     decoration: timeBoxDecoration,
                     child: Center(

@@ -20,6 +20,7 @@ class TileStyles {
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
+  static HSLColor oPrimaryColorHSL = primaryColorDarkHSL;
   static HSLColor primaryColorLightHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness + 0.2);
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
@@ -28,6 +29,51 @@ class TileStyles {
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
+  static ButtonStyle disabledButtonStyle = ButtonStyle(
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Color.fromRGBO(154, 158, 159, 1);
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.white;
+    }),
+  );
+  static ButtonStyle selectedButtonStyle = ButtonStyle(
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryColorDarkHSL.toColor();
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.white;
+    }),
+  );
+  static ButtonStyle enabledButtonStyle = ButtonStyle(
+    side: MaterialStateProperty.all(
+        BorderSide(color: primaryColorDarkHSL.toColor())),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryColorDarkHSL.toColor();
+    }),
+  );
+
+  static ButtonStyle strippedButtonStyle = ButtonStyle(
+    padding: MaterialStateProperty.resolveWith((states) {
+      return EdgeInsets.all(0);
+    }),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+  );
+
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
   static Color appBarTextColor = Colors.white;
   static Color nonViableBackgroundColor = Color.fromRGBO(150, 150, 150, 1);
@@ -60,6 +106,9 @@ class TileStyles {
           //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
           // ])
           );
+  static final titleBarStyle = TextStyle(
+    color: TileStyles.appBarTextColor,
+  );
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),

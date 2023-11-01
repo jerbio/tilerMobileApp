@@ -117,15 +117,13 @@ class DurationDialState extends State<DurationDial> {
             : AppLocalizations.of(context)!.custom;
         Widget switchUp = Container(
           padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
-          // color: Colors.yellow,
           key: switchUpID,
-          width: MediaQuery.of(context).size.width *
-              TileStyles.widthRatio *
-              TileStyles.widthRatio,
+          width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
           child: SwitchUp(
             items: durationTextCollection,
             onChanged: onTabTypeChange,
             value: switchUpvalue,
+            color: TileStyles.primaryColorDarkHSL.toColor(),
           ),
         );
         widgetColumn.insert(0, switchUp);

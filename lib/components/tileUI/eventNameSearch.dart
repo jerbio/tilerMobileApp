@@ -6,7 +6,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
-import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -540,6 +539,7 @@ class EventNameSearchState extends SearchWidgetState {
             this.widget.onChanged = this._onInputFieldChange;
             this.widget.resultMargin = EdgeInsets.fromLTRB(0, 70, 0, 0);
             this.widget.textField = TextField(
+                autofocus: true,
                 controller: textController,
                 style: TileStyles.fullScreenTextFieldStyle,
                 decoration: InputDecoration(

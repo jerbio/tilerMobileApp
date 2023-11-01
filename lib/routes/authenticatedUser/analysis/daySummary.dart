@@ -173,7 +173,7 @@ class _DaySummaryState extends State<DaySummary> {
                       color: TileStyles.primaryColorDarkHSL.toColor(),
                       fontWeight: FontWeight.w700)),
             );
-            childElements.add(dayDateText);
+            childElements.insert(0, dayDateText);
             Widget buttonPress = GestureDetector(
               onTap: () {
                 DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
@@ -190,7 +190,7 @@ class _DaySummaryState extends State<DaySummary> {
               },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: childElements,
               ),
             );
