@@ -291,15 +291,48 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                         refreshScheduleSummary(lookupTimeline);
                       });
                     },
-                    child: ListTile(
-                      leading: Image.asset('assets/images/move_forward.png'),
-                      title: Text(
-                        AppLocalizations.of(context)!.deferAll,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
+                    child: Container(
+                      alignment: Alignment.centerLeft,
+                      child: ListTile(
+                        leading: SizedBox(
+                          width: 50,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  left: -15,
+                                  child: Icon(Icons.chevron_right,
+                                      color: Colors.white)),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                left: 0,
+                                child: Icon(Icons.chevron_right,
+                                    color: Colors.white),
+                              ),
+                              Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  left: 15,
+                                  child: Icon(Icons.chevron_right,
+                                      color: Colors.white)),
+                            ],
+                          ),
+                        ),
+                        contentPadding: EdgeInsets.all(5),
+                        title: Text(
+                          AppLocalizations.of(context)!.deferAll,
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontFamily: TileStyles.rubikFontName,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.white),
+                        ),
                       ),
                     )),
                 GestureDetector(
@@ -345,6 +378,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget renderLocationRequest() {
     const lottieAsset = 'assets/lottie/car-on-the-road.json';
+    const double buttonWidth = 200;
     Widget retValue = Scaffold(
       body: Center(
         child: Container(
@@ -357,13 +391,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             alignment: Alignment.center,
             children: [
               Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 300),
-                padding: EdgeInsets.all(10),
+                alignment: Alignment.center,
+                margin: EdgeInsets.fromLTRB(0, 0, 0, 400),
+                padding: EdgeInsets.all(30),
                 width: MediaQuery.of(context).size.width *
                     TileStyles.tileWidthRatio,
                 child: Text(
                     AppLocalizations.of(context)!.allowAccessDescription,
-                    textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 20,
                         fontFamily: TileStyles.rubikFontName,
@@ -375,48 +409,53 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               ),
               Container(
                 margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
-                child: ElevatedButton(
-                    onPressed: () async {
-                      await accessManager
-                          .locationAccess(forceDeviceCheck: true)
-                          .then((value) {
-                        setState(() {
-                          locationAccess = value;
-                          isLocationRequestTriggered = true;
+                child: SizedBox(
+                  width: buttonWidth,
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        await accessManager
+                            .locationAccess(forceDeviceCheck: true)
+                            .then((value) {
+                          setState(() {
+                            locationAccess = value;
+                            isLocationRequestTriggered = true;
+                          });
                         });
-                      });
-                    },
-                    child:
-                        Text(AppLocalizations.of(context)!.allowLocationAccessQ,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 25,
-                              fontFamily: TileStyles.rubikFontName,
-                              fontWeight: FontWeight.w400,
-                            ))),
+                      },
+                      child: Text(AppLocalizations.of(context)!.allow,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w400,
+                          ))),
+                ),
               ),
               Container(
-                margin: EdgeInsets.fromLTRB(0, 400, 0, 0),
-                child: ElevatedButton(
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                    onPressed: () async {
-                      await accessManager
-                          .locationAccess(denyAccess: false)
-                          .then((value) {
-                        setState(() {
-                          locationAccess = value;
-                          isLocationRequestTriggered = true;
+                margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
+                child: SizedBox(
+                  width: buttonWidth,
+                  child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey),
+                      onPressed: () async {
+                        await accessManager
+                            .locationAccess(denyAccess: false)
+                            .then((value) {
+                          setState(() {
+                            locationAccess = value;
+                            isLocationRequestTriggered = true;
+                          });
                         });
-                      });
-                    },
-                    child: Text(AppLocalizations.of(context)!.deny,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.w400,
-                        ))),
+                      },
+                      child: Text(AppLocalizations.of(context)!.deny,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w400,
+                          ))),
+                ),
               )
             ],
           ),
@@ -448,7 +487,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
+              color: Colors.grey.withOpacity(0.08),
               blurRadius: 7,
               offset: const Offset(0, 7),
             ),

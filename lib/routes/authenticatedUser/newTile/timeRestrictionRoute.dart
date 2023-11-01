@@ -156,6 +156,10 @@ class _PreloadedRestrictionsRouteState
             )));
       }
     }
+    var buttonStyle = _isAnyTime
+        ? TileStyles.enabledButtonStyle
+        : TileStyles.selectedButtonStyle;
+
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
@@ -171,8 +175,9 @@ class _PreloadedRestrictionsRouteState
                   ))),
           Positioned(
             bottom: 20,
-            child: GestureDetector(
-              onTap: () {
+            child: ElevatedButton(
+              style: buttonStyle,
+              onPressed: () {
                 List<String> stackRouteHistory = [];
                 if (this.widget.params != null &&
                     this.widget.params!.containsKey('stackRouteHistory')) {
@@ -207,34 +212,47 @@ class _PreloadedRestrictionsRouteState
                   return resultMap;
                 });
               },
-              child: Container(
-                width: (MediaQuery.of(context).size.width *
-                        TileStyles.inputWidthFactor) -
-                    TileStyles.proceedAndCancelTotalButtonWidth,
-                height: 60,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      const Radius.circular(10.0),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        TileStyles.primaryColorLightHSL.toColor(),
-                        TileStyles.primaryColorLightHSL.toColor(),
-                      ],
-                    )),
-                alignment: Alignment.center,
-                child: Text(
-                    AppLocalizations.of(context)!.customRestrictionTitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: TileStyles.primaryColorDarkHSL.toColor(),
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18)),
-              ),
+              child: Text(
+                  "\n" +
+                      AppLocalizations.of(context)!.customRestrictionTitle +
+                      "\n",
+                  // maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      color: _isAnyTime
+                          ? TileStyles.primaryColorDarkHSL.toColor()
+                          : Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18)),
+              // child: Container(
+              //   width: (MediaQuery.of(context).size.width *
+              //           TileStyles.inputWidthFactor) -
+              //       TileStyles.proceedAndCancelTotalButtonWidth,
+              //   height: 60,
+              //   decoration: BoxDecoration(
+              //       borderRadius: BorderRadius.all(
+              //         const Radius.circular(10.0),
+              //       ),
+              //       gradient: LinearGradient(
+              //         begin: Alignment.centerLeft,
+              //         end: Alignment.bottomRight,
+              //         colors: [
+              //           TileStyles.primaryColorLightHSL.toColor(),
+              //           TileStyles.primaryColorLightHSL.toColor(),
+              //         ],
+              //       )),
+              //   alignment: Alignment.center,
+              //   child: Text(
+              //       AppLocalizations.of(context)!.customRestrictionTitle,
+              //       maxLines: 2,
+              //       overflow: TextOverflow.ellipsis,
+              //       textAlign: TextAlign.center,
+              //       style: TextStyle(
+              //           color: TileStyles.primaryColorDarkHSL.toColor(),
+              //           fontWeight: FontWeight.w500,
+              //           fontSize: 18)),
+              // ),
             ),
           )
         ]),

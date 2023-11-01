@@ -372,10 +372,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         backgroundColor: TileStyles.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.repetition,
-          style: TextStyle(
-              color: TileStyles.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
+          style: TileStyles.titleBarStyle,
         ),
         centerTitle: true,
         elevation: 0,

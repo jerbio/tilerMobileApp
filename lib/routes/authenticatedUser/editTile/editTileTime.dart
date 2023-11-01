@@ -34,8 +34,9 @@ class _EditTileTimeState extends State<EditTileTime> {
     const textStyle = TileStyles.editTimeOrDateTimeStyle;
     final localizations = MaterialLocalizations.of(context);
     final formattedTimeOfDay = localizations.formatTimeOfDay(time);
-    return GestureDetector(
-      onTap: () {
+    return ElevatedButton(
+      style: TileStyles.strippedButtonStyle,
+      onPressed: () {
         if (this.widget.isReadOnly) {
           return;
         }

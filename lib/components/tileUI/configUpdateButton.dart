@@ -70,8 +70,12 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       ),
     );
     childWidgets.add(textButton);
-    Widget retValue = new GestureDetector(
-        onTap: () {
+
+    // Widget ooo = ElevatedButton(onPressed: onPressed, child: child)
+
+    Widget retValue = new ElevatedButton(
+        style: TileStyles.strippedButtonStyle,
+        onPressed: () {
           if (this.widget.onPress != null) {
             this.widget.onPress!();
           }
@@ -80,7 +84,6 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
             constraints: BoxConstraints(
                 minWidth: (MediaQuery.of(context).size.width * 0.30)),
             decoration: this.widget.decoration,
-            // margin: EdgeInsets.all(10),
             padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
             child: Wrap(
               alignment: WrapAlignment.center,

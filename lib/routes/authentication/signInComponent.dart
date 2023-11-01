@@ -374,114 +374,47 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
     List<Widget> textFields = [usernameTextField, passwordTextField];
-    var signUpButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // background
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent // foreground
-          ),
-      child: Column(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            decoration: BoxDecoration(
-              border: Border.all(width: 4.0, color: const Color(0xFFFFFFFF)),
-              borderRadius: BorderRadius.all(Radius.circular(40)),
-              color: Colors.transparent,
-            ),
-            child: Icon(Icons.person_add),
-          ),
-          Text(AppLocalizations.of(context)!.signUp)
-        ],
+    var signUpButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        icon: Icon(Icons.person_add),
+        label: Text(AppLocalizations.of(context)!.signUp),
+        onPressed: setAsRegistrationScreen,
       ),
-      onPressed: setAsRegistrationScreen,
     );
-    var signInButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // background
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent // foreground
-          ),
-      child: Column(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            decoration: BoxDecoration(
-              border: Border.all(width: 4.0, color: const Color(0xFFFFFFFF)),
-              borderRadius: BorderRadius.all(Radius.circular(40)),
-              color: Colors.transparent,
-            ),
-            child: Icon(Icons.arrow_forward),
-          ),
-          Text(AppLocalizations.of(context)!.signIn)
-        ],
+    var signInButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        icon: Icon(Icons.arrow_forward),
+        label: Text(AppLocalizations.of(context)!.signIn),
+        onPressed: userNamePasswordSignIn,
       ),
-      onPressed: userNamePasswordSignIn,
     );
 
-    var googleSignInButton = ElevatedButton.icon(
-        onPressed: signInToGoogle,
-        icon: FaIcon(
-          FontAwesomeIcons.google,
-          color: Colors.white,
-        ),
-        label: Text(AppLocalizations.of(context)!.signUpWithGoogle));
+    var googleSignInButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+          onPressed: signInToGoogle,
+          icon: FaIcon(
+            FontAwesomeIcons.google,
+            color: Colors.white,
+          ),
+          label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
+    );
 
-    var backToSignInButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // background
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent // foreground
-          ),
-      child: Column(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            decoration: BoxDecoration(
-              border: Border.all(width: 4.0, color: const Color(0xFFFFFFFF)),
-              borderRadius: BorderRadius.all(Radius.circular(40)),
-              color: Colors.transparent,
-            ),
-            child: Icon(Icons.arrow_back),
-          ),
-          Text(AppLocalizations.of(context)!.signIn)
-        ],
-      ),
+    var backToSignInButton = ElevatedButton.icon(
+      label: Text(AppLocalizations.of(context)!.signIn),
+      icon: Icon(Icons.arrow_back),
       onPressed: setAsSignInScreen,
     );
 
-    var registerUserButton = ElevatedButton(
-      style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent, // background
-          foregroundColor: Colors.white,
-          shadowColor: Colors.transparent // foreground
-          ),
-      child: Column(
-        children: [
-          Container(
-            height: 50,
-            width: 50,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-            decoration: BoxDecoration(
-              border: Border.all(width: 4.0, color: const Color(0xFFFFFFFF)),
-              borderRadius: BorderRadius.all(Radius.circular(40)),
-              color: Colors.transparent,
-            ),
-            child: Icon(Icons.arrow_forward),
-          ),
-          Text(AppLocalizations.of(context)!.signUp)
-        ],
-      ),
+    var registerUserButton = ElevatedButton.icon(
+      label: Text(AppLocalizations.of(context)!.signUp),
+      icon: Icon(Icons.person_add),
       onPressed: registerUser,
     );
 
-    List<Widget> buttons = [signUpButton, googleSignInButton, signInButton];
+    List<Widget> buttons = [signInButton, signUpButton, googleSignInButton];
 
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
@@ -511,7 +444,7 @@ class SignInComponentState extends State<SignInComponent>
         confirmPasswordTextField,
         usernameTextField
       ];
-      buttons = [backToSignInButton, googleSignInButton, registerUserButton];
+      buttons = [registerUserButton, backToSignInButton];
     }
 
     if (this.isPendingSigning) {
@@ -545,7 +478,8 @@ class SignInComponentState extends State<SignInComponent>
                     spreadRadius: 5),
               ],
             ),
-            padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10),
+            padding: EdgeInsets.symmetric(
+                vertical: isRegistrationScreen ? 10.0 : 20.0, horizontal: 10),
             child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                 child: Column(
@@ -563,7 +497,7 @@ class SignInComponentState extends State<SignInComponent>
                       ),
                     ),
                     Container(
-                      child: Row(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: buttons,
                       ),

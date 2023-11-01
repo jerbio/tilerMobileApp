@@ -107,9 +107,13 @@ class _SettingState extends State<Setting> {
     bool isTimeRestrictionConfigSet =
         restrictionProfile != null && restrictionProfile.isEnabled;
     final Color populatedTextColor = Colors.white;
-    final Color iconColor = TileStyles.iconColor;
+    final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
     final BoxDecoration boxDecoration = BoxDecoration(
         color: Color.fromRGBO(31, 31, 31, 0.05),
+        border: Border.all(
+          color: TileStyles.primaryColorDarkHSL.toColor(),
+          width: 1,
+        ),
         borderRadius: BorderRadius.all(
           const Radius.circular(10.0),
         ));
@@ -121,14 +125,8 @@ class _SettingState extends State<Setting> {
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
           colors: [
-            HSLColor.fromColor(TileStyles.primaryColor)
-                .withLightness(
-                    HSLColor.fromColor(TileStyles.primaryColor).lightness)
-                .toColor(),
-            HSLColor.fromColor(TileStyles.primaryColor)
-                .withLightness(
-                    HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
-                .toColor(),
+            TileStyles.primaryColorDarkHSL.toColor(),
+            TileStyles.primaryColorLightHSL.toColor()
           ],
         ));
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(

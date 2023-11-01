@@ -50,7 +50,8 @@ class AddTileState extends State<AddTile> {
   bool isAppointment = false;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
-  final Color iconColor = TileStyles.iconColor;
+  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+  final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
   final Color populatedTextColor = Colors.white;
   final CarouselController tilerCarouselController = CarouselController();
   String tileNameText = '';
@@ -60,6 +61,10 @@ class AddTileState extends State<AddTile> {
   Location? work;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
+      border: Border.all(
+        color: TileStyles.primaryColorDarkHSL.toColor(),
+        width: 1,
+      ),
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
       ));
@@ -71,14 +76,8 @@ class AddTileState extends State<AddTile> {
         begin: Alignment.centerLeft,
         end: Alignment.centerRight,
         colors: [
-          HSLColor.fromColor(TileStyles.primaryColor)
-              .withLightness(
-                  HSLColor.fromColor(TileStyles.primaryColor).lightness)
-              .toColor(),
-          HSLColor.fromColor(TileStyles.primaryColor)
-              .withLightness(
-                  HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
-              .toColor(),
+          TileStyles.primaryColorDarkHSL.toColor(),
+          TileStyles.primaryColorLightHSL.toColor()
         ],
       ));
   TextEditingController tileNameController = TextEditingController();
@@ -389,12 +388,12 @@ class AddTileState extends State<AddTile> {
             child: TextField(
               controller: tileNameController,
               style: TextStyle(
-                  color: TileStyles.primaryColorDarkHSL.toColor(),
-                  fontSize: 20,
-                  fontFamily: TileStyles.rubikFontName,
-                  fontWeight: FontWeight.w500),
+                color: TileStyles.primaryColorDarkHSL.toColor(),
+                fontSize: 20,
+                fontFamily: TileStyles.rubikFontName,
+              ),
               decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.tileName,
+                hintText: AppLocalizations.of(context)!.tileNameStar,
                 hintStyle:
                     TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
                 filled: true,
@@ -448,6 +447,8 @@ class AddTileState extends State<AddTile> {
                       ],
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.once,
+                        hintStyle: TextStyle(
+                            color: TileStyles.oPrimaryColorHSL.toColor()),
                         filled: true,
                         isDense: true,
                         contentPadding: EdgeInsets.all(10),
@@ -495,7 +496,7 @@ class AddTileState extends State<AddTile> {
         isSubmissionReady();
       });
     };
-    String textButtonString = AppLocalizations.of(context)!.duration;
+    String textButtonString = AppLocalizations.of(context)!.durationStar;
     if (_duration != null && _duration!.inMinutes > 1) {
       textButtonString = "";
       int hour = _duration!.inHours.floor();
@@ -530,7 +531,7 @@ class AddTileState extends State<AddTile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.timelapse_outlined, color: iconColor),
+                    Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
@@ -747,13 +748,33 @@ class AddTileState extends State<AddTile> {
       },
     );
 
+    BoxDecoration colorConfigUpdateDecoration = boxDecoration;
+    Color selectedColor =
+        (isColorConfigSet ? (_color ?? populatedTextColor) : iconColor);
+    Color inverseColor = Color.fromRGBO(255 - selectedColor.red,
+        255 - selectedColor.green, 255 - selectedColor.blue, 1);
+    if (isColorConfigSet) {
+      colorConfigUpdateDecoration = BoxDecoration(
+          borderRadius: BorderRadius.all(
+            const Radius.circular(10.0),
+          ),
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              selectedColor.withLightness(0.5),
+              selectedColor.withLightness(0.8)
+            ],
+          ));
+    }
+
     Widget colorPickerConfigButton = ConfigUpdateButton(
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
-        color: isColorConfigSet ? (_color ?? populatedTextColor) : iconColor,
+        color: isColorConfigSet ? (inverseColor) : iconColor,
       ),
-      decoration: isColorConfigSet ? populatedDecoration : boxDecoration,
+      decoration: colorConfigUpdateDecoration,
       textColor: isColorConfigSet ? populatedTextColor : iconColor,
       onPress: () {
         Color? colorHolder = _color;
@@ -1077,7 +1098,7 @@ class AddTileState extends State<AddTile> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.calendar_month, color: iconColor),
+                    Icon(Icons.calendar_month, color: inputFieldIconColor),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
@@ -1206,6 +1227,7 @@ class AddTileState extends State<AddTile> {
         items: tabButtons,
         onChanged: onTabTypeChange,
         value: switchUpvalue,
+        color: TileStyles.oPrimaryColorHSL.toColor(),
       ),
     );
 
@@ -1240,10 +1262,7 @@ class AddTileState extends State<AddTile> {
         backgroundColor: TileStyles.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
-          style: TextStyle(
-              color: TileStyles.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
+          style: TileStyles.titleBarStyle,
         ),
         centerTitle: true,
         elevation: 0,
@@ -1258,6 +1277,12 @@ class AddTileState extends State<AddTile> {
         ),
       ),
       onProceed: this.onProceed,
+      bottomWidget: this.onProceed == null
+          ? Text(
+              AppLocalizations.of(context)!.starAreRequired,
+              style: TextStyle(color: TileStyles.disabledTextColor),
+            )
+          : null,
     );
 
     return retValue;
