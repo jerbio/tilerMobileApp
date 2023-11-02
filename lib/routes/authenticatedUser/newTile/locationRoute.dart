@@ -78,7 +78,7 @@ class LocationRouteState extends State<LocationRoute> {
     String locationText = location.description!.capitalize();
     Icon defaultLocationIcon = Icon(
       iconData ?? Icons.location_pin,
-      color: isEnabled ? (isSelected ? Colors.white : null) : Colors.green,
+      color: isEnabled ? (isSelected ? Colors.white : null) : Colors.white,
     );
 
     Widget retValue = ElevatedButton.icon(

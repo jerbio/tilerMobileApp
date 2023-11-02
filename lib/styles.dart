@@ -44,12 +44,18 @@ class TileStyles {
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.white;
     }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
   );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
     side: MaterialStateProperty.all(
         BorderSide(color: primaryColorDarkHSL.toColor())),
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
     }),
     backgroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
@@ -60,6 +66,12 @@ class TileStyles {
   );
 
   static ButtonStyle strippedButtonStyle = ButtonStyle(
+    overlayColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
     padding: MaterialStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),

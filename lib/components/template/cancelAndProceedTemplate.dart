@@ -170,7 +170,9 @@ class CancelAndProceedTemplateWidgetState
       if (proceedButton != null) {
         bottomButtons.add(proceedButton);
       } else {
-        bottomButtons.add(SizedBox.shrink());
+        bottomButtons.add(SizedBox.fromSize(
+          size: Size.fromWidth(TileStyles.proceedAndCancelButtonWidth),
+        ));
       }
 
       if (this.widget.bottomWidget != null) {
