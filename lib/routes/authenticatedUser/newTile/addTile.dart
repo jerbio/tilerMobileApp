@@ -1278,9 +1278,13 @@ class AddTileState extends State<AddTile> {
       ),
       onProceed: this.onProceed,
       bottomWidget: this.onProceed == null
-          ? Text(
-              AppLocalizations.of(context)!.starAreRequired,
-              style: TextStyle(color: TileStyles.disabledTextColor),
+          ? Container(
+              alignment: Alignment.bottomCenter,
+              margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              child: Text(
+                AppLocalizations.of(context)!.starAreRequired,
+                style: TextStyle(color: TileStyles.disabledTextColor),
+              ),
             )
           : null,
     );
