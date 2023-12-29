@@ -92,6 +92,10 @@ class CalendarEventApi extends AppApi {
       'IsAutoDeadline': calEvent.isAutoDeadline?.toString(),
       'IsAutoReviseDeadline': calEvent.isAutoReviseDeadline?.toString(),
     };
+    if (calEvent.tileDuration != null) {
+      queryParameters['Duration'] =
+          calEvent.tileDuration!.inMilliseconds.toString();
+    }
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);

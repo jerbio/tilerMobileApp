@@ -105,6 +105,12 @@ class Utility {
             editCalendarEvent.isAutoReviseDeadline;
     retValue &=
         calendarEvent.isAutoDeadline == editCalendarEvent.isAutoDeadline;
+    if (calendarEvent.tileDuration != null &&
+        editCalendarEvent.tileDuration != null) {
+      retValue &= editCalendarEvent.tileDuration!.inMinutes ==
+          calendarEvent.tileDuration!.inMinutes;
+    }
+
     return retValue;
   }
 

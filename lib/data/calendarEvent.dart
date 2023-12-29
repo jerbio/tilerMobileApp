@@ -5,6 +5,7 @@ class CalendarEvent extends TilerEvent {
   List<SubCalendarEvent>? subEvents;
   int? completeCount;
   int? deleteCount;
+  Duration? _duration;
   bool? isAutoReviseDeadline;
   bool? isAutoDeadline;
 
@@ -30,8 +31,16 @@ class CalendarEvent extends TilerEvent {
       isAutoReviseDeadline =
           TilerEvent.cast<bool>(json['isAutoReviseDeadline'])!;
     }
-    if (json.containsKey('isAutoDeadline') && json['isAutoDeadline'] != null) {
-      isAutoDeadline = TilerEvent.cast<bool>(json['isAutoDeadline'])!;
+
+    if (json.containsKey('eachTileDuration') &&
+        json['eachTileDuration'] != null) {
+      _duration = Duration(
+          milliseconds:
+              TilerEvent.cast<double>(json['eachTileDuration'])!.toInt());
     }
+  }
+
+  Duration? get tileDuration {
+    return _duration;
   }
 }
