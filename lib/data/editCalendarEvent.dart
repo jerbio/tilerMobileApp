@@ -14,6 +14,7 @@ class EditCalendarEvent extends EditTilerEvent {
   bool? isAutoReviseDeadline;
   bool? isAutoDeadline;
   String? note;
+  Duration? tileDuration;
 
   bool get isValid {
     bool retValue = true;
