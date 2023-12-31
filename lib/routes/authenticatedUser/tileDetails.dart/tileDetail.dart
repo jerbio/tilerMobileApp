@@ -8,6 +8,7 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
@@ -37,6 +38,7 @@ class _TileDetailState extends State<TileDetail> {
   EditTileName? _editTileName;
   EditTileNote? _editTileNote;
   Duration? _tileDuration;
+  Location? _location;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
@@ -179,6 +181,28 @@ class _TileDetailState extends State<TileDetail> {
 
   bool get isRigidTile {
     return (this.calEvent!.isProcrastinate ?? false);
+  }
+
+  loadLocationRoute() {
+    Location locationHolder = _location ?? Location.fromDefault();
+    Map<String, dynamic> locationParams = {
+      'location': locationHolder,
+    };
+    List<Location> defaultLocations = [];
+    if (defaultLocations.isNotEmpty) {
+      locationParams['defaults'] = defaultLocations;
+    }
+
+    Navigator.pushNamed(context, '/LocationRoute', arguments: locationParams)
+        .whenComplete(() {
+      Location? populatedLocation = locationParams['location'] as Location?;
+      setState(() {
+        if (populatedLocation != null &&
+            populatedLocation.isNotNullAndNotDefault != null) {
+          _location = populatedLocation;
+        }
+      });
+    });
   }
 
   Widget generateDurationPicker() {
@@ -386,9 +410,45 @@ class _TileDetailState extends State<TileDetail> {
                                   fontWeight: FontWeight.w500)),
                         ),
                         Container(
-                          // margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
-                          // width: 50,
                           child: generateDurationPicker(),
+                        )
+                      ],
+                    ),
+                  ));
+              Widget locationWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Container(
+                          child: Text(AppLocalizations.of(context)!.location,
+                              style: TextStyle(
+                                  color: Color.fromRGBO(31, 31, 31, 1),
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                        Container(
+                          width: 50,
+                          height: 20,
+                          color: Colors.amber,
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              textStyle: const TextStyle(
+                                fontSize: 20,
+                              ),
+                            ),
+                            onPressed: loadLocationRoute,
+                            child: Text(
+                              _location?.description ??
+                                  AppLocalizations.of(context)!.dashEmptyString,
+                              style: TextStyle(
+                                fontFamily: TileStyles.rubikFontName,
+                              ),
+                            ),
+                          ),
                         )
                       ],
                     ),
@@ -512,6 +572,10 @@ class _TileDetailState extends State<TileDetail> {
 
               if (durationWidget != null) {
                 inputChildWidgets.add(durationWidget);
+              }
+
+              if (locationWidget != null) {
+                inputChildWidgets.add(locationWidget);
               }
               if (splitWidget != null) {
                 inputChildWidgets.add(splitWidget);
