@@ -81,6 +81,10 @@ class Utility {
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
       retValue &= editTilerEvent.note == tilerEvent.noteData!.note;
     }
+
+    retValue &= editTilerEvent.address == tilerEvent.address;
+    retValue &=
+        editTilerEvent.addressDescription == tilerEvent.addressDescription;
     return retValue;
   }
 

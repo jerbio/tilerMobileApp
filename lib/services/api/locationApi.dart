@@ -1,19 +1,10 @@
 import 'dart:convert';
 
-import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
-import 'dart:convert';
 
 import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/services/api/appApi.dart';
-
-import 'package:tiler_app/util.dart';
-
 import '../../constants.dart' as Constants;
 
 class LocationApi extends AppApi {
@@ -110,5 +101,41 @@ class LocationApi extends AppApi {
       return foundEvents.first;
     }
     return null;
+  }
+
+  Future<Location?> getLocationById(
+      {String? id, String? calendarId, String? subEventId}) async {
+    String tilerDomain = Constants.tilerDomain;
+    String url = tilerDomain;
+
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+
+      final queryParameters = {
+        'Id': id,
+        'SubEventId': subEventId,
+        'CalendarEventId': calendarId,
+        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString(),
+      };
+
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Location', updatedParams);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          return Location.fromJson(jsonResult['Content']);
+        }
+      }
+
+      throw TilerError();
+    }
   }
 }
