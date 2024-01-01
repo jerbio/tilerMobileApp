@@ -10,6 +10,9 @@ class EditTilerEvent {
   String? thirdPartyId;
   String? thirdPartyUserId;
   String? note;
+  String? addressDescription;
+  String? address;
+  bool? isAddressVerified;
 
   bool get isValid {
     bool retValue = true;
@@ -21,10 +24,10 @@ class EditTilerEvent {
     retValue &= calStartTime != null;
     retValue &= calEndTime != null;
     retValue &= note != null;
-    if(startTime!=null && endTime != null) {
-      retValue &= startTime!.millisecondsSinceEpoch < endTime!.millisecondsSinceEpoch;
+    if (startTime != null && endTime != null) {
+      retValue &=
+          startTime!.millisecondsSinceEpoch < endTime!.millisecondsSinceEpoch;
     }
-    
 
     return retValue;
   }

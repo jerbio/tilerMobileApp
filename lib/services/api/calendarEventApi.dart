@@ -76,7 +76,8 @@ class CalendarEventApi extends AppApi {
     throw error;
   }
 
-  Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent) async {
+  Future<CalendarEvent> updateCalEvent(EditCalendarEvent calEvent,
+      {bool clearLocation = false}) async {
     TilerError error = new TilerError();
     error.message = "Did not update tile";
     var queryParameters = {
@@ -91,6 +92,10 @@ class CalendarEventApi extends AppApi {
       'Notes': calEvent.note.toString(),
       'IsAutoDeadline': calEvent.isAutoDeadline?.toString(),
       'IsAutoReviseDeadline': calEvent.isAutoReviseDeadline?.toString(),
+      'CalAddress': calEvent.address?.toString(),
+      'CalAddressDescription': calEvent.addressDescription?.toString(),
+      'IsCalAddressVerified': calEvent.isAddressVerified?.toString(),
+      'IsLocationCleared': clearLocation
     };
     if (calEvent.tileDuration != null) {
       queryParameters['Duration'] =

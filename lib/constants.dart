@@ -10,7 +10,7 @@ const String devDomain = isRemote
     : 'tilerfront.conveyor.cloud';
 const String tilerDomain = isProduction ? prodDomain : devDomain;
 const int stateRetrievalRetry = 100;
-const int onTextChangeDelayInMs = 500;
+const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
 const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
