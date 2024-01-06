@@ -572,6 +572,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               backgroundColor: Colors.white,
               onPressed: () {
                 displayDialog(MediaQuery.of(context).size);
+                Utility.isDebugSet = !Utility.isDebugSet;
+                print("Utility.isDebugSet + ${Utility.isDebugSet}");
               },
               child: Icon(
                 Icons.add,

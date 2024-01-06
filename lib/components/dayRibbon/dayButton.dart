@@ -14,7 +14,9 @@ class DayButton extends StatefulWidget {
     this.onTapped,
     this.showMonth = false,
     this.isSelected = false,
-  });
+  }) : super(
+            key: ValueKey(
+                dateTime.toString() + Utility.currentTime().day.toString()));
   @override
   State<StatefulWidget> createState() => _DayButtonState();
 }
