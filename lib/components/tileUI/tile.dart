@@ -18,7 +18,6 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
@@ -242,17 +241,13 @@ class TileWidgetState extends State<TileWidget>
 
     if (widget.subEvent.address != null &&
         widget.subEvent.address!.isNotEmpty) {
-      var adrressWidget = Container(
+      var addressWidget = Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TileAddress(widget.subEvent));
-      allElements.insert(1, adrressWidget);
+      allElements.insert(1, addressWidget);
     }
-    allElements.add(TileDate(
-      date: widget.subEvent.startTime,
-    ));
 
     Widget tileTimeFrame = Container(
-      margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Row(
         children: [
@@ -262,7 +257,9 @@ class TileWidgetState extends State<TileWidget>
             height: 25,
             decoration: TileStyles.tileIconContainerBoxDecoration,
             child: Icon(
-              Icons.access_time_sharp,
+              (this.widget.subEvent.isRigid ?? false)
+                  ? Icons.lock_outline
+                  : Icons.access_time_sharp,
               color: isTardy
                   ? TileStyles.lateTextColor
                   : TileStyles.defaultTextColor,
@@ -283,17 +280,17 @@ class TileWidgetState extends State<TileWidget>
     );
     allElements.add(tileTimeFrame);
     if (isEditable) {
-      if (isMoreDetailEnabled || (this.widget.subEvent.isToday)) {
+      if (isMoreDetailEnabled || (this.widget.subEvent.isCurrent)) {
         allElements.add(FractionallySizedBox(
             widthFactor: TileStyles.tileWidthRatio,
             child: Container(
-                margin: const EdgeInsets.fromLTRB(0, 40, 0, 0),
+                margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
                 child: TimeScrubWidget(
                   timeline: widget.subEvent,
                   isTardy: widget.subEvent.isTardy ?? false,
                 ))));
         allElements.add(Container(
-            margin: const EdgeInsets.fromLTRB(0, 10, 0, 0),
+            margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
             child: PlayBack(widget.subEvent)));
       } else {
         allElements.add(GestureDetector(
@@ -306,7 +303,7 @@ class TileWidgetState extends State<TileWidget>
               child: Container(
             width: 30,
             height: 30,
-            margin: EdgeInsets.fromLTRB(0, 20, 0, 10),
+            margin: EdgeInsets.fromLTRB(0, 10, 0, 2),
             child: Transform.rotate(
               angle: pi / 2,
               child: Icon(
@@ -320,14 +317,6 @@ class TileWidgetState extends State<TileWidget>
           )),
         ));
       }
-    }
-    if (this.widget.subEvent.isRigid ?? false) {
-      allElements.add(Container(
-          child: Icon(
-        Icons.lock_outline,
-        color: Color.fromRGBO(31, 31, 31, .7),
-        size: 30,
-      )));
     }
 
     return AnimatedSize(
