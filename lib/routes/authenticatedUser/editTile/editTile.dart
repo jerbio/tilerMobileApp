@@ -1000,7 +1000,7 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions.remove(PlaybackOptions.Now);
               }
               Widget playBackButtonWrapper = Container(
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+                padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
                 decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,

@@ -44,6 +44,9 @@ class Utility {
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
     DateTime time = DateTime.now();
+    if (isDebugSet) {
+      time = time.add(Duration(days: 1));
+    }
     if (minuteLimitAccuracy) {
       DateTime retValue =
           DateTime(time.year, time.month, time.day, time.hour, time.minute);
