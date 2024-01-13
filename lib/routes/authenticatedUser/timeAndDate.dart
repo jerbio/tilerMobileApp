@@ -70,8 +70,8 @@ class _TimeAndDateState extends State<TimeAndDate> {
       return;
     }
     DateTime _endDate = dateTime;
-    DateTime firstDate = _endDate.add(Duration(days: -14));
-    DateTime lastDate = _endDate.add(Duration(days: 90));
+    DateTime firstDate = _endDate.add(Duration(days: -999999));
+    DateTime lastDate = _endDate.add(Duration(days: 999999));
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,

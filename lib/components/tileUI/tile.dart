@@ -323,9 +323,10 @@ class TileWidgetState extends State<TileWidget>
         duration: Duration(milliseconds: 250),
         curve: Curves.fastOutSlowIn,
         child: Container(
-          margin: this.widget.subEvent.isCurrentTimeWithin
-              ? EdgeInsets.fromLTRB(0, 100, 0, 100)
-              : EdgeInsets.fromLTRB(0, 20, 0, 20),
+          margin: (this.widget.subEvent.isCurrentTimeWithin ||
+                  this.isMoreDetailEnabled)
+              ? EdgeInsets.fromLTRB(0, 20, 0, 20)
+              : EdgeInsets.fromLTRB(0, 5, 0, 5),
           child: Material(
               type: MaterialType.transparency,
               child: FractionallySizedBox(

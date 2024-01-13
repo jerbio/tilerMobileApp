@@ -252,13 +252,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   },
                   child: ListTile(
                     leading: Icon(Icons.refresh, color: Colors.white),
-                    title: Text(
-                      AppLocalizations.of(context)!.revise,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white),
+                    title: Padding(
+                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+                      child: Text(
+                        AppLocalizations.of(context)!.revise,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
@@ -324,14 +327,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           ),
                         ),
                         contentPadding: EdgeInsets.all(5),
-                        title: Text(
-                          AppLocalizations.of(context)!.deferAll,
-                          textAlign: TextAlign.left,
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontFamily: TileStyles.rubikFontName,
-                              fontWeight: FontWeight.w300,
-                              color: Colors.white),
+                        title: Positioned(
+                          child: Text(
+                            AppLocalizations.of(context)!.deferAll,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontFamily: TileStyles.rubikFontName,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.white),
+                          ),
                         ),
                       ),
                     )),
@@ -348,13 +353,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       Icons.add,
                       color: Colors.white,
                     ),
-                    title: Text(
-                      AppLocalizations.of(context)!.addTile,
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.white),
+                    title: Padding(
+                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+                      child: Text(
+                        AppLocalizations.of(context)!.addTile,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
                     ),
                   ),
                 ),
