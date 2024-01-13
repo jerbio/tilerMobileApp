@@ -49,6 +49,36 @@ class LocationSearchState extends SearchWidgetState {
     onChange = this.widget.onChanged;
   }
 
+  onLocationTap(collapseResultContainer,
+      {Location? location, bool onlyAddress = false}) {
+    return () {
+      LocationSearchWidget locationSearchWidget =
+          (this.widget as LocationSearchWidget);
+      setState(() {
+        selectedLocation = location;
+        isRequestEnabled = false;
+        locationSearchWidget.selectedLocation = location;
+        collapseResultContainer(selectedLocation);
+        if (selectedLocation != null && selectedLocation!.address != null) {
+          textController.text = selectedLocation!.address!;
+        }
+      });
+      if (locationSearchWidget.onLocationSelection != null) {
+        locationSearchWidget.onLocationSelection!(
+            location: location, onlyAddress: onlyAddress);
+      }
+
+      Timer(const Duration(seconds: 1), () {
+        Timer timer = new Timer(new Duration(seconds: 2), () {
+          setState(() {
+            isRequestEnabled = true;
+          });
+          debugPrint("re enabled location web requests");
+        });
+      });
+    };
+  }
+
   Widget locationNameWidget(
       Location location, Function collapseResultContainer) {
     Widget retValue = Container(
@@ -84,7 +114,7 @@ class LocationSearchState extends SearchWidgetState {
         ];
         if (location.address != location.description) {
           locationText.add(FractionallySizedBox(
-              widthFactor: TileStyles.inputWidthFactor,
+              widthFactor: TileStyles.inputWidthFactor * 0.75,
               child: Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -105,26 +135,37 @@ class LocationSearchState extends SearchWidgetState {
 
         addressChildren.add(Stack(
           children: [
-            Positioned(
-                child: Icon(
-                  location.source == null ||
-                          location.source!.isEmpty ||
-                          location.source! == 'none'
-                      ? Icons.save_outlined
-                      : Icons.cloud_outlined,
-                  color: TileStyles.activeColor,
-                ),
-                top: 45,
-                right: 0),
             Container(
               width: (MediaQuery.of(context).size.width *
-                      TileStyles.inputWidthFactor *
                       TileStyles.inputWidthFactor) -
-                  60,
+                  95,
               alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(35, 20, 0, 0),
+              margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
               child: Column(
                 children: locationText,
+              ),
+            ),
+            Positioned(
+              top: 36,
+              right: 0,
+              child: Row(
+                children: [
+                  Icon(
+                    location.source == null ||
+                            location.source!.isEmpty ||
+                            location.source! == 'none'
+                        ? Icons.save_outlined
+                        : Icons.cloud_outlined,
+                    color: TileStyles.activeColor,
+                  ),
+                  IconButton(
+                      onPressed: onLocationTap(collapseResultContainer,
+                          location: location, onlyAddress: true),
+                      icon: Icon(
+                        Icons.business,
+                        color: TileStyles.activeColor,
+                      ))
+                ],
               ),
             )
           ],
@@ -136,34 +177,10 @@ class LocationSearchState extends SearchWidgetState {
           child: Container(
               margin: EdgeInsets.fromLTRB(5, 10, 5, 10),
               child: GestureDetector(
-                onTap: () {
-                  LocationSearchWidget locationSearchWidget =
-                      (this.widget as LocationSearchWidget);
-                  setState(() {
-                    selectedLocation = location;
-                    isRequestEnabled = false;
-                    locationSearchWidget.selectedLocation = location;
-                    collapseResultContainer(selectedLocation);
-                    if (selectedLocation != null &&
-                        selectedLocation!.address != null) {
-                      textController.text = selectedLocation!.address!;
-                    }
-                  });
-                  if (locationSearchWidget.onLocationSelection != null) {
-                    locationSearchWidget.onLocationSelection!(location);
-                  }
-
-                  Timer(const Duration(seconds: 3), () {
-                    Timer timer = new Timer(new Duration(seconds: 5), () {
-                      setState(() {
-                        isRequestEnabled = true;
-                      });
-                      debugPrint("re enabled location web requests");
-                    });
-                  });
-                },
+                onTap:
+                    onLocationTap(collapseResultContainer, location: location),
                 child: Container(
-                  height: 90,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.only(
