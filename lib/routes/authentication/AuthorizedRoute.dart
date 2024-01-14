@@ -252,7 +252,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   },
                   child: ListTile(
                     leading: Icon(Icons.refresh, color: Colors.white),
-                    title: Padding(
+                    title: Container(
                       padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
                       child: Text(
                         AppLocalizations.of(context)!.revise,
@@ -327,7 +327,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           ),
                         ),
                         contentPadding: EdgeInsets.all(5),
-                        title: Positioned(
+                        title: Container(
                           child: Text(
                             AppLocalizations.of(context)!.deferAll,
                             textAlign: TextAlign.left,
@@ -353,7 +353,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       Icons.add,
                       color: Colors.white,
                     ),
-                    title: Padding(
+                    title: Container(
                       padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
                       child: Text(
                         AppLocalizations.of(context)!.addTile,
@@ -580,8 +580,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               backgroundColor: Colors.white,
               onPressed: () {
                 displayDialog(MediaQuery.of(context).size);
-                Utility.isDebugSet = !Utility.isDebugSet;
-                print("Utility.isDebugSet + ${Utility.isDebugSet}");
               },
               child: Icon(
                 Icons.add,
