@@ -25,21 +25,21 @@ class LocationRouteState extends State<LocationRoute> {
   String? lookupNickNameText;
 
   onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
-    Location? previousLocation = selectedLocation;
     setState(() {
-      selectedLocation = location;
       if (location != null) {
-        if (!onlyAddress) {
-          print('Are we in only address');
-          locationNickNameController!.value = TextEditingValue(
-            text: location.description ?? '',
-            selection: TextSelection.fromPosition(
-              TextPosition(offset: (location.description ?? '').length),
-            ),
-          );
-        } else if (previousLocation != null) {
-          selectedLocation!.description = previousLocation.description;
+        String nickNameDescription = location.description ?? '';
+        if (onlyAddress) {
+          location.description = locationNickNameController!.value.text;
+          nickNameDescription = locationNickNameController!.value.text;
         }
+        locationNickNameController!.value = TextEditingValue(
+          text: nickNameDescription,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: (nickNameDescription).length),
+          ),
+        );
+
+        selectedLocation = location;
         if (addressText != location.address) {
           addressText = location.address;
         }
