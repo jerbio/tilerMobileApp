@@ -69,8 +69,8 @@ class CancelAndProceedTemplateWidgetState
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
-            primary: Colors.transparent,
-            onPrimary: Colors.transparent,
+            foregroundColor: Colors.transparent,
+            backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent, // foreground
           ),
           child: Center(
@@ -122,8 +122,8 @@ class CancelAndProceedTemplateWidgetState
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
-            primary: Colors.transparent,
-            onPrimary: Colors.transparent,
+            foregroundColor: Colors.transparent,
+            backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent, // foreground
           ),
           child: Center(
