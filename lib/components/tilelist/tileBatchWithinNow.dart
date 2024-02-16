@@ -112,7 +112,7 @@ class WithinNowBatchState extends TileBatchState {
         child: Align(
             alignment: Alignment.topCenter,
             child: Container(
-              margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
+              margin: EdgeInsets.fromLTRB(30, 20, 0, 20),
               alignment: Alignment.centerLeft,
               child: Text(AppLocalizations.of(context)!.upcoming,
                   style: TileBatch.dayHeaderTextStyle),

@@ -48,6 +48,27 @@ class _DaySummaryState extends State<DaySummary> {
         ));
     const textStyle = const TextStyle(
         fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
+    Widget? warnWidget = isPending ? pendingShimmer : null;
+    if ((dayData?.nonViable?.length ?? 0) > 0) {
+      warnWidget = Container(
+        child: Row(
+          children: [
+            Icon(
+              Icons.error,
+              color: Colors.redAccent,
+              size: 30.0,
+            ),
+            Text(
+              (dayData?.nonViable?.length ?? 0).toString(),
+              style: textStyle,
+            )
+          ],
+        ),
+      );
+    }
+    if (warnWidget != null) {
+      rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
+    }
     Widget? completeWidget = isPending ? pendingShimmer : null;
     if ((dayData?.complete?.length ?? 0) > 0) {
       completeWidget = Container(
@@ -70,27 +91,7 @@ class _DaySummaryState extends State<DaySummary> {
       rowSymbolElements
           .add(Container(margin: iconMargin, child: completeWidget));
     }
-    Widget? warnWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.nonViable?.length ?? 0) > 0) {
-      warnWidget = Container(
-        child: Row(
-          children: [
-            Icon(
-              Icons.error,
-              color: Colors.redAccent,
-              size: 30.0,
-            ),
-            Text(
-              (dayData?.nonViable?.length ?? 0).toString(),
-              style: textStyle,
-            )
-          ],
-        ),
-      );
-    }
-    if (warnWidget != null) {
-      rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
-    }
+
     Widget? tardyWidget = isPending ? pendingShimmer : null;
     if ((dayData?.tardy?.length ?? 0) > 0) {
       tardyWidget = Container(

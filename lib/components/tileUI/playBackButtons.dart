@@ -83,7 +83,6 @@ class PlayBackState extends State<PlayBack> {
 
   resumeTile() async {
     showMessage(AppLocalizations.of(context)!.resuming);
-    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
       DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
@@ -473,7 +472,7 @@ class PlayBackState extends State<PlayBack> {
       }
       if (rowElements.isNotEmpty) {
         playBackRows.add(Container(
-          margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+          margin: EdgeInsets.fromLTRB(0, 5, 0, 5),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: rowElements,

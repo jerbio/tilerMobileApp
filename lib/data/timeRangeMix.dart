@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/util.dart';
 
-abstract class TimeRange {
+mixin TimeRange {
   int? start = 0;
   int? end = 0;
 

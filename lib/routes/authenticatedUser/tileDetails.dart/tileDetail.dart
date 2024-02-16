@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/location/location_bloc.dart';
+import 'package:tiler_app/bloc/location/location_state.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
@@ -36,10 +39,15 @@ class _TileDetailState extends State<TileDetail> {
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
   EditTileNote? _editTileNote;
+  Duration? _tileDuration;
+  Location? _location;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
   String requestId = Utility.getUuid;
+  final Color textBackgroundColor = TileStyles.textBackgroundColor;
+  final Color textBorderColor = TileStyles.textBorderColor;
+  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
 
   @override
   void initState() {
@@ -48,6 +56,8 @@ class _TileDetailState extends State<TileDetail> {
         .context
         .read<CalendarTileBloc>()
         .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
+    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
+        calEventId: this.widget.tileId, blocSessionId: requestId));
     this.context.read<SubCalendarTileBloc>().add(
         GetListOfCalendarTilesSubTilesBlocEvent(
             calEventId: this.widget.tileId, requestId: requestId));
@@ -115,9 +125,30 @@ class _TileDetailState extends State<TileDetail> {
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
     }
+    bool isLocationCleared = false;
+    if (_location == null) {
+      isLocationCleared = true;
+    }
+    if ((this.editTilerEvent!.address == null ||
+            this.editTilerEvent!.address!.isEmpty) &&
+        ((this.editTilerEvent!.addressDescription == null ||
+            this.editTilerEvent!.addressDescription!.isEmpty))) {
+      isLocationCleared = true;
+    }
+
+    if (this.calEvent!.address == editTilerEvent!.address &&
+        this.calEvent!.addressDescription ==
+            editTilerEvent!.addressDescription) {
+      // this is a hack so there isn't a database refresh or check
+      editTilerEvent!.address = null;
+      editTilerEvent!.addressDescription = null;
+      isLocationCleared = false;
+      editTilerEvent!.isAddressVerified = null;
+    }
+
     return this
         .calendarEventApi
-        .updateCalEvent(this.editTilerEvent!)
+        .updateCalEvent(this.editTilerEvent!, clearLocation: isLocationCleared)
         .then((value) {
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
@@ -154,9 +185,22 @@ class _TileDetailState extends State<TileDetail> {
             _editEndDateAndTime!.dateAndTime!.toUtc();
       }
 
+      if (_tileDuration != null) {
+        revisedEditTilerEvent.tileDuration = _tileDuration;
+      }
+
       if (splitCountController != null && splitCountController != null) {
         revisedEditTilerEvent.splitCount =
             int.tryParse(splitCountController!.text);
+      }
+
+      if (_location != null && _location!.isNotNullAndNotDefault) {
+        revisedEditTilerEvent.address = _location!.address;
+        revisedEditTilerEvent.addressDescription = _location!.description;
+        revisedEditTilerEvent.isAddressVerified = _location!.isVerified;
+      } else {
+        revisedEditTilerEvent.address = '';
+        revisedEditTilerEvent.addressDescription = '';
       }
       updateProceed();
       setState(() {
@@ -171,6 +215,157 @@ class _TileDetailState extends State<TileDetail> {
 
   bool get isRigidTile {
     return (this.calEvent!.isProcrastinate ?? false);
+  }
+
+  loadLocationRoute() {
+    Location locationHolder = _location ?? Location.fromDefault();
+    Map<String, dynamic> locationParams = {
+      'location': locationHolder,
+    };
+    List<Location> defaultLocations = [];
+    if (defaultLocations.isNotEmpty) {
+      locationParams['defaults'] = defaultLocations;
+    }
+
+    Navigator.pushNamed(context, '/LocationRoute', arguments: locationParams)
+        .whenComplete(() {
+      Location? populatedLocation = locationParams['location'] as Location?;
+      setState(() {
+        if (populatedLocation != null &&
+            populatedLocation.isNotNullAndNotDefault != null) {
+          _location = populatedLocation;
+          dataChange();
+        }
+      });
+    });
+  }
+
+  Widget generateDurationPicker() {
+    final void Function()? setDuration = () async {
+      Map<String, dynamic> durationParams = {
+        'duration': _tileDuration,
+        'initialDuration': _tileDuration
+      };
+      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+          .whenComplete(() {
+        print(durationParams['duration']);
+        Duration? populatedDuration = durationParams['duration'] as Duration?;
+        setState(() {
+          if (populatedDuration != null) {
+            _tileDuration = populatedDuration;
+          }
+        });
+        dataChange();
+      });
+    };
+    String textButtonString = AppLocalizations.of(context)!.durationStar;
+    if (_tileDuration != null && _tileDuration!.inMinutes > 1) {
+      textButtonString = "";
+      int hour = _tileDuration!.inHours.floor();
+      int minute = _tileDuration!.inMinutes.remainder(60);
+      if (hour > 0) {
+        textButtonString = '${hour}h';
+        if (minute > 0) {
+          textButtonString = '${textButtonString} : ${minute}m';
+        }
+      } else {
+        if (minute > 0) {
+          textButtonString = '${minute}m';
+        }
+      }
+    }
+    Widget retValue = new GestureDetector(
+        onTap: setDuration,
+        child: Container(
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            decoration: BoxDecoration(
+                color: textBackgroundColor,
+                borderRadius: const BorderRadius.all(
+                  const Radius.circular(8.0),
+                ),
+                border: Border.all(
+                  color: textBorderColor,
+                  width: 1.5,
+                )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
+                Container(
+                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        textStyle: const TextStyle(
+                          fontSize: 20,
+                        ),
+                      ),
+                      onPressed: setDuration,
+                      child: Text(
+                        textButtonString,
+                        style: TextStyle(
+                          fontFamily: TileStyles.rubikFontName,
+                        ),
+                      ),
+                    ))
+              ],
+            )));
+    return retValue;
+  }
+
+  Widget renderLocationTapable() {
+    Function locationButton = (String locationString) {
+      return Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        decoration: BoxDecoration(
+            color: textBackgroundColor,
+            borderRadius: const BorderRadius.all(
+              const Radius.circular(8.0),
+            ),
+            border: Border.all(
+              color: textBorderColor,
+              width: 1.5,
+            )),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Icon(Icons.location_pin, color: inputFieldIconColor),
+            Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: 20,
+                    ),
+                  ),
+                  onPressed: loadLocationRoute,
+                  child: Text(
+                    locationString,
+                    style: TextStyle(
+                      fontFamily: TileStyles.rubikFontName,
+                    ),
+                  ),
+                ))
+          ],
+        ),
+      );
+    };
+
+    var locBlocState = this.context.read<LocationBloc>().state;
+    return locBlocState.join((initial) {
+      return locationButton(AppLocalizations.of(context)!.dashEmptyString);
+    }, (locationLoading) {
+      return locationButton(AppLocalizations.of(context)!.dashEmptyString);
+    }, (locationLoaded) {
+      String? locationString = _location?.description;
+      if (locationString == null || locationString.isEmpty) {
+        locationString = AppLocalizations.of(context)!.noLocation;
+      }
+      return locationButton(locationString);
+    }, (locationLoadedError) {
+      return locationButton(AppLocalizations.of(context)!.dashEmptyString);
+    });
   }
 
   @override
@@ -199,6 +394,8 @@ class _TileDetailState extends State<TileDetail> {
                         calEvent!.isAutoReviseDeadline;
                     editTilerEvent!.isAutoDeadline = calEvent!.isAutoDeadline;
                     editTilerEvent!.note = '';
+                    editTilerEvent!.tileDuration = calEvent!.tileDuration;
+                    _tileDuration = calEvent!.tileDuration;
                     if (calEvent!.noteData != null) {
                       editTilerEvent!.note = calEvent!.noteData!.note;
                     }
@@ -209,6 +406,10 @@ class _TileDetailState extends State<TileDetail> {
                       splitCountController!.addListener(onInputCountChange);
                       editTilerEvent!.splitCount = splitCount;
                     }
+                    if (_location != null) {
+                      calEvent!.address = _location!.address;
+                      calEvent!.addressDescription = _location!.description;
+                    }
                   }
                 });
               }
@@ -216,7 +417,6 @@ class _TileDetailState extends State<TileDetail> {
           ),
           BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
               listener: (context, state) {
-            print('->->->ListOfSubCalendarTileLoadedState is called');
             if (state is ListOfSubCalendarTileLoadedState) {
               if (state.requestId == requestId) {
                 setState(() {
@@ -224,6 +424,37 @@ class _TileDetailState extends State<TileDetail> {
                 });
               }
             }
+          }),
+          BlocListener<LocationBloc, LocationState>(listener: (context, state) {
+            if (state.blocSessionId != requestId) {
+              return;
+            }
+            state.join((locationLoadingState) {
+              setState(() {
+                _location = null;
+              });
+            }, (locationLoading) {
+              return;
+            }, (locationLoaded) {
+              setState(() {
+                if (locationLoaded.locations != null &&
+                    locationLoaded.locations!.isNotEmpty) {
+                  _location = locationLoaded.locations!.first;
+                  if (_location != null &&
+                      _location!.isNotNullAndNotDefault &&
+                      calEvent != null) {
+                    calEvent!.address = _location!.address;
+                    calEvent!.addressDescription = _location!.description;
+                  }
+                  return;
+                }
+                return;
+              });
+            }, (locationLoadError) {
+              setState(() {
+                _location = null;
+              });
+            });
           })
         ],
         child: CancelAndProceedTemplateWidget(
@@ -288,6 +519,20 @@ class _TileDetailState extends State<TileDetail> {
                 tileNote: tileNote,
                 onInputChange: dataChange,
               );
+
+              Widget durationWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: generateDurationPicker(),
+                  ));
+
+              Widget? locationWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: renderLocationTapable(),
+                  ));
               if (!isRigidTile && !isProcrastinateTile) {
                 if (this.editTilerEvent!.isAutoReviseDeadline != null) {
                   softDeadlineWidget = FractionallySizedBox(
@@ -326,6 +571,7 @@ class _TileDetailState extends State<TileDetail> {
                         ),
                       ));
                 }
+
                 if (!this.calEvent!.isRecurring!) {
                   splitWidget = FractionallySizedBox(
                       widthFactor: TileStyles.tileWidthRatio,
@@ -404,6 +650,13 @@ class _TileDetailState extends State<TileDetail> {
                     child: _editTileNote!));
               }
 
+              if (durationWidget != null) {
+                inputChildWidgets.add(durationWidget);
+              }
+
+              if (locationWidget != null) {
+                inputChildWidgets.add(locationWidget);
+              }
               if (splitWidget != null) {
                 inputChildWidgets.add(splitWidget);
               }

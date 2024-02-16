@@ -211,7 +211,6 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
     return Container(
       width: 300,
       height: 30,
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: timeline,
     );
   }
