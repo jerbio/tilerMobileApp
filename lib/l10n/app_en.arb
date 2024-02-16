@@ -99,6 +99,7 @@
     "weekly":"Weekly",
     "monthly":"Monthly",
     "yearly":"Yearly",
+    "none":"None",
     "noneNotificationCategory": "Default",
     "nextTileNotificationCategory": "Next Tile",
     "userSetReminderNotificationCategory": "User Set Reminder",

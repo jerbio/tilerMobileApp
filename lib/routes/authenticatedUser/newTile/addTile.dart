@@ -819,6 +819,9 @@ class AddTileState extends State<AddTile> {
       wrapWidgets.insert(1, timeRestrictionsConfigButton);
       wrapWidgets.add(softDeadlineWidget);
     }
+    if (isRepetitionSet) {
+      wrapWidgets.remove(softDeadlineWidget);
+    }
 
     Widget retValue = Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
@@ -1203,6 +1206,9 @@ class AddTileState extends State<AddTile> {
     tileWidgets.add(tileNameWidget);
     tileWidgets.add(durationPicker);
     tileWidgets.add(deadlinePicker);
+    if (this._repetitionData != null) {
+      tileWidgets.remove(deadlinePicker);
+    }
     tileWidgets.add(splitCountWidget);
 
     appointmentWidgets.add(tileNameWidget);

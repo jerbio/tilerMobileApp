@@ -50,6 +50,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
 
     DateTime yearStart = DateTime(currentTime.year, 1, 1).toLocal();
     DateTime yearEnd = DateTime(currentTime.year, 12, 31, 23, 59).toLocal();
+    Duration noneDuration = Duration(minutes: -1);
     _yearDeadline = yearEnd;
     Duration yearDuration = Utility.durationDifference(yearEnd, yearStart);
     descriptionAndDuration = [
@@ -61,6 +62,8 @@ class _RepetitionRouteState extends State<RepetitionRoute>
           RepetitionFrequency.monthly, monthDuration),
       new Tuple2<RepetitionFrequency, Duration>(
           RepetitionFrequency.yearly, yearDuration),
+      new Tuple2<RepetitionFrequency, Duration>(
+          RepetitionFrequency.none, noneDuration),
     ];
 
     super.initState();
@@ -91,6 +94,11 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       case RepetitionFrequency.yearly:
         {
           frequencyText = AppLocalizations.of(context)!.yearly;
+        }
+        break;
+      case RepetitionFrequency.none:
+        {
+          frequencyText = AppLocalizations.of(context)!.none;
         }
         break;
     }
@@ -268,7 +276,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   }
 
   bool isRepetitionReadyForSubmit() {
-    return isDeadlineValid() && this.repetitionData != null;
+    return isDeadlineValid();
   }
 
   @override
@@ -285,9 +293,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
           repetitionParams!['tileTimeline'] != null) {
         tileTimelineParam = repetitionParams!['tileTimeline'] as Timeline;
         applicableRepetitions = descriptionAndDuration
-            .where((eachTuple) =>
-                eachTuple.item2.inMilliseconds >
-                tileTimelineParam!.duration.inMilliseconds)
+            // .where((eachTuple) =>
+            //     eachTuple.item2.inMilliseconds >
+            //     tileTimelineParam!.duration.inMilliseconds)//disabled filtering by deadline because users were confused by the random hiding of repetition.
             .toList();
       }
       for (Tuple2<RepetitionFrequency, Duration> applicableRepetition
@@ -335,11 +343,16 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                       }
                       applicableRepetitionsSelectedCpy[
                           applicableRepetitions[index].item1] = true;
-                      RepetitionData updatedRepetitionData = repetitionData ??
+                      RepetitionData? updatedRepetitionData = repetitionData ??
                           RepetitionData(
                               frequency: applicableRepetitions[index].item1);
                       updatedRepetitionData.frequency =
                           applicableRepetitions[index].item1;
+                      if (applicableRepetitions[index].item1 ==
+                          RepetitionFrequency.none) {
+                        updatedRepetitionData = null;
+                      }
+
                       setState(() {
                         applicableRepetitionsSelectedMap =
                             applicableRepetitionsSelectedCpy;
@@ -366,7 +379,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                   : SizedBox.shrink(),
             ],
           )),
-      onProceed: isRepetitionReadyForSubmit() ? this.onProceed : null,
+      onProceed: this.onProceed,
       onCancel: this.onCancel,
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
