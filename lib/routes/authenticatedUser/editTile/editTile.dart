@@ -999,6 +999,9 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions.remove(PlaybackOptions.PlayPause);
                 playbackOptions.remove(PlaybackOptions.Now);
               }
+              if ((!(this.subEvent!.isViable ?? false))) {
+                playbackOptions.remove(PlaybackOptions.PlayPause);
+              }
               Widget playBackButtonWrapper = Container(
                 margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
                 decoration: containerClusterStyle,

@@ -19,13 +19,9 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
     int? suggestionNumber = int.tryParse(splitByDots[0]);
     String? tileName = this.widget.nextTileSuggestion.name;
 
-    print(splitByDots);
-
     if (suggestionNumber != null) {
       tileName = splitByDots.skip(1).toList().join('.');
     }
-
-    print(tileName);
 
     if (tileName != null && tileName.isNotEmpty) {
       return OutlinedButton(

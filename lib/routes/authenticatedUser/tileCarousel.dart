@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
-import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -87,7 +86,7 @@ class _TileCarouselState extends State<TileCarousel> {
         Tuple3<ItemScrollController, ItemPositionsListener,
             List<SubCalendarEvent>>> dayIndexToSubEvents = {};
     subEvents.forEach((eachSubEvent) {
-      int dayIndex = Utility.getDayIndex(eachSubEvent.startTime!);
+      int dayIndex = Utility.getDayIndex(eachSubEvent.startTime);
       List<SubCalendarEvent> daySubEvents = [];
       if (dayIndexToSubEvents.containsKey(dayIndex)) {
         daySubEvents = dayIndexToSubEvents[dayIndex]!.item3;
@@ -131,7 +130,7 @@ class _TileCarouselState extends State<TileCarousel> {
             Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
 
             state.subEvents.forEach((eachSubEvent) {
-              int dayIndex = Utility.getDayIndex(eachSubEvent.startTime!);
+              int dayIndex = Utility.getDayIndex(eachSubEvent.startTime);
               List<SubCalendarEvent> daySubEvents = [];
               if (dayIndexToSubEvents.containsKey(dayIndex)) {
                 daySubEvents = dayIndexToSubEvents[dayIndex]!;
