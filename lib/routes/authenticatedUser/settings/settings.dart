@@ -211,7 +211,7 @@ class _SettingState extends State<Setting> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(AppLocalizations.of(context)!.snoozeTime),
+        Text(AppLocalizations.of(context)!.bedTime),
         Container(
           width: 120,
           height: 50,
