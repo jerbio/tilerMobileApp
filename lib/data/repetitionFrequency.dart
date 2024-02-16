@@ -1,1 +1,1 @@
-enum RepetitionFrequency { daily, weekly, monthly, yearly }
+enum RepetitionFrequency { daily, weekly, monthly, yearly, none }
