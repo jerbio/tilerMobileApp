@@ -104,7 +104,7 @@ SPEC CHECKSUMS:
   maps_launcher: 2e5b6a2d664ec6c27f82ffa81b74228d770ab203
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
-  url_launcher_ios: 08a3dfac5fb39e8759aeb0abbd5d9480f30fc8b4
+  url_launcher_ios: bbd758c6e7f9fd7b5b1d4cde34d2b95fcce5e812
   webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
 
 PODFILE CHECKSUM: c4c93c5f6502fe2754f48404d3594bf779584011

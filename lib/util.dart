@@ -44,6 +44,9 @@ class Utility {
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
     DateTime time = DateTime.now();
+    if (isDebugSet) {
+      time = time.add(Duration(days: 1));
+    }
     if (minuteLimitAccuracy) {
       DateTime retValue =
           DateTime(time.year, time.month, time.day, time.hour, time.minute);
@@ -81,6 +84,10 @@ class Utility {
     if (editTilerEvent.note != null && tilerEvent.noteData != null) {
       retValue &= editTilerEvent.note == tilerEvent.noteData!.note;
     }
+
+    retValue &= editTilerEvent.address == tilerEvent.address;
+    retValue &=
+        editTilerEvent.addressDescription == tilerEvent.addressDescription;
     return retValue;
   }
 
@@ -105,6 +112,12 @@ class Utility {
             editCalendarEvent.isAutoReviseDeadline;
     retValue &=
         calendarEvent.isAutoDeadline == editCalendarEvent.isAutoDeadline;
+    if (calendarEvent.tileDuration != null &&
+        editCalendarEvent.tileDuration != null) {
+      retValue &= editCalendarEvent.tileDuration!.inMinutes ==
+          calendarEvent.tileDuration!.inMinutes;
+    }
+
     return retValue;
   }
 

@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -114,6 +115,7 @@ class TilerApp extends StatelessWidget {
           BlocProvider(create: (context) => CalendarTileBloc()),
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
+          BlocProvider(create: (context) => LocationBloc()),
         ],
         child: MaterialApp(
           title: 'Tiler',

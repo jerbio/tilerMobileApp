@@ -554,7 +554,7 @@ class AddTileState extends State<AddTile> {
   }
 
   Widget generateExtraConfigSelection() {
-    String locationName = 'Location';
+    String locationName = AppLocalizations.of(context)!.location;
     bool isLocationConfigSet = false;
     bool isRepetitionSet = false;
     bool isColorConfigSet = false;

@@ -39,8 +39,8 @@ class _EditTileDateState extends State<EditTileDate> {
     }
 
     DateTime _endDate = time;
-    DateTime firstDate = _endDate.add(Duration(days: -14));
-    DateTime lastDate = _endDate.add(Duration(days: 90));
+    DateTime firstDate = _endDate.add(Duration(days: -9000000));
+    DateTime lastDate = _endDate.add(Duration(days: 9000000));
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,

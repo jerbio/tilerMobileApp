@@ -307,5 +307,7 @@
     "afternoonAndEvening": "Afternoon & Evening",
     "lateEvening": "Late Evening",
     "prediction": "Prediction",
-    "softDeadline": "Soft Deadline"
+    "softDeadline": "Soft Deadline",
+    "location":"Location",
+    "dashEmptyString":"--"
   }
