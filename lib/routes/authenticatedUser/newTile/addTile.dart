@@ -57,8 +57,8 @@ class AddTileState extends State<AddTile> {
   String tileNameText = '';
   String splitCountText = '';
   final LocationApi locationApi = LocationApi();
-  Location? home;
-  Location? work;
+  Location? _homeLocation;
+  Location? _workLocation;
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       border: Border.all(
@@ -102,6 +102,8 @@ class AddTileState extends State<AddTile> {
   SettingsApi settingsApi = SettingsApi();
   StreamSubscription? pendingSendTextRequest;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
+  Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
+  Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
 
   @override
   void initState() {
@@ -131,11 +133,7 @@ class AddTileState extends State<AddTile> {
             if (mounted) {
               setState(() {
                 if (!_isLocationManuallySet) {
-                  _location = _locationResponse;
-                  if (_locationResponse != null) {
-                    _location!.isDefault = false;
-                    _location!.isNull = false;
-                  }
+                  updateLocation(_locationResponse);
                 }
               });
               isSubmissionReady();
@@ -169,8 +167,8 @@ class AddTileState extends State<AddTile> {
           .getSpecificLocationByNickName(Location.workLocationNickName)
           .then((workLocation) {
         setState(() {
-          home = homeLocation;
-          work = workLocation;
+          _homeLocation = homeLocation;
+          _workLocation = workLocation;
         });
       });
     });
@@ -182,6 +180,18 @@ class AddTileState extends State<AddTile> {
               .map<Tuple2<String, RestrictionProfile>>(
                   (e) => Tuple2<String, RestrictionProfile>(e.key, e.value))
               .toList();
+          if (_listedRestrictionProfile != null) {
+            _workRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.workProfileNickName)
+                .firstOrNull;
+            _personalRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.homeProfileNickName)
+                .firstOrNull;
+          }
         });
         return response;
       }
@@ -211,6 +221,38 @@ class AddTileState extends State<AddTile> {
       });
       isSubmissionReady();
     }
+  }
+
+  void updateLocation(Location? location) {
+    print("in updateLocation");
+    setState(() {
+      _location = location;
+      if (location != null) {
+        _location!.isDefault = false;
+        _location!.isNull = false;
+        if (!_isRestictionProfileManuallySet &&
+            _location != null &&
+            _listedRestrictionProfile != null &&
+            _listedRestrictionProfile!.isNotEmpty) {
+          if (_location!.description != null &&
+              _location!.description!.toLowerCase() ==
+                  Constants.workLocationNickName &&
+              _workRestrictionProfile != null) {
+            _restrictionProfile = _workRestrictionProfile!.item2;
+            _restrictionProfileName =
+                AppLocalizations.of(context)!.workProfileHours;
+          }
+          if (_location!.description != null &&
+              _location!.description!.toLowerCase() ==
+                  Constants.homeLocationNickName &&
+              _personalRestrictionProfile != null) {
+            _restrictionProfile = _personalRestrictionProfile!.item2;
+            _restrictionProfileName =
+                AppLocalizations.of(context)!.personalHours;
+          }
+        }
+      }
+    });
   }
 
   isSubmissionReady() {
@@ -346,17 +388,27 @@ class AddTileState extends State<AddTile> {
               if (!_isDurationManuallySet) {
                 _duration = _durationResponse;
               }
-              if (!_isLocationManuallySet) {
-                _location = _locationResponse;
-                if (_locationResponse != null) {
-                  _location!.isDefault = false;
-                  _location!.isNull = false;
-                }
-              }
               if (!_isRestictionProfileManuallySet) {
                 _restrictionProfile = _restrictionProfileResponse;
                 _restrictionProfileName =
                     getTimeOfDaySectionString(remoteTileResponse.item4);
+              }
+              if (!_isLocationManuallySet) {
+                Location? location = _locationResponse;
+                if (_locationResponse != null &&
+                    _locationResponse.address != null &&
+                    _locationResponse.description != null) {
+                  String address = _locationResponse.address!.toLowerCase();
+                  String description =
+                      _locationResponse.description!.toLowerCase();
+                  bool resetLocation = Constants.invalidLocationNames.any(
+                      (element) =>
+                          element == address || element == description);
+                  if (resetLocation) {
+                    location = null;
+                  }
+                }
+                updateLocation(location);
               }
             });
             isSubmissionReady();
@@ -606,11 +658,11 @@ class AddTileState extends State<AddTile> {
         };
         List<Location> defaultLocations = [];
 
-        if (home != null && home!.isNotNullAndNotDefault) {
-          defaultLocations.add(home!);
+        if (_homeLocation != null && _homeLocation!.isNotNullAndNotDefault) {
+          defaultLocations.add(_homeLocation!);
         }
-        if (work != null && work!.isNotNullAndNotDefault) {
-          defaultLocations.add(work!);
+        if (_workLocation != null && _workLocation!.isNotNullAndNotDefault) {
+          defaultLocations.add(_workLocation!);
         }
         if (defaultLocations.isNotEmpty) {
           locationParams['defaults'] = defaultLocations;
@@ -619,12 +671,19 @@ class AddTileState extends State<AddTile> {
         Navigator.pushNamed(context, '/LocationRoute',
                 arguments: locationParams)
             .whenComplete(() {
-          Location? populatedLocation = locationParams['location'] as Location;
+          Location? populatedLocation = locationParams['location'] as Location?;
           setState(() {
             if (populatedLocation != null &&
                 populatedLocation.isNotNullAndNotDefault != null) {
               _location = populatedLocation;
               _isLocationManuallySet = true;
+              updateLocation(_location);
+              // if (!_isRestictionProfileManuallySet &&
+              //     _location != null &&
+              //     _listedRestrictionProfile != null &&
+              //     _listedRestrictionProfile!.isNotEmpty) {
+              //   if (_location!.description == Constants.workLocationNickName) {}
+              // }
             }
           });
         });
@@ -710,8 +769,9 @@ class AddTileState extends State<AddTile> {
           );
         });
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
-      text:
-          _restrictionProfileName ?? AppLocalizations.of(context)!.restriction,
+      text: isTimeRestrictionConfigSet
+          ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
+          : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
       prefixIcon: Icon(
         Icons.switch_left,
         color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
@@ -742,6 +802,17 @@ class AddTileState extends State<AddTile> {
             setState(() {
               _restrictionProfile = populatedRestrictionProfile;
               _restrictionProfileName = null;
+              if (_workRestrictionProfile != null &&
+                  _workRestrictionProfile!.item2 == _restrictionProfile) {
+                _restrictionProfileName =
+                    AppLocalizations.of(context)!.workProfileHours;
+              }
+
+              if (_personalRestrictionProfile != null &&
+                  _personalRestrictionProfile!.item2 == _restrictionProfile) {
+                _restrictionProfileName =
+                    AppLocalizations.of(context)!.personalHours;
+              }
             });
           }
         });
@@ -892,7 +963,10 @@ class AddTileState extends State<AddTile> {
 
   void onSubmitButtonTap() async {
     DateTime? _endTime = this._endTime;
-
+    bool isAutoRevisable = false;
+    if (this._isAutoRevisable) {
+      isAutoRevisable = this._isAutoRevisable;
+    }
     NewTile tile = new NewTile();
     tile.Name = this.tileNameController.value.text;
     if (this._duration != null) {
@@ -905,6 +979,8 @@ class AddTileState extends State<AddTile> {
         tile.RepeatEndYear = _repetitionData!.repetitionEnd!.year.toString();
         tile.RepeatEndMonth = _repetitionData!.repetitionEnd!.month.toString();
         tile.RepeatEndDay = _repetitionData!.repetitionEnd!.day.toString();
+        _endTime = _repetitionData!.repetitionEnd;
+        isAutoRevisable = false;
       }
 
       if (_repetitionData!.weeklyRepetition != null &&
@@ -940,7 +1016,7 @@ class AddTileState extends State<AddTile> {
     tile.isEveryDay = false.toString();
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
-    tile.AutoReviseDeadline = this._isAutoRevisable.toString();
+    tile.AutoReviseDeadline = isAutoRevisable.toString();
 
     var randomColor = _color ??
         HSLColor.fromAHSL(
@@ -1241,7 +1317,8 @@ class AddTileState extends State<AddTile> {
         carouselController: tilerCarouselController,
         items: carouselItems,
         options: CarouselOptions(
-          height: 300,
+          height:
+              isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
           aspectRatio: 16 / 9,
           viewportFraction: 1,
           initialPage: 0,

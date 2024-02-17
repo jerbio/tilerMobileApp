@@ -21,7 +21,6 @@ String adhocToken = '';
 
 const Duration retryLoginDuration = Duration(seconds: 2);
 const int retryLoginCount = 150;
-
 String googleClientDefaultKey = 'GOOGLE_CLIENT_ID_DEFAULT';
 String googleClientIdKey =
     Platform.isIOS ? 'GOOGLE_CLIENT_ID_IOS' : 'GOOGLE_CLIENT_ID_DEFAULT';
@@ -35,3 +34,9 @@ final List<String> googleApiScopes = [
   "https://www.googleapis.com/auth/calendar.events",
   'https://www.googleapis.com/auth/userinfo.email'
 ];
+
+final String workLocationNickName = "work";
+final String homeLocationNickName = "home";
+final String workProfileNickName = "work";
+final String homeProfileNickName = "personal";
+final List<String> invalidLocationNames = ["anywhere"];
