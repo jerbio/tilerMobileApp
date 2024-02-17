@@ -549,7 +549,7 @@ class EventNameSearchState extends SearchWidgetState {
                   hintStyle: TextStyle(
                       color: Color.fromRGBO(180, 180, 180, 1),
                       fontSize: TileStyles.textFontSize,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.w500),
                   contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
                   fillColor: TileStyles.primaryContrastColor,
@@ -589,6 +589,7 @@ class EventNameSearchState extends SearchWidgetState {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [Colors.transparent, Colors.transparent]));
+
             return Scaffold(
               resizeToAvoidBottomInset: false,
               body: Container(
