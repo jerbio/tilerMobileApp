@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
@@ -14,7 +13,6 @@ import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import 'package:tiler_app/util.dart';
-import 'package:web_browser/web_browser.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -116,7 +114,8 @@ class AuthorizationApi extends AppApi {
           Authentication localAuthentication = new Authentication();
           await localAuthentication.saveCredentials(retValue);
         }
-        FlutterWebBrowser.close();
+        // FlutterWebBrowser.close();
+        await closeInAppWebView();
 
         return retValue;
       }
@@ -142,21 +141,10 @@ class AuthorizationApi extends AppApi {
     ThirdPartyAuthenticationData? retValue;
     try {
       String authorizationUrl = await getAuthorizationUrl();
-      FlutterWebBrowser.openWebPage(
-        url: authorizationUrl,
-        customTabsOptions: const CustomTabsOptions(
-          colorScheme: CustomTabsColorScheme.dark,
-          shareState: CustomTabsShareState.off,
-          instantAppsEnabled: false,
-          showTitle: false,
-          urlBarHidingEnabled: true,
-        ),
-        safariVCOptions: const SafariViewControllerOptions(
-          preferredBarTintColor: TileStyles.primaryColor,
-          preferredControlTintColor: TileStyles.primaryContrastColor,
-          dismissButtonStyle: SafariViewControllerDismissButtonStyle.cancel,
-        ),
-      );
+      var encodedAuthorizationUrl = Uri.parse(authorizationUrl);
+      if (await canLaunchUrl(encodedAuthorizationUrl)) {
+        await launchUrl(encodedAuthorizationUrl);
+      }
     } catch (error) {
       print(error);
       // Handle sign-in error

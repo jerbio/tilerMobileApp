@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TileAddress extends StatefulWidget {
@@ -21,6 +22,24 @@ class TileAddressState extends State<TileAddress> {
     }
   }
 
+  Tuple2<bool, String> isStringUrl(String url) {
+    try {
+      bool retValue = Uri.parse(url).isAbsolute;
+      return Tuple2(retValue, url);
+    } catch (err) {
+      List<String> eachUrlComponent = url.split(" ");
+      if (eachUrlComponent.isNotEmpty) {
+        for (var element in eachUrlComponent) {
+          Tuple2<bool, String> isStringUrlTuple = isStringUrl(element);
+          if (isStringUrlTuple.item1) {
+            return isStringUrlTuple;
+          }
+        }
+      }
+    }
+    return Tuple2(false, url);
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isAddressTexturl = false;
@@ -31,7 +50,9 @@ class TileAddressState extends State<TileAddress> {
         ? widget.subEvent.addressDescription
         : addressString;
     if (addressString != null && addressString.isNotEmpty) {
-      isAddressTexturl = Uri.parse(addressString).isAbsolute;
+      addressString.split(" ");
+      var isStringUrlResult = isStringUrl(addressString);
+      isAddressTexturl = isStringUrlResult.item1;
       if (!isAddressTexturl) {
         addressString =
             addressString[0].toUpperCase() + addressString.substring(1);
@@ -48,8 +69,10 @@ class TileAddressState extends State<TileAddress> {
           addressLookup = this.widget.subEvent.searchdDescription;
         }
         if (addressLookup != null) {
+          var isStringUrlResult = isStringUrl(addressLookup);
+          isAddressTexturl = isStringUrlResult.item1;
           if (isAddressTexturl) {
-            final Uri url = Uri.parse(addressLookup);
+            final Uri url = Uri.parse(isStringUrlResult.item2);
             await _launchUrl(url);
             return;
           }
