@@ -12,8 +12,6 @@ PODS:
     - Flutter
   - flutter_timezone (0.0.1):
     - Flutter
-  - flutter_web_browser (0.17.1):
-    - Flutter
   - fluttertoast (0.0.2):
     - Flutter
     - Toast
@@ -34,7 +32,7 @@ PODS:
     - Flutter
   - share (0.0.1):
     - Flutter
-  - Toast (4.0.0)
+  - Toast (4.1.0)
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -45,7 +43,6 @@ DEPENDENCIES:
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - flutter_timezone (from `.symlinks/plugins/flutter_timezone/ios`)
-  - flutter_web_browser (from `.symlinks/plugins/flutter_web_browser/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/ios`)
@@ -71,8 +68,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   flutter_timezone:
     :path: ".symlinks/plugins/flutter_timezone/ios"
-  flutter_web_browser:
-    :path: ".symlinks/plugins/flutter_web_browser/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   geolocator_apple:
@@ -94,7 +89,6 @@ SPEC CHECKSUMS:
   flutter_local_notifications: 0c0b1ae97e741e1521e4c1629a459d04b9aec743
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
   flutter_timezone: ffb07bdad3c6276af8dada0f11978d8a1f8a20bb
-  flutter_web_browser: 7bccaafbb0c5b8862afe7bcd158f15557109f61f
   fluttertoast: fafc4fa4d01a6a9e4f772ecd190ffa525e9e2d9c
   geolocator_apple: cc556e6844d508c95df1e87e3ea6fa4e58c50401
   google_sign_in_ios: 1256ff9d941db546373826966720b0c24804bcdd
@@ -103,7 +97,7 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 3a63d75eecd6aa32c2fc79f578064e1214dfdec2
   maps_launcher: 2e5b6a2d664ec6c27f82ffa81b74228d770ab203
   share: 0b2c3e82132f5888bccca3351c504d0003b3b410
-  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
+  Toast: ec33c32b8688982cecc6348adeae667c1b9938da
   url_launcher_ios: bbd758c6e7f9fd7b5b1d4cde34d2b95fcce5e812
   webview_flutter_wkwebview: b7e70ef1ddded7e69c796c7390ee74180182971f
 
