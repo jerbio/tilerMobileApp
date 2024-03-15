@@ -240,7 +240,9 @@ class WithinNowBatchState extends TileBatchState {
             (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
           latestBuildTiles[eachTile.id!] = eachTile;
         }
-        if (eachTile.start! >= currentTimeinMs && upcomingTile != null) {
+        if (((eachTile as SubCalendarEvent?)?.isViable ?? true) &&
+            eachTile.start! >= currentTimeinMs &&
+            upcomingTile != null) {
           latestBuildTiles[upcomingTile!.id!] = upcomingTile!;
           upcomingTile = null;
         }
