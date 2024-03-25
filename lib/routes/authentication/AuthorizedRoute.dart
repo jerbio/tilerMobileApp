@@ -13,6 +13,7 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -381,94 +382,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget renderLocationRequest() {
-    const lottieAsset = 'assets/lottie/car-on-the-road.json';
-    const double buttonWidth = 200;
-    Widget retValue = Scaffold(
-      body: Center(
-        child: Container(
-          color: TileStyles.primaryColorLightHSL.toColor(),
-          alignment: Alignment.center,
-          width: MediaQuery.of(context).size.width * TileStyles.tileWidthRatio,
-          height:
-              MediaQuery.of(context).size.height * TileStyles.tileWidthRatio,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 400),
-                padding: EdgeInsets.all(30),
-                width: MediaQuery.of(context).size.width *
-                    TileStyles.tileWidthRatio,
-                child: Text(
-                    AppLocalizations.of(context)!.allowAccessDescription,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white)),
-              ),
-              Container(
-                child: Lottie.asset(lottieAsset, height: 150),
-              ),
-              Container(
-                margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
-                child: SizedBox(
-                  width: buttonWidth,
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        await accessManager
-                            .locationAccess(forceDeviceCheck: true)
-                            .then((value) {
-                          setState(() {
-                            locationAccess = value;
-                            isLocationRequestTriggered = true;
-                          });
-                        });
-                      },
-                      child: Text(AppLocalizations.of(context)!.allow,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w400,
-                          ))),
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
-                child: SizedBox(
-                  width: buttonWidth,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.grey),
-                      onPressed: () async {
-                        await accessManager
-                            .locationAccess(denyAccess: false)
-                            .then((value) {
-                          setState(() {
-                            locationAccess = value;
-                            isLocationRequestTriggered = true;
-                          });
-                        });
-                      },
-                      child: Text(AppLocalizations.of(context)!.deny,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w400,
-                          ))),
-                ),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+  void locationUpdate(Tuple3<Position, bool, bool> update) {
+    setState(() {
+      locationAccess = update;
+      isLocationRequestTriggered = true;
+    });
+  }
 
-    return retValue;
+  Widget renderLocationRequest(AccessManager accessManager) {
+    return LocationAccessWidget(accessManager, locationUpdate);
   }
 
   @override
@@ -481,7 +403,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         locationAccess != null &&
         !locationAccess!.item2 &&
         locationAccess!.item3) {
-      return renderLocationRequest();
+      return renderLocationRequest(accessManager);
     }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
