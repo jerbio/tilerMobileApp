@@ -317,4 +317,26 @@ class AuthorizationApi extends AppApi {
       print(e);
     }
   }
+
+  Future<bool> deleteTilerAccount() async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    return sendPostRequest('Account/DeleteAccount', {},
+            injectLocation: false, analyze: false)
+        .then((response) {
+      var jsonResult = jsonDecode(response.body);
+      error.message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        return true;
+      }
+      if (isTilerRequestError(jsonResult)) {
+        var errorJson = jsonResult['Error'];
+        error = TilerError.fromJson(errorJson);
+        throw FormatException(error.message!);
+      } else {
+        error.message = "Issues with reaching Tiler servers";
+      }
+      throw error;
+    });
+  }
 }

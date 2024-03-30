@@ -15,6 +15,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
+import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
@@ -30,6 +31,7 @@ class Setting extends StatefulWidget {
 
 class _SettingState extends State<Setting> {
   Authentication authentication = Authentication();
+  AuthorizationApi _authorizationApi = AuthorizationApi();
   SecureStorageManager secureStorageManager = SecureStorageManager();
   SettingsApi settingsApi = SettingsApi();
   RestrictionProfile? workRestrictionProfile;
@@ -232,25 +234,102 @@ class _SettingState extends State<Setting> {
     return retValue;
   }
 
+  logOutser() async {
+    await authentication.deauthenticateCredentials();
+    await secureStorageManager.deleteAllStorageData();
+    Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
+    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
+    this
+        .context
+        .read<SubCalendarTileBloc>()
+        .add(LogOutSubCalendarTileBlocEvent());
+    this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+    this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+  }
+
   Widget createLogOutButton() {
     Widget retValue = ElevatedButton(
-        onPressed: () async {
-          await authentication.deauthenticateCredentials();
-          await secureStorageManager.deleteAllStorageData();
-          Navigator.pushNamedAndRemoveUntil(
-              context, '/LoggedOut', (route) => false);
-          this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
-          this
-              .context
-              .read<SubCalendarTileBloc>()
-              .add(LogOutSubCalendarTileBlocEvent());
-          this
-              .context
-              .read<UiDateManagerBloc>()
-              .add(LogOutUiDateManagerEvent());
-          this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
-        },
+        onPressed: logOutser,
         child: Text(AppLocalizations.of(context)!.logout));
+    return retValue;
+  }
+
+  sendDeleteRequest() async {
+    _authorizationApi.deleteTilerAccount().then((result) {
+      if (result) {
+        logOutser();
+      }
+    });
+  }
+
+  Widget createDeleteAccountButton() {
+    Widget retValue = ElevatedButton(
+        onPressed: () {
+          showGeneralDialog(
+              barrierDismissible: true,
+              barrierLabel: '',
+              barrierColor: Colors.white70,
+              transitionDuration: Duration(milliseconds: 300),
+              pageBuilder: (ctx, anim1, anim2) => AlertDialog(
+                  contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
+                  insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
+                  titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+                  backgroundColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(color: Colors.white),
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(20),
+                    ),
+                  ),
+                  content: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.white, width: 2),
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.topRight,
+                        colors: [
+                          TileStyles.primaryColorHSL
+                              .toColor()
+                              .withOpacity(0.75),
+                          TileStyles.primaryColorHSL
+                              .withLightness(
+                                  TileStyles.primaryColorHSL.lightness + .2)
+                              .toColor()
+                              .withOpacity(0.75),
+                        ],
+                      ),
+                    ),
+                    child: SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!
+                                  .deleteYourTilerAccountQ,
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 15),
+                            ),
+                            ElevatedButton(
+                              onPressed: sendDeleteRequest,
+                              child: Text(
+                                AppLocalizations.of(context)!.yes,
+                              ),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: Text(AppLocalizations.of(context)!.no),
+                            )
+                          ],
+                        )),
+                  )),
+              context: this.context);
+        },
+        child: Text(AppLocalizations.of(context)!.deleteAccount));
     return retValue;
   }
 
@@ -280,6 +359,7 @@ class _SettingState extends State<Setting> {
       childElements.add(workConfigButton);
     }
     Widget logoutButton = createLogOutButton();
+    Widget deleteButton = createDeleteAccountButton();
     if (isTimeOfDayLoaded) {
       Widget endOfDayWidget =
           Container(alignment: Alignment.center, child: createEndOfDay());
@@ -292,6 +372,7 @@ class _SettingState extends State<Setting> {
     }
 
     childElements.add(logoutButton);
+    childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,

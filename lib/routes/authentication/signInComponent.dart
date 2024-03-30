@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -391,16 +392,18 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var googleSignInButton = SizedBox(
-      width: 200,
-      child: ElevatedButton.icon(
-          onPressed: signInToGoogle,
-          icon: FaIcon(
-            FontAwesomeIcons.google,
-            color: Colors.white,
-          ),
-          label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
-    );
+    var googleSignInButton = Platform.isIOS
+        ? SizedBox.shrink()
+        : SizedBox(
+            width: 200,
+            child: ElevatedButton.icon(
+                onPressed: signInToGoogle,
+                icon: FaIcon(
+                  FontAwesomeIcons.google,
+                  color: Colors.white,
+                ),
+                label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
+          );
 
     var backToSignInButton = ElevatedButton.icon(
       label: Text(AppLocalizations.of(context)!.signIn),
