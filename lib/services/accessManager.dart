@@ -6,14 +6,20 @@ import 'package:tuple/tuple.dart';
 class AccessManager {
   SecureStorageManager _secureStorageManager = SecureStorageManager();
 
+  bool isPermissionPending = false;
+
   ///Tuple3
   ///Item1 is the gps position retrieved from the system
   ///Item2 is a boolean and true if the location was verified from the actual gps device
   ///Item3 is a boolean and true if the call was a fresh attempt at reaching the gps device as opposed to a retry
-  Future<Tuple3<Position, bool, bool>> locationAccess(
+  ////The response will be null if the we have no storage reference with prior calls
+  Future<Tuple3<Position, bool, bool>?> locationAccess(
       {bool forceDeviceCheck = false,
       bool statusCheck = false,
       bool denyAccess = false}) async {
+    if (isPermissionPending) {
+      return null;
+    }
     const isAccessPermitedKey = 'accessAllowed';
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
@@ -47,8 +53,7 @@ class AccessManager {
 
     if (accessStatus == null) {
       if (!forceDeviceCheck) {
-        return Tuple3(retValue, false,
-            true); //item3 is true because we evaluate that since we haven't stored it we have no access
+        return null;
       }
       //If we need to force the hardware check on gps then we need to set the time check as earlier than now. This might be a hack.
       accessStatus = Tuple2(false,
@@ -72,6 +77,7 @@ class AccessManager {
       locationData[isAccessPermitedKey] = false;
       locationData[timeOfLastAccessKey] = referenceTimeForNextCheck;
       await _secureStorageManager.writeLocationAccess(locationData);
+      isPermissionPending = false;
       return Tuple3(retValue, isLocationVerified, false);
     }
 
@@ -82,8 +88,14 @@ class AccessManager {
                 referenceTimeForNextCheck)) {
       retValue = await Utility.determineDevicePosition().then((value) {
         isLocationVerified = true;
+        isPermissionPending = false;
         return value;
       }).catchError((onError) {
+        if (onError is PermissionRequestInProgressException) {
+          isPermissionPending = true;
+          return Utility.getDefaultPosition();
+        }
+        isPermissionPending = false;
         isLocationVerified = false;
         referenceTimeForNextCheck = timeOfNextCheck.millisecondsSinceEpoch;
         print('Tiler app: failed to pull device location.');
@@ -100,6 +112,9 @@ class AccessManager {
       locationData[isAccessPermitedKey] = isLocationVerified;
       locationData[timeOfLastAccessKey] =
           timeOfNextCheck.millisecondsSinceEpoch;
+    }
+    if (isPermissionPending) {
+      return null;
     }
 
     await _secureStorageManager.writeLocationAccess(locationData);

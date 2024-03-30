@@ -13,27 +13,16 @@ import '../../styles.dart';
 
 class LocationAccessWidget extends StatefulWidget {
   LocationAccessWidget(this.accessManager, this.onChange);
-  AccessManager? accessManager;
-  Function? onChange;
+  final AccessManager? accessManager;
+  final Function? onChange;
   @override
   LocationAccessWidgetState createState() => LocationAccessWidgetState();
 }
 
 class LocationAccessWidgetState extends State<LocationAccessWidget> {
   late AccessManager accessManager;
-  Tuple3<Position, bool, bool>? locationAccess = Tuple3(
-      Position(
-        longitude: Location.fromDefault().longitude!,
-        latitude: Location.fromDefault().latitude!,
-        timestamp: Utility.currentTime(),
-        heading: 0,
-        accuracy: 0,
-        altitude: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      ),
-      false,
-      true);
+  Tuple3<Position, bool, bool> locationAccess =
+      Tuple3(Utility.getDefaultPosition(), false, true);
   bool isLocationRequestTriggered = false;
   @override
   void initState() {
@@ -44,7 +33,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
   VoidCallback generateCallBack(
       {bool forceDeviceCheck = false,
       bool statusCheck = false,
-      bool denyAccess = false}) {
+      bool denyAccess = false,
+      bool doNotCallAgain = false}) {
     VoidCallback retValue = () async => {
           await accessManager
               .locationAccess(
@@ -53,10 +43,17 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   denyAccess: false)
               .then((value) {
             setState(() {
-              locationAccess = value;
-              isLocationRequestTriggered = true;
-              if (this.widget.onChange != null) {
-                this.widget.onChange!(value);
+              if (value != null) {
+                locationAccess = value;
+                isLocationRequestTriggered = true;
+                if (this.widget.onChange != null) {
+                  this.widget.onChange!(value);
+                }
+                return;
+              }
+              if (!doNotCallAgain) {
+                generateCallBack(
+                    forceDeviceCheck: true, doNotCallAgain: true)();
               }
             });
           })
@@ -105,7 +102,28 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     ];
 
     if (Platform.isIOS) {
-      acceptDenyButtons = [];
+      acceptDenyButtons = [
+        Container(
+          margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
+          child: SizedBox(
+            width: buttonWidth,
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                onPressed: () {
+                  if (this.widget.onChange != null) {
+                    this.widget.onChange!(locationAccess);
+                  }
+                },
+                child: Text(AppLocalizations.of(context)!.dismiss,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontFamily: TileStyles.rubikFontName,
+                      fontWeight: FontWeight.w400,
+                    ))),
+          ),
+        )
+      ];
       generateCallBack(denyAccess: false)();
     }
 
