@@ -310,5 +310,9 @@
     "prediction": "Prediction",
     "softDeadline": "Soft Deadline",
     "location":"Location",
-    "dashEmptyString":"--"
+    "dashEmptyString":"--",
+    "deleteAccount": "Delete Account",
+    "deleteYourTilerAccountQ": "Delete Account?",
+    "yes": "Yes",
+    "no": "No"
   }
