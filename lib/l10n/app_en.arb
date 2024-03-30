@@ -314,5 +314,6 @@
     "deleteAccount": "Delete Account",
     "deleteYourTilerAccountQ": "Delete Account?",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "dismiss": "Dismiss"
   }

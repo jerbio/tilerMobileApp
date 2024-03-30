@@ -98,8 +98,10 @@ abstract class AppApi {
     bool isLocationVerified = false;
     if (includeLocationParams) {
       var locationAccessResult = await accessManager.locationAccess();
-      isLocationVerified = locationAccessResult.item2;
-      position = locationAccessResult.item1;
+      if (locationAccessResult != null) {
+        isLocationVerified = locationAccessResult.item2;
+        position = locationAccessResult.item1;
+      }
     }
     if (!requestParams.containsKey('TimeZoneOffset')) {
       requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();

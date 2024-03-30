@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
@@ -38,7 +37,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
-  Tuple3<Position, bool, bool>? locationAccess = Tuple3(
+  Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
         longitude: Location.fromDefault().longitude!,
         latitude: Location.fromDefault().latitude!,
@@ -63,7 +62,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     localNotificationService.initialize(this.context);
     accessManager.locationAccess(statusCheck: true).then((value) {
       setState(() {
-        locationAccess = value;
+        if (value != null) {
+          locationAccess = value;
+          return;
+        }
       });
     });
   }
@@ -400,9 +402,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     print('isLocationRequestTriggered $isLocationRequestTriggered');
     print('locationAccess $locationAccess');
     if (!isLocationRequestTriggered &&
-        locationAccess != null &&
-        !locationAccess!.item2 &&
-        locationAccess!.item3) {
+        !locationAccess.item2 &&
+        locationAccess.item3) {
       return renderLocationRequest(accessManager);
     }
 
