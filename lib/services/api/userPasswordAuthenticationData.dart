@@ -6,6 +6,7 @@ import 'package:tiler_app/services/api/authorization.dart';
 import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
+
 class UserPasswordAuthenticationData extends AuthenticationData {
   bool isDefault = false;
   String? username;
