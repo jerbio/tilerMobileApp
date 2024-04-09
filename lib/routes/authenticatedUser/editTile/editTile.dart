@@ -466,7 +466,7 @@ class _EditTileState extends State<EditTile> {
   showPendingPreview() {
     setState(() {
       bottomWidget = PendingWidget(
-        imageAsset: 'assets/iconScout/loading-red.json',
+        imageAsset: TileStyles.evaluatingScheduleAsset,
       );
     });
   }
@@ -1078,7 +1078,9 @@ class _EditTileState extends State<EditTile> {
               ];
 
               if (isPendingSubEventProcessing) {
-                stackElements.add(PendingWidget());
+                stackElements.add(PendingWidget(
+                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                ));
               }
               return Stack(
                 children: stackElements,
