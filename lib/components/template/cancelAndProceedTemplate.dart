@@ -2,9 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'dart:math' as math;
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/styles.dart';
 
@@ -14,6 +12,7 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? loadingFinished;
   Function? isProceedAllowed;
   Widget? bottomWidget;
+  Widget? pendingWidget;
   bool hideButtons = false;
 
   Widget? child;
@@ -196,7 +195,25 @@ class CancelAndProceedTemplateWidgetState
     }
 
     if (showLoading) {
-      stackWidgets.add(PendingWidget());
+      Widget blurWidget = Container(
+          width: (MediaQuery.of(context).size.width),
+          height: (MediaQuery.of(context).size.height),
+          child: new Center(
+              child: new ClipRect(
+                  child: new BackdropFilter(
+            filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+            child: new Container(
+              width: (MediaQuery.of(context).size.width),
+              height: (MediaQuery.of(context).size.height),
+              decoration: new BoxDecoration(
+                  color: Colors.grey.shade200.withOpacity(0.5)),
+            ),
+          ))));
+      stackWidgets.add(blurWidget);
+      stackWidgets.add(this.widget.pendingWidget ??
+          PendingWidget(
+            imageAsset: TileStyles.evaluatingScheduleAsset,
+          ));
     }
 
     stackWidgets.add(Align(

@@ -33,7 +33,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   flutter_secure_storage: ^8.0.0
   http: ^0.13.1
-  intl: ^0.18.0
+  intl: ^0.18.1
   json_annotation: ^4.3.0
   tuple: ^2.0.0
   uuid: 3.0.4
@@ -132,7 +132,7 @@ flutter:
     - assets/rive/
     - assets/lottie/blackCars.json
     - assets/lottie/redCars.json
-    - assets/lottie/redCars.json
+    - assets/lottie/tiler-evaluating-card-swap.json
     - assets/lottie/abstract-waves-circles.json
     - assets/lottie/abstract-waves-lines.json
     - assets/lottie/abstract-waves-narrow-lines.json

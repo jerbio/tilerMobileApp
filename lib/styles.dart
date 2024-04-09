@@ -173,6 +173,8 @@ class TileStyles {
     );
   }
 
+  static const String evaluatingScheduleAsset =
+      'assets/lottie/tiler-evaluating-card-swap.json';
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
       SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
