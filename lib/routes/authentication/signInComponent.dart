@@ -36,10 +36,13 @@ class SignInComponentState extends State<SignInComponent>
   final confirmPasswordEditingController = TextEditingController();
   late AnimationController signinInAnimationController;
   bool isRegistrationScreen = false;
+  bool isForgetPasswordScreen = false;
   double credentialManagerHeight = 350;
-  double credentialButtonHeight = 150;
+  double credentialButtonHeight = 200;
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
+  bool isPendingResetPassword = false;
+
 
   @override
   void initState() {
@@ -183,6 +186,46 @@ class SignInComponentState extends State<SignInComponent>
     }
   }
 
+  void forgetPassword() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() {
+          isPendingResetPassword = true;
+        });
+        showMessage(AppLocalizations.of(context)!.forgetPassword);
+        var result = await AuthorizationApi.sendForgotPasswordRequest(emailEditingController.text);
+        if (result.error.code == "0") {
+          showMessage(result.error.message);
+          setAsSignInScreen();
+        } else {
+          showErrorMessage(result.error.message);
+        }
+      } catch (e) {
+        showErrorMessage("Error: $e");
+      }finally {
+        Future.delayed(Duration(seconds: 2), () {
+             setState(() {
+               isPendingResetPassword = false;
+             });
+           });
+      }
+    }
+  }
+
+
+  void setAsForgetPasswordScreen() {
+    userNameEditingController.clear();
+    passwordEditingController.clear();
+    emailEditingController.clear();
+    confirmPasswordEditingController.clear();
+    setState(() {
+      isForgetPasswordScreen = true;
+      isRegistrationScreen = false;
+      credentialManagerHeight = 300;
+      credentialButtonHeight = 100;
+    });
+  }
+
   void setAsRegistrationScreen() {
     userNameEditingController.clear();
     passwordEditingController.clear();
@@ -202,8 +245,9 @@ class SignInComponentState extends State<SignInComponent>
     confirmPasswordEditingController.clear();
     setState(() => {
           isRegistrationScreen = false,
+          isForgetPasswordScreen = false,
           credentialManagerHeight = 350,
-          credentialButtonHeight = 150
+          credentialButtonHeight = 200
         });
   }
 
@@ -300,6 +344,7 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
+
     var emailTextField = TextFormField(
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
@@ -320,6 +365,7 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
+
     var passwordTextField = TextFormField(
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -374,7 +420,19 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
-    List<Widget> textFields = [usernameTextField, passwordTextField];
+    var forgetPasswordTextButton = GestureDetector(
+      onTap: () => setAsForgetPasswordScreen(),
+      child: Container(
+        padding: EdgeInsets.only(left: 5),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          AppLocalizations.of(context)!.forgotPasswordBtn,
+          style: TextStyle(color: Color(0xFF880E4F), decoration: TextDecoration.underline),
+        ),
+      ),
+    );
+    List<Widget> textFields = [usernameTextField, passwordTextField,forgetPasswordTextButton];
+
     var signUpButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
@@ -383,6 +441,9 @@ class SignInComponentState extends State<SignInComponent>
         onPressed: setAsRegistrationScreen,
       ),
     );
+
+
+
     var signInButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
@@ -391,6 +452,7 @@ class SignInComponentState extends State<SignInComponent>
         onPressed: userNamePasswordSignIn,
       ),
     );
+
 
     var googleSignInButton = Platform.isIOS
         ? SizedBox.shrink()
@@ -405,20 +467,38 @@ class SignInComponentState extends State<SignInComponent>
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
           );
 
-    var backToSignInButton = ElevatedButton.icon(
+    var backToSignInButton = SizedBox(
+      width: isForgetPasswordScreen ? 200 : null,
+        child: ElevatedButton.icon(
       label: Text(AppLocalizations.of(context)!.signIn),
       icon: Icon(Icons.arrow_back),
       onPressed: setAsSignInScreen,
+        ),
     );
+
+    var forgetPasswordButton =
+        SizedBox(
+            width:  200 ,
+            child: ElevatedButton.icon(
+              icon: Icon(Icons.lock_reset),
+              label: Text(AppLocalizations.of(context)!.resetPassword),
+              onPressed: forgetPassword,
+            ),
+        );
 
     var registerUserButton = ElevatedButton.icon(
       label: Text(AppLocalizations.of(context)!.signUp),
       icon: Icon(Icons.person_add),
       onPressed: registerUser,
     );
+    List<Widget> buttons = [signInButton, signUpButton, googleSignInButton,];
 
-    List<Widget> buttons = [signInButton, signUpButton, googleSignInButton];
-
+    if(isForgetPasswordScreen){
+      textFields = [
+        emailTextField,
+      ];
+      buttons = [forgetPasswordButton,backToSignInButton];
+    }
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
         keyboardType: TextInputType.visiblePassword,
@@ -462,6 +542,13 @@ class SignInComponentState extends State<SignInComponent>
         Spacer(),
         createSignInPendingComponent(
             AppLocalizations.of(context)!.registeringUser),
+        Spacer(),
+      ];
+    }
+    if (this.isPendingResetPassword) {
+      buttons = [
+        Spacer(),
+        createSignInPendingComponent(AppLocalizations.of(context)!.reset),
         Spacer(),
       ];
     }

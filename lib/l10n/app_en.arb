@@ -315,5 +315,10 @@
     "deleteYourTilerAccountQ": "Delete Account?",
     "yes": "Yes",
     "no": "No",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "forgetPassword":"Forget Password",
+    "forgotPasswordBtn":"Forgot Password?",
+    "resetPassword":"Reset password",
+    "reset":"Reset"
+
   }
