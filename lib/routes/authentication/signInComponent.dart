@@ -188,11 +188,11 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
-    setState(() => {
-          isRegistrationScreen = true,
-          credentialManagerHeight = 450,
-          credentialButtonHeight = 320
-        });
+    setState(() {
+      isRegistrationScreen = true;
+      credentialManagerHeight = 450;
+      credentialButtonHeight = 320;
+    });
   }
 
   void setAsSignInScreen() {
@@ -200,11 +200,11 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
-    setState(() => {
-          isRegistrationScreen = false,
-          credentialManagerHeight = 350,
-          credentialButtonHeight = 150
-        });
+    setState(() {
+      isRegistrationScreen = false;
+      credentialManagerHeight = 350;
+      credentialButtonHeight = 150;
+    });
   }
 
   Widget createSignInPendingComponent(String message) {
@@ -392,7 +392,7 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var googleSignInButton = Platform.isIOS
+    var googleSignInButton = Platform.isIOS && false
         ? SizedBox.shrink()
         : SizedBox(
             width: 200,

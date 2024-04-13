@@ -6,7 +6,7 @@ List<String> scopes = Constants.googleApiScopes;
 
 class GoogleSignInApi {
   static final _googleSignIn = GoogleSignIn(
-      serverClientId: dotenv.env[Constants.googleClientIdKey],
+      serverClientId: dotenv.env[Constants.googleClientDefaultKey],
       scopes: scopes,
       forceCodeForRefreshToken: true);
 
@@ -16,8 +16,12 @@ class GoogleSignInApi {
 
   static GoogleSignInAccount? _googleUser;
   static Future<GoogleSignInAccount?> login() async {
-    _googleUser = await _googleSignIn.signIn();
-    return _googleUser;
+    try {
+      _googleUser = await _googleSignIn.signIn();
+      return _googleUser;
+    } catch (e) {
+      throw e;
+    }
   }
 
   static Future<GoogleSignInAccount?> logout() {

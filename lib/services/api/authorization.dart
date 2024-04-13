@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
@@ -70,114 +71,7 @@ class AuthorizationApi extends AppApi {
     }
   }
 
-  Future<ThirdPartyAuthenticationData?> iosSignIn() async {
-    final List<String> requestedScopes = Constants.googleApiScopes;
-    String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
-    String timeZone = await FlutterTimezone.getLocalTimezone();
-    String timeZoneOffset = Utility.getTimeZoneOffset().toString();
-    String nonParsedURI =
-        'https://${Constants.tilerDomain}/account/googleMobileSignIn';
-    String redirectUri = Uri.encodeComponent(nonParsedURI);
-    Map<String, dynamic> timeZoneData = {
-      'timeZone': timeZone,
-      'timeZoneOffset': timeZoneOffset
-    };
-
-    String encodedTimeZoneData = jsonEncode(timeZoneData);
-
-    Future<String> getAuthorizationUrl() async {
-      final authUrl = Uri.parse('https://accounts.google.com/o/oauth2/auth?'
-          'client_id=$clientId&'
-          'redirect_uri=$redirectUri&'
-          'response_type=code&'
-          'state=$encodedTimeZoneData&'
-          'scope=${requestedScopes.join(' ')}');
-
-      return authUrl.toString();
-    }
-
-    Future<ThirdPartyAuthenticationData?> handleCallbackAndExchangeToken(
-        Uri uri) async {
-      if (uri.queryParameters.containsKey('refreshToken') &&
-          uri.queryParameters['refreshToken'] != null) {
-        final queryParameter = uri.queryParameters;
-        String? accessToken = queryParameter['accessToken']!;
-        String? refreshToken = queryParameter['refreshToken']!;
-        String? providerId = queryParameter['providerId']!;
-        String? email = queryParameter['email']!;
-
-        ThirdPartyAuthenticationData retValue =
-            await ThirdPartyAuthenticationData.getThirdPartyuthentication(
-                accessToken, refreshToken, email, 'google', providerId);
-
-        if (!retValue.isDefault) {
-          Authentication localAuthentication = new Authentication();
-          await localAuthentication.saveCredentials(retValue);
-        }
-        // FlutterWebBrowser.close();
-        await closeInAppWebView();
-
-        return retValue;
-      }
-      return null;
-    }
-
-    MethodChannel _channel = MethodChannel(
-        'TILER_THIRD_PARTY_SIGNUP_CHANNEL'); // Replace with the name of your Flutter method channel
-
-// Listen for the authorization callback and handle it
-    _channel.setMethodCallHandler((call) async {
-      print("THE CHANNEL IS TALKING ");
-      print("call.method -> ${call.method} ");
-      if (call.method == 'handleAuthorizationCallback') {
-        final uri = Uri.parse(call.arguments as String);
-        print("uri parsed -> ${uri} ");
-        print("uri queryParameters -> ${uri.queryParameters} ");
-
-        AuthenticationData? authenticationData =
-            await handleCallbackAndExchangeToken(uri);
-      }
-    });
-    ThirdPartyAuthenticationData? retValue;
-    try {
-      String authorizationUrl = await getAuthorizationUrl();
-      var encodedAuthorizationUrl = Uri.parse(authorizationUrl);
-      if (await canLaunchUrl(encodedAuthorizationUrl)) {
-        await launchUrl(encodedAuthorizationUrl);
-      }
-    } catch (error) {
-      print(error);
-      // Handle sign-in error
-    }
-
-    Function retryLogin = () async {
-      Authentication localAuthentication = new Authentication();
-      var thirdParty = await localAuthentication.readCredentials();
-      if (thirdParty != null &&
-          thirdParty is ThirdPartyAuthenticationData &&
-          !thirdParty.isDefault) {
-        retValue = thirdParty;
-      }
-    };
-    int counter = Constants.retryLoginCount;
-    while (retValue == null && counter > 0) {
-      var futureUpdate = Future.delayed(Constants.retryLoginDuration, () async {
-        await retryLogin();
-        counter--;
-      });
-      await futureUpdate;
-    }
-    if (counter <= 0 && retValue == null) {
-      throw TilerError(message: "Google login timed out");
-    }
-
-    return retValue;
-  }
-
   Future<AuthenticationData?> signInToGoogle() async {
-    if (Platform.isIOS) {
-      return await iosSignIn();
-    }
     return await processAndroidGoogleLogin();
   }
 
@@ -228,7 +122,7 @@ class AuthorizationApi extends AppApi {
 
   Future<AuthenticationData?> processAndroidGoogleLogin() async {
     try {
-      String clientId = dotenv.env[Constants.googleClientIdKey]!;
+      String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
       String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
       final requestedScopes = Constants.googleApiScopes;
       Future<Map<String, dynamic>> getRefreshToken(
@@ -281,7 +175,7 @@ class AuthorizationApi extends AppApi {
       if (googleUser != null) {
         var googleAuthentication = await googleUser.authentication;
         var authHeaders = await googleUser.authHeaders;
-        print(authHeaders);
+        // print(authHeaders);
 
         String? refreshToken;
         String? accessToken = googleAuthentication.accessToken;
