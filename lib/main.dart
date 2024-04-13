@@ -33,6 +33,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('ExampleLogger');
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -42,6 +45,7 @@ class MyHttpOverrides extends HttpOverrides {
         ..badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
     }
+    Logger.root.level = Level.ALL; //
     return super.createHttpClient(context);
   }
 }

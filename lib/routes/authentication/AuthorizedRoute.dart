@@ -211,6 +211,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                                 currentState.lookupTimeline,
                             renderedSubEvents: currentState.subEvents,
                             renderedTimelines: currentState.timelines,
+                            scheduleStatus: currentState.scheduleStatus,
                             message:
                                 AppLocalizations.of(context)!.revisingSchedule,
                           ));

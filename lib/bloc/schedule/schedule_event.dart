@@ -26,26 +26,28 @@ class GetScheduleEvent extends ScheduleEvent {
   List<Object> get props => [];
 }
 
-class DelayedGetSchedule extends ScheduleEvent {
-  final List<SubCalendarEvent>? previousSubEvents;
-  final List<Timeline>? renderedTimelines;
-  final Timeline? scheduleTimeline;
-  final bool? isAlreadyLoaded;
-  Timeline? previousTimeline;
-  String? message;
-  Duration? delayDuration;
-  DelayedGetSchedule(
-      {this.previousSubEvents,
-      this.scheduleTimeline,
-      this.isAlreadyLoaded,
-      this.previousTimeline,
-      this.message,
-      this.delayDuration,
-      this.renderedTimelines});
+// class DelayedGetSchedule extends ScheduleEvent {
+//   final List<SubCalendarEvent> previousSubEvents;
+//   final List<Timeline> renderedTimelines;
+//   final Timeline scheduleTimeline;
+//   final bool isAlreadyLoaded;
+//   final Timeline previousTimeline;
+//   final String? message;
+//   final Duration delayDuration;
+//   final ScheduleStatus scheduleStatus;
+//   DelayedGetSchedule(
+//       {required this.previousSubEvents,
+//       required this.scheduleTimeline,
+//       required this.isAlreadyLoaded,
+//       required this.previousTimeline,
+//       this.message,
+//       required this.delayDuration,
+//       required this.renderedTimelines,
+//       required this.scheduleStatus});
 
-  @override
-  List<Object> get props => [];
-}
+//   @override
+//   List<Object> get props => [];
+// }
 
 class ReviseScheduleEvent extends ScheduleEvent {
   String? message;
@@ -64,17 +66,19 @@ class ShuffleScheduleEvent extends ScheduleEvent {
 }
 
 class EvaluateSchedule extends ScheduleEvent {
-  String? message;
+  final String? message;
   final List<SubCalendarEvent> renderedSubEvents;
   final List<Timeline> renderedTimelines;
   final Timeline renderedScheduleTimeline;
   final bool isAlreadyLoaded;
   final Future? callBack;
+  final ScheduleStatus scheduleStatus;
   EvaluateSchedule(
       {required this.renderedSubEvents,
       required this.renderedTimelines,
       required this.renderedScheduleTimeline,
       required this.isAlreadyLoaded,
+      required this.scheduleStatus,
       this.message,
       this.callBack});
 
@@ -85,24 +89,28 @@ class EvaluateSchedule extends ScheduleEvent {
 class ReloadLocalScheduleEvent extends ScheduleEvent {
   final List<SubCalendarEvent> subEvents;
   final List<Timeline> timelines;
+  final ScheduleStatus scheduleStatus;
   final Timeline lookupTimeline;
   ReloadLocalScheduleEvent(
       {required this.subEvents,
       required this.timelines,
-      required this.lookupTimeline});
+      required this.lookupTimeline,
+      required this.scheduleStatus});
 }
 
-class DelayedReloadLocalScheduleEvent extends ScheduleEvent {
-  final List<SubCalendarEvent> subEvents;
-  final List<Timeline> timelines;
-  final Timeline lookupTimeline;
-  final Duration duration;
-  DelayedReloadLocalScheduleEvent(
-      {required this.subEvents,
-      required this.timelines,
-      required this.lookupTimeline,
-      required this.duration});
-}
+// class DelayedReloadLocalScheduleEvent extends ScheduleEvent {
+//   final List<SubCalendarEvent> subEvents;
+//   final List<Timeline> timelines;
+//   final Timeline lookupTimeline;
+//   final Duration duration;
+//   final ScheduleStatus scheduleStatus;
+//   DelayedReloadLocalScheduleEvent(
+//       {required this.subEvents,
+//       required this.timelines,
+//       required this.lookupTimeline,
+//       required this.duration,
+//       required this.scheduleStatus});
+// }
 
 class LogOutScheduleEvent extends ScheduleEvent {
   LogOutScheduleEvent();
