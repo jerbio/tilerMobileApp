@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -19,17 +20,40 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<GetScheduleEvent>(_onGetSchedule);
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
-    on<DelayedGetSchedule>(_onDelayedGetSchedule);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
-    on<DelayedReloadLocalScheduleEvent>(_onDelayedReloadLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
   }
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
-      Timeline timeLine) async {
+  Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
+      getSubTiles(Timeline timeLine) async {
     Utility.isDebugSet = true;
-    return await scheduleApi.getSubEvents(timeLine);
+    Utility.log.d("Making fresh calls for subevents");
+    return scheduleApi.getSubEvents(timeLine);
+  }
+
+  Future<bool> shouldGetRefreshedListOfTiles(ScheduleStatus currentStatus) {
+    return scheduleApi.getScheduleStatus().then((value) {
+      bool isAnalyisTheSame = false;
+      bool isEvaluationTheSame = false;
+      if (value.analysisId == currentStatus.analysisId) {
+        isAnalyisTheSame = true;
+        if (currentStatus.analysisId == null ||
+            currentStatus.analysisId!.isEmpty) {
+          isAnalyisTheSame = false;
+        }
+      }
+      if (value.evaluationId == currentStatus.evaluationId) {
+        isEvaluationTheSame = true;
+        if (currentStatus.evaluationId == null ||
+            currentStatus.evaluationId!.isEmpty) {
+          isEvaluationTheSame = false;
+        }
+      }
+
+      bool retValue = !isAnalyisTheSame || !isEvaluationTheSame;
+      return retValue;
+    });
   }
 
   void _onLocalScheduleEvent(
@@ -37,26 +61,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     emit(ScheduleLoadedState(
         subEvents: event.subEvents,
         timelines: event.timelines,
+        scheduleStatus: event.scheduleStatus,
         lookupTimeline: event.lookupTimeline));
-  }
-
-  void _onDelayedReloadLocalScheduleEvent(DelayedReloadLocalScheduleEvent event,
-      Emitter<ScheduleState> emit) async {
-    var setTimeOutResult = Utility.setTimeOut(duration: event.duration);
-
-    emit(DelayedScheduleLoadedState(
-        subEvents: event.subEvents,
-        timelines: event.timelines,
-        lookupTimeline: event.lookupTimeline,
-        pendingDelayedScheduleRetrieval:
-            setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
-
-    await setTimeOutResult.item1.then((futureEvent) async {
-      emit(ScheduleLoadedState(
-          subEvents: event.subEvents,
-          timelines: event.timelines,
-          lookupTimeline: event.lookupTimeline));
-    });
   }
 
   void _onLoggedOutScheduleEvent(
@@ -75,15 +81,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     final state = this.state;
     print("Get Schedule State");
     print(state);
+    bool isAlreadyLoaded = false;
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
     List<SubCalendarEvent> subEvents = event.previousSubEvents ?? [];
     List<Timeline> timelines = [];
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
+
+    if (state is ScheduleInitialState) {
+      isAlreadyLoaded = false;
+      updateTimeline =
+          event.scheduleTimeline ?? Utility.initialScheduleTimeline;
+      subEvents = [];
+      timelines = [];
+    }
+
     if (state is ScheduleLoadedState) {
       Timeline timeline = state.lookupTimeline;
-      updateTimeline = event.scheduleTimeline ?? state.lookupTimeline;
+      updateTimeline = event.scheduleTimeline ?? timeline;
       timelines = state.timelines;
-
+      scheduleStatus = state.scheduleStatus;
+      isAlreadyLoaded = true;
       if (!timeline.isInterfering(updateTimeline)) {
         int startInMs = updateTimeline.start! < timeline.start!
             ? updateTimeline.start!
@@ -96,116 +114,59 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
             DateTime.fromMillisecondsSinceEpoch(endInMs.toInt(), isUtc: true));
       }
-      emit(ScheduleLoadingState(
-          subEvents: List.from(state.subEvents),
-          timelines: state.timelines,
-          previousLookupTimeline: timeline,
-          isAlreadyLoaded: event.isAlreadyLoaded ?? true,
-          loadingTime: Utility.currentTime(),
-          connectionState: ConnectionState.waiting));
+    }
+
+    var getSubEventCallBack = (Timeline updateTimeline,
+        List<SubCalendarEvent> subEvents,
+        List<Timeline> timelines,
+        ScheduleStatus scheduleStatus) async {
       await getSubTiles(updateTimeline).then((value) {
         emit(ScheduleLoadedState(
             subEvents: value.item2,
             timelines: value.item1,
+            scheduleStatus: value.item3,
             lookupTimeline: updateTimeline));
       }).catchError((onError) {
         emit(FailedScheduleLoadedState(
             evaluationTime: Utility.currentTime(),
-            subEvents: List.from(state.subEvents),
-            timelines: state.timelines,
+            subEvents: subEvents,
+            timelines: timelines,
+            scheduleStatus: scheduleStatus,
             lookupTimeline: updateTimeline));
       });
-      return;
-    }
-
-    if (state is ScheduleInitialState) {
-      emit(ScheduleLoadingState(
-          subEvents: [],
-          timelines: [],
-          isAlreadyLoaded: event.isAlreadyLoaded ?? false,
-          loadingTime: Utility.currentTime(),
-          connectionState: ConnectionState.waiting));
-
-      await getSubTiles(updateTimeline).then((value) {
-        emit(ScheduleLoadedState(
-            subEvents: value.item2,
-            timelines: value.item1,
-            lookupTimeline: updateTimeline));
-      }).catchError((onError) {
-        emit(FailedScheduleLoadedState(
-            evaluationTime: Utility.currentTime(),
-            subEvents: [],
-            timelines: [],
-            lookupTimeline: updateTimeline));
-      });
-      return;
-    }
+    };
 
     if (state is ScheduleEvaluationState) {
       timelines = state.timelines;
-      emit(ScheduleLoadingState(
-          subEvents: state.subEvents,
-          timelines: state.timelines,
-          previousLookupTimeline: state.lookupTimeline,
-          isAlreadyLoaded: true,
-          connectionState: ConnectionState.waiting,
-          loadingTime: Utility.currentTime()));
-
-      await getSubTiles(updateTimeline).then((value) async {
-        emit(ScheduleLoadedState(
-            subEvents: value.item2,
-            timelines: value.item1,
-            lookupTimeline: updateTimeline));
-      }).catchError((onError) {
-        emit(FailedScheduleLoadedState(
-            evaluationTime: Utility.currentTime(),
-            subEvents: state.subEvents,
-            timelines: state.timelines,
-            lookupTimeline: updateTimeline));
-      });
-      return;
-    }
-
-    bool isAlreadyLoaded = true;
-    bool allowGetSubTileCall = false || event.forceRefresh;
-
-    if (state is ScheduleLoadingState && !allowGetSubTileCall) {
-      //!allowGetSubTileCall is needed to ensure we don't unnecessarily ovewrite the initialization subEvents and timelines
-      subEvents = state.subEvents;
-      timelines = state.timelines;
-      isAlreadyLoaded = state.isAlreadyLoaded;
-
-      if (Utility.currentTime()
-              .difference((state).loadingTime)
-              .inMilliseconds >=
-          _retryScheduleLoadingDuration.inMilliseconds) {
-        allowGetSubTileCall = allowGetSubTileCall || true;
-      }
-    }
-
-    if (!allowGetSubTileCall) {
-      return;
+      scheduleStatus = state.scheduleStatus;
+      updateTimeline = state.lookupTimeline;
+      isAlreadyLoaded = true;
     }
 
     emit(ScheduleLoadingState(
         subEvents: subEvents,
         timelines: timelines,
+        previousLookupTimeline: updateTimeline,
         isAlreadyLoaded: isAlreadyLoaded,
+        scheduleStatus: scheduleStatus,
         loadingTime: Utility.currentTime(),
         connectionState: ConnectionState.waiting));
 
-    await getSubTiles(updateTimeline).then((value) {
-      emit(ScheduleLoadedState(
-          subEvents: value.item2,
-          timelines: value.item1,
-          lookupTimeline: updateTimeline));
-    }).catchError((onError) {
-      emit(FailedScheduleLoadedState(
-          evaluationTime: Utility.currentTime(),
-          subEvents: [],
-          timelines: [],
-          lookupTimeline: updateTimeline));
+    if (event.forceRefresh) {
+      await getSubEventCallBack(
+          updateTimeline, subEvents, timelines, scheduleStatus);
+      return;
+    }
+
+    await shouldGetRefreshedListOfTiles(scheduleStatus).then((value) async {
+      if (value) {
+        await getSubEventCallBack(
+            updateTimeline, subEvents, timelines, scheduleStatus);
+        return;
+      }
+      return;
     });
+
     return;
   }
 
@@ -216,12 +177,14 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     List<Timeline>? timelines;
     Timeline? lookupTimeline;
     String? message;
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (state is ScheduleLoadedState) {
       subEvents = state.subEvents;
       timelines = state.timelines;
       lookupTimeline = state.lookupTimeline;
       message = event.message;
+      scheduleStatus = state.scheduleStatus;
     }
 
     if (state is ScheduleEvaluationState) {
@@ -232,7 +195,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       }
       subEvents = state.subEvents;
       timelines = state.timelines;
+      scheduleStatus = state.scheduleStatus;
       lookupTimeline = state.lookupTimeline;
+      message = event.message;
+    }
+
+    if (state is ScheduleInitialState) {
+      subEvents = [];
+      timelines = [];
+      lookupTimeline = Utility.initialScheduleTimeline;
+      scheduleStatus = ScheduleStatus();
       message = event.message;
     }
 
@@ -242,6 +214,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: timelines,
           lookupTimeline: lookupTimeline,
           evaluationTime: Utility.currentTime(),
+          scheduleStatus: scheduleStatus,
           message: message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
@@ -263,6 +236,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         timelines: event.renderedTimelines,
         lookupTimeline: event.renderedScheduleTimeline,
         evaluationTime: Utility.currentTime(),
+        scheduleStatus: event.scheduleStatus,
         message: event.message));
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
@@ -278,26 +252,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
   }
 
-  void _onDelayedGetSchedule(
-      DelayedGetSchedule event, Emitter<ScheduleState> emit) async {
-    var setTimeOutResult = Utility.setTimeOut(duration: event.delayDuration!);
+  // void _onDelayedGetSchedule(
+  //     DelayedGetSchedule event, Emitter<ScheduleState> emit) async {
+  //   var setTimeOutResult = Utility.setTimeOut(duration: event.delayDuration!);
 
-    emit(DelayedScheduleLoadedState(
-        subEvents: event.previousSubEvents,
-        timelines: event.renderedTimelines,
-        lookupTimeline: event.scheduleTimeline,
-        pendingDelayedScheduleRetrieval:
-            setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
+  //   emit(DelayedScheduleLoadedState(
+  //       subEvents: event.previousSubEvents,
+  //       timelines: event.renderedTimelines,
+  //       lookupTimeline: event.scheduleTimeline,
+  //       scheduleStatus: event.scheduleStatus,
+  //       pendingDelayedScheduleRetrieval:
+  //           setTimeOutResult.item1.asStream().listen((futureEvent) async {})));
 
-    await setTimeOutResult.item1.then((futureEvent) async {
-      await this._onGetSchedule(
-          GetScheduleEvent(
-            isAlreadyLoaded: true,
-            previousSubEvents: event.previousSubEvents,
-            previousTimeline: event.previousTimeline,
-            scheduleTimeline: event.scheduleTimeline,
-          ),
-          emit);
-    });
-  }
+  //   await setTimeOutResult.item1.then((futureEvent) async {
+  //     await this._onGetSchedule(
+  //         GetScheduleEvent(
+  //           isAlreadyLoaded: true,
+  //           previousSubEvents: event.previousSubEvents,
+  //           previousTimeline: event.previousTimeline,
+  //           scheduleTimeline: event.scheduleTimeline,
+  //         ),
+  //         emit);
+  //   });
+  // }
 }

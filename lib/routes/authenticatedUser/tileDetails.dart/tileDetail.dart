@@ -123,6 +123,7 @@ class _TileDetailState extends State<TileDetail> {
           isAlreadyLoaded: true,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
+          scheduleStatus: currentState.scheduleStatus,
           renderedTimelines: currentState.timelines));
     }
     bool isLocationCleared = false;

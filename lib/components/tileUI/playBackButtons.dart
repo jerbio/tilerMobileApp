@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -61,11 +62,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
     var request =
         _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
@@ -77,6 +94,7 @@ class PlayBackState extends State<PlayBack> {
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: request));
   }
@@ -94,11 +112,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var request =
@@ -113,6 +147,7 @@ class PlayBackState extends State<PlayBack> {
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: scheduleStatus,
         callBack: request));
   }
 
@@ -130,11 +165,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var requestFuture = _subCalendarEventApi.setAsNow((subTile));
@@ -148,6 +199,7 @@ class PlayBackState extends State<PlayBack> {
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: scheduleStatus,
         callBack: requestFuture));
   }
 
@@ -165,11 +217,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var requestFuture = _subCalendarEventApi.complete((subTile));
@@ -181,6 +249,7 @@ class PlayBackState extends State<PlayBack> {
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: requestFuture));
   }
@@ -199,11 +268,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var requestFuture =
@@ -217,6 +302,7 @@ class PlayBackState extends State<PlayBack> {
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: ScheduleStatus(),
         callBack: requestFuture));
   }
 
@@ -244,11 +330,27 @@ class PlayBackState extends State<PlayBack> {
           List<SubCalendarEvent> renderedSubEvents = [];
           List<Timeline> timeLines = [];
           Timeline lookupTimeline = Utility.todayTimeline();
+          ScheduleStatus scheduleStatus = ScheduleStatus();
 
           if (scheduleState is ScheduleLoadedState) {
             renderedSubEvents = scheduleState.subEvents;
             timeLines = scheduleState.timelines;
             lookupTimeline = scheduleState.lookupTimeline;
+            scheduleStatus = scheduleState.scheduleStatus;
+          }
+
+          if (scheduleState is ScheduleEvaluationState) {
+            renderedSubEvents = scheduleState.subEvents;
+            timeLines = scheduleState.timelines;
+            lookupTimeline = scheduleState.lookupTimeline;
+            scheduleStatus = scheduleState.scheduleStatus;
+          }
+
+          if (scheduleState is ScheduleLoadingState) {
+            renderedSubEvents = scheduleState.subEvents;
+            timeLines = scheduleState.timelines;
+            lookupTimeline = scheduleState.previousLookupTimeline;
+            scheduleStatus = scheduleState.scheduleStatus;
           }
 
           var requestFuture = _subCalendarEventApi.procrastinate(
@@ -262,6 +364,7 @@ class PlayBackState extends State<PlayBack> {
               renderedTimelines: timeLines,
               renderedScheduleTimeline: lookupTimeline,
               isAlreadyLoaded: true,
+              scheduleStatus: ScheduleStatus(),
               callBack: requestFuture));
         }
       }

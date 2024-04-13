@@ -16,9 +16,10 @@ class ScheduleLoadingState extends ScheduleState {
   DateTime loadingTime;
   List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
-  Timeline? previousLookupTimeline;
+  final Timeline previousLookupTimeline;
   bool isAlreadyLoaded = true;
   String? message;
+  ScheduleStatus scheduleStatus;
   ConnectionState connectionState = ConnectionState.none;
 
   ScheduleLoadingState(
@@ -27,7 +28,8 @@ class ScheduleLoadingState extends ScheduleState {
       required this.isAlreadyLoaded,
       required this.connectionState,
       required this.loadingTime,
-      this.previousLookupTimeline,
+      required this.scheduleStatus,
+      required this.previousLookupTimeline,
       this.message});
 
   @override
@@ -38,11 +40,13 @@ class ScheduleLoadedState extends ScheduleState {
   final List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
   Timeline lookupTimeline;
+  ScheduleStatus scheduleStatus;
 
   ScheduleLoadedState(
       {this.subEvents = const <SubCalendarEvent>[],
       required this.timelines,
-      required this.lookupTimeline});
+      required this.lookupTimeline,
+      required this.scheduleStatus});
 
   @override
   List<Object> get props => [subEvents];
@@ -50,28 +54,32 @@ class ScheduleLoadedState extends ScheduleState {
 
 class DelayedScheduleLoadedState extends ScheduleLoadedState {
   StreamSubscription pendingDelayedScheduleRetrieval;
-  DelayedScheduleLoadedState({
-    subEvents = const <SubCalendarEvent>[],
-    required timelines,
-    required lookupTimeline,
-    required this.pendingDelayedScheduleRetrieval,
-  }) : super(
+  DelayedScheduleLoadedState(
+      {subEvents = const <SubCalendarEvent>[],
+      required timelines,
+      required lookupTimeline,
+      required this.pendingDelayedScheduleRetrieval,
+      required scheduleStatus})
+      : super(
             subEvents: subEvents,
             timelines: timelines,
-            lookupTimeline: lookupTimeline);
+            lookupTimeline: lookupTimeline,
+            scheduleStatus: scheduleStatus);
 }
 
 class FailedScheduleLoadedState extends ScheduleLoadedState {
   DateTime evaluationTime;
-  FailedScheduleLoadedState({
-    subEvents = const <SubCalendarEvent>[],
-    required timelines,
-    required lookupTimeline,
-    required this.evaluationTime,
-  }) : super(
+  FailedScheduleLoadedState(
+      {subEvents = const <SubCalendarEvent>[],
+      required timelines,
+      required lookupTimeline,
+      required this.evaluationTime,
+      required scheduleStatus})
+      : super(
             subEvents: subEvents,
             timelines: timelines,
-            lookupTimeline: lookupTimeline);
+            lookupTimeline: lookupTimeline,
+            scheduleStatus: scheduleStatus);
 }
 
 class ScheduleEvaluationState extends ScheduleState {
@@ -80,13 +88,15 @@ class ScheduleEvaluationState extends ScheduleState {
   final List<SubCalendarEvent> subEvents;
   List<Timeline> timelines;
   Timeline lookupTimeline;
+  ScheduleStatus scheduleStatus;
 
   ScheduleEvaluationState(
       {required this.subEvents,
       required this.timelines,
       required this.lookupTimeline,
       required this.evaluationTime,
-      this.message});
+      this.message,
+      required this.scheduleStatus});
 
   @override
   List<Object> get props => [subEvents];

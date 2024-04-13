@@ -523,6 +523,7 @@ class _EditTileState extends State<EditTile> {
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           isAlreadyLoaded: true,
+          scheduleStatus: currentState.scheduleStatus,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));

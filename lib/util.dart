@@ -18,6 +18,7 @@ import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:logger/logger.dart';
 
 class Utility {
   final List<String> months = [
@@ -38,6 +39,7 @@ class Utility {
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
   static final Random randomizer = Random.secure();
+  static final log = Logger();
 
   static bool isDebugSet = false;
   static bool isWithinNowSet = false;

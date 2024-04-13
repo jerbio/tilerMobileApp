@@ -1076,6 +1076,7 @@ class AddTileState extends State<AddTile> {
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           isAlreadyLoaded: true,
+          scheduleStatus: currentState.scheduleStatus,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
@@ -1093,7 +1094,7 @@ class AddTileState extends State<AddTile> {
       this
           .context
           .read<SubCalendarTileBloc>()
-          .emit(NewSubCalendarTilesLoadedState(subEvent: newlyAddedTile.item1));
+          .add(NewSubCalendarTileBlocEvent(subEvent: newlyAddedTile.item1));
 
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
