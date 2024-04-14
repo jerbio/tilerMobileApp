@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/styles.dart';
-
-enum Priority { low, medium, high }
 
 class SingleChoice extends StatefulWidget {
   final Function? onChanged;
-  final Priority priority;
+  final TilePriority priority;
   const SingleChoice({super.key, this.onChanged, required this.priority});
 
   @override
@@ -14,7 +13,7 @@ class SingleChoice extends StatefulWidget {
 }
 
 class _SingleChoiceState extends State<SingleChoice> {
-  late Priority _priorityView;
+  late TilePriority _priorityView;
   @override
   void initState() {
     super.initState();
@@ -23,24 +22,24 @@ class _SingleChoiceState extends State<SingleChoice> {
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<Priority>(
+    return SegmentedButton<TilePriority>(
       style: TileStyles.toggledButtonStyle,
-      segments: <ButtonSegment<Priority>>[
-        ButtonSegment<Priority>(
-            value: Priority.low,
+      segments: <ButtonSegment<TilePriority>>[
+        ButtonSegment<TilePriority>(
+            value: TilePriority.low,
             label: Text(AppLocalizations.of(context)!.lowPriorityTrunc),
             icon: Icon(Icons.circle)),
-        ButtonSegment<Priority>(
-            value: Priority.medium,
+        ButtonSegment<TilePriority>(
+            value: TilePriority.medium,
             label: Text(AppLocalizations.of(context)!.mediumPriorityTrunc),
             icon: Icon(Icons.calendar_view_week)),
-        ButtonSegment<Priority>(
-            value: Priority.high,
+        ButtonSegment<TilePriority>(
+            value: TilePriority.high,
             label: Text(AppLocalizations.of(context)!.highPriorityTrunc),
             icon: Icon(Icons.calendar_view_month)),
       ],
-      selected: <Priority>{_priorityView},
-      onSelectionChanged: (Set<Priority> newSelection) {
+      selected: <TilePriority>{_priorityView},
+      onSelectionChanged: (Set<TilePriority> newSelection) {
         setState(() {
           // By default there is only a single segment that can be
           // selected at one time, so its value is always the first
