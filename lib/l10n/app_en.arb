@@ -326,5 +326,8 @@
           "type": "String",
           "example": "5:14 PM"
         }
-      }}
+      }},
+    "lowPriorityTrunc": "Low",
+    "mediumPriorityTrunc": "Mid",
+    "highPriorityTrunc": "High"
   }

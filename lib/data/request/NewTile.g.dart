@@ -51,6 +51,7 @@ NewTile _$NewTileFromJson(Map<String, dynamic> json) => NewTile()
   ..isEveryDay = json['isEveryDay'] as String?
   ..RestrictionProfileId = json['RestrictionProfileId'] as String?
   ..AutoReviseDeadline = json['AutoReviseDeadline'] as String?
+  ..Priority = json['Priority'] as String?
   ..RestrictiveWeek = json['RestrictiveWeek'] == null
       ? null
       : RestrictionWeekConfig.fromJson(
@@ -101,5 +102,6 @@ Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'isEveryDay': instance.isEveryDay,
       'RestrictionProfileId': instance.RestrictionProfileId,
       'AutoReviseDeadline': instance.AutoReviseDeadline,
+      'Priority': instance.Priority,
       'RestrictiveWeek': instance.RestrictiveWeek?.toJson(),
     };

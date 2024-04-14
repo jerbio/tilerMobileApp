@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -449,10 +450,29 @@ class _EditTileState extends State<EditTile> {
             },
           );
         },
-        child: Text(AppLocalizations.of(context)!.prediction,
-            style: TextStyle(
-              fontSize: 20,
-            )),
+        style: ButtonStyle(
+            padding: MaterialStateProperty.resolveWith(
+                (states) => EdgeInsets.all(0))),
+        child: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Text(AppLocalizations.of(context)!.prediction,
+                  style: TextStyle(
+                    fontSize: 20,
+                  )),
+            ),
+            Shimmer.fromColors(
+                baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+                highlightColor: Colors.white.withAlpha(100),
+                child: Container(
+                  width: 400,
+                  decoration: BoxDecoration(
+                      color: Color.fromRGBO(31, 31, 31, 0.8),
+                      borderRadius: BorderRadius.circular(30)),
+                )),
+          ],
+        ),
       );
     });
   }
