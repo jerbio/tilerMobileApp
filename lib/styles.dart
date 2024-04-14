@@ -65,6 +65,38 @@ class TileStyles {
     }),
   );
 
+  static ButtonStyle toggledButtonStyle = ButtonStyle(
+    side: MaterialStateProperty.all(
+        BorderSide(color: primaryColorDarkHSL.toColor())),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      if (states.any((element) => element == MaterialState.selected)) {
+        return primaryColorDarkHSL.toColor();
+      }
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      if (states.any((element) => element == MaterialState.selected)) {
+        return appBarTextColor;
+      }
+      return primaryColorDarkHSL.toColor();
+    }),
+    overlayColor: MaterialStateProperty.resolveWith((states) {
+      return primaryColorLightHSL.toColor();
+    }),
+    iconColor: MaterialStateProperty.resolveWith((states) {
+      if (states.any((element) => element == MaterialState.selected)) {
+        return appBarTextColor;
+      }
+      return primaryColorDarkHSL.toColor();
+    }),
+  );
+
   static ButtonStyle strippedButtonStyle = ButtonStyle(
     overlayColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
