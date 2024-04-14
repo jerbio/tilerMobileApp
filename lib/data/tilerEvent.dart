@@ -6,6 +6,8 @@ import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import '../util.dart';
 
+enum TilePriority { low, medium, high }
+
 class TilerEvent extends TilerObj with TimeRange {
   String? name;
   String? address;
@@ -22,6 +24,7 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isRigid = false;
   bool _isComplete = false;
   bool _isEnabled = true;
+  TilePriority _tilePriority = TilePriority.medium;
 
   bool? get isReadOnly {
     return _isReadOnly;
@@ -132,6 +135,21 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('locationId')) {
       locationId = json['locationId'];
     }
+    if (json.containsKey('priority')) {
+      TilePriority priority = TilePriority.medium;
+      switch (json['priority']) {
+        case "low":
+          priority = TilePriority.low;
+          break;
+        case "medium":
+          priority = TilePriority.medium;
+          break;
+        case "high":
+          priority = TilePriority.high;
+          break;
+      }
+      this._tilePriority = priority;
+    }
   }
 
   Color? get color {
@@ -142,6 +160,10 @@ class TilerEvent extends TilerObj with TimeRange {
           this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
     }
     return null;
+  }
+
+  TilePriority get priority {
+    return _tilePriority;
   }
 
   toString() {

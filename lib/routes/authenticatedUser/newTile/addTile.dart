@@ -16,6 +16,7 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/singleChoice.dart';
@@ -105,7 +106,7 @@ class AddTileState extends State<AddTile> {
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
-  Priority priority = Priority.medium;
+  TilePriority priority = TilePriority.medium;
 
   @override
   void initState() {
@@ -883,7 +884,7 @@ class AddTileState extends State<AddTile> {
     );
 
     Widget priorityButton = SingleChoice(
-      onChanged: (Priority updatedPriotrity) {
+      onChanged: (TilePriority updatedPriotrity) {
         setState(() {
           priority = updatedPriotrity;
         });
@@ -1029,7 +1030,7 @@ class AddTileState extends State<AddTile> {
     tile.isRestricted = false.toString();
     tile.isWorkWeek = false.toString();
     tile.AutoReviseDeadline = isAutoRevisable.toString();
-    tile.Priority = priority.toString();
+    tile.Priority = priority.name.toString().toLowerCase();
 
     var randomColor = _color ??
         HSLColor.fromAHSL(
