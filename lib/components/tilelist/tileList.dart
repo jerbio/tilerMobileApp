@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -46,8 +44,7 @@ class _TileListState extends State<TileList> {
   DateTime lastUpdate = Utility.currentTime();
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
-      Utility.currentTime().dayDate.add(Duration(days: -7)),
-      Duration(days: 14));
+      Utility.currentTime().dayDate.add(Duration(days: -4)), Duration(days: 7));
   Timeline? oldTimeline;
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;

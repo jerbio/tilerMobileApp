@@ -9,6 +9,7 @@ import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../constants.dart' as Constants;
 
 class LocationSearchWidget extends SearchWidget {
   Location? selectedLocation;
@@ -226,13 +227,20 @@ class LocationSearchState extends SearchWidgetState {
   Future<List<Widget>> _onInputFieldChange(
       String name, Function collapseResultContainer) async {
     if (isRequestEnabled) {
-      List<Widget> retValue = this.locationSearchResult;
+      List<Widget> retValue = [
+        Container(
+          padding: EdgeInsets.all(10),
+          child: Text(
+              AppLocalizations.of(this.context)!.atLeastThreeLettersForLookup),
+          alignment: Alignment.center,
+        )
+      ];
 
       if (onChange != null) {
         onChange!(name);
       }
 
-      if (name.length > 3) {
+      if (name.length > Constants.autoCompleteMinCharLength) {
         List<Location> locations =
             await locationNameApi.getLocationsByName(name);
         retValue = locations
@@ -242,7 +250,8 @@ class LocationSearchState extends SearchWidgetState {
         if (retValue.length == 0) {
           retValue = [
             Container(
-              child: Text('No matching location was found'),
+              child: Text(
+                  AppLocalizations.of(this.context)!.noLocationMatchWasFound),
             )
           ];
         }
@@ -260,7 +269,7 @@ class LocationSearchState extends SearchWidgetState {
   @override
   Widget build(BuildContext context) {
     Color hslLightColor =
-        TileStyles.primaryColorLightHSL.toColor().withLightness(0.9);
+        TileStyles.primaryColorLightHSL.toColor(); //.withLightness(0.9);
     var hslDarkColor =
         TileStyles.primaryColorDarkHSL.toColor().withLightness(0.9);
     String hintText = AppLocalizations.of(context)!.address;
@@ -274,17 +283,22 @@ class LocationSearchState extends SearchWidgetState {
       );
     }
     this.widget.resultBoxDecoration = BoxDecoration(
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+            bottomLeft: Radius.circular(10),
+            bottomRight: Radius.circular(10)),
         gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-          hslLightColor,
-          hslLightColor,
-          hslLightColor,
-          hslDarkColor,
-          hslDarkColor,
-        ]));
-    this.widget.resultMargin = EdgeInsets.fromLTRB(0, 60, 0, 20);
+              hslLightColor,
+              hslLightColor,
+              hslLightColor,
+              hslDarkColor,
+              hslDarkColor,
+            ]));
+    this.widget.resultMargin = EdgeInsets.fromLTRB(0, 75, 0, 20);
     return super.build(context);
   }
 
