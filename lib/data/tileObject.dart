@@ -3,6 +3,8 @@ import 'package:tiler_app/util.dart';
 class TilerObj {
   String? id = Utility.getUuid;
   String? userId;
+  String? analysisId;
+  String? evaluationId;
   static T? cast<T>(x) => x is T ? x : null;
 
   TilerObj({this.id, this.userId});
@@ -15,6 +17,14 @@ class TilerObj {
 
     if (json.containsKey('userId')) {
       userId = json['userId'];
+    }
+
+    if (json.containsKey('analysisId')) {
+      analysisId = json['analysisId'];
+    }
+
+    if (json.containsKey('evaluationId')) {
+      evaluationId = json['evaluationId'];
     }
   }
 }

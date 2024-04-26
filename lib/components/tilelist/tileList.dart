@@ -778,6 +778,12 @@ class _TileListState extends State<TileList> {
           Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
     }
 
+    if (scheduleSubEventState is ScheduleLoadingState) {
+      subEvents = scheduleSubEventState.subEvents;
+      previousTimeline =
+          Timeline.fromTimeRange(scheduleSubEventState.previousLookupTimeline);
+    }
+
     if (startDateTime.millisecondsSinceEpoch >
             dateManageCurrentDate.millisecondsSinceEpoch ||
         endDateTime.millisecondsSinceEpoch <

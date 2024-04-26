@@ -27,8 +27,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
       getSubTiles(Timeline timeLine) async {
-    Utility.isDebugSet = true;
-    Utility.log.d("Making fresh calls for subevents");
     return scheduleApi.getSubEvents(timeLine);
   }
 
@@ -121,8 +119,38 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         List<Timeline> timelines,
         ScheduleStatus scheduleStatus) async {
       await getSubTiles(updateTimeline).then((value) {
+        Map<String, SubCalendarEvent> subEventMap = {};
+        bool isNewEvaluation = true;
+        for (SubCalendarEvent eachSubEvent in subEvents) {
+          if (eachSubEvent.id != null && eachSubEvent.id!.isNotEmpty) {
+            subEventMap[eachSubEvent.id!] = eachSubEvent;
+          }
+        }
+
+        if (subEvents.isNotEmpty) {
+          if (value.item3.analysisId != null) {
+            if (subEvents.first.analysisId == value.item3.analysisId) {
+              isNewEvaluation = false;
+            }
+          }
+          if (value.item3.evaluationId != null) {
+            if (subEvents.first.evaluationId == value.item3.evaluationId) {
+              isNewEvaluation = false;
+            }
+          }
+        }
+        List<SubCalendarEvent> updatedSubEvents = value.item2;
+        if (!isNewEvaluation) {
+          print("------old evaluation-----");
+          updatedSubEvents.forEach((eachSubEvent) {
+            if (eachSubEvent.id != null) {
+              subEventMap[eachSubEvent.id!] = eachSubEvent;
+            }
+          });
+          updatedSubEvents = subEventMap.values.toList();
+        }
         emit(ScheduleLoadedState(
-            subEvents: value.item2,
+            subEvents: updatedSubEvents,
             timelines: value.item1,
             scheduleStatus: value.item3,
             lookupTimeline: updateTimeline));
@@ -153,11 +181,13 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         connectionState: ConnectionState.waiting));
 
     if (event.forceRefresh) {
+      print("Force refresh on get tiles");
       await getSubEventCallBack(
           updateTimeline, subEvents, timelines, scheduleStatus);
       return;
     }
 
+    print("no force refresh on get tiles");
     await shouldGetRefreshedListOfTiles(scheduleStatus).then((value) async {
       if (value) {
         await getSubEventCallBack(
