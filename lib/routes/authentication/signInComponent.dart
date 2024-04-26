@@ -196,7 +196,11 @@ class SignInComponentState extends State<SignInComponent>
         var result = await AuthorizationApi.sendForgotPasswordRequest(emailEditingController.text);
         if (result.error.code == "0") {
           showMessage(result.error.message);
-          setAsSignInScreen();
+          Future.delayed(Duration(seconds: 2), () {
+            setState(() {
+              setAsSignInScreen();
+            });
+          });
         } else {
           showErrorMessage(result.error.message);
         }
