@@ -5,6 +5,8 @@ import 'package:tiler_app/styles.dart';
 class PendingWidget extends StatelessWidget {
   Decoration decoration = TileStyles.defaultBackground;
   String? imageAsset;
+  double? height;
+  double? width;
   PendingWidget({backgroundDecoration, this.imageAsset}) {
     if (backgroundDecoration != null && backgroundDecoration is Decoration) {
       decoration = backgroundDecoration;
@@ -20,7 +22,8 @@ class PendingWidget extends StatelessWidget {
     );
 
     if (this.imageAsset != null && this.imageAsset!.contains('.json')) {
-      imageAsset = Lottie.asset(this.imageAsset!, height: 85);
+      imageAsset =
+          Lottie.asset(this.imageAsset!, height: height ?? 200, width: width);
     }
 
     return Container(

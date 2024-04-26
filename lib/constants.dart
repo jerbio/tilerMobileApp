@@ -40,3 +40,4 @@ final String homeLocationNickName = "home";
 final String workProfileNickName = "work";
 final String homeProfileNickName = "personal";
 final List<String> invalidLocationNames = ["anywhere"];
+final int autoCompleteMinCharLength = 3;
