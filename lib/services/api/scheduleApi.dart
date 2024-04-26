@@ -83,6 +83,18 @@ class ScheduleApi extends AppApi {
             if (contentData.containsKey('evaluationId')) {
               scheduleStatus.evaluationId = contentData["evaluationId"];
             }
+
+            subEvents.forEach((eachSubEvent) {
+              if (scheduleStatus.evaluationId != null &&
+                  scheduleStatus.evaluationId!.isNotEmpty) {
+                eachSubEvent.evaluationId = scheduleStatus.evaluationId;
+              }
+              if (scheduleStatus.analysisId != null &&
+                  scheduleStatus.analysisId!.isNotEmpty) {
+                eachSubEvent.analysisId = scheduleStatus.analysisId;
+              }
+            });
+
             Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>
                 retValue =
                 new Tuple3(sleepTimelines, subEvents, scheduleStatus);
