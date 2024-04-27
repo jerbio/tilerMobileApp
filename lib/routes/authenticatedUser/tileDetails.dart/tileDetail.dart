@@ -384,7 +384,9 @@ class _TileDetailState extends State<TileDetail> {
                     editTilerEvent!.splitCount = calEvent!.split;
                     editTilerEvent!.name = calEvent!.name ?? '';
                     editTilerEvent!.thirdPartyId = calEvent!.thirdpartyId;
-                    editTilerEvent!.thirdPartyType = calEvent!.thirdpartyType;
+                    editTilerEvent!.thirdPartyType =
+                        calEvent!.thirdpartyType?.name.toLowerCase() ?? "";
+                    ;
                     editTilerEvent!.thirdPartyUserId =
                         calEvent!.thirdPartyUserId;
                     editTilerEvent!.id = calEvent!.id;

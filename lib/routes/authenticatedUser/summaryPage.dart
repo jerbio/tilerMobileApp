@@ -195,8 +195,14 @@ class _SummaryPage extends State<SummaryPage> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    EditTile(tileId: subCalendarEventTile.id!)));
+                builder: (context) => EditTile(
+                      tileId: (subCalendarEventTile.isFromTiler
+                              ? subCalendarEventTile.id
+                              : subCalendarEventTile.thirdpartyId) ??
+                          "",
+                      tileSource: subCalendarEventTile.thirdpartyType,
+                      thirdPartyUserId: subCalendarEventTile.thirdPartyUserId,
+                    )));
       },
       child: Container(
         decoration: BoxDecoration(

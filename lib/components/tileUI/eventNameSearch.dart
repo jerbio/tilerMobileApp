@@ -217,7 +217,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget createDeletionButton(TilerEvent tile) {
     Function deletionCallBack =
-        createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
+        createDeletionCallBack(tile.id!, tile.thirdpartyId ?? "")!;
     return GestureDetector(
       onTap: () => {deletionCallBack()},
       child: Container(

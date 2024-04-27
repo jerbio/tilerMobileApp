@@ -577,7 +577,7 @@ class SignInComponentState extends State<SignInComponent>
               ],
             ),
             padding: EdgeInsets.symmetric(
-                vertical: isRegistrationScreen ? 10.0 : 20.0, horizontal: 10),
+                vertical: isRegistrationScreen ? 10.0 : 0.0, horizontal: 10),
             child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                 child: Column(

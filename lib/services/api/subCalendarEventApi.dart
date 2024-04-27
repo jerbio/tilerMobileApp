@@ -12,7 +12,8 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
 class SubCalendarEventApi extends AppApi {
-  Future<SubCalendarEvent> getSubEvent(String id) async {
+  Future<SubCalendarEvent> getSubEvent(String id,
+      {String calendarSource = "", String thirdPartyUserId = ""}) async {
     // return getAdHocSubEventId(id);
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
@@ -20,6 +21,8 @@ class SubCalendarEventApi extends AppApi {
       String url = tilerDomain;
       final queryParameters = {
         'EventID': id,
+        "ThirdPartyType": calendarSource,
+        "ThirdPartyUserID": thirdPartyUserId
       };
       Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
@@ -126,7 +129,7 @@ class SubCalendarEventApi extends AppApi {
     error.message = "Failed to resume tile";
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType
+      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
@@ -146,7 +149,7 @@ class SubCalendarEventApi extends AppApi {
     error.message = "Did not move up task";
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType
+      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
@@ -200,7 +203,7 @@ class SubCalendarEventApi extends AppApi {
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
       'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType
+      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {

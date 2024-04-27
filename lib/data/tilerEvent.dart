@@ -8,12 +8,14 @@ import '../util.dart';
 
 enum TilePriority { low, medium, high }
 
+enum TileSource { tiler, google, outlook }
+
 class TilerEvent extends TilerObj with TimeRange {
   String? name;
   String? address;
   String? addressDescription;
-  String? thirdpartyType;
-  String thirdpartyId = '';
+  TileSource? thirdpartyType;
+  String? thirdpartyId = '';
   String thirdPartyUserId = '';
   String? searchdDescription;
   String? locationId = '';
@@ -81,13 +83,22 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('addressDescription')) {
       addressDescription = json['addressDescription'];
     }
-    if (json.containsKey('thirdpartyType')) {
-      thirdpartyType = json['thirdpartyType'];
+    if (json.containsKey('thirdPartyType') && json['thirdPartyType'] != null) {
+      try {
+        thirdpartyType = TileSource.values.byName(json['thirdPartyType']);
+      } catch (e) {
+        thirdpartyType = null;
+      }
     }
     if (json.containsKey('thirdPartyUserId') &&
         json['thirdPartyUserId'] != null) {
       thirdPartyUserId = json['thirdPartyUserId'];
     }
+
+    if (json.containsKey('thirdPartyId') && json['thirdPartyId'] != null) {
+      thirdpartyId = json['thirdPartyId'];
+    }
+
     if (json.containsKey('searchdDescription')) {
       searchdDescription = json['searchdDescription'];
     }
@@ -183,7 +194,7 @@ class TilerEvent extends TilerObj with TimeRange {
   }
 
   bool get isFromTiler {
-    return this.thirdpartyType == 'tiler';
+    return this.thirdpartyType == TileSource.tiler;
   }
 
   static Future<TilerEvent> getAdHocTilerEventId(String id) {
