@@ -21,6 +21,8 @@ import 'package:tiler_app/styles.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/forgot_password_response.dart';
+
 class AuthorizationApi extends AppApi {
   Future<UserPasswordAuthenticationData> registerUser(
       String email,
@@ -233,4 +235,40 @@ class AuthorizationApi extends AppApi {
       throw error;
     });
   }
+
+  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(String email) async {
+    String tilerDomain = Constants.tilerDomain;
+    String path = '/Account/VerifyForgotPassword';
+    Uri uri = Uri.https(tilerDomain, path);
+    var headers = {'Content-Type': 'application/json'};
+    var requestBody = jsonEncode({'Email': email});
+    print('Sending forgot password request to: $uri');
+    print('Request body: $requestBody');
+    http.Response response = await http.post(uri, headers: headers, body: requestBody);
+    print('Forgot password request response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    var responseBody = jsonDecode(response.body);
+    if (response.statusCode == 200) {
+      return ForgotPasswordResponse.fromJson({
+        "Error": {
+          "Code": responseBody["Error"]["Code"],
+          "Message": responseBody["Error"]["Message"]
+        },
+        "Content": responseBody["Content"]
+      });
+    } else {
+      String errorReason = "Request failed with status code ${response
+          .statusCode}. Reason: ${response.reasonPhrase}";
+      print(errorReason);
+      return ForgotPasswordResponse.fromJson({
+        "Error": {
+          "Code": response.statusCode.toString(),
+          "Message": "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
+        },
+        "Content": responseBody["Content"] ?? null
+      });
+    }
+  }
+
+
 }
