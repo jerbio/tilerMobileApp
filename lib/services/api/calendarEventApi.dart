@@ -171,6 +171,9 @@ class CalendarEventApi extends AppApi {
           return CalendarEvent.fromJson(jsonResult['Content']);
         }
       }
+      if (isTilerRequestError(jsonResult)) {
+        throw TilerError.fromJson(jsonResult);
+      }
 
       throw TilerError();
     }
@@ -209,6 +212,9 @@ class CalendarEventApi extends AppApi {
               .toList();
         }
       }
+      if (isTilerRequestError(jsonResult)) {
+        throw TilerError.fromJson(jsonResult);
+      }
 
       throw TilerError();
     }
@@ -243,6 +249,10 @@ class CalendarEventApi extends AppApi {
           }
           return retValue;
         }
+      }
+
+      if (isTilerRequestError(jsonResult)) {
+        throw TilerError.fromJson(jsonResult);
       }
       throw TilerError();
     }
