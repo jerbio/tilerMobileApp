@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -34,8 +33,10 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTile extends StatefulWidget {
-  String tileId;
-  EditTile({required this.tileId});
+  final String tileId;
+  final TileSource? tileSource;
+  final String? thirdPartyUserId;
+  EditTile({required this.tileId, this.tileSource, this.thirdPartyUserId});
 
   @override
   _EditTileState createState() => _EditTileState();
@@ -75,10 +76,10 @@ class _EditTileState extends State<EditTile> {
   void initState() {
     super.initState();
     print("Edit sub event with id ${this.widget.tileId}");
-    this
-        .context
-        .read<SubCalendarTileBloc>()
-        .add(GetSubCalendarTileBlocEvent(subEventId: this.widget.tileId));
+    this.context.read<SubCalendarTileBloc>().add(GetSubCalendarTileBlocEvent(
+        subEventId: this.widget.tileId,
+        calendarSource: (this.widget.tileSource?.name ?? ""),
+        thirdPartyUserId: this.widget.thirdPartyUserId));
 
     calendarEventApi.getNextTileSuggestion(this.widget.tileId).then((value) {
       setState(() {
@@ -708,9 +709,12 @@ class _EditTileState extends State<EditTile> {
                   editTilerEvent!.splitCount = subEvent!.split;
                   editTilerEvent!.name = subEvent!.name ?? '';
                   editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
-                  editTilerEvent!.thirdPartyType = subEvent!.thirdpartyType;
+                  editTilerEvent!.thirdPartyType =
+                      subEvent!.thirdpartyType?.name.toLowerCase() ?? "";
                   editTilerEvent!.thirdPartyUserId = subEvent!.thirdPartyUserId;
-                  editTilerEvent!.id = subEvent!.id;
+                  editTilerEvent!.id = subEvent!.isFromTiler
+                      ? subEvent!.id
+                      : subEvent!.thirdpartyId;
                   if (subEvent!.noteData != null) {
                     editTilerEvent!.note = subEvent!.noteData!.note;
                   }
@@ -980,7 +984,7 @@ class _EditTileState extends State<EditTile> {
 
               inputChildWidgets.add(durationClusterWrapper);
 
-              if (_editTileNote != null) {
+              if (_editTileNote != null && subEvent!.isFromTiler) {
                 inputChildWidgets.add(Container(
                     decoration: containerClusterStyle,
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
@@ -1077,10 +1081,10 @@ class _EditTileState extends State<EditTile> {
                     child: renderNextTileSuggestionContainer());
                 inputChildWidgets.add(nextTileSuggestionWrapper);
               }
-              if (subEvent!.isActive) {
+              if (subEvent!.isActive && subEvent!.isFromTiler) {
                 inputChildWidgets.add(playBackButtonWrapper);
               }
-              if (tileProgressWidget != null) {
+              if (tileProgressWidget != null && subEvent!.isFromTiler) {
                 inputChildWidgets.add(tileProgressWidget);
               }
 

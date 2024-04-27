@@ -10,7 +10,6 @@ import 'package:tiler_app/components/animatedLine.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
-import 'package:tiler_app/components/tileUI/tileDate.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -29,7 +28,6 @@ import 'timeScrub.dart';
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
-  late bool _isFaded = false;
   TileWidget(subEvent) : super(key: Key(subEvent.id)) {
     assert(subEvent != null);
     this.subEvent = subEvent;
@@ -38,10 +36,6 @@ class TileWidget extends StatefulWidget {
   TileWidgetState createState() {
     _state = TileWidgetState();
     return _state!;
-  }
-
-  fade() {
-    _isFaded = true;
   }
 }
 
@@ -79,12 +73,6 @@ class TileWidgetState extends State<TileWidget>
       end: 0.0,
     ).animate(controller);
     super.initState();
-  }
-
-  fade() {
-    controller.forward().then((value) {
-      this.widget._isFaded = true;
-    });
   }
 
   void updateSubEvent(SubCalendarEvent subEvent) async {
@@ -186,8 +174,7 @@ class TileWidgetState extends State<TileWidget>
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
-    bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true)) &&
-        this.widget.subEvent.isFromTiler;
+    bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true));
 
     Widget editButton = IconButton(
         icon: Icon(
@@ -200,8 +187,15 @@ class TileWidgetState extends State<TileWidget>
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        EditTile(tileId: this.widget.subEvent.id!)));
+                    builder: (context) => EditTile(
+                          tileId: (this.widget.subEvent.isFromTiler
+                                  ? this.widget.subEvent.id
+                                  : this.widget.subEvent.thirdpartyId) ??
+                              "",
+                          tileSource: this.widget.subEvent.thirdpartyType,
+                          thirdPartyUserId:
+                              this.widget.subEvent.thirdPartyUserId,
+                        )));
           }
         });
 
