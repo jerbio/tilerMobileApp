@@ -760,10 +760,13 @@ class _EditTileState extends State<EditTile> {
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
                   '';
+
+              bool isNoteReadOnly = !this.subEvent!.isActive ||
+                  (this.subEvent == null ? false : !this.subEvent!.isFromTiler);
               _editTileNote = EditTileNote(
                 tileNote: tileNote,
                 onInputChange: dataChange,
-                isReadOnly: !this.subEvent!.isActive,
+                isReadOnly: isNoteReadOnly,
               );
               DateTime startTime =
                   this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
