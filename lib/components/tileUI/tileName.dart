@@ -51,7 +51,7 @@ class TileNameState extends State<TileName> {
     }
 
     if (subEvent.emojis == null || subEvent.emojis!.isEmpty) {
-      if (subEvent.thirdpartyType == TileSource.google.name.toLowerCase()) {
+      if (subEvent.thirdpartyType == TileSource.google) {
         String assetLabel = AppLocalizations.of(this.context)!.googleLogo;
         String assetName =
             'assets/icons/svg/google-outline---filled(24x24)@1x.svg';
