@@ -39,6 +39,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final AccessManager accessManager = AccessManager();
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
+        altitudeAccuracy: 777.0,
+        headingAccuracy: 0.0,
         longitude: Location.fromDefault().longitude!,
         latitude: Location.fromDefault().latitude!,
         timestamp: Utility.currentTime(),

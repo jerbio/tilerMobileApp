@@ -58,6 +58,8 @@ class Utility {
   static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
 
   static final Position _defaultPosition = new Position(
+      headingAccuracy: 777,
+      altitudeAccuracy: 0,
       longitude: 7777,
       latitude: 7777,
       timestamp: Utility.currentTime(),
