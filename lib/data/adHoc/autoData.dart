@@ -17,7 +17,7 @@ var autoTileParams = [
   {
     'id': Utility.getUuid,
     'descriptions': [
-      'Dance party',
+      'Dance Class',
     ],
     'durations': [
       Utility.fifteenMin,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class NextTileSuggestionWidget extends StatefulWidget {
   NextTileSuggestion nextTileSuggestion;
@@ -11,6 +13,7 @@ class NextTileSuggestionWidget extends StatefulWidget {
 }
 
 class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
+  final int _maxLengthOfSuggestion = 80;
   @override
   Widget build(BuildContext context) {
     String suggestionName = this.widget.nextTileSuggestion.name!;
@@ -24,7 +27,11 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
     }
 
     if (tileName != null && tileName.isNotEmpty) {
+      String suggestionText = tileName.length > _maxLengthOfSuggestion
+          ? tileName.substring(0, _maxLengthOfSuggestion) + "..."
+          : tileName;
       return OutlinedButton(
+          style: TileStyles.suggestedButtonStyle,
           onPressed: () {
             final autoTile = AutoTile(
               description: tileName!,
@@ -35,6 +42,7 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
                     builder: (context) => AddTile(autoTile: autoTile)));
           },
           child: Container(
+              // padding: EdgeInsets.all(20),
               child: Stack(
             children: [
               suggestionNumber != null
@@ -48,7 +56,8 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
                       ),
                     )
                   : SizedBox.shrink(),
-              Center(child: Text(tileName, style: TextStyle(fontSize: 20)))
+              Center(
+                  child: Text(suggestionText, style: TextStyle(fontSize: 20)))
             ],
           )));
     }

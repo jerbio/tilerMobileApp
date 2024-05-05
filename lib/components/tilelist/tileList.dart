@@ -861,8 +861,9 @@ class _TileListState extends State<TileList> {
                         Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        TileDetail(tileId: subEvent.id!)))
+                                    builder: (context) => TileDetail(
+                                        tileId: subEvent.calendarEvent?.id ??
+                                            subEvent.id!)))
                             .whenComplete(() => Navigator.pop(context));
                       },
                       style: ElevatedButton.styleFrom(

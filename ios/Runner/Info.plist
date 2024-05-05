@@ -55,6 +55,8 @@
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS</key>
+	<false/>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>

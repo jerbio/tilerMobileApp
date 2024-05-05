@@ -1029,8 +1029,16 @@ class _EditTileState extends State<EditTile> {
               if ((!(this.subEvent!.isViable ?? false))) {
                 playbackOptions.remove(PlaybackOptions.PlayPause);
               }
+
+              if (!subEvent!.isFromTiler) {
+                playbackOptions = [PlaybackOptions.Delete];
+              }
+
               Widget playBackButtonWrapper = Container(
                 padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
+                margin: !this.subEvent!.isFromTiler
+                    ? EdgeInsets.fromLTRB(0, 25, 0, 0)
+                    : EdgeInsets.fromLTRB(0, 7.5, 0, 0),
                 decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,
@@ -1084,7 +1092,7 @@ class _EditTileState extends State<EditTile> {
                     child: renderNextTileSuggestionContainer());
                 inputChildWidgets.add(nextTileSuggestionWrapper);
               }
-              if (subEvent!.isActive && subEvent!.isFromTiler) {
+              if (subEvent!.isActive) {
                 inputChildWidgets.add(playBackButtonWrapper);
               }
               if (tileProgressWidget != null && subEvent!.isFromTiler) {
