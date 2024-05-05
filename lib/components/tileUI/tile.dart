@@ -285,7 +285,12 @@ class TileWidgetState extends State<TileWidget>
                 ))));
         allElements.add(Container(
             margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-            child: PlayBack(widget.subEvent)));
+            child: PlayBack(
+              widget.subEvent,
+              forcedOption: (widget.subEvent.isRigid == true
+                  ? [PlaybackOptions.Delete]
+                  : null),
+            )));
       } else {
         allElements.add(GestureDetector(
           onTap: () {

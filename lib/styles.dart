@@ -48,6 +48,21 @@ class TileStyles {
       return 0;
     }),
   );
+
+  static ButtonStyle suggestedButtonStyle = ButtonStyle(
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryColorDarkHSL.toColor();
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
+    padding: MaterialStateProperty.resolveWith((states) {
+      return EdgeInsets.all(30);
+    }),
+  );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
     side: MaterialStateProperty.all(
         BorderSide(color: primaryColorDarkHSL.toColor())),

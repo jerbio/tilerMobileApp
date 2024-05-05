@@ -323,11 +323,12 @@ class EventNameSearchState extends SearchWidgetState {
             ),
           ],
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+        child: Stack(
+          // mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Positioned(
-                top: 0.5,
+                bottom: 0,
+                left: 0,
                 child: IconButton(
                     icon: Transform.rotate(
                       angle: -pi / 2,

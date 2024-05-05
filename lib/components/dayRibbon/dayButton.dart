@@ -88,7 +88,9 @@ class _DayButtonState extends State<DayButton> {
     ];
     if (this.widget.showMonth) {
       childWidgets.add(Container(
-        padding: this.widget.isSelected ? EdgeInsets.all(5) : null,
+        padding: this.widget.isSelected
+            ? EdgeInsets.fromLTRB(0, 3, 0, 0)
+            : EdgeInsets.fromLTRB(0, 0, 0, 1),
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style: TextStyle(

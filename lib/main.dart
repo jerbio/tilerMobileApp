@@ -30,6 +30,9 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
@@ -51,12 +54,16 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(TilerApp());
 }
 
 class TilerApp extends StatelessWidget {
   bool isAuthenticated = false;
   Authentication? authentication;
+  final FirebaseAnalytics analytics = FirebaseAnalytics.instance;
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
     authentication = new Authentication();
     var authenticationResult = await authentication!.isUserAuthenticated();
@@ -175,6 +182,33 @@ class TilerApp extends StatelessWidget {
 
                   if (snapshot.data!.item1) {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
+                    print("~~~~~befor data gather");
+                    analytics.logEvent(
+                        name: "authenticateduser",
+                        parameters: {"tilerId": "sampleUserId"}).then((value) {
+                      print(
+                          "---- custom event analystics user logged in verified-----");
+                    });
+                    // analytics
+                    //     .logLogin("user")
+                    //     // analytics.logLogin()
+                    //     .then((value) {
+                    //   print("---- analystics user logged in verified-----");
+                    //   // print(value);
+                    // }).catchError((error) {
+                    //   print(error);
+                    //   print("---- analystics failed logged in verified-----");
+                    // });
+                    // analytics.logBeginCheckout(
+                    //     value: 10.0,
+                    //     currency: 'USD',
+                    //     items: [
+                    //       AnalyticsEventItem(
+                    //           itemName: 'Socks',
+                    //           itemId: 'xjw73ndnw',
+                    //           price: 10.0),
+                    //     ],
+                    //     coupon: '10PERCENTOFF');
                     retValue = new AuthorizedRoute();
                   } else {
                     authentication?.deauthenticateCredentials();
