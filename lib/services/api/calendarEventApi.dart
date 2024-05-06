@@ -95,7 +95,7 @@ class CalendarEventApi extends AppApi {
       'CalAddress': calEvent.address?.toString(),
       'CalAddressDescription': calEvent.addressDescription?.toString(),
       'IsCalAddressVerified': calEvent.isAddressVerified?.toString(),
-      'IsLocationCleared': clearLocation
+      'IsLocationCleared': clearLocation,
     };
     if (calEvent.tileDuration != null) {
       queryParameters['Duration'] =

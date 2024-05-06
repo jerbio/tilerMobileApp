@@ -63,19 +63,18 @@ class _SettingState extends State<Setting> {
         fontSize: 16.0);
   }
 
-  Future proceedUpdate() {
-    List<Future> futureExecutions = <Future>[];
+  Future proceedUpdate() async {
     if (workRestrictionProfile != null) {
       Future workRestrictionProfileUpdateFuture =
           settingsApi.updateRestrictionProfile(workRestrictionProfile!,
               restrictionProfileType: 'work');
-      futureExecutions.add(workRestrictionProfileUpdateFuture);
+      await workRestrictionProfileUpdateFuture;
     }
     if (personalRestrictionProfile != null) {
       Future personalRestrictionProfileUpdateFuture =
           settingsApi.updateRestrictionProfile(personalRestrictionProfile!,
               restrictionProfileType: 'personal');
-      futureExecutions.add(personalRestrictionProfileUpdateFuture);
+      await personalRestrictionProfileUpdateFuture;
     }
 
     if (this.endOfDay != null) {
@@ -84,18 +83,8 @@ class _SettingState extends State<Setting> {
       }
       Future endOfDayUpdateFuture =
           settingsApi.updateStartOfDay(this.endOfDay!);
-
-      futureExecutions.add(endOfDayUpdateFuture);
+      await endOfDayUpdateFuture;
     }
-
-    return Future.wait(futureExecutions).onError((error, stackTrace) {
-      if (error is TilerError) {
-        if (error.message != null) {
-          showErrorMessage(error.message!);
-        }
-      }
-      throw Error();
-    });
   }
 
   bool isProceedReady() {
@@ -158,6 +147,15 @@ class _SettingState extends State<Setting> {
                 restrictionProfile != null) {
               populatedRestrictionProfile.id = restrictionProfile.id;
             }
+
+            if (restrictionProfile != null &&
+                (populatedRestrictionProfile == null ||
+                    (restrictionParams.containsKey('isAnytTime') &&
+                        restrictionParams['isAnytTime'] != null))) {
+              restrictionProfile.isEnabled = !restrictionParams['isAnytTime'];
+              populatedRestrictionProfile = restrictionProfile;
+            }
+
             if (callBack != null) {
               callBack(populatedRestrictionProfile);
             }

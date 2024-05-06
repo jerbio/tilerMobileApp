@@ -77,7 +77,9 @@ class RestrictionTimeLine extends TilerObj {
       final tzLocation = getLocation(timzeZone);
       DateTime startTime =
           DateTime.fromMillisecondsSinceEpoch(map['start'] as int).toUtc();
-      start = TZDateTime.from(startTime, tzLocation);
+      start = TZDateTime.utc(0, 1, 1, 0, 0, 0, map['start'] as int);
+      // start = TZDateTime.utc(0, millisecond = map['start'] as int);
+      // start = TZDateTime.from(startTime, tzLocation);
     }
     return RestrictionTimeLine(
       start: start != null
