@@ -15,6 +15,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
@@ -77,17 +78,20 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
+          AnalysticsSignal.send('SEARCH_PRESSED');
           Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 1:
         {
           // Navigator.pushNamed(context, '/AddTile');
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
           displayDialog(MediaQuery.of(context).size);
         }
         break;
       case 2:
         {
+          AnalysticsSignal.send('SETTING_PRESSED');
           Navigator.pushNamed(context, '/Setting');
         }
         break;
@@ -204,6 +208,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 // ),
                 GestureDetector(
                   onTap: () {
+                    AnalysticsSignal.send('REVISE_BUTTON');
                     final currentState =
                         this.context.read<ScheduleBloc>().state;
                     if (currentState is ScheduleLoadedState) {
@@ -269,6 +274,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ),
                 GestureDetector(
                     onTap: () {
+                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON');
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {
@@ -344,6 +350,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     )),
                 GestureDetector(
                   onTap: () {
+                    AnalysticsSignal.send('NEW_ADD_TILE');
                     Navigator.pop(context);
                     Map<String, dynamic> newTileParams = {'newTile': null};
 
@@ -501,6 +508,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           : FloatingActionButton(
               backgroundColor: Colors.white,
               onPressed: () {
+                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
                 displayDialog(MediaQuery.of(context).size);
               },
               child: Icon(
