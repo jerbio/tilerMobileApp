@@ -15,6 +15,7 @@ import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 
@@ -184,6 +185,7 @@ class TileWidgetState extends State<TileWidget>
         ),
         onPressed: () {
           if (isEditable) {
+            AnalysticsSignal.send('SUB_TILE_EDIT');
             Navigator.push(
                 context,
                 MaterialPageRoute(

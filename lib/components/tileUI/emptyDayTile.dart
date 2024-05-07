@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -194,6 +195,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                 return;
               }
               if (AppinioSwiperDirection.right == direction) {
+                AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
+                  'description': autoTile.description,
+                  'duration': autoTile.duration?.inMilliseconds ?? -1
+                });
                 Navigator.push(
                     context,
                     MaterialPageRoute(

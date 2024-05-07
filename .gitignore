@@ -46,3 +46,7 @@ thirdParty/*
 ios/build/*
 ios/Runner/GoogleService-Info.plist
 android/key.propertie*
+
+# credentials
+lib/firebase.json
+lib/firebase_options.dart

@@ -17,6 +17,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
@@ -559,6 +560,12 @@ class _TileListState extends State<TileList> {
                 DateTime previousTime = Utility.currentTime().dayDate;
                 DateTime currentTime =
                     Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
+                if (previousTime.millisecondsSinceEpoch >
+                    currentTime.millisecondsSinceEpoch) {
+                  AnalysticsSignal.send('DAY_SWIPE_BACK');
+                } else {
+                  AnalysticsSignal.send('DAY_SWIPE_FORWARD');
+                }
                 if (currentState is UiDateManagerInitial) {
                   previousTime = currentState.currentDate;
                 }
