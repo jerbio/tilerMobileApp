@@ -203,7 +203,11 @@ class SubCalendarEventApi extends AppApi {
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
       'EventID': subEvent.id,
-      'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
+      'ThirdPartyType':
+          subEvent.thirdpartyType?.name.toString().toLowerCase() ?? "",
+      'ThirdPartyUserID': subEvent.thirdPartyUserId,
+      'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+      'ThirdPartyEventID': subEvent.thirdpartyId,
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
@@ -218,7 +222,8 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
-  Future<CalendarEvent> delete(String eventId, String thirdPartyId) async {
+  Future<CalendarEvent> delete(String eventId, String? thirdPartyEventID,
+      String? thirdPartyUserId, String? thirdPartyType) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
     if ((await this.authentication.isUserAuthenticated()).item1) {
@@ -234,9 +239,10 @@ class SubCalendarEventApi extends AppApi {
       var deleteSubEventParameters = {
         'ID': eventId,
         'EventID': eventId,
+        'ThirdPartyUserID': thirdPartyUserId,
         'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
-        'ThirdPartyEventID': thirdPartyId,
-        'ThirdPartyType': thirdPartyId,
+        'ThirdPartyEventID': thirdPartyEventID,
+        'ThirdPartyType': thirdPartyType,
         'MobileApp': true.toString()
       };
 
