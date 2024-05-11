@@ -206,7 +206,10 @@ class PlayBackState extends State<PlayBack> {
       lookupTimeline = scheduleState.lookupTimeline;
     }
 
-    var requestFuture = _subCalendarEventApi.delete(subTile.id!,
+    var requestFuture = _subCalendarEventApi.delete(
+        subTile.id!,
+        subTile.thirdpartyId,
+        subTile.thirdPartyUserId,
         subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
