@@ -159,55 +159,55 @@ class AuthorizationApi extends AppApi {
         }
       }
 
-      if (GoogleSignInApi.googleUser != null) {
-        GoogleSignInApi.googleUser!.clearAuthCache();
-        await GoogleSignInApi.logout();
-      }
+      // if (GoogleSignInApi.googleUser != null) {
+      //   GoogleSignInApi.googleUser!.clearAuthCache();
+      //   await GoogleSignInApi.logout();
+      // }
 
-      var googleUser = await GoogleSignInApi.login()
-          .then((value) => value)
-          .catchError((onError) {
-        print("ERROR GoogleSignInApi.login" + onError.toString());
-        print(onError);
-      });
+      // var googleUser = await GoogleSignInApi.login()
+      //     .then((value) => value)
+      //     .catchError((onError) {
+      //   print("ERROR GoogleSignInApi.login" + onError.toString());
+      //   print(onError);
+      // });
 
-      print('Signed in googleUser');
-      print(googleUser);
+      // print('Signed in googleUser');
+      // print(googleUser);
 
-      if (googleUser != null) {
-        var googleAuthentication = await googleUser.authentication;
-        var authHeaders = await googleUser.authHeaders;
-        // print(authHeaders);
+      // if (googleUser != null) {
+      //   var googleAuthentication = await googleUser.authentication;
+      //   var authHeaders = await googleUser.authHeaders;
+      //   // print(authHeaders);
 
-        String? refreshToken;
-        String? accessToken = googleAuthentication.accessToken;
-        String? serverAuthCode =
-            googleUser.serverAuthCode ?? googleAuthentication.idToken;
-        if (serverAuthCode != null) {
-          refreshToken = googleAuthentication.idToken!;
-          Map serverResponse = await getRefreshToken(
-              clientId, clientSecret, serverAuthCode, requestedScopes);
+      //   String? refreshToken;
+      //   String? accessToken = googleAuthentication.accessToken;
+      //   String? serverAuthCode =
+      //       googleUser.serverAuthCode ?? googleAuthentication.idToken;
+      //   if (serverAuthCode != null) {
+      //     refreshToken = googleAuthentication.idToken!;
+      //     Map serverResponse = await getRefreshToken(
+      //         clientId, clientSecret, serverAuthCode, requestedScopes);
 
-          refreshToken = serverResponse['refresh_token'];
-          accessToken = serverResponse['access_token'];
-        }
-        String providerName = 'Google';
-        try {
-          String timeZone = await FlutterTimezone.getLocalTimezone();
-          return await getBearerToken(
-              accessToken: accessToken!,
-              email: googleUser.email,
-              providerId: googleUser.id,
-              refreshToken: refreshToken!,
-              displayName: googleUser.displayName!,
-              timeZone: timeZone,
-              thirdpartyType: providerName);
-        } catch (e) {
-          if (e is TilerError) {
-            throw e;
-          }
-        }
-      }
+      //     refreshToken = serverResponse['refresh_token'];
+      //     accessToken = serverResponse['access_token'];
+      //   }
+      //   String providerName = 'Google';
+      //   try {
+      //     String timeZone = await FlutterTimezone.getLocalTimezone();
+      //     return await getBearerToken(
+      //         accessToken: accessToken!,
+      //         email: googleUser.email,
+      //         providerId: googleUser.id,
+      //         refreshToken: refreshToken!,
+      //         displayName: googleUser.displayName!,
+      //         timeZone: timeZone,
+      //         thirdpartyType: providerName);
+      //   } catch (e) {
+      //     if (e is TilerError) {
+      //       throw e;
+      //     }
+      //   }
+      // }
       throw TilerError();
     } catch (e) {
       print(e);
@@ -236,7 +236,8 @@ class AuthorizationApi extends AppApi {
     });
   }
 
-  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(String email) async {
+  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(
+      String email) async {
     String tilerDomain = Constants.tilerDomain;
     String path = '/Account/VerifyForgotPassword';
     Uri uri = Uri.https(tilerDomain, path);
@@ -244,7 +245,8 @@ class AuthorizationApi extends AppApi {
     var requestBody = jsonEncode({'Email': email});
     print('Sending forgot password request to: $uri');
     print('Request body: $requestBody');
-    http.Response response = await http.post(uri, headers: headers, body: requestBody);
+    http.Response response =
+        await http.post(uri, headers: headers, body: requestBody);
     print('Forgot password request response status: ${response.statusCode}');
     print('Response body: ${response.body}');
     var responseBody = jsonDecode(response.body);
@@ -257,18 +259,17 @@ class AuthorizationApi extends AppApi {
         "Content": responseBody["Content"]
       });
     } else {
-      String errorReason = "Request failed with status code ${response
-          .statusCode}. Reason: ${response.reasonPhrase}";
+      String errorReason =
+          "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}";
       print(errorReason);
       return ForgotPasswordResponse.fromJson({
         "Error": {
           "Code": response.statusCode.toString(),
-          "Message": "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
+          "Message":
+              "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
         },
         "Content": responseBody["Content"] ?? null
       });
     }
   }
-
-
 }

@@ -277,35 +277,35 @@ class SignInComponentState extends State<SignInComponent>
 
   Future signInToGoogle() async {
     AuthorizationApi authorizationApi = AuthorizationApi();
-    AuthenticationData? authenticationData = await authorizationApi
-        .signInToGoogle()
-        .then((value) => value)
-        .catchError((onError) {
-      setState(() {
-        isPendingSigning = false;
-      });
-      showErrorMessage(onError.message);
-      return null;
-    });
+    // AuthenticationData? authenticationData = await authorizationApi
+    //     .signInToGoogle()
+    //     .then((value) => value)
+    //     .catchError((onError) {
+    //   setState(() {
+    //     isPendingSigning = false;
+    //   });
+    //   showErrorMessage(onError.message);
+    //   return null;
+    // });
 
-    if (authenticationData != null) {
-      if (authenticationData.isValid) {
-        Authentication localAuthentication = new Authentication();
-        await localAuthentication.saveCredentials(authenticationData);
-        while (Navigator.canPop(context)) {
-          Navigator.pop(context);
-        }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
-        );
-      }
-    }
-    setState(() {
-      isPendingSigning = false;
-    });
+    // if (authenticationData != null) {
+    //   if (authenticationData.isValid) {
+    //     Authentication localAuthentication = new Authentication();
+    //     await localAuthentication.saveCredentials(authenticationData);
+    //     while (Navigator.canPop(context)) {
+    //       Navigator.pop(context);
+    //     }
+    //     context.read<ScheduleBloc>().add(LogInScheduleEvent());
+    //     Navigator.pop(context);
+    //     Navigator.push(
+    //       context,
+    //       MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+    //     );
+    //   }
+    // }
+    // setState(() {
+    //   isPendingSigning = false;
+    // });
   }
 
   @override
