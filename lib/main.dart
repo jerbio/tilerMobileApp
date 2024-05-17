@@ -34,6 +34,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/localAuthentication.dart';
 
@@ -60,13 +62,29 @@ Future main() async {
   runApp(TilerApp());
 }
 
-class TilerApp extends StatelessWidget {
+class TilerApp extends StatefulWidget {
+  @override
+  _TilerAppState createState() => new _TilerAppState();
+}
+
+class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
-  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
-    authentication = new Authentication();
-    var authenticationResult = await authentication!.isUserAuthenticated();
-    return authenticationResult;
+  String _debugLabelString = "";
+  String? _emailAddress;
+  String? _smsNumber;
+  String? _externalUserId;
+  String? _language;
+  String? _liveActivityId;
+  bool _enableConsentButton = false;
+
+  // CHANGE THIS parameter to true if you want to test GDPR privacy consent
+  bool _requireConsent = false;
+
+  @override
+  void initState() {
+    super.initState();
+    initPlatformState();
   }
 
   void showMessage(String message) {
@@ -91,6 +109,142 @@ class TilerApp extends StatelessWidget {
         fontSize: 16.0);
   }
 
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    if (!mounted) return;
+
+    String app_id = dotenv.env[Constants.oneSignalAppleIdKey] ?? "";
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+
+    OneSignal.Debug.setAlertLevel(OSLogLevel.none);
+    OneSignal.consentRequired(_requireConsent);
+
+    // NOTE: Replace with your own app ID from https://www.onesignal.com
+
+    OneSignal.initialize(app_id);
+
+    OneSignal.LiveActivities.setupDefault();
+    // OneSignal.LiveActivities.setupDefault(options: new LiveActivitySetupOptions(enablePushToStart: false, enablePushToUpdate: true));
+
+    // AndroidOnly stat only
+    // OneSignal.Notifications.removeNotification(1);
+    // OneSignal.Notifications.removeGroupedNotifications("group5");
+
+    OneSignal.Notifications.clearAll();
+
+    OneSignal.User.pushSubscription.addObserver((state) {
+      print(OneSignal.User.pushSubscription.optedIn);
+      print(OneSignal.User.pushSubscription.id);
+      print(OneSignal.User.pushSubscription.token);
+      print(state.current.jsonRepresentation());
+    });
+
+    OneSignal.User.addObserver((state) {
+      var userState = state.jsonRepresentation();
+      print('OneSignal user changed: $userState');
+    });
+
+    OneSignal.Notifications.addPermissionObserver((state) {
+      print("Has permission " + state.toString());
+    });
+
+    OneSignal.Notifications.addClickListener((event) {
+      print('NOTIFICATION CLICK LISTENER CALLED WITH EVENT: $event');
+      this.setState(() {
+        _debugLabelString =
+            "Clicked notification: \n${event.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
+      });
+    });
+
+    OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+      print(
+          'NOTIFICATION WILL DISPLAY LISTENER CALLED WITH: ${event.notification.jsonRepresentation()}');
+
+      /// Display Notification, preventDefault to not display
+      event.preventDefault();
+
+      /// Do async work
+
+      /// notification.display() to display after preventing default
+      event.notification.display();
+
+      this.setState(() {
+        _debugLabelString =
+            "Notification received in foreground notification: \n${event.notification.jsonRepresentation().replaceAll("\\n", "\n")}";
+      });
+    });
+
+    OneSignal.InAppMessages.addClickListener((event) {
+      this.setState(() {
+        _debugLabelString =
+            "In App Message Clicked: \n${event.result.jsonRepresentation().replaceAll("\\n", "\n")}";
+      });
+    });
+    OneSignal.InAppMessages.addWillDisplayListener((event) {
+      print("ON WILL DISPLAY IN APP MESSAGE ${event.message.messageId}");
+    });
+    OneSignal.InAppMessages.addDidDisplayListener((event) {
+      print("ON DID DISPLAY IN APP MESSAGE ${event.message.messageId}");
+    });
+    OneSignal.InAppMessages.addWillDismissListener((event) {
+      print("ON WILL DISMISS IN APP MESSAGE ${event.message.messageId}");
+    });
+    OneSignal.InAppMessages.addDidDismissListener((event) {
+      print("ON DID DISMISS IN APP MESSAGE ${event.message.messageId}");
+    });
+
+    this.setState(() {
+      _enableConsentButton = _requireConsent;
+    });
+
+    // Some examples of how to use In App Messaging public methods with OneSignal SDK
+    oneSignalInAppMessagingTriggerExamples();
+
+    // Some examples of how to use Outcome Events public methods with OneSignal SDK
+    oneSignalOutcomeExamples();
+
+    OneSignal.InAppMessages.paused(true);
+  }
+
+  oneSignalInAppMessagingTriggerExamples() async {
+    /// Example addTrigger call for IAM
+    /// This will add 1 trigger so if there are any IAM satisfying it, it
+    /// will be shown to the user
+    OneSignal.InAppMessages.addTrigger("trigger_1", "one");
+
+    /// Example addTriggers call for IAM
+    /// This will add 2 triggers so if there are any IAM satisfying these, they
+    /// will be shown to the user
+    Map<String, String> triggers = new Map<String, String>();
+    triggers["trigger_2"] = "two";
+    triggers["trigger_3"] = "three";
+    OneSignal.InAppMessages.addTriggers(triggers);
+
+    // Removes a trigger by its key so if any future IAM are pulled with
+    // these triggers they will not be shown until the trigger is added back
+    OneSignal.InAppMessages.removeTrigger("trigger_2");
+
+    // Create a list and bulk remove triggers based on keys supplied
+    List<String> keys = ["trigger_1", "trigger_3"];
+    OneSignal.InAppMessages.removeTriggers(keys);
+
+    // Toggle pausing (displaying or not) of IAMs
+    OneSignal.InAppMessages.paused(true);
+    var arePaused = await OneSignal.InAppMessages.arePaused();
+    print('Notifications paused $arePaused');
+  }
+
+  oneSignalOutcomeExamples() async {
+    OneSignal.Session.addOutcome("normal_1");
+    OneSignal.Session.addOutcome("normal_2");
+
+    OneSignal.Session.addUniqueOutcome("unique_1");
+    OneSignal.Session.addUniqueOutcome("unique_2");
+
+    OneSignal.Session.addOutcomeWithValue("value_1", 3.2);
+    OneSignal.Session.addOutcomeWithValue("value_2", 3.9);
+  }
+
   Widget renderPending() {
     return Center(
         child: Stack(children: [
@@ -98,6 +252,12 @@ class TilerApp extends StatelessWidget {
           child: Image.asset('assets/images/tiler_logo_white_text.png',
               fit: BoxFit.cover, scale: 7)),
     ]));
+  }
+
+  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
+    authentication = new Authentication();
+    var authenticationResult = await authentication!.isUserAuthenticated();
+    return authenticationResult;
   }
 
   @override
