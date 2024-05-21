@@ -231,7 +231,9 @@ class _SummaryPage extends State<SummaryPage> {
                           TileStyles.widthRatio -
                       205,
                   child: Text(
-                    subCalendarEventTile.name!,
+                    subCalendarEventTile.isProcrastinate == true
+                        ? AppLocalizations.of(context)!.procrastinateBlockOut
+                        : subCalendarEventTile.name ?? "",
                     style: TextStyle(
                       fontFamily: TileStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,

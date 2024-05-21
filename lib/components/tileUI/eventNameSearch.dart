@@ -323,28 +323,31 @@ class EventNameSearchState extends SearchWidgetState {
             ),
           ],
         ),
-        child: Stack(
-          // mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Positioned(
-                bottom: 0,
-                left: 0,
-                child: IconButton(
-                    icon: Transform.rotate(
-                      angle: -pi / 2,
-                      child: Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey,
-                        size: 35,
+        child: Center(
+          child: Stack(
+            children: [
+              Positioned(
+                  top: 1,
+                  bottom: 0,
+                  left: 0,
+                  child: IconButton(
+                      icon: Transform.rotate(
+                        angle: -pi / 2,
+                        child: Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey,
+                          size: 35,
+                        ),
                       ),
-                    ),
-                    onPressed: () => {setAsNowCallBack()})),
-            SizedBox.square(
-              dimension: 5,
-            ),
-            Text(AppLocalizations.of(context)!.now,
-                style: TextStyle(fontSize: 15))
-          ],
+                      onPressed: () => {setAsNowCallBack()})),
+              Positioned(
+                  top: 4,
+                  bottom: 0,
+                  left: 50,
+                  child: Text(AppLocalizations.of(context)!.now,
+                      style: TextStyle(fontSize: 15)))
+            ],
+          ),
         ),
       ),
     );
