@@ -37,8 +37,16 @@ class SignInComponentState extends State<SignInComponent>
   late AnimationController signinInAnimationController;
   bool isRegistrationScreen = false;
   bool isForgetPasswordScreen = false;
-  double credentialManagerHeight = 350;
-  double credentialButtonHeight = 200;
+  final double registrationContainerHeight = 450;
+  final double signInContainerHeight = 400;
+  final double forgotPasswordContainerHeight = 300;
+
+  final double registrationContainerButtonHeight = 300;
+  final double signInContainerButtonHeight = 175;
+  final double forgotPasswordContainerButtonHeight = 100;
+
+  late double credentialManagerHeight = 400;
+  double credentialButtonHeight = 175;
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
   bool isPendingResetPassword = false;
@@ -50,6 +58,8 @@ class SignInComponentState extends State<SignInComponent>
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
+    credentialManagerHeight = signInContainerHeight;
+    credentialButtonHeight = signInContainerButtonHeight;
   }
 
   void showMessage(String message) {
@@ -224,8 +234,8 @@ class SignInComponentState extends State<SignInComponent>
     setState(() {
       isForgetPasswordScreen = true;
       isRegistrationScreen = false;
-      credentialManagerHeight = 300;
-      credentialButtonHeight = 100;
+      credentialManagerHeight = forgotPasswordContainerHeight;
+      credentialButtonHeight = forgotPasswordContainerButtonHeight;
     });
   }
 
@@ -236,8 +246,8 @@ class SignInComponentState extends State<SignInComponent>
     confirmPasswordEditingController.clear();
     setState(() {
       isRegistrationScreen = true;
-      credentialManagerHeight = 450;
-      credentialButtonHeight = 320;
+      credentialManagerHeight = registrationContainerHeight;
+      credentialButtonHeight = registrationContainerButtonHeight;
     });
   }
 
@@ -249,8 +259,8 @@ class SignInComponentState extends State<SignInComponent>
     setState(() => {
           isRegistrationScreen = false,
           isForgetPasswordScreen = false,
-          credentialManagerHeight = 350,
-          credentialButtonHeight = 200
+          credentialManagerHeight = signInContainerHeight,
+          credentialButtonHeight = signInContainerButtonHeight
         });
   }
 
@@ -276,6 +286,9 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
+    setState(() {
+      isPendingSigning = true;
+    });
     AuthorizationApi authorizationApi = AuthorizationApi();
     AuthenticationData? authenticationData = await authorizationApi
         .signInToGoogle()
@@ -581,7 +594,7 @@ class SignInComponentState extends State<SignInComponent>
             child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
                       height: credentialButtonHeight,
@@ -589,12 +602,13 @@ class SignInComponentState extends State<SignInComponent>
                           vertical: 5.0, horizontal: 20),
                       child: AutofillGroup(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: textFields,
                         ),
                       ),
                     ),
                     Container(
+                      padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: buttons,
