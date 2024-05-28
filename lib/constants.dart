@@ -25,7 +25,8 @@ String googleClientDefaultKey = 'GOOGLE_CLIENT_ID_DEFAULT';
 String googleClientIdKey =
     Platform.isIOS ? 'GOOGLE_CLIENT_ID_IOS' : 'GOOGLE_CLIENT_ID_DEFAULT';
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
-String oneSignalAppleIdKey = 'ONE_SIGNAL_APP_ID';
+String oneSignalAppleIdKey =
+    isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
 
 final List<String> googleApiScopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
