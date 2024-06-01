@@ -1,36 +1,63 @@
 class NotificationData {
   final int instantiationTime = (new DateTime.now()).millisecondsSinceEpoch;
-  late final String? platform;
+  late final String? channelType;
   late final String? tilerNotificationId;
   late final String? thirdPartyId;
   bool isValid = false;
-  late int expirationTime;
-
+  int? expirationTime = 0;
+  String? _notificationIdKey = 'notificationId';
+  String? _thirdPartyIdKey = 'thirdPartyId';
+  String? _expiresInKey = 'expiresIn';
+  String? _channelTypeKey = 'channelType';
   NotificationData();
   NotificationData.initializedWithRestData(this.tilerNotificationId,
-      this.thirdPartyId, this.expirationTime, this.platform) {
+      this.channelType, this.thirdPartyId, this.expirationTime) {
     assert(this.tilerNotificationId != null);
-    assert(this.thirdPartyId != null);
-    assert(this.platform != null);
-    assert(this.expirationTime != null);
-    this.expirationTime = this.instantiationTime + (this.expirationTime * 1000);
-    this.isValid = !isExpired();
+    assert(this.channelType != null);
+    this.isValid = true;
+    this.expirationTime = 999999999999999;
+  }
+
+  NotificationData.fromJson(Map<String, dynamic> json) {
+    if (json.containsKey(_notificationIdKey)) {
+      tilerNotificationId = json[_notificationIdKey];
+    }
+    if (json.containsKey(_thirdPartyIdKey)) {
+      thirdPartyId = json[_thirdPartyIdKey];
+    }
+    if (json.containsKey(_expiresInKey)) {
+      this.expirationTime = json[_expiresInKey];
+    }
+    if (json.containsKey(_channelTypeKey)) {
+      channelType = json[_channelTypeKey];
+    }
+    assert(this.tilerNotificationId != null);
+    assert(this.channelType != null);
+    this.isValid = true;
+    this.expirationTime = 999999999999999;
+  }
+
+  NotificationData.noCredentials() {
+    this.expirationTime = 0;
+    this.isValid = false;
   }
 
   bool isExpired() {
     var now = new DateTime.now().millisecondsSinceEpoch;
-    int expiryTime = this.expirationTime;
-
-    bool retValue = now >= expiryTime;
-    return retValue;
+    if (this.expirationTime != null) {
+      int expiryTime = this.expirationTime!;
+      bool retValue = now >= expiryTime;
+      return retValue;
+    }
+    return false;
   }
 
-  toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'notificationId': tilerNotificationId,
       'thirdPartyId': thirdPartyId,
       'expiresIn': expirationTime,
-      'platform': platform?.toLowerCase() ?? ""
+      'channelType': channelType?.toLowerCase() ?? ""
     };
   }
 

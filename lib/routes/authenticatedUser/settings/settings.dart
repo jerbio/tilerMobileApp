@@ -4,6 +4,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -234,6 +235,7 @@ class _SettingState extends State<Setting> {
   }
 
   logOutser() async {
+    await OneSignal.logout();
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
