@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/notificationData.dart';
 
 class SecureStorageManager {
   static final _storage = new FlutterSecureStorage();
@@ -83,17 +84,24 @@ class SecureStorageManager {
     return retValue;
   }
 
-  Future saveNotificationData(AuthenticationData credentials) async {
-    String credentialJsonString = jsonEncode(credentials.toJson());
-    await _storage.write(key: _notificationKey, value: credentialJsonString);
+  Future saveNotificationData(NotificationData notificationData) async {
+    String notificationJsonString = jsonEncode(notificationData.toJson());
+    await _storage.write(key: _notificationKey, value: notificationJsonString);
   }
 
   Future deleteNotificationData() async {
     await _storage.delete(key: _notificationKey);
   }
 
-  Future<String?> readNotificationData() async {
-    String? retValue = await _storage.read(key: _notificationKey);
+  Future<NotificationData?> readNotificationData() async {
+    String? retValueJsonString = await _storage.read(key: _notificationKey);
+    NotificationData retValue = NotificationData.noCredentials();
+    if (retValueJsonString != null && retValueJsonString.isNotEmpty) {
+      Map<String, dynamic> jsonData = jsonDecode(retValueJsonString);
+      try {
+        retValue = NotificationData.fromJson(jsonData);
+      } catch (e) {}
+    }
     return retValue;
   }
 }
