@@ -42,6 +42,8 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
   bool isPendingResetPassword = false;
+  bool isGoogleSignInEnabled = false;
+  final authApi = AuthorizationApi();
 
   @override
   void initState() {
@@ -50,6 +52,24 @@ class SignInComponentState extends State<SignInComponent>
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
+    isGoogleSignInEnabled = !Platform.isIOS;
+    if (Platform.isIOS) {
+      authApi.statusSupport().then((value) {
+        String versionKey = "version";
+        String authResult = "315";
+        if (value != null &&
+            value.containsKey(versionKey) &&
+            value[versionKey] != null) {
+          for (var versions in value[versionKey]) {
+            if (versions == authResult) {
+              setState(() {
+                isGoogleSignInEnabled = true;
+              });
+            }
+          }
+        }
+      });
+    }
   }
 
   void showMessage(String message) {
@@ -459,9 +479,8 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var googleSignInButton = Platform.isIOS && false
-        ? SizedBox.shrink()
-        : SizedBox(
+    var googleSignInButton = isGoogleSignInEnabled
+        ? SizedBox(
             width: 200,
             child: ElevatedButton.icon(
                 onPressed: signInToGoogle,
@@ -470,7 +489,8 @@ class SignInComponentState extends State<SignInComponent>
                   color: Colors.white,
                 ),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
-          );
+          )
+        : SizedBox.shrink();
 
     var backToSignInButton = SizedBox(
       width: isForgetPasswordScreen ? 200 : null,

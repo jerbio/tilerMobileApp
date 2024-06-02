@@ -236,7 +236,29 @@ class AuthorizationApi extends AppApi {
     });
   }
 
-  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(String email) async {
+  Future<Map<String, dynamic>?> statusSupport() async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    String tilerDomain = Constants.tilerDomain;
+    String url = tilerDomain;
+    // https://localhost-44388-x-if7.conveyor.cloud/home/Supported
+    Uri uri = Uri.https(url, 'home/Supported');
+    // var header = this.getHeaders();
+    // if (header == null) {
+    //   throw TilerError(message: 'Issues with authentication');
+    // }
+
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      var jsonResult = jsonDecode(response.body);
+      return jsonResult;
+    }
+
+    return null;
+  }
+
+  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(
+      String email) async {
     String tilerDomain = Constants.tilerDomain;
     String path = '/Account/VerifyForgotPassword';
     Uri uri = Uri.https(tilerDomain, path);
@@ -244,7 +266,8 @@ class AuthorizationApi extends AppApi {
     var requestBody = jsonEncode({'Email': email});
     print('Sending forgot password request to: $uri');
     print('Request body: $requestBody');
-    http.Response response = await http.post(uri, headers: headers, body: requestBody);
+    http.Response response =
+        await http.post(uri, headers: headers, body: requestBody);
     print('Forgot password request response status: ${response.statusCode}');
     print('Response body: ${response.body}');
     var responseBody = jsonDecode(response.body);
@@ -257,18 +280,17 @@ class AuthorizationApi extends AppApi {
         "Content": responseBody["Content"]
       });
     } else {
-      String errorReason = "Request failed with status code ${response
-          .statusCode}. Reason: ${response.reasonPhrase}";
+      String errorReason =
+          "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}";
       print(errorReason);
       return ForgotPasswordResponse.fromJson({
         "Error": {
           "Code": response.statusCode.toString(),
-          "Message": "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
+          "Message":
+              "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
         },
         "Content": responseBody["Content"] ?? null
       });
     }
   }
-
-
 }

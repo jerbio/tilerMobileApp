@@ -71,6 +71,12 @@ class LocalNotificationService {
         await _storageManager.readNotificationData();
     final String notificationPlatform = "upcomingtiles";
     if (notificationData == null || !notificationData.isValid) {
+      try {
+        await OneSignal.Notifications.requestPermission(true);
+      } catch (e) {
+        print('Error in requesting notification permissions.');
+      }
+
       notificationData =
           await userApi.getNotificationChannel(notificationPlatform);
       await _storageManager.saveNotificationData(
