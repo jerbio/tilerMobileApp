@@ -63,6 +63,12 @@
 	<true/>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
+    <key>NSLocationUsageDescription</key>
+    <string>This because Tiler may need to continuously track the user's location in order to provide timely and accurate updates to the calendar. Additionally suggest activities the user may want to be aware based on background changes to the calendar.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>TilerActivityLocationKey</key>
@@ -101,5 +107,9 @@ Overall, location permissions are essential for an app that dynamically updates 
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+</dict>
+<dict>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0.0</string>
 </dict>
 </plist>

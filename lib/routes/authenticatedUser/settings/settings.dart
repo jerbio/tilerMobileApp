@@ -235,7 +235,12 @@ class _SettingState extends State<Setting> {
   }
 
   logOutser() async {
-    await OneSignal.logout();
+    OneSignal.logout().then((value) {
+      print("successful logged out of onesignal");
+    }).catchError((onError) {
+      print("Failed to logout of onesignal");
+      print(onError);
+    });
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
