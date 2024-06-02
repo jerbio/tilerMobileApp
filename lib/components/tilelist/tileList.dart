@@ -865,6 +865,7 @@ class _TileListState extends State<TileList> {
                     return ElevatedButton(
                       onPressed: () {
                         hideNewSheeTileFutrue.cancel();
+                        Navigator.pop(context);
                         Navigator.push(
                                 context,
                                 MaterialPageRoute(
