@@ -225,6 +225,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                           ));
                     }
                     ScheduleApi().reviseSchedule().then((value) {
+                      AnalysticsSignal.send('REVISE_BUTTON_SUCCESS');
                       final currentState =
                           this.context.read<ScheduleBloc>().state;
                       if (currentState is ScheduleEvaluationState) {
@@ -237,6 +238,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                         refreshScheduleSummary(currentState.lookupTimeline);
                       }
                     }).catchError((onError) {
+                      AnalysticsSignal.send('REVISE_BUTTON_FAILURE');
                       final currentState =
                           this.context.read<ScheduleBloc>().state;
                       Fluttertoast.showToast(
@@ -276,7 +278,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ),
                 GestureDetector(
                     onTap: () {
-                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON');
+                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {

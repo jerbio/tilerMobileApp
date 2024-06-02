@@ -10,6 +10,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/util.dart';
@@ -87,6 +88,7 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.movingUp;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
         return this.calendarEventApi.setAsNow(tileId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
@@ -130,6 +132,7 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.deleting;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
@@ -172,6 +175,7 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.completing;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
         return this.calendarEventApi.complete(tileId).then((value) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
@@ -514,6 +518,7 @@ class EventNameSearchState extends SearchWidgetState {
     ];
 
     if (name.length > Constants.autoCompleteMinCharLength) {
+      AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
       List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
 
       retValue = tileEvents.map((tile) => tileToEventNameWidget(tile)).toList();

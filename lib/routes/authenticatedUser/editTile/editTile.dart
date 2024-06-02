@@ -25,6 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -540,6 +541,7 @@ class _EditTileState extends State<EditTile> {
   }
 
   Future<SubCalendarEvent> subEventUpdate() {
+    AnalysticsSignal.send('EDIT_TILE_REQUEST_INITIALIZED');
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
@@ -552,6 +554,7 @@ class _EditTileState extends State<EditTile> {
         .subCalendarEventApi
         .updateSubEvent(this.editTilerEvent!)
         .then((value) {
+      AnalysticsSignal.send('EDIT_TILE_REQUEST_SUCCESS');
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
         this.context.read<ScheduleBloc>().add(GetScheduleEvent(
