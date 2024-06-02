@@ -17,6 +17,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -132,6 +133,8 @@ class _SettingState extends State<Setting> {
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
       textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       onPress: () {
+        AnalysticsSignal.send('SETTINGS_OPEN_RESTRICTION_PROFILE_' +
+            (configButtonName ?? "NONE"));
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': restrictionProfile,
           'stackRouteHistory': [Setting.routeName]
@@ -226,6 +229,7 @@ class _SettingState extends State<Setting> {
                   this.endOfDay!.timeOfDay = updatedTimeOfDay;
                 });
               }
+              AnalysticsSignal.send('SETTINGS_BEDTIME_UPDATE');
             },
           ),
         )
@@ -234,7 +238,8 @@ class _SettingState extends State<Setting> {
     return retValue;
   }
 
-  logOutser() async {
+  logOutUser() async {
+    AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
     OneSignal.logout().then((value) {
       print("successful logged out of onesignal");
     }).catchError((onError) {
@@ -255,15 +260,16 @@ class _SettingState extends State<Setting> {
 
   Widget createLogOutButton() {
     Widget retValue = ElevatedButton(
-        onPressed: logOutser,
+        onPressed: logOutUser,
         child: Text(AppLocalizations.of(context)!.logout));
     return retValue;
   }
 
   sendDeleteRequest() async {
+    AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
     _authorizationApi.deleteTilerAccount().then((result) {
       if (result) {
-        logOutser();
+        logOutUser();
       }
     });
   }
@@ -271,6 +277,7 @@ class _SettingState extends State<Setting> {
   Widget createDeleteAccountButton() {
     Widget retValue = ElevatedButton(
         onPressed: () {
+          AnalysticsSignal.send('SETTINGS_DELETE_USER_INITIATED');
           showGeneralDialog(
               barrierDismissible: true,
               barrierLabel: '',
