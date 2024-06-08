@@ -19,6 +19,7 @@ import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
 import '../../styles.dart';
+import '../../constants.dart' as Constants;
 
 class EventNameSearchWidget extends SearchWidget {
   EventNameSearchWidget(
@@ -39,11 +40,14 @@ class EventNameSearchWidget extends SearchWidget {
   EventNameSearchState createState() => EventNameSearchState();
 }
 
+enum LookupStatus { NotStarted, Pending, Finished, Failed }
+
 class EventNameSearchState extends SearchWidgetState {
   TileNameApi tileNameApi = new TileNameApi();
   CalendarEventApi calendarEventApi = new CalendarEventApi();
   TextEditingController textController = TextEditingController();
   List<Widget> nameSearchResult = [];
+  LookupStatus _lookupStatus = LookupStatus.NotStarted;
 
   Tuple4<List<SubCalendarEvent>, List<Timeline>, Timeline, ScheduleStatus>
       getPriorStateVariables() {
@@ -226,7 +230,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget createDeletionButton(TilerEvent tile) {
     Function deletionCallBack =
-        createDeletionCallBack(tile.id!, tile.thirdpartyId)!;
+        createDeletionCallBack(tile.id!, tile.thirdpartyId ?? "")!;
     return GestureDetector(
       onTap: () => {deletionCallBack()},
       child: Container(
@@ -314,44 +318,51 @@ class EventNameSearchState extends SearchWidgetState {
     return GestureDetector(
       onTap: () => {setAsNowCallBack()},
       child: Container(
-          padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-          height: 70,
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(53, 53, 53, 0.1),
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(5),
-                topRight: Radius.circular(5),
-                bottomLeft: Radius.circular(5),
-                bottomRight: Radius.circular(5)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.white70.withOpacity(0.2),
-                spreadRadius: 5,
-                blurRadius: 5,
-                offset: Offset(0, 1),
-              ),
+        padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+        height: 70,
+        decoration: BoxDecoration(
+          color: Color.fromRGBO(53, 53, 53, 0.1),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
+              bottomLeft: Radius.circular(5),
+              bottomRight: Radius.circular(5)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white70.withOpacity(0.2),
+              spreadRadius: 5,
+              blurRadius: 5,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Stack(
+            children: [
+              Positioned(
+                  top: 1,
+                  bottom: 0,
+                  left: 0,
+                  child: IconButton(
+                      icon: Transform.rotate(
+                        angle: -pi / 2,
+                        child: Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey,
+                          size: 35,
+                        ),
+                      ),
+                      onPressed: () => {setAsNowCallBack()})),
+              Positioned(
+                  top: 4,
+                  bottom: 0,
+                  left: 50,
+                  child: Text(AppLocalizations.of(context)!.now,
+                      style: TextStyle(fontSize: 15)))
             ],
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                  icon: Transform.rotate(
-                    angle: -pi / 2,
-                    child: Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey,
-                      size: 35,
-                    ),
-                  ),
-                  onPressed: () => {setAsNowCallBack()}),
-              SizedBox.square(
-                dimension: 5,
-              ),
-              Text(AppLocalizations.of(context)!.now,
-                  style: TextStyle(fontSize: 15))
-            ],
-          )),
+        ),
+      ),
     );
   }
 
@@ -504,10 +515,18 @@ class EventNameSearchState extends SearchWidgetState {
 
   Future<List<Widget>> _onInputFieldChange(
       String name, Function callBackOnCloseInput) async {
-    List<Widget> retValue = this.nameSearchResult;
+    List<Widget> retValue = [
+      Container(
+        padding: EdgeInsets.all(10),
+        child: Text(
+            AppLocalizations.of(this.context)!.atLeastThreeLettersForLookup),
+        alignment: Alignment.center,
+      )
+    ];
 
-    if (name.length > 3) {
+    if (name.length > Constants.autoCompleteMinCharLength) {
       List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
+
       retValue = tileEvents.map((tile) => tileToEventNameWidget(tile)).toList();
       if (retValue.length == 0) {
         retValue = [

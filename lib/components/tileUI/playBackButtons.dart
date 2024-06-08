@@ -291,8 +291,11 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture =
-        _subCalendarEventApi.delete(subTile.id!, subTile.thirdpartyType!);
+    var requestFuture = _subCalendarEventApi.delete(
+        subTile.id!,
+        subTile.thirdpartyId,
+        subTile.thirdPartyUserId,
+        subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
     }
@@ -483,8 +486,9 @@ class PlayBackState extends State<PlayBack> {
       alreadyAddedButton.add(PlaybackOptions.Procrastinate);
     }
 
-    if (widget.subEvent.isCurrent ||
-        (widget.subEvent.isPaused != null && widget.subEvent.isPaused!)) {
+    if ((widget.subEvent.isRigid != null && !widget.subEvent.isRigid!) &&
+        (widget.subEvent.isCurrent ||
+            (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
       playPauseButton = Column(
         children: [
           GestureDetector(
@@ -524,7 +528,11 @@ class PlayBackState extends State<PlayBack> {
           ],
         );
       }
-      playBackElements.insert(1, playPauseButton as Column);
+      if (playBackElements.isNotEmpty) {
+        playBackElements.insert(1, playPauseButton as Column);
+      } else {
+        playBackElements.add(playPauseButton as Column);
+      }
       alreadyAddedButton.add(PlaybackOptions.PlayPause);
     }
 

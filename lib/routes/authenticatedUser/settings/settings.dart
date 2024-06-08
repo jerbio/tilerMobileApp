@@ -1,8 +1,10 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -63,19 +65,18 @@ class _SettingState extends State<Setting> {
         fontSize: 16.0);
   }
 
-  Future proceedUpdate() {
-    List<Future> futureExecutions = <Future>[];
+  Future proceedUpdate() async {
     if (workRestrictionProfile != null) {
       Future workRestrictionProfileUpdateFuture =
           settingsApi.updateRestrictionProfile(workRestrictionProfile!,
               restrictionProfileType: 'work');
-      futureExecutions.add(workRestrictionProfileUpdateFuture);
+      await workRestrictionProfileUpdateFuture;
     }
     if (personalRestrictionProfile != null) {
       Future personalRestrictionProfileUpdateFuture =
           settingsApi.updateRestrictionProfile(personalRestrictionProfile!,
               restrictionProfileType: 'personal');
-      futureExecutions.add(personalRestrictionProfileUpdateFuture);
+      await personalRestrictionProfileUpdateFuture;
     }
 
     if (this.endOfDay != null) {
@@ -84,18 +85,8 @@ class _SettingState extends State<Setting> {
       }
       Future endOfDayUpdateFuture =
           settingsApi.updateStartOfDay(this.endOfDay!);
-
-      futureExecutions.add(endOfDayUpdateFuture);
+      await endOfDayUpdateFuture;
     }
-
-    return Future.wait(futureExecutions).onError((error, stackTrace) {
-      if (error is TilerError) {
-        if (error.message != null) {
-          showErrorMessage(error.message!);
-        }
-      }
-      throw Error();
-    });
   }
 
   bool isProceedReady() {
@@ -158,6 +149,15 @@ class _SettingState extends State<Setting> {
                 restrictionProfile != null) {
               populatedRestrictionProfile.id = restrictionProfile.id;
             }
+
+            if (restrictionProfile != null &&
+                (populatedRestrictionProfile == null ||
+                    (restrictionParams.containsKey('isAnytTime') &&
+                        restrictionParams['isAnytTime'] != null))) {
+              restrictionProfile.isEnabled = !restrictionParams['isAnytTime'];
+              populatedRestrictionProfile = restrictionProfile;
+            }
+
             if (callBack != null) {
               callBack(populatedRestrictionProfile);
             }
@@ -235,6 +235,12 @@ class _SettingState extends State<Setting> {
   }
 
   logOutser() async {
+    OneSignal.logout().then((value) {
+      print("successful logged out of onesignal");
+    }).catchError((onError) {
+      print("Failed to logout of onesignal");
+      print(onError);
+    });
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);

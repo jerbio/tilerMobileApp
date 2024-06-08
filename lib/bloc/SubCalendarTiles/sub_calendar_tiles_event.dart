@@ -8,10 +8,16 @@ abstract class SubCalendarTileEvent extends Equatable {
 }
 
 class GetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
-  String subEventId;
+  final String subEventId;
+  final String? calendarSource;
+  final String? thirdPartyUserId;
   SubCalendarEvent? subEvent;
 
-  GetSubCalendarTileBlocEvent({required this.subEventId, this.subEvent});
+  GetSubCalendarTileBlocEvent(
+      {required this.subEventId,
+      this.subEvent,
+      this.calendarSource,
+      this.thirdPartyUserId});
 
   @override
   List<Object> get props => [subEventId];

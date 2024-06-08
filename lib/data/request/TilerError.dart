@@ -6,7 +6,7 @@ class TilerError {
   static const String unexpectedCharacter = 'Unexpected character';
   String? message;
   String? Code;
-  TilerError({this.message});
+  TilerError({this.message, this.Code});
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>
       _$TilerErrorFromJson(json);

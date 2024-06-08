@@ -1,9 +1,9 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -33,8 +33,10 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTile extends StatefulWidget {
-  String tileId;
-  EditTile({required this.tileId});
+  final String tileId;
+  final TileSource? tileSource;
+  final String? thirdPartyUserId;
+  EditTile({required this.tileId, this.tileSource, this.thirdPartyUserId});
 
   @override
   _EditTileState createState() => _EditTileState();
@@ -74,10 +76,10 @@ class _EditTileState extends State<EditTile> {
   void initState() {
     super.initState();
     print("Edit sub event with id ${this.widget.tileId}");
-    this
-        .context
-        .read<SubCalendarTileBloc>()
-        .add(GetSubCalendarTileBlocEvent(subEventId: this.widget.tileId));
+    this.context.read<SubCalendarTileBloc>().add(GetSubCalendarTileBlocEvent(
+        subEventId: this.widget.tileId,
+        calendarSource: (this.widget.tileSource?.name ?? ""),
+        thirdPartyUserId: this.widget.thirdPartyUserId));
 
     calendarEventApi.getNextTileSuggestion(this.widget.tileId).then((value) {
       setState(() {
@@ -449,10 +451,29 @@ class _EditTileState extends State<EditTile> {
             },
           );
         },
-        child: Text(AppLocalizations.of(context)!.prediction,
-            style: TextStyle(
-              fontSize: 20,
-            )),
+        style: ButtonStyle(
+            padding: MaterialStateProperty.resolveWith(
+                (states) => EdgeInsets.all(0))),
+        child: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Text(AppLocalizations.of(context)!.prediction,
+                  style: TextStyle(
+                    fontSize: 20,
+                  )),
+            ),
+            Shimmer.fromColors(
+                baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+                highlightColor: Colors.white.withAlpha(100),
+                child: Container(
+                  width: 400,
+                  decoration: BoxDecoration(
+                      color: Color.fromRGBO(31, 31, 31, 0.8),
+                      borderRadius: BorderRadius.circular(30)),
+                )),
+          ],
+        ),
       );
     });
   }
@@ -689,9 +710,12 @@ class _EditTileState extends State<EditTile> {
                   editTilerEvent!.splitCount = subEvent!.split;
                   editTilerEvent!.name = subEvent!.name ?? '';
                   editTilerEvent!.thirdPartyId = subEvent!.thirdpartyId;
-                  editTilerEvent!.thirdPartyType = subEvent!.thirdpartyType;
+                  editTilerEvent!.thirdPartyType =
+                      subEvent!.thirdpartyType?.name.toLowerCase() ?? "";
                   editTilerEvent!.thirdPartyUserId = subEvent!.thirdPartyUserId;
-                  editTilerEvent!.id = subEvent!.id;
+                  editTilerEvent!.id = subEvent!.isFromTiler
+                      ? subEvent!.id
+                      : subEvent!.thirdpartyId;
                   if (subEvent!.noteData != null) {
                     editTilerEvent!.note = subEvent!.noteData!.note;
                   }
@@ -737,10 +761,13 @@ class _EditTileState extends State<EditTile> {
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
                   '';
+
+              bool isNoteReadOnly = !this.subEvent!.isActive ||
+                  (this.subEvent == null ? false : !this.subEvent!.isFromTiler);
               _editTileNote = EditTileNote(
                 tileNote: tileNote,
                 onInputChange: dataChange,
-                isReadOnly: !this.subEvent!.isActive,
+                isReadOnly: isNoteReadOnly,
               );
               DateTime startTime =
                   this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
@@ -961,7 +988,7 @@ class _EditTileState extends State<EditTile> {
 
               inputChildWidgets.add(durationClusterWrapper);
 
-              if (_editTileNote != null) {
+              if (_editTileNote != null && subEvent!.isFromTiler) {
                 inputChildWidgets.add(Container(
                     decoration: containerClusterStyle,
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
@@ -1003,8 +1030,16 @@ class _EditTileState extends State<EditTile> {
               if ((!(this.subEvent!.isViable ?? false))) {
                 playbackOptions.remove(PlaybackOptions.PlayPause);
               }
+
+              if (!subEvent!.isFromTiler) {
+                playbackOptions = [PlaybackOptions.Delete];
+              }
+
               Widget playBackButtonWrapper = Container(
                 padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
+                margin: !this.subEvent!.isFromTiler
+                    ? EdgeInsets.fromLTRB(0, 25, 0, 0)
+                    : EdgeInsets.fromLTRB(0, 7.5, 0, 0),
                 decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,
@@ -1061,7 +1096,7 @@ class _EditTileState extends State<EditTile> {
               if (subEvent!.isActive) {
                 inputChildWidgets.add(playBackButtonWrapper);
               }
-              if (tileProgressWidget != null) {
+              if (tileProgressWidget != null && subEvent!.isFromTiler) {
                 inputChildWidgets.add(tileProgressWidget);
               }
 

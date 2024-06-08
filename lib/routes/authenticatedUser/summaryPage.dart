@@ -10,6 +10,7 @@ import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
@@ -194,11 +195,24 @@ class _SummaryPage extends State<SummaryPage> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    EditTile(tileId: subCalendarEventTile.id!)));
+                builder: (context) => EditTile(
+                      tileId: (subCalendarEventTile.isFromTiler
+                              ? subCalendarEventTile.id
+                              : subCalendarEventTile.thirdpartyId) ??
+                          "",
+                      tileSource: subCalendarEventTile.thirdpartyType,
+                      thirdPartyUserId: subCalendarEventTile.thirdPartyUserId,
+                    )));
       },
       child: Container(
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        decoration: BoxDecoration(
+            border: Border.all(
+                width: 0.5,
+                color: subCalendarEventTile.priority == TilePriority.high
+                    ? Colors.red
+                    : Colors.transparent),
+            borderRadius: BorderRadius.circular(5)),
+        padding: EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -215,9 +229,11 @@ class _SummaryPage extends State<SummaryPage> {
                   height: 20,
                   width: MediaQuery.of(context).size.width *
                           TileStyles.widthRatio -
-                      190,
+                      205,
                   child: Text(
-                    subCalendarEventTile.name!,
+                    subCalendarEventTile.isProcrastinate == true
+                        ? AppLocalizations.of(context)!.procrastinateBlockOut
+                        : subCalendarEventTile.name ?? "",
                     style: TextStyle(
                       fontFamily: TileStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
