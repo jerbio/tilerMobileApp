@@ -25,12 +25,17 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
@@ -45,7 +50,7 @@ class MyHttpOverrides extends HttpOverrides {
         ..badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
     }
-    Logger.root.level = Level.ALL; //
+    Logger.root.level = Level.ALL;
     return super.createHttpClient(context);
   }
 }
@@ -55,16 +60,23 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
   runApp(TilerApp());
 }
 
-class TilerApp extends StatelessWidget {
+class TilerApp extends StatefulWidget {
+  @override
+  _TilerAppState createState() => new _TilerAppState();
+}
+
+class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
-  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
-    authentication = new Authentication();
-    var authenticationResult = await authentication!.isUserAuthenticated();
-    return authenticationResult;
+  @override
+  void initState() {
+    super.initState();
   }
 
   void showMessage(String message) {
@@ -96,6 +108,12 @@ class TilerApp extends StatelessWidget {
           child: Image.asset('assets/images/tiler_logo_white_text.png',
               fit: BoxFit.cover, scale: 7)),
     ]));
+  }
+
+  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
+    authentication = new Authentication();
+    var authenticationResult = await authentication!.isUserAuthenticated();
+    return authenticationResult;
   }
 
   @override
@@ -179,6 +197,7 @@ class TilerApp extends StatelessWidget {
 
                   if (snapshot.data!.item1) {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
+                    AnalysticsSignal.send('LOGIN-VERIFIED');
                     retValue = new AuthorizedRoute();
                   } else {
                     authentication?.deauthenticateCredentials();

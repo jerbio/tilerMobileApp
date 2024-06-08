@@ -15,14 +15,13 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-
-import '../../constants.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -39,6 +38,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final AccessManager accessManager = AccessManager();
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
+        altitudeAccuracy: 777.0,
+        headingAccuracy: 0.0,
         longitude: Location.fromDefault().longitude!,
         latitude: Location.fromDefault().latitude!,
         timestamp: Utility.currentTime(),
@@ -57,9 +58,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   void initState() {
-    localNotificationService = LocalNotificationService();
     super.initState();
+    localNotificationService = LocalNotificationService();
+    localNotificationService.initializeRemoteNotification().then((value) {
+      localNotificationService.subscribeToRemoteNotification();
+    });
     localNotificationService.initialize(this.context);
+
     accessManager.locationAccess(statusCheck: true).then((value) {
       setState(() {
         if (value != null) {
@@ -75,17 +80,20 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
+          AnalysticsSignal.send('SEARCH_PRESSED');
           Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 1:
         {
           // Navigator.pushNamed(context, '/AddTile');
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
           displayDialog(MediaQuery.of(context).size);
         }
         break;
       case 2:
         {
+          AnalysticsSignal.send('SETTING_PRESSED');
           Navigator.pushNamed(context, '/Setting');
         }
         break;
@@ -202,6 +210,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 // ),
                 GestureDetector(
                   onTap: () {
+                    AnalysticsSignal.send('REVISE_BUTTON');
                     final currentState =
                         this.context.read<ScheduleBloc>().state;
                     if (currentState is ScheduleLoadedState) {
@@ -268,6 +277,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ),
                 GestureDetector(
                     onTap: () {
+                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON');
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {
@@ -343,6 +353,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     )),
                 GestureDetector(
                   onTap: () {
+                    AnalysticsSignal.send('NEW_ADD_TILE');
                     Navigator.pop(context);
                     Map<String, dynamic> newTileParams = {'newTile': null};
 
@@ -402,11 +413,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     print('isLocationRequestTriggered $isLocationRequestTriggered');
     print('locationAccess $locationAccess');
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
@@ -500,6 +511,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           : FloatingActionButton(
               backgroundColor: Colors.white,
               onPressed: () {
+                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
                 displayDialog(MediaQuery.of(context).size);
               },
               child: Icon(

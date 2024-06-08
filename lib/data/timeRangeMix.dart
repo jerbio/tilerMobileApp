@@ -32,11 +32,11 @@ mixin TimeRange {
   }
 
   DateTime get startTime {
-    return Utility.localDateTimeFromMs(this.start!.toInt());
+    return Utility.localDateTimeFromMs(this.start ?? 0.toInt());
   }
 
   DateTime get endTime {
-    return Utility.localDateTimeFromMs(this.end!.toInt());
+    return Utility.localDateTimeFromMs(this.end ?? 0.toInt());
   }
 
   Duration get duration {

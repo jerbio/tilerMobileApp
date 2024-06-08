@@ -78,8 +78,14 @@ class _TileSummaryState extends State<TileSummary> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                EditTile(tileId: subEvent.id!)));
+                            builder: (context) => EditTile(
+                                  tileId: (subEvent.isFromTiler
+                                          ? subEvent.id
+                                          : subEvent.thirdpartyId) ??
+                                      "",
+                                  tileSource: subEvent.thirdpartyType,
+                                  thirdPartyUserId: subEvent.thirdPartyUserId,
+                                )));
                   }
                 },
                 icon: Icon(

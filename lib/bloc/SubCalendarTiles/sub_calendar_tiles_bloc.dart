@@ -44,7 +44,9 @@ class SubCalendarTileBloc
     }
 
     await subCalendarEventApi
-        .getSubEvent(event.subEvent?.id ?? event.subEventId)
+        .getSubEvent(event.subEvent?.id ?? event.subEventId,
+            calendarSource: event.calendarSource ?? "",
+            thirdPartyUserId: event.thirdPartyUserId ?? "")
         .then((value) {
       emit(SubCalendarTileLoadedState(subEvent: value));
     });

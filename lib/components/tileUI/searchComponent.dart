@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:tiler_app/styles.dart';
+import '../../constants.dart' as Constants;
 
 class SearchWidget extends StatefulWidget {
   Function? onChanged;
@@ -45,6 +49,75 @@ class SearchWidgetState extends State<SearchWidget> {
           setState(() {
             searchedText = this.widget.textField!.controller!.text;
             showResponseContainer = true;
+          });
+        }
+        BoxDecoration resultContainerDecoration = BoxDecoration(
+          color: TileStyles.primaryColorLightHSL.toColor(),
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(10),
+              topRight: Radius.circular(10),
+              bottomLeft: Radius.circular(10),
+              bottomRight: Radius.circular(10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.white70.withOpacity(0.2),
+              spreadRadius: 5,
+              blurRadius: 5,
+              offset: Offset(0, 1),
+            ),
+          ],
+        );
+
+        if (this.widget.textField!.controller!.text.length >
+            Constants.autoCompleteMinCharLength) {
+          // this whole if block is a hack relying on the autoCompleteMinCharLength
+          setState(() {
+            resultViewContainer = GestureDetector(
+                onTap: () {
+                  setState(() {
+                    showResponseContainer = false;
+                  });
+                },
+                child: Container(
+                  decoration: resultContainerDecoration,
+                  height: 75,
+                  width: 500,
+                  child: Stack(
+                    alignment: Alignment.topLeft,
+                    children: [
+                      Shimmer.fromColors(
+                          baseColor: TileStyles.primaryColorLightHSL
+                              .toColor()
+                              .withAlpha(100),
+                          highlightColor: Colors.white.withAlpha(100),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Color.fromRGBO(31, 31, 31, 0.8),
+                                borderRadius: BorderRadius.circular(8)),
+                          )),
+                      Container(
+                        padding: EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            Container(
+                                margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                child: Icon(Icons.search)),
+                            Flexible(
+                              child: Container(
+                                child: Text(
+                                  this.widget.textField!.controller!.text,
+                                  style: TextStyle(
+                                      fontSize: 22.5,
+                                      overflow: TextOverflow.ellipsis),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ));
           });
         }
 

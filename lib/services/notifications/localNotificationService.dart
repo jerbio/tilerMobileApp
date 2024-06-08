@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/notificationData.dart';
+import 'package:tiler_app/services/api/userApi.dart';
+import 'package:tiler_app/services/storageManager.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import '../../../constants.dart' as Constants;
 
 enum NotificationIdTypes { none, nextTile, userSetReminder, depatureTime }
 
@@ -25,6 +32,9 @@ class LocalNotificationService {
   LocalNotificationService();
   static Map<NotificationIdTypes, _NotificationDetailFormat>? channelDetails;
   static final _localNotificationService = FlutterLocalNotificationsPlugin();
+  NotificationData _notificationData = NotificationData.noCredentials();
+  UserApi userApi = UserApi();
+  SecureStorageManager _storageManager = SecureStorageManager();
 
   Future<void> initialize(BuildContext context) async {
     tz.initializeTimeZones();
@@ -54,6 +64,48 @@ class LocalNotificationService {
       print('payload $payload');
     });
     intializeChannelDetails(context);
+  }
+
+  Future initializeRemoteNotification() async {
+    NotificationData? notificationData =
+        await _storageManager.readNotificationData();
+    final String notificationPlatform = "upcomingtiles";
+    if (notificationData == null || !notificationData.isValid) {
+      try {
+        await OneSignal.Notifications.requestPermission(true);
+      } catch (e) {
+        print('Error in requesting notification permissions.');
+      }
+
+      notificationData =
+          await userApi.getNotificationChannel(notificationPlatform);
+      await _storageManager.saveNotificationData(
+          notificationData ?? NotificationData.noCredentials());
+    }
+    if (notificationData != null) {
+      _notificationData = notificationData;
+    }
+  }
+
+  Future subscribeToRemoteNotification() async {
+    if (_notificationData.isValid) {
+      if (!Constants.isProduction) {
+        OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+        OneSignal.Debug.setAlertLevel(OSLogLevel.none);
+      }
+      String appId = dotenv.env[Constants.oneSignalAppIdKey] ?? "";
+      OneSignal.initialize(appId);
+      if (_notificationData.tilerNotificationId != null) {
+        await OneSignal.login(_notificationData.tilerNotificationId!)
+            .then((value) {
+          if (!Constants.isProduction) print("onesignal successful login");
+        }).catchError((value) {
+          if (!Constants.isProduction) {
+            print("onesignal failed to login ");
+          }
+        });
+      }
+    }
   }
 
   intializeChannelDetails(BuildContext context) {

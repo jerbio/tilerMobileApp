@@ -278,11 +278,7 @@ class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
             ModalRoute.of(context)?.settings.arguments as Map?;
         if (stateWidget.isAnyTime) {
           if (restrictionProfileParams != null) {
-            if (stateWidget.restrictionProfile != null) {
-              stateWidget.restrictionProfile!.isEnabled = false;
-            }
-            restrictionProfileParams['routeRestrictionProfile'] =
-                stateWidget.restrictionProfile;
+            restrictionProfileParams['routeRestrictionProfile'] = null;
             restrictionProfileParams['isAnytTime'] = true;
           }
           return;

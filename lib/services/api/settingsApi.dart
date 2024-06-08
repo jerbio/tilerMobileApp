@@ -66,12 +66,8 @@ class SettingsApi extends AppApi {
   }
 
   Future<StartOfDay> getUserStartOfDay() async {
-    Map timeOfDayParams = {};
-
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
-      Map<String, dynamic> restrictedUpdatedParams =
-          await injectRequestParams({}, includeLocationParams: false);
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetStartOfDay');
       var header = this.getHeaders();

@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -50,7 +51,7 @@ class TileNameState extends State<TileName> {
     }
 
     if (subEvent.emojis == null || subEvent.emojis!.isEmpty) {
-      if (subEvent.thirdpartyType == 'google') {
+      if (subEvent.thirdpartyType == TileSource.google) {
         String assetLabel = AppLocalizations.of(this.context)!.googleLogo;
         String assetName =
             'assets/icons/svg/google-outline---filled(24x24)@1x.svg';

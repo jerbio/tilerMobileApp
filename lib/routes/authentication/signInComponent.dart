@@ -36,10 +36,22 @@ class SignInComponentState extends State<SignInComponent>
   final confirmPasswordEditingController = TextEditingController();
   late AnimationController signinInAnimationController;
   bool isRegistrationScreen = false;
-  double credentialManagerHeight = 350;
-  double credentialButtonHeight = 150;
+  bool isForgetPasswordScreen = false;
+  final double registrationContainerHeight = 450;
+  final double signInContainerHeight = 400;
+  final double forgotPasswordContainerHeight = 300;
+
+  final double registrationContainerButtonHeight = 300;
+  final double signInContainerButtonHeight = 175;
+  final double forgotPasswordContainerButtonHeight = 100;
+
+  late double credentialManagerHeight = 400;
+  double credentialButtonHeight = 175;
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
+  bool isPendingResetPassword = false;
+  bool isGoogleSignInEnabled = false;
+  final authApi = AuthorizationApi();
 
   @override
   void initState() {
@@ -48,6 +60,26 @@ class SignInComponentState extends State<SignInComponent>
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
+    isGoogleSignInEnabled = !Platform.isIOS;
+    if (Platform.isIOS) {
+      authApi.statusSupport().then((value) {
+        String versionKey = "version";
+        String authResult = "315";
+        if (value != null &&
+            value.containsKey(versionKey) &&
+            value[versionKey] != null) {
+          for (var versions in value[versionKey]) {
+            if (versions == authResult) {
+              setState(() {
+                isGoogleSignInEnabled = true;
+              });
+            }
+          }
+        }
+      });
+    }
+    credentialManagerHeight = signInContainerHeight;
+    credentialButtonHeight = signInContainerButtonHeight;
   }
 
   void showMessage(String message) {
@@ -183,6 +215,50 @@ class SignInComponentState extends State<SignInComponent>
     }
   }
 
+  void forgetPassword() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() {
+          isPendingResetPassword = true;
+        });
+        showMessage(AppLocalizations.of(context)!.forgetPassword);
+        var result = await AuthorizationApi.sendForgotPasswordRequest(
+            emailEditingController.text);
+        if (result.error.code == "0") {
+          showMessage(result.error.message);
+          Future.delayed(Duration(seconds: 2), () {
+            setState(() {
+              setAsSignInScreen();
+            });
+          });
+        } else {
+          showErrorMessage(result.error.message);
+        }
+      } catch (e) {
+        showErrorMessage("Error: $e");
+      } finally {
+        Future.delayed(Duration(seconds: 2), () {
+          setState(() {
+            isPendingResetPassword = false;
+          });
+        });
+      }
+    }
+  }
+
+  void setAsForgetPasswordScreen() {
+    userNameEditingController.clear();
+    passwordEditingController.clear();
+    emailEditingController.clear();
+    confirmPasswordEditingController.clear();
+    setState(() {
+      isForgetPasswordScreen = true;
+      isRegistrationScreen = false;
+      credentialManagerHeight = forgotPasswordContainerHeight;
+      credentialButtonHeight = forgotPasswordContainerButtonHeight;
+    });
+  }
+
   void setAsRegistrationScreen() {
     userNameEditingController.clear();
     passwordEditingController.clear();
@@ -190,8 +266,8 @@ class SignInComponentState extends State<SignInComponent>
     confirmPasswordEditingController.clear();
     setState(() {
       isRegistrationScreen = true;
-      credentialManagerHeight = 450;
-      credentialButtonHeight = 320;
+      credentialManagerHeight = registrationContainerHeight;
+      credentialButtonHeight = registrationContainerButtonHeight;
     });
   }
 
@@ -200,11 +276,12 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
-    setState(() {
-      isRegistrationScreen = false;
-      credentialManagerHeight = 350;
-      credentialButtonHeight = 150;
-    });
+    setState(() => {
+          isRegistrationScreen = false,
+          isForgetPasswordScreen = false,
+          credentialManagerHeight = signInContainerHeight,
+          credentialButtonHeight = signInContainerButtonHeight
+        });
   }
 
   Widget createSignInPendingComponent(String message) {
@@ -229,6 +306,9 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
+    setState(() {
+      isPendingSigning = true;
+    });
     AuthorizationApi authorizationApi = AuthorizationApi();
     AuthenticationData? authenticationData = await authorizationApi
         .signInToGoogle()
@@ -300,6 +380,7 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
+
     var emailTextField = TextFormField(
       keyboardType: TextInputType.emailAddress,
       validator: (value) {
@@ -320,6 +401,7 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
+
     var passwordTextField = TextFormField(
       validator: (value) {
         if (value == null || value.isEmpty) {
@@ -374,7 +456,24 @@ class SignInComponentState extends State<SignInComponent>
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
-    List<Widget> textFields = [usernameTextField, passwordTextField];
+    var forgetPasswordTextButton = GestureDetector(
+      onTap: () => setAsForgetPasswordScreen(),
+      child: Container(
+        padding: EdgeInsets.only(left: 5),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          AppLocalizations.of(context)!.forgotPasswordBtn,
+          style: TextStyle(
+              color: Color(0xFF880E4F), decoration: TextDecoration.underline),
+        ),
+      ),
+    );
+    List<Widget> textFields = [
+      usernameTextField,
+      passwordTextField,
+      forgetPasswordTextButton
+    ];
+
     var signUpButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
@@ -383,6 +482,7 @@ class SignInComponentState extends State<SignInComponent>
         onPressed: setAsRegistrationScreen,
       ),
     );
+
     var signInButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
@@ -392,9 +492,8 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var googleSignInButton = Platform.isIOS && false
-        ? SizedBox.shrink()
-        : SizedBox(
+    var googleSignInButton = isGoogleSignInEnabled
+        ? SizedBox(
             width: 200,
             child: ElevatedButton.icon(
                 onPressed: signInToGoogle,
@@ -403,12 +502,25 @@ class SignInComponentState extends State<SignInComponent>
                   color: Colors.white,
                 ),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
-          );
+          )
+        : SizedBox.shrink();
 
-    var backToSignInButton = ElevatedButton.icon(
-      label: Text(AppLocalizations.of(context)!.signIn),
-      icon: Icon(Icons.arrow_back),
-      onPressed: setAsSignInScreen,
+    var backToSignInButton = SizedBox(
+      width: isForgetPasswordScreen ? 200 : null,
+      child: ElevatedButton.icon(
+        label: Text(AppLocalizations.of(context)!.signIn),
+        icon: Icon(Icons.arrow_back),
+        onPressed: setAsSignInScreen,
+      ),
+    );
+
+    var forgetPasswordButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        icon: Icon(Icons.lock_reset),
+        label: Text(AppLocalizations.of(context)!.resetPassword),
+        onPressed: forgetPassword,
+      ),
     );
 
     var registerUserButton = ElevatedButton.icon(
@@ -416,9 +528,18 @@ class SignInComponentState extends State<SignInComponent>
       icon: Icon(Icons.person_add),
       onPressed: registerUser,
     );
+    List<Widget> buttons = [
+      signInButton,
+      signUpButton,
+      googleSignInButton,
+    ];
 
-    List<Widget> buttons = [signInButton, signUpButton, googleSignInButton];
-
+    if (isForgetPasswordScreen) {
+      textFields = [
+        emailTextField,
+      ];
+      buttons = [forgetPasswordButton, backToSignInButton];
+    }
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
         keyboardType: TextInputType.visiblePassword,
@@ -465,6 +586,13 @@ class SignInComponentState extends State<SignInComponent>
         Spacer(),
       ];
     }
+    if (this.isPendingResetPassword) {
+      buttons = [
+        Spacer(),
+        createSignInPendingComponent(AppLocalizations.of(context)!.reset),
+        Spacer(),
+      ];
+    }
     return Form(
         key: _formKey,
         child: Container(
@@ -482,11 +610,11 @@ class SignInComponentState extends State<SignInComponent>
               ],
             ),
             padding: EdgeInsets.symmetric(
-                vertical: isRegistrationScreen ? 10.0 : 20.0, horizontal: 10),
+                vertical: isRegistrationScreen ? 10.0 : 0.0, horizontal: 10),
             child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     Container(
                       height: credentialButtonHeight,
@@ -494,12 +622,13 @@ class SignInComponentState extends State<SignInComponent>
                           vertical: 5.0, horizontal: 20),
                       child: AutofillGroup(
                         child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: textFields,
                         ),
                       ),
                     ),
                     Container(
+                      padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: buttons,

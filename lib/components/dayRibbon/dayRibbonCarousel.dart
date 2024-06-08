@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -51,6 +52,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   }
 
   onDateButtonTapped(DateTime date) {
+    AnalysticsSignal.send('DAY_RIBBON_TAPPED');
     DateTime previousDate = this.selectedDate;
     DateTime currentDate = date;
     updateSelectedDate(date);
