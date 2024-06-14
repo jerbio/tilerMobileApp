@@ -6,11 +6,68 @@ abstract class ScheduleState extends Equatable {
 
   @override
   List<Object> get props => [];
+
+  static _PriorScheduleState generatePriorScheduleState(ScheduleState state) {
+    List<SubCalendarEvent> subEvents = [];
+    List<Timeline> timelines = [];
+    Timeline lookupTimeline = Utility.initialScheduleTimeline;
+    DateTime loadingTime = DateTime.fromMillisecondsSinceEpoch(0);
+    ScheduleStatus scheduleStatus = ScheduleStatus.fromJson({});
+    if (state is ScheduleLoadedState) {
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      lookupTimeline = state.lookupTimeline;
+      scheduleStatus = state.scheduleStatus;
+    }
+
+    if (state is ScheduleEvaluationState) {
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      lookupTimeline = state.lookupTimeline;
+      scheduleStatus = state.scheduleStatus;
+    }
+
+    if (state is ScheduleLoadingState) {
+      subEvents = state.subEvents;
+      timelines = state.timelines;
+      lookupTimeline = state.previousLookupTimeline;
+      loadingTime = state.loadingTime;
+      scheduleStatus = state.scheduleStatus;
+    }
+
+    if (state is ScheduleInitialState) {
+      subEvents = [];
+      timelines = [];
+      lookupTimeline = Utility.initialScheduleTimeline;
+      scheduleStatus = ScheduleStatus.fromJson({});
+    }
+
+    return _PriorScheduleState(
+        loadingTime: loadingTime,
+        previousLookupTimeline: lookupTimeline,
+        subEvents: subEvents,
+        timelines: timelines,
+        scheduleStatus: scheduleStatus);
+  }
 }
 
 class ScheduleInitialState extends ScheduleState {}
 
 class ScheduleLoggedOutState extends ScheduleState {}
+
+class _PriorScheduleState {
+  final DateTime loadingTime;
+  final List<SubCalendarEvent> subEvents;
+  final List<Timeline> timelines;
+  final Timeline previousLookupTimeline;
+  final ScheduleStatus scheduleStatus;
+  _PriorScheduleState(
+      {required this.loadingTime,
+      required this.previousLookupTimeline,
+      required this.subEvents,
+      required this.timelines,
+      required this.scheduleStatus});
+}
 
 class ScheduleLoadingState extends ScheduleState {
   DateTime loadingTime;
@@ -41,12 +98,14 @@ class ScheduleLoadedState extends ScheduleState {
   List<Timeline> timelines;
   Timeline lookupTimeline;
   ScheduleStatus scheduleStatus;
+  String? eventId;
 
   ScheduleLoadedState(
       {this.subEvents = const <SubCalendarEvent>[],
       required this.timelines,
       required this.lookupTimeline,
-      required this.scheduleStatus});
+      required this.scheduleStatus,
+      this.eventId});
 
   @override
   List<Object> get props => [subEvents];
@@ -74,12 +133,14 @@ class FailedScheduleLoadedState extends ScheduleLoadedState {
       required timelines,
       required lookupTimeline,
       required this.evaluationTime,
-      required scheduleStatus})
+      required scheduleStatus,
+      eventId})
       : super(
             subEvents: subEvents,
             timelines: timelines,
             lookupTimeline: lookupTimeline,
-            scheduleStatus: scheduleStatus);
+            scheduleStatus: scheduleStatus,
+            eventId: eventId);
 }
 
 class ScheduleEvaluationState extends ScheduleState {

@@ -14,12 +14,14 @@ class GetScheduleEvent extends ScheduleEvent {
   bool forceRefresh = false;
   Timeline? previousTimeline;
   String? message;
+  String? eventId;
   GetScheduleEvent(
       {this.previousSubEvents,
       this.scheduleTimeline,
       this.isAlreadyLoaded,
       this.previousTimeline,
       this.message,
+      this.eventId,
       this.forceRefresh = false});
 
   @override

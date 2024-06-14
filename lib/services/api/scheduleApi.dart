@@ -66,7 +66,6 @@ class ScheduleApi extends AppApi {
             var contentData = jsonResult['Content'];
             List subEventJson = contentData['subCalendarEvents'];
             List sleepTimelinesJson = [];
-            print("Got more data " + subEventJson.length.toString());
 
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
@@ -475,7 +474,7 @@ class ScheduleApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          print(jsonResult);
+          // print(jsonResult);
           return TimelineSummary.subCalendarEventFromJson(
               jsonResult['Content']);
         }
