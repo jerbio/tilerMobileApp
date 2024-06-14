@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -77,8 +78,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
-    print("Get Schedule State");
-    print(state);
+    String? eventId = event.eventId;
     bool isAlreadyLoaded = false;
     Timeline updateTimeline =
         event.scheduleTimeline ?? Utility.initialScheduleTimeline;
@@ -153,14 +153,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             subEvents: updatedSubEvents,
             timelines: value.item1,
             scheduleStatus: value.item3,
-            lookupTimeline: updateTimeline));
+            lookupTimeline: updateTimeline,
+            eventId: eventId));
       }).catchError((onError) {
         emit(FailedScheduleLoadedState(
             evaluationTime: Utility.currentTime(),
             subEvents: subEvents,
             timelines: timelines,
             scheduleStatus: scheduleStatus,
-            lookupTimeline: updateTimeline));
+            lookupTimeline: updateTimeline,
+            eventId: eventId));
       });
     };
 
@@ -200,9 +202,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     return;
   }
 
-  Future<void> _onReviseSchedule(
-      ReviseScheduleEvent event, Emitter<ScheduleState> emit) async {
-    final state = this.state;
+  void preserveState(ScheduleState state) {
     List<SubCalendarEvent>? subEvents;
     List<Timeline>? timelines;
     Timeline? lookupTimeline;
@@ -213,7 +213,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       subEvents = state.subEvents;
       timelines = state.timelines;
       lookupTimeline = state.lookupTimeline;
-      message = event.message;
       scheduleStatus = state.scheduleStatus;
     }
 
@@ -227,7 +226,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       timelines = state.timelines;
       scheduleStatus = state.scheduleStatus;
       lookupTimeline = state.lookupTimeline;
-      message = event.message;
     }
 
     if (state is ScheduleInitialState) {
@@ -235,9 +233,22 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       timelines = [];
       lookupTimeline = Utility.initialScheduleTimeline;
       scheduleStatus = ScheduleStatus();
-      message = event.message;
     }
+  }
 
+  Future<void> _onReviseSchedule(
+      ReviseScheduleEvent event, Emitter<ScheduleState> emit) async {
+    final state = this.state;
+
+    print("revising your schedule");
+    print("current state is ");
+    print(state);
+    var priorSscheduleState = ScheduleState.generatePriorScheduleState(state);
+    List<SubCalendarEvent> subEvents = priorSscheduleState.subEvents;
+    List<Timeline> timelines = priorSscheduleState.timelines;
+    Timeline lookupTimeline = priorSscheduleState.previousLookupTimeline;
+    ScheduleStatus? scheduleStatus = priorSscheduleState.scheduleStatus;
+    String? message;
     if (subEvents != null && timelines != null && lookupTimeline != null) {
       emit(ScheduleEvaluationState(
           subEvents: subEvents,
@@ -246,6 +257,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           evaluationTime: Utility.currentTime(),
           scheduleStatus: scheduleStatus,
           message: message));
+      print("remote revise execution sent");
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
             GetScheduleEvent(

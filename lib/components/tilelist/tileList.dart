@@ -59,6 +59,8 @@ class _TileListState extends State<TileList> {
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
   List<Widget> carouselItems = [];
   final CarouselController tileListDayCarouselController = CarouselController();
+  final String incrementalTilerScrolId = "incremental-get-schedule";
+  final Map<String, dynamic> incrementalIdToMapping = {};
 
   @override
   void initState() {
@@ -416,17 +418,6 @@ class _TileListState extends State<TileList> {
       var timeStamps = dayIndexes
           .map((eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
 
-      print('------------There are 111 ' +
-          tileData.item2.length.toString() +
-          ' tiles------------');
-      print('------------There are relevant ' +
-          relevantTimeline.toString() +
-          ' tiles------------');
-
-      print('------------There are ' +
-          timeLine.toString() +
-          ' tiles------------');
-
       List<TileBatch> preceedingDayTiles =
           preceedingDayTilesDict.values.toList();
       preceedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
@@ -702,7 +693,8 @@ class _TileListState extends State<TileList> {
         currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
         currentScheduleSummaryState is ScheduleDaySummaryLoading) {
       this.context.read<ScheduleSummaryBloc>().add(
-            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+            GetScheduleDaySummaryEvent(
+                timeline: lookupTimeline, requestId: incrementalTilerScrolId),
           );
     }
   }
@@ -809,13 +801,19 @@ class _TileListState extends State<TileList> {
     }
 
     Timeline newTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
+    print("previous timeline " + previousTimeline.toString());
+    print("new timeline " + newTimeline.toString());
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeline,
         isAlreadyLoaded: !forceRenderingPage,
-        scheduleTimeline: newTimeline));
+        scheduleTimeline: newTimeline,
+        eventId: incrementalTilerScrolId));
     refreshScheduleSummary(lookupTimeline: newTimeline);
   }
+
+  void augmentLoadedState(ScheduleLoadedState augmentedLoadedState,
+      {ScheduleLoadedState? currentLoadedState = null}) {}
 
   @override
   Widget build(BuildContext context) {
@@ -832,6 +830,16 @@ class _TileListState extends State<TileList> {
                   backgroundColor: Colors.black45,
                   textColor: Colors.white,
                   fontSize: 16.0);
+            }
+          }
+          if (state is ScheduleLoadedState) {
+            if (state.eventId != null && state.eventId!.isNotEmpty) {
+              String eventId = state.eventId!;
+              if (eventId.contains(incrementalTilerScrolId) &&
+                  incrementalIdToMapping.containsKey(incrementalTilerScrolId)) {
+                augmentLoadedState(state);
+                var priorSetup = {};
+              }
             }
           }
         }),
