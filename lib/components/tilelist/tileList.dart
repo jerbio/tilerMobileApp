@@ -13,6 +13,7 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -59,13 +60,15 @@ class _TileListState extends State<TileList> {
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
   List<Widget> carouselItems = [];
   final CarouselController tileListDayCarouselController = CarouselController();
-  final String incrementalTilerScrolId = "incremental-get-schedule";
-  final Map<String, dynamic> incrementalIdToMapping = {};
+  final String incrementalTilerScrollId = "incremental-get-schedule";
+  late String updatedIncrementalTilerScrollId;
+  Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
 
   @override
   void initState() {
     localNotificationService = LocalNotificationService();
     super.initState();
+    updatedIncrementalTilerScrollId = incrementalTilerScrollId;
     _scrollController.addListener(() {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
@@ -694,7 +697,7 @@ class _TileListState extends State<TileList> {
         currentScheduleSummaryState is ScheduleDaySummaryLoading) {
       this.context.read<ScheduleSummaryBloc>().add(
             GetScheduleDaySummaryEvent(
-                timeline: lookupTimeline, requestId: incrementalTilerScrolId),
+                timeline: lookupTimeline, requestId: incrementalTilerScrollId),
           );
     }
   }
@@ -753,6 +756,10 @@ class _TileListState extends State<TileList> {
     handleAutoRefresh(tiles);
   }
 
+  String _generateIncrementalIdToMapping() {
+    return incrementalTilerScrollId + "-" + Utility.msCurrentTime.toString();
+  }
+
   reloadSchedule(DateTime dateManageCurrentDate,
       {bool forceRenderingPage = true}) {
     var scheduleSubEventState = this.context.read<ScheduleBloc>().state;
@@ -760,6 +767,9 @@ class _TileListState extends State<TileList> {
     Timeline todayTimeLine = Utility.todayTimeline();
     DateTime startDateTime = todayTimeLine.startTime;
     DateTime endDateTime = todayTimeLine.endTime;
+    List<Timeline> evaluatedDayTimelines = [];
+    ScheduleStatus scheduleStatus = ScheduleStatus();
+
     Timeline previousTimeline =
         Timeline.fromDateTime(todayTimeLine.startTime, todayTimeLine.endTime);
     if (scheduleSubEventState is ScheduleLoadedState) {
@@ -768,6 +778,9 @@ class _TileListState extends State<TileList> {
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
       previousTimeline =
           Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
+      scheduleStatus = scheduleSubEventState.scheduleStatus;
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
     }
     if (scheduleSubEventState is ScheduleEvaluationState) {
       subEvents = scheduleSubEventState.subEvents;
@@ -775,12 +788,18 @@ class _TileListState extends State<TileList> {
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
       previousTimeline =
           Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
+      scheduleStatus = scheduleSubEventState.scheduleStatus;
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
     }
 
     if (scheduleSubEventState is ScheduleLoadingState) {
       subEvents = scheduleSubEventState.subEvents;
       previousTimeline =
           Timeline.fromTimeRange(scheduleSubEventState.previousLookupTimeline);
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
+      scheduleStatus = scheduleSubEventState.scheduleStatus;
+      evaluatedDayTimelines = scheduleSubEventState.timelines;
     }
 
     if (startDateTime.millisecondsSinceEpoch >
@@ -803,17 +822,102 @@ class _TileListState extends State<TileList> {
     Timeline newTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
     print("previous timeline " + previousTimeline.toString());
     print("new timeline " + newTimeline.toString());
+    String loopIncrementalIdToMapping = _generateIncrementalIdToMapping();
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeline,
         isAlreadyLoaded: !forceRenderingPage,
         scheduleTimeline: newTimeline,
-        eventId: incrementalTilerScrolId));
+        eventId: loopIncrementalIdToMapping));
     refreshScheduleSummary(lookupTimeline: newTimeline);
+    setState(() {
+      Map<String, ScheduleLoadedState> incrementalIdToMapping_cpy = {};
+      incrementalIdToMapping_cpy.addAll(incrementalIdToMapping);
+      incrementalIdToMapping_cpy[loopIncrementalIdToMapping] =
+          ScheduleLoadedState(
+              lookupTimeline: previousTimeline,
+              subEvents: subEvents,
+              scheduleStatus: scheduleStatus,
+              timelines: evaluatedDayTimelines);
+      incrementalIdToMapping = incrementalIdToMapping_cpy;
+    });
+  }
+
+  List<SubCalendarEvent> dedupeAndMergeSubEvents(
+      List<SubCalendarEvent> destination, List<SubCalendarEvent> source) {
+    Map<String, SubCalendarEvent> destinationResult = {};
+    destination.forEach((eachSubEvent) {
+      if (eachSubEvent.id != null) {
+        destinationResult[eachSubEvent.id!] = eachSubEvent;
+      }
+    });
+    source.forEach((eachSubEvent) {
+      if (eachSubEvent.id != null) {
+        if (destinationResult.containsKey(eachSubEvent.id)) {
+          destinationResult[eachSubEvent.id!] = eachSubEvent;
+        }
+      }
+    });
+    return destinationResult.values.toList();
+  }
+
+  List<Timeline> dedupeAndMergeTimelines(
+      List<Timeline> destination, List<Timeline> source) {
+    Map<String, Timeline> destinationResult = {};
+    destination.forEach((eachTimeline) {
+      if (eachTimeline.id != null) {
+        destinationResult[eachTimeline.toString()] = eachTimeline;
+      }
+    });
+    source.forEach((eachTimeline) {
+      if (eachTimeline.id != null) {
+        if (destinationResult.containsKey(eachTimeline.id)) {
+          destinationResult[eachTimeline.toString()] = eachTimeline;
+        }
+      }
+    });
+    return destinationResult.values.toList();
+  }
+
+  Timeline mergeTimeline(Timeline destination, Timeline source) {
+    DateTime start = (destination.start ?? 0) < (source.end ?? 0)
+        ? destination.startTime
+        : source.endTime;
+
+    DateTime end = (destination.end ?? 0) > (source.end ?? 0)
+        ? destination.endTime
+        : source.endTime;
+
+    Timeline retValue = new Timeline.fromDateTime(start, end);
+    return retValue;
   }
 
   void augmentLoadedState(ScheduleLoadedState augmentedLoadedState,
-      {ScheduleLoadedState? currentLoadedState = null}) {}
+      {ScheduleLoadedState? currentLoadedState = null}) {
+    List<Timeline> revisedTimelines = augmentedLoadedState.timelines;
+    List<SubCalendarEvent> subEvents = augmentedLoadedState.subEvents;
+    Timeline lookupTimeline = augmentedLoadedState.lookupTimeline;
+    ScheduleStatus scheduleStatus = augmentedLoadedState.scheduleStatus;
+
+    if (currentLoadedState != null &&
+        scheduleStatus.analysisId ==
+            currentLoadedState.scheduleStatus.analysisId &&
+        scheduleStatus.evaluationId ==
+            currentLoadedState.scheduleStatus.evaluationId) {
+      revisedTimelines = dedupeAndMergeTimelines(
+          revisedTimelines, currentLoadedState.timelines);
+      subEvents =
+          dedupeAndMergeSubEvents(subEvents, currentLoadedState.subEvents);
+      lookupTimeline =
+          mergeTimeline(lookupTimeline, currentLoadedState.lookupTimeline);
+    }
+
+    this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+        lookupTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
+        subEvents: subEvents,
+        timelines: revisedTimelines));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -835,10 +939,13 @@ class _TileListState extends State<TileList> {
           if (state is ScheduleLoadedState) {
             if (state.eventId != null && state.eventId!.isNotEmpty) {
               String eventId = state.eventId!;
-              if (eventId.contains(incrementalTilerScrolId) &&
-                  incrementalIdToMapping.containsKey(incrementalTilerScrolId)) {
-                augmentLoadedState(state);
-                var priorSetup = {};
+              if (eventId.contains(incrementalTilerScrollId) &&
+                  incrementalIdToMapping
+                      .containsKey(incrementalTilerScrollId)) {
+                augmentLoadedState(state,
+                    currentLoadedState:
+                        incrementalIdToMapping[incrementalTilerScrollId]);
+                incrementalIdToMapping.remove(incrementalTilerScrollId);
               }
             }
           }
