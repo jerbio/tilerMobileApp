@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -189,23 +190,26 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // GestureDetector(
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     Navigator.of(context).pushNamed('/ForecastPreview');
-                //   },
-                //   child: ListTile(
-                //     leading: Image.asset('assets/images/binocular.png'),
-                //     title: Text(
-                //       AppLocalizations.of(context)!.forecast,
-                //       style: TextStyle(
-                //           fontSize: 20,
-                //           fontFamily: TileStyles.rubikFontName,
-                //           fontWeight: FontWeight.w300,
-                //           color: Colors.white),
-                //     ),
-                //   ),
-                // ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).pushNamed('/ForecastPreview');
+                  },
+                  child: ListTile(
+                    leading: SvgPicture.asset('assets/images/binocular.svg'),
+                    title: Container(
+                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+                      child: Text(
+                        AppLocalizations.of(context)!.forecast,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
                 GestureDetector(
                   onTap: () {
                     AnalysticsSignal.send('REVISE_BUTTON');

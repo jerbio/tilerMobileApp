@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -122,6 +123,7 @@ class TilerApp extends StatelessWidget {
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
           BlocProvider(create: (context) => LocationBloc()),
+          BlocProvider(create: (context) => ForecastBloc()),
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -144,7 +146,8 @@ class TilerApp extends StatelessWidget {
             '/ForecastPreview': (ctx) => ForecastPreview(),
             '/ForecastDuration': (ctx) => ForecastDuration(),
             '/Procrastinate': (ctx) => ProcrastinateAll(),
-            '/DurationDial': (ctx) => DurationDial(
+            '/DurationDial': (ctx) => 
+            DurationDial(
                   presetDurations: [
                     Duration(minutes: 30),
                     Duration(hours: 1),
@@ -186,7 +189,10 @@ class TilerApp extends StatelessWidget {
                     retValue = new AuthorizedRoute();
                   } else {
                     authentication?.deauthenticateCredentials();
-                    retValue = SignInRoute();
+                    retValue = /*AuthorizedRoute()*/
+
+                        // This is the original route but it was commented for development sake by ted
+                        SignInRoute();
                   }
                 } else {
                   retValue = renderPending();
