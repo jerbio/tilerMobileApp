@@ -23,18 +23,17 @@ class ForecastLoading extends ForecastState {
 class ForecastLoaded extends ForecastState {
   final bool isViable;
   final List<SubCalendarEvent> subCalEvents;
-  final String resp;
+  
 
   const ForecastLoaded({
     required this.isViable,
     required this.subCalEvents,
-    required this.resp,
     required Duration duration,
     required DateTime? endTime,
   }) : super(duration: duration, endTime: endTime);
 
   @override
-  List<Object?> get props => [isViable, subCalEvents, resp, duration, endTime];
+  List<Object?> get props => [isViable, subCalEvents,  duration, endTime];
 }
 
 class ForecastError extends ForecastState {
