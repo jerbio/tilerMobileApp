@@ -13,6 +13,7 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileBatchWithinNow.dart';
+import 'package:tiler_app/constants.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -244,7 +245,8 @@ class _TileListState extends State<TileList> {
             );
       }
     }
-    autoRefreshTileList(Duration(minutes: 4));
+    autoRefreshTileList(
+        Duration(minutes: autoRefreshSubEventDurationInMinutes));
   }
 
   void handleRenderingOfNewTile(SubCalendarEvent subEvent) {
