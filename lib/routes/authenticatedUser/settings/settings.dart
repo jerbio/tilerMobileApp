@@ -8,6 +8,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/pendingWidget.dart';
@@ -256,6 +257,10 @@ class _SettingState extends State<Setting> {
         .add(LogOutSubCalendarTileBlocEvent());
     this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
     this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+    this
+        .context
+        .read<ScheduleSummaryBloc>()
+        .add(LogOutScheduleDaySummaryEvent());
   }
 
   Widget createLogOutButton() {

@@ -107,7 +107,7 @@
     "userSetReminderNotificationCategory": "User Set Reminder",
     "depatureTimeNotificationCategory": "Depature time",
     "tile": "Tile",
-    "appointment": "Appointment",
+    "appointment": "Block",
     "startingAtTime": "Starts at {time}",
     "@startingAtTime": {
       "description": "Starts at time",
@@ -333,5 +333,14 @@
       }},
     "lowPriorityTrunc": "Low",
     "mediumPriorityTrunc": "Mid",
-    "highPriorityTrunc": "High"
+    "highPriorityTrunc": "High",
+    "failedToAddGoogleCalendar": "Failed to add {email}",
+    "@failedToAddGoogleCalendar": {
+      "description": "Email address",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "5:14 PM"
+        }
+      }}
   }

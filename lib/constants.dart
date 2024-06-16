@@ -1,6 +1,6 @@
 import 'dart:io';
 
-const bool isProduction = true;
+const bool isProduction = false;
 const bool isDebug = !isProduction;
 const bool isRemote = true;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
@@ -12,6 +12,7 @@ const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
 const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
+const int autoRefreshSubEventDurationInMinutes = 4;
 const int animationDuration = 200;
 const String requestDelimiter = ',';
 const String cannotVerifyError = 'Cannot verify error';
