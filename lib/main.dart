@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -23,6 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -132,6 +134,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
           BlocProvider(create: (context) => LocationBloc()),
+          BlocProvider(create: (context) => IntegrationsBloc()),
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -163,6 +166,7 @@ class _TilerAppState extends State<TilerApp> {
             '/repetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
+            '/Integrations': (ctx) => IntegrationWidgetRoute(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,

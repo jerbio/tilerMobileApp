@@ -340,7 +340,23 @@
       "placeholders": {
         "email": {
           "type": "String",
-          "example": "5:14 PM"
+          "example": "abc@xyz.com"
         }
-      }}
+      }},
+
+      "deletedCalendar": "Deleted {email} calendar",
+      "@deletedCalendar": {
+        "description": "Email address",
+        "placeholders": {
+          "email": {
+            "type": "String",
+            "example": "abc@xyz.com"
+          }
+        }},
+      "loadingIntegrations": "Loading Integrations",
+      "noThirdPartyIntegtions": "No Thirdparty calendars",
+      "addGoogleCalendar": "Add Google Calendar",
+      "integrations": "Integrations",
+      "integrateOtherCalendars": "Integrate with third party calendars"
+      
   }

@@ -62,4 +62,39 @@ class IntegrationApi extends AppApi {
       return jsonResult;
     });
   }
+
+  Future<bool?> deleteIntegration(
+      CalendarIntegration calendarIntegration) async {
+    TilerError error = new TilerError();
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      error.message = "Did not send request";
+      String url = Constants.tilerDomain;
+
+      Uri uri = Uri.https(url, 'api/Integrations');
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var deleteIntegrationParameters = {
+        'IntegrationId': calendarIntegration.id,
+        'Provider': calendarIntegration.calendarType,
+        'MobileApp': true.toString()
+      };
+
+      var injectedDeleteIntegrationParameters =
+          await injectRequestParams(deleteIntegrationParameters);
+      var response = await http.delete(uri,
+          headers: header,
+          body: json.encode(injectedDeleteIntegrationParameters));
+      var jsonResult = jsonDecode(response.body);
+      error.message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 }

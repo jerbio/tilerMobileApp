@@ -1361,7 +1361,7 @@ class AddTileState extends State<AddTile> {
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileStyles.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
           style: TileStyles.titleBarStyle,
