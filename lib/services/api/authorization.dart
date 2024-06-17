@@ -174,6 +174,10 @@ class AuthorizationApi extends AppApi {
   }
 
   Future<Map<String, dynamic>?> addGoogleCalendar() async {
+    if (GoogleSignInApi.googleUser != null) {
+      GoogleSignInApi.googleUser!.clearAuthCache();
+      await GoogleSignInApi.logout();
+    }
     Map<String, dynamic>? remoteGoogleCredentials =
         await getRemoteGoogleCredentials();
     GoogleSignInAccount? googleUser = null;
@@ -199,6 +203,7 @@ class AuthorizationApi extends AppApi {
         'RefreshToken': refreshToken,
         'Email': googleUser.email,
         'DisplayName': googleUser.displayName,
+        'Provider': providerName,
         'ServerAuthCode': googleUser.serverAuthCode,
       };
       return sendPostRequest(

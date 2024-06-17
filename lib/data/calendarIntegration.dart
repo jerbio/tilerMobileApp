@@ -13,8 +13,8 @@ class CalendarIntegration extends TilerObj {
     if (json.containsKey('email')) {
       email = json['email'];
     }
-    if (json.containsKey('calendarType')) {
-      calendarType = json['calendarType'];
+    if (json.containsKey('provider')) {
+      calendarType = json['provider'];
     }
     if (json.containsKey('location') && json["location"] != null) {
       location = Location.fromJson(json["location"]);

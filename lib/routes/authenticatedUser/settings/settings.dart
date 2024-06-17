@@ -1,4 +1,3 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,7 +13,6 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
@@ -270,6 +268,15 @@ class _SettingState extends State<Setting> {
     return retValue;
   }
 
+  Widget createIntegrationButton() {
+    Widget retValue = ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/Integrations');
+        },
+        child: Text(AppLocalizations.of(context)!.integrateOtherCalendars));
+    return retValue;
+  }
+
   sendDeleteRequest() async {
     AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
     _authorizationApi.deleteTilerAccount().then((result) {
@@ -378,6 +385,7 @@ class _SettingState extends State<Setting> {
     }
     Widget logoutButton = createLogOutButton();
     Widget deleteButton = createDeleteAccountButton();
+    Widget integrationButton = createIntegrationButton();
     if (isTimeOfDayLoaded) {
       Widget endOfDayWidget =
           Container(alignment: Alignment.center, child: createEndOfDay());
@@ -388,12 +396,12 @@ class _SettingState extends State<Setting> {
         backgroundDecoration: BoxDecoration(color: Colors.transparent),
       ));
     }
-
+    childElements.add(integrationButton);
     childElements.add(logoutButton);
     childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileStyles.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.settings,
           style: TextStyle(
