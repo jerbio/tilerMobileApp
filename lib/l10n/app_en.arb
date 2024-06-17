@@ -333,5 +333,6 @@
       }},
     "lowPriorityTrunc": "Low",
     "mediumPriorityTrunc": "Mid",
-    "highPriorityTrunc": "High"
+    "highPriorityTrunc": "High",
+    "clear":"Clear"
   }
