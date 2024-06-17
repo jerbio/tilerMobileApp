@@ -1,11 +1,17 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/bloc/integrations_bloc.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/authorization.dart';
+import 'package:tiler_app/services/api/integrationsApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -17,6 +23,8 @@ class IntegrationWidgetRoute extends StatefulWidget {
 
 class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
   final String blocEventId = "IntegrationId";
+  final AuthorizationApi authorizationApi = AuthorizationApi();
+  final IntegrationApi integrationApi = IntegrationApi();
   List<CalendarIntegration> integrations = [];
   @override
   void initState() {
@@ -48,7 +56,6 @@ class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
   Widget renderAddNewIntegration() {
     return ElevatedButton(
         onPressed: () async {
-          AuthorizationApi authorizationApi = AuthorizationApi();
           this.context.read<IntegrationsBloc>().add(PendingIntegrationsEvent(
               eventId: blocEventId, integrations: integrations));
           authorizationApi.addGoogleCalendar().then((value) {
@@ -108,12 +115,58 @@ class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
           },
           child: ListTile(
             title: Text(titleText),
-            trailing: ElevatedButton(
-                style: TileStyles.onlyIcons,
-                onPressed: () {
-                  deleteIntegration(index, orderedIntegrations);
-                },
-                child: Icon(Icons.delete_outline_sharp)),
+            trailing: Stack(
+              children: [
+                Container(
+                  color: Colors.yellow,
+                  child: ElevatedButton(
+                      style: TileStyles.onlyIcons,
+                      onPressed: () {
+                        Map<String, dynamic> locationParams = {
+                          'location': integration.location,
+                        };
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => LocationRoute(
+                                      disableNickName: true,
+                                      hideHomeButton: true,
+                                      hideWorkButton: true,
+                                      locationArgs: locationParams,
+                                    ))).whenComplete(() {
+                          Location? populatedLocation =
+                              locationParams['location'] as Location? ??
+                                  Location.fromDefault();
+                          AnalysticsSignal.send(
+                              'INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
+                          setState(() {
+                            if (populatedLocation != null) {
+                              if (integration.id != null) {
+                                integration.location = populatedLocation;
+                                integrationApi.addIntegrationLocation(
+                                    populatedLocation, integration.id!);
+                              }
+                              // integration.location = populatedLocation;
+                            }
+                          });
+                        });
+                      },
+                      child: Icon(Icons.location_pin)),
+                ),
+                Positioned(
+                  left: 26,
+                  child: Container(
+                    color: Colors.green,
+                    child: ElevatedButton(
+                        style: TileStyles.onlyIcons,
+                        onPressed: () {
+                          deleteIntegration(index, orderedIntegrations);
+                        },
+                        child: Icon(Icons.delete_outline_sharp)),
+                  ),
+                )
+              ],
+            ),
           ),
         );
       },
