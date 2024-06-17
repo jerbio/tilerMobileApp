@@ -10,6 +10,16 @@ import '../../../styles.dart';
 class LocationRoute extends StatefulWidget {
   Location? pushedLocation;
   Map? _locationParams;
+  bool disableNickName;
+  bool disableAddress;
+  bool hideHomeButton;
+  bool hideWorkButton;
+  LocationRoute(
+      {this.disableAddress = false,
+      this.disableNickName = false,
+      this.hideHomeButton = false,
+      this.hideWorkButton = false});
+
   @override
   LocationRouteState createState() => LocationRouteState();
 }
@@ -119,6 +129,26 @@ class LocationRouteState extends State<LocationRoute> {
     return retValue;
   }
 
+  Widget clearAll() {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          addressText = "";
+          lookupNickNameText = "";
+          isLocationVerified = false;
+          selectedLocation = null;
+        });
+        if (this.locationAddressController != null) {
+          this.locationAddressController!.clear();
+        }
+        if (this.locationNickNameController != null) {
+          this.locationNickNameController!.clear();
+        }
+      },
+      child: Text(AppLocalizations.of(context)!.clear),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Map? locationParams = ModalRoute.of(context)?.settings.arguments as Map?;
@@ -180,41 +210,49 @@ class LocationRouteState extends State<LocationRoute> {
             },
             textField: addressTextField,
             onLocationSelection: onAutoSuggestedLocationTap));
-    List<Widget> routeStackWidgets = <Widget>[
-      Align(
-          alignment: Alignment.center,
-          child: FractionallySizedBox(
-              widthFactor: TileStyles.inputWidthFactor,
-              child: Container(
-                alignment: Alignment.topCenter,
-                margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
-                child: TextField(
-                  controller: locationNickNameController,
-                  style: TileStyles.fullScreenTextFieldStyle,
-                  decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.nickName,
-                    filled: true,
-                    isDense: true,
-                    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                    fillColor: Colors.transparent,
-                    border: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.transparent),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                        borderSide:
-                            BorderSide(color: textBorderColor, width: 1)),
-                    enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                            color: textBorderColor.withLightness(0.8),
-                            width: 1)),
+
+    Widget locationNickNameWidget = Align(
+        alignment: Alignment.center,
+        child: FractionallySizedBox(
+            widthFactor: TileStyles.inputWidthFactor,
+            child: Container(
+              alignment: Alignment.topCenter,
+              margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
+              child: TextField(
+                controller: locationNickNameController,
+                style: TileStyles.fullScreenTextFieldStyle,
+                decoration: InputDecoration(
+                  hintText: AppLocalizations.of(context)!.nickName,
+                  filled: true,
+                  isDense: true,
+                  contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                  fillColor: Colors.transparent,
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.transparent),
                   ),
+                  focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: textBorderColor, width: 1)),
+                  enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                          color: textBorderColor.withLightness(0.8), width: 1)),
                 ),
-              ))),
-      Container(
-        alignment: Alignment.topCenter,
-        child: locationSearchWidget,
-      ),
+              ),
+            )));
+    Widget locationAddressWidget = Container(
+      alignment: Alignment.topCenter,
+      child: locationSearchWidget,
+    );
+    List<Widget> routeStackWidgets = <Widget>[
+      locationNickNameWidget,
+      locationAddressWidget
     ];
+    if (this.widget.disableAddress) {
+      routeStackWidgets.remove(locationAddressWidget);
+    }
+
+    if (this.widget.disableNickName) {
+      routeStackWidgets.remove(locationNickNameWidget);
+    }
 
     Location? homeLocation = Location.fromDefault();
     homeLocation.description = AppLocalizations.of(context)!.home;
@@ -241,7 +279,7 @@ class LocationRouteState extends State<LocationRoute> {
         defaultLocationFields.add(renderNickNameDefaultButton(eachLocation));
       }
     }
-    if (workLocation != null) {
+    if (workLocation != null && !this.widget.hideWorkButton) {
       defaultLocationFields.add(renderNickNameDefaultButton(workLocation,
           iconData: Icons.work,
           isEnabled: workLocation.isNotNullAndNotDefault,
@@ -250,7 +288,7 @@ class LocationRouteState extends State<LocationRoute> {
               : workLocation.description!.toLowerCase() ==
                   (locationNickNameController!.text).toLowerCase()));
     }
-    if (homeLocation != null) {
+    if (homeLocation != null && !this.widget.hideHomeButton) {
       defaultLocationFields.insert(
           0,
           renderNickNameDefaultButton(homeLocation,
@@ -277,6 +315,7 @@ class LocationRouteState extends State<LocationRoute> {
       children: routeStackWidgets,
     );
     return CancelAndProceedTemplateWidget(
+      bottomWidget: clearAll(),
       child: Container(
         child: columnOfItems,
       ),
