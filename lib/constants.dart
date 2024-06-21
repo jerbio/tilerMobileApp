@@ -3,9 +3,7 @@ import 'dart:io';
 const bool isProduction = false;
 const bool isDebug = !isProduction;
 const bool isRemote = true;
-// const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
-// const String devDomain = 'localhost-44388-x-if7.conveyor.cloud';
 const String devDomain =
     isRemote ? 'localhost-44388-x-if7.conveyor.cloud' : '10.0.2.2:44322';
 const String tilerDomain = isProduction ? prodDomain : devDomain;
@@ -14,6 +12,7 @@ const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
 const int autoScrollBuffer = 50;
 const int autoHideInMs = 3000;
+const int autoRefreshSubEventDurationInMinutes = 4;
 const int animationDuration = 200;
 const String requestDelimiter = ',';
 const String cannotVerifyError = 'Cannot verify error';

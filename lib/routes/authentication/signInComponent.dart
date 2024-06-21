@@ -15,6 +15,7 @@ import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
+import 'package:tiler_app/services/analyticsSignal.dart';
 
 import 'AuthorizedRoute.dart';
 
@@ -106,6 +107,7 @@ class SignInComponentState extends State<SignInComponent>
 
   void userNamePasswordSignIn() async {
     if (_formKey.currentState!.validate()) {
+      AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_INITIATED');
       showMessage(AppLocalizations.of(context)!.signingIn);
       setState(() {
         isPendingSigning = true;
@@ -121,12 +123,13 @@ class SignInComponentState extends State<SignInComponent>
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
         if (!authenticationData.isValid) {
+          AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
             showErrorMessage(authenticationData.errorMessage!);
             return;
           }
         }
-
+        AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_SUCCESS');
         setState(() {
           isPendingSigning = false;
         });
@@ -221,10 +224,12 @@ class SignInComponentState extends State<SignInComponent>
         setState(() {
           isPendingResetPassword = true;
         });
+        AnalysticsSignal.send('FORGOT_PASSWORD_INITIATED');
         showMessage(AppLocalizations.of(context)!.forgetPassword);
         var result = await AuthorizationApi.sendForgotPasswordRequest(
             emailEditingController.text);
         if (result.error.code == "0") {
+          AnalysticsSignal.send('FORGOT_PASSWORD_SUCCESS');
           showMessage(result.error.message);
           Future.delayed(Duration(seconds: 2), () {
             setState(() {
@@ -232,9 +237,11 @@ class SignInComponentState extends State<SignInComponent>
             });
           });
         } else {
+          AnalysticsSignal.send('FORGOT_PASSWORD_ERROR');
           showErrorMessage(result.error.message);
         }
       } catch (e) {
+        AnalysticsSignal.send('FORGOT_PASSWORD_SERVER_ERROR');
         showErrorMessage("Error: $e");
       } finally {
         Future.delayed(Duration(seconds: 2), () {
@@ -306,17 +313,20 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
+    AnalysticsSignal.send('GOOGLE_SIGNUP_INITIALIZE');
     setState(() {
       isPendingSigning = true;
     });
     AuthorizationApi authorizationApi = AuthorizationApi();
-    AuthenticationData? authenticationData = await authorizationApi
-        .signInToGoogle()
-        .then((value) => value)
-        .catchError((onError) {
+    AuthenticationData? authenticationData =
+        await authorizationApi.signInToGoogle().then((value) {
+      AnalysticsSignal.send('GOOGLE_SIGNUP_SUCCESSFUL');
+      return value;
+    }).catchError((onError) {
       setState(() {
         isPendingSigning = false;
       });
+      AnalysticsSignal.send('GOOGLE_SIGNUP_FAILED');
       showErrorMessage(onError.message);
       return null;
     });

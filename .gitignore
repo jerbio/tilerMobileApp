@@ -47,6 +47,7 @@ ios/build/*
 ios/Runner/GoogleService-Info.plist
 android/key.propertie*
 android/app/google-services.json
+android/app/src/google-services.json
 
 
 # credentials
