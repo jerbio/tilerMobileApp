@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -23,6 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -32,10 +34,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-// import 'firebase_options.dart';
+import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
-import 'package:onesignal_flutter/onesignal_flutter.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
@@ -60,9 +60,9 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(TilerApp());
 }
 
@@ -138,6 +138,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
           BlocProvider(create: (context) => LocationBloc()),
+          BlocProvider(create: (context) => IntegrationsBloc()),
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -169,6 +170,7 @@ class _TilerAppState extends State<TilerApp> {
             '/repetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
+            '/Integrations': (ctx) => IntegrationWidgetRoute(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,

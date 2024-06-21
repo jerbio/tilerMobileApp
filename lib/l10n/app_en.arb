@@ -107,7 +107,7 @@
     "userSetReminderNotificationCategory": "User Set Reminder",
     "depatureTimeNotificationCategory": "Depature time",
     "tile": "Tile",
-    "appointment": "Appointment",
+    "appointment": "Block",
     "startingAtTime": "Starts at {time}",
     "@startingAtTime": {
       "description": "Starts at time",
@@ -333,5 +333,29 @@
       }},
     "lowPriorityTrunc": "Low",
     "mediumPriorityTrunc": "Mid",
-    "highPriorityTrunc": "High"
+    "highPriorityTrunc": "High",
+    "failedToAddGoogleCalendar": "Failed to add {email}",
+    "@failedToAddGoogleCalendar": {
+      "description": "Email address",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "abc@xyz.com"
+        }
+      }},
+    "deletedCalendar": "Deleted {email} calendar",
+    "@deletedCalendar": {
+      "description": "Email address",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "abc@xyz.com"
+        }
+      }},
+    "loadingIntegrations": "Loading Integrations",
+    "noThirdPartyIntegtions": "No Thirdparty calendars",
+    "addGoogleCalendar": "Add Google Calendar",
+    "integrations": "Integrations",
+    "integrateOtherCalendars": "Integrate with third party calendars",
+    "clear":"Clear"
   }

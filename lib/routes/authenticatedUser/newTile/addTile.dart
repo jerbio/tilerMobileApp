@@ -22,6 +22,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/singleChoice.dart';
 
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -539,6 +540,7 @@ class AddTileState extends State<AddTile> {
       Map<String, dynamic> durationParams = {'duration': _duration};
       Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
           .whenComplete(() {
+        AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_DURATION_ADDED');
         print('done with pop');
         print(durationParams['duration']);
         Duration? populatedDuration = durationParams['duration'] as Duration?;
@@ -675,6 +677,7 @@ class AddTileState extends State<AddTile> {
                 arguments: locationParams)
             .whenComplete(() {
           Location? populatedLocation = locationParams['location'] as Location?;
+          AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
           setState(() {
             if (populatedLocation != null &&
                 populatedLocation.isNotNullAndNotDefault != null) {
@@ -721,7 +724,7 @@ class AddTileState extends State<AddTile> {
             'repetitionData': repetitionData,
             'tileTimeline': tileTimeline,
           };
-
+          AnalysticsSignal.send('ADD_TILE_NEWTILE_REPETITION_OPEN');
           Navigator.pushNamed(context, '/repetitionRoute',
                   arguments: repetitionParams)
               .whenComplete(() {
@@ -975,6 +978,7 @@ class AddTileState extends State<AddTile> {
   }
 
   void onSubmitButtonTap() async {
+    AnalysticsSignal.send('ADD_TILE_NEWTILE_INITIATED');
     DateTime? _endTime = this._endTime;
     bool isAutoRevisable = false;
     if (this._isAutoRevisable) {
@@ -1104,7 +1108,7 @@ class AddTileState extends State<AddTile> {
       if (this.widget.newTileParams != null) {
         this.widget.newTileParams!['newTile'] = newlyAddedTile.item1;
       }
-
+      AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_SUCCESS_RESPONSE');
       this
           .context
           .read<SubCalendarTileBloc>()
@@ -1121,6 +1125,7 @@ class AddTileState extends State<AddTile> {
         refreshScheduleSummary(currentState.lookupTimeline);
       }
     }).onError((error, stackTrace) {
+      AnalysticsSignal.send('ADD_TILE_NEWTILE_ADD_ERROR_RESPONSE');
       if (error != null) {
         String message = error.toString();
         if (error is FormatException) {
@@ -1357,7 +1362,7 @@ class AddTileState extends State<AddTile> {
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileStyles.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
           style: TileStyles.titleBarStyle,

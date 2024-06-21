@@ -211,59 +211,59 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 GestureDetector(
                   onTap: () {
                     AnalysticsSignal.send('REVISE_BUTTON');
-
                     this
                         .context
                         .read<ScheduleBloc>()
                         .add(ReviseScheduleEvent());
-
-                    // final currentState =
-                    //     this.context.read<ScheduleBloc>().state;
-                    // if (currentState is ScheduleLoadedState) {
-                    //   this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-                    //         isAlreadyLoaded: true,
-                    //         renderedScheduleTimeline:
-                    //             currentState.lookupTimeline,
-                    //         renderedSubEvents: currentState.subEvents,
-                    //         renderedTimelines: currentState.timelines,
-                    //         scheduleStatus: currentState.scheduleStatus,
-                    //         message:
-                    //             AppLocalizations.of(context)!.revisingSchedule,
-                    //       ));
-                    // }
-                    // ScheduleApi().reviseSchedule().then((value) {
-                    //   final currentState =
-                    //       this.context.read<ScheduleBloc>().state;
-                    //   if (currentState is ScheduleEvaluationState) {
-                    //     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                    //           isAlreadyLoaded: true,
-                    //           previousSubEvents: currentState.subEvents,
-                    //           scheduleTimeline: currentState.lookupTimeline,
-                    //           previousTimeline: currentState.lookupTimeline,
-                    //         ));
-                    //     refreshScheduleSummary(currentState.lookupTimeline);
-                    //   }
-                    // }).catchError((onError) {
-                    //   final currentState =
-                    //       this.context.read<ScheduleBloc>().state;
-                    //   Fluttertoast.showToast(
-                    //       msg: onError!.message,
-                    //       toastLength: Toast.LENGTH_SHORT,
-                    //       gravity: ToastGravity.SNACKBAR,
-                    //       timeInSecForIosWeb: 1,
-                    //       backgroundColor: Colors.black45,
-                    //       textColor: Colors.white,
-                    //       fontSize: 16.0);
-                    //   if (currentState is ScheduleEvaluationState) {
-                    //     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                    //           isAlreadyLoaded: true,
-                    //           previousSubEvents: currentState.subEvents,
-                    //           scheduleTimeline: currentState.lookupTimeline,
-                    //           previousTimeline: currentState.lookupTimeline,
-                    //         ));
-                    //     refreshScheduleSummary(currentState.lookupTimeline);
-                    //   }
-                    // });
+                    final currentState =
+                        this.context.read<ScheduleBloc>().state;
+                    if (currentState is ScheduleLoadedState) {
+                      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
+                            isAlreadyLoaded: true,
+                            renderedScheduleTimeline:
+                                currentState.lookupTimeline,
+                            renderedSubEvents: currentState.subEvents,
+                            renderedTimelines: currentState.timelines,
+                            scheduleStatus: currentState.scheduleStatus,
+                            message:
+                                AppLocalizations.of(context)!.revisingSchedule,
+                          ));
+                    }
+                    ScheduleApi().reviseSchedule().then((value) {
+                      AnalysticsSignal.send('REVISE_BUTTON_SUCCESS');
+                      final currentState =
+                          this.context.read<ScheduleBloc>().state;
+                      if (currentState is ScheduleEvaluationState) {
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
+                      }
+                    }).catchError((onError) {
+                      AnalysticsSignal.send('REVISE_BUTTON_FAILURE');
+                      final currentState =
+                          this.context.read<ScheduleBloc>().state;
+                      Fluttertoast.showToast(
+                          msg: onError!.message,
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.SNACKBAR,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.black45,
+                          textColor: Colors.white,
+                          fontSize: 16.0);
+                      if (currentState is ScheduleEvaluationState) {
+                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                              isAlreadyLoaded: true,
+                              previousSubEvents: currentState.subEvents,
+                              scheduleTimeline: currentState.lookupTimeline,
+                              previousTimeline: currentState.lookupTimeline,
+                            ));
+                        refreshScheduleSummary(currentState.lookupTimeline);
+                      }
+                    });
                     Navigator.pop(context);
                   },
                   child: ListTile(
@@ -283,7 +283,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ),
                 GestureDetector(
                     onTap: () {
-                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON');
+                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {
@@ -419,11 +419,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     print('isLocationRequestTriggered $isLocationRequestTriggered');
     print('locationAccess $locationAccess');
-    // if (!isLocationRequestTriggered &&
-    //     !locationAccess.item2 &&
-    //     locationAccess.item3) {
-    //   return renderLocationRequest(accessManager);
-    // }
+    if (!isLocationRequestTriggered &&
+        !locationAccess.item2 &&
+        locationAccess.item3) {
+      return renderLocationRequest(accessManager);
+    }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
