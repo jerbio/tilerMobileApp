@@ -215,56 +215,56 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                         .context
                         .read<ScheduleBloc>()
                         .add(ReviseScheduleEvent());
-                    final currentState =
-                        this.context.read<ScheduleBloc>().state;
-                    if (currentState is ScheduleLoadedState) {
-                      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-                            isAlreadyLoaded: true,
-                            renderedScheduleTimeline:
-                                currentState.lookupTimeline,
-                            renderedSubEvents: currentState.subEvents,
-                            renderedTimelines: currentState.timelines,
-                            scheduleStatus: currentState.scheduleStatus,
-                            message:
-                                AppLocalizations.of(context)!.revisingSchedule,
-                          ));
-                    }
-                    ScheduleApi().reviseSchedule().then((value) {
-                      AnalysticsSignal.send('REVISE_BUTTON_SUCCESS');
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    }).catchError((onError) {
-                      AnalysticsSignal.send('REVISE_BUTTON_FAILURE');
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      Fluttertoast.showToast(
-                          msg: onError!.message,
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.SNACKBAR,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.black45,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    });
-                    Navigator.pop(context);
+                    // final currentState =
+                    //     this.context.read<ScheduleBloc>().state;
+                    // if (currentState is ScheduleLoadedState) {
+                    //   this.context.read<ScheduleBloc>().add(EvaluateSchedule(
+                    //         isAlreadyLoaded: true,
+                    //         renderedScheduleTimeline:
+                    //             currentState.lookupTimeline,
+                    //         renderedSubEvents: currentState.subEvents,
+                    //         renderedTimelines: currentState.timelines,
+                    //         scheduleStatus: currentState.scheduleStatus,
+                    //         message:
+                    //             AppLocalizations.of(context)!.revisingSchedule,
+                    //       ));
+                    // }
+                    // ScheduleApi().reviseSchedule().then((value) {
+                    //   AnalysticsSignal.send('REVISE_BUTTON_SUCCESS');
+                    //   final currentState =
+                    //       this.context.read<ScheduleBloc>().state;
+                    //   if (currentState is ScheduleEvaluationState) {
+                    //     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                    //           isAlreadyLoaded: true,
+                    //           previousSubEvents: currentState.subEvents,
+                    //           scheduleTimeline: currentState.lookupTimeline,
+                    //           previousTimeline: currentState.lookupTimeline,
+                    //         ));
+                    //     refreshScheduleSummary(currentState.lookupTimeline);
+                    //   }
+                    // }).catchError((onError) {
+                    //   AnalysticsSignal.send('REVISE_BUTTON_FAILURE');
+                    //   final currentState =
+                    //       this.context.read<ScheduleBloc>().state;
+                    //   Fluttertoast.showToast(
+                    //       msg: onError!.message,
+                    //       toastLength: Toast.LENGTH_SHORT,
+                    //       gravity: ToastGravity.SNACKBAR,
+                    //       timeInSecForIosWeb: 1,
+                    //       backgroundColor: Colors.black45,
+                    //       textColor: Colors.white,
+                    //       fontSize: 16.0);
+                    //   if (currentState is ScheduleEvaluationState) {
+                    //     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                    //           isAlreadyLoaded: true,
+                    //           previousSubEvents: currentState.subEvents,
+                    //           scheduleTimeline: currentState.lookupTimeline,
+                    //           previousTimeline: currentState.lookupTimeline,
+                    //         ));
+                    //     refreshScheduleSummary(currentState.lookupTimeline);
+                    //   }
+                    // });
+                    // Navigator.pop(context);
                   },
                   child: ListTile(
                     leading: Icon(Icons.refresh, color: Colors.white),

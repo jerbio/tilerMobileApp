@@ -85,6 +85,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     List<SubCalendarEvent> subEvents = event.previousSubEvents ?? [];
     List<Timeline> timelines = [];
     ScheduleStatus scheduleStatus = new ScheduleStatus();
+    bool makeRemoteCall = false;
 
     if (state is ScheduleInitialState) {
       isAlreadyLoaded = false;
@@ -99,8 +100,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       updateTimeline = event.scheduleTimeline ?? timeline;
       timelines = state.timelines;
       scheduleStatus = state.scheduleStatus;
-      isAlreadyLoaded = true;
+      // isAlreadyLoaded = true;
+      double middleTimeInMillisecond =
+          updateTimeline.startTime.millisecondsSinceEpoch +
+              (updateTimeline.duration.inMilliseconds / 2);
+      DateTime middleTime =
+          DateTime.fromMillisecondsSinceEpoch(middleTimeInMillisecond.toInt());
+      isAlreadyLoaded = timeline.isDateTimeWithin(middleTime);
       if (!timeline.isInterfering(updateTimeline)) {
+        makeRemoteCall = true;
         int startInMs = updateTimeline.start! < timeline.start!
             ? updateTimeline.start!
             : timeline.start!;
@@ -111,6 +119,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         updateTimeline = Timeline.fromDateTime(
             DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
             DateTime.fromMillisecondsSinceEpoch(endInMs.toInt(), isUtc: true));
+      }
+
+      if (!timeline.isStartAndEndEqual(updateTimeline)) {
+        makeRemoteCall = true;
       }
     }
 
@@ -182,7 +194,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         loadingTime: Utility.currentTime(),
         connectionState: ConnectionState.waiting));
 
-    if (event.forceRefresh) {
+    if (event.forceRefresh || makeRemoteCall) {
       print("Force refresh on get tiles");
       await getSubEventCallBack(
           updateTimeline, subEvents, timelines, scheduleStatus);
