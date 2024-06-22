@@ -100,28 +100,29 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       updateTimeline = event.scheduleTimeline ?? timeline;
       timelines = state.timelines;
       scheduleStatus = state.scheduleStatus;
-      // isAlreadyLoaded = true;
-      double middleTimeInMillisecond =
-          updateTimeline.startTime.millisecondsSinceEpoch +
-              (updateTimeline.duration.inMilliseconds / 2);
-      DateTime middleTime =
-          DateTime.fromMillisecondsSinceEpoch(middleTimeInMillisecond.toInt());
-      isAlreadyLoaded = timeline.isDateTimeWithin(middleTime);
-      if (!timeline.isInterfering(updateTimeline)) {
-        makeRemoteCall = true;
-        int startInMs = updateTimeline.start! < timeline.start!
-            ? updateTimeline.start!
-            : timeline.start!;
-        int endInMs = updateTimeline.end! > timeline.end!
-            ? updateTimeline.end!
-            : timeline.end!;
+      isAlreadyLoaded = true;
+      // double middleTimeInMillisecond =
+      //     updateTimeline.startTime.millisecondsSinceEpoch +
+      //         (updateTimeline.duration.inMilliseconds / 2);
+      // DateTime middleTime =
+      //     DateTime.fromMillisecondsSinceEpoch(middleTimeInMillisecond.toInt());
+      // isAlreadyLoaded = timeline.isDateTimeWithin(middleTime);
+      // if (!timeline.isInterfering(updateTimeline)) {
+      //   makeRemoteCall = true;
+      //   int startInMs = updateTimeline.start! < timeline.start!
+      //       ? updateTimeline.start!
+      //       : timeline.start!;
+      //   int endInMs = updateTimeline.end! > timeline.end!
+      //       ? updateTimeline.end!
+      //       : timeline.end!;
 
-        updateTimeline = Timeline.fromDateTime(
-            DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
-            DateTime.fromMillisecondsSinceEpoch(endInMs.toInt(), isUtc: true));
-      }
+      //   updateTimeline = Timeline.fromDateTime(
+      //       DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
+      //       DateTime.fromMillisecondsSinceEpoch(endInMs.toInt(), isUtc: true));
+      // }
 
-      if (!timeline.isStartAndEndEqual(updateTimeline)) {
+      if (!timeline.isStartAndEndEqual(updateTimeline) ||
+          event.scheduleTimeline == null) {
         makeRemoteCall = true;
       }
     }

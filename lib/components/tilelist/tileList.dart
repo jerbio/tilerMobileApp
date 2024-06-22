@@ -1085,7 +1085,16 @@ class _TileListState extends State<TileList> {
           }
 
           if (state is ScheduleLoadingState) {
-            if (!state.isAlreadyLoaded) {
+            bool showPendingUI = !state.isAlreadyLoaded;
+
+            final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
+            if (dateMangerBloc is UiDateManagerUpdated) {
+              showPendingUI = showPendingUI ||
+                  state.previousLookupTimeline
+                      .isDateTimeWithin(dateMangerBloc.currentDate);
+            }
+
+            if (showPendingUI) {
               return renderPending();
             }
             return Stack(children: [
