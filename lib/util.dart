@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
-
+import '../../../constants.dart' as Constants;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoData.dart';
@@ -11,6 +11,8 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/onBoardingApi.dart';
+import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
@@ -149,6 +151,7 @@ class Utility {
         retValueShifted.year, retValueShifted.month, retValueShifted.day);
     return retValue;
   }
+
 
   static Timeline todayTimeline() {
     DateTime currentTime = Utility.currentTime();
@@ -550,6 +553,18 @@ class Utility {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
+  }
+
+  static Future<bool> checkOnboardingStatus() async {
+    try {
+      await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
+      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
+      return shouldSkipOnboarding || isOnboardingvalid;
+    } catch (e) {
+      print("Error checking onboarding status: $e");
+      return true;
+    }
   }
 
   static Tuple2<List<BlobEvent>, HashSet<TilerEvent>> getConflictingEvents(
