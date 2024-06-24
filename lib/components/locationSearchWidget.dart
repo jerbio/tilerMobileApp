@@ -71,6 +71,7 @@ class LocationSearchState extends SearchWidgetState {
 
       Timer(const Duration(seconds: 1), () {
         Timer timer = new Timer(new Duration(seconds: 2), () {
+          if (!mounted) return;
           setState(() {
             isRequestEnabled = true;
           });
