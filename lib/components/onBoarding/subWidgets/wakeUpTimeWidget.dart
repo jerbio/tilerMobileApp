@@ -28,8 +28,8 @@ class _WeakUpTimeWidgetState extends State<WeakUpTimeWidget> {
   @override
   Widget build(BuildContext context) {
     return OnboardingSubWidget(
-      questionText:  AppLocalizations.of(context)!.wakeUpTimeQuestion,
-      child:BlocBuilder<OnboardingBloc, OnboardingState>(
+      questionText: AppLocalizations.of(context)!.wakeUpTimeQuestion,
+      child: BlocBuilder<OnboardingBloc, OnboardingState>(
         builder: (context, state) {
           final wakeUpTime = state.wakeUpTime != null
               ? state.wakeUpTime!.format(context)

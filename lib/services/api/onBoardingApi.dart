@@ -30,20 +30,23 @@ class OnBoardingApi extends AppApi {
       return null;
     }
   }
-  Future<OnboardingContent?> sendOnboardingData(OnboardingContent content) async {
+
+  Future<OnboardingContent?> sendOnboardingData(
+      OnboardingContent content) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
-      await checkAndReplaceCredentialCache();
-      Map<String, dynamic> requestParams = content.toJson();
-      Uri uri = Uri.https(Constants.tilerDomain, 'api/User/Onboarding');
-      var headers = this.getHeaders();
-      if (headers == null) {
-        throw TilerError(message: 'Issues with authentication');
-      }
-      http.Response response = await http.post(uri, headers: headers, body: jsonEncode(requestParams));
-      print('Response from sendOnboardingData: ${response.body}');
-      return handleResponse(response);
+        await checkAndReplaceCredentialCache();
+        Map<String, dynamic> requestParams = content.toJson();
+        Uri uri = Uri.https(Constants.tilerDomain, 'api/User/Onboarding');
+        var headers = this.getHeaders();
+        if (headers == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+        http.Response response = await http.post(uri,
+            headers: headers, body: jsonEncode(requestParams));
+        print('Response from sendOnboardingData: ${response.body}');
+        return handleResponse(response);
       } else {
         throw TilerError(message: 'User is not authenticated');
       }
@@ -57,7 +60,8 @@ class OnBoardingApi extends AppApi {
     if (response.statusCode == 200) {
       var jsonResult = jsonDecode(response.body);
       if (jsonResult.containsKey('Content')) {
-        OnboardingContent onboardingContent = OnboardingContent.fromJson(jsonResult['Content']);
+        OnboardingContent onboardingContent =
+            OnboardingContent.fromJson(jsonResult['Content']);
         return onboardingContent;
       } else {
         throw TilerError(message: 'Response does not contain expected Content');
@@ -67,8 +71,8 @@ class OnBoardingApi extends AppApi {
     }
   }
 
-  Future<bool> areRequiredFieldsValid() async{
-    OnboardingContent? onboardingContent=await fetchOnboardingData();
+  Future<bool> areRequiredFieldsValid() async {
+    OnboardingContent? onboardingContent = await fetchOnboardingData();
     if (onboardingContent == null) {
       return false;
     }
@@ -76,8 +80,5 @@ class OnBoardingApi extends AppApi {
         (onboardingContent.workHoursStart?.isNotEmpty ?? false) &&
         (onboardingContent.preferredDaySections?.isNotEmpty ?? false) &&
         (onboardingContent.workLocation?.address?.isNotEmpty ?? false);
-
   }
-
-
 }
