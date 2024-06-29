@@ -13,27 +13,30 @@ class PrimaryLocationWidget extends StatefulWidget {
   @override
   _PrimaryLocationWidgetState createState() => _PrimaryLocationWidgetState();
 }
+
 class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
   TextEditingController? locationAddressController;
-onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
+  onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
     locationAddressController!.text = location!.address ?? '';
     context.read<OnboardingBloc>().add(LocationSelected(location));
   }
+
   @override
   void initState() {
     super.initState();
     locationAddressController = TextEditingController();
     locationAddressController!.addListener(() {
       if (mounted) {
-        context.read<OnboardingBloc>().add(
-            AddressTextChanged(locationAddressController!.text));
+        context
+            .read<OnboardingBloc>()
+            .add(AddressTextChanged(locationAddressController!.text));
       }
     });
   }
 
   @override
   void dispose() {
-   locationAddressController!.dispose();
+    locationAddressController!.dispose();
     super.dispose();
   }
 
@@ -41,7 +44,8 @@ onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
-        if (state.addressText != null && state.addressText != locationAddressController!.text) {
+        if (state.addressText != null &&
+            state.addressText != locationAddressController!.text) {
           locationAddressController!.text = state.addressText!;
         }
         TextField addressTextField = TextField(
@@ -64,20 +68,21 @@ onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
           controller: locationAddressController,
         );
         Widget locationSearchWidget = Flexible(
-          child:Material(
+          child: Material(
             child: LocationSearchWidget(
-              onChanged: (address) {
-               context.read<OnboardingBloc>().add(AddressTextChanged(address));
-              },
-              textField: addressTextField,
-              onLocationSelection: onAutoSuggestedLocationTap
-            ),
+                onChanged: (address) {
+                  context
+                      .read<OnboardingBloc>()
+                      .add(AddressTextChanged(address));
+                },
+                textField: addressTextField,
+                onLocationSelection: onAutoSuggestedLocationTap),
           ),
         );
 
         return OnboardingSubWidget(
-            questionText:AppLocalizations.of(context)!.primaryLocationQuestion,
-            child:locationSearchWidget,
+          questionText: AppLocalizations.of(context)!.primaryLocationQuestion,
+          child: locationSearchWidget,
         );
       },
     );

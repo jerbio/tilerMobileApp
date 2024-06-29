@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/location.dart';
+
 enum OnboardingStep {
   initial,
   pageChanged,
@@ -64,14 +65,14 @@ class OnboardingState extends Equatable {
 
   @override
   List<Object?> get props => [
-    step,
-    pageNumber,
-    wakeUpTime,
-    startingWorkDayTime,
-    preferredDaySection,
-    selectedLocation,
-    addressText,
-    isLocationVerified,
-    error,
-  ];
+        step,
+        pageNumber,
+        wakeUpTime,
+        startingWorkDayTime,
+        preferredDaySection,
+        selectedLocation,
+        addressText,
+        isLocationVerified,
+        error,
+      ];
 }

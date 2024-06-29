@@ -19,8 +19,8 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
 
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
+      context: context,
+      initialTime: TimeOfDay.now(),
     );
 
     if (picked != null) {
@@ -28,40 +28,39 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return OnboardingSubWidget(
-      questionText:AppLocalizations.of(context)!.workdayStartQuestion,
-       child: BlocBuilder<OnboardingBloc, OnboardingState>(
-          builder: (context, state) {
-            final startingWorkDayTime = state.startingWorkDayTime != null
-                ? state.startingWorkDayTime!.format(context)
-                : AppLocalizations.of(context)!.oClock;
-            return GestureDetector(
-              onTap: () => _selectTime(context),
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.0),
-                width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30.0),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    startingWorkDayTime,
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w400,
-                    ),
+      questionText: AppLocalizations.of(context)!.workdayStartQuestion,
+      child: BlocBuilder<OnboardingBloc, OnboardingState>(
+        builder: (context, state) {
+          final startingWorkDayTime = state.startingWorkDayTime != null
+              ? state.startingWorkDayTime!.format(context)
+              : AppLocalizations.of(context)!.oClock;
+          return GestureDetector(
+            onTap: () => _selectTime(context),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30.0),
+                border: Border.all(color: Colors.grey),
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  startingWorkDayTime,
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

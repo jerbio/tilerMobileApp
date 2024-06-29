@@ -11,7 +11,6 @@ import '../../components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import '../../components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import '../../routes/authentication/authorizedRoute.dart';
 
-
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
   @override
@@ -41,14 +40,12 @@ Widget renderPending() {
   );
 }
 
-
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
     WeakUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
     PrimaryLocationWidget(),
     WorkDayStartWidget(),
-
   ];
 
   @override
@@ -71,23 +68,22 @@ class _OnboardingViewState extends State<OnboardingView> {
           body: SafeArea(
             child: Stack(
               children: [
-                if(state.step == OnboardingStep.loading) renderPending(),
-                Column
-                  (
+                if (state.step == OnboardingStep.loading) renderPending(),
+                Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 30.0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 30.0),
                       child: OnBoardingProgressIndicator(
                           currentPage: state.pageNumber ?? 0,
-                          totalPages: pages.length
-                      ),
+                          totalPages: pages.length),
                     ),
                     Expanded(
                       child: Center(
                         child: AnimatedSwitcher(
                           duration: Duration(milliseconds: 300),
-                          transitionBuilder: (Widget child,
-                              Animation<double> animation) {
+                          transitionBuilder:
+                              (Widget child, Animation<double> animation) {
                             return FadeTransition(
                               opacity: animation,
                               child: child,
@@ -95,7 +91,8 @@ class _OnboardingViewState extends State<OnboardingView> {
                           },
                           child: Padding(
                             key: ValueKey<int>(state.pageNumber ?? 0),
-                            padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 30.0),
                             child: pages[state.pageNumber ?? 0],
                           ),
                         ),
@@ -110,12 +107,8 @@ class _OnboardingViewState extends State<OnboardingView> {
               ],
             ),
           ),
-
         );
       },
-
-
     );
   }
 }
-
