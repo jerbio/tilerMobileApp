@@ -103,6 +103,7 @@ class EventNameSearchState extends SearchWidgetState {
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
                 scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });
@@ -150,6 +151,7 @@ class EventNameSearchState extends SearchWidgetState {
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
                 scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });
@@ -196,6 +198,7 @@ class EventNameSearchState extends SearchWidgetState {
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
                 scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });

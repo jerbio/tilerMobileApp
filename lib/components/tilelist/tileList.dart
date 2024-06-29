@@ -48,7 +48,7 @@ class _TileListState extends State<TileList> {
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
       Utility.currentTime().dayDate.add(Duration(days: -4)), Duration(days: 7));
-  Timeline? oldTimeline;
+  // Timeline? oldTimeline;
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;
   BoxDecoration previousTileBatchDecoration =
@@ -64,12 +64,16 @@ class _TileListState extends State<TileList> {
   final String incrementalTilerScrollId = "incremental-get-schedule";
   late String updatedIncrementalTilerScrollId;
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
+  List<Timeline> loadedTimeline = [];
+  List<SubCalendarEvent> loadedSubCalendarEvent = [];
+  late Timeline previousTimeline;
 
   @override
   void initState() {
     localNotificationService = LocalNotificationService();
     super.initState();
     updatedIncrementalTilerScrollId = incrementalTilerScrollId;
+    previousTimeline = this.timeLine;
     _scrollController.addListener(() {
       double minScrollLimit = _scrollController.position.minScrollExtent + 1500;
       double maxScrollLimit = _scrollController.position.maxScrollExtent - 1500;
@@ -80,14 +84,15 @@ class _TileListState extends State<TileList> {
         final currentState = this.context.read<ScheduleBloc>().state;
         updatedTimeline = new Timeline(timeLine.start!,
             (timeLine.end! + Utility.sevenDays.inMilliseconds));
+        previousTimeline = this.timeLine;
         if (currentState is ScheduleLoadedState) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
-            oldTimeline = timeLine;
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
+          previousTimeline = currentTimeline;
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               previousSubEvents: renderedSubEvents,
               isAlreadyLoaded: true,
@@ -99,8 +104,9 @@ class _TileListState extends State<TileList> {
         if (currentState is ScheduleEvaluationState) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
+          previousTimeline = timeLine;
           setState(() {
-            oldTimeline = timeLine;
+            previousTimeline = this.timeLine;
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
@@ -118,7 +124,7 @@ class _TileListState extends State<TileList> {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
-            oldTimeline = timeLine;
+            previousTimeline = this.timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -139,7 +145,7 @@ class _TileListState extends State<TileList> {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
-            oldTimeline = timeLine;
+            previousTimeline = this.timeLine;
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
@@ -155,7 +161,7 @@ class _TileListState extends State<TileList> {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
           setState(() {
-            oldTimeline = timeLine;
+            previousTimeline = this.timeLine;
             timeLine = updatedTimeline;
             lastUpdate = Utility.currentTime();
           });
@@ -172,8 +178,9 @@ class _TileListState extends State<TileList> {
                 .isAfter(currentState.loadingTime.add(Duration(minutes: 1)))) {
           renderedSubEvents = currentState.subEvents;
           final currentTimeline = this.timeLine;
+          previousTimeline = this.timeLine;
           setState(() {
-            oldTimeline = timeLine;
+            previousTimeline = this.timeLine;
             timeLine = updatedTimeline;
           });
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -357,7 +364,7 @@ class _TileListState extends State<TileList> {
       Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
 
       int todayDayIndex = Utility.getDayIndex(DateTime.now());
-      Timeline relevantTimeline = this.oldTimeline ?? this.timeLine;
+      Timeline relevantTimeline = this.previousTimeline ?? this.timeLine;
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleLoadingState) {
         if (currentState.previousLookupTimeline != null) {
@@ -574,32 +581,32 @@ class _TileListState extends State<TileList> {
                       selectedDate: currentTime,
                       previousSelectedDate: previousTime));
                 }
-                List<int> allDayIndexes = dayIndexToCarouselIndex.keys.toList();
-                allDayIndexes.sort();
+                // List<int> allDayIndexes = dayIndexToCarouselIndex.keys.toList();
+                // allDayIndexes.sort();
 
-                if (pageNumber == 1) {
-                  int earliestDayIndex = allDayIndexes.first - 1;
-                  if (earliestDayIndex < 0) {
-                    earliestDayIndex = 0;
-                  }
-                  reloadSchedule(
-                      Utility.getTimeFromIndex(earliestDayIndex)
-                          .dayDate
-                          .add(Duration(days: -12)),
-                      forceRenderingPage: false);
-                }
+                // if (pageNumber == 1) {
+                //   int earliestDayIndex = allDayIndexes.first - 1;
+                //   if (earliestDayIndex < 0) {
+                //     earliestDayIndex = 0;
+                //   }
+                //   reloadSchedule(
+                //       Utility.getTimeFromIndex(earliestDayIndex)
+                //           .dayDate
+                //           .add(Duration(days: -12)),
+                //       forceRenderingPage: false);
+                // }
 
-                if (pageNumber > carouselItems.length - 5) {
-                  int latestDayIndex = allDayIndexes.last + 1;
-                  if (latestDayIndex < 0) {
-                    latestDayIndex = 0;
-                  }
-                  reloadSchedule(
-                      Utility.getTimeFromIndex(latestDayIndex)
-                          .dayDate
-                          .add(Duration(days: 12)),
-                      forceRenderingPage: false);
-                }
+                // if (pageNumber > carouselItems.length - 5) {
+                //   int latestDayIndex = allDayIndexes.last + 1;
+                //   if (latestDayIndex < 0) {
+                //     latestDayIndex = 0;
+                //   }
+                //   reloadSchedule(
+                //       Utility.getTimeFromIndex(latestDayIndex)
+                //           .dayDate
+                //           .add(Duration(days: 12)),
+                //       forceRenderingPage: false);
+                // }
               }
             },
             scrollDirection: Axis.horizontal,
@@ -711,20 +718,6 @@ class _TileListState extends State<TileList> {
         .where((eachTile) => eachTile.end! > currentTime)
         .map((eachTile) => eachTile as SubCalendarEvent)
         .toList();
-
-    // if (subSequentTiles.isNotEmpty) {
-    //   SubCalendarEvent notificationTile = subSequentTiles.first;
-    //   final scheduleState = this.context.read<ScheduleBloc>().state;
-    //   if (scheduleState is ScheduleLoadedState) {
-    //     this.context.read<ScheduleBloc>().add(DelayedGetSchedule(
-    //         delayDuration: notificationTile.durationTillEnd,
-    //         isAlreadyLoaded: true,
-    //         previousSubEvents: scheduleState.subEvents,
-    //         previousTimeline: scheduleState.lookupTimeline,
-    //         scheduleTimeline: scheduleState.lookupTimeline,
-    //         renderedTimelines: scheduleState.timelines));
-    //   }
-    // }
   }
 
   Widget renderPending({String? message}) {
@@ -763,86 +756,141 @@ class _TileListState extends State<TileList> {
   }
 
   reloadSchedule(DateTime dateManageCurrentDate,
-      {bool forceRenderingPage = true}) {
+      {bool forceRenderingPage = true,
+      Timeline? forcedTimeline = null,
+      bool incremental = false}) {
     var scheduleSubEventState = this.context.read<ScheduleBloc>().state;
     List<SubCalendarEvent> subEvents = [];
     Timeline todayTimeLine = Utility.todayTimeline();
+    Timeline currentTimeline = todayTimeLine;
     DateTime startDateTime = todayTimeLine.startTime;
     DateTime endDateTime = todayTimeLine.endTime;
     List<Timeline> evaluatedDayTimelines = [];
     ScheduleStatus scheduleStatus = ScheduleStatus();
+    Timeline previousTimeLine = this.previousTimeline;
 
-    Timeline previousTimeline =
-        Timeline.fromDateTime(todayTimeLine.startTime, todayTimeLine.endTime);
     if (scheduleSubEventState is ScheduleLoadedState) {
       subEvents = scheduleSubEventState.subEvents;
       startDateTime = scheduleSubEventState.lookupTimeline.startTime;
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
-      previousTimeline =
+      previousTimeLine =
           Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
+      currentTimeline = scheduleSubEventState.lookupTimeline;
     }
     if (scheduleSubEventState is ScheduleEvaluationState) {
       subEvents = scheduleSubEventState.subEvents;
       startDateTime = scheduleSubEventState.lookupTimeline.startTime;
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
-      previousTimeline =
+      previousTimeLine =
           Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
+      currentTimeline = scheduleSubEventState.lookupTimeline;
     }
 
     if (scheduleSubEventState is ScheduleLoadingState) {
       subEvents = scheduleSubEventState.subEvents;
-      previousTimeline =
+      previousTimeLine =
           Timeline.fromTimeRange(scheduleSubEventState.previousLookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
+      currentTimeline = scheduleSubEventState.previousLookupTimeline;
     }
 
-    if (startDateTime.millisecondsSinceEpoch >
-            dateManageCurrentDate.millisecondsSinceEpoch ||
-        endDateTime.millisecondsSinceEpoch <
-            dateManageCurrentDate.endOfDay.millisecondsSinceEpoch) {
-      int dayDelta = previousTimeline.duration.inDays;
-      int daySplit = (dayDelta.toDouble() / 2).round();
-
-      startDateTime =
-          dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
-      endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: daySplit));
-
-      if (daySplit == 0) {
-        startDateTime = dateManageCurrentDate.dayDate;
-        endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: 1));
+    int dayDelta = Constants.numberOfDaysToLoad ~/ 2;
+    int daySplit = (dayDelta.toDouble() / 2).round();
+    startDateTime =
+        dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
+    endDateTime =
+        startDateTime.add(Duration(days: Constants.numberOfDaysToLoad));
+    bool emitOnlyLoadedStated = true;
+    if (daySplit == 0) {
+      startDateTime = dateManageCurrentDate.dayDate.add(Duration(days: -1));
+      ;
+      endDateTime = dateManageCurrentDate.dayDate.add(Duration(days: 1));
+    }
+    if (!previousTimeLine.isDateTimeWithin(dateManageCurrentDate.dayDate)) {
+      emitOnlyLoadedStated = false;
+      if (forcedTimeline == null) {
+        forcedTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
       }
     }
 
+    String? loopIncrementalIdToMapping;
     Timeline newTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
-    print("previous timeline " + previousTimeline.toString());
-    print("new timeline " + newTimeline.toString());
-    String loopIncrementalIdToMapping = _generateIncrementalIdToMapping();
+    if (incremental) {
+      loopIncrementalIdToMapping = _generateIncrementalIdToMapping();
+      if (previousTimeLine.startTime.millisecondsSinceEpoch <=
+              newTimeline.startTime.millisecondsSinceEpoch &&
+          previousTimeLine.endTime.millisecondsSinceEpoch >=
+              newTimeline.endTime.millisecondsSinceEpoch) {
+        // if new timeline is within previous timeline
+        newTimeline = previousTimeLine;
+      }
+
+      startDateTime = newTimeline.startTime;
+      endDateTime = newTimeline.endTime;
+
+      if (newTimeline.startTime.millisecondsSinceEpoch <
+          previousTimeLine.startTime.millisecondsSinceEpoch) {
+        // if new timeline is earlier than previous
+        startDateTime = newTimeline.startTime;
+        endDateTime = previousTimeLine.startTime;
+      }
+
+      if (newTimeline.endTime.millisecondsSinceEpoch >
+          previousTimeLine.endTime.millisecondsSinceEpoch) {
+        // if new timeline is earlier than previous
+        startDateTime = previousTimeLine.endTime;
+        endDateTime = newTimeline.endTime;
+      }
+
+      if (newTimeline.startTime.millisecondsSinceEpoch <
+              previousTimeLine.startTime.millisecondsSinceEpoch &&
+          newTimeline.endTime.millisecondsSinceEpoch >
+              previousTimeLine.endTime.millisecondsSinceEpoch) {
+        // if new timeline is within previous timeline
+        startDateTime = newTimeline.startTime;
+        endDateTime = newTimeline.endTime;
+      }
+    }
+
+    if (forcedTimeline != null) {
+      startDateTime = forcedTimeline.startTime;
+      endDateTime = forcedTimeline.endTime;
+    }
+
+    Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
+    print("previous timeline " + previousTimeLine.toString());
+    print("     new timeline " + queryTimeline.toString());
+
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
-        previousTimeline: previousTimeline,
+        previousTimeline: previousTimeLine,
         isAlreadyLoaded: !forceRenderingPage,
-        scheduleTimeline: newTimeline,
+        emitOnlyLoadedStated: emitOnlyLoadedStated,
+        scheduleTimeline: queryTimeline,
         eventId: loopIncrementalIdToMapping));
-    refreshScheduleSummary(lookupTimeline: newTimeline);
-    setState(() {
-      Map<String, ScheduleLoadedState> incrementalIdToMapping_cpy = {};
-      incrementalIdToMapping_cpy.addAll(incrementalIdToMapping);
-      incrementalIdToMapping_cpy[loopIncrementalIdToMapping] =
-          ScheduleLoadedState(
-              lookupTimeline: previousTimeline,
-              subEvents: subEvents,
-              scheduleStatus: scheduleStatus,
-              timelines: evaluatedDayTimelines);
-      incrementalIdToMapping = incrementalIdToMapping_cpy;
-    });
+    refreshScheduleSummary(lookupTimeline: queryTimeline);
+    if (loopIncrementalIdToMapping != null) {
+      setState(() {
+        Map<String, ScheduleLoadedState> incrementalIdToMapping_cpy = {};
+        incrementalIdToMapping_cpy.addAll(incrementalIdToMapping);
+        incrementalIdToMapping_cpy[loopIncrementalIdToMapping!] =
+            ScheduleLoadedState(
+                lookupTimeline: currentTimeline,
+                subEvents: subEvents,
+                scheduleStatus: scheduleStatus,
+                previousLookupTimeline: previousTimeLine,
+                timelines: evaluatedDayTimelines);
+        incrementalIdToMapping = incrementalIdToMapping_cpy;
+      });
+    }
   }
 
   List<SubCalendarEvent> dedupeAndMergeSubEvents(
@@ -894,7 +942,8 @@ class _TileListState extends State<TileList> {
     return retValue;
   }
 
-  void augmentLoadedState(ScheduleLoadedState augmentedLoadedState,
+  void augmentLoadedState(
+      ScheduleLoadedState augmentedLoadedState, BuildContext context,
       {ScheduleLoadedState? currentLoadedState = null}) {
     List<Timeline> revisedTimelines = augmentedLoadedState.timelines;
     List<SubCalendarEvent> subEvents = augmentedLoadedState.subEvents;
@@ -914,10 +963,11 @@ class _TileListState extends State<TileList> {
           mergeTimeline(lookupTimeline, currentLoadedState.lookupTimeline);
     }
 
-    this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+    context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
         lookupTimeline: lookupTimeline,
         scheduleStatus: scheduleStatus,
         subEvents: subEvents,
+        previousLookupTimeline: lookupTimeline,
         timelines: revisedTimelines));
   }
 
@@ -942,13 +992,19 @@ class _TileListState extends State<TileList> {
             if (state.eventId != null && state.eventId!.isNotEmpty) {
               String eventId = state.eventId!;
               if (eventId.contains(incrementalTilerScrollId) &&
-                  incrementalIdToMapping
-                      .containsKey(incrementalTilerScrollId)) {
-                augmentLoadedState(state,
-                    currentLoadedState:
-                        incrementalIdToMapping[incrementalTilerScrollId]);
-                incrementalIdToMapping.remove(incrementalTilerScrollId);
+                  incrementalIdToMapping.containsKey(eventId)) {
+                augmentLoadedState(state, context,
+                    currentLoadedState: incrementalIdToMapping[eventId]);
+                incrementalIdToMapping.remove(eventId);
               }
+            } else {
+              setState(() {
+                loadedTimeline = state.timelines;
+                loadedSubCalendarEvent = state.subEvents;
+                if (state.previousLookupTimeline != null) {
+                  previousTimeline = state.previousLookupTimeline!;
+                }
+              });
             }
           }
         }),
@@ -1036,24 +1092,6 @@ class _TileListState extends State<TileList> {
                     dayIndexToCarouselIndex[
                             state.currentDate.universalDayIndex]!
                         .item1);
-                var scheduleBlocState = this.context.read<ScheduleBloc>().state;
-                bool dontReloadSchedule = true;
-                if (scheduleBlocState is ScheduleLoadedState) {
-                  dontReloadSchedule = scheduleBlocState.lookupTimeline
-                      .isDateTimeWithin(state.currentDate);
-                }
-
-                if (scheduleBlocState is ScheduleEvaluationState) {
-                  dontReloadSchedule = false;
-                }
-
-                if (scheduleBlocState is ScheduleInitialState ||
-                    scheduleBlocState is ScheduleLoadingState) {
-                  dontReloadSchedule = false;
-                }
-                if (dontReloadSchedule) {
-                  return;
-                }
               }
 
               reloadSchedule(state.currentDate,
@@ -1070,7 +1108,8 @@ class _TileListState extends State<TileList> {
             }
             return Stack(
               children: [
-                renderSubCalendarTiles(Tuple2(state.timelines, state.subEvents))
+                renderSubCalendarTiles(
+                    Tuple2(loadedTimeline, loadedSubCalendarEvent))
               ],
             );
           }
@@ -1083,6 +1122,10 @@ class _TileListState extends State<TileList> {
             refreshScheduleSummary(lookupTimeline: timeLine);
             return renderPending();
           }
+          // final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
+          // if (dateMangerBloc is UiDateManagerUpdated) {
+          //   print("Current day is " + dateMangerBloc.currentDate.toString());
+          // }
 
           if (state is ScheduleLoadingState) {
             bool showPendingUI = !state.isAlreadyLoaded;
@@ -1090,7 +1133,7 @@ class _TileListState extends State<TileList> {
             final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
             if (dateMangerBloc is UiDateManagerUpdated) {
               showPendingUI = showPendingUI ||
-                  state.previousLookupTimeline
+                  !state.previousLookupTimeline
                       .isDateTimeWithin(dateMangerBloc.currentDate);
             }
 

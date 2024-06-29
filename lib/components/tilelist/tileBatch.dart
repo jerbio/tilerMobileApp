@@ -64,7 +64,7 @@ class TileBatchState extends State<TileBatch> {
   late ListModel<TilerEvent>? _list;
   bool _pendingRendering = false;
   double _emptyDayOpacity = 0;
-  final double daySummaryToHeightBuffer = 213.0;
+  final double daySummaryToHeightBuffer = 245;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -93,10 +93,10 @@ class TileBatchState extends State<TileBatch> {
       sleepTimeline = timeline;
       uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
     });
-    print('---sleep TL 0 -- ' +
-        sleepTimeline!.startTime.toString() +
-        ' - ' +
-        uniqueKey);
+    // print('---sleep TL 0 -- ' +
+    //     sleepTimeline!.startTime.toString() +
+    //     ' - ' +
+    //     uniqueKey);
   }
 
   Widget _buildRemovedItem(
@@ -176,14 +176,14 @@ class TileBatchState extends State<TileBatch> {
       });
     }
 
-    print('' +
-        this.widget.dayIndex.toString() +
-        " " +
-        Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
-        " " +
-        (widget.tiles ?? []).length.toString() +
-        " " +
-        uniqueKey);
+    // print('' +
+    //     this.widget.dayIndex.toString() +
+    //     " " +
+    //     Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
+    //     " " +
+    //     (widget.tiles ?? []).length.toString() +
+    //     " " +
+    //     uniqueKey);
     childrenColumnWidgets = [];
     if (dayData != null && this.widget.tiles != null) {
       this.dayData!.nonViable = this

@@ -219,8 +219,6 @@ class WithinNowBatchState extends TileBatchState {
     print('Within now ' +
         this.widget.dayIndex.toString() +
         " " +
-        Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
-        " " +
         (widget.tiles ?? []).length.toString() +
         " " +
         uniqueKey);
@@ -267,7 +265,6 @@ class WithinNowBatchState extends TileBatchState {
     }
 
     children.add(Container(
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
         child:
             DaySummary(dayTimelineSummary: this.dayData ?? TimelineSummary())));
     List<TilerEvent> precedingTiles = [];
@@ -327,7 +324,8 @@ class WithinNowBatchState extends TileBatchState {
         }
       },
       child: Container(
-        height: MediaQuery.of(context).size.height - daySummaryToHeightBuffer,
+        margin: EdgeInsets.fromLTRB(0, 65, 0, 0),
+        height: MediaQuery.of(context).size.height - 245,
         width: MediaQuery.of(context).size.width,
         child: ListView(
           children: [
@@ -363,10 +361,8 @@ class WithinNowBatchState extends TileBatchState {
       });
     }
 
-    return Container(
-      child: Column(
-        children: children,
-      ),
+    return Column(
+      children: children,
     );
   }
 

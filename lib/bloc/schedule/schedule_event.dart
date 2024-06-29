@@ -12,6 +12,7 @@ class GetScheduleEvent extends ScheduleEvent {
   final Timeline? scheduleTimeline;
   final bool? isAlreadyLoaded;
   bool forceRefresh = false;
+  bool emitOnlyLoadedStated = false;
   Timeline? previousTimeline;
   String? message;
   String? eventId;
@@ -22,11 +23,33 @@ class GetScheduleEvent extends ScheduleEvent {
       this.previousTimeline,
       this.message,
       this.eventId,
-      this.forceRefresh = false});
+      this.forceRefresh = false,
+      this.emitOnlyLoadedStated = false});
 
   @override
   List<Object> get props => [];
 }
+
+// class AdHocScheduleEvent extends ScheduleEvent {
+//   final List<SubCalendarEvent>? previousSubEvents;
+//   final Timeline? scheduleTimeline;
+//   final bool? isAlreadyLoaded;
+//   bool forceRefresh = false;
+//   Timeline? previousTimeline;
+//   String? message;
+//   String? eventId;
+//   AdHocScheduleEvent(
+//       {this.previousSubEvents,
+//       this.scheduleTimeline,
+//       this.isAlreadyLoaded,
+//       this.previousTimeline,
+//       this.message,
+//       this.eventId,
+//       this.forceRefresh = false});
+
+//   @override
+//   List<Object> get props => [];
+// }
 
 // class DelayedGetSchedule extends ScheduleEvent {
 //   final List<SubCalendarEvent> previousSubEvents;
@@ -93,11 +116,13 @@ class ReloadLocalScheduleEvent extends ScheduleEvent {
   final List<Timeline> timelines;
   final ScheduleStatus scheduleStatus;
   final Timeline lookupTimeline;
+  Timeline? previousLookupTimeline;
   ReloadLocalScheduleEvent(
       {required this.subEvents,
       required this.timelines,
       required this.lookupTimeline,
-      required this.scheduleStatus});
+      required this.scheduleStatus,
+      this.previousLookupTimeline});
 }
 
 // class DelayedReloadLocalScheduleEvent extends ScheduleEvent {

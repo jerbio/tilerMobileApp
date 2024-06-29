@@ -415,15 +415,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
-    // return renderLocationRequest();
-
-    print('isLocationRequestTriggered $isLocationRequestTriggered');
-    print('locationAccess $locationAccess');
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // print('isLocationRequestTriggered $isLocationRequestTriggered');
+    // print('locationAccess $locationAccess');
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
