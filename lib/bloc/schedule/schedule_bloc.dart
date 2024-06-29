@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -56,12 +55,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   }
 
   void _onLocalScheduleEvent(
-      ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) async {
-    emit(ScheduleLoadedState(
+      ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) {
+    // print("Hey Jerome wha are the results");
+    // emit(ScheduleLoadingState(
+    //     subEvents: event.subEvents,
+    //     timelines: event.timelines,
+    //     previousLookupTimeline:
+    //         event.previousLookupTimeline ?? Utility.todayTimeline(),
+    //     isAlreadyLoaded: true,
+    //     scheduleStatus: ScheduleStatus(),
+    //     loadingTime: Utility.currentTime(),
+    //     connectionState: ConnectionState.waiting));
+    LocalScheduleLoadedState put = LocalScheduleLoadedState(
         subEvents: event.subEvents,
         timelines: event.timelines,
         scheduleStatus: event.scheduleStatus,
-        lookupTimeline: event.lookupTimeline));
+        lookupTimeline: event.lookupTimeline,
+        eventId: null,
+        previousLookupTimeline: event.previousLookupTimeline);
+
+    emit(put);
+    // emit(put);
   }
 
   void _onLoggedOutScheduleEvent(
@@ -73,6 +87,74 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   void _onInitialLogInScheduleEvent(
       LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
     emit(ScheduleInitialState());
+  }
+
+  Future _getSubEventCallBack(
+      Timeline updateTimeline,
+      List<SubCalendarEvent> subEvents,
+      List<Timeline> timelines,
+      ScheduleStatus scheduleStatus,
+      Emitter<ScheduleState> emit,
+      {String? eventId = null,
+      Timeline? previousTimeLine}) async {
+    await this.getSubTiles(updateTimeline).then((value) {
+      Map<String, SubCalendarEvent> subEventMap = {};
+      bool isNewEvaluation = true;
+      for (SubCalendarEvent eachSubEvent in subEvents) {
+        if (eachSubEvent.id != null && eachSubEvent.id!.isNotEmpty) {
+          subEventMap[eachSubEvent.id!] = eachSubEvent;
+        }
+      }
+
+      if (subEvents.isNotEmpty) {
+        if (value.item3.analysisId != null) {
+          if (subEvents.first.analysisId == value.item3.analysisId) {
+            isNewEvaluation = false;
+          }
+        }
+        if (value.item3.evaluationId != null) {
+          if (subEvents.first.evaluationId == value.item3.evaluationId) {
+            isNewEvaluation = false;
+          }
+        }
+      }
+      List<SubCalendarEvent> updatedSubEvents = value.item2;
+      if (!isNewEvaluation) {
+        updatedSubEvents.forEach((eachSubEvent) {
+          if (eachSubEvent.id != null) {
+            subEventMap[eachSubEvent.id!] = eachSubEvent;
+          }
+        });
+        updatedSubEvents = subEventMap.values.toList();
+      }
+      if (state is ScheduleLoadedState &&
+          !(state is LocalScheduleLoadedState)) {
+        emit(LocalScheduleLoadedState(
+            subEvents: updatedSubEvents,
+            timelines: value.item1.toList(),
+            scheduleStatus: value.item3,
+            lookupTimeline: updateTimeline,
+            previousLookupTimeline: previousTimeLine,
+            eventId: eventId));
+      } else {
+        emit(ScheduleLoadedState(
+            subEvents: updatedSubEvents,
+            timelines: value.item1.toList(),
+            scheduleStatus: value.item3,
+            lookupTimeline: updateTimeline,
+            previousLookupTimeline: previousTimeLine,
+            eventId: eventId));
+      }
+    }).catchError((onError) {
+      emit(FailedScheduleLoadedState(
+          evaluationTime: Utility.currentTime(),
+          subEvents: subEvents,
+          timelines: timelines,
+          scheduleStatus: scheduleStatus,
+          lookupTimeline: updateTimeline,
+          previousLookupTimeline: previousTimeLine,
+          eventId: eventId));
+    });
   }
 
   Future<void> _onGetSchedule(
@@ -101,83 +183,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       timelines = state.timelines;
       scheduleStatus = state.scheduleStatus;
       isAlreadyLoaded = true;
-      // double middleTimeInMillisecond =
-      //     updateTimeline.startTime.millisecondsSinceEpoch +
-      //         (updateTimeline.duration.inMilliseconds / 2);
-      // DateTime middleTime =
-      //     DateTime.fromMillisecondsSinceEpoch(middleTimeInMillisecond.toInt());
-      // isAlreadyLoaded = timeline.isDateTimeWithin(middleTime);
-      // if (!timeline.isInterfering(updateTimeline)) {
-      //   makeRemoteCall = true;
-      //   int startInMs = updateTimeline.start! < timeline.start!
-      //       ? updateTimeline.start!
-      //       : timeline.start!;
-      //   int endInMs = updateTimeline.end! > timeline.end!
-      //       ? updateTimeline.end!
-      //       : timeline.end!;
-
-      //   updateTimeline = Timeline.fromDateTime(
-      //       DateTime.fromMillisecondsSinceEpoch(startInMs.toInt(), isUtc: true),
-      //       DateTime.fromMillisecondsSinceEpoch(endInMs.toInt(), isUtc: true));
-      // }
-
       if (!timeline.isStartAndEndEqual(updateTimeline) ||
           event.scheduleTimeline == null) {
         makeRemoteCall = true;
       }
     }
-
-    var getSubEventCallBack = (Timeline updateTimeline,
-        List<SubCalendarEvent> subEvents,
-        List<Timeline> timelines,
-        ScheduleStatus scheduleStatus) async {
-      await getSubTiles(updateTimeline).then((value) {
-        Map<String, SubCalendarEvent> subEventMap = {};
-        bool isNewEvaluation = true;
-        for (SubCalendarEvent eachSubEvent in subEvents) {
-          if (eachSubEvent.id != null && eachSubEvent.id!.isNotEmpty) {
-            subEventMap[eachSubEvent.id!] = eachSubEvent;
-          }
-        }
-
-        if (subEvents.isNotEmpty) {
-          if (value.item3.analysisId != null) {
-            if (subEvents.first.analysisId == value.item3.analysisId) {
-              isNewEvaluation = false;
-            }
-          }
-          if (value.item3.evaluationId != null) {
-            if (subEvents.first.evaluationId == value.item3.evaluationId) {
-              isNewEvaluation = false;
-            }
-          }
-        }
-        List<SubCalendarEvent> updatedSubEvents = value.item2;
-        if (!isNewEvaluation) {
-          print("------old evaluation-----");
-          updatedSubEvents.forEach((eachSubEvent) {
-            if (eachSubEvent.id != null) {
-              subEventMap[eachSubEvent.id!] = eachSubEvent;
-            }
-          });
-          updatedSubEvents = subEventMap.values.toList();
-        }
-        emit(ScheduleLoadedState(
-            subEvents: updatedSubEvents,
-            timelines: value.item1,
-            scheduleStatus: value.item3,
-            lookupTimeline: updateTimeline,
-            eventId: eventId));
-      }).catchError((onError) {
-        emit(FailedScheduleLoadedState(
-            evaluationTime: Utility.currentTime(),
-            subEvents: subEvents,
-            timelines: timelines,
-            scheduleStatus: scheduleStatus,
-            lookupTimeline: updateTimeline,
-            eventId: eventId));
-      });
-    };
 
     if (state is ScheduleEvaluationState) {
       timelines = state.timelines;
@@ -185,28 +195,32 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       updateTimeline = state.lookupTimeline;
       isAlreadyLoaded = true;
     }
-
-    emit(ScheduleLoadingState(
-        subEvents: subEvents,
-        timelines: timelines,
-        previousLookupTimeline: updateTimeline,
-        isAlreadyLoaded: isAlreadyLoaded,
-        scheduleStatus: scheduleStatus,
-        loadingTime: Utility.currentTime(),
-        connectionState: ConnectionState.waiting));
+    if (!event.emitOnlyLoadedStated) {
+      emit(ScheduleLoadingState(
+          subEvents: subEvents,
+          timelines: timelines,
+          previousLookupTimeline: event.previousTimeline ?? updateTimeline,
+          isAlreadyLoaded: isAlreadyLoaded,
+          scheduleStatus: scheduleStatus,
+          eventId: event.eventId,
+          loadingTime: Utility.currentTime(),
+          connectionState: ConnectionState.waiting));
+    }
 
     if (event.forceRefresh || makeRemoteCall) {
       print("Force refresh on get tiles");
-      await getSubEventCallBack(
-          updateTimeline, subEvents, timelines, scheduleStatus);
+      await _getSubEventCallBack(
+          updateTimeline, subEvents, timelines, scheduleStatus, emit,
+          eventId: eventId, previousTimeLine: event.previousTimeline);
       return;
     }
 
     print("no force refresh on get tiles");
     await shouldGetRefreshedListOfTiles(scheduleStatus).then((value) async {
       if (value) {
-        await getSubEventCallBack(
-            updateTimeline, subEvents, timelines, scheduleStatus);
+        await _getSubEventCallBack(
+            updateTimeline, subEvents, timelines, scheduleStatus, emit,
+            eventId: eventId, previousTimeLine: event.previousTimeline);
         return;
       }
       return;
@@ -298,6 +312,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
+              emitOnlyLoadedStated: true,
               previousSubEvents: event.renderedSubEvents,
               previousTimeline: event.renderedScheduleTimeline,
               scheduleTimeline: event.renderedScheduleTimeline,

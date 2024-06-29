@@ -222,7 +222,7 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
-  Future<CalendarEvent> delete(String eventId, String? thirdPartyEventID,
+  Future<CalendarEvent?> delete(String eventId, String? thirdPartyEventID,
       String? thirdPartyUserId, String? thirdPartyType) async {
     TilerError error = new TilerError();
     print('deleting ' + eventId);
@@ -255,7 +255,9 @@ class SubCalendarEventApi extends AppApi {
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           var deleteCalendarEventJson = jsonResult['Content'];
-          return CalendarEvent.fromJson(deleteCalendarEventJson);
+          if (!deleteCalendarEventJson is String) {
+            return CalendarEvent.fromJson(deleteCalendarEventJson);
+          }
         } else {
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
