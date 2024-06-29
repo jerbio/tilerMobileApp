@@ -78,7 +78,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
               padding: EdgeInsets.fromLTRB(1, 0, 0, 1),
               margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
               child: Stack(
-                  children: [Icon(Icons.check, color: Colors.white, size: 35)]),
+                  children: [Icon(Icons.check, color: Colors.white, size: 25)]),
             ),
             Transform.scale(
                 scale: 2.0,
@@ -86,10 +86,10 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
                   checkColor: Colors.white,
                   fillColor: MaterialStateProperty.resolveWith(getColor),
                   value: checkStatus,
-                  splashRadius: 20,
+                  splashRadius: 15,
                   shape: CircleBorder(
                       side:
-                          BorderSide(width: 5, color: TileStyles.primaryColor)),
+                          BorderSide(width: 2, color: TileStyles.primaryColor)),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;
