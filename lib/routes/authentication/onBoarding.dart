@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/onBoarding/on_boarding_bloc.dart';
@@ -23,6 +25,12 @@ Widget renderPending() {
     child: Center(
       child: Stack(
         children: [
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+            child: Container(
+              color: Colors.black.withOpacity(0.2),
+            ),
+          ),
           Center(
             child: SizedBox(
               child: CircularProgressIndicator(),
@@ -65,11 +73,11 @@ class _OnboardingViewState extends State<OnboardingView> {
       },
       builder: (context, state) {
         return Scaffold(
-          body: SafeArea(
-            child: Stack(
-              children: [
-                if (state.step == OnboardingStep.loading) renderPending(),
-                Column(
+          body: Stack(
+            children: [
+              if (state.step == OnboardingStep.loading) renderPending(),
+              SafeArea(
+                child: Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -104,8 +112,8 @@ class _OnboardingViewState extends State<OnboardingView> {
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
