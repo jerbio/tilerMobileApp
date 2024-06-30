@@ -581,32 +581,6 @@ class _TileListState extends State<TileList> {
                       selectedDate: currentTime,
                       previousSelectedDate: previousTime));
                 }
-                // List<int> allDayIndexes = dayIndexToCarouselIndex.keys.toList();
-                // allDayIndexes.sort();
-
-                // if (pageNumber == 1) {
-                //   int earliestDayIndex = allDayIndexes.first - 1;
-                //   if (earliestDayIndex < 0) {
-                //     earliestDayIndex = 0;
-                //   }
-                //   reloadSchedule(
-                //       Utility.getTimeFromIndex(earliestDayIndex)
-                //           .dayDate
-                //           .add(Duration(days: -12)),
-                //       forceRenderingPage: false);
-                // }
-
-                // if (pageNumber > carouselItems.length - 5) {
-                //   int latestDayIndex = allDayIndexes.last + 1;
-                //   if (latestDayIndex < 0) {
-                //     latestDayIndex = 0;
-                //   }
-                //   reloadSchedule(
-                //       Utility.getTimeFromIndex(latestDayIndex)
-                //           .dayDate
-                //           .add(Duration(days: 12)),
-                //       forceRenderingPage: false);
-                // }
               }
             },
             scrollDirection: Axis.horizontal,
