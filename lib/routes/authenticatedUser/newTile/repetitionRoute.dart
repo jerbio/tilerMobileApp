@@ -15,7 +15,7 @@ import 'package:weekday_selector/weekday_selector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RepetitionRoute extends StatefulWidget {
-  static final String routeName = '/repetitionRoute';
+  static final String routeName = '/RepetitionRoute';
   @override
   _RepetitionRouteState createState() => _RepetitionRouteState();
 }

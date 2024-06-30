@@ -725,7 +725,7 @@ class AddTileState extends State<AddTile> {
             'tileTimeline': tileTimeline,
           };
           AnalysticsSignal.send('ADD_TILE_NEWTILE_REPETITION_OPEN');
-          Navigator.pushNamed(context, '/repetitionRoute',
+          Navigator.pushNamed(context, '/RepetitionRoute',
                   arguments: repetitionParams)
               .whenComplete(() {
             RepetitionData? updatedRepetitionData =

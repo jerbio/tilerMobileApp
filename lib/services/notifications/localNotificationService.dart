@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
 import 'package:tiler_app/services/api/notificationData.dart';
+import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/userApi.dart';
 import 'package:tiler_app/services/storageManager.dart';
 import 'package:tiler_app/util.dart';
@@ -87,14 +95,177 @@ class LocalNotificationService {
     }
   }
 
-  Future subscribeToRemoteNotification() async {
+  void showMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+
+  void showErrorMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.SNACKBAR,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black45,
+        textColor: Colors.red,
+        fontSize: 16.0);
+  }
+
+  completeTile(BuildContext context, SubCalendarEvent subTile) async {
+    showMessage(AppLocalizations.of(context)!.completing);
+    final scheduleState = context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
+      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
+        return;
+      }
+    }
+
+    List<SubCalendarEvent> renderedSubEvents = [];
+    List<Timeline> timeLines = [];
+    Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
+
+    if (scheduleState is ScheduleLoadedState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    var subCalendarEventApi = SubCalendarEventApi();
+
+    var requestFuture = subCalendarEventApi.complete((subTile));
+
+    context.read<ScheduleBloc>().add(EvaluateSchedule(
+        renderedSubEvents: renderedSubEvents,
+        renderedTimelines: timeLines,
+        renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
+        isAlreadyLoaded: true,
+        callBack: requestFuture));
+  }
+
+  Future handleComplete(BuildContext context, String notificationID) async {
+    const completeText = '_complete';
+    String subEventComponentId = notificationID;
+    int indexOfCompleteText =
+        subEventComponentId.toLowerCase().indexOf(completeText);
+    if (indexOfCompleteText > 0) {
+      subEventComponentId =
+          subEventComponentId.substring(0, indexOfCompleteText);
+    }
+    SubCalendarEvent? subTile =
+        getSubCalendartEventById(context, subEventComponentId);
+    if (subTile != null && subTile.id != null && subTile.id!.isNotEmpty) {
+      await completeTile(context, subTile);
+    }
+  }
+
+  Future handleDefer(BuildContext context, String notificationID) async {
+    const deferText = '_defer';
+    const deferAllText = 'deferall';
+    if (notificationID.toLowerCase().contains(deferAllText)) {
+      Navigator.push(
+          context, MaterialPageRoute(builder: (context) => ProcrastinateAll()));
+    } else {
+      String subEventComponentId = notificationID;
+      int indexOfDeferText =
+          subEventComponentId.toLowerCase().indexOf(deferText);
+      if (indexOfDeferText > 0) {
+        subEventComponentId =
+            subEventComponentId.substring(0, indexOfDeferText);
+      }
+      SubCalendarEvent? subTile =
+          getSubCalendartEventById(context, subEventComponentId);
+      if (subTile != null && subTile.id != null && subTile.id!.isNotEmpty) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => TileProcrastinateRoute(
+                      tileId: subTile.id!,
+                    )));
+      }
+    }
+  }
+
+  SubCalendarEvent? getSubCalendartEventById(
+      BuildContext context, String subEventId) {
+    final state = context.read<ScheduleBloc>().state;
+    PriorScheduleState priorScheduleState =
+        ScheduleState.generatePriorScheduleState(state);
+    List<SubCalendarEvent> subEvents = priorScheduleState.subEvents
+        .where((eachSubEvent) =>
+            eachSubEvent.id != null && eachSubEvent.id!.contains(subEventId))
+        .toList();
+    if (subEvents.isNotEmpty) {
+      return subEvents.first;
+    }
+
+    return null;
+  }
+
+  Future notification(BuildContext context,
+      OSNotificationClickResult? notificationResult) async {
+    const deferText = 'defer';
+    const completeText = 'complete';
+    if (notificationResult != null) {
+      String? actionId = notificationResult.actionId;
+      if (actionId != null) {
+        if (actionId.toLowerCase().contains(deferText)) {
+          handleDefer(context, actionId);
+        } else if (actionId.toLowerCase().contains(completeText)) {
+          handleComplete(context, actionId);
+        }
+      }
+    }
+  }
+
+  Future notificationHandler(
+      BuildContext context, OSNotificationClickEvent? event) async {
+    if (event != null) {
+      notification(context, event.result);
+    }
+  }
+
+  Future subscribeToRemoteNotification(BuildContext context) async {
     if (_notificationData.isValid) {
       if (!Constants.isProduction) {
         OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
         OneSignal.Debug.setAlertLevel(OSLogLevel.none);
       }
+
       String appId = dotenv.env[Constants.oneSignalAppIdKey] ?? "";
       OneSignal.initialize(appId);
+      if (!Constants.isProduction) {
+        OneSignal.User.pushSubscription.addObserver((state) {
+          print(OneSignal.User.pushSubscription.optedIn);
+          print(OneSignal.User.pushSubscription.id);
+          print(OneSignal.User.pushSubscription.token);
+          print(state.current.jsonRepresentation());
+        });
+      }
+
       if (_notificationData.tilerNotificationId != null) {
         await OneSignal.login(_notificationData.tilerNotificationId!)
             .then((value) {
@@ -103,6 +274,10 @@ class LocalNotificationService {
           if (!Constants.isProduction) {
             print("onesignal failed to login ");
           }
+        });
+        OneSignal.Notifications.addClickListener((event) {
+          var notificationResult = event.result;
+          notificationHandler(context, event);
         });
       }
     }

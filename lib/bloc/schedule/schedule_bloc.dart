@@ -110,13 +110,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           }
         }
       }
-
-      var thirdPartyUpdate = subEvents
-          .where((element) =>
-              element != null &&
-              element.thirdpartyId == "2id6973lhuds5paon9gipd7bfk")
-          .toList();
-
       if (subEvents.isNotEmpty) {
         if (value.item3.analysisId != null) {
           if (subEvents.first.analysisId == value.item3.analysisId) {
@@ -245,7 +238,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     return;
   }
 
-  void preserveState(ScheduleState state) {
+  static void preserveState(ScheduleState state) {
     List<SubCalendarEvent>? subEvents;
     List<Timeline>? timelines;
     Timeline? lookupTimeline;
