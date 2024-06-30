@@ -7,7 +7,7 @@ abstract class ScheduleState extends Equatable {
   @override
   List<Object> get props => [];
 
-  static _PriorScheduleState generatePriorScheduleState(ScheduleState state) {
+  static PriorScheduleState generatePriorScheduleState(ScheduleState state) {
     List<SubCalendarEvent> subEvents = [];
     List<Timeline> timelines = [];
     Timeline lookupTimeline = Utility.initialScheduleTimeline;
@@ -42,7 +42,7 @@ abstract class ScheduleState extends Equatable {
       scheduleStatus = ScheduleStatus.fromJson({});
     }
 
-    return _PriorScheduleState(
+    return PriorScheduleState(
         loadingTime: loadingTime,
         previousLookupTimeline: lookupTimeline,
         subEvents: subEvents,
@@ -55,13 +55,13 @@ class ScheduleInitialState extends ScheduleState {}
 
 class ScheduleLoggedOutState extends ScheduleState {}
 
-class _PriorScheduleState {
+class PriorScheduleState {
   final DateTime loadingTime;
   final List<SubCalendarEvent> subEvents;
   final List<Timeline> timelines;
   final Timeline previousLookupTimeline;
   final ScheduleStatus scheduleStatus;
-  _PriorScheduleState(
+  PriorScheduleState(
       {required this.loadingTime,
       required this.previousLookupTimeline,
       required this.subEvents,

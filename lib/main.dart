@@ -167,7 +167,7 @@ class _TilerAppState extends State<TilerApp> {
                     Duration(hours: 1),
                   ],
                 ),
-            '/repetitionRoute': (ctx) => RepetitionRoute(),
+            '/RepetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
             '/Integrations': (ctx) => IntegrationWidgetRoute(),

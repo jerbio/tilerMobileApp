@@ -9,6 +9,7 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
 
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
@@ -617,9 +618,6 @@ class _TileListState extends State<TileList> {
         this.notificationSubEvent!.isStartAndEndEqual(nextTile)) {
       return;
     }
-    this
-        .localNotificationService
-        .nextTileNotification(tile: nextTile, context: this.context);
     this.notificationSubEvent = nextTile;
   }
 
@@ -1138,6 +1136,9 @@ class _TileListState extends State<TileList> {
                             color: Colors.grey.shade200.withOpacity(0.5)),
                       ),
                     )))),
+                PendingWidget(
+                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                )
               ],
             );
           }
