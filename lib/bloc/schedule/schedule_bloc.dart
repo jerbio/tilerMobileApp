@@ -102,9 +102,20 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       bool isNewEvaluation = true;
       for (SubCalendarEvent eachSubEvent in subEvents) {
         if (eachSubEvent.id != null && eachSubEvent.id!.isNotEmpty) {
-          subEventMap[eachSubEvent.id!] = eachSubEvent;
+          if (eachSubEvent.thirdpartyId != null &&
+              eachSubEvent.thirdpartyId!.isNotEmpty) {
+            subEventMap[eachSubEvent.thirdpartyId!] = eachSubEvent;
+          } else {
+            subEventMap[eachSubEvent.id!] = eachSubEvent;
+          }
         }
       }
+
+      var thirdPartyUpdate = subEvents
+          .where((element) =>
+              element != null &&
+              element.thirdpartyId == "2id6973lhuds5paon9gipd7bfk")
+          .toList();
 
       if (subEvents.isNotEmpty) {
         if (value.item3.analysisId != null) {
@@ -122,7 +133,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       if (!isNewEvaluation) {
         updatedSubEvents.forEach((eachSubEvent) {
           if (eachSubEvent.id != null) {
-            subEventMap[eachSubEvent.id!] = eachSubEvent;
+            if (eachSubEvent.thirdpartyId != null &&
+                eachSubEvent.thirdpartyId!.isNotEmpty) {
+              subEventMap[eachSubEvent.thirdpartyId!] = eachSubEvent;
+            } else {
+              subEventMap[eachSubEvent.id!] = eachSubEvent;
+            }
           }
         });
         updatedSubEvents = subEventMap.values.toList();
@@ -284,7 +300,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           evaluationTime: Utility.currentTime(),
           scheduleStatus: scheduleStatus,
           message: message));
-      print("remote revise execution sent");
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
             GetScheduleEvent(

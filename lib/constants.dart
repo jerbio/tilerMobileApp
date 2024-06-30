@@ -1,6 +1,6 @@
 import 'dart:io';
 
-const bool isProduction = false;
+const bool isProduction = true;
 const bool isDebug = !isProduction;
 const bool isRemote = true;
 const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
@@ -42,4 +42,4 @@ final String workProfileNickName = "work";
 final String homeProfileNickName = "personal";
 final List<String> invalidLocationNames = ["anywhere"];
 final int autoCompleteMinCharLength = 3;
-final int numberOfDaysToLoad = 7;
+final int numberOfDaysToLoad = 8;
