@@ -13,11 +13,13 @@ class WeakUpTimeWidget extends StatefulWidget {
 
 class _WeakUpTimeWidgetState extends State<WeakUpTimeWidget> {
   String? selectedTime;
+  final TimeOfDay defaultTime = TimeOfDay(hour: 7, minute: 0);
 
   Future<void> _selectTime(BuildContext context) async {
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: context.read<OnboardingBloc>().state.wakeUpTime ??defaultTime,
     );
 
     if (picked != null) {
@@ -31,9 +33,8 @@ class _WeakUpTimeWidgetState extends State<WeakUpTimeWidget> {
       questionText: AppLocalizations.of(context)!.wakeUpTimeQuestion,
       child: BlocBuilder<OnboardingBloc, OnboardingState>(
         builder: (context, state) {
-          final wakeUpTime = state.wakeUpTime != null
-              ? state.wakeUpTime!.format(context)
-              : AppLocalizations.of(context)!.oClock;
+          final wakeUpTime = state.wakeUpTime?.format(context) ?? defaultTime.format(context);
+
 
           return GestureDetector(
             onTap: () => _selectTime(context),

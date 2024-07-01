@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/onBoarding/on_boarding_bloc.dart';
@@ -18,24 +19,27 @@ class OnboardingView extends StatefulWidget {
 }
 
 Widget renderPending() {
-  return Container(
-    decoration: TileStyles.defaultBackground,
-    child: Center(
-      child: Stack(
-        children: [
-          Center(
-            child: SizedBox(
-              child: CircularProgressIndicator(),
-              height: 200.0,
-              width: 200.0,
-            ),
+  return Center(
+    child: Stack(
+      children: [
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: Container(
+            decoration:TileStyles.defaultBackground,
           ),
-          Center(
-            child: Image.asset('assets/images/tiler_logo_black.png',
-                fit: BoxFit.cover, scale: 7),
+        ),
+        Center(
+          child: SizedBox(
+            child: CircularProgressIndicator(),
+            height: 200.0,
+            width: 200.0,
           ),
-        ],
-      ),
+        ),
+        Center(
+          child: Image.asset('assets/images/tiler_logo_black.png',
+              fit: BoxFit.cover, scale: 7),
+        ),
+      ],
     ),
   );
 }
@@ -65,11 +69,11 @@ class _OnboardingViewState extends State<OnboardingView> {
       },
       builder: (context, state) {
         return Scaffold(
-          body: SafeArea(
-            child: Stack(
-              children: [
-                if (state.step == OnboardingStep.loading) renderPending(),
-                Column(
+          body: Stack(
+            children: [
+
+              SafeArea(
+                child: Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -104,8 +108,9 @@ class _OnboardingViewState extends State<OnboardingView> {
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              if (state.step == OnboardingStep.loading) renderPending(),
+            ],
           ),
         );
       },

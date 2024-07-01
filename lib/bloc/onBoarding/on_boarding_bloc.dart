@@ -14,7 +14,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       : super(OnboardingState(
             step: OnboardingStep.initial,
             pageNumber: 0,
-            preferredDaySection: "Morning")) {
+            preferredDaySection: "Morning",
+            wakeUpTime: TimeOfDay(hour: 7, minute: 0),
+            startingWorkDayTime:TimeOfDay(hour: 9, minute: 0),
+
+  )) {
     on<NextPageEvent>(_onNextPageChanged);
     on<PreviousPageEvent>(_onPreviousPageEvent);
     on<WakeUpTimeUpdated>(_onWakeUpTimeUpdated);
@@ -111,7 +115,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     try {
       OnboardingContent? result =
           await onBoardingApi.sendOnboardingData(onboardingContent);
-      emit(OnboardingState(step: OnboardingStep.submitted));
+     emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
       print(e.toString());
       emit(state.copyWith(

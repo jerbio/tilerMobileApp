@@ -37,8 +37,8 @@ class EnergyLevelDescriptionWidget extends StatelessWidget {
                     value: AppLocalizations.of(context)!.midday,
                   ),
                   DropdownMenuItem(
-                    child: Text(AppLocalizations.of(context)!.nocPerson),
-                    value: AppLocalizations.of(context)!.noc,
+                    child: Text(AppLocalizations.of(context)!.neutralPerson),
+                    value: AppLocalizations.of(context)!.neutral,
                   ),
                 ],
                 onChanged: (value) {

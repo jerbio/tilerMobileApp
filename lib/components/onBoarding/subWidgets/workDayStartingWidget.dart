@@ -16,11 +16,12 @@ class WorkDayStartWidget extends StatefulWidget {
 
 class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
   String? selectedTime;
+  final TimeOfDay defaultTime = TimeOfDay(hour: 9, minute: 0);
 
   Future<void> _selectTime(BuildContext context) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: context.read<OnboardingBloc>().state.startingWorkDayTime??defaultTime,
     );
 
     if (picked != null) {
@@ -34,9 +35,7 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
       questionText: AppLocalizations.of(context)!.workdayStartQuestion,
       child: BlocBuilder<OnboardingBloc, OnboardingState>(
         builder: (context, state) {
-          final startingWorkDayTime = state.startingWorkDayTime != null
-              ? state.startingWorkDayTime!.format(context)
-              : AppLocalizations.of(context)!.oClock;
+          final startingWorkDayTime =state.startingWorkDayTime?.format(context) ?? defaultTime.format(context);
           return GestureDetector(
             onTap: () => _selectTime(context),
             child: Container(

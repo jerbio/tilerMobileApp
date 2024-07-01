@@ -65,14 +65,14 @@ class OnboardingState extends Equatable {
 
   @override
   List<Object?> get props => [
-        step,
-        pageNumber,
-        wakeUpTime,
-        startingWorkDayTime,
-        preferredDaySection,
-        selectedLocation,
-        addressText,
-        isLocationVerified,
-        error,
-      ];
+    step,
+    pageNumber,
+    wakeUpTime,
+    startingWorkDayTime,
+    preferredDaySection,
+    selectedLocation,
+    addressText,
+    isLocationVerified,
+    error,
+  ];
 }
