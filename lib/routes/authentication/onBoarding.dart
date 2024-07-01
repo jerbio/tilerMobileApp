@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../bloc/onBoarding/on_boarding_bloc.dart';
@@ -20,30 +19,27 @@ class OnboardingView extends StatefulWidget {
 }
 
 Widget renderPending() {
-  return Container(
-    decoration: TileStyles.defaultBackground,
-    child: Center(
-      child: Stack(
-        children: [
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-            child: Container(
-              color: Colors.black.withOpacity(0.2),
-            ),
+  return Center(
+    child: Stack(
+      children: [
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: Container(
+            decoration:TileStyles.defaultBackground,
           ),
-          Center(
-            child: SizedBox(
-              child: CircularProgressIndicator(),
-              height: 200.0,
-              width: 200.0,
-            ),
+        ),
+        Center(
+          child: SizedBox(
+            child: CircularProgressIndicator(),
+            height: 200.0,
+            width: 200.0,
           ),
-          Center(
-            child: Image.asset('assets/images/tiler_logo_black.png',
-                fit: BoxFit.cover, scale: 7),
-          ),
-        ],
-      ),
+        ),
+        Center(
+          child: Image.asset('assets/images/tiler_logo_black.png',
+              fit: BoxFit.cover, scale: 7),
+        ),
+      ],
     ),
   );
 }
@@ -75,7 +71,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         return Scaffold(
           body: Stack(
             children: [
-              if (state.step == OnboardingStep.loading) renderPending(),
+
               SafeArea(
                 child: Column(
                   children: [
@@ -113,6 +109,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                   ],
                 ),
               ),
+              if (state.step == OnboardingStep.loading) renderPending(),
             ],
           ),
         );
