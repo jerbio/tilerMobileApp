@@ -28,7 +28,6 @@ class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
   List<CalendarIntegration> integrations = [];
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     emitGetIntegrations();
   }
@@ -101,6 +100,7 @@ class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
     if (integrations.isEmpty) {
       return renderEmpty();
     }
+    double endOfRowButtonsWidth = 40.0;
     List<CalendarIntegration> orderedIntegrations = integrations;
     return ListView.builder(
       itemCount: orderedIntegrations.length,
@@ -114,58 +114,65 @@ class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
             deleteIntegration(index, orderedIntegrations);
           },
           child: ListTile(
-            title: Text(titleText),
-            trailing: Stack(
-              children: [
-                Container(
-                  color: Colors.yellow,
-                  child: ElevatedButton(
-                      style: TileStyles.onlyIcons,
-                      onPressed: () {
-                        Map<String, dynamic> locationParams = {
-                          'location': integration.location,
-                        };
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LocationRoute(
-                                      disableNickName: true,
-                                      hideHomeButton: true,
-                                      hideWorkButton: true,
-                                      locationArgs: locationParams,
-                                    ))).whenComplete(() {
-                          Location? populatedLocation =
-                              locationParams['location'] as Location? ??
-                                  Location.fromDefault();
-                          AnalysticsSignal.send(
-                              'INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
-                          setState(() {
-                            if (populatedLocation != null) {
-                              if (integration.id != null) {
-                                integration.location = populatedLocation;
-                                integrationApi.addIntegrationLocation(
-                                    populatedLocation, integration.id!);
-                              }
-                              // integration.location = populatedLocation;
-                            }
-                          });
-                        });
-                      },
-                      child: Icon(Icons.location_pin)),
-                ),
-                Positioned(
-                  left: 26,
-                  child: Container(
-                    color: Colors.green,
+            title: Container(
+                child: Text(
+              titleText,
+              style: TextStyle(overflow: TextOverflow.ellipsis),
+            )),
+            trailing: Container(
+              width: endOfRowButtonsWidth * 2,
+              child: Stack(
+                children: [
+                  Container(
+                    width: endOfRowButtonsWidth,
                     child: ElevatedButton(
                         style: TileStyles.onlyIcons,
                         onPressed: () {
-                          deleteIntegration(index, orderedIntegrations);
+                          Map<String, dynamic> locationParams = {
+                            'location': integration.location,
+                          };
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LocationRoute(
+                                        disableNickName: true,
+                                        hideHomeButton: true,
+                                        hideWorkButton: true,
+                                        locationArgs: locationParams,
+                                      ))).whenComplete(() {
+                            Location? populatedLocation =
+                                locationParams['location'] as Location? ??
+                                    Location.fromDefault();
+                            AnalysticsSignal.send(
+                                'INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
+                            setState(() {
+                              if (populatedLocation != null) {
+                                if (integration.id != null) {
+                                  integration.location = populatedLocation;
+                                  integrationApi.addIntegrationLocation(
+                                      populatedLocation, integration.id!);
+                                }
+                                // integration.location = populatedLocation;
+                              }
+                            });
+                          });
                         },
-                        child: Icon(Icons.delete_outline_sharp)),
+                        child: Icon(Icons.location_pin)),
                   ),
-                )
-              ],
+                  Positioned(
+                    left: endOfRowButtonsWidth,
+                    child: Container(
+                      width: endOfRowButtonsWidth,
+                      child: ElevatedButton(
+                          style: TileStyles.onlyIcons,
+                          onPressed: () {
+                            deleteIntegration(index, orderedIntegrations);
+                          },
+                          child: Icon(Icons.delete_outline_sharp)),
+                    ),
+                  )
+                ],
+              ),
             ),
           ),
         );

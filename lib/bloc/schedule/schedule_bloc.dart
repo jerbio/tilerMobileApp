@@ -56,16 +56,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLocalScheduleEvent(
       ReloadLocalScheduleEvent event, Emitter<ScheduleState> emit) {
-    // print("Hey Jerome wha are the results");
-    // emit(ScheduleLoadingState(
-    //     subEvents: event.subEvents,
-    //     timelines: event.timelines,
-    //     previousLookupTimeline:
-    //         event.previousLookupTimeline ?? Utility.todayTimeline(),
-    //     isAlreadyLoaded: true,
-    //     scheduleStatus: ScheduleStatus(),
-    //     loadingTime: Utility.currentTime(),
-    //     connectionState: ConnectionState.waiting));
     LocalScheduleLoadedState put = LocalScheduleLoadedState(
         subEvents: event.subEvents,
         timelines: event.timelines,
@@ -98,44 +88,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       {String? eventId = null,
       Timeline? previousTimeLine}) async {
     await this.getSubTiles(updateTimeline).then((value) {
-      Map<String, SubCalendarEvent> subEventMap = {};
-      bool isNewEvaluation = true;
-      for (SubCalendarEvent eachSubEvent in subEvents) {
-        if (eachSubEvent.id != null && eachSubEvent.id!.isNotEmpty) {
-          if (eachSubEvent.thirdpartyId != null &&
-              eachSubEvent.thirdpartyId!.isNotEmpty) {
-            subEventMap[eachSubEvent.thirdpartyId!] = eachSubEvent;
-          } else {
-            subEventMap[eachSubEvent.id!] = eachSubEvent;
-          }
-        }
-      }
-      if (subEvents.isNotEmpty) {
-        if (value.item3.analysisId != null) {
-          if (subEvents.first.analysisId == value.item3.analysisId) {
-            isNewEvaluation = false;
-          }
-        }
-        if (value.item3.evaluationId != null) {
-          if (subEvents.first.evaluationId == value.item3.evaluationId) {
-            isNewEvaluation = false;
-          }
-        }
-      }
       List<SubCalendarEvent> updatedSubEvents = value.item2;
-      if (!isNewEvaluation) {
-        updatedSubEvents.forEach((eachSubEvent) {
-          if (eachSubEvent.id != null) {
-            if (eachSubEvent.thirdpartyId != null &&
-                eachSubEvent.thirdpartyId!.isNotEmpty) {
-              subEventMap[eachSubEvent.thirdpartyId!] = eachSubEvent;
-            } else {
-              subEventMap[eachSubEvent.id!] = eachSubEvent;
-            }
-          }
-        });
-        updatedSubEvents = subEventMap.values.toList();
-      }
       if (state is ScheduleLoadedState &&
           !(state is LocalScheduleLoadedState)) {
         emit(LocalScheduleLoadedState(

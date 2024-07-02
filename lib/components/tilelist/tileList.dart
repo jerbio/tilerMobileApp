@@ -1122,23 +1122,9 @@ class _TileListState extends State<TileList> {
               children: [
                 renderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
-                Container(
-                    width: (MediaQuery.of(context).size.width),
-                    height: (MediaQuery.of(context).size.height),
-                    child: new Center(
-                        child: new ClipRect(
-                            child: new BackdropFilter(
-                      filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
-                      child: new Container(
-                        width: (MediaQuery.of(context).size.width),
-                        height: (MediaQuery.of(context).size.height),
-                        decoration: new BoxDecoration(
-                            color: Colors.grey.shade200.withOpacity(0.5)),
-                      ),
-                    )))),
                 PendingWidget(
                   imageAsset: TileStyles.evaluatingScheduleAsset,
-                )
+                ),
               ],
             );
           }
