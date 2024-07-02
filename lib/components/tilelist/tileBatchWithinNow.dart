@@ -216,12 +216,6 @@ class WithinNowBatchState extends TileBatchState {
   bool internalBreak = false;
   @override
   Widget build(BuildContext context) {
-    print('Within now ' +
-        this.widget.dayIndex.toString() +
-        " " +
-        (widget.tiles ?? []).length.toString() +
-        " " +
-        uniqueKey);
     latestBuildTiles = {};
     renderedTiles = this.pendingRenderedTiles ?? {};
     SubCalendarEvent? upcomingTile = SubCalendarEvent();
