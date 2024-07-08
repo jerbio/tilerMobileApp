@@ -6,20 +6,20 @@ import '../../../../../bloc/onBoarding/on_boarding_state.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'onBoardingSubWidget.dart';
 
-class WeakUpTimeWidget extends StatefulWidget {
+class WakeUpTimeWidget extends StatefulWidget {
   @override
-  _WeakUpTimeWidgetState createState() => _WeakUpTimeWidgetState();
+  _WakeUpTimeWidgetState createState() => _WakeUpTimeWidgetState();
 }
 
-class _WeakUpTimeWidgetState extends State<WeakUpTimeWidget> {
+class _WakeUpTimeWidgetState extends State<WakeUpTimeWidget> {
   String? selectedTime;
   final TimeOfDay defaultTime = TimeOfDay(hour: 7, minute: 0);
 
   Future<void> _selectTime(BuildContext context) async {
-
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: context.read<OnboardingBloc>().state.wakeUpTime ??defaultTime,
+      initialTime:
+          context.read<OnboardingBloc>().state.wakeUpTime ?? defaultTime,
     );
 
     if (picked != null) {
@@ -33,8 +33,8 @@ class _WeakUpTimeWidgetState extends State<WeakUpTimeWidget> {
       questionText: AppLocalizations.of(context)!.wakeUpTimeQuestion,
       child: BlocBuilder<OnboardingBloc, OnboardingState>(
         builder: (context, state) {
-          final wakeUpTime = state.wakeUpTime?.format(context) ?? defaultTime.format(context);
-
+          final wakeUpTime =
+              state.wakeUpTime?.format(context) ?? defaultTime.format(context);
 
           return GestureDetector(
             onTap: () => _selectTime(context),
