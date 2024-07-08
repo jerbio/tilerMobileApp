@@ -25,7 +25,7 @@ Widget renderPending() {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
           child: Container(
-            decoration:TileStyles.defaultBackground,
+            decoration: TileStyles.defaultBackground,
           ),
         ),
         Center(
@@ -46,7 +46,7 @@ Widget renderPending() {
 
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
-    WeakUpTimeWidget(),
+    WakeUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
     PrimaryLocationWidget(),
     WorkDayStartWidget(),
@@ -71,7 +71,6 @@ class _OnboardingViewState extends State<OnboardingView> {
         return Scaffold(
           body: Stack(
             children: [
-
               SafeArea(
                 child: Column(
                   children: [
