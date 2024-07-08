@@ -159,6 +159,8 @@ class CustomTimeRestrictionRouteState
       }
     }
     final localizations = MaterialLocalizations.of(context);
+    const widthOfTimeOfDay = 75.0;
+    const heightOfTimeOfDay = 35.0;
     Widget retValue = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -177,9 +179,9 @@ class CustomTimeRestrictionRouteState
           },
         ),
         Container(
-          width: 160,
+          width: 210,
           child:
-              Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
             GestureDetector(
                 onTap: () async {
                   var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
@@ -199,8 +201,8 @@ class CustomTimeRestrictionRouteState
                 },
                 child: Container(
                     padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                    width: 70,
-                    height: 45,
+                    width: widthOfTimeOfDay,
+                    height: heightOfTimeOfDay,
                     decoration: timeBoxDecoration,
                     child: Center(
                       child: Text(localizations
@@ -229,8 +231,8 @@ class CustomTimeRestrictionRouteState
                 }
               },
               child: Container(
-                  width: 60,
-                  height: 45,
+                  width: widthOfTimeOfDay,
+                  height: heightOfTimeOfDay,
                   decoration: timeBoxDecoration,
                   child: Center(
                       child: Text(localizations

@@ -42,6 +42,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   denyAccess: false)
               .then((value) {
             setState(() {
+              if (!mounted) return;
               if (value != null) {
                 locationAccess = value;
                 isLocationRequestTriggered = true;

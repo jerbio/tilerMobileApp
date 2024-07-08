@@ -1,5 +1,5 @@
 import 'package:tiler_app/util.dart';
-// import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 class AnalysticSession {
   final String _sessionId = Utility.uuid.toString();
@@ -24,7 +24,7 @@ class AnalysticsSignal {
   Map? additionalInfo;
   final AnalysticSession session;
   static AnalysticSession latestSession = new AnalysticSession();
-  // static final FirebaseAnalytics fireBaseAnalytics = FirebaseAnalytics.instance;
+  static final FirebaseAnalytics fireBaseAnalytics = FirebaseAnalytics.instance;
   AnalysticsSignal(
       {required this.session, this.tag = "default", this.additionalInfo}) {
     this.session.incrementSequence();
@@ -63,10 +63,10 @@ class AnalysticsSignal {
     }
     AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
         signalTag: tag, additionalInfo: additionalInfo);
-    // await fireBaseAnalytics
-    //     .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
-    //     .then((value) {
-    //   print("---- custom event analystics user logged in verified-----");
-    // });
+    await fireBaseAnalytics
+        .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
+        .then((value) {
+      print("---- custom event analystics user logged in verified-----");
+    });
   }
 }

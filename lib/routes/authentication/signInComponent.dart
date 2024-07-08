@@ -17,7 +17,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/analyticsSignal.dart';
 
+import '../../util.dart';
 import 'AuthorizedRoute.dart';
+import 'onBoarding.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -140,10 +142,13 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
         print(isValidSignIn);
         setState(() {
@@ -196,10 +201,13 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
 
         print(isValidSignIn);
@@ -339,10 +347,13 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
       }
     }
