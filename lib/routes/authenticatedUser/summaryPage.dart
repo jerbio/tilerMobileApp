@@ -858,10 +858,25 @@ class _SummaryPage extends State<SummaryPage> {
       }
     }
 
-    print(' isFuture: ' + isFuture.toString());
-
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: TileStyles.primaryColor,
+          title: Text(
+            this.widget.timeline.startTime.humanDate,
+            style: TextStyle(
+                color: TileStyles.appBarTextColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 22),
+          ),
+          iconTheme: IconThemeData(
+            color: TileStyles.appBarTextColor,
+          ),
+          leading: CloseButton(),
+          centerTitle: true,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+        ),
         body: Container(
           width: double.infinity,
           height: double.infinity,
@@ -888,13 +903,13 @@ class _SummaryPage extends State<SummaryPage> {
                           top: 15,
                           bottom: 15,
                         ),
-                        child: Text(
-                          this.widget.timeline.startTime.humanDate,
-                          style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w600,
-                              fontFamily: TileStyles.rubikFontName),
-                        ),
+                        // child: Text(
+                        //   this.widget.timeline.startTime.humanDate,
+                        //   style: TextStyle(
+                        //       fontSize: 40,
+                        //       fontWeight: FontWeight.w600,
+                        //       fontFamily: TileStyles.rubikFontName),
+                        // ),
                       ),
                       // renderAnalysisData(),
                       this.timelineSummary == null || isFuture

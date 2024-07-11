@@ -86,7 +86,7 @@ class CancelAndProceedTemplateWidgetState
               ),
             ),
           )),
-          onPressed: () {
+          onPressed: () async {
             if (this.widget.onCancel != null) {
               Navigator.pop(context);
               this.widget.onCancel!();
@@ -143,7 +143,7 @@ class CancelAndProceedTemplateWidgetState
                 setState(() {
                   showLoading = true;
                 });
-                proceedResult.then((value) {
+                return proceedResult.then((value) {
                   setState(() {
                     showLoading = false;
                   });
@@ -153,7 +153,6 @@ class CancelAndProceedTemplateWidgetState
                     showLoading = false;
                   });
                 });
-                return;
               }
               Navigator.pop(context, proceedResult);
             } else {
