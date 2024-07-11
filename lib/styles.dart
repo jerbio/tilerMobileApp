@@ -156,6 +156,27 @@ class TileStyles {
     }),
   );
 
+  static ButtonStyle onlyIconsContrast = ButtonStyle(
+    overlayColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
+    padding: MaterialStateProperty.resolveWith((states) {
+      return EdgeInsets.all(0);
+    }),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryContrastColor;
+    }),
+  );
+
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
   static Color appBarTextColor = Colors.white;
   static Color nonViableBackgroundColor = Color.fromRGBO(150, 150, 150, 1);

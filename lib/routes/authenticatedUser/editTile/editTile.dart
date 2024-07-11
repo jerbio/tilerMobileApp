@@ -25,6 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -698,6 +699,37 @@ class _EditTileState extends State<EditTile> {
     }
   }
 
+  List<Widget>? getAppBarActionButtons() {
+    final appBarActionButtons = <Widget>[];
+    if (this.subEvent != null &&
+        this.subEvent?.calendarEvent?.id != null &&
+        this.subEvent?.thirdpartyType == TileSource.tiler) {
+      appBarActionButtons.add(ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TileDetail(
+                        tileId: this.subEvent?.calendarEvent?.id ??
+                            this.widget.tileId,
+                        loadSubEvents: false,
+                      ))).whenComplete(() {
+            this.context.read<SubCalendarTileBloc>().add(
+                GetSubCalendarTileBlocEvent(
+                    subEventId: this.widget.tileId,
+                    calendarSource: (this.widget.tileSource?.name ?? ""),
+                    thirdPartyUserId: this.widget.thirdPartyUserId));
+            subEvent = null;
+          });
+        },
+        style: TileStyles.onlyIconsContrast,
+        child: Icon(Icons.app_registration),
+      ));
+    }
+
+    return appBarActionButtons;
+  }
+
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
@@ -729,6 +761,10 @@ class _EditTileState extends State<EditTile> {
                         TextEditingController(text: splitCount!.toString());
                     splitCountController!.addListener(onInputCountChange);
                     editTilerEvent!.splitCount = splitCount;
+                    editTilerEvent!.calEndTime =
+                        subEvent!.calendarEvent!.endTime;
+                    editTilerEvent!.calStartTime =
+                        subEvent!.calendarEvent!.startTime;
                   }
                 }
               });
@@ -907,7 +943,9 @@ class _EditTileState extends State<EditTile> {
                         splitWidget
                       ],
                     )));
-                if (_editCalEndDateAndTime != null) {
+                if (_editCalEndDateAndTime != null &&
+                    subEvent != null &&
+                    subEvent!.isRecurring == true) {
                   Widget deadlineWidget = FractionallySizedBox(
                       widthFactor: TileStyles.tileWidthRatio,
                       child: Container(
@@ -1145,6 +1183,7 @@ class _EditTileState extends State<EditTile> {
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),
+          actions: this.getAppBarActionButtons(),
           centerTitle: true,
           elevation: 0,
           automaticallyImplyLeading: false,

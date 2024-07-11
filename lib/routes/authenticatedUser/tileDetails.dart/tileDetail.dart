@@ -24,7 +24,8 @@ import 'package:tiler_app/util.dart';
 
 class TileDetail extends StatefulWidget {
   final String tileId;
-  TileDetail({required this.tileId});
+  final bool loadSubEvents;
+  TileDetail({required this.tileId, this.loadSubEvents = true});
 
   @override
   State<StatefulWidget> createState() => _TileDetailState();
@@ -58,9 +59,11 @@ class _TileDetailState extends State<TileDetail> {
         .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
     this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
         calEventId: this.widget.tileId, blocSessionId: requestId));
-    this.context.read<SubCalendarTileBloc>().add(
-        GetListOfCalendarTilesSubTilesBlocEvent(
-            calEventId: this.widget.tileId, requestId: requestId));
+    if (this.widget.loadSubEvents) {
+      this.context.read<SubCalendarTileBloc>().add(
+          GetListOfCalendarTilesSubTilesBlocEvent(
+              calEventId: this.widget.tileId, requestId: requestId));
+    }
   }
 
   void onInputCountChange() {

@@ -159,7 +159,8 @@ class _TileSummaryState extends State<TileSummary> {
                                   temporalTextStatus,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      fontSize: 15, fontFamily: 'Rubik'),
+                                      fontSize: 15,
+                                      fontFamily: TileStyles.rubikFontName),
                                 ))
                           ],
                         )
@@ -185,7 +186,8 @@ class _TileSummaryState extends State<TileSummary> {
                                       temporalTextStatus,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          fontSize: 15, fontFamily: 'Rubik'),
+                                          fontSize: 15,
+                                          fontFamily: TileStyles.rubikFontName),
                                     ))
                               ],
                             )
@@ -209,7 +211,8 @@ class _TileSummaryState extends State<TileSummary> {
                                       temporalTextStatus,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          fontSize: 15, fontFamily: 'Rubik'),
+                                          fontSize: 15,
+                                          fontFamily: TileStyles.rubikFontName),
                                     ))
                               ],
                             ))
