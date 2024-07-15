@@ -65,7 +65,7 @@ class ForecastView extends StatelessWidget {
                 builder: (context, state) {
                   print('Current state: $state');
                   if (state is ForecastInitial) {
-                    return Text('Initial State');
+                    return SizedBox.shrink();
                   } else if (state is ForecastLoading) {
                     return SizedBox(
                         height: height / (height / 450),

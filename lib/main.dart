@@ -26,6 +26,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
+import 'package:tiler_app/routes/completed/completed.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tuple/tuple.dart';
@@ -190,9 +191,10 @@ class TilerApp extends StatelessWidget {
                   } else {
                     authentication?.deauthenticateCredentials();
                     retValue = /*AuthorizedRoute()*/
-
+                                //  SignInRoute()
+                                CompletedTiles()
                         // This is the original route but it was commented for development sake by ted
-                        SignInRoute();
+                       ;
                   }
                 } else {
                   retValue = renderPending();

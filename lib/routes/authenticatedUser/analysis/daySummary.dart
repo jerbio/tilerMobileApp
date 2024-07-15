@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
@@ -7,6 +8,8 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+
+import '../../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
@@ -18,6 +21,7 @@ class DaySummary extends StatefulWidget {
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
   bool pendingFlag = false;
+
   @override
   void initState() {
     super.initState();
@@ -126,6 +130,9 @@ class _DaySummaryState extends State<DaySummary> {
 
   @override
   Widget build(BuildContext context) {
+    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return MultiBlocListener(
         listeners: [
           BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
@@ -164,17 +171,73 @@ class _DaySummaryState extends State<DaySummary> {
               }
             }
 
-            List<Widget> childElements = [renderDayMetricInfo()];
+            // List<Widget> childElements = [
+            //   renderDayMetricInfo(),
+            // ];
             Widget dayDateText = Container(
               child: Text(
                   Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
                   style: TextStyle(
                       fontSize: 30,
                       fontFamily: TileStyles.rubikFontName,
-                      color: TileStyles.primaryColorDarkHSL.toColor(),
+                      color: TileStyles.primaryColor,
                       fontWeight: FontWeight.w700)),
             );
-            childElements.insert(0, dayDateText);
+
+            //
+            // childElements.insert(0, dayDateText);
+
+            //
+            Widget navToToday = GestureDetector(
+              onTap: () {
+                print("Navigated to current day");
+                uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+              },
+              child: Container(
+                // color: Colors.amber,
+                height: height / (height / 38),
+                width: height / (height / 38),
+                child: LayoutBuilder(
+                  builder: (context, constraints) => Stack(
+                    children: [
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Icon(
+                          FontAwesomeIcons.calendar,
+                          size: constraints.maxWidth * 0.9,
+                          color: TileStyles.primaryColor,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: constraints.maxHeight * 0.1,
+                        left: (constraints.maxWidth -
+                                constraints.maxWidth * 0.55) /
+                            2,
+                        child: Center(
+                          child: Container(
+                            // color: Colors.green,
+                            height: constraints.maxHeight * 0.55,
+                            width: constraints.maxHeight * 0.55,
+                            child: Center(
+                              child: Text(
+                                DateTime.now().day.toString(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: TileStyles.rubikFontName,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ), //Last Place
+            );
             Widget buttonPress = GestureDetector(
               onTap: () {
                 DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
@@ -191,8 +254,13 @@ class _DaySummaryState extends State<DaySummary> {
               },
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: childElements,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [dayDateText, renderDayMetricInfo()],
+                  ),
+                  navToToday,
+                ],
               ),
             );
 
