@@ -338,10 +338,12 @@ class _TileListState extends State<TileList> {
           eachSubEventA.start!.compareTo(eachSubEventB.start!));
 
       Map<int, Timeline> dayToSleepTimeLines = {};
-      sleepTimelines.forEach((sleepTimeLine) {
-        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
-        dayToSleepTimeLines[dayIndex] = sleepTimeLine;
-      });
+      sleepTimelines.forEach(
+        (sleepTimeLine) {
+          int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
+          dayToSleepTimeLines[dayIndex] = sleepTimeLine;
+        },
+      );
 
       Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
           mapTilesToDays(tileData.item2, _todayTimeLine);
@@ -374,6 +376,7 @@ class _TileListState extends State<TileList> {
       dayIndexToTileDict.keys.toList();
       dayIndexes.sort();
 
+      // Top Section(Date and other section)
       for (int i = 0; i < dayIndexes.length; i++) {
         int dayIndex = dayIndexes[i];
         dayIndex += startIndex;
@@ -422,7 +425,6 @@ class _TileListState extends State<TileList> {
       print('------------There are relevant ' +
           relevantTimeline.toString() +
           ' tiles------------');
-
       print('------------There are ' +
           timeLine.toString() +
           ' tiles------------');
@@ -546,12 +548,15 @@ class _TileListState extends State<TileList> {
               int? dayIndexOfTileBatch;
               Tuple2<int, Widget>? tileBatchTupleData;
 
-              this.dayIndexToCarouselIndex.forEach((key, value) {
-                if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
-                  dayIndexOfTileBatch = key;
-                  tileBatchTupleData = value;
-                }
-              });
+              this.dayIndexToCarouselIndex.forEach(
+                (key, value) {
+                  if (value.item1 == pageNumber &&
+                      dayIndexOfTileBatch == null) {
+                    dayIndexOfTileBatch = key;
+                    tileBatchTupleData = value;
+                  }
+                },
+              );
 
               if (carouselData == CarouselPageChangedReason.manual &&
                   dayIndexOfTileBatch != null &&

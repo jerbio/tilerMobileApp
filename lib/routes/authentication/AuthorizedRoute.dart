@@ -122,18 +122,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
-        onTap: () {
-          setState(() {
-            isAddButtonClicked = false;
-          });
-        },
-        child: Container(
-            height: MediaQuery.of(this.context).size.height,
-            width: MediaQuery.of(this.context).size.width,
-            color: Colors.amber,
-            child: Stack(children: <Widget>[
-              AutoAddTile(),
-            ])));
+      onTap: () {
+        setState(() {
+          isAddButtonClicked = false;
+        });
+      },
+      child: Container(
+        height: MediaQuery.of(this.context).size.height,
+        width: MediaQuery.of(this.context).size.width,
+        color: Colors.amber,
+        child: Stack(
+          children: <Widget>[
+            AutoAddTile(),
+          ],
+        ),
+      ),
+    );
 
     return containerWrapper;
   }
@@ -422,7 +426,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      TileList(),
+      // //this is the default and we need to switch these to routes and so we dont loose back button support
       Container(
         margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
         decoration: BoxDecoration(
@@ -445,6 +450,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     }
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
+    // Bottom Navbar Widget
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
@@ -458,19 +464,23 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
         child: Container(
           decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
                 Colors.white,
                 Colors.white,
                 Colors.white,
-              ])),
+              ],
+            ),
+          ),
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.search,
-                    color: TileStyles.primaryColorDarkHSL.toColor()),
+                icon: Icon(
+                  Icons.search,
+                  color: TileStyles.primaryColorDarkHSL.toColor(),
+                ),
                 label: '',
               ),
               BottomNavigationBarItem(
@@ -480,8 +490,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   ),
                   label: ''),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings,
-                      color: TileStyles.primaryColorDarkHSL.toColor()),
+                  icon: Icon(
+                    Icons.settings,
+                    color: TileStyles.primaryColorDarkHSL.toColor(),
+                  ),
                   label: ''),
             ],
             unselectedItemColor: Colors.white,

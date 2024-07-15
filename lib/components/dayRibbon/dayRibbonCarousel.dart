@@ -33,7 +33,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late DateTime selectedDate;
   late int batchCount;
   late int numberOfDays;
-  final CarouselController dayRibbonCarouselController = CarouselController();
+  // final CarouselController dayRibbonCarouselController = CarouselController();
+  
   Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
   Map<int, Tuple2<int, Timeline>> dayBatchIndexToBatch = {};
   @override
@@ -53,6 +54,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
 
   onDateButtonTapped(DateTime date) {
     AnalysticsSignal.send('DAY_RIBBON_TAPPED');
+    print('DAY_RIBBON_TAPPED');
     DateTime previousDate = this.selectedDate;
     DateTime currentDate = date;
     updateSelectedDate(date);
@@ -159,7 +161,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         batchDayIndexes);
   }
 
-  handleDateChange(UiDateManagerUpdated state) {
+  handleDateChange(UiDateManagerUpdated state, CarouselController dayRibbonCarouselController) {
     if (universalIndexToBatch
         .containsKey(state.currentDate.universalDayIndex)) {
       dayRibbonCarouselController.animateToPage(
@@ -173,6 +175,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     if (this.widget.autoUpdateAnchorDate) {
       if (this.anchorDate.universalDayIndex !=
           Utility.currentTime().universalDayIndex) {
@@ -186,17 +189,17 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
       }
     }
     return MultiBlocListener(
-        listeners: [
-          BlocListener<UiDateManagerBloc, UiDateManagerState>(
-            listener: (context, state) {
-              if (state is UiDateManagerUpdated) {
-                handleDateChange(state);
-              }
-            },
-          ),
-        ],
-        child: BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
-            builder: ((context, state) {
+      listeners: [
+        BlocListener<UiDateManagerBloc, UiDateManagerState>(
+          listener: (context, state) {
+            if (state is UiDateManagerUpdated) {
+              handleDateChange(state, uiDateManagerBloc.dayRibbonCarouselController);
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+        builder: ((context, state) {
           int beginDelta = this.batchCount - (this.batchCount ~/ 2);
           if (beginDelta < 0) {
             beginDelta = 0;
@@ -233,23 +236,26 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           }
 
           if (initialCarouselIndex < 0) {
-            initialCarouselIndex = 0;
+            initialCarouselIndex = 0; 
           }
           return Container(
             color: Colors.white,
             width: MediaQuery.of(context).size.width,
             height: 130,
             child: CarouselSlider(
-                carouselController: dayRibbonCarouselController,
-                items: carouselDayRibbonBatch,
-                options: CarouselOptions(
-                  viewportFraction: 1,
-                  initialPage: initialCarouselIndex,
-                  enableInfiniteScroll: false,
-                  reverse: false,
-                  scrollDirection: Axis.horizontal,
-                )),
+              carouselController: uiDateManagerBloc.dayRibbonCarouselController,
+              items: carouselDayRibbonBatch,
+              options: CarouselOptions(
+                viewportFraction: 1,
+                initialPage: initialCarouselIndex,
+                enableInfiniteScroll: false,
+                reverse: false,
+                scrollDirection: Axis.horizontal,
+              ),
+            ),
           );
-        })));
+        }),
+      ),
+    );
   }
 }

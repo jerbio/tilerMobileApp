@@ -1359,7 +1359,10 @@ class AddTileState extends State<AddTile> {
         backgroundColor: TileStyles.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
-          style: TileStyles.titleBarStyle,
+          style: TextStyle(
+              color: TileStyles.appBarTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
         ),
         centerTitle: true,
         elevation: 0,

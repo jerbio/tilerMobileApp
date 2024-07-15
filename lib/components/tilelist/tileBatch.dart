@@ -184,6 +184,8 @@ class TileBatchState extends State<TileBatch> {
         (widget.tiles ?? []).length.toString() +
         " " +
         uniqueKey);
+    
+    //
     childrenColumnWidgets = [];
     if (dayData != null && this.widget.tiles != null) {
       this.dayData!.nonViable = this
