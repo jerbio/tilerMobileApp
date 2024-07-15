@@ -26,8 +26,8 @@ class OnBoardingApi extends AppApi {
         throw TilerError(message: 'User is not authenticated');
       }
     } catch (e) {
-      print('Exception occurred in fetchOnboardingData: $e');
-      return null;
+      print('Exception occurred in fetchOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
+      throw TilerError(message: e is TilerError?e.message:"An error occurred!!\nPlease try again.");
     }
   }
 
@@ -51,8 +51,8 @@ class OnBoardingApi extends AppApi {
         throw TilerError(message: 'User is not authenticated');
       }
     } catch (e) {
-      print('Exception occurred in sendOnboardingData: $e');
-      return null;
+      print('Exception occurred in sendOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
+      throw TilerError(message: e is TilerError?e.message:e.toString());
     }
   }
 
