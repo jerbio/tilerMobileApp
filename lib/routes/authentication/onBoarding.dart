@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../../../bloc/onBoarding/on_boarding_bloc.dart';
 import '../../../bloc/onBoarding/on_boarding_state.dart';
 import '../../../styles.dart';
@@ -44,6 +45,17 @@ Widget renderPending() {
   );
 }
 
+void showErrorMessage(String message) {
+  Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.SNACKBAR,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.black54,
+      textColor: Colors.red,
+      fontSize: 16.0);
+}
+
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
     WakeUpTimeWidget(),
@@ -62,9 +74,7 @@ class _OnboardingViewState extends State<OnboardingView> {
               MaterialPageRoute(builder: (context) => AuthorizedRoute()));
         }
         if (state.step == OnboardingStep.error && state.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!)),
-          );
+          showErrorMessage(state.error.toString());
         }
       },
       builder: (context, state) {

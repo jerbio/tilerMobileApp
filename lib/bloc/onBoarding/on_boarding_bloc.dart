@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import '../../data/location.dart';
 import '../../data/onBoarding.dart';
+import '../../data/request/TilerError.dart';
 import '../../services/api/onBoardingApi.dart';
 import '../../services/onBoardingHelper.dart';
 import 'on_boarding_event.dart';
@@ -120,7 +121,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       print(e.toString());
       emit(state.copyWith(
         step: OnboardingStep.error,
-        error: e.toString(),
+        error: e is TilerError?e.message:"An error occurred!!\nPlease try again.",
       ));
     }
   }
