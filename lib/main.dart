@@ -190,9 +190,9 @@ class TilerApp extends StatelessWidget {
                     retValue = new AuthorizedRoute();
                   } else {
                     authentication?.deauthenticateCredentials();
-                    retValue = /*AuthorizedRoute()*/
+                    retValue = AuthorizedRoute()
                                 //  SignInRoute()
-                                CompletedTiles()
+                                // CompletedTiles()
                         // This is the original route but it was commented for development sake by ted
                        ;
                   }

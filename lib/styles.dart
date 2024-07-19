@@ -15,6 +15,8 @@ class TileStyles {
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
+  static const Color inactiveTextColor = Color(0xFF4A4A4A);
+  static const Color black = Colors.black;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
@@ -80,9 +82,10 @@ class TileStyles {
     }),
   );
 
+  // TODO : Edit here to change
   static ButtonStyle toggledButtonStyle = ButtonStyle(
     side: MaterialStateProperty.all(
-        BorderSide(color: primaryColorDarkHSL.toColor())),
+        BorderSide(color: primaryColor)),
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
@@ -91,7 +94,7 @@ class TileStyles {
     }),
     backgroundColor: MaterialStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
-        return primaryColorDarkHSL.toColor();
+        return primaryColor;
       }
       return Colors.transparent;
     }),
@@ -99,7 +102,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
     overlayColor: MaterialStateProperty.resolveWith((states) {
       return primaryColorLightHSL.toColor();
@@ -108,7 +111,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
   );
 

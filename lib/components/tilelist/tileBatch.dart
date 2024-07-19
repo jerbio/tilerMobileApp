@@ -163,6 +163,7 @@ class TileBatchState extends State<TileBatch> {
     }
   }
 
+  // TED FIRST STOP
   @override
   Widget build(BuildContext context) {
     const double heightMargin = 262;
@@ -184,7 +185,7 @@ class TileBatchState extends State<TileBatch> {
         (widget.tiles ?? []).length.toString() +
         " " +
         uniqueKey);
-    
+
     //
     childrenColumnWidgets = [];
     if (dayData != null && this.widget.tiles != null) {
@@ -194,9 +195,12 @@ class TileBatchState extends State<TileBatch> {
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
-      childrenColumnWidgets.add(Container(
+      childrenColumnWidgets.add(
+        Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayTimelineSummary: this.dayData!)));
+          child: DaySummary(dayTimelineSummary: this.dayData!),
+        ),
+      );
     }
 
     Widget? sleepWidget;
@@ -295,41 +299,50 @@ class TileBatchState extends State<TileBatch> {
       }
     }
 
-    childrenColumnWidgets.add(RefreshIndicator(
+    childrenColumnWidgets.add(
+      RefreshIndicator(
         onRefresh: () async {
           final currentState = this.context.read<ScheduleBloc>().state;
           if (currentState is ScheduleEvaluationState) {
-            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.lookupTimeline,
-                previousTimeline: currentState.lookupTimeline,
-                forceRefresh: true));
+            this.context.read<ScheduleBloc>().add(
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.lookupTimeline,
+                      previousTimeline: currentState.lookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadedState) {
-            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.lookupTimeline,
-                previousTimeline: currentState.lookupTimeline,
-                forceRefresh: true));
+            this.context.read<ScheduleBloc>().add(
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.lookupTimeline,
+                      previousTimeline: currentState.lookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadingState) {
-            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.previousLookupTimeline,
-                previousTimeline: currentState.previousLookupTimeline,
-                forceRefresh: true));
+            this.context.read<ScheduleBloc>().add(
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.previousLookupTimeline,
+                      previousTimeline: currentState.previousLookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(
                 lookupTimeline: currentState.previousLookupTimeline);
           }
         },
-        child: dayContent));
+        child: dayContent,
+      ),
+    );
 
     if (sleepWidget != null && sleepTimeline != null) {
       if (childrenColumnWidgets.contains(sleepWidget)) {
@@ -351,15 +364,20 @@ class TileBatchState extends State<TileBatch> {
     }
 
     if (!this._pendingRendering && this.pendingRenderedTiles != null) {
-      Timer(Duration(milliseconds: 1000), () {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            setState(() {
-              this.pendingRenderedTiles = null;
-            });
-          }
-        });
-      });
+      Timer(
+        Duration(milliseconds: 1000),
+        () {
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) {
+              if (mounted) {
+                setState(() {
+                  this.pendingRenderedTiles = null;
+                });
+              }
+            },
+          );
+        },
+      );
     }
     return Column(
       children: childrenColumnWidgets,
