@@ -23,7 +23,25 @@ class _SingleChoiceState extends State<SingleChoice> {
   @override
   Widget build(BuildContext context) {
     return SegmentedButton<TilePriority>(
-      style: TileStyles.toggledButtonStyle,
+      style: ButtonStyle(
+        foregroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
+              return TileStyles.appBarTextColor;
+            }
+            return TileStyles.inactiveTextColor;
+          },
+        ),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.selected)) {
+              return TileStyles.primaryColor;
+            }
+            return TileStyles.appBarTextColor;
+          },
+        ),
+      ),
+      // TileStyles.toggledButtonStyle,
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(
             value: TilePriority.low,
