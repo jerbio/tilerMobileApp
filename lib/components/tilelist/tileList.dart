@@ -327,6 +327,14 @@ class _TileListState extends State<TileList> {
     return retValue;
   }
 
+  List<TilerEvent> filterElapsedTasks(List<TilerEvent> tiles) {
+  DateTime now = DateTime.now();
+  return tiles.where((tile) {
+    DateTime tileEndTime = DateTime.fromMillisecondsSinceEpoch(tile.end!);
+    return tileEndTime.isAfter(now);
+  }).toList();
+}
+
   Widget renderSubCalendarTiles(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     Map<int, TileBatch> preceedingDayTilesDict = new Map<int, TileBatch>();
@@ -348,7 +356,7 @@ class _TileListState extends State<TileList> {
       Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
           mapTilesToDays(tileData.item2, _todayTimeLine);
 
-      List<TilerEvent> todayTiles = dayToTiles.item2;
+      List<TilerEvent> todayTiles = filterElapsedTasks(dayToTiles.item2);
       Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
 
       int todayDayIndex = Utility.getDayIndex(DateTime.now());
@@ -385,7 +393,7 @@ class _TileListState extends State<TileList> {
           if (!upcomingDayTilesDict.containsKey(dayIndex)) {
             var tiles = <TilerEvent>[];
             if (dayIndexToTileDict.containsKey(dayIndex)) {
-              tiles = dayIndexToTileDict[dayIndex]!;
+              tiles = filterElapsedTasks(dayIndexToTileDict[dayIndex]!);
             }
             var allTiles = tiles.toList();
             String headerString = Utility.getTimeFromIndex(dayIndex).humanDate;
@@ -402,7 +410,7 @@ class _TileListState extends State<TileList> {
           if (!preceedingDayTilesDict.containsKey(dayIndex)) {
             var tiles = <TilerEvent>[];
             if (dayIndexToTileDict.containsKey(dayIndex)) {
-              tiles = dayIndexToTileDict[dayIndex]!;
+              tiles = filterElapsedTasks(dayIndexToTileDict[dayIndex]!);
             }
             var allTiles = tiles.toList();
             Key key = Key(dayIndex.toString());

@@ -14,6 +14,13 @@ class GetScheduleDaySummaryEvent extends ScheduleSummaryEvent {
   GetScheduleDaySummaryEvent({this.timeline, this.requestId});
 
   @override
+  List<Object> get props => [timeline ?? '', requestId ?? ''];
+}
+
+class GetElapsedTasksEvent extends ScheduleSummaryEvent {
+  GetElapsedTasksEvent();
+
+  @override
   List<Object> get props => [];
 }
 
