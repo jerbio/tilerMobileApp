@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/routes/authenticatedUser/completed/completed.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -134,143 +135,161 @@ class _DaySummaryState extends State<DaySummary> {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return MultiBlocListener(
-        listeners: [
-          BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
-            listener: (context, state) {
-              if (state is ScheduleDaySummaryLoaded &&
-                  state.requestId == null) {
-                if (state.dayData != null && dayData != null) {
-                  TimelineSummary? latestDayData = state.dayData!
-                      .where((timelineSummary) =>
-                          timelineSummary.dayIndex == dayData?.dayIndex)
-                      .firstOrNull;
-                  setState(() {
-                    dayData = latestDayData;
-                    pendingFlag = false;
-                  });
-                }
-              }
-              if (state is ScheduleDaySummaryLoading &&
-                  state.requestId == null) {
+      listeners: [
+        BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
+          listener: (context, state) {
+            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+              if (state.dayData != null && dayData != null) {
+                TimelineSummary? latestDayData = state.dayData!
+                    .where((timelineSummary) =>
+                        timelineSummary.dayIndex == dayData?.dayIndex)
+                    .firstOrNull;
                 setState(() {
-                  pendingFlag = true;
+                  dayData = latestDayData;
+                  pendingFlag = false;
                 });
               }
-            },
-          ),
-        ],
-        child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
-          builder: (context, state) {
-            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-              TimelineSummary? latestDayData = state.dayData!
-                  .where((timelineSummary) =>
-                      timelineSummary.dayIndex == dayData?.dayIndex)
-                  .firstOrNull;
-              if (latestDayData != null) {
-                dayData = latestDayData;
-              }
             }
+            if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+              setState(() {
+                pendingFlag = true;
+              });
+            }
+          },
+        ),
+      ],
+      child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
+        builder: (context, state) {
+          if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+            TimelineSummary? latestDayData = state.dayData!
+                .where((timelineSummary) =>
+                    timelineSummary.dayIndex == dayData?.dayIndex)
+                .firstOrNull;
+            if (latestDayData != null) {
+              dayData = latestDayData;
+            }
+          }
 
-            // List<Widget> childElements = [
-            //   renderDayMetricInfo(),
-            // ];
-            Widget dayDateText = Container(
-              child: Text(
-                  Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontFamily: TileStyles.rubikFontName,
-                      color: TileStyles.primaryColor,
-                      fontWeight: FontWeight.w700)),
-            );
+          // List<Widget> childElements = [
+          //   renderDayMetricInfo(),
+          // ];
+          Widget dayDateText = Container(
+            child: Text(Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
+                style: TextStyle(
+                    fontSize: 30,
+                    fontFamily: TileStyles.rubikFontName,
+                    color: TileStyles.primaryColor,
+                    fontWeight: FontWeight.w700)),
+          );
 
-            //
-            // childElements.insert(0, dayDateText);
+          //
+          // childElements.insert(0, dayDateText);
 
-            //
-            Widget navToToday = GestureDetector(
-              onTap: () {
-                print("Navigated to current day");
-                uiDateManagerBloc.onDateButtonTapped(DateTime.now());
-              },
-              child: Container(
-                // color: Colors.amber,
-                height: height / (height / 38),
-                width: height / (height / 38),
-                child: LayoutBuilder(
-                  builder: (context, constraints) => Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Icon(
-                          FontAwesomeIcons.calendar,
-                          size: constraints.maxWidth * 0.9,
-                          color: TileStyles.primaryColor,
-                        ),
+          // Calender icon to navigate to current day
+          Widget navToToday = GestureDetector(
+            onTap: () {
+              print("Navigated to current day");
+              uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+            },
+            child: Container(
+              // color: Colors.amber,
+              height: height / (height / 38),
+              width: height / (height / 38),
+              child: LayoutBuilder(
+                builder: (context, constraints) => Stack(
+                  children: [
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: Icon(
+                        FontAwesomeIcons.calendar,
+                        size: constraints.maxWidth * 0.9,
+                        color: TileStyles.primaryColor,
                       ),
-                      Positioned(
-                        bottom: constraints.maxHeight * 0.1,
-                        left: (constraints.maxWidth -
-                                constraints.maxWidth * 0.55) /
-                            2,
-                        child: Center(
-                          child: Container(
-                            // color: Colors.green,
-                            height: constraints.maxHeight * 0.55,
-                            width: constraints.maxHeight * 0.55,
-                            child: Center(
-                              child: Text(
-                                DateTime.now().day.toString(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: TileStyles.rubikFontName,
-                                ),
+                    ),
+                    Positioned(
+                      bottom: constraints.maxHeight * 0.1,
+                      left:
+                          (constraints.maxWidth - constraints.maxWidth * 0.55) /
+                              2,
+                      child: Center(
+                        child: Container(
+                          // color: Colors.green,
+                          height: constraints.maxHeight * 0.55,
+                          width: constraints.maxHeight * 0.55,
+                          child: Center(
+                            child: Text(
+                              DateTime.now().day.toString(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontFamily: TileStyles.rubikFontName,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ), //Last Place
-            );
-            Widget buttonPress = GestureDetector(
-              onTap: () {
-                DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
-                DateTime end =
-                    Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
-                Timeline timeline = Timeline(
-                    start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SummaryPage(
-                              timeline: timeline,
-                            )));
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [dayDateText, renderDayMetricInfo()],
-                  ),
-                  navToToday,
-                ],
               ),
-            );
+            ), //Last Place
+          );
 
-            Container retContainer = Container(
-                padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
-                height: 120,
-                child: buttonPress);
+          // Makeshift Checkmark icon to navigate to completed page
+          Widget checkmarkButton = GestureDetector(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => CompletedTiles(),
+                ),
+              );
+            },
+            child: Container(
+              height: height / (height / 30),
+              width: height / (height / 30),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: TileStyles.primaryColor,
+              ),
+            ),
+          );
 
-            return retContainer;
-          },
-        ));
+          Widget buttonPress = GestureDetector(
+            onTap: () {
+              DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
+              DateTime end =
+                  Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
+              Timeline timeline = Timeline(
+                  start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SummaryPage(
+                            timeline: timeline,
+                          )));
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [dayDateText, renderDayMetricInfo(), checkmarkButton],
+                ),
+                navToToday,
+              ],
+            ),
+          );
+
+          Container retContainer = Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
+              height: 120,
+              child: buttonPress);
+
+          return retContainer;
+        },
+      ),
+    );
   }
 }
