@@ -1094,10 +1094,6 @@ class _TileListState extends State<TileList> {
             refreshScheduleSummary(lookupTimeline: timeLine);
             return renderPending();
           }
-          // final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
-          // if (dateMangerBloc is UiDateManagerUpdated) {
-          //   print("Current day is " + dateMangerBloc.currentDate.toString());
-          // }
 
           if (state is ScheduleLoadingState) {
             bool showPendingUI = !state.isAlreadyLoaded;
