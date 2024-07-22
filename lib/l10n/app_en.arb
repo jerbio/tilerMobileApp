@@ -362,13 +362,16 @@
     "skip":"Skip",
     "morningPerson":"🌅 Morning person",
     "morning":"Morning",
-    "midday":"Midday",
-    "neutral":"Neutral",
     "middayPerson":"🌞 Midday person",
     "nightPerson":"🌃 Night person",
     "enterAddress":"Enter your address",
     "wakeUpTimeQuestion":"What time do you usually wake up in the morning?",
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
-    "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?"
+    "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
+    "errorOccurred": "An error occurred!!\nPlease try again.",
+    "authenticationIssues":"Issues with authentication.",
+    "userIsNotAuthenticated":"User is not authenticated.",
+    "responseContentError":"Response does not contain expected Content.",
+    "responseHandlingError":"Failed to handle the response."
   }
