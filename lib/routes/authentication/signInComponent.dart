@@ -114,6 +114,7 @@ class SignInComponentState extends State<SignInComponent>
       setState(() {
         isPendingSigning = true;
       });
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
       try {
         UserPasswordAuthenticationData authenticationData =
             await UserPasswordAuthenticationData.getAuthenticationInfo(
@@ -176,6 +177,7 @@ class SignInComponentState extends State<SignInComponent>
         setState(() {
           isPendingRegistration = true;
         });
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
         showMessage(AppLocalizations.of(context)!.registeringUser);
         AuthorizationApi authorization = new AuthorizationApi();
         UserPasswordAuthenticationData authenticationData =
@@ -321,6 +323,7 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
     AnalysticsSignal.send('GOOGLE_SIGNUP_INITIALIZE');
     setState(() {
       isPendingSigning = true;
@@ -375,7 +378,6 @@ class SignInComponentState extends State<SignInComponent>
   @override
   Widget build(BuildContext context) {
     var usernameTextField = TextFormField(
-      keyboardType: TextInputType.name,
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (!isRegistrationScreen) {

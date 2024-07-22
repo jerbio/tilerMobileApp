@@ -17,6 +17,11 @@
     <application
         android:label="Tiler"
         android:icon="@mipmap/ic_launcher">
+        <!-- App notification icon-->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_tiler_notificationicon" />
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"

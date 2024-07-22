@@ -130,8 +130,7 @@ class _DaySummaryState extends State<DaySummary> {
         listeners: [
           BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
             listener: (context, state) {
-              if (state is ScheduleDaySummaryLoaded &&
-                  state.requestId == null) {
+              if (state is ScheduleDaySummaryLoaded) {
                 if (state.dayData != null && dayData != null) {
                   TimelineSummary? latestDayData = state.dayData!
                       .where((timelineSummary) =>
