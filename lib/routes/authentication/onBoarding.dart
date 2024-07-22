@@ -2,19 +2,19 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import '../../../bloc/onBoarding/on_boarding_bloc.dart';
-import '../../../bloc/onBoarding/on_boarding_state.dart';
-import '../../../styles.dart';
-import '../../components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
-import '../../components/onBoarding/onBoardingProgressIndicator.dart';
-import '../../components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
-import '../../components/onBoarding/subWidgets/primaryLocationWidget.dart';
-import '../../components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
-import '../../components/onBoarding/subWidgets/workDayStartingWidget.dart';
-import '../../routes/authentication/authorizedRoute.dart';
+import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
+import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
+import 'package:tiler_app/routes/authentication/authorizedRoute.dart';
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
+
   @override
   _OnboardingViewState createState() => _OnboardingViewState();
 }
@@ -51,12 +51,13 @@ void showErrorMessage(String message) {
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.SNACKBAR,
       timeInSecForIosWeb: 1,
-      backgroundColor: Colors.black54,
-      textColor: Colors.red,
+      backgroundColor: TileStyles.errorBackgroundColor,
+      textColor: TileStyles.errorTxtColor,
       fontSize: 16.0);
 }
 
 class _OnboardingViewState extends State<OnboardingView> {
+
   final List<Widget> pages = [
     WakeUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
@@ -66,63 +67,66 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<OnboardingBloc, OnboardingState>(
-      listener: (context, state) {
-        if (state.step == OnboardingStep.skipped ||
-            state.step == OnboardingStep.submitted) {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => AuthorizedRoute()));
-        }
-        if (state.step == OnboardingStep.error && state.error != null) {
-          showErrorMessage(state.error.toString());
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          body: Stack(
-            children: [
-              SafeArea(
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16.0, horizontal: 30.0),
-                      child: OnBoardingProgressIndicator(
-                          currentPage: state.pageNumber ?? 0,
-                          totalPages: pages.length),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          transitionBuilder:
-                              (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
-                          },
-                          child: Padding(
-                            key: ValueKey<int>(state.pageNumber ?? 0),
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 30.0),
-                            child: pages[state.pageNumber ?? 0],
+    return BlocProvider(
+      create: (context) => OnboardingBloc(context),
+      child: BlocConsumer<OnboardingBloc, OnboardingState>(
+        listener: (context, state) {
+          if (state.step == OnboardingStep.skipped ||
+              state.step == OnboardingStep.submitted) {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => AuthorizedRoute()));
+          }
+          if (state.step == OnboardingStep.error && state.error != null) {
+            showErrorMessage(state.error.toString());
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            body: Stack(
+              children: [
+                SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 30.0),
+                        child: OnBoardingProgressIndicator(
+                            currentPage: state.pageNumber ?? 0,
+                            totalPages: pages.length),
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: AnimatedSwitcher(
+                            duration: Duration(milliseconds: 300),
+                            transitionBuilder:
+                                (Widget child, Animation<double> animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              );
+                            },
+                            child: Padding(
+                              key: ValueKey<int>(state.pageNumber ?? 0),
+                              padding:
+                              const EdgeInsets.symmetric(horizontal: 30.0),
+                              child: pages[state.pageNumber ?? 0],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    OnboardingBottomNavigationBar(
-                      currentPage: state.pageNumber ?? 0,
-                      totalPages: pages.length,
-                    ),
-                  ],
+                      OnboardingBottomNavigationBar(
+                        currentPage: state.pageNumber ?? 0,
+                        totalPages: pages.length,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              if (state.step == OnboardingStep.loading) renderPending(),
-            ],
-          ),
-        );
-      },
+                if (state.step == OnboardingStep.loading) renderPending(),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
