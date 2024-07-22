@@ -1,7 +1,4 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
-
-import '../../data/location.dart';
+part of 'on_boarding_bloc.dart';
 
 enum OnboardingStep {
   initial,

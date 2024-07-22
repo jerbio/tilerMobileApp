@@ -16,6 +16,7 @@ import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
+import 'data/request/TilerError.dart';
 import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
@@ -557,14 +558,14 @@ class Utility {
     return await Geolocator.getCurrentPosition();
   }
 
-  static Future<bool> checkOnboardingStatus() async {
+  static Future<bool> checkOnboardingStatus(BuildContext context) async {
     try {
       await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
-      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
+      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid(context);
       return shouldSkipOnboarding || isOnboardingvalid;
     } catch (e) {
-      print("Error checking onboarding status: $e");
+      print("Error checking onboarding status: ${e is TilerError?e.message:"Unknown error!"}");
       return true;
     }
   }

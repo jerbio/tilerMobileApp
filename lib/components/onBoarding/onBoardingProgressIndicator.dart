@@ -1,7 +1,6 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
-
-import '../../styles.dart';
+import 'package:tiler_app/styles.dart';
 
 class OnBoardingProgressIndicator extends StatelessWidget {
   final int totalPages;

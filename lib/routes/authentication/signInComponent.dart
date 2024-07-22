@@ -143,7 +143,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(context);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -203,7 +203,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(context);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -350,7 +350,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(context);
         Navigator.pop(context);
         Navigator.push(
           context,

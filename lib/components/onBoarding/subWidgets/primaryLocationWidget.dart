@@ -1,11 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/locationSearchWidget.dart';
-import '../../../../../bloc/onBoarding/on_boarding_bloc.dart';
-import '../../../../../bloc/onBoarding/on_boarding_event.dart';
-import '../../../../../bloc/onBoarding/on_boarding_state.dart';
-import '../../../../../data/location.dart';
+import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'onBoardingSubWidget.dart';
 
