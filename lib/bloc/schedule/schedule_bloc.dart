@@ -9,12 +9,15 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../services/api/subCalendarEventApi.dart';
+
 part 'schedule_event.dart';
 part 'schedule_state.dart';
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
   ScheduleApi scheduleApi = ScheduleApi();
+  SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
   ScheduleBloc() : super(ScheduleInitialState()) {
     on<GetScheduleEvent>(_onGetSchedule);
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
@@ -24,6 +27,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<DelayedReloadLocalScheduleEvent>(_onDelayedReloadLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
+    on<CompleteTaskEvent>(_onCompleteTask);
   }
 
   Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubTiles(
@@ -69,6 +73,66 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
     emit(ScheduleInitialState());
   }
+
+  Future<void> _onCompleteTask(
+      CompleteTaskEvent event, Emitter<ScheduleState> emit) async {
+    emit(ScheduleLoadingTaskState());
+    try {
+      print("started making api call to complete");
+      SubCalendarEvent completedEvent =
+          await subCalendarEventApi.complete(event.subEvent);
+      print("SUCCESSFULLY COMPLETED TASK");
+      emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
+    } catch (error) {
+      emit(FailedScheduleLoadedState(
+          evaluationTime: DateTime.now(),
+          subEvents: [],
+          timelines: [],
+          lookupTimeline: Timeline.fromDateTime(
+              DateTime.now(), DateTime.now().add(Duration(days: 1)))));
+    }
+  }
+
+//   Future<void> _onCompleteTask(
+//     CompleteTaskEvent event, Emitter<ScheduleState> emit) async {
+//   try {
+//     emit(ScheduleLoadingState(
+//         subEvents: [],
+//         timelines: [],
+//         previousLookupTimeline: Timeline.fromDateTime(DateTime.now(), DateTime.now().add(Duration(days: 1))),
+//         isAlreadyLoaded: true,
+//         loadingTime: DateTime.now(),
+//         connectionState: ConnectionState.waiting));
+
+//     SubCalendarEvent completedEvent = await subCalendarEventApi.complete(event.subEvent);
+//     emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
+//   } catch (error) {
+//     emit(FailedScheduleLoadedState(
+//         evaluationTime: DateTime.now(),
+//         subEvents: [],
+//         timelines: [],
+//         lookupTimeline: Timeline.fromDateTime(
+//             DateTime.now(), DateTime.now().add(Duration(days: 1)))));
+//   }
+// }
+
+  // Future<void> _onCompleteTask(
+  //     CompleteTaskEvent event, Emitter<ScheduleState> emit) async {
+  //   try {
+  //     print("started making api call to complete");
+  //     SubCalendarEvent completedEvent =
+  //         await subCalendarEventApi.complete(event.subEvent);
+  //     print("SUCCESSFULLY COMPLETED TASK");
+  //     emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
+  //   } catch (error) {
+  //     emit(FailedScheduleLoadedState(
+  //         evaluationTime: DateTime.now(),
+  //         subEvents: [],
+  //         timelines: [],
+  //         lookupTimeline: Timeline.fromDateTime(
+  //             DateTime.now(), DateTime.now().add(Duration(days: 1)))));
+  //   }
+  // }
 
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {

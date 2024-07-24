@@ -17,6 +17,7 @@ class TileStyles {
   static const Color primaryContrastColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
   static const Color black = Colors.black;
+  
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
