@@ -24,6 +24,16 @@ class GetElapsedTasksEvent extends ScheduleSummaryEvent {
   List<Object> get props => [];
 }
 
+class CompleteTaskEvent extends ScheduleSummaryEvent {
+  final SubCalendarEvent subEvent;
+
+  CompleteTaskEvent({required this.subEvent});
+
+  @override
+  List<Object> get props => [subEvent];
+}
+
+
 class LogOutScheduleDaySummaryEvent extends ScheduleSummaryEvent {
   LogOutScheduleDaySummaryEvent();
 

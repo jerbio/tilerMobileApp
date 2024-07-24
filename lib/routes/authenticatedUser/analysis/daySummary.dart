@@ -206,7 +206,7 @@ class _DaySummaryState extends State<DaySummary> {
                       child: Icon(
                         FontAwesomeIcons.calendar,
                         size: constraints.maxWidth * 0.9,
-                        color: TileStyles.primaryColor,
+                        color: Colors.black,
                       ),
                     ),
                     Positioned(
@@ -247,12 +247,13 @@ class _DaySummaryState extends State<DaySummary> {
               );
             },
             child: Container(
-              height: height / (height / 30),
-              width: height / (height / 30),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: TileStyles.primaryColor,
-              ),
+              height: height / (height / 35),
+              width: height / (height / 35),
+              // decoration: BoxDecoration(
+              //   shape: BoxShape.circle,
+              //   color: TileStyles.primaryColor,
+              // ),
+              child: Icon(Icons.history),
             ),
           );
 

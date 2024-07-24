@@ -36,10 +36,24 @@ class ScheduleDaySummaryLoading extends ScheduleSummaryState {
   ScheduleDaySummaryLoading({this.dayData, this.timeline, this.requestId});
 }
 
+class ScheduleSummaryLoadingTaskState extends ScheduleSummaryState {
+  @override
+  List<Object> get props => [DateTime.now().millisecondsSinceEpoch];
+}
+
+class ScheduleSummaryCompleteTaskState extends ScheduleSummaryState {
+  final SubCalendarEvent completedEvent;
+
+  ScheduleSummaryCompleteTaskState({required this.completedEvent});
+
+  @override
+  List<Object> get props => [completedEvent];
+}
+
 class ScheduleSummaryErrorState extends ScheduleSummaryState {
   final String error;
 
-  ScheduleSummaryErrorState({required this.error});
+  ScheduleSummaryErrorState({required this.error, required String message});
 
   @override
   List<Object?> get props => [error];

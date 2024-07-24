@@ -464,7 +464,7 @@ class AddTileState extends State<AddTile> {
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
-                fillColor: textBackgroundColor,
+                fillColor: TileStyles.primaryContrastColor,
                 border: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(
                     const Radius.circular(50.0),
@@ -585,7 +585,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-              color: textBackgroundColor,
+              color: TileStyles.primaryContrastColor,
               borderRadius: const BorderRadius.all(
                 const Radius.circular(8.0),
               ),
@@ -1200,7 +1200,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-            color: textBackgroundColor,
+            color: TileStyles.primaryContrastColor,
             borderRadius: const BorderRadius.all(
               const Radius.circular(8.0),
             ),
@@ -1354,6 +1354,7 @@ class AddTileState extends State<AddTile> {
         onChanged: onTabTypeChange,
         value: switchUpvalue,
         color: TileStyles.primaryColor,
+       backgroundColor: TileStyles.primaryContrastColor, 
         // TileStyles.oPrimaryColorHSL.toColor(),
       ),
     );
