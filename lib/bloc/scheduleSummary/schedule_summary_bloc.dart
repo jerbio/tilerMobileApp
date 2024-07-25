@@ -125,46 +125,6 @@ class ScheduleSummaryBloc
     });
   }
 
-  // Future<void> _onCompleteTask(
-  //     CompleteTaskEvent event, Emitter<ScheduleSummaryState> emit) async {
-  //   emit(ScheduleSummaryLoadingTaskState());
-  //   print(state);
-  //   print("emitted complete task loading state");
-  //   try {
-  //     print("started making api call to complete");
-  //     SubCalendarEvent completedEvent =
-  //         await subCalendarEventApi.complete(event.subEvent);
-  //     print("SUCCESSFULLY COMPLETED TASK");
-  //     emit(ScheduleSummaryCompleteTaskState(completedEvent: completedEvent));
-  //     print(state);
-  //     print("emitted complete task loaded state");
-  //   } catch (error) {
-  //     emit(ScheduleSummaryErrorState(message: error.toString(), error: ''));
-  //   }
-  // }
-
-  // Future<void> _onCompleteTask(
-  //     CompleteTaskEvent event, Emitter<ScheduleSummaryState> emit) async {
-  //   print("State before event launch: $state");
-  //   print("_onCompleteTask called");
-  //   emit(ScheduleSummaryLoadingTaskState());
-  //   print(state);
-  //   print("Emitted ScheduleSummaryLoadingTaskState");
-  //   try {
-  //     print("Started making API call to complete");
-  //     SubCalendarEvent completedEvent =
-  //         await subCalendarEventApi.complete(event.subEvent);
-  //     print("API call completed successfully");
-  //     emit(ScheduleSummaryCompleteTaskState(completedEvent: completedEvent));
-  //     print(state);
-  //     print("Emitted ScheduleSummaryCompleteTaskState");
-  //   } catch (error) {
-  //     print("Error completing task: $error");
-  //     emit(ScheduleSummaryErrorState(message: error.toString(), error: ''));
-  //     print("Emitted ScheduleSummaryErrorState");
-  //   }
-  // }
-
   Future<bool> _onCompleteTask(
       CompleteTaskEvent event, Emitter<ScheduleSummaryState> emit) async {
     emit(ScheduleSummaryLoadingTaskState());
@@ -201,32 +161,6 @@ class ScheduleSummaryBloc
       return false;
     }
   }
-
-  // Future<void> _onCompleteTask(
-  //     CompleteTaskEvent event, Emitter<ScheduleSummaryState> emit) async {
-  //   print("_onCompleteTask started. Current state: $state");
-  //   print("Attempting to emit ScheduleSummaryLoadingTaskState");
-  //   emit(ScheduleSummaryLoadingTaskState());
-  //   print("State after emitting ScheduleSummaryLoadingTaskState: $state");
-
-  //   try {
-  //     print("Starting API call to complete task");
-  //     SubCalendarEvent completedEvent =
-  //         await subCalendarEventApi.complete(event.subEvent);
-  //     print("API call completed successfully. Result: $completedEvent");
-
-  //     print("Attempting to emit ScheduleSummaryCompleteTaskState");
-  //     emit(ScheduleSummaryCompleteTaskState(completedEvent: completedEvent));
-  //     print("State after emitting ScheduleSummaryCompleteTaskState: $state");
-  //   } catch (error) {
-  //     print("Error occurred while completing task: $error");
-  //     print("Attempting to emit ScheduleSummaryErrorState");
-  //     emit(ScheduleSummaryErrorState(message: error.toString(), error: ''));
-  //     print("State after emitting ScheduleSummaryErrorState: $state");
-  //   }
-
-  //   print("_onCompleteTask finished. Final state: $state");
-  // }
 
   FutureOr<void> _onLogOutScheduleDaySummaryEvent(
       LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {

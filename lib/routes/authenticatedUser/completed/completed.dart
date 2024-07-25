@@ -69,7 +69,6 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
 
     return BlocConsumer<ScheduleSummaryBloc, ScheduleSummaryState>(
       listenWhen: (previous, current) {
-        print("listenWhen called. Previous: $previous, Current: $current");
         return true;
       },
       buildWhen: (previous, current) {
@@ -79,21 +78,16 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
             current is ScheduleSummaryCompleteTaskState;
       },
       listener: (context, state) {
-        print("BlocListener triggered with state: $state");
         if (state is ScheduleSummaryLoadingTaskState) {
-          print("Task sent for completion, waiting for feedback");
           _showLoadingDialog();
         } else if (state is ScheduleSummaryCompleteTaskState) {
-          print("Task completed successfully, dialog will disappear now");
           _showCompletionDialog();
         } else if (state is ScheduleSummaryErrorState) {
-          print("Error occurred: ${state.error}");
           _closeAnyOpenDialogs();
           _showErrorDialog(state.error);
         }
       },
       builder: (context, state) {
-        print("BlocConsumer builder called. State: $state");
         if (state is ScheduleDaySummaryLoaded) {
           if (selectedOption.length != state.elapsedTasks.length) {
             selectedOption =
@@ -318,7 +312,6 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
                                               popEvent: () =>
                                                   Navigator.pop(context),
                                               proceedEvent: () async {
-                                                print("Complete button tapped");
                                                 Navigator.pop(
                                                     loadingContext); // Close the confirmation dialog
                                                 _showLoadingDialog();
@@ -457,14 +450,11 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
                                               popEvent: () =>
                                                   Navigator.pop(context),
                                               proceedEvent: () async {
+                                                // Current tile extracted
                                                 SubCalendarEvent tile =
                                                     state.elapsedTasks[index]
                                                         as SubCalendarEvent;
-                                                print("Defer button tapped");
-                                                debugPrint(
-                                                    'Calender Event Id: ${tile.calendarEvent?.id}');
-                                                debugPrint(
-                                                    'Event Id: ${tile.id}');
+
                                                 Navigator.pop(
                                                     loadingContext); // Close the confirmation dialog
                                                 _showLoadingDialog();
@@ -474,7 +464,9 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
                                                         .of<ScheduleSummaryBloc>(
                                                             context)
                                                     .deferTask(
-                                                  'tileId',
+                                                  tile.id != null
+                                                      ? tile.id!
+                                                      : "",
                                                   Duration(hours: 4),
                                                 );
 
@@ -647,7 +639,7 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
       builder: (context) => PendingWidget(
         imageAsset: TileStyles.evaluatingScheduleAsset,
       ),
-    ).then((value) => print("Loading dialog closed."));
+    );
   }
 
   void _showCompletionDialog() {
@@ -660,7 +652,7 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
           content: Text("Task completed successfully!"),
         );
       },
-    ).then((value) => print("Completion dialog closed."));
+    );
     Future.delayed(Duration(seconds: 1), () {
       if (mounted) {
         _closeAnyOpenDialogs();
@@ -679,6 +671,6 @@ class _CompletedTilesWidgetState extends State<CompletedTilesWidget> {
           content: Text("Error: $error"),
         );
       },
-    ).then((value) => print("Error dialog closed."));
+    );
   }
 }
