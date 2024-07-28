@@ -164,36 +164,39 @@ class _DaySummaryState extends State<DaySummary> {
             }
 
             List<Widget> childElements = [renderDayMetricInfo()];
-            Widget dayDateText = Container(
-              child: Text(
-                  Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontFamily: TileStyles.rubikFontName,
-                      color: TileStyles.primaryColorDarkHSL.toColor(),
-                      fontWeight: FontWeight.w700)),
-            );
-            childElements.insert(0, dayDateText);
-            Widget buttonPress = GestureDetector(
-              onTap: () {
-                DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
-                DateTime end =
-                    Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
-                Timeline timeline = Timeline(
-                    start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SummaryPage(
-                              timeline: timeline,
-                            )));
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: childElements,
-              ),
-            );
+            Widget buttonPress = SizedBox.shrink();
+            if (dayData != null) {
+              Widget dayDateText = Container(
+                child: Text(
+                    Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
+                    style: TextStyle(
+                        fontSize: 30,
+                        fontFamily: TileStyles.rubikFontName,
+                        color: TileStyles.primaryColorDarkHSL.toColor(),
+                        fontWeight: FontWeight.w700)),
+              );
+              childElements.insert(0, dayDateText);
+              buttonPress = GestureDetector(
+                onTap: () {
+                  DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
+                  DateTime end =
+                      Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
+                  Timeline timeline = Timeline(
+                      start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => SummaryPage(
+                                timeline: timeline,
+                              )));
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: childElements,
+                ),
+              );
+            }
 
             Container retContainer = Container(
                 padding: EdgeInsets.fromLTRB(10, 10, 20, 0),

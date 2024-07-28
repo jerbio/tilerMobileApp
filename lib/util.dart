@@ -154,7 +154,6 @@ class Utility {
     return retValue;
   }
 
-
   static Timeline todayTimeline() {
     DateTime currentTime = Utility.currentTime();
     DateTime begin =
@@ -559,13 +558,23 @@ class Utility {
 
   static Future<bool> checkOnboardingStatus() async {
     try {
-      await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-      bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
+      await Future.delayed(
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      bool shouldSkipOnboarding =
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
       bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
       return shouldSkipOnboarding || isOnboardingvalid;
     } catch (e) {
       print("Error checking onboarding status: $e");
       return true;
+    }
+  }
+
+  static debugPrint(String val) {
+    if (Constants.isDebug ||
+        Constants.userId == "6bc6992f-3222-4fd8-9e2b-b94eba2fb717" ||
+        Constants.userName == "jerbio") {
+      print(val);
     }
   }
 
