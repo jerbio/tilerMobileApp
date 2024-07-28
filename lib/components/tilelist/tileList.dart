@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
@@ -49,7 +50,6 @@ class _TileListState extends State<TileList> {
   Map? contextParams;
   Timeline timeLine = Timeline.fromDateTimeAndDuration(
       Utility.currentTime().dayDate.add(Duration(days: -4)), Duration(days: 7));
-  // Timeline? oldTimeline;
   ScrollController _scrollController = new ScrollController();
   late final LocalNotificationService localNotificationService;
   BoxDecoration previousTileBatchDecoration =
@@ -59,6 +59,8 @@ class _TileListState extends State<TileList> {
       BoxDecoration(color: Colors.white);
   Key carouselKey = ValueKey(Utility.getUuid);
   Map<int, Widget> dayIndexToWidget = {};
+  Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
+  Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
   List<Widget> carouselItems = [];
   final CarouselController tileListDayCarouselController = CarouselController();
@@ -68,6 +70,7 @@ class _TileListState extends State<TileList> {
   List<Timeline> loadedTimeline = [];
   List<SubCalendarEvent> loadedSubCalendarEvent = [];
   late Timeline previousTimeline;
+  late bool disableDayCarouselSlide = false;
 
   @override
   void initState() {
@@ -363,7 +366,6 @@ class _TileListState extends State<TileList> {
 
       List<TilerEvent> todayTiles = dayToTiles.item2;
       Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
-
       int todayDayIndex = Utility.getDayIndex(DateTime.now());
       Timeline relevantTimeline = this.previousTimeline ?? this.timeLine;
       final currentState = this.context.read<ScheduleBloc>().state;
@@ -549,11 +551,13 @@ class _TileListState extends State<TileList> {
             onPageChanged: (pageNumber, carouselData) {
               int? dayIndexOfTileBatch;
               Tuple2<int, Widget>? tileBatchTupleData;
+              DateTime currentTime = Utility.currentTime().dayDate;
 
               this.dayIndexToCarouselIndex.forEach((key, value) {
                 if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
                   dayIndexOfTileBatch = key;
                   tileBatchTupleData = value;
+                  currentTime = Utility.getTimeFromIndex(key);
                 }
               });
 
@@ -562,7 +566,7 @@ class _TileListState extends State<TileList> {
                   tileBatchTupleData != null) {
                 var currentState = this.context.read<UiDateManagerBloc>().state;
                 DateTime previousTime = Utility.currentTime().dayDate;
-                DateTime currentTime =
+                currentTime =
                     Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
                 if (previousTime.millisecondsSinceEpoch >
                     currentTime.millisecondsSinceEpoch) {
@@ -583,7 +587,12 @@ class _TileListState extends State<TileList> {
                       previousSelectedDate: previousTime));
                 }
               }
+
+              updateDayCarouselSlide(
+                  universalDayIndex: currentTime.universalDayIndex);
             },
+            scrollPhysics:
+                disableDayCarouselSlide ? NeverScrollableScrollPhysics() : null,
             scrollDirection: Axis.horizontal,
           ));
     } else {
@@ -727,6 +736,42 @@ class _TileListState extends State<TileList> {
     return incrementalTilerScrollId + "-" + Utility.msCurrentTime.toString();
   }
 
+  updateDayCarouselSlide({int? universalDayIndex}) {
+    bool retValue = false;
+    var currentState = this.context.read<UiDateManagerBloc>().state;
+    Utility.debugPrint("universalDayIndex is " + universalDayIndex.toString());
+    int? dayIndex = universalDayIndex;
+    if (dayIndex == null && currentState is UiDateManagerUpdated) {
+      dayIndex =
+          universalDayIndex ?? currentState.currentDate.universalDayIndex;
+      Utility.debugPrint("UiDateManagerUpdated is " +
+          currentState.currentDate.universalDayIndex.toString());
+    }
+    if (dayIndex != null) {
+      retValue = true;
+      Utility.debugPrint("dayIndex is " + dayIndex.toString());
+      Utility.debugPrint(dayIndexToSubEvents.toString());
+      if (dayIndexToSubEvents.containsKey(dayIndex) &&
+          dayIndexToSubEvents[dayIndex] != null) {
+        retValue = false;
+        if (dayIndexToSubEvents[dayIndex] != null) {
+          bool? atLeastOneIsViable = dayIndexToSubEvents[dayIndex]
+              ?.any((element) => element.isViable == true);
+          if (atLeastOneIsViable == true) {
+            retValue = false;
+          } else {
+            retValue = true;
+          }
+        }
+      }
+    }
+    if (retValue != disableDayCarouselSlide) {
+      setState(() {
+        disableDayCarouselSlide = retValue;
+      });
+    }
+  }
+
   reloadSchedule(DateTime dateManageCurrentDate,
       {bool forceRenderingPage = true,
       Timeline? forcedTimeline = null,
@@ -838,8 +883,6 @@ class _TileListState extends State<TileList> {
     }
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
-    print("previous timeline " + previousTimeLine.toString());
-    print("     new timeline " + queryTimeline.toString());
 
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
@@ -948,6 +991,7 @@ class _TileListState extends State<TileList> {
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
+          Utility.debugPrint("ScheduleBloc state is " + state.toString());
           if (state is ScheduleLoadingState) {
             if (state.message != null) {
               Fluttertoast.showToast(
@@ -961,6 +1005,51 @@ class _TileListState extends State<TileList> {
             }
           }
           if (state is ScheduleLoadedState) {
+            dayIndexToSubEvents = {};
+            String? statusId = state.scheduleStatus.evaluationId;
+            Map<String, SubCalendarEvent> idToSubEventByStatus = {};
+            if (statusId != null) {
+              if (statusToSubEvents.containsKey(statusId) &&
+                  statusToSubEvents[statusId] != null) {
+                idToSubEventByStatus = statusToSubEvents[statusId]!;
+              }
+              statusToSubEvents[statusId] = idToSubEventByStatus;
+            }
+
+            int startIndex = state.lookupTimeline.startTime.universalDayIndex;
+            int endIndex = state.lookupTimeline.endTime.universalDayIndex;
+            if (startIndex < endIndex - 1) {
+              // this is a hack because the start time of the look up timeline
+              // tends to 11:59pm which means there are almost never any tiles.
+              // So this screws up the empty day evaluation.
+              // Because it assumes there are no tiles on that day and then disables side scrolling
+              startIndex -= 1;
+              if (startIndex < endIndex - 1) {
+                endIndex -= 1;
+              }
+            }
+            print("Loaded timeline is " + state.lookupTimeline.toString());
+
+            int currentIndex = startIndex;
+            do {
+              dayIndexToSubEvents[currentIndex] = [];
+              ++currentIndex;
+            } while (currentIndex < endIndex);
+            for (SubCalendarEvent eachSubEvent in state.subEvents) {
+              List<SubCalendarEvent> subEvents = dayIndexToSubEvents[
+                      eachSubEvent.startTime.universalDayIndex] ??
+                  [];
+              if (!dayIndexToSubEvents
+                  .containsKey(eachSubEvent.startTime.universalDayIndex)) {
+                dayIndexToSubEvents[eachSubEvent.startTime.universalDayIndex] =
+                    subEvents;
+              }
+              subEvents.add(eachSubEvent);
+
+              if (statusId != null) {
+                idToSubEventByStatus[eachSubEvent.uniqueId] = eachSubEvent;
+              }
+            }
             if (state.eventId != null && state.eventId!.isNotEmpty) {
               String eventId = state.eventId!;
               if (eventId.contains(incrementalTilerScrollId) &&

@@ -191,7 +191,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     return;
   }
 
-  static void preserveState(ScheduleState state) {
+  static Tuple5<List<SubCalendarEvent>?, List<Timeline>?, Timeline?, String?,
+      ScheduleStatus> preserveState(ScheduleState state) {
     List<SubCalendarEvent>? subEvents;
     List<Timeline>? timelines;
     Timeline? lookupTimeline;
@@ -206,11 +207,6 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
 
     if (state is ScheduleEvaluationState) {
-      Duration durationSinceLastCall =
-          Utility.currentTime().difference(state.evaluationTime);
-      if (durationSinceLastCall.inSeconds < Utility.thirtySeconds.inSeconds) {
-        return;
-      }
       subEvents = state.subEvents;
       timelines = state.timelines;
       scheduleStatus = state.scheduleStatus;
@@ -223,6 +219,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       lookupTimeline = Utility.initialScheduleTimeline;
       scheduleStatus = ScheduleStatus();
     }
+
+    return Tuple5<List<SubCalendarEvent>?, List<Timeline>?, Timeline?, String?,
+            ScheduleStatus>(
+        subEvents, timelines, lookupTimeline, message, scheduleStatus);
   }
 
   Future<void> _onReviseSchedule(
