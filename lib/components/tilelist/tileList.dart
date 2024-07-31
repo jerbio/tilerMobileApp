@@ -71,6 +71,7 @@ class _TileListState extends State<TileList> {
   List<SubCalendarEvent> loadedSubCalendarEvent = [];
   late Timeline previousTimeline;
   late bool disableDayCarouselSlide = false;
+  int forceRefreshCounter = 0;
 
   @override
   void initState() {
@@ -518,16 +519,11 @@ class _TileListState extends State<TileList> {
 
       int itemCounter = 0;
       int initialCarouselIndex = -1;
-      bool isCarouselKeyRefreshed = false;
       carouselItems = sortedDayIndex.map<Widget>((dayIndex) {
         if (initialCarouselIndex < 0 && currentDayIndex == dayIndex) {
           initialCarouselIndex = itemCounter;
         }
-        if (!isCarouselKeyRefreshed &&
-            !dayIndexToCarouselIndex.containsKey(dayIndex)) {
-          carouselKey = ValueKey(Utility.getUuid);
-          isCarouselKeyRefreshed = true;
-        }
+
         dayIndexToCarouselIndex[dayIndex] =
             Tuple2(itemCounter, dayIndexToWidget[dayIndex]!);
         ++itemCounter;
@@ -564,7 +560,8 @@ class _TileListState extends State<TileList> {
               if (carouselData == CarouselPageChangedReason.manual &&
                   dayIndexOfTileBatch != null &&
                   tileBatchTupleData != null) {
-                var currentState = this.context.read<UiDateManagerBloc>().state;
+                var uiDateManagerState =
+                    this.context.read<UiDateManagerBloc>().state;
                 DateTime previousTime = Utility.currentTime().dayDate;
                 currentTime =
                     Utility.getTimeFromIndex(dayIndexOfTileBatch!).dayDate;
@@ -574,11 +571,11 @@ class _TileListState extends State<TileList> {
                 } else {
                   AnalysticsSignal.send('DAY_SWIPE_FORWARD');
                 }
-                if (currentState is UiDateManagerInitial) {
-                  previousTime = currentState.currentDate;
+                if (uiDateManagerState is UiDateManagerInitial) {
+                  previousTime = uiDateManagerState.currentDate;
                 }
-                if (currentState is UiDateManagerUpdated) {
-                  previousTime = currentState.currentDate;
+                if (uiDateManagerState is UiDateManagerUpdated) {
+                  previousTime = uiDateManagerState.currentDate;
                 }
                 if (previousTime.millisecondsSinceEpoch !=
                     currentTime.millisecondsSinceEpoch) {
@@ -748,7 +745,7 @@ class _TileListState extends State<TileList> {
           currentState.currentDate.universalDayIndex.toString());
     }
     if (dayIndex != null) {
-      retValue = true;
+      retValue = false;
       Utility.debugPrint("dayIndex is " + dayIndex.toString());
       Utility.debugPrint(dayIndexToSubEvents.toString());
       if (dayIndexToSubEvents.containsKey(dayIndex) &&
@@ -765,6 +762,12 @@ class _TileListState extends State<TileList> {
         }
       }
     }
+
+    var scheduleBlocState = this.context.read<ScheduleBloc>().state;
+    if (!(scheduleBlocState is ScheduleLoadedState)) {
+      retValue = false;
+    }
+
     if (retValue != disableDayCarouselSlide) {
       setState(() {
         disableDayCarouselSlide = retValue;
@@ -986,6 +989,20 @@ class _TileListState extends State<TileList> {
         timelines: revisedTimelines));
   }
 
+  String _generateCarouselKeyId(String sessionId) {
+    UiDateManagerState uiDateManagerState =
+        this.context.read<UiDateManagerBloc>().state;
+    int dayIndex = Utility.currentTime().universalDayIndex;
+    if (uiDateManagerState is UiDateManagerUpdated) {
+      dayIndex = uiDateManagerState.currentDate.universalDayIndex;
+    }
+    return sessionId +
+        "_" +
+        forceRefreshCounter.toString() +
+        "_" +
+        dayIndex.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -1064,6 +1081,10 @@ class _TileListState extends State<TileList> {
                 loadedSubCalendarEvent = state.subEvents;
                 if (state.previousLookupTimeline != null) {
                   previousTimeline = state.previousLookupTimeline!;
+                }
+                if (statusId != null) {
+                  String carouselId = _generateCarouselKeyId(statusId);
+                  carouselKey = ValueKey(carouselId);
                 }
               });
             }
