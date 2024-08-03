@@ -6,7 +6,10 @@ part 'ui_date_manager_event.dart';
 part 'ui_date_manager_state.dart';
 
 class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
-  UiDateManagerBloc() : super(UiDateManagerInitial()) {
+  UiDateManagerBloc()
+      : super(UiDateManagerUpdated(
+            currentDate: Utility.currentTime().dayDate,
+            previousDate: Utility.currentTime().dayDate)) {
     on<DateChangeEvent>(_onDayDateChange);
     on<LogOutUiDateManagerEvent>(_onLogOutUiDateManagerChange);
   }

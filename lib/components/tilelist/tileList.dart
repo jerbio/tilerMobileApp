@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 
@@ -71,6 +72,7 @@ class _TileListState extends State<TileList> {
   List<SubCalendarEvent> loadedSubCalendarEvent = [];
   late Timeline previousTimeline;
   late bool disableDayCarouselSlide = false;
+  late bool pendingCarouselDisabled = disableDayCarouselSlide;
   int forceRefreshCounter = 0;
 
   @override
@@ -513,9 +515,6 @@ class _TileListState extends State<TileList> {
       if (uiManagedDateState is UiDateManagerUpdated) {
         currentDayIndex = uiManagedDateState.currentDate.universalDayIndex;
       }
-      if (uiManagedDateState is UiDateManagerInitial) {
-        currentDayIndex = uiManagedDateState.currentDate.universalDayIndex;
-      }
 
       int itemCounter = 0;
       int initialCarouselIndex = -1;
@@ -534,6 +533,8 @@ class _TileListState extends State<TileList> {
         initialCarouselIndex = 0;
       }
 
+      Utility.debugPrint(
+          "Disable carousel -> " + disableDayCarouselSlide.toString());
       retValue = CarouselSlider(
           key: carouselKey,
           carouselController: tileListDayCarouselController,
@@ -549,6 +550,8 @@ class _TileListState extends State<TileList> {
               Tuple2<int, Widget>? tileBatchTupleData;
               DateTime currentTime = Utility.currentTime().dayDate;
 
+              Utility.debugPrint("onPageChanged carousel change -> " +
+                  disableDayCarouselSlide.toString());
               this.dayIndexToCarouselIndex.forEach((key, value) {
                 if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
                   dayIndexOfTileBatch = key;
@@ -571,9 +574,7 @@ class _TileListState extends State<TileList> {
                 } else {
                   AnalysticsSignal.send('DAY_SWIPE_FORWARD');
                 }
-                if (uiDateManagerState is UiDateManagerInitial) {
-                  previousTime = uiDateManagerState.currentDate;
-                }
+
                 if (uiDateManagerState is UiDateManagerUpdated) {
                   previousTime = uiDateManagerState.currentDate;
                 }
@@ -734,45 +735,9 @@ class _TileListState extends State<TileList> {
   }
 
   updateDayCarouselSlide({int? universalDayIndex}) {
-    bool retValue = false;
-    var currentState = this.context.read<UiDateManagerBloc>().state;
-    Utility.debugPrint("universalDayIndex is " + universalDayIndex.toString());
-    int? dayIndex = universalDayIndex;
-    if (dayIndex == null && currentState is UiDateManagerUpdated) {
-      dayIndex =
-          universalDayIndex ?? currentState.currentDate.universalDayIndex;
-      Utility.debugPrint("UiDateManagerUpdated is " +
-          currentState.currentDate.universalDayIndex.toString());
-    }
-    if (dayIndex != null) {
-      retValue = false;
-      Utility.debugPrint("dayIndex is " + dayIndex.toString());
-      Utility.debugPrint(dayIndexToSubEvents.toString());
-      if (dayIndexToSubEvents.containsKey(dayIndex) &&
-          dayIndexToSubEvents[dayIndex] != null) {
-        retValue = false;
-        if (dayIndexToSubEvents[dayIndex] != null) {
-          bool? atLeastOneIsViable = dayIndexToSubEvents[dayIndex]
-              ?.any((element) => element.isViable == true);
-          if (atLeastOneIsViable == true) {
-            retValue = false;
-          } else {
-            retValue = true;
-          }
-        }
-      }
-    }
-
-    var scheduleBlocState = this.context.read<ScheduleBloc>().state;
-    if (!(scheduleBlocState is ScheduleLoadedState)) {
-      retValue = false;
-    }
-
-    if (retValue != disableDayCarouselSlide) {
-      setState(() {
-        disableDayCarouselSlide = retValue;
-      });
-    }
+    setState(() {
+      disableDayCarouselSlide = pendingCarouselDisabled;
+    });
   }
 
   reloadSchedule(DateTime dateManageCurrentDate,
@@ -823,7 +788,7 @@ class _TileListState extends State<TileList> {
     }
 
     int dayDelta = Constants.numberOfDaysToLoad ~/ 2;
-    int daySplit = (dayDelta.toDouble() / 2).round();
+    int daySplit = (dayDelta.toDouble()).round();
     startDateTime =
         dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
     endDateTime =
@@ -886,7 +851,7 @@ class _TileListState extends State<TileList> {
     }
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
-
+    print('After queryTimeline ' + queryTimeline.toString());
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeLine,
@@ -1025,10 +990,12 @@ class _TileListState extends State<TileList> {
             dayIndexToSubEvents = {};
             String? statusId = state.scheduleStatus.evaluationId;
             Map<String, SubCalendarEvent> idToSubEventByStatus = {};
+            bool isNewStatusId = true;
             if (statusId != null) {
               if (statusToSubEvents.containsKey(statusId) &&
                   statusToSubEvents[statusId] != null) {
                 idToSubEventByStatus = statusToSubEvents[statusId]!;
+                isNewStatusId = false;
               }
               statusToSubEvents[statusId] = idToSubEventByStatus;
             }
@@ -1052,21 +1019,29 @@ class _TileListState extends State<TileList> {
               dayIndexToSubEvents[currentIndex] = [];
               ++currentIndex;
             } while (currentIndex < endIndex);
-            for (SubCalendarEvent eachSubEvent in state.subEvents) {
-              List<SubCalendarEvent> subEvents = dayIndexToSubEvents[
-                      eachSubEvent.startTime.universalDayIndex] ??
-                  [];
-              if (!dayIndexToSubEvents
-                  .containsKey(eachSubEvent.startTime.universalDayIndex)) {
-                dayIndexToSubEvents[eachSubEvent.startTime.universalDayIndex] =
-                    subEvents;
-              }
-              subEvents.add(eachSubEvent);
-
-              if (statusId != null) {
-                idToSubEventByStatus[eachSubEvent.uniqueId] = eachSubEvent;
-              }
+            List<SubCalendarEvent> subEvents = state.subEvents;
+            if (statusId != null &&
+                statusToSubEvents[statusId] != null &&
+                !isNewStatusId) {
+              subEvents = (statusToSubEvents[statusId] ?? {}).values.toList();
             }
+            print("Loaded timeline subevent Count " +
+                subEvents.length.toString());
+            // for (SubCalendarEvent eachSubEvent in subEvents) {
+            //   List<SubCalendarEvent> subEvents = dayIndexToSubEvents[
+            //           eachSubEvent.startTime.universalDayIndex] ??
+            //       [];
+            //   if (!dayIndexToSubEvents
+            //       .containsKey(eachSubEvent.startTime.universalDayIndex)) {
+            //     dayIndexToSubEvents[eachSubEvent.startTime.universalDayIndex] =
+            //         subEvents;
+            //   }
+            //   subEvents.add(eachSubEvent);
+
+            //   if (statusId != null) {
+            //     idToSubEventByStatus[eachSubEvent.uniqueId] = eachSubEvent;
+            //   }
+            // }
             if (state.eventId != null && state.eventId!.isNotEmpty) {
               String eventId = state.eventId!;
               if (eventId.contains(incrementalTilerScrollId) &&
@@ -1175,12 +1150,43 @@ class _TileListState extends State<TileList> {
                             state.currentDate.universalDayIndex]!
                         .item1);
               }
+              disableDayCarouselSlide = false;
 
               reloadSchedule(state.currentDate,
                   forceRenderingPage: forceRenderingPage);
             }
           },
         ),
+        BlocListener<TileListCarouselBloc, TileListCarouselState>(
+            listener: (context, state) {
+          bool isCarouselDisabled = false;
+          bool isImmediate = false;
+          if (state is TileListCarouselDisabled) {
+            isCarouselDisabled = true;
+            isImmediate = state.isImmediate;
+          }
+
+          if (state is TileListCarouselEnable) {
+            isCarouselDisabled = false;
+            isImmediate = state.isImmediate;
+          }
+          if (!isCarouselDisabled) {
+            setState(() {
+              disableDayCarouselSlide = isCarouselDisabled;
+              pendingCarouselDisabled = isCarouselDisabled;
+            });
+            return;
+          }
+          if (isCarouselDisabled &&
+              isCarouselDisabled != disableDayCarouselSlide) {
+            pendingCarouselDisabled = isCarouselDisabled;
+          }
+          if (isImmediate) {
+            setState(() {
+              disableDayCarouselSlide = pendingCarouselDisabled;
+            });
+          }
+        })
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
