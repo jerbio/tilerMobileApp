@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
@@ -49,13 +50,34 @@ class EmptyDayTileState extends State<EmptyDayTile> {
       }
     }
     super.initState();
+
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Utility.setTimeOut(
+    //       duration: Duration(milliseconds: 2000),
+    //       callBack: () {
+    //         if (mounted) {
+    //           this.disableTileListCarousel();
+    //         }
+    //       });
+    // });
+    this.disableTileListCarousel();
+  }
+
+  void disableTileListCarousel() {
+    context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
+  }
+
+  void enableTileListCarousel() {
+    context
+        .read<TileListCarouselBloc>()
+        .add(EnableCarouselScrollEvent(isImmediate: true));
   }
 
   void dateTap(int dayIndex) {
     int updatedDayIndex = dayIndex;
     DateTime newDate = Utility.getTimeFromIndex(updatedDayIndex).dayDate;
     DateTime currentDate = Utility.getTimeFromIndex(this.emptyDayIndex).dayDate;
-
+    this.enableTileListCarousel();
     if (currentDate.millisecondsSinceEpoch != newDate.millisecondsSinceEpoch) {
       this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
           previousSelectedDate: currentDate, selectedDate: newDate));

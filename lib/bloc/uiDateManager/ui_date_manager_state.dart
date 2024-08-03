@@ -7,10 +7,10 @@ abstract class UiDateManagerState extends Equatable {
   List<Object> get props => [];
 }
 
-class UiDateManagerInitial extends UiDateManagerState {
-  DateTime currentDate = Utility.currentTime().dayDate;
-  UiDateManagerInitial();
-}
+// class UiDateManagerInitial extends UiDateManagerState {
+//   DateTime currentDate = Utility.currentTime().dayDate;
+//   UiDateManagerInitial();
+// }
 
 class UiDateManagerUpdated extends UiDateManagerState {
   DateTime previousDate;

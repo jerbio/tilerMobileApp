@@ -6,11 +6,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/bloc/bloc/integrations_bloc.dart';
+import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
@@ -145,6 +146,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
           BlocProvider(create: (context) => LocationBloc()),
           BlocProvider(create: (context) => IntegrationsBloc()),
+          BlocProvider(create: (context) => TileListCarouselBloc()),
           BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
         ],
         child: MaterialApp(
