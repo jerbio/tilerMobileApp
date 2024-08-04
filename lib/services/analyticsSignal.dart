@@ -61,12 +61,16 @@ class AnalysticsSignal {
     if (tag.isEmpty) {
       return "no-tag-set";
     }
-    AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
-        signalTag: tag, additionalInfo: additionalInfo);
-    await fireBaseAnalytics
-        .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
-        .then((value) {
-      print("---- custom event analystics user logged in verified-----");
-    });
+    try {
+      AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
+          signalTag: tag, additionalInfo: additionalInfo);
+      await fireBaseAnalytics
+          .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
+          .then((value) {
+        print("---- custom event analystics user logged in verified-----");
+      });
+    } catch (e) {
+      Utility.debugPrint("Issues sending analytical signal");
+    }
   }
 }

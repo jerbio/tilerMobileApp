@@ -65,9 +65,13 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    Utility.debugPrint("Issues Initializing Firebase");
+  }
   runApp(TilerApp());
 }
 
