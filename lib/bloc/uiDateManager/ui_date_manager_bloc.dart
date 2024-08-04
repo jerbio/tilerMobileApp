@@ -23,7 +23,9 @@ class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
       previousDate = (state as UiDateManagerUpdated).currentDate;
     }
     emit(UiDateManagerUpdated(
-        currentDate: updatedDate, previousDate: previousDate));
+        currentDate: updatedDate,
+        previousDate: previousDate,
+        dateChangeTrigger: event.dateChangeTrigger));
   }
 
   _onLogOutUiDateManagerChange(
