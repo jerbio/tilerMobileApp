@@ -50,27 +50,21 @@ class EmptyDayTileState extends State<EmptyDayTile> {
       }
     }
     super.initState();
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Utility.setTimeOut(
-    //       duration: Duration(milliseconds: 2000),
-    //       callBack: () {
-    //         if (mounted) {
-    //           this.disableTileListCarousel();
-    //         }
-    //       });
-    // });
     this.disableTileListCarousel();
   }
 
   void disableTileListCarousel() {
-    context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
+    if (this.mounted) {
+      context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
+    }
   }
 
   void enableTileListCarousel() {
-    context
-        .read<TileListCarouselBloc>()
-        .add(EnableCarouselScrollEvent(isImmediate: true));
+    if (this.mounted) {
+      context
+          .read<TileListCarouselBloc>()
+          .add(EnableCarouselScrollEvent(isImmediate: true));
+    }
   }
 
   void dateTap(int dayIndex) {
@@ -86,6 +80,11 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
   Widget buttonClickButton(int dayIndex) {
     return GestureDetector(
+        onHorizontalDragEnd: (details) {
+          if (this.emptyDayIndex != 0) {
+            dateTap(dayIndex);
+          }
+        },
         onTap: () {
           if (this.emptyDayIndex != 0) {
             dateTap(dayIndex);
@@ -299,5 +298,11 @@ class EmptyDayTileState extends State<EmptyDayTile> {
         buttonClickButton(this.emptyDayIndex + 1),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    // this.enableTileListCarousel();
+    super.dispose();
   }
 }

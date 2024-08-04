@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:collection';
-import 'dart:ui';
 
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +70,7 @@ class _TileListState extends State<TileList> {
   List<SubCalendarEvent> loadedSubCalendarEvent = [];
   late Timeline previousTimeline;
   late bool disableDayCarouselSlide = false;
-  late bool pendingCarouselDisabled = disableDayCarouselSlide;
+  late bool? pendingCarouselDisabled = disableDayCarouselSlide;
   int forceRefreshCounter = 0;
 
   @override
@@ -373,9 +371,7 @@ class _TileListState extends State<TileList> {
       Timeline relevantTimeline = this.previousTimeline ?? this.timeLine;
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleLoadingState) {
-        if (currentState.previousLookupTimeline != null) {
-          relevantTimeline = currentState.previousLookupTimeline!;
-        }
+        relevantTimeline = currentState.previousLookupTimeline;
       }
 
       if (currentState is ScheduleLoadedState) {
@@ -533,8 +529,6 @@ class _TileListState extends State<TileList> {
         initialCarouselIndex = 0;
       }
 
-      Utility.debugPrint(
-          "Disable carousel -> " + disableDayCarouselSlide.toString());
       retValue = CarouselSlider(
           key: carouselKey,
           carouselController: tileListDayCarouselController,
@@ -550,8 +544,6 @@ class _TileListState extends State<TileList> {
               Tuple2<int, Widget>? tileBatchTupleData;
               DateTime currentTime = Utility.currentTime().dayDate;
 
-              Utility.debugPrint("onPageChanged carousel change -> " +
-                  disableDayCarouselSlide.toString());
               this.dayIndexToCarouselIndex.forEach((key, value) {
                 if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
                   dayIndexOfTileBatch = key;
@@ -589,8 +581,9 @@ class _TileListState extends State<TileList> {
               updateDayCarouselSlide(
                   universalDayIndex: currentTime.universalDayIndex);
             },
-            scrollPhysics:
-                disableDayCarouselSlide ? NeverScrollableScrollPhysics() : null,
+            scrollPhysics: (disableDayCarouselSlide)
+                ? NeverScrollableScrollPhysics()
+                : null,
             scrollDirection: Axis.horizontal,
           ));
     } else {
@@ -736,7 +729,10 @@ class _TileListState extends State<TileList> {
 
   updateDayCarouselSlide({int? universalDayIndex}) {
     setState(() {
-      disableDayCarouselSlide = pendingCarouselDisabled;
+      if (pendingCarouselDisabled != null) {
+        disableDayCarouselSlide = pendingCarouselDisabled!;
+        pendingCarouselDisabled = null;
+      }
     });
   }
 
@@ -1150,7 +1146,17 @@ class _TileListState extends State<TileList> {
                             state.currentDate.universalDayIndex]!
                         .item1);
               }
-              disableDayCarouselSlide = false;
+              if (pendingCarouselDisabled != null) {
+                disableDayCarouselSlide = pendingCarouselDisabled!;
+                pendingCarouselDisabled = null;
+              }
+              if (state.dateChangeTrigger == DateChangeTrigger.buttonPress) {
+                if (this.mounted) {
+                  context
+                      .read<TileListCarouselBloc>()
+                      .add(EnableCarouselScrollEvent(isImmediate: true));
+                }
+              }
 
               reloadSchedule(state.currentDate,
                   forceRenderingPage: forceRenderingPage);
@@ -1170,20 +1176,26 @@ class _TileListState extends State<TileList> {
             isCarouselDisabled = false;
             isImmediate = state.isImmediate;
           }
+
           if (!isCarouselDisabled) {
             setState(() {
               disableDayCarouselSlide = isCarouselDisabled;
-              pendingCarouselDisabled = isCarouselDisabled;
+              pendingCarouselDisabled = null;
             });
             return;
           }
-          if (isCarouselDisabled &&
-              isCarouselDisabled != disableDayCarouselSlide) {
+          if (isCarouselDisabled
+              //  &&
+              //     isCarouselDisabled != disableDayCarouselSlide
+              ) {
             pendingCarouselDisabled = isCarouselDisabled;
           }
           if (isImmediate) {
             setState(() {
-              disableDayCarouselSlide = pendingCarouselDisabled;
+              if (pendingCarouselDisabled != null) {
+                disableDayCarouselSlide = pendingCarouselDisabled!;
+                pendingCarouselDisabled = null;
+              }
             });
           }
         })
