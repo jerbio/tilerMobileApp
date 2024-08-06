@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -82,6 +83,7 @@ class TileBatchState extends State<TileBatch> {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
+    this.enableTileListCarousel();
   }
 
   TimelineSummary? get dayData {
@@ -97,6 +99,20 @@ class TileBatchState extends State<TileBatch> {
     //     sleepTimeline!.startTime.toString() +
     //     ' - ' +
     //     uniqueKey);
+  }
+
+  void disableTileListCarousel() {
+    if (this.mounted) {
+      context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
+    }
+  }
+
+  void enableTileListCarousel() {
+    if (this.mounted) {
+      context
+          .read<TileListCarouselBloc>()
+          .add(EnableCarouselScrollEvent(isImmediate: true));
+    }
   }
 
   Widget _buildRemovedItem(
