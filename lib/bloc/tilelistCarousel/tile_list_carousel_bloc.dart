@@ -14,10 +14,12 @@ class TileListCarouselBloc
 
   _onDisableCarouselScrollEvent(
       DisableCarouselScrollEvent event, Emitter emit) {
+    Utility.debugPrint("Disable carousel emitted");
     emit(TileListCarouselDisabled(isImmediate: event.isImmediate));
   }
 
   _onEnableCarouselScrollEvent(EnableCarouselScrollEvent event, Emitter emit) {
+    Utility.debugPrint("Enable carousel emitted");
     emit(TileListCarouselEnable(isImmediate: event.isImmediate));
   }
 }

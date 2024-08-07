@@ -83,7 +83,6 @@ class TileBatchState extends State<TileBatch> {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
-    this.enableTileListCarousel();
   }
 
   TimelineSummary? get dayData {
@@ -99,20 +98,6 @@ class TileBatchState extends State<TileBatch> {
     //     sleepTimeline!.startTime.toString() +
     //     ' - ' +
     //     uniqueKey);
-  }
-
-  void disableTileListCarousel() {
-    if (this.mounted) {
-      context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
-    }
-  }
-
-  void enableTileListCarousel() {
-    if (this.mounted) {
-      context
-          .read<TileListCarouselBloc>()
-          .add(EnableCarouselScrollEvent(isImmediate: true));
-    }
   }
 
   Widget _buildRemovedItem(
