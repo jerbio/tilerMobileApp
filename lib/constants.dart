@@ -2,11 +2,13 @@ import 'dart:io';
 
 const bool isProduction = true;
 const bool isDebug = !isProduction;
+const bool isStaging = true;
 const bool isRemote = true;
-const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
-const String devDomain =
-    isRemote ? 'localhost-44388-x-if7.conveyor.cloud' : '10.0.2.2:44322';
-const String tilerDomain = isProduction ? prodDomain : devDomain;
+const prodDomain = 'tiler.app';
+const stagingDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
+const devDomain = 'localhost-44388-x-if7.conveyor.cloud';
+const String tilerDomain =
+    isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
