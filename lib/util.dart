@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'package:tiler_app/services/localizationService.dart';
+
 import '../../../constants.dart' as Constants;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -558,15 +560,15 @@ class Utility {
     return await Geolocator.getCurrentPosition();
   }
 
-  static Future<bool> checkOnboardingStatus(BuildContext context) async {
+  static Future<bool> checkOnboardingStatus(LocalizationService localizationService) async {
     try {
       await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
-      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid(context);
-      return shouldSkipOnboarding || isOnboardingvalid;
+      bool isOnboardingValid = await OnBoardingApi(localizationService).areRequiredFieldsValid();
+      return shouldSkipOnboarding || isOnboardingValid;
     } catch (e) {
       print("Error checking onboarding status: ${e is TilerError?e.message:"Unknown error!"}");
-      return true;
+      return false;
     }
   }
 
