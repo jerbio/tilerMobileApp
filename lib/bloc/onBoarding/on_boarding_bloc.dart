@@ -5,17 +5,18 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/constants.dart' as Constants;
+import 'package:tiler_app/services/localizationService.dart';
 
 part 'on_boarding_event.dart';
 part 'on_boarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  OnBoardingApi onBoardingApi= OnBoardingApi();
-  final BuildContext context;
-  OnboardingBloc(this.context)
+
+  final LocalizationService localizationService;
+  late OnBoardingApi onBoardingApi;
+  OnboardingBloc(this.localizationService)
       : super(OnboardingState(
             step: OnboardingStep.initial,
             pageNumber: 0,
@@ -24,6 +25,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
             startingWorkDayTime:TimeOfDay(hour: 9, minute: 0),
 
   )) {
+    onBoardingApi= OnBoardingApi(localizationService);
     on<NextPageEvent>(_onNextPageChanged);
     on<PreviousPageEvent>(_onPreviousPageEvent);
     on<WakeUpTimeUpdated>(_onWakeUpTimeUpdated);
@@ -119,13 +121,13 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
     try {
       OnboardingContent? result =
-          await onBoardingApi.sendOnboardingData(onboardingContent,context!);
+          await onBoardingApi.sendOnboardingData(onboardingContent);
      emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
-      print( e is TilerError?e.message:AppLocalizations.of(context!)!.errorOccurred);
+      print( e is TilerError?e.message:localizationService.errorOccurred);
       emit(state.copyWith(
         step: OnboardingStep.error,
-        error: e is TilerError?e.message:AppLocalizations.of(context!)!.errorOccurred,
+        error: e is TilerError?e.message:localizationService.errorOccurred,
       ));
     }
   }

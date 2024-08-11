@@ -11,6 +11,8 @@ import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget
 import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import 'package:tiler_app/routes/authentication/authorizedRoute.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
@@ -67,8 +69,9 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
+    final localizationService = LocalizationService(AppLocalizations.of(context)!);
     return BlocProvider(
-      create: (context) => OnboardingBloc(context),
+      create: (context) => OnboardingBloc(localizationService),
       child: BlocConsumer<OnboardingBloc, OnboardingState>(
         listener: (context, state) {
           if (state.step == OnboardingStep.skipped ||
