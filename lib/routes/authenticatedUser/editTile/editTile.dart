@@ -519,13 +519,17 @@ class _EditTileState extends State<EditTile> {
             clearPreviewButton();
             return;
           }
-          setState(() {
-            beforePreview = value.item1;
-            afterPreview = value.item2;
-          });
-          updatePreviewWidget();
+          if (this.mounted) {
+            setState(() {
+              beforePreview = value.item1;
+              afterPreview = value.item2;
+            });
+            updatePreviewWidget();
+          }
         }).catchError((onError) {
-          clearPreviewButton();
+          if (this.mounted) {
+            clearPreviewButton();
+          }
           print(onError);
         });
       }
@@ -558,16 +562,23 @@ class _EditTileState extends State<EditTile> {
         .then((value) {
       AnalysticsSignal.send('EDIT_TILE_REQUEST_SUCCESS');
       final currentState = this.context.read<ScheduleBloc>().state;
-      if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-              isAlreadyLoaded: true,
-              emitOnlyLoadedStated: true,
-              previousSubEvents: currentState.subEvents,
-              scheduleTimeline: currentState.lookupTimeline,
-              previousTimeline: currentState.lookupTimeline,
-            ));
-        refreshScheduleSummary(currentState.lookupTimeline);
-      }
+      var stateResult = ScheduleBloc.preserveState(currentState);
+      List<SubCalendarEvent>? subEvents = stateResult.item1;
+      List<Timeline>? timelines = stateResult.item2;
+      Timeline? lookupTimeline = stateResult.item3;
+      // String? message = stateResult.item4;
+      // var scheduleStatus = stateResult.item5;
+      // if (currentState is ScheduleEvaluationState) {
+
+      // }
+      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          isAlreadyLoaded: true,
+          emitOnlyLoadedStated: true,
+          previousSubEvents: subEvents,
+          scheduleTimeline: lookupTimeline,
+          previousTimeline: lookupTimeline,
+          forceRefresh: true));
+      refreshScheduleSummary(lookupTimeline);
       return value;
     });
   }

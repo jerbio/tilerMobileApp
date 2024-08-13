@@ -43,3 +43,5 @@ final String homeProfileNickName = "personal";
 final List<String> invalidLocationNames = ["anywhere"];
 final int autoCompleteMinCharLength = 3;
 final int numberOfDaysToLoad = 8;
+String? userId = "";
+String? userName = "";

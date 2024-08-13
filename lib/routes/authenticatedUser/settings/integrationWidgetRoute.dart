@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:tiler_app/bloc/bloc/integrations_bloc.dart';
+import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -297,9 +296,6 @@ class PlayBackState extends State<PlayBack> {
         subTile.thirdpartyId,
         subTile.thirdPartyUserId,
         subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
-    if (this.widget.callBack != null) {
-      this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
-    }
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
@@ -308,6 +304,9 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: ScheduleStatus(),
         callBack: requestFuture));
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
+    }
   }
 
   procrastinate() async {
@@ -318,6 +317,7 @@ class PlayBackState extends State<PlayBack> {
           MaterialPageRoute(
               builder: (context) => TileProcrastinateRoute(
                     tileId: subTile.id!,
+                    callBack: this.widget.callBack,
                   )));
     }
   }

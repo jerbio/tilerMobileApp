@@ -177,6 +177,15 @@ class TilerEvent extends TilerObj with TimeRange {
     return _tilePriority;
   }
 
+  String get uniqueId {
+    return (this.thirdpartyType == null ||
+                this.thirdpartyType == TileSource.tiler ||
+                (this.thirdpartyId != null && this.thirdpartyId!.isEmpty)
+            ? this.id
+            : this.thirdpartyId) ??
+        "";
+  }
+
   toString() {
     String retValue = "";
     if (this.name != null) {
