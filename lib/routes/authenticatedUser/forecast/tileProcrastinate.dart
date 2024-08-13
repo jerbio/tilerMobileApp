@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -55,7 +56,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         fontSize: 16.0);
   }
 
-  void onProceedTap() {
+  Future onProceedTap() {
     if (this.widget._params != null) {
       this.widget._params!['duration'] = _duration;
     }
@@ -66,7 +67,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     if (scheduleState is ScheduleEvaluationState) {
       DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
       if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-        return;
+        return Future(() => null);
       }
     }
 
@@ -99,7 +100,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     var requestFuture =
         _subCalendarEventApi.procrastinate(populatedDuration, tileId);
     if (this.widget.callBack != null) {
-      this.widget.callBack!(requestFuture);
+      this.widget.callBack!(PlaybackOptions.Procrastinate, requestFuture);
     }
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
@@ -109,6 +110,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         isAlreadyLoaded: true,
         scheduleStatus: ScheduleStatus(),
         callBack: requestFuture));
+    return requestFuture;
   }
 
   onTabTypeChange(value) {

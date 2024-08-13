@@ -157,7 +157,6 @@ class Utility {
     return retValue;
   }
 
-
   static Timeline todayTimeline() {
     DateTime currentTime = Utility.currentTime();
     DateTime begin =
@@ -566,9 +565,18 @@ class Utility {
       bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
       bool isOnboardingValid = await OnBoardingApi(localizationService).areRequiredFieldsValid();
       return shouldSkipOnboarding || isOnboardingValid;
+
     } catch (e) {
       print("Error checking onboarding status: ${e is TilerError?e.message:"Unknown error!"}");
       return false;
+    }
+  }
+
+  static debugPrint(String val) {
+    if (Constants.isDebug ||
+        Constants.userId == "6bc6992f-3222-4fd8-9e2b-b94eba2fb717" ||
+        Constants.userName == "jerbio") {
+      print(val);
     }
   }
 
