@@ -126,6 +126,7 @@ abstract class AppApi {
 
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
       {bool injectLocation = true, bool analyze = true}) async {
+    print("Sending POST REQUEST " + requestPath);
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
@@ -150,6 +151,7 @@ abstract class AppApi {
           return http
               .post(uri, headers: header, body: jsonEncode(injectedParameters))
               .then((value) async {
+            print("Concluded Sending POST REQUEST " + requestPath);
             if (analyze) {
               String tilerDomain = Constants.tilerDomain;
               String analyzeUrl = tilerDomain;
@@ -161,6 +163,9 @@ abstract class AppApi {
                   headers: header, body: jsonEncode(analyzeParameters));
             }
             return value;
+          }).catchError((onError) {
+            print("Issues with POST REQUEST " + requestPath);
+            return onError;
           });
         }
         throw TilerError();
