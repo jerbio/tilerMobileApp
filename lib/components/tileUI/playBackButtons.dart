@@ -3,11 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/util.dart';
 
@@ -61,11 +62,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
     var request =
         _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
@@ -77,6 +94,7 @@ class PlayBackState extends State<PlayBack> {
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: request));
   }
@@ -94,11 +112,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var request =
@@ -113,6 +147,7 @@ class PlayBackState extends State<PlayBack> {
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: scheduleStatus,
         callBack: request));
   }
 
@@ -130,11 +165,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var requestFuture = _subCalendarEventApi.setAsNow((subTile));
@@ -148,6 +199,7 @@ class PlayBackState extends State<PlayBack> {
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: scheduleStatus,
         callBack: requestFuture));
   }
 
@@ -165,11 +217,27 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     var requestFuture = _subCalendarEventApi.complete((subTile));
@@ -181,6 +249,7 @@ class PlayBackState extends State<PlayBack> {
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: requestFuture));
   }
@@ -199,73 +268,58 @@ class PlayBackState extends State<PlayBack> {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
 
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var requestFuture = _subCalendarEventApi.delete(subTile.id!,
-        subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
-    if (this.widget.callBack != null) {
-      this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
+    if (scheduleState is ScheduleEvaluationState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
+
+    if (scheduleState is ScheduleLoadingState) {
+      renderedSubEvents = scheduleState.subEvents;
+      timeLines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+
+    var requestFuture = _subCalendarEventApi.delete(
+        subTile.id!,
+        subTile.thirdpartyId,
+        subTile.thirdPartyUserId,
+        subTile.thirdpartyType?.name.toString().toLowerCase() ?? "");
 
     context.read<ScheduleBloc>().add(EvaluateSchedule(
         renderedSubEvents: renderedSubEvents,
         renderedTimelines: timeLines,
         renderedScheduleTimeline: lookupTimeline,
         isAlreadyLoaded: true,
+        scheduleStatus: ScheduleStatus(),
         callBack: requestFuture));
+    if (this.widget.callBack != null) {
+      this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
+    }
   }
 
   procrastinate() async {
-    Map<String, dynamic> durationParams = {'duration': Duration(hours: 0)};
-    Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
-        .whenComplete(() {
-      print('done with pop');
-      print(durationParams['duration']);
-      Duration? populatedDuration = durationParams['duration'] as Duration?;
-
-      if (populatedDuration != null && populatedDuration.inMinutes > 0) {
-        SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
-        if (subTile.id != null) {
-          showMessage(AppLocalizations.of(context)!.procrastinating);
-          final scheduleState = this.context.read<ScheduleBloc>().state;
-          if (scheduleState is ScheduleEvaluationState) {
-            DateTime timeOutTime =
-                Utility.currentTime().subtract(Utility.oneMin);
-            if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-              return;
-            }
-          }
-
-          List<SubCalendarEvent> renderedSubEvents = [];
-          List<Timeline> timeLines = [];
-          Timeline lookupTimeline = Utility.todayTimeline();
-
-          if (scheduleState is ScheduleLoadedState) {
-            renderedSubEvents = scheduleState.subEvents;
-            timeLines = scheduleState.timelines;
-            lookupTimeline = scheduleState.lookupTimeline;
-          }
-
-          var requestFuture = _subCalendarEventApi.procrastinate(
-              populatedDuration, subTile.id!);
-          if (this.widget.callBack != null) {
-            this.widget.callBack!(PlaybackOptions.Procrastinate, requestFuture);
-          }
-
-          context.read<ScheduleBloc>().add(EvaluateSchedule(
-              renderedSubEvents: renderedSubEvents,
-              renderedTimelines: timeLines,
-              renderedScheduleTimeline: lookupTimeline,
-              isAlreadyLoaded: true,
-              callBack: requestFuture));
-        }
-      }
-    });
+    SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+    if (subTile.id != null && subTile.id!.isNotEmpty) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => TileProcrastinateRoute(
+                    tileId: subTile.id!,
+                    callBack: this.widget.callBack,
+                  )));
+    }
   }
 
   @override

@@ -6,15 +6,16 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
@@ -49,30 +50,34 @@ class EventNameSearchState extends SearchWidgetState {
   List<Widget> nameSearchResult = [];
   LookupStatus _lookupStatus = LookupStatus.NotStarted;
 
-  Tuple3<List<SubCalendarEvent>, List<Timeline>, Timeline>
+  Tuple4<List<SubCalendarEvent>, List<Timeline>, Timeline, ScheduleStatus>
       getPriorStateVariables() {
     List<SubCalendarEvent> renderedSubEvents = [];
     List<Timeline> timeLines = [];
     Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = new ScheduleStatus();
     final scheduleState = this.context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleLoadedState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     if (scheduleState is ScheduleEvaluationState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
       lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
     if (scheduleState is ScheduleLoadingState) {
       renderedSubEvents = scheduleState.subEvents;
       timeLines = scheduleState.timelines;
+      scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    return Tuple3(renderedSubEvents, timeLines, lookupTimeline);
+    return Tuple4(renderedSubEvents, timeLines, lookupTimeline, scheduleStatus);
   }
 
   Function? createSetAsNowCallBack(String tileId) {
@@ -87,24 +92,30 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.movingUp;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
         return this.calendarEventApi.setAsNow(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                emitOnlyLoadedStated: true,
+              ));
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
+          print("Error in eventname search on setAsNow callback");
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
+                scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });
       };
 
-      Tuple3<List<SubCalendarEvent>, List<Timeline>, Timeline> priorState =
-          getPriorStateVariables();
+      var priorState = getPriorStateVariables();
       List<SubCalendarEvent> renderedSubEvents = priorState.item1;
       List<Timeline> timeLines = priorState.item2;
       Timeline lookupTimeline = priorState.item3;
+      ScheduleStatus scheduleStatus = priorState.item4;
 
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           renderedSubEvents: renderedSubEvents,
@@ -112,6 +123,7 @@ class EventNameSearchState extends SearchWidgetState {
           renderedScheduleTimeline: lookupTimeline,
           isAlreadyLoaded: true,
           message: message,
+          scheduleStatus: scheduleStatus,
           callBack: generateCallBack()));
       Navigator.pop(context);
     };
@@ -130,23 +142,29 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.deleting;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                emitOnlyLoadedStated: true,
+              ));
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
+          print("Error in eventname search on delete callback");
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
+                scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });
       };
-      Tuple3<List<SubCalendarEvent>, List<Timeline>, Timeline> priorState =
-          getPriorStateVariables();
+      var priorState = getPriorStateVariables();
       List<SubCalendarEvent> renderedSubEvents = priorState.item1;
       List<Timeline> timeLines = priorState.item2;
       Timeline lookupTimeline = priorState.item3;
+      var scheduleStatus = priorState.item4;
 
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           renderedSubEvents: renderedSubEvents,
@@ -154,6 +172,7 @@ class EventNameSearchState extends SearchWidgetState {
           renderedScheduleTimeline: lookupTimeline,
           isAlreadyLoaded: true,
           message: message,
+          scheduleStatus: scheduleStatus,
           callBack: generateCallBack()));
       Navigator.pop(context);
     };
@@ -172,28 +191,35 @@ class EventNameSearchState extends SearchWidgetState {
 
       String message = AppLocalizations.of(context)!.completing;
       Function generateCallBack = () {
+        AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
         return this.calendarEventApi.complete(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                emitOnlyLoadedStated: true,
+              ));
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
+          print("Error in eventname search on complete callback");
           if (scheduleState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
                 subEvents: scheduleState.subEvents,
                 timelines: scheduleState.timelines,
+                scheduleStatus: scheduleState.scheduleStatus,
+                previousLookupTimeline: scheduleState.previousLookupTimeline,
                 lookupTimeline: scheduleState.lookupTimeline));
           }
         });
       };
-      Tuple3<List<SubCalendarEvent>, List<Timeline>, Timeline> priorState =
-          getPriorStateVariables();
+      var priorState = getPriorStateVariables();
       List<SubCalendarEvent> renderedSubEvents = priorState.item1;
       List<Timeline> timeLines = priorState.item2;
       Timeline lookupTimeline = priorState.item3;
+      var scheduleStatus = priorState.item4;
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           renderedSubEvents: renderedSubEvents,
           renderedTimelines: timeLines,
           renderedScheduleTimeline: lookupTimeline,
           isAlreadyLoaded: true,
+          scheduleStatus: scheduleStatus,
           message: message,
           callBack: generateCallBack()));
       refreshScheduleSummary();
@@ -323,28 +349,31 @@ class EventNameSearchState extends SearchWidgetState {
             ),
           ],
         ),
-        child: Stack(
-          // mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Positioned(
-                bottom: 0,
-                left: 0,
-                child: IconButton(
-                    icon: Transform.rotate(
-                      angle: -pi / 2,
-                      child: Icon(
-                        Icons.chevron_right,
-                        color: Colors.grey,
-                        size: 35,
+        child: Center(
+          child: Stack(
+            children: [
+              Positioned(
+                  top: 1,
+                  bottom: 0,
+                  left: 0,
+                  child: IconButton(
+                      icon: Transform.rotate(
+                        angle: -pi / 2,
+                        child: Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey,
+                          size: 35,
+                        ),
                       ),
-                    ),
-                    onPressed: () => {setAsNowCallBack()})),
-            SizedBox.square(
-              dimension: 5,
-            ),
-            Text(AppLocalizations.of(context)!.now,
-                style: TextStyle(fontSize: 15))
-          ],
+                      onPressed: () => {setAsNowCallBack()})),
+              Positioned(
+                  top: 4,
+                  bottom: 0,
+                  left: 50,
+                  child: Text(AppLocalizations.of(context)!.now,
+                      style: TextStyle(fontSize: 15)))
+            ],
+          ),
         ),
       ),
     );
@@ -355,8 +384,6 @@ class EventNameSearchState extends SearchWidgetState {
     Widget textContainer;
     if (tile.name != null) {
       if (tile.start != null && tile.end != null) {
-        DateTime start =
-            DateTime.fromMillisecondsSinceEpoch(tile.start!.toInt());
         DateTime end = DateTime.fromMillisecondsSinceEpoch(tile.end!.toInt());
         String monthString = Utility.returnMonth(end);
         monthString = monthString.substring(0, 3);
@@ -511,6 +538,7 @@ class EventNameSearchState extends SearchWidgetState {
     ];
 
     if (name.length > Constants.autoCompleteMinCharLength) {
+      AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
       List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
 
       retValue = tileEvents.map((tile) => tileToEventNameWidget(tile)).toList();

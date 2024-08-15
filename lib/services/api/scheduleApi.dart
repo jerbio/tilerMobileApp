@@ -4,6 +4,7 @@ import 'package:tiler_app/data/combination.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'dart:convert';
 
@@ -23,15 +24,15 @@ class ScheduleApi extends AppApi {
   bool preserveSubEventList = true;
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
-      Timeline timeLine) async {
+  Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
+      getSubEvents(Timeline timeLine) async {
     // return await getAdHocSubEvents(timeLine);
     // return await getAdHocSubEvents(Timeline.fromDateTimeAndDuration(
     //     Utility.todayTimeline().endTime.add(Utility.oneDay), Utility.oneDay));
     return await getSubEventsInScheduleRequest(timeLine);
   }
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
+  Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
     print("|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
     if ((await this.authentication.isUserAuthenticated()).item1) {
@@ -62,9 +63,9 @@ class ScheduleApi extends AppApi {
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
               jsonResult['Content'].containsKey('subCalendarEvents')) {
-            List subEventJson = jsonResult['Content']['subCalendarEvents'];
+            var contentData = jsonResult['Content'];
+            List subEventJson = contentData['subCalendarEvents'];
             List sleepTimelinesJson = [];
-            print("Got more data " + subEventJson.length.toString());
 
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
@@ -74,8 +75,28 @@ class ScheduleApi extends AppApi {
                 .map((eachSubEventJson) =>
                     SubCalendarEvent.fromJson(eachSubEventJson))
                 .toList();
-            Tuple2<List<Timeline>, List<SubCalendarEvent>> retValue =
-                new Tuple2(sleepTimelines, subEvents);
+            ScheduleStatus scheduleStatus = new ScheduleStatus();
+            if (contentData.containsKey('analysisId')) {
+              scheduleStatus.analysisId = contentData["analysisId"];
+            }
+            if (contentData.containsKey('evaluationId')) {
+              scheduleStatus.evaluationId = contentData["evaluationId"];
+            }
+
+            subEvents.forEach((eachSubEvent) {
+              if (scheduleStatus.evaluationId != null &&
+                  scheduleStatus.evaluationId!.isNotEmpty) {
+                eachSubEvent.evaluationId = scheduleStatus.evaluationId;
+              }
+              if (scheduleStatus.analysisId != null &&
+                  scheduleStatus.analysisId!.isNotEmpty) {
+                eachSubEvent.analysisId = scheduleStatus.analysisId;
+              }
+            });
+
+            Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>
+                retValue =
+                new Tuple3(sleepTimelines, subEvents, scheduleStatus);
             return retValue;
           }
         }
@@ -83,7 +104,9 @@ class ScheduleApi extends AppApi {
             message: 'Tiler disagrees with you, please try again later');
       }
     }
-    var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
+    var retValue =
+        new Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>(
+            [], [], new ScheduleStatus());
     return retValue;
   }
 
@@ -127,6 +150,42 @@ class ScheduleApi extends AppApi {
           }
 
           return retValue;
+        }
+      }
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
+  Future<ScheduleStatus> getScheduleStatus() async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+
+      var timeline = Utility.initialScheduleTimeline;
+
+      DateTime dateTime = Utility.currentTime();
+      final queryParameters = {
+        'StartRange': timeline.start!.toInt().toString(),
+        'EndRange': timeline.end!.toInt().toString(),
+        'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString()
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Schedule/status', updatedParams);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(uri, headers: header);
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          Map<String, dynamic> scheduleStatusJson = jsonResult['Content'];
+          return ScheduleStatus.fromJson(scheduleStatusJson);
         }
       }
       throw TilerError();
@@ -415,7 +474,7 @@ class ScheduleApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          print(jsonResult);
+          // print(jsonResult);
           return TimelineSummary.subCalendarEventFromJson(
               jsonResult['Content']);
         }

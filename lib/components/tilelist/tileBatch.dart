@@ -63,7 +63,7 @@ class TileBatchState extends State<TileBatch> {
   late ListModel<TilerEvent>? _list;
   bool _pendingRendering = false;
   double _emptyDayOpacity = 0;
-  final double daySummaryToHeightBuffer = 213.0;
+  final double daySummaryToHeightBuffer = 245;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -92,10 +92,10 @@ class TileBatchState extends State<TileBatch> {
       sleepTimeline = timeline;
       uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
     });
-    print('---sleep TL 0 -- ' +
-        sleepTimeline!.startTime.toString() +
-        ' - ' +
-        uniqueKey);
+    // print('---sleep TL 0 -- ' +
+    //     sleepTimeline!.startTime.toString() +
+    //     ' - ' +
+    //     uniqueKey);
   }
 
   Widget _buildRemovedItem(
@@ -130,22 +130,23 @@ class TileBatchState extends State<TileBatch> {
     Map<String, TilerEvent> allFoundTiles = {};
 
     for (var eachTile in orderedTiles!.values) {
-      allFoundTiles[eachTile.item1.id!] = eachTile.item1;
+      allFoundTiles[eachTile.item1.uniqueId] = eachTile.item1;
     }
 
     for (int i = 0; i < orderedByTimeTiles.length; i++) {
       TilerEvent eachTile = orderedByTimeTiles[i];
       int? currentIndexPosition;
-      if (orderedTiles!.containsKey(eachTile.id)) {
-        currentIndexPosition = orderedTiles![eachTile.id!]!.item2;
+      if (orderedTiles!.containsKey(eachTile.uniqueId)) {
+        currentIndexPosition = orderedTiles![eachTile.uniqueId]!.item2;
       }
-      orderedTiles![eachTile.id!] = Tuple3(eachTile, currentIndexPosition, i);
-      allFoundTiles.remove(eachTile.id);
+      orderedTiles![eachTile.uniqueId] =
+          Tuple3(eachTile, currentIndexPosition, i);
+      allFoundTiles.remove(eachTile.uniqueId);
     }
 
     for (TilerEvent eachTile in allFoundTiles.values) {
-      orderedTiles![eachTile.id!] =
-          Tuple3(eachTile, orderedTiles![eachTile.id!]!.item2, null);
+      orderedTiles![eachTile.uniqueId] =
+          Tuple3(eachTile, orderedTiles![eachTile.uniqueId]!.item2, null);
     }
   }
 
@@ -162,7 +163,7 @@ class TileBatchState extends State<TileBatch> {
     }
   }
 
-  // TED FIRST STOP
+
   @override
   Widget build(BuildContext context) {
     const double heightMargin = 262;
@@ -171,21 +172,19 @@ class TileBatchState extends State<TileBatch> {
       widget.tiles!.forEach((eachTile) {
         if (eachTile.id != null &&
             (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
-          renderedTiles[eachTile.id!] = eachTile;
+          renderedTiles[eachTile.uniqueId] = eachTile;
         }
       });
     }
 
-    print('' +
-        this.widget.dayIndex.toString() +
-        " " +
-        Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
-        " " +
-        (widget.tiles ?? []).length.toString() +
-        " " +
-        uniqueKey);
-
-    //
+    // print('' +
+    //     this.widget.dayIndex.toString() +
+    //     " " +
+    //     Utility.getTimeFromIndex(this.widget.dayIndex!).humanDate +
+    //     " " +
+    //     (widget.tiles ?? []).length.toString() +
+    //     " " +
+    //     uniqueKey);
     childrenColumnWidgets = [];
     if (dayData != null && this.widget.tiles != null) {
       this.dayData!.nonViable = this
@@ -224,7 +223,7 @@ class TileBatchState extends State<TileBatch> {
         initialItems.sort((tupleA, tupleB) {
           if (tupleA.item1.start == tupleB.item1.start) {
             if (tupleA.item1.end == tupleB.item1.end!) {
-              return tupleA.item1.id!.compareTo(tupleB.item1.id!);
+              return tupleA.item1.uniqueId.compareTo(tupleB.item1.uniqueId);
             }
             return tupleA.item1.end!.compareTo(tupleB.item1.end!);
           }
@@ -401,7 +400,7 @@ class TileBatchState extends State<TileBatch> {
       if (allNewEntries) {
         List finalOrederedTileValues = timeSectionTiles.values.toList();
         for (var eachTileTupleData in finalOrederedTileValues) {
-          timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+          timeSectionTiles[eachTileTupleData.item1.uniqueId] = Tuple3(
               eachTileTupleData.item1,
               eachTileTupleData.item3,
               eachTileTupleData.item3);
@@ -425,12 +424,16 @@ class TileBatchState extends State<TileBatch> {
         }
       }
 
-      List<String> listIds =
-          _timeSectionListModel!.toList().map<String>((e) => e.id!).toList();
+      List<String> listIds = _timeSectionListModel!
+          .toList()
+          .map<String>((e) => e.uniqueId)
+          .toList();
       for (var removedTile in removedTiles) {
-        listIds =
-            _timeSectionListModel.toList().map<String>((e) => e.id!).toList();
-        int toBeRemovedIndex = listIds.indexOf(removedTile.item1.id!);
+        listIds = _timeSectionListModel
+            .toList()
+            .map<String>((e) => e.uniqueId)
+            .toList();
+        int toBeRemovedIndex = listIds.indexOf(removedTile.item1.uniqueId);
         if (toBeRemovedIndex != removedTile.item3) {
           if (toBeRemovedIndex >= 0) {
             print('tileBatch 0 removeAt');
@@ -440,7 +443,7 @@ class TileBatchState extends State<TileBatch> {
       }
 
       for (var removedTile in removedTiles) {
-        timeSectionTiles.remove(removedTile.item1.id);
+        timeSectionTiles.remove(removedTile.item1.uniqueId);
       }
 
       Utility.isWithinNowSet = false;
@@ -460,9 +463,9 @@ class TileBatchState extends State<TileBatch> {
           for (var reorderedTile in reorderedTiles) {
             listIds = _timeSectionListModel
                 .toList()
-                .map<String>((e) => e.id!)
+                .map<String>((e) => e.uniqueId)
                 .toList();
-            int toMovedIndex = listIds.indexOf(reorderedTile.item1.id!);
+            int toMovedIndex = listIds.indexOf(reorderedTile.item1.uniqueId);
             if (toMovedIndex != -1) {
               print('tileBatch 1 removeAndUpdate');
               _timeSectionListModel.removeAndUpdate(
@@ -481,7 +484,7 @@ class TileBatchState extends State<TileBatch> {
     if (timeSectionTiles != null) {
       List finalOrederedTileValues = timeSectionTiles.values.toList();
       for (var eachTileTupleData in finalOrederedTileValues) {
-        timeSectionTiles[eachTileTupleData.item1.id!] = Tuple3(
+        timeSectionTiles[eachTileTupleData.item1.uniqueId] = Tuple3(
             eachTileTupleData.item1,
             eachTileTupleData.item3,
             eachTileTupleData.item3);

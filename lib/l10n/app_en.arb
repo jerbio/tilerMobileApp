@@ -89,7 +89,7 @@
     "failedToSendRequest":"Failed to send request",
     "revise":"Revise",
     "revisingSchedule":"Revising Schedule",
-    "procrastinateBlockOut":"Procrastinate block out",
+    "procrastinateBlockOut":"Tile Break",
     "start":"Start",
     "end":"End",
     "deadline": "Deadline",
@@ -107,7 +107,7 @@
     "userSetReminderNotificationCategory": "User Set Reminder",
     "depatureTimeNotificationCategory": "Depature time",
     "tile": "Tile",
-    "appointment": "Appointment",
+    "appointment": "Block",
     "startingAtTime": "Starts at {time}",
     "@startingAtTime": {
       "description": "Starts at time",
@@ -302,7 +302,6 @@
     "allowLocationAccessQ": "Allow location access?",
     "allow": "Allow",
     "deny": "Deny",
-    "morning": "Morning",
     "afternoon": "Afternoon",
     "evening": "Evening",
     "night": "Night",
@@ -333,5 +332,43 @@
       }},
     "lowPriorityTrunc": "Low",
     "mediumPriorityTrunc": "Mid",
-    "highPriorityTrunc": "High"
+    "highPriorityTrunc": "High",
+    "failedToAddGoogleCalendar": "Failed to add {email}",
+    "@failedToAddGoogleCalendar": {
+      "description": "Email address",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "abc@xyz.com"
+        }
+      }},
+    "deletedCalendar": "Deleted {email} calendar",
+    "@deletedCalendar": {
+      "description": "Email address",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "abc@xyz.com"
+        }
+      }},
+    "loadingIntegrations": "Loading Integrations",
+    "noThirdPartyIntegtions": "No Thirdparty calendars",
+    "addGoogleCalendar": "Add Google Calendar",
+    "integrations": "Integrations",
+    "integrateOtherCalendars": "Integrate with third party calendars",
+    "clear":"Clear",
+    "next":"Next",
+    "previous":"Previous",
+    "skip":"Skip",
+    "morningPerson":"🌅 Morning person",
+    "morning":"Morning",
+    "midday":"Midday",
+    "neutral":"Neutral",
+    "middayPerson":"🌞 Midday person",
+    "nightPerson":"🌃 Night person",
+    "enterAddress":"Enter your address",
+    "wakeUpTimeQuestion":"What time do you usually wake up in the morning?",
+    "workdayStartQuestion":"What time do you typically start your workday?",
+    "primaryLocationQuestion":"What is your primary location for work or study?",
+    "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?"
   }

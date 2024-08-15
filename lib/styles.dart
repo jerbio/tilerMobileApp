@@ -13,11 +13,13 @@ class TileStyles {
       proceedAndCancelButtonWidth * 2;
   static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
+
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
   static const Color black = Colors.black;
   
+  static const Color appBarColor = primaryColor;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
@@ -134,6 +136,48 @@ class TileStyles {
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
+    }),
+  );
+
+  static ButtonStyle onlyIcons = ButtonStyle(
+    overlayColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
+    padding: MaterialStateProperty.resolveWith((states) {
+      return EdgeInsets.all(0);
+    }),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryColor;
+    }),
+  );
+
+  static ButtonStyle onlyIconsContrast = ButtonStyle(
+    overlayColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    elevation: MaterialStateProperty.resolveWith((states) {
+      return 0;
+    }),
+    padding: MaterialStateProperty.resolveWith((states) {
+      return EdgeInsets.all(0);
+    }),
+    shadowColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    backgroundColor: MaterialStateProperty.resolveWith((states) {
+      return Colors.transparent;
+    }),
+    foregroundColor: MaterialStateProperty.resolveWith((states) {
+      return primaryContrastColor;
     }),
   );
 

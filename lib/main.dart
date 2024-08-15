@@ -6,11 +6,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
@@ -24,13 +26,18 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/routes/authenticatedUser/completed/completed.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -38,6 +45,9 @@ import 'package:firebase_core/firebase_core.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('ExampleLogger');
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -47,6 +57,7 @@ class MyHttpOverrides extends HttpOverrides {
         ..badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
     }
+    Logger.root.level = Level.ALL;
     return super.createHttpClient(context);
   }
 }
@@ -56,19 +67,25 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
-  // await Firebase.initializeApp(
-  //   options: DefaultFirebaseOptions.currentPlatform,
-  // );
+  await Firebase.initializeApp(
+    // options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(TilerApp());
 }
 
-class TilerApp extends StatelessWidget {
+class TilerApp extends StatefulWidget {
+  @override
+  _TilerAppState createState() => new _TilerAppState();
+}
+
+class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
-  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
-    authentication = new Authentication();
-    var authenticationResult = await authentication!.isUserAuthenticated();
-    return authenticationResult;
+  OnBoardingApi? onBoardingApi;
+  @override
+  void initState() {
+    onBoardingApi = OnBoardingApi();
+    super.initState();
   }
 
   void showMessage(String message) {
@@ -102,6 +119,12 @@ class TilerApp extends StatelessWidget {
     ]));
   }
 
+  Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
+    authentication = new Authentication();
+    var authenticationResult = await authentication!.isUserAuthenticated();
+    return authenticationResult;
+  }
+
   @override
   Widget build(BuildContext context) {
     Map<int, Color> color = {
@@ -124,6 +147,9 @@ class TilerApp extends StatelessWidget {
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(create: (context) => ScheduleSummaryBloc()),
           BlocProvider(create: (context) => LocationBloc()),
+          BlocProvider(create: (context) => IntegrationsBloc()),
+          BlocProvider(create: (context) => TileListCarouselBloc()),
+          BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
           BlocProvider(create: (context) => ForecastBloc()),
         ],
         child: MaterialApp(
@@ -153,9 +179,11 @@ class TilerApp extends StatelessWidget {
                     Duration(hours: 1),
                   ],
                 ),
-            '/repetitionRoute': (ctx) => RepetitionRoute(),
+            '/RepetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
+            '/Integrations': (ctx) => IntegrationWidgetRoute(),
+            '/OnBoarding': (ctx) => OnboardingView()
           },
           localizationsDelegates: [
             AppLocalizations.delegate,
@@ -184,14 +212,29 @@ class TilerApp extends StatelessWidget {
 
                   if (snapshot.data!.item1) {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
-                    print("~~~~~befor data gather");
                     AnalysticsSignal.send('LOGIN-VERIFIED');
-                    retValue = new AuthorizedRoute();
+                    retValue = FutureBuilder<bool>(
+                      future: Utility.checkOnboardingStatus(),
+                      builder:
+                          (context, AsyncSnapshot<bool> onboardingSnapshot) {
+                        if (onboardingSnapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return renderPending();
+                        } else if (onboardingSnapshot.hasError) {
+                          showErrorMessage("Error checking onboarding status.");
+                          return SignInRoute();
+                        } else {
+                          return onboardingSnapshot.data!
+                              ? AuthorizedRoute()
+                              : OnboardingView();
+                        }
+                      },
+                    );
                   } else {
                     authentication?.deauthenticateCredentials();
                     retValue =
-                            // AuthorizedRoute()
-                            SignInRoute()
+                            AuthorizedRoute()
+                            // SignInRoute()
                         // CompletedTiles()
                         // This is the original route but it was commented for development sake by ted
                         ;

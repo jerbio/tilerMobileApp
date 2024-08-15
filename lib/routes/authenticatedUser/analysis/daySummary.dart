@@ -238,24 +238,24 @@ class _DaySummaryState extends State<DaySummary> {
           );
 
           // Makeshift Checkmark icon to navigate to completed page
-          Widget checkmarkButton = GestureDetector(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => CompletedTiles(),
-                ),
-              );
-            },
-            child: Container(
-              height: height / (height / 35),
-              width: height / (height / 35),
-              // decoration: BoxDecoration(
-              //   shape: BoxShape.circle,
-              //   color: TileStyles.primaryColor,
-              // ),
-              child: Icon(Icons.history),
-            ),
-          );
+          // Widget checkmarkButton = GestureDetector(
+          //   onTap: () {
+          //     Navigator.of(context).push(
+          //       MaterialPageRoute(
+          //         builder: (context) => CompletedTiles(),
+          //       ),
+          //     );
+          //   },
+          //   child: Container(
+          //     height: height / (height / 35),
+          //     width: height / (height / 35),
+          //     // decoration: BoxDecoration(
+          //     //   shape: BoxShape.circle,
+          //     //   color: TileStyles.primaryColor,
+          //     // ),
+          //     child: Icon(Icons.history),
+          //   ),
+          // );
 
           Widget buttonPress = GestureDetector(
             onTap: () {
@@ -276,9 +276,9 @@ class _DaySummaryState extends State<DaySummary> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  children: [dayDateText, renderDayMetricInfo(), checkmarkButton],
+                  children: [dayDateText, renderDayMetricInfo()],
                 ),
-                navToToday,
+               // navToToday,
               ],
             ),
           );
