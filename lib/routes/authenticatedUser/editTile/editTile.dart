@@ -25,6 +25,8 @@ import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -517,13 +519,17 @@ class _EditTileState extends State<EditTile> {
             clearPreviewButton();
             return;
           }
-          setState(() {
-            beforePreview = value.item1;
-            afterPreview = value.item2;
-          });
-          updatePreviewWidget();
+          if (this.mounted) {
+            setState(() {
+              beforePreview = value.item1;
+              afterPreview = value.item2;
+            });
+            updatePreviewWidget();
+          }
         }).catchError((onError) {
-          clearPreviewButton();
+          if (this.mounted) {
+            clearPreviewButton();
+          }
           print(onError);
         });
       }
@@ -540,10 +546,12 @@ class _EditTileState extends State<EditTile> {
   }
 
   Future<SubCalendarEvent> subEventUpdate() {
+    AnalysticsSignal.send('EDIT_TILE_REQUEST_INITIALIZED');
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           isAlreadyLoaded: true,
+          scheduleStatus: currentState.scheduleStatus,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
@@ -552,16 +560,25 @@ class _EditTileState extends State<EditTile> {
         .subCalendarEventApi
         .updateSubEvent(this.editTilerEvent!)
         .then((value) {
+      AnalysticsSignal.send('EDIT_TILE_REQUEST_SUCCESS');
       final currentState = this.context.read<ScheduleBloc>().state;
-      if (currentState is ScheduleEvaluationState) {
-        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-              isAlreadyLoaded: true,
-              previousSubEvents: currentState.subEvents,
-              scheduleTimeline: currentState.lookupTimeline,
-              previousTimeline: currentState.lookupTimeline,
-            ));
-        refreshScheduleSummary(currentState.lookupTimeline);
-      }
+      var stateResult = ScheduleBloc.preserveState(currentState);
+      List<SubCalendarEvent>? subEvents = stateResult.item1;
+      List<Timeline>? timelines = stateResult.item2;
+      Timeline? lookupTimeline = stateResult.item3;
+      // String? message = stateResult.item4;
+      // var scheduleStatus = stateResult.item5;
+      // if (currentState is ScheduleEvaluationState) {
+
+      // }
+      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          isAlreadyLoaded: true,
+          emitOnlyLoadedStated: true,
+          previousSubEvents: subEvents,
+          scheduleTimeline: lookupTimeline,
+          previousTimeline: lookupTimeline,
+          forceRefresh: true));
+      refreshScheduleSummary(lookupTimeline);
       return value;
     });
   }
@@ -693,6 +710,37 @@ class _EditTileState extends State<EditTile> {
     }
   }
 
+  List<Widget>? getAppBarActionButtons() {
+    final appBarActionButtons = <Widget>[];
+    if (this.subEvent != null &&
+        this.subEvent?.calendarEvent?.id != null &&
+        this.subEvent?.thirdpartyType == TileSource.tiler) {
+      appBarActionButtons.add(ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => TileDetail(
+                        tileId: this.subEvent?.calendarEvent?.id ??
+                            this.widget.tileId,
+                        loadSubEvents: false,
+                      ))).whenComplete(() {
+            this.context.read<SubCalendarTileBloc>().add(
+                GetSubCalendarTileBlocEvent(
+                    subEventId: this.widget.tileId,
+                    calendarSource: (this.widget.tileSource?.name ?? ""),
+                    thirdPartyUserId: this.widget.thirdPartyUserId));
+            subEvent = null;
+          });
+        },
+        style: TileStyles.onlyIconsContrast,
+        child: Icon(Icons.app_registration),
+      ));
+    }
+
+    return appBarActionButtons;
+  }
+
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
@@ -724,6 +772,10 @@ class _EditTileState extends State<EditTile> {
                         TextEditingController(text: splitCount!.toString());
                     splitCountController!.addListener(onInputCountChange);
                     editTilerEvent!.splitCount = splitCount;
+                    editTilerEvent!.calEndTime =
+                        subEvent!.calendarEvent!.endTime;
+                    editTilerEvent!.calStartTime =
+                        subEvent!.calendarEvent!.startTime;
                   }
                 }
               });
@@ -902,7 +954,9 @@ class _EditTileState extends State<EditTile> {
                         splitWidget
                       ],
                     )));
-                if (_editCalEndDateAndTime != null) {
+                if (_editCalEndDateAndTime != null &&
+                    subEvent != null &&
+                    subEvent!.isRecurring == true) {
                   Widget deadlineWidget = FractionallySizedBox(
                       widthFactor: TileStyles.tileWidthRatio,
                       child: Container(
@@ -1140,6 +1194,7 @@ class _EditTileState extends State<EditTile> {
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),
+          actions: this.getAppBarActionButtons(),
           centerTitle: true,
           elevation: 0,
           automaticallyImplyLeading: false,

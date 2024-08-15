@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
-import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
@@ -43,6 +42,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   denyAccess: false)
               .then((value) {
             setState(() {
+              if (!mounted) return;
               if (value != null) {
                 locationAccess = value;
                 isLocationRequestTriggered = true;

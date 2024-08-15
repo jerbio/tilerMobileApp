@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -64,9 +65,7 @@ class _DayButtonState extends State<DayButton> {
 
     List<Widget> childWidgets = [
       Container(
-        margin: this.widget.isSelected
-            ? EdgeInsets.fromLTRB(0, 10, 0, 0)
-            : EdgeInsets.fromLTRB(0, 15, 0, 0),
+        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
         alignment: Alignment.center,
         height: buttonHeight,
         width: buttonWidth,
@@ -90,9 +89,6 @@ class _DayButtonState extends State<DayButton> {
     ];
     if (this.widget.showMonth) {
       childWidgets.add(Container(
-        padding: this.widget.isSelected
-            ? EdgeInsets.fromLTRB(0, 3, 0, 0)
-            : EdgeInsets.fromLTRB(0, 0, 0, 1),
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style: TextStyle(

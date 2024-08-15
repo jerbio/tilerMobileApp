@@ -15,8 +15,11 @@ import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
+import 'package:tiler_app/services/analyticsSignal.dart';
 
+import '../../util.dart';
 import 'AuthorizedRoute.dart';
+import 'onBoarding.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -50,6 +53,8 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingSigning = false;
   bool isPendingRegistration = false;
   bool isPendingResetPassword = false;
+  bool isGoogleSignInEnabled = false;
+  final authApi = AuthorizationApi();
 
   @override
   void initState() {
@@ -58,6 +63,24 @@ class SignInComponentState extends State<SignInComponent>
       duration: const Duration(seconds: 1),
       vsync: this,
     )..repeat(reverse: true);
+    isGoogleSignInEnabled = !Platform.isIOS;
+    if (Platform.isIOS) {
+      authApi.statusSupport().then((value) {
+        String versionKey = "version";
+        String authResult = "315";
+        if (value != null &&
+            value.containsKey(versionKey) &&
+            value[versionKey] != null) {
+          for (var versions in value[versionKey]) {
+            if (versions == authResult) {
+              setState(() {
+                isGoogleSignInEnabled = true;
+              });
+            }
+          }
+        }
+      });
+    }
     credentialManagerHeight = signInContainerHeight;
     credentialButtonHeight = signInContainerButtonHeight;
   }
@@ -86,10 +109,12 @@ class SignInComponentState extends State<SignInComponent>
 
   void userNamePasswordSignIn() async {
     if (_formKey.currentState!.validate()) {
+      AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_INITIATED');
       showMessage(AppLocalizations.of(context)!.signingIn);
       setState(() {
         isPendingSigning = true;
       });
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
       try {
         UserPasswordAuthenticationData authenticationData =
             await UserPasswordAuthenticationData.getAuthenticationInfo(
@@ -101,12 +126,13 @@ class SignInComponentState extends State<SignInComponent>
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
         if (!authenticationData.isValid) {
+          AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
             showErrorMessage(authenticationData.errorMessage!);
             return;
           }
         }
-
+        AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_SUCCESS');
         setState(() {
           isPendingSigning = false;
         });
@@ -117,10 +143,13 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
         print(isValidSignIn);
         setState(() {
@@ -148,6 +177,7 @@ class SignInComponentState extends State<SignInComponent>
         setState(() {
           isPendingRegistration = true;
         });
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
         showMessage(AppLocalizations.of(context)!.registeringUser);
         AuthorizationApi authorization = new AuthorizationApi();
         UserPasswordAuthenticationData authenticationData =
@@ -173,10 +203,13 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
 
         print(isValidSignIn);
@@ -201,10 +234,12 @@ class SignInComponentState extends State<SignInComponent>
         setState(() {
           isPendingResetPassword = true;
         });
+        AnalysticsSignal.send('FORGOT_PASSWORD_INITIATED');
         showMessage(AppLocalizations.of(context)!.forgetPassword);
         var result = await AuthorizationApi.sendForgotPasswordRequest(
             emailEditingController.text);
         if (result.error.code == "0") {
+          AnalysticsSignal.send('FORGOT_PASSWORD_SUCCESS');
           showMessage(result.error.message);
           Future.delayed(Duration(seconds: 2), () {
             setState(() {
@@ -212,9 +247,11 @@ class SignInComponentState extends State<SignInComponent>
             });
           });
         } else {
+          AnalysticsSignal.send('FORGOT_PASSWORD_ERROR');
           showErrorMessage(result.error.message);
         }
       } catch (e) {
+        AnalysticsSignal.send('FORGOT_PASSWORD_SERVER_ERROR');
         showErrorMessage("Error: $e");
       } finally {
         Future.delayed(Duration(seconds: 2), () {
@@ -286,17 +323,21 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   Future signInToGoogle() async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    AnalysticsSignal.send('GOOGLE_SIGNUP_INITIALIZE');
     setState(() {
       isPendingSigning = true;
     });
     AuthorizationApi authorizationApi = AuthorizationApi();
-    AuthenticationData? authenticationData = await authorizationApi
-        .signInToGoogle()
-        .then((value) => value)
-        .catchError((onError) {
+    AuthenticationData? authenticationData =
+        await authorizationApi.signInToGoogle().then((value) {
+      AnalysticsSignal.send('GOOGLE_SIGNUP_SUCCESSFUL');
+      return value;
+    }).catchError((onError) {
       setState(() {
         isPendingSigning = false;
       });
+      AnalysticsSignal.send('GOOGLE_SIGNUP_FAILED');
       showErrorMessage(onError.message);
       return null;
     });
@@ -309,10 +350,13 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => AuthorizedRoute()),
+          MaterialPageRoute(
+              builder: (context) =>
+                  nextPage ? AuthorizedRoute() : OnboardingView()),
         );
       }
     }
@@ -334,7 +378,6 @@ class SignInComponentState extends State<SignInComponent>
   @override
   Widget build(BuildContext context) {
     var usernameTextField = TextFormField(
-      keyboardType: TextInputType.name,
       textInputAction: TextInputAction.next,
       validator: (value) {
         if (!isRegistrationScreen) {
@@ -472,9 +515,8 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var googleSignInButton = Platform.isIOS && false
-        ? SizedBox.shrink()
-        : SizedBox(
+    var googleSignInButton = isGoogleSignInEnabled
+        ? SizedBox(
             width: 200,
             child: ElevatedButton.icon(
                 onPressed: signInToGoogle,
@@ -483,7 +525,8 @@ class SignInComponentState extends State<SignInComponent>
                   color: Colors.white,
                 ),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
-          );
+          )
+        : SizedBox.shrink();
 
     var backToSignInButton = SizedBox(
       width: isForgetPasswordScreen ? 200 : null,

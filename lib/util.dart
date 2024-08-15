@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
-
+import '../../../constants.dart' as Constants;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/adHoc/autoData.dart';
@@ -11,6 +11,8 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/api/onBoardingApi.dart';
+import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
@@ -18,6 +20,7 @@ import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:logger/logger.dart';
 
 class Utility {
   final List<String> months = [
@@ -38,6 +41,7 @@ class Utility {
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
   static final Random randomizer = Random.secure();
+  static final log = Logger();
 
   static bool isDebugSet = false;
   static bool isWithinNowSet = false;
@@ -550,6 +554,28 @@ class Utility {
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
+  }
+
+  static Future<bool> checkOnboardingStatus() async {
+    try {
+      await Future.delayed(
+          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      bool shouldSkipOnboarding =
+          await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
+      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
+      return shouldSkipOnboarding || isOnboardingvalid;
+    } catch (e) {
+      print("Error checking onboarding status: $e");
+      return true;
+    }
+  }
+
+  static debugPrint(String val) {
+    if (Constants.isDebug ||
+        Constants.userId == "6bc6992f-3222-4fd8-9e2b-b94eba2fb717" ||
+        Constants.userName == "jerbio") {
+      print(val);
+    }
   }
 
   static Tuple2<List<BlobEvent>, HashSet<TilerEvent>> getConflictingEvents(

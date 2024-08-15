@@ -25,8 +25,11 @@ class Location extends TilerObj {
     if (json.containsKey('description')) {
       description = cast<String>(json['description']);
     }
-    if (json.containsKey('address')) {
+    if (json.containsKey('address')){
       address = cast<String>(json['address']);
+    }
+    if(json.containsKey('Address')){
+      address = cast<String>(json['Address']);
     }
     if (json.containsKey('longitude')) {
       longitude = cast<double>(json['longitude'])!.toDouble();
@@ -52,6 +55,20 @@ class Location extends TilerObj {
     if (json.containsKey('isDefault')) {
       isDefault = cast<bool>(json['isDefault']);
     }
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'description': description,
+      'address': address,
+      'longitude': longitude,
+      'latitude': latitude,
+      'isVerified': isVerified,
+      'isDefault': isDefault,
+      'isNull': isNull,
+      'source': source,
+      'thirdPartyId': thirdPartyId,
+      'userId': userId,
+    };
   }
 
   Location.fromDefault() {

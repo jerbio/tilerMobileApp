@@ -1,25 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:flutter_web_browser/flutter_web_browser.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
 import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
-import 'package:tiler_app/services/localAuthentication.dart';
 import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:tiler_app/styles.dart';
-
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../data/forgot_password_response.dart';
 
@@ -122,92 +115,142 @@ class AuthorizationApi extends AppApi {
     throw tilerError;
   }
 
+  Future<Map<String, dynamic>> _getRefreshToken(String clientId,
+      String clientSecret, String serverAuthCode, List<String> scopes) async {
+    final String refreshTokenEndpoint = 'https://oauth2.googleapis.com/token';
+
+    final Map<String, dynamic> requestBody = {
+      'access_type': 'offline',
+      'client_id': clientId,
+      'client_secret': clientSecret,
+      'grant_type': 'authorization_code',
+      'code': serverAuthCode,
+      'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
+      'scope': scopes.join(' '),
+    };
+
+    final http.Response response = await http.post(
+      Uri.parse(refreshTokenEndpoint),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: requestBody,
+    );
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = jsonDecode(response.body);
+      return responseData;
+    } else {
+      throw Exception('Failed to authenticate user account');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getRemoteGoogleCredentials() async {
+    String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
+    String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
+    final requestedScopes = Constants.googleApiScopes;
+
+    var googleUser = await GoogleSignInApi.login()
+        .then((value) => value)
+        .catchError((onError) {
+      print("ERROR GoogleSignInApi.login" + onError.toString());
+      print(onError);
+    });
+    if (googleUser != null) {
+      var googleAuthentication = await googleUser.authentication;
+
+      String? refreshToken;
+      String? accessToken = googleAuthentication.accessToken;
+      String? serverAuthCode =
+          googleUser.serverAuthCode ?? googleAuthentication.idToken;
+      if (serverAuthCode != null) {
+        refreshToken = googleAuthentication.idToken!;
+        Map<String, dynamic> serverResponse = await _getRefreshToken(
+            clientId, clientSecret, serverAuthCode, requestedScopes);
+        serverResponse["googleUser"] = googleUser;
+        serverResponse["authCode"] = serverAuthCode;
+        return serverResponse;
+      }
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> addGoogleCalendar() async {
+    if (GoogleSignInApi.googleUser != null) {
+      GoogleSignInApi.googleUser!.clearAuthCache();
+      await GoogleSignInApi.logout();
+    }
+    Map<String, dynamic>? remoteGoogleCredentials =
+        await getRemoteGoogleCredentials();
+    GoogleSignInAccount? googleUser = null;
+    String? refreshToken = null;
+    String? accessToken = null;
+
+    if (remoteGoogleCredentials != null &&
+        remoteGoogleCredentials.containsKey('googleUser') &&
+        remoteGoogleCredentials.containsKey('refresh_token') &&
+        remoteGoogleCredentials.containsKey('access_token')) {
+      refreshToken = remoteGoogleCredentials['refresh_token'];
+      accessToken = remoteGoogleCredentials['access_token'];
+      googleUser = remoteGoogleCredentials["googleUser"];
+    }
+
+    if (refreshToken != null && accessToken != null && googleUser != null) {
+      String providerName = 'Google';
+      String timeZone = await FlutterTimezone.getLocalTimezone();
+
+      Map<String, String?> thirdpartyCredentialPostData = {
+        'ThirdPartyId': googleUser.id,
+        'AccessToken': accessToken,
+        'RefreshToken': refreshToken,
+        'Email': googleUser.email,
+        'DisplayName': googleUser.displayName,
+        'Provider': providerName,
+        'ServerAuthCode': googleUser.serverAuthCode,
+      };
+      return sendPostRequest(
+              'api/integrations/google', thirdpartyCredentialPostData,
+              injectLocation: false, analyze: false)
+          .then((response) {
+        var jsonResult = jsonDecode(response.body);
+        return jsonResult;
+      });
+    }
+  }
+
   Future<AuthenticationData?> processAndroidGoogleLogin() async {
     try {
-      String clientId = dotenv.env[Constants.googleClientDefaultKey]!;
-      String clientSecret = dotenv.env[Constants.googleClientSecretKey]!;
-      final requestedScopes = Constants.googleApiScopes;
-      Future<Map<String, dynamic>> getRefreshToken(
-          String clientId,
-          String clientSecret,
-          String serverAuthCode,
-          List<String> scopes) async {
-        final String refreshTokenEndpoint =
-            'https://oauth2.googleapis.com/token';
-
-        final Map<String, dynamic> requestBody = {
-          'access_type': 'offline',
-          'client_id': clientId,
-          'client_secret': clientSecret,
-          'grant_type': 'authorization_code',
-          'code': serverAuthCode,
-          'redirect_uri': 'https://${Constants.tilerDomain}/signin-google',
-          'scope': scopes.join(' '),
-        };
-
-        final http.Response response = await http.post(
-          Uri.parse(refreshTokenEndpoint),
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: requestBody,
-        );
-
-        if (response.statusCode == 200) {
-          final Map<String, dynamic> responseData = jsonDecode(response.body);
-          return responseData;
-        } else {
-          throw Exception('Failed to authenticate user account');
-        }
-      }
-
       if (GoogleSignInApi.googleUser != null) {
         GoogleSignInApi.googleUser!.clearAuthCache();
         await GoogleSignInApi.logout();
       }
 
-      var googleUser = await GoogleSignInApi.login()
-          .then((value) => value)
-          .catchError((onError) {
-        print("ERROR GoogleSignInApi.login" + onError.toString());
-        print(onError);
-      });
+      Map<String, dynamic>? remoteGoogleCredentials =
+          await getRemoteGoogleCredentials();
 
-      print('Signed in googleUser');
-      print(googleUser);
+      GoogleSignInAccount? googleUser = null;
+      String? refreshToken = null;
+      String? accessToken = null;
 
-      if (googleUser != null) {
-        var googleAuthentication = await googleUser.authentication;
-        var authHeaders = await googleUser.authHeaders;
-        // print(authHeaders);
-
-        String? refreshToken;
-        String? accessToken = googleAuthentication.accessToken;
-        String? serverAuthCode =
-            googleUser.serverAuthCode ?? googleAuthentication.idToken;
-        if (serverAuthCode != null) {
-          refreshToken = googleAuthentication.idToken!;
-          Map serverResponse = await getRefreshToken(
-              clientId, clientSecret, serverAuthCode, requestedScopes);
-
-          refreshToken = serverResponse['refresh_token'];
-          accessToken = serverResponse['access_token'];
-        }
-        String providerName = 'Google';
-        try {
-          String timeZone = await FlutterTimezone.getLocalTimezone();
-          return await getBearerToken(
-              accessToken: accessToken!,
-              email: googleUser.email,
-              providerId: googleUser.id,
-              refreshToken: refreshToken!,
-              displayName: googleUser.displayName!,
-              timeZone: timeZone,
-              thirdpartyType: providerName);
-        } catch (e) {
-          if (e is TilerError) {
-            throw e;
-          }
-        }
+      if (remoteGoogleCredentials != null &&
+          remoteGoogleCredentials.containsKey('googleUser') &&
+          remoteGoogleCredentials.containsKey('refresh_token') &&
+          remoteGoogleCredentials.containsKey('access_token')) {
+        refreshToken = remoteGoogleCredentials['refresh_token'];
+        accessToken = remoteGoogleCredentials['access_token'];
+        googleUser = remoteGoogleCredentials["googleUser"];
       }
+      if (refreshToken != null && accessToken != null && googleUser != null) {
+        String providerName = 'Google';
+        String timeZone = await FlutterTimezone.getLocalTimezone();
+        return await getBearerToken(
+            accessToken: accessToken,
+            email: googleUser.email,
+            providerId: googleUser.id,
+            refreshToken: refreshToken,
+            displayName: googleUser.displayName!,
+            timeZone: timeZone,
+            thirdpartyType: providerName);
+      }
+
       throw TilerError();
     } catch (e) {
       print(e);
@@ -236,7 +279,29 @@ class AuthorizationApi extends AppApi {
     });
   }
 
-  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(String email) async {
+  Future<Map<String, dynamic>?> statusSupport() async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    String tilerDomain = Constants.tilerDomain;
+    String url = tilerDomain;
+    // https://localhost-44388-x-if7.conveyor.cloud/home/Supported
+    Uri uri = Uri.https(url, 'home/Supported');
+    // var header = this.getHeaders();
+    // if (header == null) {
+    //   throw TilerError(message: 'Issues with authentication');
+    // }
+
+    var response = await http.get(uri);
+    if (response.statusCode == 200) {
+      var jsonResult = jsonDecode(response.body);
+      return jsonResult;
+    }
+
+    return null;
+  }
+
+  static Future<ForgotPasswordResponse> sendForgotPasswordRequest(
+      String email) async {
     String tilerDomain = Constants.tilerDomain;
     String path = '/Account/VerifyForgotPassword';
     Uri uri = Uri.https(tilerDomain, path);
@@ -244,7 +309,8 @@ class AuthorizationApi extends AppApi {
     var requestBody = jsonEncode({'Email': email});
     print('Sending forgot password request to: $uri');
     print('Request body: $requestBody');
-    http.Response response = await http.post(uri, headers: headers, body: requestBody);
+    http.Response response =
+        await http.post(uri, headers: headers, body: requestBody);
     print('Forgot password request response status: ${response.statusCode}');
     print('Response body: ${response.body}');
     var responseBody = jsonDecode(response.body);
@@ -257,18 +323,17 @@ class AuthorizationApi extends AppApi {
         "Content": responseBody["Content"]
       });
     } else {
-      String errorReason = "Request failed with status code ${response
-          .statusCode}. Reason: ${response.reasonPhrase}";
+      String errorReason =
+          "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}";
       print(errorReason);
       return ForgotPasswordResponse.fromJson({
         "Error": {
           "Code": response.statusCode.toString(),
-          "Message": "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
+          "Message":
+              "Request failed with status code ${response.statusCode}. Reason: ${response.reasonPhrase}"
         },
         "Content": responseBody["Content"] ?? null
       });
     }
   }
-
-
 }

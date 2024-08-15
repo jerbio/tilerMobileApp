@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -24,7 +25,7 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../constants.dart';
+import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -39,6 +40,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
+  
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
         altitudeAccuracy: 777.0,
@@ -61,9 +63,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   void initState() {
-    localNotificationService = LocalNotificationService();
     super.initState();
+    localNotificationService = LocalNotificationService();
+    localNotificationService.initializeRemoteNotification().then((value) {
+      localNotificationService.subscribeToRemoteNotification(this.context);
+    });
     localNotificationService.initialize(this.context);
+
     accessManager.locationAccess(statusCheck: true).then((value) {
       setState(() {
         if (value != null) {
@@ -217,52 +223,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 GestureDetector(
                   onTap: () {
                     AnalysticsSignal.send('REVISE_BUTTON');
-                    final currentState =
-                        this.context.read<ScheduleBloc>().state;
-                    if (currentState is ScheduleLoadedState) {
-                      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-                            isAlreadyLoaded: true,
-                            renderedScheduleTimeline:
-                                currentState.lookupTimeline,
-                            renderedSubEvents: currentState.subEvents,
-                            renderedTimelines: currentState.timelines,
-                            message:
-                                AppLocalizations.of(context)!.revisingSchedule,
-                          ));
-                    }
-                    ScheduleApi().reviseSchedule().then((value) {
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    }).catchError((onError) {
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      Fluttertoast.showToast(
-                          msg: onError!.message,
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.SNACKBAR,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.black45,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    });
+                    this
+                        .context
+                        .read<ScheduleBloc>()
+                        .add(ReviseScheduleEvent());
                     Navigator.pop(context);
                   },
                   child: ListTile(
@@ -282,7 +246,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ),
                 GestureDetector(
                     onTap: () {
-                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON');
+                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
                       Navigator.pop(context);
                       Navigator.pushNamed(context, '/Procrastinate')
                           .whenComplete(() {
@@ -414,16 +378,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
-    // return renderLocationRequest();
-
-    print('isLocationRequestTriggered $isLocationRequestTriggered');
-    print('locationAccess $locationAccess');
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
-
+    // print('isLocationRequestTriggered $isLocationRequestTriggered');
+    // print('locationAccess $locationAccess');
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
+    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    double height = MediaQuery.of(context).size.height;
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(),
@@ -444,6 +407,59 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           autoUpdateAnchorDate: true,
         ),
       ),
+
+      Positioned(
+        right: 10,
+        child: GestureDetector(
+          onTap: () {
+            print("Navigated to current day");
+            uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+          },
+          child: Container(
+            // color: Colors.amber,
+            height: height / (height / 38),
+            width: height / (height / 38),
+            child: LayoutBuilder(
+              builder: (context, constraints) => Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Icon(
+                      FontAwesomeIcons.calendar,
+                      size: constraints.maxWidth * 0.9,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: constraints.maxHeight * 0.1,
+                    left: (constraints.maxWidth - constraints.maxWidth * 0.55) /
+                        2,
+                    child: Center(
+                      child: Container(
+                        // color: Colors.green,
+                        height: constraints.maxHeight * 0.55,
+                        width: constraints.maxHeight * 0.55,
+                        child: Center(
+                          child: Text(
+                            DateTime.now().day.toString(),
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontFamily: TileStyles.rubikFontName,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ), //Last Place
+        ),
+      )
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
@@ -479,7 +495,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               BottomNavigationBarItem(
                 icon: Icon(
                   Icons.search,
-                  color: TileStyles.primaryColorDarkHSL.toColor(),
+                  color: TileStyles.primaryColor,
                 ),
                 label: '',
               ),
@@ -492,7 +508,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               BottomNavigationBarItem(
                   icon: Icon(
                     Icons.settings,
-                    color: TileStyles.primaryColorDarkHSL.toColor(),
+                    color: TileStyles.primaryColor,
                   ),
                   label: ''),
             ],
@@ -530,7 +546,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               child: Icon(
                 Icons.add,
                 size: 35,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
+                color: TileStyles.primaryColor,
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

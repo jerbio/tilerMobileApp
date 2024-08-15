@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/notificationData.dart';
 
 class SecureStorageManager {
   static final _storage = new FlutterSecureStorage();
   final _accessControlKey = 'access';
   final _locationAccessKey = 'location';
   final _credentialKey = 'credentials';
+  final _notificationKey = 'notification';
 
   Future<Map<String, dynamic>?> getAccessObject() async {
     Map<String, dynamic>? accessDataObj;
@@ -65,6 +67,7 @@ class SecureStorageManager {
     await _storage.delete(key: _accessControlKey);
     await _storage.delete(key: _locationAccessKey);
     await _storage.delete(key: _credentialKey);
+    await _storage.delete(key: _notificationKey);
   }
 
   Future saveCredentials(AuthenticationData credentials) async {
@@ -78,6 +81,27 @@ class SecureStorageManager {
 
   Future<String?> readCredentials() async {
     String? retValue = await _storage.read(key: _credentialKey);
+    return retValue;
+  }
+
+  Future saveNotificationData(NotificationData notificationData) async {
+    String notificationJsonString = jsonEncode(notificationData.toJson());
+    await _storage.write(key: _notificationKey, value: notificationJsonString);
+  }
+
+  Future deleteNotificationData() async {
+    await _storage.delete(key: _notificationKey);
+  }
+
+  Future<NotificationData?> readNotificationData() async {
+    String? retValueJsonString = await _storage.read(key: _notificationKey);
+    NotificationData retValue = NotificationData.noCredentials();
+    if (retValueJsonString != null && retValueJsonString.isNotEmpty) {
+      Map<String, dynamic> jsonData = jsonDecode(retValueJsonString);
+      try {
+        retValue = NotificationData.fromJson(jsonData);
+      } catch (e) {}
+    }
     return retValue;
   }
 }

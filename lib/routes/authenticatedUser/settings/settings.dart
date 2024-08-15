@@ -1,21 +1,24 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -131,6 +134,8 @@ class _SettingState extends State<Setting> {
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
       textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
       onPress: () {
+        AnalysticsSignal.send('SETTINGS_OPEN_RESTRICTION_PROFILE_' +
+            (configButtonName ?? "NONE"));
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': restrictionProfile,
           'stackRouteHistory': [Setting.routeName]
@@ -225,6 +230,7 @@ class _SettingState extends State<Setting> {
                   this.endOfDay!.timeOfDay = updatedTimeOfDay;
                 });
               }
+              AnalysticsSignal.send('SETTINGS_BEDTIME_UPDATE');
             },
           ),
         )
@@ -233,7 +239,14 @@ class _SettingState extends State<Setting> {
     return retValue;
   }
 
-  logOutser() async {
+  logOutUser() async {
+    AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
+    OneSignal.logout().then((value) {
+      print("successful logged out of onesignal");
+    }).catchError((onError) {
+      print("Failed to logout of onesignal");
+      print(onError);
+    });
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
@@ -244,19 +257,39 @@ class _SettingState extends State<Setting> {
         .add(LogOutSubCalendarTileBlocEvent());
     this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
     this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+    this
+        .context
+        .read<TileListCarouselBloc>()
+        .add(EnableCarouselScrollEvent(isImmediate: true));
+
+    this.context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
+    this
+        .context
+        .read<ScheduleSummaryBloc>()
+        .add(LogOutScheduleDaySummaryEvent());
   }
 
   Widget createLogOutButton() {
     Widget retValue = ElevatedButton(
-        onPressed: logOutser,
+        onPressed: logOutUser,
         child: Text(AppLocalizations.of(context)!.logout));
     return retValue;
   }
 
+  Widget createIntegrationButton() {
+    Widget retValue = ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/Integrations');
+        },
+        child: Text(AppLocalizations.of(context)!.integrateOtherCalendars));
+    return retValue;
+  }
+
   sendDeleteRequest() async {
+    AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
     _authorizationApi.deleteTilerAccount().then((result) {
       if (result) {
-        logOutser();
+        logOutUser();
       }
     });
   }
@@ -264,6 +297,7 @@ class _SettingState extends State<Setting> {
   Widget createDeleteAccountButton() {
     Widget retValue = ElevatedButton(
         onPressed: () {
+          AnalysticsSignal.send('SETTINGS_DELETE_USER_INITIATED');
           showGeneralDialog(
               barrierDismissible: true,
               barrierLabel: '',
@@ -359,6 +393,7 @@ class _SettingState extends State<Setting> {
     }
     Widget logoutButton = createLogOutButton();
     Widget deleteButton = createDeleteAccountButton();
+    Widget integrationButton = createIntegrationButton();
     if (isTimeOfDayLoaded) {
       Widget endOfDayWidget =
           Container(alignment: Alignment.center, child: createEndOfDay());
@@ -369,12 +404,12 @@ class _SettingState extends State<Setting> {
         backgroundDecoration: BoxDecoration(color: Colors.transparent),
       ));
     }
-
+    childElements.add(integrationButton);
     childElements.add(logoutButton);
     childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileStyles.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.settings,
           style: TextStyle(
