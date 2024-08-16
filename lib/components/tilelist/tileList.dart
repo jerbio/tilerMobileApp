@@ -357,10 +357,12 @@ class _TileListState extends State<TileList> {
           eachSubEventA.start!.compareTo(eachSubEventB.start!));
 
       Map<int, Timeline> dayToSleepTimeLines = {};
-      sleepTimelines.forEach((sleepTimeLine) {
-        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
-        dayToSleepTimeLines[dayIndex] = sleepTimeLine;
-      });
+      sleepTimelines.forEach(
+        (sleepTimeLine) {
+          int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
+          dayToSleepTimeLines[dayIndex] = sleepTimeLine;
+        },
+      );
 
       Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
           mapTilesToDays(tileData.item2, _todayTimeLine);
@@ -390,6 +392,7 @@ class _TileListState extends State<TileList> {
       dayIndexToTileDict.keys.toList();
       dayIndexes.sort();
 
+      // Top Section(Date and other section)
       for (int i = 0; i < dayIndexes.length; i++) {
         int dayIndex = dayIndexes[i];
         dayIndex += startIndex;
@@ -431,6 +434,16 @@ class _TileListState extends State<TileList> {
 
       var timeStamps = dayIndexes
           .map((eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
+
+      print('------------There are 111 ' +
+          tileData.item2.length.toString() +
+          ' tiles------------');
+      print('------------There are relevant ' +
+          relevantTimeline.toString() +
+          ' tiles------------');
+      print('------------There are ' +
+          timeLine.toString() +
+          ' tiles------------');
 
       List<TileBatch> preceedingDayTiles =
           preceedingDayTilesDict.values.toList();
@@ -544,13 +557,16 @@ class _TileListState extends State<TileList> {
               Tuple2<int, Widget>? tileBatchTupleData;
               DateTime currentTime = Utility.currentTime().dayDate;
 
-              this.dayIndexToCarouselIndex.forEach((key, value) {
-                if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
-                  dayIndexOfTileBatch = key;
-                  tileBatchTupleData = value;
+              this.dayIndexToCarouselIndex.forEach(
+                (key, value) {
+                  if (value.item1 == pageNumber &&
+                      dayIndexOfTileBatch == null) {
+                    dayIndexOfTileBatch = key;
+                    tileBatchTupleData = value;
                   currentTime = Utility.getTimeFromIndex(key);
-                }
-              });
+                  }
+                },
+              );
 
               if (carouselData == CarouselPageChangedReason.manual &&
                   dayIndexOfTileBatch != null &&

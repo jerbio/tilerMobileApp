@@ -137,7 +137,7 @@ class ScheduleApi extends AppApi {
         if (isContentInResponse(jsonResult)) {
           Map jsDayIndexToTimelineSummary = jsonResult['Content'];
           Map<int, TimelineSummary> retValue = {};
-
+          print("DATA FETCHED FOR TED");
           for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
             int jsDayIndex = int.parse(jsDayIndexString);
             DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);

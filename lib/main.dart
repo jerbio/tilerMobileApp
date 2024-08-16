@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -29,6 +30,7 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRou
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
+import 'package:tiler_app/routes/authenticatedUser/completed/completed.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/styles.dart';
@@ -39,7 +41,7 @@ import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
@@ -66,7 +68,7 @@ Future main() async {
   }
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    // options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(TilerApp());
 }
@@ -148,6 +150,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => IntegrationsBloc()),
           BlocProvider(create: (context) => TileListCarouselBloc()),
           BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
+          BlocProvider(create: (context) => ForecastBloc()),
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -229,7 +232,12 @@ class _TilerAppState extends State<TilerApp> {
                     );
                   } else {
                     authentication?.deauthenticateCredentials();
-                    retValue = SignInRoute();
+                    retValue =
+                            // AuthorizedRoute()
+                            SignInRoute()
+                        // CompletedTiles()
+                        // This is the original route but it was commented for development sake by ted
+                        ;
                   }
                 } else {
                   retValue = renderPending();

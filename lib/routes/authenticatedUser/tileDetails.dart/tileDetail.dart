@@ -48,7 +48,7 @@ class _TileDetailState extends State<TileDetail> {
   String requestId = Utility.getUuid;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+  final Color inputFieldIconColor = TileStyles.primaryColor;
 
   @override
   void initState() {

@@ -1,3 +1,81 @@
+// import 'package:duration_picker/duration_picker.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter/widgets.dart';
+// import 'package:switch_up/switch_up.dart';
+// import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:tiler_app/styles.dart';
+// import 'package:tiler_app/util.dart';
+
+// class DurationDial extends StatefulWidget {
+//   final List<Duration> presetDurations;
+//   final Function(Duration) onDurationSelected;
+
+//   DurationDial({required this.presetDurations, required this.onDurationSelected});
+
+//   static final String routeName = '/DurationDial';
+
+//   @override
+//   DurationDialState createState() => DurationDialState();
+// }
+
+// class DurationDialState extends State<DurationDial> {
+//   Duration _duration = Duration();
+//   bool _isInitialize = false;
+
+//   void onProceedTap() {
+//     widget.onDurationSelected(_duration);
+//     // Navigator.pop(context); // Simply navigate back
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     final Map? durationParams = ModalRoute.of(context)?.settings.arguments as Map?;
+//     if (!_isInitialize && durationParams != null) {
+//       _isInitialize = true;
+//       if (durationParams.containsKey('initialDuration') && durationParams['initialDuration'] != null) {
+//         _duration = durationParams['initialDuration'];
+//       }
+//     }
+
+//     return CancelAndProceedTemplateWidget(
+//       appBar: AppBar(
+//         backgroundColor: TileStyles.primaryColor,
+//         title: Text(
+//           AppLocalizations.of(context)!.duration,
+//           style: TextStyle(
+//             color: TileStyles.appBarTextColor,
+//             fontWeight: FontWeight.w800,
+//             fontSize: 22,
+//           ),
+//         ),
+//         centerTitle: true,
+//         elevation: 0,
+//         automaticallyImplyLeading: false,
+//       ),
+//       child: Column(
+//         children: [
+//           Expanded(
+//             child: DurationPicker(
+//               duration: _duration,
+//               onChange: (val) {
+//                 setState(() {
+//                   _duration = val;
+//                 });
+//               },
+//               snapToMins: 5.0,
+//             ),
+//           ),
+//         ],
+//       ),
+//       onProceed: onProceedTap,
+//     );
+//   }
+// }
+
+
+
+
 import 'dart:ffi';
 
 import 'package:duration_picker/duration_picker.dart';

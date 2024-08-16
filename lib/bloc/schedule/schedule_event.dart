@@ -30,6 +30,15 @@ class GetScheduleEvent extends ScheduleEvent {
   List<Object> get props => [];
 }
 
+class CompleteTaskEvent extends ScheduleEvent {
+  final SubCalendarEvent subEvent;
+
+  CompleteTaskEvent({required this.subEvent});
+
+  @override
+  List<Object> get props => [subEvent];
+}
+
 // class AdHocScheduleEvent extends ScheduleEvent {
 //   final List<SubCalendarEvent>? previousSubEvents;
 //   final Timeline? scheduleTimeline;
