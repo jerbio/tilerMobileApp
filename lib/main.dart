@@ -233,8 +233,8 @@ class _TilerAppState extends State<TilerApp> {
                   } else {
                     authentication?.deauthenticateCredentials();
                     retValue =
-                            AuthorizedRoute()
-                            // SignInRoute()
+                            // AuthorizedRoute()
+                            SignInRoute()
                         // CompletedTiles()
                         // This is the original route but it was commented for development sake by ted
                         ;
