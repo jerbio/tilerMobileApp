@@ -23,6 +23,7 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/scheduleSummary/schedule_summary_bloc.dart';
+import '../../components/PendingWidget.dart';
 import '../../components/summaryPage/TileToBeCompleted.dart';
 
 class SummaryPage extends StatefulWidget {
@@ -39,29 +40,36 @@ class _SummaryPage extends State<SummaryPage> {
   Map<String, double> dataDriveTime = {};
   bool isLoadingAnalysis = true;
   bool isLoadingTimelineSummary = true;
+  bool isCheckStateActive = false;
   int times = 10;
   List<Timeline> sleeplines = [];
   List<OverViewItem> overviewItems = [];
   List<DriveTime> driveTimes = [];
   List<bool> unscheduledTilesCheckStates = [];
   List<bool> lateTilesCheckStates = [];
-  // for testing purposes
-  List<bool> completeTilesCheckStates = [];
+  List<SubCalendarEvent> selectedUnscheduledItems = [];
   ScheduleApi scheduleApi = ScheduleApi();
 
   @override
   void initState() {
     super.initState();
+    initialize();
+  }
+
+  Future<void> initialize() async {
     isLoadingAnalysis = true;
     setState(() {});
-    scheduleApi.getTimelineSummary(this.widget.timeline).then((value) {
+    await scheduleApi.getTimelineSummary(this.widget.timeline).then((value) {
       timelineSummary = value;
       if (timelineSummary != null && timelineSummary!.timeline == null) {
         timelineSummary!.timeline = this.widget.timeline;
+        setState(() {
+          unscheduledTilesCheckStates = List.generate(
+              timelineSummary?.nonViable?.length ?? 0, (index) => false);
+        });
       }
       if (analysis == null) {
         isLoadingTimelineSummary = false;
-        setState(() {});
         return;
       }
 
@@ -105,7 +113,8 @@ class _SummaryPage extends State<SummaryPage> {
       timelineSummary = null;
     });
 
-    scheduleApi.getAnalysis().then((value) {
+    // GET ANALYSIS FUNCTION
+    await scheduleApi.getAnalysis().then((value) {
       analysis = value;
       if (analysis == null) {
         isLoadingAnalysis = false;
@@ -147,22 +156,34 @@ class _SummaryPage extends State<SummaryPage> {
         dataDriveTime.addAll(other);
       });
 
-      unscheduledTilesCheckStates =
-          List.generate(timelineSummary!.nonViable!.length, (index) => false);
-
-      lateTilesCheckStates =
-          List.generate(timelineSummary!.tardy!.length, (index) => false);
-
-      completeTilesCheckStates =
-          List.generate(timelineSummary!.complete!.length, (index) => false);
-
       isLoadingAnalysis = false;
+
       if (mounted) {
         setState(() {
           isLoadingAnalysis = false;
         });
       }
     });
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Prevent dismissal
+      builder: (context) => PendingWidget(
+        imageAsset: TileStyles.evaluatingScheduleAsset,
+      ),
+    );
+  }
+
+  List<SubCalendarEvent> getSelectedUnscheduledItems() {
+    List<SubCalendarEvent> selectedItems = [];
+    for (int i = 0; i < unscheduledTilesCheckStates.length; i++) {
+      if (unscheduledTilesCheckStates[i]) {
+        selectedItems.add(timelineSummary?.nonViable?[i] as SubCalendarEvent);
+      }
+    }
+    return selectedItems;
   }
 
   Widget renderDate(SubCalendarEvent subCalendarEventTile) {
@@ -359,8 +380,9 @@ class _SummaryPage extends State<SummaryPage> {
   }
 
   Widget renderListOfTiles(
-      double height, List<SubCalendarEvent> tiles, List<bool> checkStates,
-      {bool isToBeCompleted = false}) {
+    double height,
+    List<SubCalendarEvent> tiles,
+  ) {
     List<GlobalKey<_TileToBeCompletedState>> tileKeys = List.generate(
       tiles.length,
       (_) => GlobalKey<_TileToBeCompletedState>(),
@@ -369,129 +391,12 @@ class _SummaryPage extends State<SummaryPage> {
       children: tiles.asMap().entries.map<Widget>((entry) {
         int index = entry.key;
         SubCalendarEvent e = entry.value;
-        return !isToBeCompleted
-            ? renderTile(e)
-            : TileToBeCompleted(
-                key: tileKeys[index],
-                subCalendarEventTile: e,
-                initialTapValue: false, // Initial value if needed
-                onChanged: (bool newValue) {
-                  newValue == true
-                      ? showDialog(
-                          context: context,
-                          builder: (BuildContext loadingContext) {
-                            return ConfirmationDialog(
-                              height: height,
-                              textContent:
-                                  "Are you sure you want to complete this tile?",
-                              popEvent: () {
-                                setState(() {
-                                  // Update the tapValue in the TileToBeCompleted widget
-                                  tileKeys[index]
-                                      .currentState
-                                      ?.updateTapValue(false);
-                                });
-                                Navigator.pop(context);
-                              },
-                              proceedEvent: () async {
-                                Navigator.pop(
-                                    loadingContext); // Close the confirmation dialog
-                                // _showLoadingDialog();
-
-                                // Wait for the task completion
-                                bool success =
-                                    await BlocProvider.of<ScheduleSummaryBloc>(
-                                            context)
-                                        .completeTask(e);
-
-                                // Close loading dialog
-                                Navigator.of(context, rootNavigator: true)
-                                    .pop();
-
-                                // Show completion or error dialog
-                                if (success) {
-                                  showDialog(
-                                    context: context,
-
-                                    barrierDismissible:
-                                        false, // Prevent the user from dismissing the dialog
-                                    builder: (BuildContext completionContext) {
-                                      // Start a timer to close the dialog after 1 second
-                                      Future.delayed(Duration(seconds: 1), () {
-                                        // Check if the dialog is still showing before trying to close it
-                                        if (Navigator.of(completionContext)
-                                            .canPop()) {
-                                          Navigator.of(completionContext).pop();
-                                        }
-                                      });
-
-                                      return AlertDialog(
-                                        backgroundColor: Colors.transparent,
-                                        content: Container(
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Image.asset(
-                                                "assets/images/task_completed.png",
-                                                width: height / (height / 174),
-                                              ),
-                                              SizedBox(
-                                                width: height / (height / 174),
-                                                child: Center(
-                                                  child: Text(
-                                                    'Tile completed successfully!',
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                        fontFamily: TileStyles
-                                                            .rubikFontName,
-                                                        color: Colors.white),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ).then(
-                                    (_) {
-                                      // This will run after the dialog is closed
-                                      BlocProvider.of<ScheduleSummaryBloc>(
-                                              context)
-                                          .add(
-                                              GetElapsedTasksEvent()); // Update UI
-                                    },
-                                  );
-                                } else {
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext errorContext) {
-                                      return AlertDialog(
-                                        content:
-                                            Text("Task completion failed."),
-                                        actions: [
-                                          TextButton(
-                                            child: Text("OK"),
-                                            onPressed: () =>
-                                                Navigator.pop(errorContext),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  );
-                                }
-                              },
-                            );
-                          },
-                        )
-                      : null;
-                },
-              );
+        return renderTile(e);
       }).toList(),
     );
   }
 
+  // Completed section
   Widget renderCompleteTiles(double height, List<SubCalendarEvent> tiles) {
     Widget completeHeader = Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -601,7 +506,6 @@ class _SummaryPage extends State<SummaryPage> {
                     renderListOfTiles(
                       height,
                       tiles,
-                      completeTilesCheckStates,
                     )
                   ],
                 )
@@ -613,7 +517,16 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
-  Widget renderUnscheduledTiles(double height, List<SubCalendarEvent> tiles) {
+  // Unscheduled section
+  Widget renderUnscheduledTiles(
+    double height,
+    List<SubCalendarEvent> tiles,
+    bool switchCondition, {
+    required VoidCallback switchTapFunction,
+    required List<bool> checkBoxStates,
+    required VoidCallback completeFunction,
+  }) {
+    tiles = tiles ?? [];
     Widget unscheduledHeader = Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
       alignment: Alignment.centerLeft,
@@ -624,10 +537,6 @@ class _SummaryPage extends State<SummaryPage> {
             fontFamily: TileStyles.rubikFontName,
           )),
     );
-
-    if (tiles.isEmpty) {
-      return SizedBox.shrink();
-    }
 
     Widget unscheduledBodyHeader = Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -655,6 +564,9 @@ class _SummaryPage extends State<SummaryPage> {
       ),
     );
 
+    if (tiles.isEmpty) {
+      return SizedBox.shrink();
+    }
     return Align(
       alignment: Alignment.center,
       child: Container(
@@ -669,16 +581,207 @@ class _SummaryPage extends State<SummaryPage> {
                   color: Colors.white, borderRadius: BorderRadius.circular(10)),
               child: Column(children: [
                 unscheduledBodyHeader,
-                Column(
-                  children: [
-                    renderListOfTiles(
-                      height,
-                      tiles,
-                      unscheduledTilesCheckStates,
-                      isToBeCompleted: true,
-                    )
-                  ],
-                )
+
+                switchCondition == true
+                    ? Column(
+                        children: tiles.asMap().entries.map<Widget>((entry) {
+                        int index = entry.key;
+                        SubCalendarEvent e = entry.value;
+                        return Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  width: 0.5,
+                                  color: e.priority == TilePriority.high
+                                      ? Colors.red
+                                      : Colors.transparent),
+                              borderRadius: BorderRadius.circular(5)),
+                          padding: EdgeInsets.all(10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: Checkbox.adaptive(
+                                      value: //false,
+                                          checkBoxStates[index],
+                                      onChanged: (value) {
+                                        print(
+                                            "checkBoxStates: $checkBoxStates");
+                                        print("Tap value is $value");
+                                        // print('index is $index');
+                                        setState(() {
+                                          checkBoxStates[index] = value!;
+                                          selectedUnscheduledItems =
+                                              getSelectedUnscheduledItems();
+                                        });
+                                      },
+                                      activeColor: Colors.transparent,
+                                      checkColor: Colors.black,
+                                    ),
+                                  ),
+
+                                  //Sizedbox for spacing
+                                  SizedBox(
+                                    width: height / (height / 10),
+                                  ),
+
+                                  // Container(
+                                  //     height: 20,
+                                  //     width: 20,
+                                  //     margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                                  //     decoration: BoxDecoration(
+                                  //         color: e.color ?? Colors.transparent,
+                                  //         borderRadius:
+                                  //             BorderRadius.circular(5))),
+                                  Container(
+                                    height: 20,
+                                    width: MediaQuery.of(context).size.width *
+                                            TileStyles.widthRatio -
+                                        205,
+                                    child: Text(
+                                      e.isProcrastinate == true
+                                          ? AppLocalizations.of(context)!
+                                              .procrastinateBlockOut
+                                          : e.name ?? "",
+                                      style: TextStyle(
+                                        fontFamily: TileStyles.rubikFontName,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [renderDate(e)],
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList())
+                    : Column(
+                        children: tiles.asMap().entries.map<Widget>((entry) {
+                          int index = entry.key;
+                          SubCalendarEvent e = entry.value;
+                          return GestureDetector(
+                              onTap: switchTapFunction,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        width: 0.5,
+                                        color: e.priority == TilePriority.high
+                                            ? Colors.red
+                                            : Colors.transparent),
+                                    borderRadius: BorderRadius.circular(5)),
+                                padding: EdgeInsets.all(10),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                            height: 20,
+                                            width: 20,
+                                            margin: EdgeInsets.fromLTRB(
+                                                0, 0, 10, 0),
+                                            decoration: BoxDecoration(
+                                                color: e.color ??
+                                                    Colors.transparent,
+                                                borderRadius:
+                                                    BorderRadius.circular(5))),
+                                        Container(
+                                          height: 20,
+                                          width: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  TileStyles.widthRatio -
+                                              205,
+                                          child: Text(
+                                            e.isProcrastinate == true
+                                                ? AppLocalizations.of(context)!
+                                                    .procrastinateBlockOut
+                                                : e.name ?? "",
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  TileStyles.rubikFontName,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [renderDate(e)],
+                                    ),
+                                  ],
+                                ),
+                              ));
+                        }).toList(),
+                      ),
+
+                // Sizedbox for spacing
+                checkBoxStates.where((value) => value == true).length >= 1
+                    ? SizedBox(
+                        height: height / (height / 20),
+                      )
+                    : SizedBox.shrink(),
+
+                // Display currently selected tiles
+                checkBoxStates.where((value) => value == true).length >= 1
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            "${checkBoxStates.where((value) => value == true).length} Tiles Selected",
+                            style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                              color: TileStyles.primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: completeFunction,
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: height / (height / 10),
+                                vertical: height / (height / 5),
+                              ),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: TileStyles.primaryColor,
+                                  width: height / height,
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  height / (height / 4),
+                                ),
+                              ),
+                              child: Text(
+                                'Complete Tiles',
+                                style: TextStyle(
+                                  fontFamily: TileStyles.rubikFontName,
+                                  color: TileStyles.primaryColor,
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    : SizedBox.shrink(),
+                // Column(
+                //   children: [
+                //     renderListOfTiles(
+                //       height,
+                //       tiles,
+                //       unscheduledTilesCheckStates,
+                //     )
+                //   ],
+                // )
               ]),
             )
           ],
@@ -687,6 +790,7 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
+  // Late section
   Widget renderTardyTiles(double height, List<SubCalendarEvent> tiles) {
     Widget tardyHeader = Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -794,8 +898,10 @@ class _SummaryPage extends State<SummaryPage> {
                 tardyBodyHeader,
                 Column(
                   children: [
-                    renderListOfTiles(height, tiles, lateTilesCheckStates,
-                        isToBeCompleted: true)
+                    renderListOfTiles(
+                      height,
+                      tiles,
+                    )
                   ],
                 )
               ]),
@@ -1171,12 +1277,115 @@ class _SummaryPage extends State<SummaryPage> {
                             ]),
                       this.timelineSummary == null
                           ? SizedBox.shrink()
-                          : renderUnscheduledTiles(height, <SubCalendarEvent>[
-                              ...((this.timelineSummary!.nonViable ?? [])
-                                  .map<SubCalendarEvent>((eachSubEvent) {
-                                return eachSubEvent as SubCalendarEvent;
-                              }))
-                            ]),
+                          : renderUnscheduledTiles(
+                              height,
+                              // <SubCalendarEvent>[
+                              //   ...((this.timelineSummary!.nonViable ?? [])
+                              //       .map<SubCalendarEvent>((eachSubEvent) {
+                              //     return eachSubEvent as SubCalendarEvent;
+                              //   }))
+                              // ],
+                              this
+                                      .timelineSummary
+                                      ?.nonViable
+                                      ?.cast<SubCalendarEvent>() ??
+                                  [],
+                              this.isCheckStateActive,
+                              switchTapFunction: () => setState(() {
+                                this.isCheckStateActive =
+                                    !this.isCheckStateActive;
+                                print(
+                                    "checkboxstate: $unscheduledTilesCheckStates");
+                                print(
+                                    "timeline is of lenght: ${timelineSummary?.nonViable?.length}");
+                                // print(
+                                //     'LENGTH ${this.timelineSummary!.nonViable!.length}');
+                                // print('List is $unscheduledTilesCheckStates');
+                              }),
+                              checkBoxStates: unscheduledTilesCheckStates,
+                              completeFunction: () async {
+                                List<String> eventIds = selectedUnscheduledItems
+                                    .map((element) => element.id)
+                                    .where((id) => id != null)
+                                    .cast<String>()
+                                    .toList();
+                                List<String> eventThirdPartyTypes =
+                                    selectedUnscheduledItems
+                                        .map((element) => element
+                                            .thirdpartyType?.name
+                                            .toLowerCase())
+                                        .where((id) => id != null)
+                                        .cast<String>()
+                                        .toList();
+                                List<String> eventThirdPartyUserIds =
+                                    selectedUnscheduledItems
+                                        .map((element) {
+                                          if (element
+                                                  .thirdPartyUserId.isEmpty ||
+                                              element.thirdPartyUserId == '') {
+                                            return 'tiler-account';
+                                          } else {
+                                            return element.thirdPartyUserId;
+                                          }
+                                        })
+                                        .where((id) => id.isNotEmpty)
+                                        .cast<String>()
+                                        .toList();
+                                List<String> eventThirdPartyEventId =
+                                    selectedUnscheduledItems
+                                        .map((element) {
+                                          if (element.thirdpartyId!.isEmpty ||
+                                              element.thirdpartyId == '') {
+                                            return '';
+                                          } else {
+                                            return element.thirdpartyId;
+                                          }
+                                        })
+                                        .where((id) => id != null)
+                                        .cast<String>()
+                                        .toList();
+
+                                String eventIdString = eventIds
+                                    .where(
+                                      (element) => element != null,
+                                    )
+                                    .join(',');
+                                String eventThirdPartyTypeString =
+                                    eventThirdPartyTypes.join(',');
+                                String eventThirdPartyUserIdString =
+                                    eventThirdPartyUserIds.join(',');
+                                String eventThirdPartyEventIdString =
+                                    eventThirdPartyEventId.join(',');
+                                print(eventIdString);
+                                print(eventThirdPartyTypeString);
+                                print(eventThirdPartyUserIdString);
+                                print(eventThirdPartyEventIdString);
+
+                                print(
+                                    'First item is: ${selectedUnscheduledItems[0].thirdPartyUserId}');
+                                print(
+                                    'First item is: ${selectedUnscheduledItems[0].thirdpartyId}');
+
+                                _showLoadingDialog();
+
+                                // Wait for the task completion
+                                bool success =
+                                    await BlocProvider.of<ScheduleSummaryBloc>(
+                                            context)
+                                        .completeTasks(
+                                            eventIdString,
+                                            eventThirdPartyTypeString,
+                                            eventThirdPartyUserIdString);
+
+                                if (success) {
+                                  print("Success: $success");
+                                  await initialize();
+                                  Future.delayed(Duration(seconds: 2), () {
+                                    Navigator.pop(context);
+                                  });
+                                }
+                              },
+                            ),
                       this.timelineSummary == null
                           ? SizedBox.shrink()
                           : renderTardyTiles(height, <SubCalendarEvent>[

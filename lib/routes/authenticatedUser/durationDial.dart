@@ -201,7 +201,7 @@ class DurationDialState extends State<DurationDial> {
             items: durationTextCollection,
             onChanged: onTabTypeChange,
             value: switchUpvalue,
-            color: TileStyles.oPrimaryColorHSL.toColor(),
+            color: TileStyles.primaryColor,
           ),
         );
         widgetColumn.insert(0, switchUp);

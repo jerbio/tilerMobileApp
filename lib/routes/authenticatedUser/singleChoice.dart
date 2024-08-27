@@ -29,7 +29,7 @@ class _SingleChoiceState extends State<SingleChoice> {
             if (states.contains(MaterialState.selected)) {
               return TileStyles.appBarTextColor;
             }
-            return TileStyles.inactiveTextColor;
+            return TileStyles.primaryColor;
           },
         ),
         backgroundColor: MaterialStateProperty.resolveWith<Color>(
@@ -37,7 +37,7 @@ class _SingleChoiceState extends State<SingleChoice> {
             if (states.contains(MaterialState.selected)) {
               return TileStyles.primaryColor;
             }
-            return TileStyles.appBarTextColor;
+            return Color.fromRGBO(31, 31, 31, 0.05);
           },
         ),
       ),

@@ -240,10 +240,12 @@ class LocationRouteState extends State<LocationRoute> {
                 ),
               ),
             )));
+    
     Widget locationAddressWidget = Container(
       alignment: Alignment.topCenter,
       child: locationSearchWidget,
     );
+    
     List<Widget> routeStackWidgets = <Widget>[
       locationNickNameWidget,
       locationAddressWidget

@@ -67,7 +67,7 @@ class AddTileState extends State<AddTile> {
   final BoxDecoration boxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.05),
       border: Border.all(
-        color: TileStyles.primaryColorDarkHSL.toColor(),
+        color: TileStyles.primaryColor,
         width: 1,
       ),
       borderRadius: BorderRadius.all(
@@ -513,7 +513,7 @@ class AddTileState extends State<AddTile> {
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
                     hintStyle:
-                        TextStyle(color: TileStyles.oPrimaryColorHSL.toColor()),
+                        TextStyle(color: TileStyles.primaryColor),
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
@@ -770,6 +770,7 @@ class AddTileState extends State<AddTile> {
             isSubmissionReady();
           });
         });
+    
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
         prefixIcon: Icon(
@@ -793,6 +794,7 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
+    
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction

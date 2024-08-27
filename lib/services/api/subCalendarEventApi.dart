@@ -222,6 +222,30 @@ class SubCalendarEventApi extends AppApi {
     });
   }
 
+  Future completeTiles(String id, String type, String userId) async {
+    TilerError error = new TilerError();
+    error.message = "Did not send complete request";
+    return sendPostRequest('api/Schedule/Events/Complete', {
+      'EventID': id,
+      'ThirdPartyType': type,
+      'ThirdPartyUserID': userId,
+      'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+    }).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      print("jsonResult:$jsonResult");
+      if (isJsonResponseOk(jsonResult)) {
+        // if (isContentInResponse(jsonResult)) {
+        //   Map<String, dynamic> tileJson = jsonResult['Content'];
+        //   SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
+        //   return retValue;
+        // }
+        return true;
+      }
+      error = getTilerResponseError(jsonResult) ?? error;
+      throw error;
+    });
+  }
+
   Future<CalendarEvent?> delete(String eventId, String? thirdPartyEventID,
       String? thirdPartyUserId, String? thirdPartyType) async {
     TilerError error = new TilerError();
