@@ -44,7 +44,7 @@ class TileStyles {
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColorDarkHSL.toColor();
+      return primaryColor;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.white;
@@ -70,7 +70,7 @@ class TileStyles {
   );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
     side: MaterialStateProperty.all(
-        BorderSide(color: primaryColorDarkHSL.toColor())),
+        BorderSide(color: primaryColor)),
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
@@ -81,7 +81,7 @@ class TileStyles {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColorDarkHSL.toColor();
+      return primaryColor;
     }),
   );
 

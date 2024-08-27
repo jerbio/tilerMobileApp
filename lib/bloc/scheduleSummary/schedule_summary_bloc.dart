@@ -153,6 +153,16 @@ class ScheduleSummaryBloc
     }
   }
 
+  Future<bool> completeTasks(String id, String type, String userId) async {
+    try {
+      var resp = await subCalendarEventApi.completeTiles(id, type, userId);
+      print(resp);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<bool> deferTask(String tileId, Duration duration) async {
     try {
       await subCalendarEventApi.procrastinate(duration, tileId);
