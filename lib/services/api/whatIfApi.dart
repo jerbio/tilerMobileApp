@@ -77,8 +77,7 @@ class WhatIfApi extends AppApi {
         }
 
         
-        print(subCalEventIds);
-        print(subCalEventIds.length);
+       
 
         // Perform concurrent GET requests using the populated subCalEventIds
         final results = await Future.wait(
@@ -86,7 +85,6 @@ class WhatIfApi extends AppApi {
             try {
               return await getSubCalEvent(id);
             } catch (e) {
-              print(e);
               return null; // Handle the error as needed, maybe return a default value or null
             }
           }),
@@ -98,15 +96,11 @@ class WhatIfApi extends AppApi {
             .cast<SubCalendarEvent>()
             .toList();
 
-        // Print updatedSubCalEvents or handle them as needed
-        print('Updated sub cal events: $updatedSubCalEvents');
-
         return [forecastResponse.isViable, updatedSubCalEvents];
       }
 
       return ForecastResponse();
     } catch (e) {
-      print('Error occurred: $e');
       return ForecastResponse();
     }
   }

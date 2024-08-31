@@ -234,11 +234,6 @@ class SubCalendarEventApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       print("jsonResult:$jsonResult");
       if (isJsonResponseOk(jsonResult)) {
-        // if (isContentInResponse(jsonResult)) {
-        //   Map<String, dynamic> tileJson = jsonResult['Content'];
-        //   SubCalendarEvent retValue = SubCalendarEvent.fromJson(tileJson);
-        //   return retValue;
-        // }
         return true;
       }
       error = getTilerResponseError(jsonResult) ?? error;

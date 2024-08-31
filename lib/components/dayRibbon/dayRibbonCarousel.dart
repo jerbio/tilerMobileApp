@@ -33,8 +33,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late DateTime selectedDate;
   late int batchCount;
   late int numberOfDays;
-  // final CarouselController dayRibbonCarouselController = CarouselController();
-  
+   final CarouselController dayRibbonCarouselController = CarouselController();
   Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
   Map<int, Tuple2<int, Timeline>> dayBatchIndexToBatch = {};
   @override
@@ -54,7 +53,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
 
   onDateButtonTapped(DateTime date) {
     AnalysticsSignal.send('DAY_RIBBON_TAPPED');
-    print('DAY_RIBBON_TAPPED');
+
     DateTime previousDate = this.selectedDate;
     DateTime currentDate = date;
     updateSelectedDate(date);
@@ -159,7 +158,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         batchDayIndexes);
   }
 
-  handleDateChange(UiDateManagerUpdated state, CarouselController dayRibbonCarouselController) {
+  handleDateChange(UiDateManagerUpdated state) {
     if (universalIndexToBatch
         .containsKey(state.currentDate.universalDayIndex)) {
       dayRibbonCarouselController.animateToPage(
@@ -173,7 +172,6 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     if (this.widget.autoUpdateAnchorDate) {
       if (this.anchorDate.universalDayIndex !=
           Utility.currentTime().universalDayIndex) {
@@ -191,7 +189,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         BlocListener<UiDateManagerBloc, UiDateManagerState>(
           listener: (context, state) {
             if (state is UiDateManagerUpdated) {
-              handleDateChange(state, uiDateManagerBloc.dayRibbonCarouselController);
+              handleDateChange(state);
             }
           },
         ),
@@ -241,7 +239,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
             width: MediaQuery.of(context).size.width,
             height: 130,
             child: CarouselSlider(
-              carouselController: uiDateManagerBloc.dayRibbonCarouselController,
+              carouselController: dayRibbonCarouselController,
               items: carouselDayRibbonBatch,
               options: CarouselOptions(
                 viewportFraction: 1,

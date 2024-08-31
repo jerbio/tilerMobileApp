@@ -30,7 +30,6 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRou
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
-import 'package:tiler_app/routes/authenticatedUser/completed/completed.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/styles.dart';

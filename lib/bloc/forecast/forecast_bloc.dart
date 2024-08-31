@@ -81,7 +81,6 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
         endTime: state.endTime,
       ));
     } catch (e) {
-      print('Error: $e');
       emit(ForecastError(
         'An error occurred while fetching data. Please try again later.',
         duration: state.duration,

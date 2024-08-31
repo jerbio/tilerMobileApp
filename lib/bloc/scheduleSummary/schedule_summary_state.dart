@@ -15,17 +15,17 @@ class ScheduleDaySummaryLoaded extends ScheduleSummaryState {
   final Timeline? timeline;
   final List<TimelineSummary>? dayData;
   final String? requestId;
-  final List<TilerEvent> elapsedTasks;
+  final List<TilerEvent> elapsedTiles;
 
   ScheduleDaySummaryLoaded({
     required this.dayData,
     this.timeline,
     this.requestId,
-    required this.elapsedTasks,
+    required this.elapsedTiles,
   });
 
   @override
-  List<Object?> get props => [timeline, dayData, requestId, elapsedTasks];
+  List<Object?> get props => [timeline, dayData, requestId, elapsedTiles];
 }
 
 class ScheduleDaySummaryLoading extends ScheduleSummaryState {
@@ -38,7 +38,7 @@ class ScheduleDaySummaryLoading extends ScheduleSummaryState {
 
 class ScheduleSummaryLoadingTaskState extends ScheduleSummaryState {
   @override
-  List<Object> get props => [DateTime.now().millisecondsSinceEpoch];
+  List<Object> get props => [Utility.currentTime().millisecondsSinceEpoch];
 }
 
 class ScheduleSummaryCompleteTaskState extends ScheduleSummaryState {

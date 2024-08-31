@@ -85,7 +85,6 @@ class TileStyles {
     }),
   );
 
-  // TODO : Edit here to change
   static ButtonStyle toggledButtonStyle = ButtonStyle(
     side: MaterialStateProperty.all(
         BorderSide(color: primaryColor)),
