@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/routes/authenticatedUser/completed/completed.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -181,81 +180,6 @@ class _DaySummaryState extends State<DaySummary> {
                     color: TileStyles.primaryColor,
                     fontWeight: FontWeight.w700)),
           );
-
-          //
-          // childElements.insert(0, dayDateText);
-
-          // Calender icon to navigate to current day
-          Widget navToToday = GestureDetector(
-            onTap: () {
-              print("Navigated to current day");
-              uiDateManagerBloc.onDateButtonTapped(DateTime.now());
-            },
-            child: Container(
-              // color: Colors.amber,
-              height: height / (height / 38),
-              width: height / (height / 38),
-              child: LayoutBuilder(
-                builder: (context, constraints) => Stack(
-                  children: [
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: Icon(
-                        FontAwesomeIcons.calendar,
-                        size: constraints.maxWidth * 0.9,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: constraints.maxHeight * 0.1,
-                      left:
-                          (constraints.maxWidth - constraints.maxWidth * 0.55) /
-                              2,
-                      child: Center(
-                        child: Container(
-                          // color: Colors.green,
-                          height: constraints.maxHeight * 0.55,
-                          width: constraints.maxHeight * 0.55,
-                          child: Center(
-                            child: Text(
-                              DateTime.now().day.toString(),
-                              style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontFamily: TileStyles.rubikFontName,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ), //Last Place
-          );
-
-          // Makeshift Checkmark icon to navigate to completed page
-          // Widget checkmarkButton = GestureDetector(
-          //   onTap: () {
-          //     Navigator.of(context).push(
-          //       MaterialPageRoute(
-          //         builder: (context) => CompletedTiles(),
-          //       ),
-          //     );
-          //   },
-          //   child: Container(
-          //     height: height / (height / 35),
-          //     width: height / (height / 35),
-          //     // decoration: BoxDecoration(
-          //     //   shape: BoxShape.circle,
-          //     //   color: TileStyles.primaryColor,
-          //     // ),
-          //     child: Icon(Icons.history),
-          //   ),
-          // );
 
           Widget buttonPress = GestureDetector(
             onTap: () {

@@ -22,11 +22,6 @@ class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
     on<LogOutUiDateManagerEvent>(_onLogOutUiDateManagerChange);
   }
 
-  void navigateToDate(DateTime date, CarouselController controller) {
-    if (state is UiDateManagerUpdated) {
-      handleDateChange(state as UiDateManagerUpdated, controller, date);
-    }
-  }
 
   _onDayDateChange(DateChangeEvent event, Emitter emit) {
     DateTime previousDate =
@@ -47,18 +42,7 @@ class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
     emit(LoggedOutUiDateManagerUpdated());
   }
 
-  void handleDateChange(UiDateManagerUpdated state,
-      CarouselController dayRibbonCarouselController, DateTime date) {
-    if (universalIndexToBatch.containsKey(date.universalDayIndex)) {
-      dayRibbonCarouselController
-          .animateToPage(universalIndexToBatch[date.universalDayIndex]!.item1);
-      if (date.dayDate.millisecondsSinceEpoch !=
-          state.currentDate.dayDate.millisecondsSinceEpoch) {
-        add(DateChangeEvent(
-            previousSelectedDate: state.currentDate, selectedDate: date));
-      }
-    }
-  }
+  
 
    void onDateButtonTapped(DateTime date) {
     AnalysticsSignal.send('DAY_RIBBON_TAPPED');

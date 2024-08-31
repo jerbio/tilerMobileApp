@@ -48,14 +48,7 @@ class ScheduleSummaryBloc
         elapsedTasks.addAll(
             summary.nonViable!.where((task) => task.endTime.isBefore(now)));
       }
-      // if (summary.sleep != null) {
-      //   elapsedTasks
-      //       .addAll(summary.sleep!.where((task) => task.endTime.isBefore(now)));
-      // }
-      // if (summary.deleted != null) {
-      //   elapsedTasks.addAll(
-      //       summary.deleted!.where((task) => task.endTime.isBefore(now)));
-      // }
+    
     }
     return elapsedTasks;
   }
@@ -100,7 +93,7 @@ class ScheduleSummaryBloc
           timeline: timeline,
           dayData: value.values.toList(),
           requestId: event.requestId,
-          elapsedTasks: elapsedTasks));
+          elapsedTiles: elapsedTasks));
     });
   }
 
@@ -119,7 +112,7 @@ class ScheduleSummaryBloc
           timeline: timeline,
           dayData: daySummaries,
           requestId: null,
-          elapsedTasks: elapsedTasks));
+          elapsedTiles: elapsedTasks));
     }).catchError((error) {
       emit(ScheduleSummaryErrorState(error: error.toString(), message: ''));
     });
@@ -128,49 +121,21 @@ class ScheduleSummaryBloc
   Future<bool> _onCompleteTask(
       CompleteTaskEvent event, Emitter<ScheduleSummaryState> emit) async {
     emit(ScheduleSummaryLoadingTaskState());
-
-    await Future.delayed(
-      Duration(seconds: 2),
-      () {
-        print("Test 1");
-      },
-    );
-    await Future.delayed(
-      Duration(seconds: 2),
-      () {
-        print("Test 2");
-      },
-    );
     return true;
   }
 
-  Future<bool> completeTask(SubCalendarEvent subEvent) async {
-    try {
-      await subCalendarEventApi.complete(subEvent);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  
 
   Future<bool> completeTasks(String id, String type, String userId) async {
     try {
-      var resp = await subCalendarEventApi.completeTiles(id, type, userId);
-      print(resp);
+      await subCalendarEventApi.completeTiles(id, type, userId);
       return true;
     } catch (e) {
       return false;
     }
   }
 
-  Future<bool> deferTask(String tileId, Duration duration) async {
-    try {
-      await subCalendarEventApi.procrastinate(duration, tileId);
-      return true;
-    } catch (e) {
-      return false;
-    }
-  }
+  
 
   FutureOr<void> _onLogOutScheduleDaySummaryEvent(
       LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {

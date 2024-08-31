@@ -435,16 +435,6 @@ class _TileListState extends State<TileList> {
       var timeStamps = dayIndexes
           .map((eachDayIndex) => Utility.getTimeFromIndex(eachDayIndex));
 
-      print('------------There are 111 ' +
-          tileData.item2.length.toString() +
-          ' tiles------------');
-      print('------------There are relevant ' +
-          relevantTimeline.toString() +
-          ' tiles------------');
-      print('------------There are ' +
-          timeLine.toString() +
-          ' tiles------------');
-
       List<TileBatch> preceedingDayTiles =
           preceedingDayTilesDict.values.toList();
       preceedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
