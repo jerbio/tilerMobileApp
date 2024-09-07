@@ -169,9 +169,6 @@ class _DaySummaryState extends State<DaySummary> {
             }
           }
 
-          // List<Widget> childElements = [
-          //   renderDayMetricInfo(),
-          // ];
           Widget dayDateText = Container(
             child: Text(Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
                 style: TextStyle(
@@ -202,7 +199,7 @@ class _DaySummaryState extends State<DaySummary> {
                 Row(
                   children: [dayDateText, renderDayMetricInfo()],
                 ),
-               // navToToday,
+                // navToToday,
               ],
             ),
           );
