@@ -41,7 +41,6 @@ class _SingleChoiceState extends State<SingleChoice> {
           },
         ),
       ),
-      // TileStyles.toggledButtonStyle,
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(
             value: TilePriority.low,

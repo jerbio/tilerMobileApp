@@ -1,15 +1,10 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
-// import 'package:pie_chart/pie_chart.dart';
 import 'package:fl_chart/fl_chart.dart' as flchart;
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/elapsedTiles/confirmation_dialog.dart';
 
-//  as PieChart;
 import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
@@ -24,7 +19,6 @@ import 'package:tiler_app/util.dart';
 
 import '../../bloc/scheduleSummary/schedule_summary_bloc.dart';
 import '../../components/PendingWidget.dart';
-import '../../components/summaryPage/TileToBeCompleted.dart';
 
 class SummaryPage extends StatefulWidget {
   Timeline timeline;
@@ -608,10 +602,6 @@ class _SummaryPage extends State<SummaryPage> {
                                       value: //false,
                                           checkBoxStates[index],
                                       onChanged: (value) {
-                                        print(
-                                            "checkBoxStates: $checkBoxStates");
-                                        print("Tap value is $value");
-                                        // print('index is $index');
                                         setState(() {
                                           checkBoxStates[index] = value!;
                                           selectedUnscheduledItems =
@@ -627,15 +617,6 @@ class _SummaryPage extends State<SummaryPage> {
                                   SizedBox(
                                     width: height / (height / 10),
                                   ),
-
-                                  // Container(
-                                  //     height: 20,
-                                  //     width: 20,
-                                  //     margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                                  //     decoration: BoxDecoration(
-                                  //         color: e.color ?? Colors.transparent,
-                                  //         borderRadius:
-                                  //             BorderRadius.circular(5))),
                                   Container(
                                     height: 20,
                                     width: MediaQuery.of(context).size.width *
@@ -1258,13 +1239,6 @@ class _SummaryPage extends State<SummaryPage> {
                           top: 15,
                           bottom: 15,
                         ),
-                        // child: Text(
-                        //   this.widget.timeline.startTime.humanDate,
-                        //   style: TextStyle(
-                        //       fontSize: 40,
-                        //       fontWeight: FontWeight.w600,
-                        //       fontFamily: TileStyles.rubikFontName),
-                        // ),
                       ),
                       // renderAnalysisData(),
                       this.timelineSummary == null || isFuture
@@ -1279,12 +1253,6 @@ class _SummaryPage extends State<SummaryPage> {
                           ? SizedBox.shrink()
                           : renderUnscheduledTiles(
                               height,
-                              // <SubCalendarEvent>[
-                              //   ...((this.timelineSummary!.nonViable ?? [])
-                              //       .map<SubCalendarEvent>((eachSubEvent) {
-                              //     return eachSubEvent as SubCalendarEvent;
-                              //   }))
-                              // ],
                               this
                                       .timelineSummary
                                       ?.nonViable
@@ -1294,13 +1262,6 @@ class _SummaryPage extends State<SummaryPage> {
                               switchTapFunction: () => setState(() {
                                 this.isCheckStateActive =
                                     !this.isCheckStateActive;
-                                print(
-                                    "checkboxstate: $unscheduledTilesCheckStates");
-                                print(
-                                    "timeline is of lenght: ${timelineSummary?.nonViable?.length}");
-                                // print(
-                                //     'LENGTH ${this.timelineSummary!.nonViable!.length}');
-                                // print('List is $unscheduledTilesCheckStates');
                               }),
                               checkBoxStates: unscheduledTilesCheckStates,
                               completeFunction: () async {
@@ -1402,177 +1363,6 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 }
-
-// class _LineChart extends StatelessWidget {
-//   const _LineChart({required this.isShowingMainData, required this.spots});
-
-//   final bool isShowingMainData;
-//   final List<flchart.FlSpot> spots;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return flchart.LineChart(
-//       data,
-//       swapAnimationDuration: const Duration(milliseconds: 250),
-//     );
-//   }
-
-//   flchart.LineChartData get data => flchart.LineChartData(
-//         lineTouchData: lineTouchData,
-//         gridData: gridData,
-//         titlesData: titlesData,
-//         borderData: borderData,
-//         lineBarsData: lineBarsData,
-//         // minX: 0,
-//         // maxX: 7,
-//         maxY: spots.last.y + 120,
-//         minY: 0,
-//       );
-
-//   flchart.LineTouchData get lineTouchData => flchart.LineTouchData(
-//         handleBuiltInTouches: true,
-//         touchTooltipData: flchart.LineTouchTooltipData(
-//           tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
-//         ),
-//       );
-
-//   flchart.FlTitlesData get titlesData => flchart.FlTitlesData(
-//         bottomTitles: flchart.AxisTitles(
-//           sideTitles: bottomTitles,
-//         ),
-//         rightTitles: flchart.AxisTitles(
-//           sideTitles: flchart.SideTitles(showTitles: false),
-//         ),
-//         topTitles: flchart.AxisTitles(
-//           sideTitles: flchart.SideTitles(showTitles: false),
-//         ),
-//         leftTitles: flchart.AxisTitles(
-//           axisNameWidget: Text("Hrs"),
-//           sideTitles: leftTitles(),
-//         ),
-//       );
-
-//   List<flchart.LineChartBarData> get lineBarsData => [
-//         lineChartBarData1_2,
-//       ];
-
-//   Widget leftTitleWidgets(double value, flchart.TitleMeta meta) {
-//     const style = TextStyle(
-//       fontWeight: FontWeight.w400,
-//       fontSize: 10,
-//     );
-//     final time = Duration(minutes: value.toInt());
-
-//     final text = Utility.toHuman(time, abbreviations: true);
-
-//     return Text(text, style: style, textAlign: TextAlign.center);
-//   }
-
-//   flchart.SideTitles leftTitles() => flchart.SideTitles(
-//         getTitlesWidget: leftTitleWidgets,
-//         showTitles: true,
-//         interval: 60,
-//         reservedSize: 40,
-//       );
-
-//   Widget bottomTitleWidgets(double value, flchart.TitleMeta meta) {
-//     const style = TextStyle(
-//       fontWeight: FontWeight.w400,
-//       fontSize: 10,
-//     );
-
-//     Widget text;
-
-//     switch (value.toInt()) {
-//       case 1:
-//         text = const Text('Sun', style: style);
-//         break;
-//       case 2:
-//         text = const Text('Mon', style: style);
-//         break;
-//       case 3:
-//         text = const Text('Tue', style: style);
-//         break;
-//       case 4:
-//         text = const Text('Wed', style: style);
-//         break;
-//       case 5:
-//         text = const Text('Thur', style: style);
-//         break;
-//       case 6:
-//         text = const Text('Fri', style: style);
-//         break;
-//       case 7:
-//         text = const Text('Sat', style: style);
-//         break;
-
-//       default:
-//         text = const Text('  ');
-//         break;
-//     }
-
-//     return flchart.SideTitleWidget(
-//       axisSide: meta.axisSide,
-//       space: 10,
-//       child: text,
-//     );
-//   }
-
-//   flchart.SideTitles get bottomTitles => flchart.SideTitles(
-//         showTitles: true,
-//         reservedSize: 32,
-//         interval: 1,
-//         getTitlesWidget: bottomTitleWidgets,
-//       );
-
-//   flchart.FlGridData get gridData => flchart.FlGridData(
-//       show: true, horizontalInterval: 60, verticalInterval: 1);
-
-//   flchart.FlBorderData get borderData => flchart.FlBorderData(
-//         show: true,
-//         border: Border(
-//           bottom: const BorderSide(color: AppColors.borderColor),
-//           right: const BorderSide(color: Colors.transparent),
-//           top: const BorderSide(color: Colors.transparent),
-//         ),
-//       );
-
-//   flchart.LineChartBarData get lineChartBarData1_2 => flchart.LineChartBarData(
-//       isCurved: true,
-//       color: Color(0xff0077FF),
-//       barWidth: 3,
-//       isStrokeCapRound: true,
-//       dotData: flchart.FlDotData(show: false),
-//       belowBarData: flchart.BarAreaData(
-//         show: false,
-//         color: Color(0xff0077FF).withOpacity(0),
-//       ),
-//       spots: spots);
-// }
-
-// class AppColors {
-//   static const Color primary = contentColorCyan;
-//   static const Color menuBackground = Color(0xFF090912);
-//   static const Color itemsBackground = Color(0xFF1B2339);
-//   static const Color pageBackground = Color(0xFF282E45);
-//   static const Color mainTextColor1 = Colors.white;
-//   static const Color mainTextColor2 = Colors.white70;
-//   static const Color mainTextColor3 = Colors.white38;
-//   static const Color mainGridLineColor = Colors.white10;
-//   static const Color borderColor = Colors.white54;
-//   static const Color gridLinesColor = Color(0x11FFFFFF);
-
-//   static const Color contentColorBlack = Colors.black;
-//   static const Color contentColorWhite = Colors.white;
-//   static const Color contentColorBlue = Color(0xFF2196F3);
-//   static const Color contentColorYellow = Color(0xFFFFC300);
-//   static const Color contentColorOrange = Color(0xFFFF683B);
-//   static const Color contentColorGreen = Color(0xFF3BFF49);
-//   static const Color contentColorPurple = Color(0xFF6E1BFF);
-//   static const Color contentColorPink = Color(0xFFFF3AF2);
-//   static const Color contentColorRed = Color(0xFFE80054);
-//   static const Color contentColorCyan = Color(0xFF50E4FF);
-// }
 
 class TileToBeCompleted extends StatefulWidget {
   final SubCalendarEvent subCalendarEventTile;

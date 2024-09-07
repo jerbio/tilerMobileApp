@@ -67,8 +67,8 @@ Future main() async {
   }
   await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
-    // options: DefaultFirebaseOptions.currentPlatform,
-  );
+      // options: DefaultFirebaseOptions.currentPlatform,
+      );
   runApp(TilerApp());
 }
 
@@ -231,12 +231,7 @@ class _TilerAppState extends State<TilerApp> {
                     );
                   } else {
                     authentication?.deauthenticateCredentials();
-                    retValue =
-                            // AuthorizedRoute()
-                            SignInRoute()
-                        // CompletedTiles()
-                        // This is the original route but it was commented for development sake by ted
-                        ;
+                    retValue = SignInRoute();
                   }
                 } else {
                   retValue = renderPending();
