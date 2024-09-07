@@ -40,7 +40,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
-  
+
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
         altitudeAccuracy: 777.0,
@@ -378,15 +378,14 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
-    // print('isLocationRequestTriggered $isLocationRequestTriggered');
-    // print('locationAccess $locationAccess');
-    // if (!isLocationRequestTriggered &&
-    //     !locationAccess.item2 &&
-    //     locationAccess.item3) {
-    //   return renderLocationRequest(accessManager);
-    // }
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     double height = MediaQuery.of(context).size.height;
+    if (!isLocationRequestTriggered &&
+        !locationAccess.item2 &&
+        locationAccess.item3) {
+      return renderLocationRequest(accessManager);
+    }
+
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(),
