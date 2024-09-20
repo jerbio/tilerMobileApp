@@ -8,13 +8,13 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class NewTileSheet extends StatefulWidget {
+class CreatedTileSheet extends StatefulWidget {
   final SubCalendarEvent subEvent;
-  NewTileSheet({required this.subEvent});
-  _NewTileSheetState createState() => _NewTileSheetState();
+  CreatedTileSheet({required this.subEvent});
+  _CreatedTileSheetState createState() => _CreatedTileSheetState();
 }
 
-class _NewTileSheetState extends State<NewTileSheet> {
+class _CreatedTileSheetState extends State<CreatedTileSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(

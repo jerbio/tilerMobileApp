@@ -299,7 +299,7 @@ class _TileListState extends State<TileList> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                NewTileSheet(subEvent: subEvent),
+                CreatedTileSheet(subEvent: subEvent),
               ],
             ),
           ),
@@ -1122,7 +1122,7 @@ class _TileListState extends State<TileList> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              NewTileSheet(subEvent: subEvent),
+                              CreatedTileSheet(subEvent: subEvent),
                             ],
                           ),
                         ),
