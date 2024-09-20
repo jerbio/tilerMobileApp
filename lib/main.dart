@@ -27,6 +27,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -182,7 +183,8 @@ class _TilerAppState extends State<TilerApp> {
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
             '/Integrations': (ctx) => IntegrationWidgetRoute(),
-            '/OnBoarding': (ctx) => OnboardingView()
+            '/OnBoarding': (ctx) => OnboardingView(),
+            '/TileCluster': (ctx) => TileClusterWidget(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,

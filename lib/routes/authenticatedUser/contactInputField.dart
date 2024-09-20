@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/contact.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ContactInputField extends StatefulWidget {
   final Function? onContactUpdate;
@@ -82,7 +83,7 @@ class _ContactInputFieldState extends State<ContactInputField> {
         controller: _controller,
         decoration: InputDecoration(
           border: OutlineInputBorder(),
-          hintText: "Add contact",
+          hintText: AppLocalizations.of(context)!.addContact,
         ),
         onSubmitted: (value) {
           _addContact(value);
