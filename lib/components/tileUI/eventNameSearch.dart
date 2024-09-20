@@ -10,6 +10,7 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
@@ -641,10 +642,11 @@ class EventNameSearchState extends SearchWidgetState {
                   alignment: Alignment.topCenter,
                   child:
                       Stack(alignment: Alignment.topCenter, children: <Widget>[
-                    FractionallySizedBox(
-                      widthFactor: 0.825,
-                      child: super.build(context),
-                    ),
+                    // FractionallySizedBox(
+                    //   widthFactor: 0.825,
+                    //   child: super.build(context),
+                    // ),
+                    ContactInputField(),
                     Align(
                       alignment: Alignment.topLeft,
                       child: Padding(
