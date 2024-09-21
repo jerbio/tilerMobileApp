@@ -10,6 +10,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/services/api/tileClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -25,7 +26,8 @@ class TileClusterWidget extends StatefulWidget {
 class TileClusterWidgetState extends State<TileClusterWidget> {
   final TileClusterData tileClusterData = TileClusterData();
   final List<Contact> contacts = <Contact>[];
-  final List<NewTile> _newTiles = <NewTile>[];
+  final List<NewTile> _tileTemplates = <NewTile>[];
+  final TileClusterApi tileClusterApi = TileClusterApi();
   DateTime? _endTime;
   Duration? _duration;
   Function? onProceedResponse;
@@ -33,6 +35,7 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
   Widget clusterName() {
     var onClusterNameChange = (updatedValue) {
       tileClusterData.name = updatedValue;
+      updateProceed();
     };
     return TextInputWidget(
       onTextChange: onClusterNameChange,
@@ -40,10 +43,31 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
     );
   }
 
-  void _removeContact(NewTile newTile) {
+  Future proceedRequest() {
+    tileClusterData.contacts = contacts;
+    tileClusterData.tileTemplates = _tileTemplates;
+    tileClusterData.endTimeInMs = this._endTime?.millisecondsSinceEpoch;
+    tileClusterData.startTimeInMs = Utility.msCurrentTime;
+    return tileClusterApi.createCluster(tileClusterData);
+  }
+
+  void updateProceed() {
+    if (_tileTemplates.length > 0 &&
+        tileClusterData.name.isNot_NullEmptyOrWhiteSpace() &&
+        tileClusterData.name!.trim().isNot_NullEmptyOrWhiteSpace()) {
+      setState(() {
+        onProceedResponse = proceedRequest;
+      });
+      return;
+    }
     setState(() {
-      _newTiles.remove(newTile);
+      onProceedResponse = null;
     });
+  }
+
+  void _removeTIle(NewTile newTile) {
+    _tileTemplates.remove(newTile);
+    updateProceed();
   }
 
   Widget _buildNewTilePill(NewTile newTile) {
@@ -55,7 +79,7 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
         child: Text(newTile.Name ?? ""),
       ),
       deleteIcon: Icon(Icons.close),
-      onDeleted: () => _removeContact(newTile),
+      onDeleted: () => _removeTIle(newTile),
       backgroundColor: Colors.blueAccent.shade100,
       labelStyle: TextStyle(color: Colors.white),
     );
@@ -77,9 +101,9 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
                   newTile: currentTile,
                   onAddTile: (newTile) {
                     if (currentTile == null) {
-                      _newTiles.add(newTile);
+                      _tileTemplates.add(newTile);
                     }
-                    setState(() {});
+                    updateProceed();
                     Navigator.pop(context);
                   },
                   onCancel: () => {Navigator.pop(context)},
@@ -111,7 +135,7 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
             spacing: 8.0,
             runSpacing: 8.0,
             children: [
-              ..._newTiles
+              ..._tileTemplates
                   .map((newTile) => _buildNewTilePill(newTile))
                   .toList(),
             ],
@@ -135,7 +159,6 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
   onDurationChange(Duration? duration) {
     setState(() {
       _duration = duration;
-      Utility.debugPrint("duration val" + _duration.toString());
     });
   }
 
@@ -223,7 +246,13 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
   @override
   Widget build(BuildContext context) {
     Column response = Column(
-      children: [clusterName(), designatedTiles(), duration(), deadline()],
+      children: [
+        clusterName(),
+        designatedTiles(),
+        duration(),
+        deadline(),
+        addContacts()
+      ],
     );
     return CancelAndProceedTemplateWidget(
       child: response,
