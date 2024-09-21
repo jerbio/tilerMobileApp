@@ -32,7 +32,7 @@ class _ContactInputFieldState extends State<ContactInputField> {
       setState(() {
         final contactObj = Contact();
         if (emailRegex.hasMatch(contactVal)) {
-          contactObj.emailNumber = contactVal;
+          contactObj.email = contactVal;
         }
         if (phoneRegex.hasMatch(contactVal)) {
           contactObj.phoneNumber = contactVal;
@@ -97,7 +97,7 @@ class _ContactInputFieldState extends State<ContactInputField> {
 
   Widget _buildPill(Contact contact) {
     return Chip(
-      label: Text(contact.emailNumber ?? contact.phoneNumber ?? ""),
+      label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: Icon(Icons.close),
       onDeleted: () => _removeContact(contact),
       backgroundColor: Colors.blueAccent.shade100,

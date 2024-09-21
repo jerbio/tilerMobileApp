@@ -859,3 +859,9 @@ extension ColorExtension on Color {
     return hslColor.withLightness(lightness).toColor();
   }
 }
+
+extension StringExtension on String? {
+  bool isNot_NullEmptyOrWhiteSpace() {
+    return this != null && this!.isNotEmpty;
+  }
+}
