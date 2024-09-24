@@ -336,6 +336,33 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     ),
                   ),
                 ),
+                GestureDetector(
+                  onTap: () {
+                    AnalysticsSignal.send('DESIGNATED_TILE');
+                    Navigator.pop(context);
+                    Map<String, dynamic> newTileParams = {'newTile': null};
+
+                    Navigator.pushNamed(context, '/DesignatedTileList',
+                        arguments: newTileParams);
+                  },
+                  child: ListTile(
+                    leading: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    title: Container(
+                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+                      child: Text(
+                        "Designated tiles",
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),

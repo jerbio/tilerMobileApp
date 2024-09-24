@@ -7,6 +7,7 @@ import 'package:tiler_app/data/request/templateClusterModel.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 
 class TileClusterData {
+  String? id;
   String? name;
   List<Contact>? contacts;
   List<NewTile>? tileTemplates;

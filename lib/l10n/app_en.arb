@@ -371,5 +371,16 @@
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
-    "addContact": "Add contact"
+    "addContact": "Add contact",
+    "deadlineTime": "Deadline: {time}",
+    "@deadlineTime": {
+      "description": "Deadline: time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "Deadline: 12/25/24"
+        }
+      }},
+    "accept": "Accept",
+    "decline": "Decline"
   }
