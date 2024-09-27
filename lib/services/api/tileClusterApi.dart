@@ -44,9 +44,6 @@ class TileClusterApi extends AppApi {
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             return;
-            // var subEventJson = jsonResult['Content'];
-            // SubCalendarEvent subEvent = SubCalendarEvent.fromJson(subEventJson);
-            // return new Tuple2(subEvent, null);
           }
         }
         if (isTilerRequestError(jsonResult)) {
@@ -103,7 +100,8 @@ class TileClusterApi extends AppApi {
         message: 'Tiler disagrees with you, please try again later');
   }
 
-  Future updateDesignatedTile(DesignatedTile designatedTile) async {
+  Future<DesignatedTile?> statusUpdate(
+      String designatedTileId, InvitationStatus invitationStatus) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";
     bool userIsAuthenticated = true;
@@ -114,17 +112,22 @@ class TileClusterApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        final newCluster = {};
+        final updatedStatusCluster = {
+          "Id": designatedTileId,
+          "Status": invitationStatus.name.toString()
+        };
 
         Utility.debugPrint(
-            "newCluster Tilecluster api" + newCluster.toString());
-        Map<String, dynamic> injectedParameters =
-            await injectRequestParams(newCluster, includeLocationParams: false);
-        Utility.debugPrint(
-            "injectRequestParams Tilecluster api" + newCluster.toString());
-        Uri uri = Uri.https(url, 'api/Cluster');
+            "Designated tile update" + updatedStatusCluster.toString());
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
+            updatedStatusCluster,
+            includeLocationParams: false);
+        Utility.debugPrint("injectRequestParams Tilecluster api" +
+            updatedStatusCluster.toString());
+        Uri uri = Uri.https(url, 'api/DesignatedTile/status');
         var header = this.getHeaders();
-        Utility.debugPrint("headers Tilecluster api" + newCluster.toString());
+        Utility.debugPrint(
+            "headers Tilecluster api" + updatedStatusCluster.toString());
         if (header == null) {
           throw TilerError(message: 'Issues with authentication');
         }
@@ -135,10 +138,13 @@ class TileClusterApi extends AppApi {
         error.message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
-            return;
-            // var subEventJson = jsonResult['Content'];
-            // SubCalendarEvent subEvent = SubCalendarEvent.fromJson(subEventJson);
-            // return new Tuple2(subEvent, null);
+            var designatedTileJson = jsonResult['Content']['designatedTile'];
+            if (designatedTileJson != null) {
+              DesignatedTile designatedTile =
+                  DesignatedTile.fromJson(designatedTileJson);
+              return designatedTile;
+            }
+            return null;
           }
         }
         if (isTilerRequestError(jsonResult)) {

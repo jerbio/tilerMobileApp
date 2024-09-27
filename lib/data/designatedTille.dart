@@ -1,19 +1,26 @@
 import 'package:tiler_app/data/tileTemplate.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/tilerUserProfile.dart';
+import 'package:tiler_app/util.dart';
+
+enum InvitationStatus { accepted, declined, none }
 
 class DesignatedTile {
   String? id;
   String? name;
   int? startInMs;
   int? endInMs;
-  String? invitationStatus;
+  String? invitationStatus = InvitationStatus.none.toString();
   bool? isViable;
   String? displayedIdentifier;
   TileTemplate? tileTemplate;
   TilerUserProfile? user;
+  TilerEvent? tilerEvent;
 
   DesignatedTile.fromJson(Map<String, dynamic> json) {
     id = '';
+    Utility.debugPrint("DesignatedTile json");
+    Utility.debugPrint(json.toString());
     if (json.containsKey('id')) {
       id = json['id'];
     }
@@ -40,6 +47,10 @@ class DesignatedTile {
 
     if (json.containsKey('user') && json['user'] != null) {
       user = TilerUserProfile.fromJson(json['user']);
+    }
+
+    if (json.containsKey('tilerEvent') && json['tilerEvent'] != null) {
+      tilerEvent = TilerEvent.fromJson(json['tilerEvent']);
     }
   }
 
