@@ -410,10 +410,32 @@ class ScheduleApi extends AppApi {
   }
 
   Future reviseSchedule() async {
+    // return buzzSchedule();
     TilerError error = new TilerError();
     error.message = "Failed to revise schedule";
 
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      error.message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        return;
+      }
+      if (isTilerRequestError(jsonResult)) {
+        var errorJson = jsonResult['Error'];
+        error = TilerError.fromJson(errorJson);
+        throw error;
+      } else {
+        error.message = "Issues with reaching Tiler servers";
+        throw error;
+      }
+    });
+  }
+
+  Future buzzSchedule() async {
+    TilerError error = new TilerError();
+    error.message = "Failed to Buzz schedule";
+
+    return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
       error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {

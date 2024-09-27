@@ -65,14 +65,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
     localNotificationService.initialize(this.context);
 
-    accessManager.locationAccess(statusCheck: true).then((value) {
-      setState(() {
-        if (value != null) {
-          locationAccess = value;
-          return;
-        }
-      });
-    });
+    // accessManager.locationAccess(statusCheck: true).then((value) {
+    //   if (this.mounted) {
+    //     setState(() {
+    //       if (value != null) {
+    //         locationAccess = value;
+    //         return;
+    //       }
+    //     });
+    //   }
+    // });
   }
 
   void _onBottomNavigationTap(int index) {

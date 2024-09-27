@@ -382,5 +382,6 @@
         }
       }},
     "accept": "Accept",
-    "decline": "Decline"
+    "decline": "Decline",
+    "preview": "Preview"
   }
