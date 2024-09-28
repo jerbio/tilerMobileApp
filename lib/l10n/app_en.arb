@@ -383,5 +383,6 @@
       }},
     "accept": "Accept",
     "decline": "Decline",
-    "preview": "Preview"
+    "preview": "Preview",
+    "addTilette": "Add Tilette"
   }

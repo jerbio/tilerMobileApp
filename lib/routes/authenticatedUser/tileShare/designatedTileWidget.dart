@@ -4,6 +4,7 @@ import 'package:tiler_app/data/designatedTille.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileClusterApi.dart';
+import 'package:tiler_app/styles.dart';
 
 class DesignatedTileWidget extends StatefulWidget {
   final DesignatedTile designatedTile;
@@ -67,12 +68,16 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     setState(() {});
   }
 
+  final double lrPadding = 12;
   ButtonStyle generateButtonStyle(bool isSelected, Color defaultColor) {
-    ButtonStyle retValue =
-        ElevatedButton.styleFrom(foregroundColor: defaultColor);
+    ButtonStyle retValue = ElevatedButton.styleFrom(
+        padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+        foregroundColor: defaultColor);
     if (isSelected) {
       retValue = ElevatedButton.styleFrom(
-          backgroundColor: defaultColor, foregroundColor: Colors.white);
+          padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+          backgroundColor: defaultColor,
+          foregroundColor: Colors.white);
     }
     return retValue;
   }
@@ -113,9 +118,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                       style: generateButtonStyle(
                           this.designatedTile.invitationStatus ==
                               InvitationStatus.accepted.name.toString(),
-                          Colors.green)
-                      // ElevatedButton.styleFrom(foregroundColor: Colors.green),
-                      ),
+                          Colors.green)),
                   ElevatedButton.icon(
                       onPressed: _handleDecline,
                       icon: Icon(Icons.close),
@@ -123,16 +126,15 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                       style: generateButtonStyle(
                           this.designatedTile.invitationStatus ==
                               InvitationStatus.declined.name.toString(),
-                          Colors.red)
-                      // style:
-                      //     ElevatedButton.styleFrom(foregroundColor: Colors.red),
-                      ),
+                          TileStyles.primaryColor)),
                   ElevatedButton.icon(
                     onPressed: _handlePreview,
                     icon: Icon(Icons.remove_circle_outline),
                     label: Text(AppLocalizations.of(context)!.preview),
-                    style:
-                        ElevatedButton.styleFrom(foregroundColor: Colors.grey),
+                    style: ElevatedButton.styleFrom(
+                        padding:
+                            EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+                        foregroundColor: Colors.grey),
                   ),
                 ],
               ),
