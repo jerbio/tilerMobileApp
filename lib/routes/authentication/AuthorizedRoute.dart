@@ -84,8 +84,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       case 0:
         {
           AnalysticsSignal.send('SEARCH_PRESSED');
-          // Navigator.pushNamed(context, '/SearchTile');
-          Navigator.pushNamed(context, '/TileCluster');
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 1:

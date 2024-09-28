@@ -92,7 +92,7 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
       builder: (BuildContext context) {
         return Container(
           height: 300,
-          color: Colors.amber,
+          color: TileStyles.primaryContrastColor,
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -109,10 +109,6 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
                   },
                   onCancel: () => {Navigator.pop(context)},
                 ),
-                // ElevatedButton(
-                //   child: const Text('Close BottomSheet'),
-                //   onPressed: () => Navigator.pop(context),
-                // ),
               ],
             ),
           ),
@@ -127,11 +123,12 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
       child: Column(
         children: [
           ElevatedButton.icon(
+              style: TileStyles.enabledButtonStyle,
               onPressed: () {
                 renderModal();
               },
               icon: Icon(Icons.add),
-              label: Text(AppLocalizations.of(context)!.addTile)),
+              label: Text(AppLocalizations.of(context)!.addTilette)),
           Wrap(
             spacing: 8.0,
             runSpacing: 8.0,
