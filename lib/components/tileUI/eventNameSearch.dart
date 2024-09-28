@@ -646,7 +646,7 @@ class EventNameSearchState extends SearchWidgetState {
                     //   widthFactor: 0.825,
                     //   child: super.build(context),
                     // ),
-                    ContactInputField(),
+                    ContactInputFieldWidget(),
                     Align(
                       alignment: Alignment.topLeft,
                       child: Padding(
