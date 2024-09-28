@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/components/dateInput.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
 import 'package:tiler_app/components/textInputWidget.dart';
@@ -146,7 +147,7 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
   }
 
   Widget addContacts() {
-    return ContactInputField(
+    return ContactInputFieldWidget(
       onContactUpdate: (List<Contact> updatedContacts) {
         contacts.clear();
         for (var eachContact in updatedContacts) {
@@ -196,50 +197,17 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
   }
 
   Widget deadline() {
-    final Color textBackgroundColor = TileStyles.textBackgroundColor;
-    final Color textBorderColor = TileStyles.textBorderColor;
-    final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
-    String textButtonString = this._endTime == null
-        ? AppLocalizations.of(context)!.deadline_anytime
-        : DateFormat.yMMMd().format(this._endTime!);
-    Widget deadlineContainer = new GestureDetector(
-        onTap: this.onEndDateTap,
-        child: FractionallySizedBox(
-            widthFactor: TileStyles.widthRatio,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    border: Border.all(
-                      color: textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.calendar_month, color: inputFieldIconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: onEndDateTap,
-                          child: Text(
-                            textButtonString,
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                            ),
-                          ),
-                        ))
-                  ],
-                ))));
+    Widget deadlineContainer = DateInputWidget(
+      placeHolder: AppLocalizations.of(context)!.deadline_anytime,
+      time: this._endTime,
+      onDateChange: (DateTime? updatedTime) {
+        if (updatedTime != null) {
+          setState(() {
+            this._endTime = updatedTime;
+          });
+        }
+      },
+    );
     return deadlineContainer;
   }
 
@@ -248,10 +216,15 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
     Column response = Column(
       children: [
         clusterName(),
-        designatedTiles(),
         duration(),
         deadline(),
-        addContacts()
+        Divider(),
+        Container(
+          height: 200,
+          child: addContacts(),
+        ),
+        Divider(),
+        designatedTiles()
       ],
     );
     return CancelAndProceedTemplateWidget(

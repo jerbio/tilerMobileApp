@@ -32,13 +32,18 @@ class _TextInputWidgetState extends State<TextInputWidget> {
   @override
   Widget build(BuildContext context) {
     Widget tileNameContainer = Container(
-        // width: 380,
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        height: TileStyles.inputHeight,
+        decoration: BoxDecoration(
+          borderRadius: TileStyles.inputFieldBorderRadius,
+          boxShadow: [
+            TileStyles.inputFieldBoxShadow,
+          ],
+        ),
         child: TextField(
           controller: textFieldController,
           style: TextStyle(
             color: TileStyles.primaryColorDarkHSL.toColor(),
-            fontSize: 20,
+            fontSize: TileStyles.inputFontSize,
             fontFamily: TileStyles.rubikFontName,
           ),
           decoration: InputDecoration(

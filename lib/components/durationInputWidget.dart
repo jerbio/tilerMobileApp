@@ -61,17 +61,12 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            padding: TileStyles.inputFieldPadding,
+            height: TileStyles.inputHeight,
             decoration: BoxDecoration(
                 color: textBackgroundColor,
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                border: Border.all(
-                  color: textBorderColor,
-                  width: 1.5,
-                )),
+                borderRadius: TileStyles.inputFieldBorderRadius,
+                boxShadow: [TileStyles.inputFieldBoxShadow]),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -81,7 +76,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
                     child: TextButton(
                       style: TextButton.styleFrom(
                         textStyle: const TextStyle(
-                          fontSize: 20,
+                          fontSize: TileStyles.inputFontSize,
                         ),
                       ),
                       onPressed: setDuration,
