@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
-class ContactInputField extends StatefulWidget {
+class ContactInputFieldWidget extends StatefulWidget {
   final Function? onContactUpdate;
-  ContactInputField({this.onContactUpdate});
+  ContactInputFieldWidget({this.onContactUpdate});
   @override
-  _ContactInputFieldState createState() => _ContactInputFieldState();
+  _ContactInputFieldWidgetState createState() =>
+      _ContactInputFieldWidgetState();
 }
 
-class _ContactInputFieldState extends State<ContactInputField> {
+class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
   final phoneRegex = RegExp(r"^\+?[0-9]{7,15}$");
   final TextEditingController _controller = TextEditingController();
@@ -23,7 +27,6 @@ class _ContactInputFieldState extends State<ContactInputField> {
 
   bool _isValidContact(String input) {
     // Simple email and phone number validation
-
     return emailRegex.hasMatch(input) || phoneRegex.hasMatch(input);
   }
 
@@ -61,14 +64,17 @@ class _ContactInputFieldState extends State<ContactInputField> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
             spacing: 8.0,
+            alignment: WrapAlignment.start,
+            crossAxisAlignment: WrapCrossAlignment.start,
             runSpacing: 8.0,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
             children: [
-              _buildTextField(),
               ..._contacts.map((contact) => _buildPill(contact)).toList(),
+              _buildTextField(),
             ],
           ),
         ],
@@ -78,11 +84,22 @@ class _ContactInputFieldState extends State<ContactInputField> {
 
   Widget _buildTextField() {
     return Container(
-      width: 150, // You can adjust the width or make it responsive
+      // color: Colors.green,
+      alignment: Alignment.center,
+      width: (MediaQuery.of(context)
+          .size
+          .width), // You can adjust the width or make it responsive
+      height: TileStyles.inputHeight,
       child: TextField(
+        style: TileStyles.inputTextStyle,
         controller: _controller,
         decoration: InputDecoration(
-          border: OutlineInputBorder(),
+          // border: OutlineInputBorder(),
+          hintStyle: TextStyle(
+              fontSize: TileStyles.inputFontSize,
+              fontFamily: TileStyles.rubikFontName,
+              color: TileStyles.primaryColorDarkHSL.toColor(),
+              fontWeight: FontWeight.w100),
           hintText: AppLocalizations.of(context)!.addContact,
         ),
         onSubmitted: (value) {
@@ -97,10 +114,20 @@ class _ContactInputFieldState extends State<ContactInputField> {
 
   Widget _buildPill(Contact contact) {
     return Chip(
+      avatar: Icon(
+        (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
+            ? Icons.messenger_outline
+            : Icons.person_2_outlined),
+        color: TileStyles.primaryContrastColor,
+      ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: Icon(Icons.close),
+      deleteIcon: Icon(
+        Icons.close,
+        color: TileStyles.primaryContrastColor,
+      ),
+      side: BorderSide.none,
       onDeleted: () => _removeContact(contact),
-      backgroundColor: Colors.blueAccent.shade100,
+      backgroundColor: TileStyles.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
   }

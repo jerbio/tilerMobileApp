@@ -194,7 +194,7 @@ class TileStyles {
 
   static const TextStyle editTimeOrDateTimeStyle =
       TextStyle(fontSize: 18, color: const Color.fromRGBO(40, 40, 40, 1));
-  static Color textBackgroundColor = Color.fromRGBO(239, 48, 84, .05);
+  static Color textBackgroundColor = Colors.white;
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
@@ -270,4 +270,25 @@ class TileStyles {
       SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
       SizedBox(height: 150);
+
+  static BoxShadow inputFieldBoxShadow = BoxShadow(
+    color: Color.fromRGBO(168, 168, 168, 0.54),
+    spreadRadius: 2,
+    blurRadius: 50,
+    offset: Offset(0, 0),
+  );
+
+  static BorderRadius inputFieldBorderRadius = BorderRadius.only(
+      topLeft: Radius.circular(10),
+      topRight: Radius.circular(10),
+      bottomLeft: Radius.circular(10),
+      bottomRight: Radius.circular(10));
+  static const double inputHeight = 60;
+  static const double inputFontSize = 20;
+  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(10, 0, 10, 0);
+  static TextStyle inputTextStyle = TextStyle(
+    fontSize: TileStyles.inputFontSize,
+    fontFamily: TileStyles.rubikFontName,
+    color: TileStyles.primaryColorDarkHSL.toColor(),
+  );
 }

@@ -14,6 +14,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -406,34 +407,35 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
-      Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
-              blurRadius: 7,
-              offset: const Offset(0, 7),
-            ),
-          ],
-        ),
-        child: DayRibbonCarousel(
-          Utility.currentTime().dayDate,
-          autoUpdateAnchorDate: true,
-        ),
-      ),
+      // TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      TileClusterWidget(),
+      // Container(
+      //   margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+      //   decoration: BoxDecoration(
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.grey.withOpacity(0.08),
+      //         blurRadius: 7,
+      //         offset: const Offset(0, 7),
+      //       ),
+      //     ],
+      //   ),
+      //   child: DayRibbonCarousel(
+      //     Utility.currentTime().dayDate,
+      //     autoUpdateAnchorDate: true,
+      //   ),
+      // ),
     ];
-    if (isAddButtonClicked) {
-      widgetChildren.add(generatePredictiveAdd());
-    }
+    // if (isAddButtonClicked) {
+    //   widgetChildren.add(generatePredictiveAdd());
+    // }
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
       var eventNameSearch = this.generateSearchWidget();
-      widgetChildren.add(eventNameSearch);
+      // widgetChildren.add(eventNameSearch);
     } else {
       bottomNavigator = ClipRRect(
         borderRadius: BorderRadius.only(
