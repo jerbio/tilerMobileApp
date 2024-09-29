@@ -384,5 +384,8 @@
     "accept": "Accept",
     "decline": "Decline",
     "preview": "Preview",
-    "addTilette": "Add Tilette"
+    "addTilette": "Add Tilette",
+    "tileShareName": "Tile Share Name",
+    "tileShare": "Tile Share",
+    "update": "Update"
   }

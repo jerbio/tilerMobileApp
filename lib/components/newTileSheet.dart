@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
 import 'package:tiler_app/components/TextInputWidget.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class NewTileSheetWidget extends StatefulWidget {
   final Function? onAddTile;
@@ -15,10 +19,16 @@ class NewTileSheetWidget extends StatefulWidget {
 
 class NewTileSheetState extends State<NewTileSheetWidget> {
   late final NewTile newTile;
+  late List<Contact> contacts = [];
   @override
   void initState() {
     super.initState();
-    this.newTile = this.widget.newTile ?? NewTile();
+    this.newTile =
+        NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
+    if (this.newTile.contacts != null && this.newTile.contacts!.isNotEmpty) {
+      contacts =
+          this.newTile.contacts!.map<Contact>((e) => e.toContact()).toList();
+    }
   }
 
   Widget _renderOptionalFields() {
@@ -86,33 +96,78 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextInputWidget(
-          value: newTile.Name,
-          onTextChange: (value) {
-            newTile.Name = value;
-          },
+        Container(
+          decoration: BoxDecoration(
+            color: TileStyles.appBarColor,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+          ),
+          padding: EdgeInsets.all(16),
+          child: Text(
+            AppLocalizations.of(context)!.addTilette,
+            style: TextStyle(
+              color: TileStyles.appBarTextColor,
+              fontFamily: TileStyles.rubikFontName,
+              fontSize: TileStyles.inputFontSize,
+            ),
+          ),
+          alignment: Alignment.centerLeft,
         ),
-        DurationInputWidget(
-          duration: _getDuration(),
-          onDurationChange: onDurationChange,
+        const SizedBox.square(
+          dimension: 5,
+        ),
+        Padding(
+          padding: TileStyles.inpuPadding,
+          child: TextInputWidget(
+            placeHolder: AppLocalizations.of(context)!.tileName,
+            value: newTile.Name,
+            onTextChange: (value) {
+              setState(() {
+                newTile.Name = value;
+              });
+            },
+          ),
+        ),
+        const SizedBox.square(
+          dimension: 5,
+        ),
+        Padding(
+          padding: TileStyles.inpuPadding,
+          child: DurationInputWidget(
+            duration: _getDuration(),
+            onDurationChange: onDurationChange,
+          ),
         ),
         _renderOptionalFields(),
-        ElevatedButton.icon(
-            onPressed: () {
-              if (this.widget.onAddTile != null) {
-                this.widget.onAddTile!(newTile);
-              }
-            },
-            icon: Icon(Icons.check),
-            label: Text(AppLocalizations.of(context)!.complete)),
-        ElevatedButton.icon(
-            onPressed: () {
-              if (this.widget.onCancel != null) {
-                this.widget.onCancel!();
-              }
-            },
-            icon: Icon(Icons.cancel),
-            label: Text(AppLocalizations.of(context)!.cancel))
+        ContactInputFieldWidget(
+            contentHeight: this.contacts.isEmpty
+                ? 0
+                : this.contacts.length < 3
+                    ? 50
+                    : 100,
+            contacts: this.contacts,
+            onContactUpdate: (List<Contact> updatedContacts) {
+              setState(() {
+                this.contacts = updatedContacts;
+              });
+            }),
+        this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3)
+            ? ElevatedButton.icon(
+                onPressed: () {
+                  if (this.widget.onAddTile != null) {
+                    newTile.contacts =
+                        this.contacts.map((e) => e.toContactModel()).toList();
+                    this.widget.onAddTile!(newTile);
+                  }
+                },
+                style: TileStyles.enabledButtonStyle,
+                icon: Icon(Icons.check),
+                label: Text(this.widget.newTile == null
+                    ? AppLocalizations.of(context)!.add
+                    : AppLocalizations.of(context)!.update))
+            : SizedBox.shrink(),
       ],
     );
   }

@@ -6,8 +6,11 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class ContactInputFieldWidget extends StatefulWidget {
+  final List<Contact>? contacts;
   final Function? onContactUpdate;
-  ContactInputFieldWidget({this.onContactUpdate});
+  final double contentHeight;
+  ContactInputFieldWidget(
+      {this.onContactUpdate, this.contentHeight = 100, this.contacts});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -17,7 +20,15 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
   final phoneRegex = RegExp(r"^\+?[0-9]{7,15}$");
   final TextEditingController _controller = TextEditingController();
-  final List<Contact> _contacts = [];
+  late List<Contact> _contacts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    if (this.widget.contacts != null) {
+      this._contacts = this.widget.contacts!;
+    }
+  }
 
   @override
   void dispose() {
@@ -64,19 +75,26 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
-        // crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 8.0,
-            alignment: WrapAlignment.start,
-            crossAxisAlignment: WrapCrossAlignment.start,
-            runSpacing: 8.0,
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            children: [
-              ..._contacts.map((contact) => _buildPill(contact)).toList(),
-              _buildTextField(),
-            ],
+          Container(
+            height: this.widget.contentHeight,
+            child: ListView(
+              reverse: true,
+              children: [
+                Wrap(
+                  spacing: 8.0,
+                  alignment: WrapAlignment.start,
+                  crossAxisAlignment: WrapCrossAlignment.start,
+                  runSpacing: 8.0,
+                  clipBehavior: Clip.antiAliasWithSaveLayer,
+                  children: [
+                    ..._contacts.map((contact) => _buildPill(contact)).toList(),
+                  ],
+                ),
+              ],
+            ),
           ),
+          _buildTextField(),
         ],
       ),
     );
@@ -84,7 +102,6 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
 
   Widget _buildTextField() {
     return Container(
-      // color: Colors.green,
       alignment: Alignment.center,
       width: (MediaQuery.of(context)
           .size
@@ -94,14 +111,13 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         style: TileStyles.inputTextStyle,
         controller: _controller,
         decoration: InputDecoration(
-          // border: OutlineInputBorder(),
-          hintStyle: TextStyle(
-              fontSize: TileStyles.inputFontSize,
-              fontFamily: TileStyles.rubikFontName,
-              color: TileStyles.primaryColorDarkHSL.toColor(),
-              fontWeight: FontWeight.w100),
-          hintText: AppLocalizations.of(context)!.addContact,
-        ),
+            hintStyle: TextStyle(
+                fontSize: TileStyles.inputFontSize,
+                fontFamily: TileStyles.rubikFontName,
+                color: TileStyles.inputFieldTextColor,
+                fontWeight: FontWeight.w100),
+            hintText: AppLocalizations.of(context)!.addContact,
+            border: InputBorder.none),
         onSubmitted: (value) {
           _addContact(value);
         },

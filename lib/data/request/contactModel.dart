@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tiler_app/data/contact.dart';
 
 part 'contactModel.g.dart';
 
@@ -14,4 +15,13 @@ class ContactModel {
       _$ContactModelFromJson(json);
 
   Map<String, dynamic> toJson() => _$ContactModelToJson(this);
+
+  Contact toContact() {
+    var contact = Contact();
+    contact.email = this.Email;
+    contact.phoneNumber = this.PhoneNumber;
+    contact.firstName = this.FirstName;
+    contact.lastName = this.LastName;
+    return contact;
+  }
 }

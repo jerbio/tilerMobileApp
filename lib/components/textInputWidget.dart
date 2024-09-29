@@ -42,14 +42,15 @@ class _TextInputWidgetState extends State<TextInputWidget> {
         child: TextField(
           controller: textFieldController,
           style: TextStyle(
-            color: TileStyles.primaryColorDarkHSL.toColor(),
-            fontSize: TileStyles.inputFontSize,
-            fontFamily: TileStyles.rubikFontName,
-          ),
+              fontSize: TileStyles.inputFontSize,
+              fontFamily: TileStyles.rubikFontName,
+              color: TileStyles.inputFieldTextColor,
+              fontWeight: FontWeight.w400),
           decoration: InputDecoration(
             hintText: this.widget.placeHolder,
-            hintStyle:
-                TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
+            hintStyle: TextStyle(
+                color: TileStyles.inputFieldTextColor,
+                fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,
             contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
