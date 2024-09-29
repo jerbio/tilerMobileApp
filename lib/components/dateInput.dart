@@ -16,7 +16,7 @@ class DateInputWidget extends StatefulWidget {
 class _DateInputWidgetState extends State<DateInputWidget> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+  final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
   String textButtonString = "";
   DateTime? _time;
   @override
@@ -93,6 +93,10 @@ class _DateInputWidgetState extends State<DateInputWidget> {
                     child: Text(
                       textButtonString,
                       style: TextStyle(
+                        color: TileStyles.inputFieldTextColor,
+                        fontWeight: (this._time != null)
+                            ? TileStyles.inputFieldFontWeight
+                            : TileStyles.inputFieldHintFontWeight,
                         fontFamily: TileStyles.rubikFontName,
                       ),
                     ),

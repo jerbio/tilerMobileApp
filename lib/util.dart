@@ -861,7 +861,9 @@ extension ColorExtension on Color {
 }
 
 extension StringExtension on String? {
-  bool isNot_NullEmptyOrWhiteSpace() {
-    return this != null && this!.isNotEmpty;
+  bool isNot_NullEmptyOrWhiteSpace({int minLength = 0}) {
+    return this != null &&
+        this!.isNotEmpty &&
+        (minLength == 0 || this!.trim().length > minLength);
   }
 }

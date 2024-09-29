@@ -287,6 +287,11 @@ class TileStyles {
   static TextStyle inputTextStyle = TextStyle(
     fontSize: TileStyles.inputFontSize,
     fontFamily: TileStyles.rubikFontName,
-    color: TileStyles.primaryColorDarkHSL.toColor(),
+    color: TileStyles.inputFieldTextColor,
   );
+
+  static const EdgeInsets inpuPadding = const EdgeInsets.all(8.0);
+  static const Color inputFieldTextColor = Colors.black;
+  static const FontWeight inputFieldFontWeight = FontWeight.w400;
+  static const FontWeight inputFieldHintFontWeight = FontWeight.w100;
 }
