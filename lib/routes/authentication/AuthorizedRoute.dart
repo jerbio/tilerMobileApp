@@ -14,9 +14,6 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -85,15 +82,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
-          AnalysticsSignal.send('SEARCH_PRESSED');
-          Navigator.pushNamed(context, '/SearchTile');
+          // Navigator.pushNamed(context, '/AddTile');
+          AnalysticsSignal.send('TILE_SHARE_BUTTON');
+          Navigator.pushNamed(context, '/TileShare');
         }
         break;
       case 1:
         {
-          // Navigator.pushNamed(context, '/AddTile');
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
+          AnalysticsSignal.send('SEARCH_PRESSED');
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 2:
@@ -339,34 +336,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       ),
                     ),
                   ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    AnalysticsSignal.send('DESIGNATED_TILE');
-                    Navigator.pop(context);
-                    Map<String, dynamic> newTileParams = {'newTile': null};
-
-                    Navigator.pushNamed(context, '/DesignatedTileList',
-                        arguments: newTileParams);
-                  },
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        "Designated tiles",
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
+                )
               ],
             ),
           ),
@@ -408,27 +378,25 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      // TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
       // TileClusterWidget(),
       // DesignatedTileList(),
-      TileShareRoute()
-      // DesignatedTileList(),
-      // Container(
-      //   margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-      //   decoration: BoxDecoration(
-      //     boxShadow: [
-      //       BoxShadow(
-      //         color: Colors.grey.withOpacity(0.08),
-      //         blurRadius: 7,
-      //         offset: const Offset(0, 7),
-      //       ),
-      //     ],
-      //   ),
-      //   child: DayRibbonCarousel(
-      //     Utility.currentTime().dayDate,
-      //     autoUpdateAnchorDate: true,
-      //   ),
-      // ),
+      Container(
+        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.08),
+              blurRadius: 7,
+              offset: const Offset(0, 7),
+            ),
+          ],
+        ),
+        child: DayRibbonCarousel(
+          Utility.currentTime().dayDate,
+          autoUpdateAnchorDate: true,
+        ),
+      ),
     ];
     // if (isAddButtonClicked) {
     //   widgetChildren.add(generatePredictiveAdd());
@@ -459,19 +427,17 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.search,
-                    color: TileStyles.primaryColorDarkHSL.toColor()),
-                label: '',
-              ),
-              BottomNavigationBarItem(
                   icon: Icon(
-                    Icons.add,
-                    color: Color.fromRGBO(0, 0, 0, 0),
+                    Icons.share,
+                    color: TileStyles.primaryColor,
                   ),
                   label: ''),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings,
-                      color: TileStyles.primaryColorDarkHSL.toColor()),
+                icon: Icon(Icons.search, color: TileStyles.primaryColor),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
                   label: ''),
             ],
             unselectedItemColor: Colors.white,
@@ -497,21 +463,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: isAddButtonClicked
-          ? null
-          : FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: () {
-                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-                displayDialog(MediaQuery.of(context).size);
-              },
-              child: Icon(
-                Icons.add,
-                size: 35,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
-              ),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TileStyles.primaryContrastColor,
+        onPressed: () {
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+          displayDialog(MediaQuery.of(context).size);
+        },
+        child: Icon(
+          Icons.add,
+          size: 35,
+          color: TileStyles.primaryColor,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
