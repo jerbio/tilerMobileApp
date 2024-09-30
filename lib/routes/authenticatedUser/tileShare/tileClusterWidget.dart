@@ -232,26 +232,26 @@ class TileClusterWidgetState extends State<TileClusterWidget> {
           ],
         ));
     return CancelAndProceedTemplateWidget(
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: TileStyles.appBarColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.share,
-              color: TileStyles.appBarTextColor,
-            ),
-            SizedBox.square(
-              dimension: 5,
-            ),
-            Text(
-              AppLocalizations.of(context)!.tileShare,
-              style: TileStyles.titleBarStyle,
-            )
-          ],
-        ),
-      ),
+      // appBar: AppBar(
+      //   centerTitle: true,
+      //   backgroundColor: TileStyles.appBarColor,
+      //   title: Row(
+      //     mainAxisAlignment: MainAxisAlignment.center,
+      //     children: [
+      //       Icon(
+      //         Icons.share,
+      //         color: TileStyles.appBarTextColor,
+      //       ),
+      //       SizedBox.square(
+      //         dimension: 5,
+      //       ),
+      //       Text(
+      //         AppLocalizations.of(context)!.tileShare,
+      //         style: TileStyles.titleBarStyle,
+      //       )
+      //     ],
+      //   ),
+      // ),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
     );
