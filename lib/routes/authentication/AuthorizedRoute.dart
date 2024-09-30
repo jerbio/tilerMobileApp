@@ -379,8 +379,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
-      // TileClusterWidget(),
-      // DesignatedTileList(),
       Container(
         margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
         decoration: BoxDecoration(
@@ -398,16 +396,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
     ];
-    // if (isAddButtonClicked) {
-    //   widgetChildren.add(generatePredictiveAdd());
-    // }
+    if (isAddButtonClicked) {
+      widgetChildren.add(generatePredictiveAdd());
+    }
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
       var eventNameSearch = this.generateSearchWidget();
-      // widgetChildren.add(eventNameSearch);
+      widgetChildren.add(eventNameSearch);
     } else {
       bottomNavigator = ClipRRect(
         borderRadius: BorderRadius.only(
