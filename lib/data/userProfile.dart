@@ -1,4 +1,4 @@
-class TilerUserProfile {
+class UserProfile {
   String? id;
   String? username;
   int? timezoneDiff;
@@ -7,7 +7,7 @@ class TilerUserProfile {
   String? endOfDay;
   String? fullName;
 
-  TilerUserProfile.fromJson(Map<String, dynamic> json) {
+  UserProfile.fromJson(Map<String, dynamic> json) {
     id = '';
     if (json.containsKey('id')) {
       id = json['id'];

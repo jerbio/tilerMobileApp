@@ -1,5 +1,5 @@
 import 'package:http/http.dart' as http;
-import 'package:tiler_app/data/designatedTille.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileClusterData.dart';
@@ -58,7 +58,8 @@ class TileClusterApi extends AppApi {
     throw error;
   }
 
-  Future<List<DesignatedTile>> getDesignatedTiles() async {
+  Future<List<DesignatedTile>> getDesignatedTiles(
+      {int index = 0, int pageSize = 50}) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
@@ -67,7 +68,9 @@ class TileClusterApi extends AppApi {
         String? username = '';
         final queryParameters = {
           'UserName': username,
-          'MobileApp': true.toString()
+          'MobileApp': true.toString(),
+          'PageSize': pageSize.toString(),
+          'Index': index.toString()
         };
         Uri uri =
             Uri.https(url, 'api/DesignatedTile/designated', queryParameters);
