@@ -387,5 +387,6 @@
     "addTilette": "Add Tilette",
     "tileShareName": "Tile Share Name",
     "tileShare": "Tile Share",
-    "update": "Update"
+    "update": "Update",
+    "noDesignatedTiles": "No designated tiles"
   }

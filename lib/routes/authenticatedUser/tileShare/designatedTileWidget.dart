@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/data/designatedTille.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileClusterApi.dart';
@@ -82,67 +82,105 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     return retValue;
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      margin: EdgeInsets.all(10),
-      child: Padding(
-        padding: EdgeInsets.all(20),
+  Widget renderButtons() {
+    if (_isLoading)
+      return CircularProgressIndicator();
+    else
+      return Container(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Text(
-              designatedTile.name ?? "",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            designatedTile.endTime != null
-                ? Text(
-                    AppLocalizations.of(context)!.deadlineTime(
-                        DateFormat('d MMM').format(designatedTile.endTime!)),
-                    style: TextStyle(fontSize: 16),
-                  )
-                : SizedBox.shrink(),
-            SizedBox(height: 20),
-            if (_isLoading)
-              CircularProgressIndicator()
-            else
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ElevatedButton.icon(
-                      onPressed: _handleAccept,
-                      icon: Icon(Icons.check),
-                      label: Text(AppLocalizations.of(context)!.accept),
-                      style: generateButtonStyle(
-                          this.designatedTile.invitationStatus ==
-                              InvitationStatus.accepted.name.toString(),
-                          Colors.green)),
-                  ElevatedButton.icon(
-                      onPressed: _handleDecline,
-                      icon: Icon(Icons.close),
-                      label: Text(AppLocalizations.of(context)!.decline),
-                      style: generateButtonStyle(
-                          this.designatedTile.invitationStatus ==
-                              InvitationStatus.declined.name.toString(),
-                          TileStyles.primaryColor)),
-                  ElevatedButton.icon(
-                    onPressed: _handlePreview,
-                    icon: Icon(Icons.remove_circle_outline),
-                    label: Text(AppLocalizations.of(context)!.preview),
-                    style: ElevatedButton.styleFrom(
-                        padding:
-                            EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
-                        foregroundColor: Colors.grey),
-                  ),
-                ],
-              ),
-            SizedBox(height: 10),
+            ElevatedButton.icon(
+                onPressed: _handleAccept,
+                icon: Icon(Icons.check),
+                label: Text(AppLocalizations.of(context)!.accept),
+                style: generateButtonStyle(
+                    this.designatedTile.invitationStatus ==
+                        InvitationStatus.accepted.name.toString(),
+                    Colors.green)),
+            ElevatedButton.icon(
+                onPressed: _handleDecline,
+                icon: Icon(Icons.close),
+                label: Text(AppLocalizations.of(context)!.decline),
+                style: generateButtonStyle(
+                    this.designatedTile.invitationStatus ==
+                        InvitationStatus.declined.name.toString(),
+                    TileStyles.primaryColor)),
+            // ElevatedButton.icon(
+            //   onPressed: _handlePreview,
+            //   icon: Icon(Icons.remove_circle_outline),
+            //   label: Text(AppLocalizations.of(context)!.preview),
+            //   style: ElevatedButton.styleFrom(
+            //       padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+            //       foregroundColor: Colors.grey),
+            // ),
+          ],
+        ),
+      );
+  }
+
+  Widget designatedTileDetails() {
+    const supplementalTextStyle =
+        TextStyle(fontSize: 12, fontFamily: TileStyles.rubikFontName);
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            designatedTile.name ?? "",
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                fontFamily: TileStyles.rubikFontName),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          SizedBox(height: 10),
+          designatedTile.endTime != null
+              ? Text(
+                  AppLocalizations.of(context)!.deadlineTime(
+                      DateFormat('d MMM').format(designatedTile.endTime!)),
+                  style: supplementalTextStyle,
+                )
+              : SizedBox.shrink(),
+          SizedBox(height: 10),
+          designatedTile.clusterOwner?.username != null
+              ? Text(designatedTile.clusterOwner!.username!,
+                  style: supplementalTextStyle)
+              : designatedTile.clusterOwner?.email != null
+                  ? Text(designatedTile.clusterOwner!.email!)
+                  : SizedBox.shrink(),
+          SizedBox(height: 10),
+          if (_responseMessage.isEmpty)
+            SizedBox.shrink()
+          else
             Text(
               _responseMessage,
               style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
             )
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.white,
+      elevation: 5,
+      margin: EdgeInsets.all(10),
+      child: Padding(
+        padding: EdgeInsets.all(15),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            designatedTileDetails(),
+            SizedBox.square(
+              dimension: 8,
+            ),
+            renderButtons()
           ],
         ),
       ),

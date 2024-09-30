@@ -29,6 +29,7 @@ import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRou
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -187,6 +188,7 @@ class _TilerAppState extends State<TilerApp> {
             '/OnBoarding': (ctx) => OnboardingView(),
             '/TileCluster': (ctx) => TileClusterWidget(),
             '/DesignatedTileList': (ctx) => DesignatedTileList(),
+            '/TileShare': (ctx) => TileShareRoute(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,
