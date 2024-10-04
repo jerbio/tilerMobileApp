@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/services/api/tileClusterApi.dart';
+import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 
 class DesignatedTileWidget extends StatefulWidget {
@@ -16,7 +16,7 @@ class DesignatedTileWidget extends StatefulWidget {
 
 class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isLoading = false;
-  final TileClusterApi tileClusterApi = TileClusterApi();
+  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
   final ScheduleApi scheduleApi = ScheduleApi();
   String _responseMessage = '';
   late DesignatedTile designatedTile;
@@ -146,7 +146,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
               : SizedBox.shrink(),
           SizedBox(height: 10),
           designatedTile.clusterOwner?.username != null
-              ? Text(designatedTile.clusterOwner!.username!,
+              ? Text("@${designatedTile.clusterOwner!.username!}",
                   style: supplementalTextStyle)
               : designatedTile.clusterOwner?.email != null
                   ? Text(designatedTile.clusterOwner!.email!)

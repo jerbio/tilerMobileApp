@@ -242,8 +242,8 @@ class TileBatchState extends State<TileBatch> {
         );
       }
       dayContent = Container(
-        height: MediaQuery.of(context).size.height - daySummaryToHeightBuffer,
-        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
+        width: MediaQuery.sizeOf(context).width,
         child: ListView(
           children: [
             animatedList!,

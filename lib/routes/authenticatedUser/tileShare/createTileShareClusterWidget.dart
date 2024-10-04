@@ -6,27 +6,30 @@ import 'package:tiler_app/components/textInputWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
-import 'package:tiler_app/data/tileClusterData.dart';
+import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/api/tileClusterApi.dart';
+import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class TileClusterWidget extends StatefulWidget {
+class CreateTileShareClusterWidget extends StatefulWidget {
   final Function? onAddTileCluster;
   final Function? onAddingATileCluster;
   static final String routeName = '/TileCluster';
-  TileClusterWidget({this.onAddTileCluster, this.onAddingATileCluster});
+  CreateTileShareClusterWidget(
+      {this.onAddTileCluster, this.onAddingATileCluster});
   @override
-  TileClusterWidgetState createState() => TileClusterWidgetState();
+  _CreateTileShareClusterWidgetState createState() =>
+      _CreateTileShareClusterWidgetState();
 }
 
-class TileClusterWidgetState extends State<TileClusterWidget> {
-  final TileClusterData tileClusterData = TileClusterData();
+class _CreateTileShareClusterWidgetState
+    extends State<CreateTileShareClusterWidget> {
+  final TileShareClusterData tileClusterData = TileShareClusterData();
   List<Contact> contacts = <Contact>[];
   final List<NewTile> _tileTemplates = <NewTile>[];
-  final TileClusterApi tileClusterApi = TileClusterApi();
+  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
   DateTime? _endTime;
   Duration? _duration;
   Function? onProceedResponse;

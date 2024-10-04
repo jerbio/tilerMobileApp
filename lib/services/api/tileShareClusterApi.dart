@@ -1,15 +1,18 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/data/tileClusterData.dart';
+import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
 
-class TileClusterApi extends AppApi {
-  Future createCluster(TileClusterData tileCluster) async {
+class TileShareClusterApi extends AppApi {
+  Future createCluster(TileShareClusterData tileCluster) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";
     bool userIsAuthenticated = true;
@@ -30,7 +33,7 @@ class TileClusterApi extends AppApi {
             await injectRequestParams(newCluster, includeLocationParams: false);
         Utility.debugPrint(
             "injectRequestParams Tilecluster api" + newCluster.toString());
-        Uri uri = Uri.https(url, 'api/Cluster');
+        Uri uri = Uri.https(url, 'api/TileShareCluster');
         var header = this.getHeaders();
         Utility.debugPrint("headers Tilecluster api" + newCluster.toString());
         if (header == null) {
@@ -59,7 +62,7 @@ class TileClusterApi extends AppApi {
   }
 
   Future<List<DesignatedTile>> getDesignatedTiles(
-      {int index = 0, int pageSize = 50}) async {
+      {int index = 0, int pageSize = 50, String? clusterId}) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
@@ -72,6 +75,9 @@ class TileClusterApi extends AppApi {
           'PageSize': pageSize.toString(),
           'Index': index.toString()
         };
+        if (clusterId.isNot_NullEmptyOrWhiteSpace()) {
+          queryParameters["ClusterId"] = clusterId!;
+        }
         Uri uri =
             Uri.https(url, 'api/DesignatedTile/designated', queryParameters);
 
@@ -92,6 +98,65 @@ class TileClusterApi extends AppApi {
                   .map<DesignatedTile>((e) => DesignatedTile.fromJson(e))
                   .toList();
               return designatedTiles;
+            }
+          }
+        }
+        throw TilerError(
+            message: 'Tiler disagrees with you, please try again later');
+      }
+    }
+    throw TilerError(
+        message: 'Tiler disagrees with you, please try again later');
+  }
+
+  Future<List<TileShareClusterData>> getTileShareClusters(
+      {int index = 0, int pageSize = 50, String? clusterId}) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = '';
+        final queryParameters = {
+          'UserName': username,
+          'MobileApp': true.toString(),
+          'PageSize': pageSize.toString(),
+          'Index': index.toString()
+        };
+        if (clusterId.isNot_NullEmptyOrWhiteSpace()) {
+          queryParameters["ClusterId"] = clusterId!;
+        }
+        Uri uri = Uri.https(url, 'api/TileShareCluster', queryParameters);
+
+        var header = this.getHeaders();
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+
+        Response response = await http.get(uri, headers: header);
+        HandleHttpStatusFailure(response);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            if (clusterId.isNot_NullEmptyOrWhiteSpace()) {
+              String clusterKey = 'cluster';
+              if (jsonResult['Content'].containsKey(clusterKey)) {
+                TileShareClusterData designatedTilesJson =
+                    TileShareClusterData.fromJson(
+                        jsonResult['Content'][clusterKey]);
+                return <TileShareClusterData>[designatedTilesJson];
+              }
+            } else {
+              String clusterKey = 'clusters';
+              if (jsonResult['Content'].containsKey(clusterKey)) {
+                List designatedTilesJson = jsonResult['Content'][clusterKey];
+                List<TileShareClusterData> designatedTiles = designatedTilesJson
+                    .where((element) => element != null)
+                    .map<TileShareClusterData>(
+                        (e) => TileShareClusterData.fromJson(e))
+                    .toList();
+                return designatedTiles;
+              }
             }
           }
         }

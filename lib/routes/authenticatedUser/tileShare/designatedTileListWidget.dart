@@ -1,29 +1,35 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileWidget.dart';
-import 'package:tiler_app/services/api/tileClusterApi.dart';
+import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 
 class DesignatedTileList extends StatefulWidget {
   static final String routeName = '/DesignatedTileList';
+  final List<DesignatedTile>? designatedTiles;
+  DesignatedTileList({this.designatedTiles});
   @override
   State<StatefulWidget> createState() => _DesignatedTileListState();
 }
 
 class _DesignatedTileListState extends State<DesignatedTileList> {
-  TileClusterApi tileClusterApi = TileClusterApi();
+  TileShareClusterApi tileClusterApi = TileShareClusterApi();
   List<DesignatedTile> designatedTiles = [];
-  ScrollController _scrollController = new ScrollController();
+  ScrollController? _scrollController;
   int index = 0;
-  final int pageSize = 6;
+  final int pageSize = 5;
   bool hasMore = true;
   bool isLoading = false;
   @override
   void initState() {
     super.initState();
-    getTiles();
-    _scrollController.addListener(handleScrollToEnd);
+    if (this.widget.designatedTiles == null) {
+      _scrollController = new ScrollController();
+      getTiles();
+      _scrollController!.addListener(handleScrollToEnd);
+    } else {
+      designatedTiles = this.widget.designatedTiles!;
+    }
   }
 
   void getTiles() {
@@ -42,11 +48,13 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
   }
 
   void handleScrollToEnd() {
-    while (_scrollController.offset >=
-            _scrollController.position.maxScrollExtent &&
-        !isLoading) {
-      if (!isLoading) {
-        getTiles();
+    if (_scrollController == null) {
+      while (_scrollController!.offset >=
+              _scrollController!.position.maxScrollExtent &&
+          !isLoading) {
+        if (!isLoading) {
+          getTiles();
+        }
       }
     }
   }
