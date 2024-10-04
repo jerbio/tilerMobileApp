@@ -176,7 +176,7 @@ class TileStyles {
   );
 
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
-  static Color appBarTextColor = Colors.white;
+  static const Color appBarTextColor = Colors.white;
   static Color nonViableBackgroundColor = Color.fromRGBO(150, 150, 150, 1);
 
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
@@ -190,8 +190,14 @@ class TileStyles {
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
 
-  static const TextStyle editTimeOrDateTimeStyle =
-      TextStyle(fontSize: 18, color: const Color.fromRGBO(40, 40, 40, 1));
+  static const TextStyle editTimeOrDateTimeStyle = TextStyle(
+      fontSize: 18,
+      fontFamily: rubikFontName,
+      color: const Color.fromRGBO(40, 40, 40, 1));
+  static const TextStyle defaultTextStyle = TextStyle(
+      fontSize: 18,
+      fontFamily: rubikFontName,
+      color: const Color.fromRGBO(40, 40, 40, 1));
   static Color textBackgroundColor = Colors.white;
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);

@@ -388,5 +388,8 @@
     "tileShareName": "Tile Share Name",
     "tileShare": "Tile Share",
     "update": "Update",
-    "noDesignatedTiles": "No designated tiles"
+    "noDesignatedTiles": "No designated tiles",
+    "errorLoadingTilelist": "Error loading tilelist",
+    "failedToLoadTileShareCluster": "Failed to load tile share cluster",
+    "missingTileShareCluster": "Missing TileShare cluster"
   }

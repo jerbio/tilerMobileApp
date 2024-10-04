@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
@@ -114,17 +114,15 @@ class _TileShareListState extends State<TileShareList> {
         itemCount: toBeRenderedElementCount,
         itemBuilder: (context, index) {
           if (index < tileShareClusters.length) {
-            return GestureDetector(
+            return InkWell(
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => CancelAndProceedTemplateWidget(
-                              child: TileShareDetailWidget.byId(
-                                  tileShareClusters[index].id!),
-                            )));
+                        builder: (context) => TileShareDetailWidget.byId(
+                            tileShareClusters[index].id!)));
               },
-              child: TileShareWidget(
+              child: TileShareSimpleWidget(
                 tileShareCluster: tileShareClusters[index],
               ),
             );
