@@ -106,14 +106,6 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                     this.designatedTile.invitationStatus ==
                         InvitationStatus.declined.name.toString(),
                     TileStyles.primaryColor)),
-            // ElevatedButton.icon(
-            //   onPressed: _handlePreview,
-            //   icon: Icon(Icons.remove_circle_outline),
-            //   label: Text(AppLocalizations.of(context)!.preview),
-            //   style: ElevatedButton.styleFrom(
-            //       padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
-            //       foregroundColor: Colors.grey),
-            // ),
           ],
         ),
       );
@@ -157,7 +149,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
           else
             Text(
               _responseMessage,
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: TileStyles.rubikFontName),
             )
         ],
       ),
