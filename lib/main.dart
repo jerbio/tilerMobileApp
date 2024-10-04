@@ -28,7 +28,7 @@ import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
@@ -186,7 +186,7 @@ class _TilerAppState extends State<TilerApp> {
             '/Setting': (ctx) => Setting(),
             '/Integrations': (ctx) => IntegrationWidgetRoute(),
             '/OnBoarding': (ctx) => OnboardingView(),
-            '/TileCluster': (ctx) => TileClusterWidget(),
+            '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
             '/DesignatedTileList': (ctx) => DesignatedTileList(),
             '/TileShare': (ctx) => TileShareRoute(),
           },

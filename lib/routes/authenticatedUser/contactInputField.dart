@@ -17,8 +17,6 @@ class ContactInputFieldWidget extends StatefulWidget {
 }
 
 class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
-  final emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-  final phoneRegex = RegExp(r"^\+?[0-9]{7,15}$");
   final TextEditingController _controller = TextEditingController();
   late List<Contact> _contacts = [];
 
@@ -38,17 +36,17 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
 
   bool _isValidContact(String input) {
     // Simple email and phone number validation
-    return emailRegex.hasMatch(input) || phoneRegex.hasMatch(input);
+    return Utility.isEmail(input) || Utility.isPhoneNumber(input);
   }
 
   void _addContact(String contactVal) {
     if (_isValidContact(contactVal)) {
       setState(() {
         final contactObj = Contact();
-        if (emailRegex.hasMatch(contactVal)) {
+        if (Utility.isEmail(contactVal)) {
           contactObj.email = contactVal;
         }
-        if (phoneRegex.hasMatch(contactVal)) {
+        if (Utility.isPhoneNumber(contactVal)) {
           contactObj.phoneNumber = contactVal;
         }
         _contacts.add(contactObj);

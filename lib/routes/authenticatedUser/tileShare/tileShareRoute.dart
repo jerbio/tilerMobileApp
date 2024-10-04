@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareList.dart';
 import 'package:tiler_app/styles.dart';
 
 class TileShareRoute extends StatefulWidget {
@@ -46,16 +47,14 @@ class _TileShareState extends State<TileShareRoute> {
               Tab(
                   icon:
                       Icon(Icons.list, color: TileStyles.primaryContrastColor)),
-              // Tab(icon: Icon(Icons.directions_bike)),
             ],
           ),
-          // title: Text(AppLocalizations.of(context)!.tileShare),
         ),
         body: TabBarView(
           children: [
-            TileClusterWidget(),
-            DesignatedTileList(),
-            // Icon(Icons.directions_bike),
+            CreateTileShareClusterWidget(),
+            TileShareList()
+            // DesignatedTileList(),
           ],
         ),
       ),

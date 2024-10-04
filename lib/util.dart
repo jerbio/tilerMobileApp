@@ -188,6 +188,22 @@ class Utility {
         Utility.currentTime().add(Duration(days: -3)), Duration(days: 7));
   }
 
+  static final _emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+  static final _phoneRegex = RegExp(r"^\+?[0-9]{7,15}$");
+  static bool isEmail(String? emailString) {
+    if (emailString != null) {
+      return _emailRegex.hasMatch(emailString);
+    }
+    return false;
+  }
+
+  static bool isPhoneNumber(String? phoneNumber) {
+    if (phoneNumber != null) {
+      return _phoneRegex.hasMatch(phoneNumber);
+    }
+    return false;
+  }
+
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {

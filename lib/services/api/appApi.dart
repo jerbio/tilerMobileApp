@@ -197,4 +197,18 @@ abstract class AppApi {
           headers: header, body: jsonEncode(analyzeParameters));
     }
   }
+
+  void HandleHttpStatusFailure(Response response,
+      {String? serviceName, String? message}) {
+    if (response.statusCode != HttpStatus.ok) {
+      switch (response.statusCode) {
+        case HttpStatus.notFound:
+          throw TilerError(
+              message: serviceName ?? '' + (message ?? ' Not Found'));
+
+        default:
+          throw TilerError(message: serviceName ?? '' + ' Is Having issues');
+      }
+    }
+  }
 }

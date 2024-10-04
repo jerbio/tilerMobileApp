@@ -3,11 +3,11 @@ import 'package:tiler_app/data/request/addressModel.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
 
-part 'templateClusterModel.g.dart';
+part 'tileShareClusterModel.g.dart';
 
 @JsonSerializable(explicitToJson: true)
-class TemplateClusterModel {
-  TemplateClusterModel();
+class TileShareClusterModel {
+  TileShareClusterModel();
   String? Name;
   int? StartTime;
   int? EndTime;
@@ -18,8 +18,8 @@ class TemplateClusterModel {
   String? Notes;
   List<ClusterTemplateTileModel>? ClusterTemplateTileModels;
 
-  factory TemplateClusterModel.fromJson(Map<String, dynamic> json) =>
-      _$TemplateClusterModelFromJson(json);
+  factory TileShareClusterModel.fromJson(Map<String, dynamic> json) =>
+      _$TileShareClusterModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$TemplateClusterModelToJson(this);
+  Map<String, dynamic> toJson() => _$TileShareClusterModelToJson(this);
 }

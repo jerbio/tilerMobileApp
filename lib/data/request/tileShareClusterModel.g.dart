@@ -1,14 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'templateClusterModel.dart';
+part of 'tileShareClusterModel.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-TemplateClusterModel _$TemplateClusterModelFromJson(
+TileShareClusterModel _$TileShareClusterModelFromJson(
         Map<String, dynamic> json) =>
-    TemplateClusterModel()
+    TileShareClusterModel()
       ..Name = json['Name'] as String?
       ..StartTime = (json['StartTime'] as num?)?.toInt()
       ..EndTime = (json['EndTime'] as num?)?.toInt()
@@ -27,8 +27,8 @@ TemplateClusterModel _$TemplateClusterModelFromJson(
                   ClusterTemplateTileModel.fromJson(e as Map<String, dynamic>))
               .toList();
 
-Map<String, dynamic> _$TemplateClusterModelToJson(
-        TemplateClusterModel instance) =>
+Map<String, dynamic> _$TileShareClusterModelToJson(
+        TileShareClusterModel instance) =>
     <String, dynamic>{
       'Name': instance.Name,
       'StartTime': instance.StartTime,
