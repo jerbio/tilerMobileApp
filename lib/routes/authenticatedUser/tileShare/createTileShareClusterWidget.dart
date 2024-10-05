@@ -169,10 +169,6 @@ class _CreateTileShareClusterWidgetState
                   ? 50
                   : 100,
           onContactUpdate: (List<Contact> updatedContacts) {
-            // contacts.clear();
-            // for (var eachContact in updatedContacts) {
-            //   contacts.add(eachContact);
-            // }
             setState(() {
               this.contacts = updatedContacts;
             });
@@ -235,28 +231,54 @@ class _CreateTileShareClusterWidgetState
           ],
         ));
     return CancelAndProceedTemplateWidget(
-      // appBar: AppBar(
-      //   centerTitle: true,
-      //   backgroundColor: TileStyles.appBarColor,
-      //   title: Row(
-      //     mainAxisAlignment: MainAxisAlignment.center,
-      //     children: [
-      //       Icon(
-      //         Icons.share,
-      //         color: TileStyles.appBarTextColor,
-      //       ),
-      //       SizedBox.square(
-      //         dimension: 5,
-      //       ),
-      //       Text(
-      //         AppLocalizations.of(context)!.tileShare,
-      //         style: TileStyles.titleBarStyle,
-      //       )
-      //     ],
-      //   ),
-      // ),
+      appBar: AppBar(
+        centerTitle: true,
+        leading: TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Icon(
+            Icons.close,
+            color: TileStyles.appBarTextColor,
+          ),
+        ),
+        actions: [
+          if (onProceedResponse != null)
+            ElevatedButton.icon(
+                style: TileStyles.enabledButtonStyle,
+                onPressed: () {
+                  if (onProceedResponse != null) {
+                    onProceedResponse!();
+                  }
+                  Navigator.of(context).pop(false);
+                },
+                icon: Icon(
+                  Icons.save,
+                  color: TileStyles.primaryContrastColor,
+                ),
+                label: SizedBox.shrink())
+          else
+            SizedBox.shrink()
+        ],
+        backgroundColor: TileStyles.appBarColor,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.share,
+              color: TileStyles.appBarTextColor,
+            ),
+            SizedBox.square(
+              dimension: 5,
+            ),
+            Text(
+              AppLocalizations.of(context)!.tileShare,
+              style: TileStyles.titleBarStyle,
+            )
+          ],
+        ),
+      ),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
+      hideButtons: true,
     );
   }
 }

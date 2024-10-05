@@ -175,7 +175,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             SizedBox.square(
               dimension: 8,
             ),
-            renderButtons()
+            if (this.designatedTile.isTilable == false)
+              SizedBox.shrink()
+            else
+              renderButtons()
           ],
         ),
       ),

@@ -5,7 +5,6 @@ import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
@@ -204,6 +203,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
 
   @override
   Widget build(BuildContext context) {
+    const double heightOfTileClusterDetails = 310;
     Widget? widgetContent = SizedBox.shrink();
     if (this.tilerError != null) {
       widgetContent = Center(child: renderError());
@@ -212,29 +212,31 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
         child: renderLoading(),
       );
     } else {
-      widgetContent = Container(
-        height: 500,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            renderTileShareCluster(),
-            Divider(),
-            if (this.isTileListLoading == true)
-              CircularProgressIndicator()
-            else
-              Padding(
-                padding: EdgeInsets.all(15),
-                child: SizedBox(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: 300.0,
-                  child: DesignatedTileList(
-                    designatedTiles:
-                        this.designatedTileList ?? <DesignatedTile>[],
-                  ),
+      widgetContent = Flex(
+        direction: Axis.vertical,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          renderTileShareCluster(),
+          Divider(),
+          if (this.isTileListLoading == true)
+            CircularProgressIndicator()
+          else
+            Padding(
+              padding: EdgeInsets.all(15),
+              child: SizedBox(
+                width: MediaQuery.sizeOf(context).width,
+                height: MediaQuery.sizeOf(context).height <
+                        heightOfTileClusterDetails
+                    ? heightOfTileClusterDetails
+                    : MediaQuery.sizeOf(context).height -
+                        heightOfTileClusterDetails,
+                child: DesignatedTileList(
+                  designatedTiles:
+                      this.designatedTileList ?? <DesignatedTile>[],
                 ),
-              )
-          ],
-        ),
+              ),
+            )
+        ],
       );
     }
 

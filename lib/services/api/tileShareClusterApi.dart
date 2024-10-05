@@ -110,7 +110,10 @@ class TileShareClusterApi extends AppApi {
   }
 
   Future<List<TileShareClusterData>> getTileShareClusters(
-      {int index = 0, int pageSize = 50, String? clusterId}) async {
+      {int index = 0,
+      int pageSize = 50,
+      String? clusterId,
+      bool? isOutbox}) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
@@ -125,6 +128,10 @@ class TileShareClusterApi extends AppApi {
         };
         if (clusterId.isNot_NullEmptyOrWhiteSpace()) {
           queryParameters["ClusterId"] = clusterId!;
+        }
+
+        if (isOutbox != null) {
+          queryParameters["IsOutbox"] = isOutbox.toString();
         }
         Uri uri = Uri.https(url, 'api/TileShareCluster', queryParameters);
 
