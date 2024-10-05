@@ -21,8 +21,6 @@ class DesignatedTile {
 
   DesignatedTile.fromJson(Map<String, dynamic> json) {
     id = '';
-    Utility.debugPrint("DesignatedTile json");
-    Utility.debugPrint(json.toString());
     if (json.containsKey('id')) {
       id = json['id'];
     }

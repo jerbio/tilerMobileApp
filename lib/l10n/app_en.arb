@@ -389,7 +389,10 @@
     "tileShare": "Tile Share",
     "update": "Update",
     "noDesignatedTiles": "No designated tiles",
+    "noTileCluster": "No Tile Shares Created",
     "errorLoadingTilelist": "Error loading tilelist",
     "failedToLoadTileShareCluster": "Failed to load tile share cluster",
-    "missingTileShareCluster": "Missing TileShare cluster"
+    "missingTileShareCluster": "Missing TileShare cluster",
+    "outBound": "OutBound",
+    "inBound": "Inbound"
   }

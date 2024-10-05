@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/styles.dart';
 
 class TileShareList extends StatefulWidget {
   final List<TileShareClusterData>? clusters;
@@ -98,6 +100,24 @@ class _TileShareListState extends State<TileShareList> {
   }
 
   Widget renderEmpty() {
+    if (this.isOubox == true) {
+      return Center(
+        child: Container(
+            height: 40,
+            alignment: AlignmentDirectional.topCenter,
+            child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              CreateTileShareClusterWidget()));
+                },
+                style: TileStyles.enabledButtonStyle,
+                icon: Icon(Icons.add),
+                label: Text(AppLocalizations.of(context)!.tileShare))),
+      );
+    }
     return Center(
       child: Container(
           height: 40,
