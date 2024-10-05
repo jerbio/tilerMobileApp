@@ -12,6 +12,7 @@ class DesignatedTile {
   int? endInMs;
   String? invitationStatus = InvitationStatus.none.toString();
   bool? isViable;
+  bool? isTilable;
   String? displayedIdentifier;
   TileTemplate? tileTemplate;
   UserProfile? user;
@@ -50,6 +51,10 @@ class DesignatedTile {
       user = UserProfile.fromJson(json['user']);
     }
 
+    if (json.containsKey('isTilable') && json['isTilable'] != null) {
+      isTilable = json['isTilable'];
+    }
+
     if (json.containsKey('clusterOwner') && json['clusterOwner'] != null) {
       clusterOwner = UserProfile.fromJson(json['clusterOwner']);
     }
@@ -66,6 +71,7 @@ class DesignatedTile {
     if (tileTemplate != null && tileTemplate!.start != null) {
       return DateTime.fromMillisecondsSinceEpoch(tileTemplate!.start!);
     }
+    return null;
   }
 
   DateTime? get endTime {
@@ -75,5 +81,6 @@ class DesignatedTile {
     if (tileTemplate != null && tileTemplate!.end != null) {
       return DateTime.fromMillisecondsSinceEpoch(tileTemplate!.end!);
     }
+    return null;
   }
 }

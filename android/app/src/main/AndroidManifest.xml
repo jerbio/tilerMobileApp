@@ -61,6 +61,7 @@
                 <data android:scheme="https"
                     android:host="tiler.app"
                     android:pathPrefix=""
+                    android:pathPattern="/TileShare/.*"
                     />
                 <data android:scheme="tilerapp"
                     android:host="tiler"

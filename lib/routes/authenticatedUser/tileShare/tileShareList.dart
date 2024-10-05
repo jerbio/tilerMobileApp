@@ -5,11 +5,11 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidg
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/util.dart';
 
 class TileShareList extends StatefulWidget {
   final List<TileShareClusterData>? clusters;
-  TileShareList({this.clusters});
+  final bool? isOutBox;
+  TileShareList({this.clusters, this.isOutBox});
   @override
   State<StatefulWidget> createState() => _TileShareListState();
 }
@@ -22,10 +22,16 @@ class _TileShareListState extends State<TileShareList> {
   bool hasMore = true;
   bool isLoading = false;
   List<TileShareClusterData> tileShareClusters = [];
+  late bool isOubox;
 
   @override
   void initState() {
     super.initState();
+    if (this.widget.isOutBox != null) {
+      isOubox = this.widget.isOutBox!;
+    } else {
+      isOubox = false;
+    }
     if (this.widget.clusters != null) {
       tileShareClusters = this.widget.clusters!;
       _scrollController = null;
@@ -37,10 +43,9 @@ class _TileShareListState extends State<TileShareList> {
 
   Future getTileShareCluster() async {
     tileClusterApi
-        .getTileShareClusters(index: index, pageSize: pageSize)
+        .getTileShareClusters(
+            index: index, pageSize: pageSize, isOutbox: this.isOubox)
         .then((value) {
-      Utility.debugPrint("Tile share cluster");
-      print(value);
       updateTileShareClusters(updatedTileShareClusters: value);
     }).whenComplete(() {
       setState(() {
