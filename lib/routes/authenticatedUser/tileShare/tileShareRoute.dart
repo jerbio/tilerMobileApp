@@ -10,17 +10,9 @@ class TileShareRoute extends StatefulWidget {
   State<StatefulWidget> createState() => _TileShareState();
 }
 
-class ScreenArguments {
-  final String? title;
-  final String? message;
-
-  ScreenArguments(this.title, this.message);
-}
-
 class _TileShareState extends State<TileShareRoute> {
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as ScreenArguments?;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -67,18 +59,36 @@ class _TileShareState extends State<TileShareRoute> {
               )
             ],
           ),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
               Tab(
-                icon: Icon(
-                  Icons.outbound,
-                  color: TileStyles.primaryContrastColor,
+                icon: Column(
+                  children: [
+                    Icon(
+                      Icons.outbox_outlined,
+                      color: TileStyles.primaryContrastColor,
+                    ),
+                    Text(
+                      AppLocalizations.of(context)!.outBound,
+                      style: TileStyles.titleBarStyle,
+                    )
+                  ],
                 ),
               ),
               Tab(
-                  icon: Icon(Icons.inbox_outlined,
-                      color: TileStyles.primaryContrastColor)),
+                  icon: Column(
+                children: [
+                  Icon(Icons.inbox_outlined,
+                      color: TileStyles.primaryContrastColor),
+                  Text(
+                    AppLocalizations.of(context)!.inBound,
+                    style: TileStyles.titleBarStyle,
+                  )
+                ],
+              )),
             ],
+            dividerColor: TileStyles.appBarTextColor,
+            indicatorColor: TileStyles.appBarTextColor,
           ),
         ),
         body: TabBarView(
