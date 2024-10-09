@@ -1,8 +1,8 @@
 import 'dart:io';
 
 const bool isProduction = true;
-// const bool isDebug = !isProduction;
-const bool isDebug = true;
+const bool isDebug = !isProduction;
+// const bool isDebug = true;
 const bool isStaging = false;
 const bool isRemote = true;
 const prodDomain = 'tiler.app';
