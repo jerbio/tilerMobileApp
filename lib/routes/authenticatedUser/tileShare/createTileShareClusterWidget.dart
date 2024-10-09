@@ -14,11 +14,12 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class CreateTileShareClusterWidget extends StatefulWidget {
+  final bool? isMultiTilette;
   final Function? onAddTileCluster;
-  final Function? onAddingATileCluster;
+  final Function? onAddingTilette;
   static final String routeName = '/TileCluster';
   CreateTileShareClusterWidget(
-      {this.onAddTileCluster, this.onAddingATileCluster});
+      {this.onAddTileCluster, this.onAddingTilette, this.isMultiTilette});
   @override
   _CreateTileShareClusterWidgetState createState() =>
       _CreateTileShareClusterWidgetState();
@@ -33,6 +34,14 @@ class _CreateTileShareClusterWidgetState
   DateTime? _endTime;
   Duration? _duration;
   Function? onProceedResponse;
+  bool isMultiTilette = false;
+  @override
+  void initState() {
+    super.initState();
+    if (this.widget.isMultiTilette != null) {
+      isMultiTilette = this.widget.isMultiTilette!;
+    }
+  }
 
   Widget clusterName() {
     var onClusterNameChange = (updatedValue) {
@@ -54,24 +63,31 @@ class _CreateTileShareClusterWidgetState
     tileClusterData.tileTemplates = _tileTemplates;
     tileClusterData.endTimeInMs = this._endTime?.millisecondsSinceEpoch;
     tileClusterData.startTimeInMs = Utility.msCurrentTime;
+    tileClusterData.isMultiTilette = this.isMultiTilette;
     return tileClusterApi.createCluster(tileClusterData);
   }
 
   void updateProceed() {
-    if (_tileTemplates.length > 0 &&
-        tileClusterData.name.isNot_NullEmptyOrWhiteSpace() &&
-        tileClusterData.name!.trim().isNot_NullEmptyOrWhiteSpace()) {
-      setState(() {
-        onProceedResponse = proceedRequest;
-      });
-      return;
+    Function? updatedProceed = null;
+    if (tileClusterData.name.isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
+      if (!isMultiTilette) {
+        if (this.contacts.isNotEmpty &&
+            this._duration != null &&
+            this._duration!.inMinutes > 0) {
+          updatedProceed = proceedRequest;
+        }
+      } else {
+        if (this._tileTemplates.isNotEmpty) {
+          updatedProceed = proceedRequest;
+        }
+      }
     }
     setState(() {
-      onProceedResponse = null;
+      onProceedResponse = updatedProceed;
     });
   }
 
-  void _removeTIle(NewTile newTile) {
+  void _removeTile(NewTile newTile) {
     _tileTemplates.remove(newTile);
     updateProceed();
   }
@@ -89,7 +105,7 @@ class _CreateTileShareClusterWidgetState
         color: TileStyles.primaryContrastColor,
       ),
       side: BorderSide.none,
-      onDeleted: () => _removeTIle(newTile),
+      onDeleted: () => _removeTile(newTile),
       backgroundColor: TileStyles.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
@@ -169,6 +185,7 @@ class _CreateTileShareClusterWidgetState
                   ? 50
                   : 100,
           onContactUpdate: (List<Contact> updatedContacts) {
+            updateProceed();
             setState(() {
               this.contacts = updatedContacts;
             });
@@ -182,6 +199,7 @@ class _CreateTileShareClusterWidgetState
     setState(() {
       _duration = duration;
     });
+    updateProceed();
   }
 
   Widget duration() {
@@ -212,73 +230,96 @@ class _CreateTileShareClusterWidgetState
     return deadlineContainer;
   }
 
+  Widget generatedTopRightButton() {
+    if (this.isMultiTilette) {
+      if (onProceedResponse != null) {
+        return ElevatedButton.icon(
+            style: TileStyles.enabledButtonStyle,
+            onPressed: () {
+              if (onProceedResponse != null) {
+                onProceedResponse!();
+              }
+              Navigator.of(context).pop(false);
+            },
+            icon: Icon(
+              Icons.save,
+              color: TileStyles.primaryContrastColor,
+            ),
+            label: SizedBox.shrink());
+      }
+      return SizedBox.shrink();
+    } else {
+      return ElevatedButton.icon(
+          style: TileStyles.enabledButtonStyle,
+          onPressed: () {
+            Navigator.of(context).pop(false);
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => CreateTileShareClusterWidget(
+                          isMultiTilette: true,
+                          onAddTileCluster: this.widget.onAddTileCluster,
+                          onAddingTilette: this.widget.onAddingTilette,
+                        )));
+          },
+          icon: TileStyles.multiShareWidget,
+          label: SizedBox.shrink());
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<Widget> clusterInputWidgets = <Widget>[clusterName(), deadline()];
+    Widget selectionButtonWidgets = generatedTopRightButton();
+
+    if (!isMultiTilette) {
+      var durationWidget = duration();
+      clusterInputWidgets.insert((1), durationWidget);
+      clusterInputWidgets.add(Divider());
+      clusterInputWidgets.add(Container(
+        height: 180,
+        child: addContacts(),
+      ));
+    } else {
+      clusterInputWidgets.add(Divider());
+      clusterInputWidgets.add(designatedTiles());
+    }
+
     Container tileShareWidgets = Container(
         padding: EdgeInsets.fromLTRB(0, 10, 0, 0),
         child: Column(
-          children: [
-            clusterName(),
-            duration(),
-            deadline(),
-            Divider(),
-            Container(
-              height: 180,
-              child: addContacts(),
-            ),
-            Divider(),
-            designatedTiles()
-          ],
+          children: clusterInputWidgets,
         ));
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
-        centerTitle: true,
-        leading: TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Icon(
-            Icons.close,
-            color: TileStyles.appBarTextColor,
-          ),
-        ),
-        actions: [
-          if (onProceedResponse != null)
-            ElevatedButton.icon(
-                style: TileStyles.enabledButtonStyle,
-                onPressed: () {
-                  if (onProceedResponse != null) {
-                    onProceedResponse!();
-                  }
-                  Navigator.of(context).pop(false);
-                },
-                icon: Icon(
-                  Icons.save,
-                  color: TileStyles.primaryContrastColor,
-                ),
-                label: SizedBox.shrink())
-          else
-            SizedBox.shrink()
-        ],
-        backgroundColor: TileStyles.appBarColor,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.share,
+          centerTitle: true,
+          leading: TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Icon(
+              Icons.close,
               color: TileStyles.appBarTextColor,
             ),
-            SizedBox.square(
-              dimension: 5,
-            ),
-            Text(
-              AppLocalizations.of(context)!.tileShare,
-              style: TileStyles.titleBarStyle,
-            )
-          ],
-        ),
-      ),
+          ),
+          actions: [selectionButtonWidgets],
+          backgroundColor: TileStyles.appBarColor,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.share,
+                color: TileStyles.appBarTextColor,
+              ),
+              Text(
+                this.isMultiTilette
+                    ? AppLocalizations.of(context)!.multiShare
+                    : AppLocalizations.of(context)!.tileShare,
+                style: TileStyles.titleBarStyle,
+              )
+            ],
+          )),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
-      hideButtons: true,
+      hideButtons: isMultiTilette == true ? true : false,
     );
   }
 }

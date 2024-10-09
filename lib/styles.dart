@@ -300,4 +300,9 @@ class TileStyles {
   static const Color inputFieldTextColor = Colors.black;
   static const FontWeight inputFieldFontWeight = FontWeight.w400;
   static const FontWeight inputFieldHintFontWeight = FontWeight.w100;
+  static const IconData multiShareIcon = Icons.bento_outlined;
+  static const Widget multiShareWidget = Icon(
+    multiShareIcon,
+    color: TileStyles.primaryContrastColor,
+  );
 }

@@ -4,6 +4,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListW
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareList.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class TileShareRoute extends StatefulWidget {
   @override
@@ -11,6 +12,8 @@ class TileShareRoute extends StatefulWidget {
 }
 
 class _TileShareState extends State<TileShareRoute> {
+  ValueKey inBoxKey = ValueKey(Utility.getUuid);
+  ValueKey outBoxKey = ValueKey(Utility.getUuid);
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -35,7 +38,12 @@ class _TileShareState extends State<TileShareRoute> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              CreateTileShareClusterWidget()));
+                              CreateTileShareClusterWidget())).whenComplete(() {
+                    setState(() {
+                      inBoxKey = ValueKey(Utility.getUuid);
+                      outBoxKey = ValueKey(Utility.getUuid);
+                    });
+                  });
                 },
                 icon: Icon(
                   Icons.add,
@@ -94,9 +102,12 @@ class _TileShareState extends State<TileShareRoute> {
         body: TabBarView(
           children: [
             TileShareList(
+              key: outBoxKey,
               isOutBox: true,
             ),
-            TileShareList()
+            TileShareList(
+              key: inBoxKey,
+            )
           ],
         ),
       ),

@@ -21,6 +21,7 @@ TileShareClusterModel _$TileShareClusterModelFromJson(
           .toList()
       ..SchedulePattern = json['SchedulePattern'] as String?
       ..Notes = json['Notes'] as String?
+      ..IsMultiTilette = json['IsMultiTilette'] as bool?
       ..ClusterTemplateTileModels =
           (json['ClusterTemplateTileModels'] as List<dynamic>?)
               ?.map((e) =>
@@ -38,6 +39,7 @@ Map<String, dynamic> _$TileShareClusterModelToJson(
       'Contacts': instance.Contacts?.map((e) => e.toJson()).toList(),
       'SchedulePattern': instance.SchedulePattern,
       'Notes': instance.Notes,
+      'IsMultiTilette': instance.IsMultiTilette,
       'ClusterTemplateTileModels':
           instance.ClusterTemplateTileModels?.map((e) => e.toJson()).toList(),
     };

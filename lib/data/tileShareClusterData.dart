@@ -20,6 +20,7 @@ class TileShareClusterData {
   bool? isCompleted;
   bool? isDeleted;
   bool? isDismissed;
+  bool? isMultiTilette;
 
   TilePriority priority = TilePriority.medium;
   TileShareClusterData();
@@ -54,6 +55,9 @@ class TileShareClusterData {
     if (json.containsKey('isCompleted')) {
       isCompleted = json['isCompleted'];
     }
+    if (json.containsKey('isMultiTilette')) {
+      isMultiTilette = json['isMultiTilette'];
+    }
     if (json.containsKey('truncatedUser') && json['truncatedUser'] != null) {
       var trucatedUsers = json['truncatedUser'];
       if (json['truncatedUser'] is String) {
@@ -86,6 +90,7 @@ class TileShareClusterData {
     templateClusterModel.DurationInMs = durationInMs;
     templateClusterModel.StartTime = this.startTimeInMs;
     templateClusterModel.EndTime = this.endTimeInMs;
+    templateClusterModel.IsMultiTilette = this.isMultiTilette;
     templateClusterModel.Contacts =
         this.contacts?.map<ContactModel>((e) => e.toContactModel()).toList();
     templateClusterModel.ClusterTemplateTileModels = this
