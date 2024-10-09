@@ -16,6 +16,7 @@ class TileShareClusterModel {
   List<ContactModel>? Contacts;
   String? SchedulePattern;
   String? Notes;
+  bool? IsMultiTilette;
   List<ClusterTemplateTileModel>? ClusterTemplateTileModels;
 
   factory TileShareClusterModel.fromJson(Map<String, dynamic> json) =>

@@ -394,5 +394,6 @@
     "failedToLoadTileShareCluster": "Failed to load tile share cluster",
     "missingTileShareCluster": "Missing TileShare cluster",
     "outBound": "OutBound",
-    "inBound": "Inbound"
+    "inBound": "Inbound",
+    "multiShare": "Multi Share"
   }

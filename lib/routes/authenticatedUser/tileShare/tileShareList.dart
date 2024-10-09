@@ -11,7 +11,7 @@ import 'package:tiler_app/styles.dart';
 class TileShareList extends StatefulWidget {
   final List<TileShareClusterData>? clusters;
   final bool? isOutBox;
-  TileShareList({this.clusters, this.isOutBox});
+  TileShareList({this.clusters, this.isOutBox, Key? key}) : super(key: key);
   @override
   State<StatefulWidget> createState() => _TileShareListState();
 }
@@ -94,8 +94,18 @@ class _TileShareListState extends State<TileShareList> {
   Widget renderPending() {
     return Container(
       height: 40,
-      alignment: AlignmentDirectional.topCenter,
+      alignment: AlignmentDirectional.center,
       child: CircularProgressIndicator(),
+    );
+  }
+
+  Widget renderEmptyPending() {
+    return Center(
+      child: Container(
+        height: 40,
+        alignment: AlignmentDirectional.center,
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 
@@ -111,7 +121,9 @@ class _TileShareListState extends State<TileShareList> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              CreateTileShareClusterWidget()));
+                              CreateTileShareClusterWidget())).whenComplete(() {
+                    getTileShareCluster();
+                  });
                 },
                 style: TileStyles.enabledButtonStyle,
                 icon: Icon(Icons.add),
@@ -129,6 +141,9 @@ class _TileShareListState extends State<TileShareList> {
   Widget renderBody() {
     int toBeRenderedElementCount = tileShareClusters.length;
     if (isLoading) {
+      if (toBeRenderedElementCount == 0) {
+        return renderEmptyPending();
+      }
       toBeRenderedElementCount += 1;
     }
     if (toBeRenderedElementCount == 0) {

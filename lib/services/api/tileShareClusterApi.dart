@@ -23,9 +23,7 @@ class TileShareClusterApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
       if (this.authentication.cachedCredentials != null) {
-        // String? username = '';
         final newCluster = tileCluster.toTemplateClusterModel().toJson();
-        // newCluster['UserName'] = username;
 
         Utility.debugPrint(
             "newCluster Tilecluster api" + newCluster.toString());
