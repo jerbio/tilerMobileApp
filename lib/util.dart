@@ -43,14 +43,8 @@ class Utility {
   static final Random randomizer = Random.secure();
   static final log = Logger();
 
-  static bool isDebugSet = false;
-  static bool isWithinNowSet = false;
-
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
     DateTime time = DateTime.now();
-    if (isDebugSet) {
-      time = time.add(Duration(days: 1));
-    }
     if (minuteLimitAccuracy) {
       DateTime retValue =
           DateTime(time.year, time.month, time.day, time.hour, time.minute);
@@ -192,6 +186,22 @@ class Utility {
   static get initialScheduleTimeline {
     return Timeline.fromDateTimeAndDuration(
         Utility.currentTime().add(Duration(days: -3)), Duration(days: 7));
+  }
+
+  static final _emailRegex = RegExp(r"^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+  static final _phoneRegex = RegExp(r"^\+?[0-9]{7,15}$");
+  static bool isEmail(String? emailString) {
+    if (emailString != null) {
+      return _emailRegex.hasMatch(emailString);
+    }
+    return false;
+  }
+
+  static bool isPhoneNumber(String? phoneNumber) {
+    if (phoneNumber != null) {
+      return _phoneRegex.hasMatch(phoneNumber);
+    }
+    return false;
   }
 
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
@@ -863,5 +873,13 @@ extension ColorExtension on Color {
   Color withLightness(double lightness) {
     HSLColor hslColor = HSLColor.fromColor(this);
     return hslColor.withLightness(lightness).toColor();
+  }
+}
+
+extension StringExtension on String? {
+  bool isNot_NullEmptyOrWhiteSpace({int minLength = 0}) {
+    return this != null &&
+        this!.isNotEmpty &&
+        (minLength == 0 || this!.trim().length > minLength);
   }
 }

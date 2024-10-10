@@ -65,14 +65,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
     localNotificationService.initialize(this.context);
 
-    accessManager.locationAccess(statusCheck: true).then((value) {
-      setState(() {
-        if (value != null) {
-          locationAccess = value;
-          return;
-        }
-      });
-    });
+    // accessManager.locationAccess(statusCheck: true).then((value) {
+    //   if (this.mounted) {
+    //     setState(() {
+    //       if (value != null) {
+    //         locationAccess = value;
+    //         return;
+    //       }
+    //     });
+    //   }
+    // });
   }
 
   void _onBottomNavigationTap(int index) {
@@ -80,15 +82,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
-          AnalysticsSignal.send('SEARCH_PRESSED');
-          Navigator.pushNamed(context, '/SearchTile');
+          // Navigator.pushNamed(context, '/AddTile');
+          AnalysticsSignal.send('TILE_SHARE_BUTTON');
+          Navigator.pushNamed(context, '/TileShare');
         }
         break;
       case 1:
         {
-          // Navigator.pushNamed(context, '/AddTile');
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
+          AnalysticsSignal.send('SEARCH_PRESSED');
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 2:
@@ -334,7 +336,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       ),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ),
@@ -368,11 +370,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget build(BuildContext context) {
     // print('isLocationRequestTriggered $isLocationRequestTriggered');
     // print('locationAccess $locationAccess');
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
@@ -423,19 +425,17 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.search,
-                    color: TileStyles.primaryColorDarkHSL.toColor()),
-                label: '',
-              ),
-              BottomNavigationBarItem(
                   icon: Icon(
-                    Icons.add,
-                    color: Color.fromRGBO(0, 0, 0, 0),
+                    Icons.share,
+                    color: TileStyles.primaryColor,
                   ),
                   label: ''),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings,
-                      color: TileStyles.primaryColorDarkHSL.toColor()),
+                icon: Icon(Icons.search, color: TileStyles.primaryColor),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
                   label: ''),
             ],
             unselectedItemColor: Colors.white,
@@ -461,21 +461,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: isAddButtonClicked
-          ? null
-          : FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: () {
-                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-                displayDialog(MediaQuery.of(context).size);
-              },
-              child: Icon(
-                Icons.add,
-                size: 35,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
-              ),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TileStyles.primaryContrastColor,
+        onPressed: () {
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+          displayDialog(MediaQuery.of(context).size);
+        },
+        child: Icon(
+          Icons.add,
+          size: 35,
+          color: TileStyles.primaryColor,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

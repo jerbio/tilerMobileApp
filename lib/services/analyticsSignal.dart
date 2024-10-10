@@ -1,5 +1,6 @@
 import 'package:tiler_app/util.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import '../../constants.dart' as Constants;
 
 class AnalysticSession {
   final String _sessionId = Utility.uuid.toString();
@@ -61,16 +62,15 @@ class AnalysticsSignal {
     if (tag.isEmpty) {
       return "no-tag-set";
     }
-    try {
-      AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
-          signalTag: tag, additionalInfo: additionalInfo);
-      await fireBaseAnalytics
-          .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
-          .then((value) {
-        print("---- custom event analystics user logged in verified-----");
-      });
-    } catch (e) {
-      Utility.debugPrint("Issues sending analytical signal");
+    if (Constants.isDebug) {
+      return;
     }
+    AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
+        signalTag: tag, additionalInfo: additionalInfo);
+    await fireBaseAnalytics
+        .logEvent(name: nextSignal.tag, parameters: nextSignal.toJson())
+        .then((value) {
+      print("---- custom event analystics user logged in verified-----");
+    });
   }
 }

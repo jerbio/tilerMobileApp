@@ -566,11 +566,6 @@ class _EditTileState extends State<EditTile> {
       List<SubCalendarEvent>? subEvents = stateResult.item1;
       List<Timeline>? timelines = stateResult.item2;
       Timeline? lookupTimeline = stateResult.item3;
-      // String? message = stateResult.item4;
-      // var scheduleStatus = stateResult.item5;
-      // if (currentState is ScheduleEvaluationState) {
-
-      // }
       this.context.read<ScheduleBloc>().add(GetScheduleEvent(
           isAlreadyLoaded: true,
           emitOnlyLoadedStated: true,

@@ -27,6 +27,9 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -65,12 +68,10 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
-  try {
+  if (!Constants.isDebug) {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-  } catch (e) {
-    Utility.debugPrint("Issues Initializing Firebase");
   }
   runApp(TilerApp());
 }
@@ -184,7 +185,10 @@ class _TilerAppState extends State<TilerApp> {
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
             '/Integrations': (ctx) => IntegrationWidgetRoute(),
-            '/OnBoarding': (ctx) => OnboardingView()
+            '/OnBoarding': (ctx) => OnboardingView(),
+            '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
+            '/DesignatedTileList': (ctx) => DesignatedTileList(),
+            '/TileShare': (ctx) => TileShareRoute(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,
