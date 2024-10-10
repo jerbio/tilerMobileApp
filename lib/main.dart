@@ -214,6 +214,7 @@ class _TilerAppState extends State<TilerApp> {
                           return renderPending();
                         } else if (onboardingSnapshot.hasError) {
                           showErrorMessage("Error checking onboarding status.");
+                          authentication?.deauthenticateCredentials();
                           return SignInRoute();
                         } else {
                           return onboardingSnapshot.data!

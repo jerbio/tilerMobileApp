@@ -560,16 +560,10 @@ class Utility {
   }
 
   static Future<bool> checkOnboardingStatus(LocalizationService localizationService) async {
-    try {
       await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
       bool isOnboardingValid = await OnBoardingApi(localizationService).areRequiredFieldsValid();
       return shouldSkipOnboarding || isOnboardingValid;
-
-    } catch (e) {
-      print("Error checking onboarding status: ${e is TilerError?e.message:"Unknown error!"}");
-      return false;
-    }
   }
 
   static debugPrint(String val) {
