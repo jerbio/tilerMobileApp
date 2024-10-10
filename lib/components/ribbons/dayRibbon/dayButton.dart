@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -32,17 +30,6 @@ class _DayButtonState extends State<DayButton> {
 
   @override
   Widget build(BuildContext context) {
-    var defaultDecoration = BoxDecoration(
-        borderRadius: BorderRadius.all(
-          const Radius.circular(10.0),
-        ),
-        gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color.fromRGBO(240, 240, 240, 1),
-              Color.fromRGBO(240, 240, 240, 1),
-            ]));
 
     var selectedDecoration = BoxDecoration(
         borderRadius: BorderRadius.all(
@@ -57,7 +44,7 @@ class _DayButtonState extends State<DayButton> {
             ]));
 
     var decoration =
-        this.widget.isSelected ? selectedDecoration : defaultDecoration;
+        this.widget.isSelected ? selectedDecoration : TileStyles.ribbonsButtonDefaultDecoration;
     double buttonHeight = 40 * (this.widget.isSelected ? 1.3 : 1);
     double buttonWidth = 40 * (this.widget.isSelected ? 1.3 : 1);
 
@@ -82,7 +69,7 @@ class _DayButtonState extends State<DayButton> {
               this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
           child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
               style: TextStyle(
-                  fontFamily: 'Rubik',
+                  fontFamily: TileStyles.rubikFontName,
                   color: this.widget.isSelected ? Colors.black : Colors.grey)))
     ];
     if (this.widget.showMonth) {

@@ -7,6 +7,7 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/util.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 part 'schedule_summary_event.dart';
 part 'schedule_summary_state.dart';
@@ -15,7 +16,7 @@ class ScheduleSummaryBloc
     extends Bloc<ScheduleSummaryEvent, ScheduleSummaryState> {
   ScheduleApi scheduleApi = ScheduleApi();
   ScheduleSummaryBloc() : super(ScheduleSummaryInitial()) {
-    on<GetScheduleDaySummaryEvent>(_onGetDayData);
+    on<GetScheduleDaySummaryEvent>(_onGetDayData,transformer:restartable() );
     on<LogOutScheduleDaySummaryEvent>(_onLogOutScheduleDaySummaryEvent);
   }
 

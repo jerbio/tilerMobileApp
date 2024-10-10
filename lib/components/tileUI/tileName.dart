@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/constants.dart' as Constants;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileName extends StatefulWidget {
@@ -40,7 +40,8 @@ class TileNameState extends State<TileName> {
       double fontSize = 16;
       String emojiString = subEvent.emojis!.trim();
       if (emojiString.length > 0) {
-        fontSize = fontSize / (emojiString.length / 2) + 2;
+        int emojiCount = Constants.emojiRegex.allMatches(emojiString).length;
+        fontSize = fontSize / emojiCount + 2;
       }
       emojiField = Text(emojiString,
           style: TextStyle(
