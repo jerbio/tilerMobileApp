@@ -41,7 +41,7 @@ class TileStyles {
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColorDarkHSL.toColor();
+      return primaryColor;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.white;
@@ -56,7 +56,7 @@ class TileStyles {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColorDarkHSL.toColor();
+      return primaryColor;
     }),
     elevation: MaterialStateProperty.resolveWith((states) {
       return 0;
@@ -66,8 +66,7 @@ class TileStyles {
     }),
   );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(
-        BorderSide(color: primaryColorDarkHSL.toColor())),
+    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
@@ -78,13 +77,12 @@ class TileStyles {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColorDarkHSL.toColor();
+      return primaryColor;
     }),
   );
 
   static ButtonStyle toggledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(
-        BorderSide(color: primaryColorDarkHSL.toColor())),
+    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
@@ -93,7 +91,7 @@ class TileStyles {
     }),
     backgroundColor: MaterialStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
-        return primaryColorDarkHSL.toColor();
+        return primaryColor;
       }
       return Colors.transparent;
     }),
@@ -178,7 +176,7 @@ class TileStyles {
   );
 
   static Color enabledTextColor = primaryColorDarkHSL.toColor();
-  static Color appBarTextColor = Colors.white;
+  static const Color appBarTextColor = Colors.white;
   static Color nonViableBackgroundColor = Color.fromRGBO(150, 150, 150, 1);
 
   static Color textFieldTextColor = Color(0xff1F1F1F).withOpacity(0.4);
@@ -192,9 +190,15 @@ class TileStyles {
       fontFamily: rubikFontName,
       fontWeight: FontWeight.w500);
 
-  static const TextStyle editTimeOrDateTimeStyle =
-      TextStyle(fontSize: 18, color: const Color.fromRGBO(40, 40, 40, 1));
-  static Color textBackgroundColor = Color.fromRGBO(239, 48, 84, .05);
+  static const TextStyle editTimeOrDateTimeStyle = TextStyle(
+      fontSize: 18,
+      fontFamily: rubikFontName,
+      color: const Color.fromRGBO(40, 40, 40, 1));
+  static const TextStyle defaultTextStyle = TextStyle(
+      fontSize: 18,
+      fontFamily: rubikFontName,
+      color: const Color.fromRGBO(40, 40, 40, 1));
+  static Color textBackgroundColor = Colors.white;
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
@@ -270,4 +274,35 @@ class TileStyles {
       SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
       SizedBox(height: 150);
+
+  static BoxShadow inputFieldBoxShadow = BoxShadow(
+    color: Color.fromRGBO(168, 168, 168, 0.54),
+    spreadRadius: 2,
+    blurRadius: 50,
+    offset: Offset(0, 0),
+  );
+
+  static BorderRadius inputFieldBorderRadius = BorderRadius.only(
+      topLeft: Radius.circular(10),
+      topRight: Radius.circular(10),
+      bottomLeft: Radius.circular(10),
+      bottomRight: Radius.circular(10));
+  static const double inputHeight = 60;
+  static const double inputFontSize = 20;
+  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(10, 0, 10, 0);
+  static TextStyle inputTextStyle = TextStyle(
+    fontSize: TileStyles.inputFontSize,
+    fontFamily: TileStyles.rubikFontName,
+    color: TileStyles.inputFieldTextColor,
+  );
+
+  static const EdgeInsets inpuPadding = const EdgeInsets.all(8.0);
+  static const Color inputFieldTextColor = Colors.black;
+  static const FontWeight inputFieldFontWeight = FontWeight.w400;
+  static const FontWeight inputFieldHintFontWeight = FontWeight.w100;
+  static const IconData multiShareIcon = Icons.bento_outlined;
+  static const Widget multiShareWidget = Icon(
+    multiShareIcon,
+    color: TileStyles.primaryContrastColor,
+  );
 }

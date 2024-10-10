@@ -92,7 +92,6 @@ abstract class AppApi {
 
   Future<Map<String, dynamic>> injectRequestParams(Map jsonMap,
       {bool includeLocationParams = false}) async {
-    Utility.isDebugSet = false;
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
@@ -153,14 +152,15 @@ abstract class AppApi {
               .then((value) async {
             print("Concluded Sending POST REQUEST " + requestPath);
             if (analyze) {
-              String tilerDomain = Constants.tilerDomain;
-              String analyzeUrl = tilerDomain;
-              Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-              Map<String, dynamic> analyzeParameters =
-                  await injectRequestParams({},
-                      includeLocationParams: injectLocation);
-              http.post(analyzeUri,
-                  headers: header, body: jsonEncode(analyzeParameters));
+              analyzeSchedule(injectLocation: injectLocation);
+              // String tilerDomain = Constants.tilerDomain;
+              // String analyzeUrl = tilerDomain;
+              // Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
+              // Map<String, dynamic> analyzeParameters =
+              //     await injectRequestParams({},
+              //         includeLocationParams: injectLocation);
+              // http.post(analyzeUri,
+              //     headers: header, body: jsonEncode(analyzeParameters));
             }
             return value;
           }).catchError((onError) {
@@ -183,5 +183,32 @@ abstract class AppApi {
     }
 
     return error;
+  }
+
+  Future analyzeSchedule({bool injectLocation = false}) async {
+    var header = this.getHeaders();
+    if (header != null) {
+      String tilerDomain = Constants.tilerDomain;
+      String analyzeUrl = tilerDomain;
+      Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
+      Map<String, dynamic> analyzeParameters =
+          await injectRequestParams({}, includeLocationParams: injectLocation);
+      await http.post(analyzeUri,
+          headers: header, body: jsonEncode(analyzeParameters));
+    }
+  }
+
+  void HandleHttpStatusFailure(Response response,
+      {String? serviceName, String? message}) {
+    if (response.statusCode != HttpStatus.ok) {
+      switch (response.statusCode) {
+        case HttpStatus.notFound:
+          throw TilerError(
+              message: serviceName ?? '' + (message ?? ' Not Found'));
+
+        default:
+          throw TilerError(message: serviceName ?? '' + ' Is Having issues');
+      }
+    }
   }
 }

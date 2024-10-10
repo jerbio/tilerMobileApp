@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/styles.dart';
@@ -9,7 +7,7 @@ class EditDateAndTime extends StatelessWidget {
   DateTime time;
   EditTileTime? _tileTime;
   EditTileDate? _tileDate;
-  Function? onInputChange;
+  final Function? onInputChange;
   bool isReadOnly = false;
   EditDateAndTime(
       {required this.time, this.onInputChange, this.isReadOnly = false}) {
