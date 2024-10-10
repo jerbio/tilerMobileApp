@@ -130,6 +130,23 @@ class Utility {
     return retValue;
   }
 
+  static List<DateTime> getDaysInWeek(DateTime selectedDay) {
+    final sunday =DateTime(selectedDay.year, selectedDay.month, selectedDay.day - selectedDay.weekday % 7);
+    List<DateTime> weekDays=List.generate(7, (index) => DateTime(sunday.year, sunday.month, sunday.day + index).dayDate);
+    return weekDays;
+  }
+
+
+  static List<DateTime> getDaysInMonth(DateTime selectedMonth) {
+    final days = <DateTime>[];
+    var currentDay = DateTime(selectedMonth.year, selectedMonth.month, 1).dayDate;
+    while (currentDay.month == selectedMonth.month) {
+      days.addAll(getDaysInWeek(currentDay));
+      currentDay = days.last.add(Duration(days:1));
+    }
+    return days;
+  }
+
   static int getDayIndex(DateTime time) {
     var spanInMicroSecond = time.dayDate.microsecondsSinceEpoch -
         Utility._beginningOfTime.dayDate.microsecondsSinceEpoch;
@@ -138,7 +155,10 @@ class Utility {
             .round();
     return retValue;
   }
-
+  static int getDayOfMonthFromIndex(int dayIndex) {
+    DateTime date = Utility._beginningOfTime.add(Duration(days: dayIndex));
+    return date.day;
+  }
   static DateTime getTimeFromIndex(int dayIndex) {
     Duration totalDuration = Duration(days: dayIndex);
     DateTime retValueShifted =

@@ -9,20 +9,22 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 part 'schedule_event.dart';
 part 'schedule_state.dart';
-
+enum AuthorizedRouteTileListPage{Daily,Weekly,Monthly}
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
   ScheduleApi scheduleApi = ScheduleApi();
-  ScheduleBloc() : super(ScheduleInitialState()) {
-    on<GetScheduleEvent>(_onGetSchedule);
+
+  ScheduleBloc() : super(ScheduleInitialState(currentView: AuthorizedRouteTileListPage.Daily)) {
+    on<GetScheduleEvent>(_onGetSchedule, transformer: restartable());
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
+    on<ChangeViewEvent>(_onChangeView,transformer: restartable());;
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
@@ -62,10 +64,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         scheduleStatus: event.scheduleStatus,
         lookupTimeline: event.lookupTimeline,
         eventId: null,
-        previousLookupTimeline: event.previousLookupTimeline);
+        previousLookupTimeline: event.previousLookupTimeline,
+        currentView: state.currentView);
 
     emit(put);
-    // emit(put);
   }
 
   void _onLoggedOutScheduleEvent(
@@ -76,7 +78,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onInitialLogInScheduleEvent(
       LogInScheduleEvent event, Emitter<ScheduleState> emit) async {
-    emit(ScheduleInitialState());
+    emit(ScheduleInitialState(currentView: state.currentView));
   }
 
   Future _getSubEventCallBack(
@@ -97,6 +99,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             scheduleStatus: value.item3,
             lookupTimeline: updateTimeline,
             previousLookupTimeline: previousTimeLine,
+            currentView: state.currentView,
             eventId: eventId));
       } else {
         emit(ScheduleLoadedState(
@@ -105,6 +108,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             scheduleStatus: value.item3,
             lookupTimeline: updateTimeline,
             previousLookupTimeline: previousTimeLine,
+            currentView: state.currentView,
             eventId: eventId));
       }
     }).catchError((onError) {
@@ -115,6 +119,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           lookupTimeline: updateTimeline,
           previousLookupTimeline: previousTimeLine,
+          currentView: state.currentView,
           eventId: eventId));
     });
   }
@@ -166,6 +171,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           eventId: event.eventId,
           loadingTime: Utility.currentTime(),
+          currentView: state.currentView,
           connectionState: ConnectionState.waiting));
     }
 
@@ -245,6 +251,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           lookupTimeline: lookupTimeline,
           evaluationTime: Utility.currentTime(),
           scheduleStatus: scheduleStatus,
+          currentView: state.currentView,
           message: message));
       await this.scheduleApi.reviseSchedule().then((value) async {
         await this._onGetSchedule(
@@ -267,6 +274,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         lookupTimeline: event.renderedScheduleTimeline,
         evaluationTime: Utility.currentTime(),
         scheduleStatus: event.scheduleStatus,
+        currentView: state.currentView,
         message: event.message));
     if (event.callBack != null) {
       await event.callBack!.whenComplete(() async {
@@ -306,4 +314,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   //         emit);
   //   });
   // }
+  void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async{
+    scheduleApi = ScheduleApi();
+    emit(ScheduleInitialState(currentView: event.newView));
+
+  }
 }

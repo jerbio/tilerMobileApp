@@ -2,10 +2,11 @@
 part of 'schedule_bloc.dart';
 
 abstract class ScheduleState extends Equatable {
-  const ScheduleState();
+  final AuthorizedRouteTileListPage currentView;
+  const ScheduleState({this.currentView = AuthorizedRouteTileListPage.Daily});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [currentView];
 
   static PriorScheduleState generatePriorScheduleState(ScheduleState state) {
     List<SubCalendarEvent> subEvents = [];
@@ -13,6 +14,7 @@ abstract class ScheduleState extends Equatable {
     Timeline lookupTimeline = Utility.initialScheduleTimeline;
     DateTime loadingTime = DateTime.fromMillisecondsSinceEpoch(0);
     ScheduleStatus scheduleStatus = ScheduleStatus.fromJson({});
+    AuthorizedRouteTileListPage currentView = state.currentView;
     if (state is ScheduleLoadedState) {
       subEvents = state.subEvents;
       timelines = state.timelines;
@@ -47,13 +49,22 @@ abstract class ScheduleState extends Equatable {
         previousLookupTimeline: lookupTimeline,
         subEvents: subEvents,
         timelines: timelines,
-        scheduleStatus: scheduleStatus);
+        scheduleStatus: scheduleStatus,
+        currentView: currentView
+    );
   }
 }
 
-class ScheduleInitialState extends ScheduleState {}
+class ScheduleInitialState extends ScheduleState {
+  final AuthorizedRouteTileListPage currentView;
+  ScheduleInitialState({required this.currentView})
+      : super(currentView: currentView);
+}
 
-class ScheduleLoggedOutState extends ScheduleState {}
+class ScheduleLoggedOutState extends ScheduleState {
+  ScheduleLoggedOutState({AuthorizedRouteTileListPage currentView = AuthorizedRouteTileListPage.Daily})
+      : super(currentView: currentView);
+}
 
 class PriorScheduleState {
   final DateTime loadingTime;
@@ -61,12 +72,15 @@ class PriorScheduleState {
   final List<Timeline> timelines;
   final Timeline previousLookupTimeline;
   final ScheduleStatus scheduleStatus;
+  final AuthorizedRouteTileListPage currentView;
   PriorScheduleState(
       {required this.loadingTime,
       required this.previousLookupTimeline,
       required this.subEvents,
       required this.timelines,
-      required this.scheduleStatus});
+      required this.scheduleStatus,
+      required this.currentView
+      });
 }
 
 class ScheduleLoadingState extends ScheduleState {
@@ -79,6 +93,7 @@ class ScheduleLoadingState extends ScheduleState {
   String? eventId;
   ScheduleStatus scheduleStatus;
   ConnectionState connectionState = ConnectionState.none;
+  AuthorizedRouteTileListPage currentView;
 
   ScheduleLoadingState(
       {this.subEvents = const <SubCalendarEvent>[],
@@ -88,11 +103,13 @@ class ScheduleLoadingState extends ScheduleState {
       required this.loadingTime,
       required this.scheduleStatus,
       required this.previousLookupTimeline,
+      required this.currentView,
       this.eventId,
-      this.message});
+      this.message
+      }) : super(currentView: currentView);
 
   @override
-  List<Object> get props => [subEvents];
+  List<Object> get props => [subEvents,currentView];
 }
 
 class ScheduleLoadedState extends ScheduleState {
@@ -102,6 +119,7 @@ class ScheduleLoadedState extends ScheduleState {
   Timeline? previousLookupTimeline;
   ScheduleStatus scheduleStatus;
   String? eventId;
+  AuthorizedRouteTileListPage currentView;
 
   ScheduleLoadedState(
       {this.subEvents = const <SubCalendarEvent>[],
@@ -109,10 +127,11 @@ class ScheduleLoadedState extends ScheduleState {
       required this.lookupTimeline,
       required this.scheduleStatus,
       required this.previousLookupTimeline,
-      this.eventId});
+      required this.currentView,
+      this.eventId}): super(currentView: currentView);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [currentView];
 }
 
 class DelayedScheduleLoadedState extends ScheduleLoadedState {
@@ -123,13 +142,16 @@ class DelayedScheduleLoadedState extends ScheduleLoadedState {
       required lookupTimeline,
       required this.pendingDelayedScheduleRetrieval,
       required scheduleStatus,
+      required currentView,
       previousLookupTimeline})
       : super(
             subEvents: subEvents,
             timelines: timelines,
             lookupTimeline: lookupTimeline,
             scheduleStatus: scheduleStatus,
-            previousLookupTimeline: previousLookupTimeline);
+            previousLookupTimeline: previousLookupTimeline,
+            currentView: currentView
+      );
 }
 
 class FailedScheduleLoadedState extends ScheduleLoadedState {
@@ -140,6 +162,7 @@ class FailedScheduleLoadedState extends ScheduleLoadedState {
       required lookupTimeline,
       required this.evaluationTime,
       required scheduleStatus,
+      required currentView,
       previousLookupTimeline,
       eventId})
       : super(
@@ -148,6 +171,7 @@ class FailedScheduleLoadedState extends ScheduleLoadedState {
             lookupTimeline: lookupTimeline,
             scheduleStatus: scheduleStatus,
             previousLookupTimeline: previousLookupTimeline,
+            currentView: currentView,
             eventId: eventId);
 }
 
@@ -157,6 +181,7 @@ class LocalScheduleLoadedState extends ScheduleLoadedState {
       required timelines,
       required lookupTimeline,
       required scheduleStatus,
+      required currentView,
       previousLookupTimeline,
       eventId})
       : super(
@@ -165,6 +190,7 @@ class LocalScheduleLoadedState extends ScheduleLoadedState {
             lookupTimeline: lookupTimeline,
             scheduleStatus: scheduleStatus,
             previousLookupTimeline: previousLookupTimeline,
+            currentView: currentView,
             eventId: eventId);
 }
 
@@ -176,16 +202,19 @@ class ScheduleEvaluationState extends ScheduleState {
   Timeline lookupTimeline;
   ScheduleStatus scheduleStatus;
   Timeline? previousLookupTimeline;
+  AuthorizedRouteTileListPage currentView;
 
   ScheduleEvaluationState(
       {required this.subEvents,
       required this.timelines,
       required this.lookupTimeline,
       required this.evaluationTime,
+      required this.currentView,
       this.message,
       required this.scheduleStatus,
       this.previousLookupTimeline});
 
   @override
-  List<Object> get props => [subEvents];
+  List<Object> get props => [subEvents,currentView];
 }
+
