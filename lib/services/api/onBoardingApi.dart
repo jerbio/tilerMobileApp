@@ -69,7 +69,9 @@ class OnBoardingApi extends AppApi {
       } else {
         throw TilerError(message: localizationService.responseContentError);
       }
-    } else {
+    } else if(response.statusCode==404){
+        return null;
+    }else {
       throw TilerError(message: localizationService.responseHandlingError);
     }
   }
