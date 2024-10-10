@@ -373,5 +373,8 @@
     "authenticationIssues":"Issues with authentication.",
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
-    "responseHandlingError":"Failed to handle the response."
+    "responseHandlingError":"Failed to handle the response.",
+    "save":"Save",
+    "selectWeek":"Select a Week",
+    "selectYear":"Select Year"
   }
