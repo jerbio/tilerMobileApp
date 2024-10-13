@@ -11,16 +11,16 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
-  late final String? clusterId;
+  late final String? tileShareId;
   late final TileShareClusterData? tileShareClusterData;
-  TileShareDetailWidget.byId(String clusterId) {
-    this.clusterId = clusterId;
+  TileShareDetailWidget.byId(String tileShareId) {
+    this.tileShareId = tileShareId;
     this.tileShareClusterData = null;
   }
   TileShareDetailWidget.byTileShareData(
       {required final TileShareClusterData tileShareClusterData}) {
     this.tileShareClusterData = tileShareClusterData;
-    this.clusterId = null;
+    this.tileShareId = null;
   }
   @override
   _TileShareDetailWidget createState() => _TileShareDetailWidget();
@@ -52,10 +52,10 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
 
   Future getTileShareCluster() async {
     bool tileLoadingState = false;
-    if (this.widget.clusterId.isNot_NullEmptyOrWhiteSpace()) {
+    if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
       tileLoadingState = true;
       clusterApi
-          .getTileShareClusters(clusterId: this.widget.clusterId)
+          .getTileShareClusters(clusterId: this.widget.tileShareId)
           .then((value) {
         Utility.debugPrint("Success getting tile cluster");
         setState(() {
@@ -78,7 +78,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       });
 
       clusterApi
-          .getDesignatedTiles(clusterId: this.widget.clusterId)
+          .getDesignatedTiles(clusterId: this.widget.tileShareId)
           .then((value) {
         setState(() {
           Utility.debugPrint("Success getting tileShare list ");
