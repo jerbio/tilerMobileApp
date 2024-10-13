@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,8 +48,6 @@ import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
-
-final log = Logger('ExampleLogger');
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -114,11 +110,6 @@ class _TilerAppState extends State<TilerApp> {
         backgroundColor: Colors.black45,
         textColor: Colors.red,
         fontSize: 16.0);
-  }
-
-  void openAppLink(Uri uri) {
-    // _navigatorKey.currentState?.pushNamed(uri.fragment);
-    debugPrint("We got new app link" + uri.toString());
   }
 
   Widget renderPending() {

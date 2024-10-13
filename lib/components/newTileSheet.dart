@@ -141,18 +141,21 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
           ),
         ),
         _renderOptionalFields(),
-        ContactInputFieldWidget(
-            contentHeight: this.contacts.isEmpty
-                ? 0
-                : this.contacts.length < 3
-                    ? 50
-                    : 100,
-            contacts: this.contacts,
-            onContactUpdate: (List<Contact> updatedContacts) {
-              setState(() {
-                this.contacts = updatedContacts;
-              });
-            }),
+        Padding(
+          padding: TileStyles.inpuPadding,
+          child: ContactInputFieldWidget(
+              contentHeight: this.contacts.isEmpty
+                  ? 0
+                  : this.contacts.length < 3
+                      ? 50
+                      : 100,
+              contacts: this.contacts,
+              onContactUpdate: (List<Contact> updatedContacts) {
+                setState(() {
+                  this.contacts = updatedContacts;
+                });
+              }),
+        ),
         this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3)
             ? ElevatedButton.icon(
                 onPressed: () {
@@ -168,6 +171,9 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                     ? AppLocalizations.of(context)!.add
                     : AppLocalizations.of(context)!.update))
             : SizedBox.shrink(),
+        SizedBox.square(
+          dimension: 50,
+        )
       ],
     );
   }
