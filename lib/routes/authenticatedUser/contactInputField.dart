@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -106,23 +107,26 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           .width), // You can adjust the width or make it responsive
       height: TileStyles.inputHeight,
       child: TextField(
-        style: TileStyles.inputTextStyle,
-        controller: _controller,
-        decoration: InputDecoration(
-            hintStyle: TextStyle(
-                fontSize: TileStyles.inputFontSize,
-                fontFamily: TileStyles.rubikFontName,
-                color: TileStyles.inputFieldTextColor,
-                fontWeight: FontWeight.w100),
-            hintText: AppLocalizations.of(context)!.addContact,
-            border: InputBorder.none),
-        onSubmitted: (value) {
-          _addContact(value);
-        },
-        onEditingComplete: () {
-          _addContact(_controller.text);
-        },
-      ),
+          style: TileStyles.inputTextStyle,
+          controller: _controller,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+              hintStyle: TextStyle(
+                  fontSize: TileStyles.inputFontSize,
+                  fontFamily: TileStyles.rubikFontName,
+                  color: TileStyles.inputFieldTextColor,
+                  fontWeight: FontWeight.w100),
+              hintText: AppLocalizations.of(context)!.addContact,
+              border: InputBorder.none),
+          onSubmitted: (value) {
+            _addContact(value);
+          },
+          onEditingComplete: () {
+            _addContact(_controller.text);
+          },
+          onTapOutside: (PointerDownEvent event) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          }),
     );
   }
 

@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:ui';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,6 +16,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -55,10 +58,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
-
+  late AppLinks _appLinks;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
     super.initState();
+    initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
       localNotificationService.subscribeToRemoteNotification(this.context);
@@ -75,6 +81,21 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     //     });
     //   }
     // });
+  }
+
+  void openAppLink(Uri uri) {
+    RedirectHandler.routePage(context, uri);
+  }
+
+  Future<void> initDeepLinks() async {
+    // return;
+    _appLinks = AppLinks();
+
+    // Handle links
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('onAppLink: $uri');
+      openAppLink(uri);
+    });
   }
 
   void _onBottomNavigationTap(int index) {
