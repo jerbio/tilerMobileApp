@@ -232,21 +232,21 @@ class _CreateTileShareClusterWidgetState
 
   Widget generatedTopRightButton() {
     if (this.isMultiTilette) {
-      if (onProceedResponse != null) {
-        return ElevatedButton.icon(
-            style: TileStyles.enabledButtonStyle,
-            onPressed: () {
-              if (onProceedResponse != null) {
-                onProceedResponse!();
-              }
-              Navigator.of(context).pop(false);
-            },
-            icon: Icon(
-              Icons.save,
-              color: TileStyles.primaryContrastColor,
-            ),
-            label: SizedBox.shrink());
-      }
+      // if (onProceedResponse != null) {
+      //   return ElevatedButton.icon(
+      //       style: TileStyles.enabledButtonStyle,
+      //       onPressed: () {
+      //         if (onProceedResponse != null) {
+      //           onProceedResponse!();
+      //         }
+      //         Navigator.of(context).pop(false);
+      //       },
+      //       icon: Icon(
+      //         Icons.save,
+      //         color: TileStyles.primaryContrastColor,
+      //       ),
+      //       label: SizedBox.shrink());
+      // }
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
@@ -292,14 +292,8 @@ class _CreateTileShareClusterWidgetState
         ));
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
-          centerTitle: true,
-          leading: TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Icon(
-              Icons.close,
-              color: TileStyles.appBarTextColor,
-            ),
-          ),
+          // centerTitle: true,
+          automaticallyImplyLeading: false,
           actions: [selectionButtonWidgets],
           backgroundColor: TileStyles.appBarColor,
           title: Row(
@@ -319,7 +313,6 @@ class _CreateTileShareClusterWidgetState
           )),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
-      hideButtons: isMultiTilette == true ? true : false,
     );
   }
 }
