@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'package:tiler_app/services/localizationService.dart';
+
 import '../../../constants.dart' as Constants;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +18,7 @@ import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:faker/faker.dart';
+import 'data/request/TilerError.dart';
 import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
@@ -566,18 +569,11 @@ class Utility {
     return await Geolocator.getCurrentPosition();
   }
 
-  static Future<bool> checkOnboardingStatus() async {
-    try {
-      await Future.delayed(
-          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-      bool shouldSkipOnboarding =
-          await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
-      bool isOnboardingvalid = await OnBoardingApi().areRequiredFieldsValid();
-      return shouldSkipOnboarding || isOnboardingvalid;
-    } catch (e) {
-      print("Error checking onboarding status: $e");
-      return true;
-    }
+  static Future<bool> checkOnboardingStatus(LocalizationService localizationService) async {
+      await Future.delayed(const Duration(milliseconds: Constants.onTextChangeDelayInMs));
+      bool shouldSkipOnboarding = await OnBoardingSharedPreferencesHelper.getSkipOnboarding();
+      bool isOnboardingValid = await OnBoardingApi(localizationService).areRequiredFieldsValid();
+      return shouldSkipOnboarding || isOnboardingValid;
   }
 
   static debugPrint(String val) {
