@@ -853,7 +853,7 @@ class _TileListState extends State<TileList> {
     }
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
-    print('After queryTimeline ' + queryTimeline.toString());
+    Utility.debugPrint('After queryTimeline ' + queryTimeline.toString());
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeLine,
