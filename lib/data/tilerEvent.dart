@@ -19,6 +19,7 @@ class TilerEvent extends TilerObj with TimeRange {
   String thirdPartyUserId = '';
   String? searchdDescription;
   String? locationId = '';
+  String? tileShareDesignatedId = '';
   int? split;
   NoteData? noteData;
   bool _isReadOnly = false;
@@ -145,6 +146,9 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('locationId')) {
       locationId = json['locationId'];
+    }
+    if (json.containsKey('tileShareDesignatedId')) {
+      tileShareDesignatedId = json['tileShareDesignatedId'];
     }
     if (json.containsKey('priority')) {
       TilePriority priority = TilePriority.medium;

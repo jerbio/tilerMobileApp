@@ -50,6 +50,55 @@
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
               android:resource="@drawable/launch_background"
               />
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="true"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https"
+                    android:host="tiler.app"
+                    android:pathPrefix=""
+                    android:pathPattern="/*"
+                    />
+                <!-- <data android:scheme="tilerapp"
+                    android:host="tiler"
+                    android:pathPrefix=""
+                    /> -->
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Add optional android:host to distinguish your app
+                    from others in case of conflicting scheme name -->
+                <data android:scheme="tilerapp" android:host="app.tiler.app" />
+                <!-- <data android:scheme="sample" /> -->
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Add optional android:host to distinguish your app
+                    from others in case of conflicting scheme name -->
+                <data android:scheme="https" android:host="app.tiler.app" 
+                    android:pathPattern="/*"
+                />
+                <!-- <data android:scheme="sample" /> -->
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data 
+                    android:scheme="http"
+                    android:host="app.tiler.app" 
+                    android:pathPattern="/*"
+                />
+            </intent-filter>
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

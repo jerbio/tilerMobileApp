@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
@@ -28,6 +30,9 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -45,8 +50,6 @@ import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
-
-final log = Logger('ExampleLogger');
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -66,9 +69,11 @@ Future main() async {
     HttpOverrides.global = MyHttpOverrides();
   }
   await dotenv.load(fileName: ".env");
-  await Firebase.initializeApp(
-      // options: DefaultFirebaseOptions.currentPlatform,
-      );
+  if (!Constants.isDebug) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  }
   runApp(TilerApp());
 }
 
@@ -182,7 +187,10 @@ class _TilerAppState extends State<TilerApp> {
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
             '/Integrations': (ctx) => IntegrationWidgetRoute(),
-            '/OnBoarding': (ctx) => OnboardingView()
+            '/OnBoarding': (ctx) => OnboardingView(),
+            '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
+            '/DesignatedTileList': (ctx) => DesignatedTileList(),
+            '/TileShare': (ctx) => TileShareRoute(),
           },
           localizationsDelegates: [
             AppLocalizations.delegate,
