@@ -2,10 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
-import '../../constants.dart' as Constants;
-import '../../data/onBoarding.dart';
+import 'package:tiler_app/constants.dart' as Constants;
+import 'package:tiler_app/data/onBoarding.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 class OnBoardingApi extends AppApi {
+  final LocalizationService localizationService;
+  OnBoardingApi(this.localizationService);
   Future<OnboardingContent?> fetchOnboardingData() async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
@@ -16,18 +19,18 @@ class OnBoardingApi extends AppApi {
 
         var headers = this.getHeaders();
         if (headers == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(message:localizationService.authenticationIssues);
         }
         print('Request headers: $headers');
         var response = await http.get(uri, headers: headers);
         print('Response from fetchOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
-        throw TilerError(message: 'User is not authenticated');
+        throw TilerError(message: localizationService.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception occurred in fetchOnboardingData: $e');
-      return null;
+      print('Exception occurred in fetchOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
+      throw TilerError(message: e is TilerError?e.message:localizationService.errorOccurred);
     }
   }
 
@@ -41,18 +44,18 @@ class OnBoardingApi extends AppApi {
         Uri uri = Uri.https(Constants.tilerDomain, 'api/User/Onboarding');
         var headers = this.getHeaders();
         if (headers == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(message: localizationService.authenticationIssues);
         }
         http.Response response = await http.post(uri,
             headers: headers, body: jsonEncode(requestParams));
         print('Response from sendOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
-        throw TilerError(message: 'User is not authenticated');
+        throw TilerError(message: localizationService.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception occurred in sendOnboardingData: $e');
-      return null;
+      print('Exception occurred in sendOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
+      throw TilerError(message: e is TilerError?e.message:localizationService.errorOccurred);
     }
   }
 
@@ -61,13 +64,15 @@ class OnBoardingApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (jsonResult.containsKey('Content')) {
         OnboardingContent onboardingContent =
-            OnboardingContent.fromJson(jsonResult['Content']);
+        OnboardingContent.fromJson(jsonResult['Content']);
         return onboardingContent;
       } else {
-        throw TilerError(message: 'Response does not contain expected Content');
+        throw TilerError(message: localizationService.responseContentError);
       }
-    } else {
-      throw TilerError(message: 'Failed');
+    } else if(response.statusCode==404){
+        return null;
+    }else {
+      throw TilerError(message: localizationService.responseHandlingError);
     }
   }
 
@@ -82,3 +87,4 @@ class OnBoardingApi extends AppApi {
         (onboardingContent.workLocation?.address?.isNotEmpty ?? false);
   }
 }
+
