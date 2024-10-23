@@ -55,7 +55,10 @@ NewTile _$NewTileFromJson(Map<String, dynamic> json) => NewTile()
   ..RestrictiveWeek = json['RestrictiveWeek'] == null
       ? null
       : RestrictionWeekConfig.fromJson(
-          json['RestrictiveWeek'] as Map<String, dynamic>);
+          json['RestrictiveWeek'] as Map<String, dynamic>)
+  ..contacts = (json['contacts'] as List<dynamic>?)
+      ?.map((e) => ContactModel.fromJson(e as Map<String, dynamic>))
+      .toList();
 
 Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'BColor': instance.BColor,
@@ -104,4 +107,5 @@ Map<String, dynamic> _$NewTileToJson(NewTile instance) => <String, dynamic>{
       'AutoReviseDeadline': instance.AutoReviseDeadline,
       'Priority': instance.Priority,
       'RestrictiveWeek': instance.RestrictiveWeek?.toJson(),
+      'contacts': instance.contacts?.map((e) => e.toJson()).toList(),
     };

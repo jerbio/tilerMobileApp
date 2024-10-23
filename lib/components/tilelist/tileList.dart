@@ -299,7 +299,7 @@ class _TileListState extends State<TileList> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                NewTileSheet(subEvent: subEvent),
+                CreatedTileSheet(subEvent: subEvent),
               ],
             ),
           ),
@@ -1014,7 +1014,8 @@ class _TileListState extends State<TileList> {
                 endIndex -= 1;
               }
             }
-            print("Loaded timeline is " + state.lookupTimeline.toString());
+            Utility.debugPrint(
+                "Loaded timeline is " + state.lookupTimeline.toString());
 
             int currentIndex = startIndex;
             do {
@@ -1027,7 +1028,7 @@ class _TileListState extends State<TileList> {
                 !isNewStatusId) {
               subEvents = (statusToSubEvents[statusId] ?? {}).values.toList();
             }
-            print("Loaded timeline subevent Count " +
+            Utility.debugPrint("Loaded timeline subevent Count " +
                 subEvents.length.toString());
             // for (SubCalendarEvent eachSubEvent in subEvents) {
             //   List<SubCalendarEvent> subEvents = dayIndexToSubEvents[
@@ -1128,7 +1129,7 @@ class _TileListState extends State<TileList> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: <Widget>[
-                              NewTileSheet(subEvent: subEvent),
+                              CreatedTileSheet(subEvent: subEvent),
                             ],
                           ),
                         ),

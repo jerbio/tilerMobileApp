@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:ui';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,6 +18,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -60,23 +63,43 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
-
+  late AppLinks _appLinks;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
     super.initState();
+    initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
       localNotificationService.subscribeToRemoteNotification(this.context);
     });
     localNotificationService.initialize(this.context);
 
-    accessManager.locationAccess(statusCheck: true).then((value) {
-      setState(() {
-        if (value != null) {
-          locationAccess = value;
-          return;
-        }
-      });
+    // accessManager.locationAccess(statusCheck: true).then((value) {
+    //   if (this.mounted) {
+    //     setState(() {
+    //       if (value != null) {
+    //         locationAccess = value;
+    //         return;
+    //       }
+    //     });
+    //   }
+    // });
+  }
+
+  void openAppLink(Uri uri) {
+    RedirectHandler.routePage(context, uri);
+  }
+
+  Future<void> initDeepLinks() async {
+    // return;
+    _appLinks = AppLinks();
+
+    // Handle links
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('onAppLink: $uri');
+      openAppLink(uri);
     });
   }
 
@@ -85,15 +108,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
-          AnalysticsSignal.send('SEARCH_PRESSED');
-          Navigator.pushNamed(context, '/SearchTile');
+          // Navigator.pushNamed(context, '/AddTile');
+          AnalysticsSignal.send('TILE_SHARE_BUTTON');
+          Navigator.pushNamed(context, '/TileShare');
         }
         break;
       case 1:
         {
-          // Navigator.pushNamed(context, '/AddTile');
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
+          AnalysticsSignal.send('SEARCH_PRESSED');
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 2:
@@ -346,7 +369,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       ),
                     ),
                   ),
-                ),
+                )
               ],
             ),
           ),
@@ -380,11 +403,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget build(BuildContext context) {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     double height = MediaQuery.of(context).size.height;
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // print('isLocationRequestTriggered $isLocationRequestTriggered');
+    // print('locationAccess $locationAccess');
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
@@ -492,23 +517,17 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.search,
-                  color: TileStyles.primaryColor,
-                ),
-                label: '',
-              ),
-              BottomNavigationBarItem(
                   icon: Icon(
-                    Icons.add,
-                    color: Color.fromRGBO(0, 0, 0, 0),
+                    Icons.share,
+                    color: TileStyles.primaryColor,
                   ),
                   label: ''),
               BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.settings,
-                    color: TileStyles.primaryColor,
-                  ),
+                icon: Icon(Icons.search, color: TileStyles.primaryColor),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
                   label: ''),
             ],
             unselectedItemColor: Colors.white,
@@ -534,21 +553,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: isAddButtonClicked
-          ? null
-          : FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: () {
-                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-                displayDialog(MediaQuery.of(context).size);
-              },
-              child: Icon(
-                Icons.add,
-                size: 35,
-                color: TileStyles.primaryColor,
-              ),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: TileStyles.primaryContrastColor,
+        onPressed: () {
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+          displayDialog(MediaQuery.of(context).size);
+        },
+        child: Icon(
+          Icons.add,
+          size: 35,
+          color: TileStyles.primaryColor,
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

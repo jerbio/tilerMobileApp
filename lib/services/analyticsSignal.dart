@@ -1,5 +1,6 @@
 import 'package:tiler_app/util.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import '../../constants.dart' as Constants;
 
 class AnalysticSession {
   final String _sessionId = Utility.uuid.toString();
@@ -60,6 +61,9 @@ class AnalysticsSignal {
   static Future send(String tag, {Map? additionalInfo}) async {
     if (tag.isEmpty) {
       return "no-tag-set";
+    }
+    if (Constants.isDebug) {
+      return;
     }
     AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
         signalTag: tag, additionalInfo: additionalInfo);

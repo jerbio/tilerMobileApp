@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -650,12 +651,13 @@ class SignInComponentState extends State<SignInComponent>
                         ),
                       ),
                     ),
-                    Container(
-                      padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: buttons,
-                      ),
+                    Flex(
+                      direction: Axis.vertical,
+                      children: [
+                        Column(
+                          children: buttons,
+                        )
+                      ],
                     ),
                   ],
                 ))));

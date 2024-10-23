@@ -222,7 +222,6 @@ class AddTileState extends State<AddTile> {
   }
 
   void onTileNameInput() {
-    // isSubmissionReady();
     if (tileNameText != tileNameController.text) {
       if (tileNameController.text.length >
           Constants.autoCompleteTriggerCharacterCount) {

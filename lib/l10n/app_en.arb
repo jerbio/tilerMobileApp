@@ -371,5 +371,30 @@
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
-    "incompleteRequest":"Did not send complete request"
+    "incompleteRequest":"Did not send complete request",
+    "addContact": "Add contact",
+    "deadlineTime": "Deadline: {time}",
+    "@deadlineTime": {
+      "description": "Deadline: time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "Deadline: 12/25/24"
+        }
+      }},
+    "accept": "Accept",
+    "decline": "Decline",
+    "preview": "Preview",
+    "addTilette": "Add Tilette",
+    "tileShareName": "Tile Share Name",
+    "tileShare": "Tile Share",
+    "update": "Update",
+    "noDesignatedTiles": "No designated tiles",
+    "noTileCluster": "No Tile Shares Created",
+    "errorLoadingTilelist": "Error loading tilelist",
+    "failedToLoadTileShareCluster": "Failed to load tile share cluster",
+    "missingTileShareCluster": "Missing TileShare cluster",
+    "outBound": "OutBound",
+    "inBound": "Inbound",
+    "multiShare": "Multi Share"
   }

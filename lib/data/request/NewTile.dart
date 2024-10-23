@@ -1,5 +1,10 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
+import 'package:tiler_app/data/request/addressModel.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/request/contactModel.dart';
+import 'package:tiler_app/util.dart';
 
 part 'NewTile.g.dart';
 
@@ -159,6 +164,47 @@ class NewTile {
   String? Priority;
 
   RestrictionWeekConfig? RestrictiveWeek;
+
+  List<ContactModel>? contacts;
+
+  ClusterTemplateTileModel toClusterTemplateTileModel() {
+    ClusterTemplateTileModel clusterTemplateTileModel =
+        ClusterTemplateTileModel();
+    clusterTemplateTileModel.Name = this.Name;
+    if ((this.LocationAddress != null && this.LocationAddress!.isNotEmpty) ||
+        (this.LocationTag != null && this.LocationTag!.isNotEmpty)) {
+      AddressModel addressModel = AddressModel();
+      addressModel.Address = this.LocationAddress;
+      addressModel.Description = this.LocationTag;
+      clusterTemplateTileModel.AddressData = addressModel;
+    }
+
+    if ((this.StartYear.isNot_NullEmptyOrWhiteSpace() &&
+        this.StartMonth.isNot_NullEmptyOrWhiteSpace() &&
+        this.StartDay.isNot_NullEmptyOrWhiteSpace())) {
+      DateTime start = DateTime(
+          int.parse(this.StartYear!),
+          int.parse(this.StartMonth!),
+          int.parse(this.StartDay!),
+          int.parse(this.StartHour ?? "0"),
+          int.parse(this.StartMinute ?? "0"));
+      clusterTemplateTileModel.StartTime = start.millisecondsSinceEpoch;
+    }
+
+    if ((this.EndYear.isNot_NullEmptyOrWhiteSpace() &&
+        this.EndMonth.isNot_NullEmptyOrWhiteSpace() &&
+        this.EndDay.isNot_NullEmptyOrWhiteSpace())) {
+      DateTime end = DateTime(
+          int.parse(this.EndYear!),
+          int.parse(this.EndMonth!),
+          int.parse(this.EndDay!),
+          int.parse(this.EndHour ?? "23"),
+          int.parse(this.EndMinute ?? "59"));
+      clusterTemplateTileModel.EndTime = end.millisecondsSinceEpoch;
+    }
+    clusterTemplateTileModel.Contacts = this.contacts?.toList();
+    return clusterTemplateTileModel;
+  }
 
   factory NewTile.fromJson(Map<String, dynamic> json) =>
       _$NewTileFromJson(json);

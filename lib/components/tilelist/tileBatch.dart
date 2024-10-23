@@ -245,8 +245,8 @@ class TileBatchState extends State<TileBatch> {
         );
       }
       dayContent = Container(
-        height: MediaQuery.of(context).size.height - daySummaryToHeightBuffer,
-        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
+        width: MediaQuery.sizeOf(context).width,
         child: ListView(
           children: [
             animatedList!,
@@ -447,11 +447,9 @@ class TileBatchState extends State<TileBatch> {
         timeSectionTiles.remove(removedTile.item1.uniqueId);
       }
 
-      Utility.isWithinNowSet = false;
       if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
         this._pendingRendering = true;
         Timer(Duration(milliseconds: 500), () {
-          Utility.isWithinNowSet = true;
           print('tileBatch Delayed UI update');
           for (var insertedTile in insertedTiles) {
             print('tileBatch insert');
