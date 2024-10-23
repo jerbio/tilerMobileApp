@@ -17,8 +17,8 @@ import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/analyticsSignal.dart';
-
-import '../../util.dart';
+import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/util.dart';
 import 'AuthorizedRoute.dart';
 import 'onBoarding.dart';
 
@@ -56,10 +56,14 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingResetPassword = false;
   bool isGoogleSignInEnabled = false;
   final authApi = AuthorizationApi();
+  LocalizationService? localizationService;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      localizationService = LocalizationService(AppLocalizations.of(context)!);
+    });
     signinInAnimationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -144,7 +148,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -204,7 +208,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -351,7 +355,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,
