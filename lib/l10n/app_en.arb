@@ -400,6 +400,11 @@
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
     "responseHandlingError":"Failed to handle the response.",
+    "save":"Save",
+    "selectWeek":"Select a Week",
+    "selectYear":"Select Year",
+    "retrievingDataIssue":"Issue with retrieving data"
+    "responseHandlingError":"Failed to handle the response.",
     "numberOfTilesSelected": "{number} Tiles selected",
     "@numberOfTilesSelected": {
       "description": "Number of Tiles selected",
