@@ -396,5 +396,26 @@
     "missingTileShareCluster": "Missing TileShare cluster",
     "outBound": "OutBound",
     "inBound": "Inbound",
-    "multiShare": "Multi Share"
+    "multiShare": "Multi Share",
+    "numberOfTilesSelected": "{number} Tiles selected",
+    "@numberOfTilesSelected": {
+      "description": "Number of Tiles selected",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Tiles selected"
+        }
+      }},
+      "completeTiles":"Complete Tiles",
+
+    "unScheduledTiles": "Unscheduled Tiles",
+    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
+    "@numberOfUnScheduledTiles": {
+      "description": "Number of Unscheduled Tiles",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Unscheduled Tiles"
+        }
+      }}
   }
