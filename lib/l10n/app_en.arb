@@ -369,6 +369,7 @@
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
+    "incompleteRequest":"Did not send complete request",
     "addContact": "Add contact",
     "deadlineTime": "Deadline: {time}",
     "@deadlineTime": {
@@ -398,5 +399,26 @@
     "authenticationIssues":"Issues with authentication.",
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
-    "responseHandlingError":"Failed to handle the response."
+    "responseHandlingError":"Failed to handle the response.",
+    "numberOfTilesSelected": "{number} Tiles selected",
+    "@numberOfTilesSelected": {
+      "description": "Number of Tiles selected",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Tiles selected"
+        }
+      }},
+      "completeTiles":"Complete Tiles",
+
+    "unScheduledTiles": "Unscheduled Tiles",
+    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
+    "@numberOfUnScheduledTiles": {
+      "description": "Number of Unscheduled Tiles",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Unscheduled Tiles"
+        }
+      }}
   }

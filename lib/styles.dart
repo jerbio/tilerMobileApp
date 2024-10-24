@@ -16,6 +16,9 @@ class TileStyles {
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
+  static const Color inactiveTextColor = Color(0xFF4A4A4A);
+  static const Color black = Colors.black;
+
   static const Color appBarColor = primaryColor;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
@@ -101,7 +104,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
     overlayColor: MaterialStateProperty.resolveWith((states) {
       return primaryColorLightHSL.toColor();
@@ -110,7 +113,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
   );
 
