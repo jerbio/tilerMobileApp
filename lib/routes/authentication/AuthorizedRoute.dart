@@ -7,12 +7,22 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPickerPage.dart';
+import 'package:tiler_app/components/datePickers/weeklyDatePicker/weeklyPickerPage.dart';
+import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
+import 'package:tiler_app/components/ribbons/monthRibbon/monthRibbon.dart';
+import 'package:tiler_app/components/ribbons/weekRibbon/weekRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
+import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
+import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
@@ -103,7 +113,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   void _onBottomNavigationTap(int index) {
-    ActivePage selectedPage = ActivePage.tilelist;
     switch (index) {
       case 0:
         {
@@ -120,10 +129,65 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         break;
       case 2:
         {
-          AnalysticsSignal.send('SETTING_PRESSED');
-          Navigator.pushNamed(context, '/Setting');
+          final currentState = context.read<ScheduleBloc>().state;
+          AuthorizedRouteTileListPage newView;
+          switch (currentState.currentView) {
+            case AuthorizedRouteTileListPage.Daily:
+              context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+              newView = AuthorizedRouteTileListPage.Weekly;
+              break;
+            case AuthorizedRouteTileListPage.Weekly:
+              newView = AuthorizedRouteTileListPage.Monthly;
+              context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
+              break;
+            case AuthorizedRouteTileListPage.Monthly:
+              context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
+              newView = AuthorizedRouteTileListPage.Daily;
+              break;
+            default:
+              newView = AuthorizedRouteTileListPage.Daily;
+          }
+            context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
+          // AnalysticsSignal.send('SETTING_PRESSED');
+          // Navigator.pushNamed(context, '/Setting');
         }
         break;
+    }
+  }
+  Widget _buildTileList(AuthorizedRouteTileListPage selectedListPage) {
+    switch (selectedListPage) {
+      case AuthorizedRouteTileListPage.Daily:
+        return DailyTileList();
+      case AuthorizedRouteTileListPage.Weekly:
+        return WeeklyTileList();
+      case AuthorizedRouteTileListPage.Monthly:
+        return MonthlyTileList();
+    }
+  }
+
+  Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
+    switch (selectedListPage) {
+      case AuthorizedRouteTileListPage.Daily:
+        return DayRibbonCarousel(
+          Utility.currentTime().dayDate,
+          autoUpdateAnchorDate: false,
+        );
+      case AuthorizedRouteTileListPage.Weekly:
+        return Stack(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: WeekPickerPage(),
+          ),
+          WeeklyRibbonCarousel()
+        ]);
+      case AuthorizedRouteTileListPage.Monthly:
+        return Stack(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: MonthPickerPage(),
+          ),
+          MonthlyRibbon(),
+        ]);
     }
   }
 
@@ -410,23 +474,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(),
-      // //this is the default and we need to switch these to routes and so we dont loose back button support
-      Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
-              blurRadius: 7,
-              offset: const Offset(0, 7),
-            ),
-          ],
-        ),
-        child: DayRibbonCarousel(
-          Utility.currentTime().dayDate,
-          autoUpdateAnchorDate: true,
-        ),
+      BlocBuilder<ScheduleBloc, ScheduleState>(
+        builder: (context, state) {
+          return Stack(
+            children: [
+              _buildTileList(state.currentView),
+              _ribbonCarousel(state.currentView),
+          ]
+          );
+        },
       ),
 
       Positioned(
@@ -524,8 +580,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 label: '',
               ),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
+                  icon: Icon(Icons.calendar_month,
+                      color: TileStyles.primaryColorDarkHSL.toColor()),
                   label: ''),
+
             ],
             unselectedItemColor: Colors.white,
             selectedItemColor: Colors.black,
