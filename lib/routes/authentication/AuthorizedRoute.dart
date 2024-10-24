@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -403,13 +402,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget build(BuildContext context) {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     double height = MediaQuery.of(context).size.height;
-    // print('isLocationRequestTriggered $isLocationRequestTriggered');
-    // print('locationAccess $locationAccess');
-    // if (!isLocationRequestTriggered &&
-    //     !locationAccess.item2 &&
-    //     locationAccess.item3) {
-    //   return renderLocationRequest(accessManager);
-    // }
+    if (!isLocationRequestTriggered &&
+        !locationAccess.item2 &&
+        locationAccess.item3) {
+      return renderLocationRequest(accessManager);
+    }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
