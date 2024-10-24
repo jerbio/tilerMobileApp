@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -16,6 +17,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
@@ -42,7 +44,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
@@ -109,10 +111,10 @@ class _TilerAppState extends State<TilerApp> {
   Widget renderPending() {
     return Center(
         child: Stack(children: [
-          Center(
-              child: Image.asset('assets/images/tiler_logo_white_text.png',
-                  fit: BoxFit.cover, scale: 7)),
-        ]));
+      Center(
+          child: Image.asset('assets/images/tiler_logo_white_text.png',
+              fit: BoxFit.cover, scale: 7)),
+    ]));
   }
 
   Future<Tuple2<bool, String>> authenticateUser(BuildContext context) async {
@@ -145,7 +147,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => LocationBloc()),
           BlocProvider(create: (context) => IntegrationsBloc()),
           BlocProvider(create: (context) => TileListCarouselBloc()),
-
+          BlocProvider(create: (context) => ForecastBloc())
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -159,21 +161,21 @@ class _TilerAppState extends State<TilerApp> {
             '/LoggedOut': (BuildContext context) => new SignInRoute(),
             '/AddTile': (BuildContext context) => new AddTile(),
             '/SearchTile': (BuildContext context) =>
-            new EventNameSearchWidget(context: context),
+                new EventNameSearchWidget(context: context),
             '/LocationRoute': (BuildContext context) => new LocationRoute(),
             '/CustomRestrictionsRoute': (BuildContext context) =>
-            new CustomTimeRestrictionRoute(),
+                new CustomTimeRestrictionRoute(),
             '/TimeRestrictionRoute': (BuildContext context) =>
-            new TimeRestrictionRoute(),
+                new TimeRestrictionRoute(),
             '/ForecastPreview': (ctx) => ForecastPreview(),
             '/ForecastDuration': (ctx) => ForecastDuration(),
             '/Procrastinate': (ctx) => ProcrastinateAll(),
             '/DurationDial': (ctx) => DurationDial(
-              presetDurations: [
-                Duration(minutes: 30),
-                Duration(hours: 1),
-              ],
-            ),
+                  presetDurations: [
+                    Duration(minutes: 30),
+                    Duration(hours: 1),
+                  ],
+                ),
             '/RepetitionRoute': (ctx) => RepetitionRoute(),
             '/PickColor': (ctx) => PickColor(),
             '/Setting': (ctx) => Setting(),
@@ -196,7 +198,8 @@ class _TilerAppState extends State<TilerApp> {
           home: FutureBuilder<Tuple2<bool, String>>(
               future: authenticateUser(context),
               builder: (context, AsyncSnapshot<Tuple2<bool, String>> snapshot) {
-                localizationService=LocalizationService(AppLocalizations.of(context) !);
+                localizationService =
+                    LocalizationService(AppLocalizations.of(context)!);
                 Widget retValue;
                 if (snapshot.hasData) {
                   if (!snapshot.data!.item1) {
@@ -213,7 +216,8 @@ class _TilerAppState extends State<TilerApp> {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
                     AnalysticsSignal.send('LOGIN-VERIFIED');
                     retValue = FutureBuilder<bool>(
-                      future: Utility.checkOnboardingStatus(localizationService!),
+                      future:
+                          Utility.checkOnboardingStatus(localizationService!),
                       builder:
                           (context, AsyncSnapshot<bool> onboardingSnapshot) {
                         if (onboardingSnapshot.connectionState ==
