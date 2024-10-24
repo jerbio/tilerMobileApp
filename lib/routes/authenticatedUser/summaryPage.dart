@@ -1379,18 +1379,6 @@ class _SummaryPage extends State<SummaryPage> {
                                     eventThirdPartyTypes.join(',');
                                 String eventThirdPartyUserIdString =
                                     eventThirdPartyUserIds.join(',');
-                                String eventThirdPartyEventIdString =
-                                    eventThirdPartyEventId.join(',');
-                                print(eventIdString);
-                                print(eventThirdPartyTypeString);
-                                print(eventThirdPartyUserIdString);
-                                print(eventThirdPartyEventIdString);
-
-                                print(
-                                    'First item is: ${selectedUnscheduledItems[0].thirdPartyUserId}');
-                                print(
-                                    'First item is: ${selectedUnscheduledItems[0].thirdpartyId}');
-
                                 _showLoadingDialog();
 
                                 // Wait for the task completion
@@ -1403,7 +1391,6 @@ class _SummaryPage extends State<SummaryPage> {
                                             eventThirdPartyUserIdString);
 
                                 if (success) {
-                                  print("Success: $success");
                                   await initialize();
                                   Future.delayed(Duration(seconds: 2), () {
                                     Navigator.pop(context);
