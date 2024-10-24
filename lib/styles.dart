@@ -208,19 +208,35 @@ class TileStyles {
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
   static final BoxDecoration defaultBackground =
-      BoxDecoration(color: Colors.transparent
-          // gradient: LinearGradient(
-          //     begin: Alignment.topCenter,
-          //     end: Alignment.bottomCenter,
-          //     colors: [
-          //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-          //   Colors.white.withOpacity(0.5),
-          //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
-          // ])
-          );
+  BoxDecoration(color: Colors.transparent
+    // gradient: LinearGradient(
+    //     begin: Alignment.topCenter,
+    //     end: Alignment.bottomCenter,
+    //     colors: [
+    //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
+    //   Colors.white.withOpacity(0.5),
+    //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
+    // ])
+  );
   static final titleBarStyle = TextStyle(
     color: TileStyles.appBarTextColor,
   );
+  static const datePickersMainStyle=TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
+  static const datePickersSaveStyle=TextStyle(
+      fontFamily: rubikFontName,
+      color: primaryColor
+  );
+  static final BoxDecoration ribbonsButtonDefaultDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromRGBO(240, 240, 240, 1),
+            Color.fromRGBO(240, 240, 240, 1),
+          ]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
@@ -236,6 +252,9 @@ class TileStyles {
   static final BoxDecoration tileIconContainerBoxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.1),
       borderRadius: BorderRadius.circular(8));
+  static final BoxDecoration tileIconContainerBoxDecorationMonthly = BoxDecoration(
+      color: Color.fromRGBO(31, 31, 31, 0.1),
+      shape: BoxShape.circle);
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(
@@ -276,7 +295,7 @@ class TileStyles {
   static const String evaluatingScheduleAsset =
       'assets/lottie/tiler-evaluating-card-swap.json';
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
-      SizedBox(height: 200);
+  SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
       SizedBox(height: 150);
 

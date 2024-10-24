@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -140,7 +139,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(startString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor))),
           Lottie.asset(lottieAsset, height: 85),
@@ -149,7 +148,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(endString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor)))
         ],
