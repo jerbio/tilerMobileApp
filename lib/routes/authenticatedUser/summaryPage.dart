@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:fl_chart/fl_chart.dart' as flchart;
@@ -75,11 +77,6 @@ class _SummaryPage extends State<SummaryPage> {
           element.startTime.weekday.toDouble(),
           element.duration.inMinutes.toDouble(),
         ));
-
-        print(
-            "value is  ${element.duration.inMinutes.toDouble()} weekday ${element.startTime.weekday.toDouble()}");
-
-        print("total lenght of shots is ${shots.length}");
       });
 
       final overviewlist = analysis!.overview!;
@@ -124,11 +121,6 @@ class _SummaryPage extends State<SummaryPage> {
           element.startTime.weekday.toDouble(),
           element.duration.inMinutes.toDouble(),
         ));
-
-        print(
-            "value is  ${element.duration.inMinutes.toDouble()} weekday ${element.startTime.weekday.toDouble()}");
-
-        print("total lenght of shots is ${shots.length}");
       });
 
       final overviewlist = analysis!.overview!;
@@ -180,7 +172,7 @@ class _SummaryPage extends State<SummaryPage> {
     return selectedItems;
   }
 
-  Widget renderDate(SubCalendarEvent subCalendarEventTile) {
+  Widget renderChecklistDates(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = Container(
       padding: EdgeInsets.fromLTRB(10, 5, 5, 5),
       width: 110,
@@ -206,10 +198,10 @@ class _SummaryPage extends State<SummaryPage> {
                       subCalendarEventTile.startTime)
                   .humanDate,
               style: TextStyle(
-                fontSize: 12,
-                color: Color.fromRGBO(31, 31, 31, 0.8),
-                fontFamily: TileStyles.rubikFontName,
-              ),
+                  fontSize: 12,
+                  color: Color.fromRGBO(31, 31, 31, 0.8),
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -279,7 +271,7 @@ class _SummaryPage extends State<SummaryPage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [renderDate(subCalendarEventTile)],
+              children: [renderChecklistDates(subCalendarEventTile)],
             ),
           ],
         ),
@@ -305,14 +297,10 @@ class _SummaryPage extends State<SummaryPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Checkbox For completion
           GestureDetector(
             onTap: () {
-              print("Tapped for completion");
-              print("before tap: $tapValue");
               setState(() {
                 tapValue = !tapValue;
-                print(tapValue);
               });
             },
             child: Container(
@@ -361,7 +349,27 @@ class _SummaryPage extends State<SummaryPage> {
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: [renderDate(subCalendarEventTile)],
+                  children: [
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditTile(
+                                        tileId:
+                                            (subCalendarEventTile.isFromTiler
+                                                    ? subCalendarEventTile.id
+                                                    : subCalendarEventTile
+                                                        .thirdpartyId) ??
+                                                "",
+                                        tileSource:
+                                            subCalendarEventTile.thirdpartyType,
+                                        thirdPartyUserId: subCalendarEventTile
+                                            .thirdPartyUserId,
+                                      )));
+                        },
+                        child: renderChecklistDates(subCalendarEventTile))
+                  ],
                 ),
               ],
             ),
@@ -511,16 +519,190 @@ class _SummaryPage extends State<SummaryPage> {
     );
   }
 
+  Widget renderCheckList(List<SubCalendarEvent> tiles,
+      {required List<bool> checkBoxStates}) {
+    return Column(
+        children: tiles.asMap().entries.map<Widget>((entry) {
+      int index = entry.key;
+      SubCalendarEvent e = entry.value;
+      return Container(
+        decoration: BoxDecoration(
+            border: Border.all(
+                width: 0.5,
+                color: e.priority == TilePriority.high
+                    ? Colors.red
+                    : Colors.transparent),
+            borderRadius: BorderRadius.circular(5)),
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: Checkbox.adaptive(
+                    focusColor: Colors.green,
+                    value: //false,
+                        checkBoxStates[index],
+                    onChanged: (value) {
+                      setState(() {
+                        checkBoxStates[index] = value!;
+                        selectedUnscheduledItems =
+                            getSelectedUnscheduledItems();
+                      });
+                    },
+                    activeColor: Colors.transparent,
+                    checkColor: Colors.green,
+                  ),
+                ),
+
+                //Sizedbox for spacing
+                SizedBox(
+                  width: 10,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      bool value = checkBoxStates[index];
+                      checkBoxStates[index] = !value;
+                      selectedUnscheduledItems = getSelectedUnscheduledItems();
+                    });
+                  },
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    height: 35,
+                    width: MediaQuery.of(context).size.width *
+                            TileStyles.widthRatio -
+                        205,
+                    child: Text(
+                      e.isProcrastinate == true
+                          ? AppLocalizations.of(context)!.procrastinateBlockOut
+                          : e.name ?? "",
+                      style: TextStyle(
+                        fontFamily: TileStyles.rubikFontName,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EditTile(
+                                    tileId: (e.isFromTiler
+                                            ? e.id
+                                            : e.thirdpartyId) ??
+                                        "",
+                                    tileSource: e.thirdpartyType,
+                                    thirdPartyUserId: e.thirdPartyUserId,
+                                  )));
+                    },
+                    child: renderChecklistDates(e))
+              ],
+            ),
+          ],
+        ),
+      );
+    }).toList());
+  }
+
+  Widget renderNonCheckList(List<SubCalendarEvent> tiles,
+      {required VoidCallback switchTapFunction,
+      required List<bool> checkBoxStates}) {
+    return Column(
+      children: tiles.asMap().entries.map<Widget>((entry) {
+        SubCalendarEvent e = entry.value;
+        return OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                side: BorderSide(
+                  color: Colors.transparent,
+                ),
+                padding: EdgeInsets.all(0)),
+            onPressed: switchTapFunction,
+            child: Container(
+              decoration: BoxDecoration(
+                  border: Border.all(
+                      width: 0.5,
+                      color: e.priority == TilePriority.high
+                          ? Colors.red
+                          : Colors.transparent),
+                  borderRadius: BorderRadius.circular(5)),
+              padding: EdgeInsets.all(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                          height: 20,
+                          width: 20,
+                          margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                          decoration: BoxDecoration(
+                              color: e.color ?? Colors.transparent,
+                              borderRadius: BorderRadius.circular(5))),
+                      Container(
+                        height: 20,
+                        width: MediaQuery.of(context).size.width *
+                                TileStyles.widthRatio -
+                            205,
+                        child: Text(
+                          e.isProcrastinate == true
+                              ? AppLocalizations.of(context)!
+                                  .procrastinateBlockOut
+                              : e.name ?? "",
+                          style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                              overflow: TextOverflow.ellipsis,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => EditTile(
+                                          tileId: (e.isFromTiler
+                                                  ? e.id
+                                                  : e.thirdpartyId) ??
+                                              "",
+                                          tileSource: e.thirdpartyType,
+                                          thirdPartyUserId: e.thirdPartyUserId,
+                                        )));
+                          },
+                          child: renderChecklistDates(e))
+                    ],
+                  ),
+                ],
+              ),
+            ));
+      }).toList(),
+    );
+  }
+
   // Unscheduled section
   Widget renderUnscheduledTiles(
     double height,
     List<SubCalendarEvent> tiles,
-    bool switchCondition, {
+    bool isRenderAsCheckList, {
     required VoidCallback switchTapFunction,
     required List<bool> checkBoxStates,
     required VoidCallback completeFunction,
   }) {
-    tiles = tiles ?? [];
     Widget unscheduledHeader = Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
       alignment: Alignment.centerLeft,
@@ -542,12 +724,21 @@ class _SummaryPage extends State<SummaryPage> {
             decoration: BoxDecoration(
                 color: Color.fromRGBO(31, 31, 31, 0.05),
                 borderRadius: BorderRadius.circular(20)),
-            child: Icon(Icons.error, color: Colors.redAccent),
+            child: this.isCheckStateActive
+                ? IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isCheckStateActive = false;
+                      });
+                    },
+                    icon: Icon(Icons.close))
+                : Icon(Icons.error, color: Colors.redAccent),
           ),
           Container(
             margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
             child: Text(
-              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
+              AppLocalizations.of(context)!
+                  .numberOfUnScheduledTiles(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
                 fontFamily: TileStyles.rubikFontName,
@@ -576,150 +767,32 @@ class _SummaryPage extends State<SummaryPage> {
               child: Column(children: [
                 unscheduledBodyHeader,
 
-                switchCondition == true
-                    ? Column(
-                        children: tiles.asMap().entries.map<Widget>((entry) {
-                        int index = entry.key;
-                        SubCalendarEvent e = entry.value;
-                        return Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                                  width: 0.5,
-                                  color: e.priority == TilePriority.high
-                                      ? Colors.red
-                                      : Colors.transparent),
-                              borderRadius: BorderRadius.circular(5)),
-                          padding: EdgeInsets.all(10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: Checkbox.adaptive(
-                                      value: //false,
-                                          checkBoxStates[index],
-                                      onChanged: (value) {
-                                        setState(() {
-                                          checkBoxStates[index] = value!;
-                                          selectedUnscheduledItems =
-                                              getSelectedUnscheduledItems();
-                                        });
-                                      },
-                                      activeColor: Colors.transparent,
-                                      checkColor: Colors.black,
-                                    ),
-                                  ),
-
-                                  //Sizedbox for spacing
-                                  SizedBox(
-                                    width: height / (height / 10),
-                                  ),
-                                  Container(
-                                    height: 20,
-                                    width: MediaQuery.of(context).size.width *
-                                            TileStyles.widthRatio -
-                                        205,
-                                    child: Text(
-                                      e.isProcrastinate == true
-                                          ? AppLocalizations.of(context)!
-                                              .procrastinateBlockOut
-                                          : e.name ?? "",
-                                      style: TextStyle(
-                                        fontFamily: TileStyles.rubikFontName,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [renderDate(e)],
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList())
-                    : Column(
-                        children: tiles.asMap().entries.map<Widget>((entry) {
-                          int index = entry.key;
-                          SubCalendarEvent e = entry.value;
-                          return GestureDetector(
-                              onTap: switchTapFunction,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                        width: 0.5,
-                                        color: e.priority == TilePriority.high
-                                            ? Colors.red
-                                            : Colors.transparent),
-                                    borderRadius: BorderRadius.circular(5)),
-                                padding: EdgeInsets.all(10),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                            height: 20,
-                                            width: 20,
-                                            margin: EdgeInsets.fromLTRB(
-                                                0, 0, 10, 0),
-                                            decoration: BoxDecoration(
-                                                color: e.color ??
-                                                    Colors.transparent,
-                                                borderRadius:
-                                                    BorderRadius.circular(5))),
-                                        Container(
-                                          height: 20,
-                                          width: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  TileStyles.widthRatio -
-                                              205,
-                                          child: Text(
-                                            e.isProcrastinate == true
-                                                ? AppLocalizations.of(context)!
-                                                    .procrastinateBlockOut
-                                                : e.name ?? "",
-                                            style: TextStyle(
-                                              fontFamily:
-                                                  TileStyles.rubikFontName,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [renderDate(e)],
-                                    ),
-                                  ],
-                                ),
-                              ));
-                        }).toList(),
-                      ),
+                isRenderAsCheckList == true
+                    ? renderCheckList(tiles, checkBoxStates: checkBoxStates)
+                    : renderNonCheckList(tiles,
+                        checkBoxStates: checkBoxStates,
+                        switchTapFunction: switchTapFunction),
 
                 // Sizedbox for spacing
                 checkBoxStates.where((value) => value == true).length >= 1
                     ? SizedBox(
-                        height: height / (height / 20),
+                        height: 20,
                       )
                     : SizedBox.shrink(),
 
                 // Display currently selected tiles
-                checkBoxStates.where((value) => value == true).length >= 1
+                checkBoxStates.where((value) => value == true).length >= 1 &&
+                        this.isCheckStateActive
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            "${checkBoxStates.where((value) => value == true).length} Tiles Selected",
+                            AppLocalizations.of(context)!.numberOfTilesSelected(
+                                checkBoxStates
+                                    .where((value) => value == true)
+                                    .length
+                                    .toString()),
                             style: TextStyle(
                               fontFamily: TileStyles.rubikFontName,
                               color: TileStyles.primaryColor,
@@ -743,7 +816,7 @@ class _SummaryPage extends State<SummaryPage> {
                                 ),
                               ),
                               child: Text(
-                                'Complete Tiles',
+                                AppLocalizations.of(context)!.completeTiles,
                                 style: TextStyle(
                                   fontFamily: TileStyles.rubikFontName,
                                   color: TileStyles.primaryColor,
@@ -754,15 +827,6 @@ class _SummaryPage extends State<SummaryPage> {
                         ],
                       )
                     : SizedBox.shrink(),
-                // Column(
-                //   children: [
-                //     renderListOfTiles(
-                //       height,
-                //       tiles,
-                //       unscheduledTilesCheckStates,
-                //     )
-                //   ],
-                // )
               ]),
             )
           ],
@@ -1498,10 +1562,10 @@ class _TileToBeCompletedState extends State<TileToBeCompleted> {
                       subCalendarEventTile.startTime)
                   .humanDate,
               style: TextStyle(
-                fontSize: 12,
-                color: Color.fromRGBO(31, 31, 31, 0.8),
-                fontFamily: TileStyles.rubikFontName,
-              ),
+                  fontSize: 12,
+                  color: Color.fromRGBO(31, 31, 31, 0.8),
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w600),
             ),
           ),
         ],

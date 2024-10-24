@@ -433,16 +433,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
 
       Positioned(
-        right: 10,
+        right: 0,
         child: GestureDetector(
           onTap: () {
-            print("Navigated to current day");
             uiDateManagerBloc.onDateButtonTapped(DateTime.now());
           },
           child: Container(
-            // color: Colors.amber,
-            height: height / (height / 38),
-            width: height / (height / 38),
+            height: 45,
+            width: 38,
+            color: TileStyles.primaryContrastColor,
+            padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
             child: LayoutBuilder(
               builder: (context, constraints) => Stack(
                 children: [
@@ -451,26 +451,26 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     right: 0,
                     top: 0,
                     bottom: 0,
-                    child: Icon(
-                      FontAwesomeIcons.calendar,
-                      size: constraints.maxWidth * 0.9,
-                      color: Colors.black,
+                    child: Container(
+                      width: constraints.maxWidth * 0.9,
+                      child: Icon(
+                        FontAwesomeIcons.calendar,
+                        size: constraints.maxWidth * 0.9,
+                        color: TileStyles.primaryColor,
+                      ),
                     ),
                   ),
                   Positioned(
-                    bottom: constraints.maxHeight * 0.1,
-                    left: (constraints.maxWidth - constraints.maxWidth * 0.55) /
-                        2,
+                    bottom: constraints.maxHeight * 0.125,
+                    left: (constraints.maxWidth * 0.11),
                     child: Center(
                       child: Container(
-                        // color: Colors.green,
                         height: constraints.maxHeight * 0.55,
                         width: constraints.maxHeight * 0.55,
                         child: Center(
                           child: Text(
                             DateTime.now().day.toString(),
                             style: TextStyle(
-                              fontWeight: FontWeight.w700,
                               fontFamily: TileStyles.rubikFontName,
                             ),
                           ),
@@ -481,7 +481,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 ],
               ),
             ),
-          ), //Last Place
+          ),
         ),
       )
     ];
