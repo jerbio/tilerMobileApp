@@ -14,6 +14,7 @@ import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MonthlyTileList extends TileList {
   static final String routeName = '/MonthlyTileList';
@@ -185,7 +186,7 @@ class _MonthlyTileListState extends TileListState {
               ],
             );
           }
-          return Text('Issue with retrieving data');
+          return Text(AppLocalizations.of(context)!.retrievingDataIssue);
 
         },
       ),
