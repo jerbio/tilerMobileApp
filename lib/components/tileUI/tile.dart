@@ -308,31 +308,16 @@ class TileWidgetState extends State<TileWidget>
         );
 
         //
-        allElements.add(
-          Padding(
-            padding: EdgeInsets.only(top: 15),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  isMoreDetailEnabled = false;
-                });
-              },
-              child: SizedBox(
-                height: 40,
-                width: 40,
-                child: Expanded(
-                  child: Transform.rotate(
-                    angle: pi / 2,
-                    child: Icon(
-                      Icons.chevron_left,
-                      size: 30,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        allElements.add(GestureDetector(
+            onTap: () {
+              setState(() {
+                isMoreDetailEnabled = false;
+              });
+            },
+            child: Icon(
+              Icons.arrow_drop_up,
+              size: 30,
+            )));
       } else {
         allElements.add(
           GestureDetector(
@@ -341,22 +326,9 @@ class TileWidgetState extends State<TileWidget>
                 isMoreDetailEnabled = true;
               });
             },
-            child: Center(
-              child: Container(
-                width: 30,
-                height: 30,
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 2),
-                child: Transform.rotate(
-                  angle: pi / 2,
-                  child: Icon(
-                    Icons.chevron_right,
-                    size: 30,
-                  ),
-                ),
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, .1),
-                    borderRadius: BorderRadius.circular(25)),
-              ),
+            child: Icon(
+              Icons.arrow_drop_down,
+              size: 30,
             ),
           ),
         );
