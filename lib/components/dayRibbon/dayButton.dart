@@ -52,8 +52,8 @@ class _DayButtonState extends State<DayButton> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              TileStyles.primaryColorLightHSL.toColor(),
-              TileStyles.primaryColorLightHSL.toColor()
+              TileStyles.primaryColor,
+              TileStyles.primaryColor
             ]));
 
     var decoration =

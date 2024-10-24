@@ -247,6 +247,7 @@ class TileWidgetState extends State<TileWidget>
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Row(
         children: [
+          // Icon container
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
@@ -262,6 +263,8 @@ class TileWidgetState extends State<TileWidget>
               size: TileStyles.tileIconSize,
             ),
           ),
+
+          // Text
           Padding(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             child: TimeFrameWidget(
@@ -277,100 +280,142 @@ class TileWidgetState extends State<TileWidget>
     allElements.add(tileTimeFrame);
     if (isEditable) {
       if (isMoreDetailEnabled || (this.widget.subEvent.isCurrent)) {
-        allElements.add(FractionallySizedBox(
+        // Timescrub to show that it is elapsed
+        allElements.add(
+          FractionallySizedBox(
             widthFactor: TileStyles.tileWidthRatio,
             child: Container(
-                margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
-                child: TimeScrubWidget(
-                  timeline: widget.subEvent,
-                  isTardy: widget.subEvent.isTardy ?? false,
-                ))));
-        allElements.add(Container(
+              margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
+              child: TimeScrubWidget(
+                timeline: widget.subEvent,
+                isTardy: widget.subEvent.isTardy ?? false,
+              ),
+            ),
+          ),
+        );
+
+        // Actions Pane for widgets
+        allElements.add(
+          Container(
             margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
             child: PlayBack(
               widget.subEvent,
               forcedOption: (widget.subEvent.isRigid == true
                   ? [PlaybackOptions.Delete]
                   : null),
-            )));
-      } else {
-        allElements.add(GestureDetector(
-          onTap: () {
-            setState(() {
-              isMoreDetailEnabled = true;
-            });
-          },
-          child: Center(
-              child: Container(
-            width: 30,
-            height: 30,
-            margin: EdgeInsets.fromLTRB(0, 10, 0, 2),
-            child: Transform.rotate(
-              angle: pi / 2,
-              child: Icon(
-                Icons.chevron_right,
-                size: 30,
+            ),
+          ),
+        );
+
+        //
+        allElements.add(
+          Padding(
+            padding: EdgeInsets.only(top: 15),
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  isMoreDetailEnabled = false;
+                });
+              },
+              child: SizedBox(
+                height: 40,
+                width: 40,
+                child: Expanded(
+                  child: Transform.rotate(
+                    angle: pi / 2,
+                    child: Icon(
+                      Icons.chevron_left,
+                      size: 30,
+                    ),
+                  ),
+                ),
               ),
             ),
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, .1),
-                borderRadius: BorderRadius.circular(25)),
-          )),
-        ));
+          ),
+        );
+      } else {
+        allElements.add(
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                isMoreDetailEnabled = true;
+              });
+            },
+            child: Center(
+              child: Container(
+                width: 30,
+                height: 30,
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 2),
+                child: Transform.rotate(
+                  angle: pi / 2,
+                  child: Icon(
+                    Icons.chevron_right,
+                    size: 30,
+                  ),
+                ),
+                decoration: BoxDecoration(
+                    color: Color.fromRGBO(31, 31, 31, .1),
+                    borderRadius: BorderRadius.circular(25)),
+              ),
+            ),
+          ),
+        );
       }
     }
 
     return AnimatedSize(
-        duration: Duration(milliseconds: 250),
-        curve: Curves.fastOutSlowIn,
-        child: Container(
-          margin: (this.widget.subEvent.isCurrentTimeWithin ||
-                  this.isMoreDetailEnabled)
-              ? EdgeInsets.fromLTRB(0, 20, 0, 20)
-              : EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Material(
-              type: MaterialType.transparency,
-              child: FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: this.widget.subEvent.isViable!
-                            ? Colors.white
-                            : Colors.black,
-                        width: this.widget.subEvent.isViable! ? 0 : 5,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(TileStyles.borderRadius),
-                      boxShadow: [
-                        BoxShadow(
-                          color: tileBackGroundColor.withOpacity(0.1),
-                          spreadRadius: 5,
-                          blurRadius: 15,
-                          offset: Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Container(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                        decoration: BoxDecoration(
-                          color: tileBackGroundColor,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 0.5,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(TileStyles.borderRadius),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: allElements.length < 4
-                              ? MainAxisAlignment.spaceBetween
-                              : MainAxisAlignment.center,
-                          children: allElements,
-                        )),
-                  ))),
-        ));
+      duration: Duration(milliseconds: 250),
+      curve: Curves.fastOutSlowIn,
+      child: Container(
+        margin: (this.widget.subEvent.isCurrentTimeWithin ||
+                this.isMoreDetailEnabled)
+            ? EdgeInsets.fromLTRB(0, 20, 0, 20)
+            : EdgeInsets.fromLTRB(0, 5, 0, 5),
+        child: Material(
+          type: MaterialType.transparency,
+          child: FractionallySizedBox(
+            widthFactor: TileStyles.tileWidthRatio,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: this.widget.subEvent.isViable!
+                      ? Colors.white
+                      : Colors.black,
+                  width: this.widget.subEvent.isViable! ? 0 : 5,
+                ),
+                borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: tileBackGroundColor.withOpacity(0.1),
+                    spreadRadius: 5,
+                    blurRadius: 15,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                decoration: BoxDecoration(
+                  color: tileBackGroundColor,
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                ),
+                child: Column(
+                  mainAxisAlignment: allElements.length < 4
+                      ? MainAxisAlignment.spaceBetween
+                      : MainAxisAlignment.center,
+                  children: allElements,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
