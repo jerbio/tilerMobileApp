@@ -436,7 +436,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             uiDateManagerBloc.onDateButtonTapped(DateTime.now());
           },
           child: Container(
-            height: 45,
+            height: 50,
             width: 38,
             color: TileStyles.primaryContrastColor,
             padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
@@ -452,21 +452,21 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       width: constraints.maxWidth * 0.9,
                       child: Icon(
                         FontAwesomeIcons.calendar,
-                        size: constraints.maxWidth * 0.9,
+                        size: constraints.maxWidth,
                         color: TileStyles.primaryColor,
                       ),
                     ),
                   ),
                   Positioned(
                     bottom: constraints.maxHeight * 0.125,
-                    left: (constraints.maxWidth * 0.11),
+                    left: (constraints.maxWidth * 0.05),
                     child: Center(
                       child: Container(
                         height: constraints.maxHeight * 0.55,
                         width: constraints.maxHeight * 0.55,
                         child: Center(
                           child: Text(
-                            DateTime.now().day.toString(),
+                            (Utility.currentTime().day).toString(),
                             style: TextStyle(
                               fontFamily: TileStyles.rubikFontName,
                             ),
