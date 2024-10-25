@@ -403,7 +403,7 @@
     "save":"Save",
     "selectWeek":"Select a Week",
     "selectYear":"Select Year",
-    "retrievingDataIssue":"Issue with retrieving data"
+    "retrievingDataIssue":"Issue with retrieving data",
     "responseHandlingError":"Failed to handle the response.",
     "numberOfTilesSelected": "{number} Tiles selected",
     "@numberOfTilesSelected": {

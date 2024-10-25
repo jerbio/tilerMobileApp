@@ -203,11 +203,9 @@ class WeeklyTileBatchState extends TileBatchState {
         timeSectionTiles.remove(removedTile.item1.uniqueId);
       }
 
-      Utility.isWithinNowSet = false;
       if (insertedTiles.isNotEmpty || reorderedTiles.isNotEmpty) {
         _pendingRendering = true;
         Timer(Duration(milliseconds: 500), () {
-          Utility.isWithinNowSet = true;
           for (var insertedTile in insertedTiles) {
             _timeSectionListModel.insert(
               insertedTile.item3!,
