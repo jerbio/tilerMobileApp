@@ -47,7 +47,8 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           child: Text(
                 DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
                 style: TextStyle(
-                    fontFamily: 'Rubik',
+                    fontSize: 12,
+                    fontFamily: TileStyles.rubikFontName,
                     color: Colors.grey)
               ),
       )

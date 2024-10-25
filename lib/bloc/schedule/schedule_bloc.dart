@@ -144,6 +144,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: [],
           lookupTimeline: Timeline.fromDateTime(
               DateTime.now(), DateTime.now().add(Duration(days: 1))),
+          currentView:state.currentView ,
           scheduleStatus: null));
     }
   }

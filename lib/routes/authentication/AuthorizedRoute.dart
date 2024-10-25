@@ -129,6 +129,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         break;
       case 2:
         {
+          AnalysticsSignal.send('SETTING_PRESSED');
+          Navigator.pushNamed(context, '/Setting');
+        }
+        break;
+      case 3:
+        {
           final currentState = context.read<ScheduleBloc>().state;
           AuthorizedRouteTileListPage newView;
           switch (currentState.currentView) {
@@ -148,8 +154,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               newView = AuthorizedRouteTileListPage.Daily;
           }
             context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
-          // AnalysticsSignal.send('SETTING_PRESSED');
-          // Navigator.pushNamed(context, '/Setting');
         }
         break;
     }
@@ -480,63 +484,63 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             children: [
               _buildTileList(state.currentView),
               _ribbonCarousel(state.currentView),
-          ]
-          );
-        },
-      ),
-
-      Positioned(
-        right: 0,
-        child: GestureDetector(
-          onTap: () {
-            uiDateManagerBloc.onDateButtonTapped(DateTime.now());
-          },
-          child: Container(
-            height: 50,
-            width: 38,
-            color: TileStyles.primaryContrastColor,
-            padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
-            child: LayoutBuilder(
-              builder: (context, constraints) => Stack(
-                children: [
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
+              if (state.currentView == AuthorizedRouteTileListPage.Daily)
+                Positioned(
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () {
+                      uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+                    },
                     child: Container(
-                      width: constraints.maxWidth * 0.9,
-                      child: Icon(
-                        FontAwesomeIcons.calendar,
-                        size: constraints.maxWidth,
-                        color: TileStyles.primaryColor,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: constraints.maxHeight * 0.125,
-                    left: (constraints.maxWidth * 0.05),
-                    child: Center(
-                      child: Container(
-                        height: constraints.maxHeight * 0.55,
-                        width: constraints.maxHeight * 0.55,
-                        child: Center(
-                          child: Text(
-                            (Utility.currentTime().day).toString(),
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
+                      height: 50,
+                      width: 38,
+                      color: TileStyles.primaryContrastColor,
+                      padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) => Stack(
+                          children: [
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: constraints.maxWidth * 0.9,
+                                child: Icon(
+                                  FontAwesomeIcons.calendar,
+                                  size: constraints.maxWidth,
+                                  color: TileStyles.primaryColor,
+                                ),
+                              ),
                             ),
-                          ),
+                            Positioned(
+                              bottom: constraints.maxHeight * 0.125,
+                              left: (constraints.maxWidth * 0.05),
+                              child: Center(
+                                child: Container(
+                                  height: constraints.maxHeight * 0.55,
+                                  width: constraints.maxHeight * 0.55,
+                                  child: Center(
+                                    child: Text(
+                                      (Utility.currentTime().day).toString(),
+                                      style: TextStyle(
+                                        fontFamily: TileStyles.rubikFontName,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      )
+                ),
+            ]
+          );
+        },
+      ),
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
@@ -580,8 +584,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 label: '',
               ),
               BottomNavigationBarItem(
+                  icon: Icon(Icons.settings,
+                      color: TileStyles.primaryColor),
+                  label: ''),
+              BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_month,
-                      color: TileStyles.primaryColorDarkHSL.toColor()),
+                      color: TileStyles.primaryColor),
                   label: ''),
 
             ],
