@@ -41,8 +41,8 @@ class AnalysticsSignal {
     return AnalysticsSignal(session: newSession, tag: signalTag);
   }
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> retValue = {
+  Map<String, Object>? toJson() {
+    Map<String, Object> retValue = {
       'name': this.tag,
       'sessionId': this.session.sessionId,
       'sequnceNumber': this.session.sequenceNumber,

@@ -58,7 +58,8 @@ class AddTileState extends State<AddTile> {
   // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
   // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
   final Color populatedTextColor = Colors.white;
-  final CarouselController tilerCarouselController = CarouselController();
+  final CarouselSliderController tilerCarouselController =
+      CarouselSliderController();
   String tileNameText = '';
   String splitCountText = '';
   final LocationApi locationApi = LocationApi();
@@ -511,8 +512,7 @@ class AddTileState extends State<AddTile> {
                   ],
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
-                    hintStyle:
-                        TextStyle(color: TileStyles.primaryColor),
+                    hintStyle: TextStyle(color: TileStyles.primaryColor),
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
@@ -769,7 +769,7 @@ class AddTileState extends State<AddTile> {
             isSubmissionReady();
           });
         });
-    
+
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
         prefixIcon: Icon(
@@ -793,7 +793,7 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
-    
+
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
@@ -1362,7 +1362,7 @@ class AddTileState extends State<AddTile> {
         onChanged: onTabTypeChange,
         value: switchUpvalue,
         color: TileStyles.primaryColor,
-       backgroundColor: TileStyles.primaryContrastColor, 
+        backgroundColor: TileStyles.primaryContrastColor,
         // TileStyles.oPrimaryColorHSL.toColor(),
       ),
     );
