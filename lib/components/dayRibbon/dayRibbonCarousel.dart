@@ -33,7 +33,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late DateTime selectedDate;
   late int batchCount;
   late int numberOfDays;
-   final CarouselController dayRibbonCarouselController = CarouselController();
+  final CarouselSliderController dayRibbonCarouselController =
+      CarouselSliderController();
   Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
   Map<int, Tuple2<int, Timeline>> dayBatchIndexToBatch = {};
   @override
@@ -232,7 +233,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           }
 
           if (initialCarouselIndex < 0) {
-            initialCarouselIndex = 0; 
+            initialCarouselIndex = 0;
           }
           return Container(
             color: Colors.white,

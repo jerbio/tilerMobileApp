@@ -62,7 +62,8 @@ class _TileListState extends State<TileList> {
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
   List<Widget> carouselItems = [];
-  final CarouselController tileListDayCarouselController = CarouselController();
+  final CarouselSliderController tileListDayCarouselController =
+      CarouselSliderController();
   final String incrementalTilerScrollId = "incremental-get-schedule";
   late String updatedIncrementalTilerScrollId;
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
@@ -553,7 +554,7 @@ class _TileListState extends State<TileList> {
                       dayIndexOfTileBatch == null) {
                     dayIndexOfTileBatch = key;
                     tileBatchTupleData = value;
-                  currentTime = Utility.getTimeFromIndex(key);
+                    currentTime = Utility.getTimeFromIndex(key);
                   }
                 },
               );
