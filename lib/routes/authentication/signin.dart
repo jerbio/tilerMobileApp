@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
-import 'package:rive/rive.dart';
+// import 'package:rive/rive.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:tiler_app/routes/authentication/signInComponent.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
@@ -68,7 +68,7 @@ class SignInRouteState extends State<SignInRoute> {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 10),
           child: SizedBox(),
         )),
-        RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
+        // RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
         Positioned.fill(
             child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),

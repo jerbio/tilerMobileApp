@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "20733958481",
+    "project_id": "tiler-mobile-app",
+    "storage_bucket": "tiler-mobile-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20733958481:android:afc78a1fcecfcd5972db70",
+        "android_client_info": {
+          "package_name": "app.tiler.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByT5a8jcQr5R-LLChG88NJPAkmrDvBA94"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
