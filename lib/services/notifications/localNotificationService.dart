@@ -19,7 +19,6 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import '../../../constants.dart' as Constants;
 
 enum NotificationIdTypes { none, nextTile, userSetReminder, depatureTime }
