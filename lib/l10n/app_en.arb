@@ -134,7 +134,7 @@
       "placeholders": {
         "duration": {
           "type": "String",
-          "example": "5 Hours"
+          "example": "Starts in 5 Hours"
         }
       }},
     "concludesAtTime": "🏁 {tileName} concludes soon",
