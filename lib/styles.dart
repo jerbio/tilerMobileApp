@@ -23,7 +23,7 @@ class TileStyles {
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static const Color errorBackgroundColor = Colors.black54;
-  static const Color errorTxtColor=Colors.red;
+  static const Color errorTxtColor = Colors.red;
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
@@ -310,4 +310,19 @@ class TileStyles {
     multiShareIcon,
     color: TileStyles.primaryContrastColor,
   );
+
+  static BoxDecoration configUpdate_notSelected = BoxDecoration(
+      color: Colors.transparent,
+      border: Border.all(
+        color: TileStyles.primaryColor,
+        width: 1,
+      ),
+      borderRadius: const BorderRadius.all(
+        const Radius.circular(10.0),
+      ));
+  static const BoxDecoration configUpdate_Selected = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      color: TileStyles.primaryColor);
 }

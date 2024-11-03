@@ -51,18 +51,7 @@ class CancelAndProceedTemplateWidgetState
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(10),
                 bottomRight: Radius.circular(10)),
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                TileStyles.primaryColor,
-                HSLColor.fromColor(TileStyles.primaryColor)
-                    .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
-                            0.3)
-                    .toColor()
-              ],
-            )),
+            color: TileStyles.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
@@ -104,18 +93,7 @@ class CancelAndProceedTemplateWidgetState
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                HSLColor.fromColor(TileStyles.primaryColor)
-                    .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
-                            0.3)
-                    .toColor(),
-                TileStyles.primaryColor,
-              ],
-            )),
+            color: TileStyles.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
