@@ -56,9 +56,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
     });
     refreshTimer = Timer.periodic(
         Duration(seconds: _autoRefreshScrubberDelayInSecs), (timer) {
-      currentTimeInMs = Utility.msCurrentTime;
-      subEventDuratonInMs = end - start;
-      durationInMs = currentTimeInMs - start;
+      setState(() {
+        currentTimeInMs = Utility.msCurrentTime;
+        subEventDuratonInMs = end - start;
+        durationInMs = currentTimeInMs - start;
+      });
     });
   }
 
