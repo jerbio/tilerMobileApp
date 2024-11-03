@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -27,7 +30,9 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
   late double evaluatedPosition;
   late int subEventDuratonInMs;
   late int durationInMs;
+  final int _autoRefreshScrubberDelayInSecs = 20;
   late double widthOfUsedUpDuration = 0;
+  late Timer refreshTimer;
 
   @override
   void initState() {
@@ -48,6 +53,12 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
           widthOfUsedUpDuration = maxWidthOfTimeline;
         });
       }
+    });
+    refreshTimer = Timer.periodic(
+        Duration(seconds: _autoRefreshScrubberDelayInSecs), (timer) {
+      currentTimeInMs = Utility.msCurrentTime;
+      subEventDuratonInMs = end - start;
+      durationInMs = currentTimeInMs - start;
     });
   }
 
@@ -139,7 +150,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 10,
-                            fontFamily: 'Rubik',
+                            fontFamily: TileStyles.rubikFontName,
                             color: this.widget.loadTimeScrub
                                 ? Colors.white
                                 : Colors.black),
@@ -155,7 +166,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 10,
-                                fontFamily: 'Rubik',
+                                fontFamily: TileStyles.rubikFontName,
                                 color: this.widget.loadTimeScrub
                                     ? Colors.white
                                     : Colors.black),
@@ -177,7 +188,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                 Text(
                   AppLocalizations.of(context)!.elapsedDurationAgo(elapsedTime),
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                  style: TextStyle(
+                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
                 )
               ],
             ),
@@ -192,9 +204,10 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
               children: [
                 Icon(Icons.timelapse),
                 Text(
-                  'Starts in  $elapsedTime',
+                  AppLocalizations.of(context)!.startsInDuration(elapsedTime),
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                  style: TextStyle(
+                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
                 )
               ],
             ),
@@ -210,5 +223,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
       height: 30,
       child: timeline,
     );
+  }
+
+  @override
+  void dispose() {
+    refreshTimer.cancel();
+    super.dispose();
   }
 }
