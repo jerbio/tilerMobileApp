@@ -24,23 +24,24 @@ class _SingleChoiceState extends State<SingleChoice> {
   Widget build(BuildContext context) {
     return SegmentedButton<TilePriority>(
       style: ButtonStyle(
-        foregroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
-              return TileStyles.appBarTextColor;
-            }
-            return TileStyles.primaryColor;
-          },
-        ),
-        backgroundColor: MaterialStateProperty.resolveWith<Color>(
-          (Set<MaterialState> states) {
-            if (states.contains(MaterialState.selected)) {
+          foregroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
+              if (states.contains(MaterialState.selected)) {
+                return TileStyles.appBarTextColor;
+              }
               return TileStyles.primaryColor;
-            }
-            return Color.fromRGBO(31, 31, 31, 0.05);
-          },
-        ),
-      ),
+            },
+          ),
+          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+            (Set<MaterialState> states) {
+              if (states.contains(MaterialState.selected)) {
+                return TileStyles.primaryColor;
+              }
+              return Colors.transparent;
+            },
+          ),
+          side: MaterialStateBorderSide.resolveWith(
+              (states) => BorderSide(color: TileStyles.primaryColor))),
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(
             value: TilePriority.low,
