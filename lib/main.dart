@@ -39,6 +39,8 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
+import 'components/notification_overlay.dart';
+import 'routes/authenticatedUser/welcomeScreen.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -85,9 +87,11 @@ class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
   OnBoardingApi? onBoardingApi;
+  NotificationOverlayMessage? notificationOverlayMessage;
   @override
   void initState() {
     onBoardingApi = OnBoardingApi();
+    notificationOverlayMessage = NotificationOverlayMessage();
     super.initState();
   }
 
@@ -207,8 +211,13 @@ class _TilerAppState extends State<TilerApp> {
                 if (snapshot.hasData) {
                   if (!snapshot.data!.item1) {
                     if (snapshot.data!.item2 == Constants.cannotVerifyError) {
-                      showErrorMessage(AppLocalizations.of(context)!
-                          .issuesConnectingToTiler);
+                      // showErrorMessage(AppLocalizations.of(context)!
+                      //     .issuesConnectingToTiler);
+                      notificationOverlayMessage!.showToast(
+                        context,
+                        AppLocalizations.of(context)!.issuesConnectingToTiler,
+                        NotificationOverlayMessageType.error,
+                      );
                       return renderPending();
                     }
                     authentication?.deauthenticateCredentials();
@@ -226,7 +235,12 @@ class _TilerAppState extends State<TilerApp> {
                             ConnectionState.waiting) {
                           return renderPending();
                         } else if (onboardingSnapshot.hasError) {
-                          showErrorMessage("Error checking onboarding status.");
+                          // showErrorMessage("Error checking onboarding status.");
+                          notificationOverlayMessage!.showToast(
+                            context,
+                            "Error checking onboarding status.",
+                            NotificationOverlayMessageType.error,
+                          );
                           return SignInRoute();
                         } else {
                           return onboardingSnapshot.data!
@@ -237,7 +251,9 @@ class _TilerAppState extends State<TilerApp> {
                     );
                   } else {
                     authentication?.deauthenticateCredentials();
-                    retValue = SignInRoute();
+                    retValue = 
+                    SignInRoute();
+                    
                   }
                 } else {
                   retValue = renderPending();
