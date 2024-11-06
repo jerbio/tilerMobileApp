@@ -395,5 +395,16 @@
     "missingTileShareCluster": "Missing TileShare cluster",
     "outBound": "OutBound",
     "inBound": "Inbound",
-    "multiShare": "Multi Share"
+    "multiShare": "Multi Share",
+    "hi": "Hi",
+    "welcome": "Welcome",
+    "passwordCreationMessagePart1": "Create a strong, unique password with ",
+    "passwordConditionMinLength": "at least six characters",
+    "passwordCreationMessageIncluding": ", including ",
+    "passwordConditionUppercaseLetters": "uppercase letters",
+    "passwordConditionLowercaseLetters": "lowercase letters",
+    "passwordConditionNumbers": "numbers",
+    "passwordConditionSpecialCharacter": "a special character",
+    "listSeparator": ", ",
+    "listFinalSeparator": ", and "
   }
