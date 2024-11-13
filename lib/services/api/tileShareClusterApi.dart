@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
@@ -45,6 +44,60 @@ class TileShareClusterApi extends AppApi {
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             return;
+          }
+        }
+        if (isTilerRequestError(jsonResult)) {
+          var errorJson = jsonResult['Error'];
+          error = TilerError.fromJson(errorJson);
+          throw FormatException(error.message!);
+        } else {
+          error.message = "Issues with reaching Tiler servers";
+        }
+      }
+    }
+    throw error;
+  }
+
+  Future<DesignatedTile> createTileTemplate(
+      ClusterTemplateTileModel templateTileModel) async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
+    if (userIsAuthenticated) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        final newCluster = templateTileModel.toJson();
+
+        Utility.debugPrint(
+            "newCluster Tilecluster api" + newCluster.toString());
+        Map<String, dynamic> injectedParameters =
+            await injectRequestParams(newCluster, includeLocationParams: false);
+        Utility.debugPrint(
+            "injectRequestParams Tilecluster api" + newCluster.toString());
+        Uri uri = Uri.https(url, 'api/DesignatedTile');
+        var header = this.getHeaders();
+        Utility.debugPrint("headers Tilecluster api" + newCluster.toString());
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+        var response = await http.post(uri,
+            headers: header, body: jsonEncode(injectedParameters));
+
+        var jsonResult = jsonDecode(response.body);
+        error.message = "Issues with reaching Tiler servers";
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            if (jsonResult['Content'].containsKey('tileTemplate')) {
+              Map<String, dynamic> designatedTilesJson =
+                  jsonResult['Content']['tileTemplate'];
+              DesignatedTile designatedTiles =
+                  DesignatedTile.fromJson(designatedTilesJson);
+              return designatedTiles;
+            }
           }
         }
         if (isTilerRequestError(jsonResult)) {

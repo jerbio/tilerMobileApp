@@ -13,31 +13,25 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
+import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class TileShareDetailWidget extends StatefulWidget {
-  late final String? tileShareId;
-  late final TileShareClusterData? tileShareClusterData;
-  TileShareDetailWidget.byId(String tileShareId) {
-    this.tileShareId = tileShareId;
-    this.tileShareClusterData = null;
-  }
-  TileShareDetailWidget.byTileShareData(
-      {required final TileShareClusterData tileShareClusterData}) {
-    this.tileShareClusterData = tileShareClusterData;
-    this.tileShareId = null;
-  }
+class SingleTiletteTileShareDetailWidget extends StatefulWidget {
+  late final TileShareClusterData tileShareClusterData;
+  SingleTiletteTileShareDetailWidget({required this.tileShareClusterData});
+
   @override
-  _TileShareDetailWidget createState() => _TileShareDetailWidget();
+  _SingleTiletteTileShareDetailWidget createState() =>
+      _SingleTiletteTileShareDetailWidget();
 }
 
-class _TileShareDetailWidget extends State<TileShareDetailWidget> {
+class _SingleTiletteTileShareDetailWidget
+    extends State<SingleTiletteTileShareDetailWidget> {
   final TileShareClusterApi clusterApi = TileShareClusterApi();
-  TileShareClusterData? tileShareCluster;
+  final DesignatedTileApi designatedTileApi = DesignatedTileApi();
+  late TileShareClusterData tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
   late bool? isTileListLoading;
@@ -48,33 +42,41 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
   ScrollController _contactControllerfinal = ScrollController();
+  late List<Contact> contacts;
 
   @override
   void initState() {
     super.initState();
     isTileListLoading = false;
-    if (this.widget.tileShareClusterData != null) {
-      isLoading = false;
-      tileShareCluster = this.widget.tileShareClusterData;
-    } else {
-      isLoading = true;
-      getTileShareCluster();
-    }
+    isLoading = false;
+    tileShareCluster = this.widget.tileShareClusterData;
+    isLoading = true;
+    getTileShareCluster();
+    contacts = this.tileShareCluster.contacts ?? [];
   }
 
   Future getTileShareCluster() async {
     bool tileLoadingState = false;
-    if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
+    if (this.widget.tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
       tileLoadingState = true;
       clusterApi
-          .getTileShareClusters(clusterId: this.widget.tileShareId)
+          .getTileShareClusters(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
-        Utility.debugPrint("Success getting tile cluster");
-        setState(() {
-          tilerError = null;
-          tileShareCluster = value.firstOrNull;
-          isLoading = false;
-        });
+        if (value.isNotEmpty) {
+          Utility.debugPrint("Success getting tile cluster");
+          setState(() {
+            tilerError = null;
+            tileShareCluster = value.firstOrNull!;
+            isLoading = false;
+            contacts = value.first.contacts ?? [];
+          });
+        } else {
+          setState(() {
+            tilerError = TilerError(
+                message:
+                    AppLocalizations.of(context)!.failedToLoadTileShareCluster);
+          });
+        }
       }).catchError((onError) {
         Utility.debugPrint("Failed to get tile cluster");
         setState(() {
@@ -90,7 +92,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       });
 
       clusterApi
-          .getDesignatedTiles(clusterId: this.widget.tileShareId)
+          .getDesignatedTiles(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
         setState(() {
           Utility.debugPrint("Success getting tileShare list ");
@@ -195,24 +197,9 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                 ],
               ),
             verticalSpacer,
-            Container(
-              height: 50,
-              child: ListView(
-                controller: _contactControllerfinal,
-                children: [
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: [
-                      ...(cluster.contacts ?? [])
-                          .map((contact) => _buildContactPill(contact))
-                          .toList(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            verticalSpacer,
+            Expanded(
+              child: addContacts(),
+            )
           ],
         ));
   }
@@ -296,29 +283,118 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
         label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
+  Widget addContacts() {
+    return ContactListView(
+      isReadOnly: true,
+      contacts: (contacts).toList(),
+      onContactListUpdate: (List<Contact> updatedContacts) {
+        Set<Contact> newContacts = Set();
+        Set<Contact> removedContacts = Set();
+        updatedContacts.forEach((eachContact) {
+          if (!contacts
+                  .where((element) =>
+                      element.phoneNumber.isNot_NullEmptyOrWhiteSpace())
+                  .any((element) =>
+                      element.phoneNumber == eachContact.phoneNumber) &&
+              !contacts
+                  .where(
+                      (element) => element.email.isNot_NullEmptyOrWhiteSpace())
+                  .any((element) => element.email == eachContact.email)) {
+            newContacts.add(eachContact);
+          }
+        });
+
+        contacts.forEach((eachContact) {
+          if (!updatedContacts
+                  .where((element) =>
+                      element.phoneNumber.isNot_NullEmptyOrWhiteSpace())
+                  .any((element) =>
+                      element.phoneNumber == eachContact.phoneNumber) &&
+              !updatedContacts
+                  .where(
+                      (element) => element.email.isNot_NullEmptyOrWhiteSpace())
+                  .any((element) => element.email == eachContact.email)) {
+            removedContacts.add(eachContact);
+          }
+        });
+
+        if (this.designatedTileList?.firstOrNull != null &&
+            this.designatedTileList!.first.id.isNot_NullEmptyOrWhiteSpace()) {
+          for (var newContact in newContacts) {
+            designatedTileApi.addContact(this.designatedTileList!.first.id!,
+                newContact.toContactModel());
+          }
+          for (var deletedContact in removedContacts) {
+            designatedTileApi.deleteContact(this.designatedTileList!.first.id!,
+                deletedContact.toContactModel());
+          }
+        }
+
+        setState(() {
+          contacts = updatedContacts.toList();
+        });
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (this.isLoading == true) {
-      return Scaffold(
-        body: Center(
-          child: renderLoading(),
+    Widget? widgetContent = SizedBox.shrink();
+    if (this.tilerError != null) {
+      widgetContent = Center(child: renderError());
+    } else if (this.isLoading == true || this.isTileListLoading == true) {
+      widgetContent = Center(
+        child: renderLoading(),
+      );
+    } else {
+      widgetContent = Padding(
+        padding: const EdgeInsets.all(4.0),
+        child: Container(
+          height: MediaQuery.sizeOf(context).height,
+          child: renderTileShareCluster(),
         ),
       );
     }
-    if (this.tileShareCluster != null) {
-      if (this.tileShareCluster!.isMultiTilette == true) {
-        return MultiTiletteTileShareDetailWidget(
-            tileShareClusterData: this.tileShareCluster!);
-      } else {
-        return SingleTiletteTileShareDetailWidget(
-            tileShareClusterData: this.tileShareCluster!);
-      }
-    }
 
     return Scaffold(
-      body: Center(
-        child: renderError(),
-      ),
-    );
+        appBar: AppBar(
+          backgroundColor: TileStyles.appBarColor,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          leading: TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Icon(
+              Icons.close,
+              color: TileStyles.appBarTextColor,
+            ),
+          ),
+          title: this.tileShareCluster.name != null
+              ? Text(
+                  this.tileShareCluster.name ??
+                      AppLocalizations.of(context)!.tileShare,
+                  style: TileStyles.titleBarStyle,
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (this.tileShareCluster.name == null)
+                      Icon(
+                        Icons.share,
+                        color: TileStyles.appBarTextColor,
+                      )
+                    else
+                      SizedBox.shrink(),
+                    SizedBox.square(
+                      dimension: 5,
+                    ),
+                    Text(
+                      this.tileShareCluster.name ??
+                          AppLocalizations.of(context)!.tileShare,
+                      style: TileStyles.titleBarStyle,
+                    )
+                  ],
+                ),
+        ),
+        body: widgetContent);
   }
 }

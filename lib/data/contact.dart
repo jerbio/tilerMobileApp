@@ -7,6 +7,11 @@ class Contact {
   String? firstName;
   String? lastName;
 
+  @override
+  String toString() {
+    return "{id:$id, phoneNumber:$phoneNumber, email:$email, firstName:$firstName, lastName:$lastName}";
+  }
+
   ContactModel toContactModel() {
     var contactModel = ContactModel();
     contactModel.Email = this.email;

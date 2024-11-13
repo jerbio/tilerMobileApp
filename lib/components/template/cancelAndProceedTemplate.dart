@@ -103,7 +103,8 @@ class CancelAndProceedTemplateWidgetState
           ),
           child: Center(
               child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+            margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
+            alignment: Alignment.centerLeft,
             child: IconButton(
               icon: Icon(
                 Icons.check,
