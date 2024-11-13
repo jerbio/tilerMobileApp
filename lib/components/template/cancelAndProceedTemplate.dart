@@ -96,14 +96,12 @@ class CancelAndProceedTemplateWidgetState
             color: TileStyles.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            elevation: 0.0,
-            foregroundColor: Colors.transparent,
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent, // foreground
-          ),
-          child: Center(
-              child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 5, 0),
+              elevation: 0.0,
+              foregroundColor: Colors.transparent,
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent, // foreground
+              alignment: Alignment.topLeft),
+          child: Container(
             alignment: Alignment.centerLeft,
             child: IconButton(
               icon: Icon(
@@ -112,7 +110,7 @@ class CancelAndProceedTemplateWidgetState
               ),
               onPressed: null,
             ),
-          )),
+          ),
           onPressed: () async {
             if (this.widget.onProceed != null) {
               var proceedResult = this.widget.onProceed!();
