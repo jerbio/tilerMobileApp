@@ -9,6 +9,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -176,22 +177,14 @@ class _CreateTileShareClusterWidgetState
   }
 
   Widget addContacts() {
-    return ListView(
-      children: [
-        ContactInputFieldWidget(
-          contentHeight: this.contacts.isEmpty
-              ? 0
-              : this.contacts.length < 3
-                  ? 50
-                  : 100,
-          onContactUpdate: (List<Contact> updatedContacts) {
-            updateProceed();
-            setState(() {
-              this.contacts = updatedContacts;
-            });
-          },
-        )
-      ],
+    return ContactListView(
+      contacts: this.contacts,
+      onContactListUpdate: (List<Contact> updatedContacts) {
+        updateProceed();
+        setState(() {
+          this.contacts = updatedContacts;
+        });
+      },
     );
   }
 

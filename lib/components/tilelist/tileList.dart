@@ -292,8 +292,9 @@ class _TileListState extends State<TileList> {
           height: 250,
           width: 300,
           decoration: BoxDecoration(
-            color: bgroundColor,
-          ),
+              color: bgroundColor,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10), topRight: Radius.circular(10))),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -553,7 +554,7 @@ class _TileListState extends State<TileList> {
                       dayIndexOfTileBatch == null) {
                     dayIndexOfTileBatch = key;
                     tileBatchTupleData = value;
-                  currentTime = Utility.getTimeFromIndex(key);
+                    currentTime = Utility.getTimeFromIndex(key);
                   }
                 },
               );
