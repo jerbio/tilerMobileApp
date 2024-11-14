@@ -12,6 +12,7 @@ import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
@@ -19,6 +20,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:tiler_app/services/analyticsSignal.dart';
 
+import '../../services/api/thirdPartyAuthResult.dart';
 import '../../styles.dart';
 import '../../util.dart';
 import 'AuthorizedRoute.dart';
@@ -499,7 +501,7 @@ class SignInComponentState extends State<SignInComponent>
       isPendingSigning = true;
     });
     AuthorizationApi authorizationApi = AuthorizationApi();
-    AuthenticationData? authenticationData =
+    AuthResult? authenticationData =
         await authorizationApi.signInToGoogle().then((value) {
       AnalysticsSignal.send('GOOGLE_SIGNUP_SUCCESSFUL');
       return value;
@@ -519,9 +521,9 @@ class SignInComponentState extends State<SignInComponent>
     });
 
     if (authenticationData != null) {
-      if (authenticationData.isValid) {
+      if (authenticationData.authData.isValid) {
         Authentication localAuthentication = new Authentication();
-        await localAuthentication.saveCredentials(authenticationData);
+        await localAuthentication.saveCredentials(authenticationData.authData);
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -531,8 +533,14 @@ class SignInComponentState extends State<SignInComponent>
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  nextPage ? AuthorizedRoute() : OnboardingView()),
+            builder: (context) => WelcomeScreen(
+                welcomeType: WelcomeType.login,
+                firstName: (authenticationData.displayName != null &&
+                        authenticationData.displayName.isNotEmpty)
+                    ? authenticationData.displayName
+                    : ""),
+            // nextPage ? AuthorizedRoute() : OnboardingView(),
+          ),
         );
       }
     }
@@ -799,7 +807,6 @@ class SignInComponentState extends State<SignInComponent>
           : SizedBox.shrink(),
     );
 
-
     var confirmPasswordValidatorRules = SizedBox(
       width: MediaQuery.of(context).size.width,
       child: !isPasswordsMatch
@@ -815,7 +822,6 @@ class SignInComponentState extends State<SignInComponent>
             )
           : SizedBox.shrink(),
     );
-
 
     List<Widget> textFields = [
       spacer(20),
