@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/ribbons/weekRibbon/weekDayButton.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class WeeklyRibbonCarousel extends StatefulWidget {
@@ -164,8 +163,9 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
         if (selectedWeekIndex != -1) {
           _isManualJump = true;
           _carouselController.jumpToPage(selectedWeekIndex);
+          _loadExtraMonths(selectedWeekIndex);
         }
-        _loadExtraMonths(selectedWeekIndex);
+
       },
       builder: (context, state) {
         return Container(

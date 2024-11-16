@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/data/timeline.dart';
-
 import '../../services/analyticsSignal.dart';
 
 part 'ui_date_manager_event.dart';
