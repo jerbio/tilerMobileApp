@@ -8,6 +8,10 @@ import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WeeklyPickerDialog extends StatelessWidget {
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
@@ -33,12 +37,8 @@ class WeeklyPickerDialog extends StatelessWidget {
               ),
               _buildMonthYearPicker(context, state),
               TableCalendar(
-                firstDay: DateTime(DateTime
-                    .now()
-                    .year - 5, 1),
-                lastDay: DateTime(DateTime
-                    .now()
-                    .year + 5, 12, 31),
+                firstDay: Utility.getFirstDate(),
+                lastDay: Utility.getLastDate(),
                 focusedDay: state.tempDate,
                 selectedDayPredicate: (day) =>
                     (state.tempSelectedWeek ).any((d) =>
@@ -46,6 +46,9 @@ class WeeklyPickerDialog extends StatelessWidget {
                 onDaySelected: (selectedDay, _) {
                   context.read<WeeklyUiDateManagerBloc>().add(
                       SetTempSelectedWeek(selectedDate: selectedDay));
+                },
+                onPageChanged: (focusedDay) {
+                  context.read<WeeklyUiDateManagerBloc>().add(UpdateTempDate(tempDate: focusedDay.dayDate));
                 },
                 startingDayOfWeek: StartingDayOfWeek.sunday,
                 calendarFormat: CalendarFormat.month,
@@ -116,7 +119,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<WeeklyUiDateManagerBloc>().add(UpdateSelectedWeek(
+                      context.read<WeeklyUiDateManagerBloc>().add(UpdateSelectedWeekOnPicking(
                           selectedDate: state.tempSelectedWeek.first)
                       );
                       Navigator.of(context).pop();

@@ -112,18 +112,27 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
               }
             },
             child: Container(
-              width:calculatedWidth,
-              height:195,
-              padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(240, 240, 240, 1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 2,
+                width:calculatedWidth,
+                height:195,
+                padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
+                decoration: BoxDecoration(
+                  color: Color.fromRGBO(220, 220, 220, 1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Column( mainAxisSize: MainAxisSize.min,children: childrenColumnWidgets),
+                child: ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Color.fromRGBO(220, 220, 220,0.7) ,
+                    BlendMode.srcATop
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: childrenColumnWidgets
+                  ),
+                ),
             ),
           );
           return retValue!;

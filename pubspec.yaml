@@ -88,6 +88,7 @@ dependencies:
   timelines: ^0.1.0
   table_calendar: ^3.0.9
   bloc_concurrency: ^0.2.5
+  emoji_regex: ^0.0.5
 
   go_router: ^14.3.0
   app_links: ^6.3.2

@@ -28,26 +28,6 @@ String googleClientIdKey =
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
 String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
-final RegExp emojiRegex = RegExp(
-    r'(\ud83c[\udf00-\udfff]|'
-    r'\ud83d[\udc00-\ude4f]|'
-    r'\ud83d[\ude80-\udeff]|'
-    r'\ud83e[\udd00-\uddff]|'
-    r'\u2600-\u26FF|'
-    r'\u2700-\u27BF|'
-    r'[\u2B50\u2B06\u2B05\u2B07]|'
-    r'\u231A|\u231B|\u23EA|\u23E9|'
-    r'\u1F004|\u1F0CF|\u1F170-\u1F251|'
-    r'\u1F600-\u1F64F|'
-    r'\u1F900-\u1F9FF|'
-    r'\u1F300-\u1F5FF|'
-    r'\u1F680-\u1F6FF|'
-    r'\u1F700-\u1F77F|'
-    r'\u1F780-\u1F7FF|'
-    r'\u1F800-\u1F8FF|'
-    r'\u1F9C0-\u1F9FF|'
-    r'[\u1F1E6-\u1F1FF]{1,2})'
-);
 final List<String> googleApiScopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/calendar',

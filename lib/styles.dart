@@ -237,6 +237,17 @@ class TileStyles {
             Color.fromRGBO(240, 240, 240, 1),
             Color.fromRGBO(240, 240, 240, 1),
           ]));
+  static final  ribbonsButtonSelectedDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(20.0),
+      ),
+      gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            TileStyles.primaryColor,
+            TileStyles.primaryColor
+          ]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),

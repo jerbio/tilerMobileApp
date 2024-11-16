@@ -7,10 +7,16 @@ abstract class WeeklyUiDateManagerEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class UpdateSelectedWeek extends WeeklyUiDateManagerEvent {
+class UpdateSelectedWeekOnPicking extends WeeklyUiDateManagerEvent {
   final DateTime selectedDate;
-  const UpdateSelectedWeek({required this.selectedDate});
+  const UpdateSelectedWeekOnPicking({required this.selectedDate});
 
+  @override
+  List<Object> get props => [selectedDate];
+}
+class UpdateSelectedWeekOnSwiping extends WeeklyUiDateManagerEvent {
+  final DateTime selectedDate;
+  const UpdateSelectedWeekOnSwiping({required this.selectedDate});
   @override
   List<Object> get props => [selectedDate];
 }

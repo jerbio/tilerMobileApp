@@ -30,21 +30,8 @@ class _DayButtonState extends State<DayButton> {
 
   @override
   Widget build(BuildContext context) {
-
-    var selectedDecoration = BoxDecoration(
-        borderRadius: BorderRadius.all(
-          const Radius.circular(20.0),
-        ),
-        gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              TileStyles.primaryColor,
-              TileStyles.primaryColor
-            ]));
-
     var decoration =
-        this.widget.isSelected ? selectedDecoration : TileStyles.ribbonsButtonDefaultDecoration;
+        this.widget.isSelected ? TileStyles.ribbonsButtonSelectedDecoration : TileStyles.ribbonsButtonDefaultDecoration;
     double buttonHeight = 40 * (this.widget.isSelected ? 1.3 : 1);
     double buttonWidth = 40 * (this.widget.isSelected ? 1.3 : 1);
 

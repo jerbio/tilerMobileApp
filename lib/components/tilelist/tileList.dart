@@ -5,7 +5,6 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
-import 'package:tiler_app/constants.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -24,23 +23,57 @@ abstract class TileList extends StatefulWidget {
   TileListState createState();
 }
 
-abstract class TileListState<T extends TileList> extends State<T> {
+abstract class TileListState<T extends TileList> extends State<T> with TickerProviderStateMixin {
 
   late Timeline timeLine;
   String incrementalTilerScrollId = "";
   SubCalendarEvent? notificationSubEvent;
   SubCalendarEvent? concludingSubEvent;
-  final Duration autoRefreshDuration = const Duration(minutes: 5);
+  final Duration autoRefreshDuration = const Duration(minutes: 1);
   StreamSubscription? autoRefreshList;
   late final LocalNotificationService localNotificationService;
+  bool isAutoRefresh = false;
+  bool isManualRefreshed=false;
+  AnimationController? swipingAnimationController;
+  Animation<double>? swipingAnimation;
+  int swipeDirection = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    localNotificationService = LocalNotificationService();
+    autoRefreshTileList(autoRefreshDuration);
+  }
+  @override
+  void dispose() {
+    swipingAnimationController?.dispose();
+    super.dispose();
+  }
+  
+  void initializingSwipingAnimation({Duration duration = const Duration(milliseconds: 300)}) {
+    swipingAnimationController = AnimationController(
+      duration: duration,
+      vsync: this,
+    );
+    swipingAnimation = CurvedAnimation(
+      parent: swipingAnimationController!,
+      curve: Curves.easeInOut,
+    );
+  }
+
+  Timeline get todayTimeLine {
+    return Utility.todayTimeline();
+  }
+
   void autoRefreshTileList(Duration duration) {
-    Future onTileExpiredCallBack =
-    Future.delayed(duration, callScheduleRefresh);
+    isAutoRefresh = true;
+    Future onTileExpiredCallBack = Future.delayed(duration,callScheduleRefresh);
     // ignore: cancel_subscriptions
     autoRefreshList = onTileExpiredCallBack.asStream().listen((_) {});
   }
 
   void callScheduleRefresh() {
+
     if (this.mounted) {
       final currentState = this.context.read<ScheduleBloc>().state;
       Timeline? lookupTimeline;
@@ -52,7 +85,7 @@ abstract class TileListState<T extends TileList> extends State<T> {
           previousTimeline: currentState.lookupTimeline,
         ));
         lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline,isTriggeredByAutoRefresh: true);
       }
 
       if (currentState is ScheduleLoadedState) {
@@ -63,7 +96,7 @@ abstract class TileListState<T extends TileList> extends State<T> {
           previousTimeline: currentState.lookupTimeline,
         ));
         lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline,isTriggeredByAutoRefresh: true);
       }
 
       if (currentState is ScheduleLoadingState) {
@@ -74,8 +107,7 @@ abstract class TileListState<T extends TileList> extends State<T> {
           previousTimeline: currentState.previousLookupTimeline,
         ));
         lookupTimeline = currentState.previousLookupTimeline;
-        refreshScheduleSummary(
-            lookupTimeline: currentState.previousLookupTimeline);
+        refreshScheduleSummary(lookupTimeline: currentState.previousLookupTimeline,isTriggeredByAutoRefresh: true);
       }
       final currentScheduleSummaryState =
           this.context.read<ScheduleSummaryBloc>().state;
@@ -92,11 +124,28 @@ abstract class TileListState<T extends TileList> extends State<T> {
     }
     autoRefreshTileList(
         Duration(
-            minutes: autoRefreshSubEventDurationInMinutes
+            minutes: 1
         ));
   }
 
+  void refreshScheduleSummary({Timeline? lookupTimeline,isTriggeredByAutoRefresh=false}) {
+    if(!isTriggeredByAutoRefresh)
+      isAutoRefresh =false;
+    final currentScheduleSummaryState =
+        this.context.read<ScheduleSummaryBloc>().state;
+
+    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
+        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
+      this.context.read<ScheduleSummaryBloc>().add(
+        GetScheduleDaySummaryEvent(
+            timeline: lookupTimeline, requestId: incrementalTilerScrollId),
+      );
+    }
+  }
+
   Future<void> handleRefresh() async {
+    isManualRefreshed=true;
     final currentState = this.context
         .read<ScheduleBloc>()
         .state;
@@ -132,19 +181,7 @@ abstract class TileListState<T extends TileList> extends State<T> {
     }
   }
 
-  void refreshScheduleSummary({Timeline? lookupTimeline}) {
-    final currentScheduleSummaryState =
-        this.context.read<ScheduleSummaryBloc>().state;
 
-    if (currentScheduleSummaryState is ScheduleSummaryInitial ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
-        currentScheduleSummaryState is ScheduleDaySummaryLoading) {
-      this.context.read<ScheduleSummaryBloc>().add(
-        GetScheduleDaySummaryEvent(
-            timeline: lookupTimeline, requestId: incrementalTilerScrollId),
-      );
-    }
-  }
 
   Widget renderPending({String? message}) {
     List<Widget> centerElements = [

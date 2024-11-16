@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileBatch.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/precedingMonthlyTileBatch.dart';
@@ -10,11 +11,11 @@ import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter/animation.dart';
 
 class MonthlyTileList extends TileList {
   static final String routeName = '/MonthlyTileList';
@@ -26,16 +27,17 @@ class MonthlyTileList extends TileList {
       _MonthlyTileListState();
 }
 
-class _MonthlyTileListState extends TileListState {
+class _MonthlyTileListState extends TileListState  {
+
   @override
   void initState() {
     super.initState();
-    localNotificationService = LocalNotificationService();
+    initializingSwipingAnimation();
     List<DateTime> daysInMonth=Utility.getDaysInMonth(Utility.currentTime().dayDate);
     timeLine=Timeline.fromDateTime(daysInMonth.first, daysInMonth.last.add(Duration(days: 1)));
     incrementalTilerScrollId="monthly-incremental-get-schedule";
-    autoRefreshTileList(autoRefreshDuration);
   }
+
 
   reloadSchedule({required DateTime dateManageSelectedMonth}) {
     List<DateTime> selectedDaysInMonth=Utility.getDaysInMonth(dateManageSelectedMonth);
@@ -77,9 +79,18 @@ class _MonthlyTileListState extends TileListState {
       for (int dayIndex = weekStart; dayIndex < weekStart + 7 && dayIndex < selectedDaysInMonth.length; dayIndex++) {
         DateTime selectedDate = selectedDaysInMonth[dayIndex];
         int selectedDateIndex = Utility.getDayIndex(selectedDate);
-        List<TilerEvent> tilesForDay = tileData!.item2.where((tile) =>
-        Utility.getDayIndex(tile.startTime.dayDate) == selectedDateIndex
-        ).toList();
+        List<TilerEvent> tilesForDay;
+        if(todayDayIndex==selectedDateIndex) {
+          tilesForDay = tileData!.item2
+              .where((tile) => todayTimeLine.isInterfering(tile))
+              .toList();
+        }else {
+          tilesForDay = tileData!.item2
+              .where((tile) =>
+          Utility.getDayIndex(tile.startTime.dayDate) ==
+              selectedDateIndex)
+              .toList();
+        }
         weekBatches.add(
           selectedDateIndex < todayDayIndex
               ? PrecedingMonthlyTileBatch(
@@ -103,36 +114,71 @@ class _MonthlyTileListState extends TileListState {
   }
   Widget buildMonthlyRenderSubCalendarTiles(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData ) {
     List<Widget> monthRows =generateMonthRows(tileData);
-    return Container(
-      margin: EdgeInsets.only(top: 150, right: 10, left: 10),
-      child:RefreshIndicator(
-        onRefresh: handleRefresh,
-        child: CustomScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          slivers: [
-            ...monthRows.map((row) => SliverToBoxAdapter(child: row)).toList(),
-            SliverToBoxAdapter(
-              child: MediaQuery.of(context).orientation == Orientation.landscape
-                  ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                  : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles,
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        setState(() {
+          swipeDirection = details.primaryVelocity! > 0 ? 1 : -1;
+        });
+        swipingAnimationController?.forward().then((_) {
+          final monthlyUiBloc = context.read<MonthlyUiDateManagerBloc>();
+          DateTime newDate = monthlyUiBloc.state.selectedDate;
+          if (swipeDirection < 0) {
+            newDate = newDate.month == 12
+                ? DateTime(newDate.year + 1, 1)
+                : DateTime(newDate.year, newDate.month + 1);
+          } else if (swipeDirection > 0) {
+            newDate = newDate.month == 1
+                ? DateTime(newDate.year - 1, 12)
+                : DateTime(newDate.year, newDate.month - 1);
+          }
+          monthlyUiBloc.add(UpdateSelectedMonthOnSwiping(selectedTime: newDate));
+          swipingAnimationController?.reset();
+        });
+      },
+      child:  AnimatedBuilder(
+        animation: swipingAnimationController!,
+        builder: (context, child) {
+          return Transform.translate(
+            offset: Offset(
+              swipeDirection * swipingAnimation!.value * MediaQuery.of(context).size.width,
+              0,
             ),
-          ],
+            child: child,
+          );
+        },
+        child: Container(
+          margin: EdgeInsets.only(top: 150, right: 10, left: 10),
+          child:RefreshIndicator(
+            onRefresh: handleRefresh,
+            child: CustomScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              slivers: [
+                ...monthRows.map((row) => SliverToBoxAdapter(child: row)).toList(),
+                SliverToBoxAdapter(
+                  child: MediaQuery.of(context).orientation == Orientation.landscape
+                      ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
+                      : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
+
   }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-         BlocListener<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
-          listenWhen: (previous, current) =>
-          previous.selectedDate != current.selectedDate,
-          listener: (context, state) {
-            reloadSchedule(dateManageSelectedMonth: state.selectedDate);
-          }
-         ),
+        BlocListener<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
+            listenWhen: (previous, current) =>
+            previous.selectedDate != current.selectedDate,
+            listener: (context, state) {
+              reloadSchedule(dateManageSelectedMonth: state.selectedDate);
+            }
+        ),
         BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
           listener: (context, state) {
             showSubEventModal(state);
@@ -167,16 +213,16 @@ class _MonthlyTileListState extends TileListState {
               Timeline monthlySelectedTimeline=Timeline.fromDateTime(daysInMonth.first, daysInMonth.last.add(Duration(days: 1)));
               showPendingUI=showPendingUI || !(state.previousLookupTimeline.isStartAndEndEqual(monthlySelectedTimeline));
             }
-            if (showPendingUI ) {
+            final currentScheduleSummaryState = this.context.read<ScheduleSummaryBloc>().state;
+            if (showPendingUI || currentScheduleSummaryState is ScheduleDaySummaryLoading && !isAutoRefresh && !isManualRefreshed) {
+              isManualRefreshed=false;
               return renderPending();
             }
             return Stack(children: [
               buildMonthlyRenderSubCalendarTiles(Tuple2(state.timelines, state.subEvents))
             ]);
           }
-
           if (state is ScheduleEvaluationState) {
-
             return Stack(
               children: [
                 buildMonthlyRenderSubCalendarTiles(Tuple2(state.timelines, state.subEvents)),
