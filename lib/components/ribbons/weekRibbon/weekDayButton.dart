@@ -29,7 +29,9 @@ class _WeekDayButtonState extends State<WeekDayButton> {
     List<Widget> childWidgets = [
       Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        decoration: TileStyles.ribbonsButtonDefaultDecoration,
+        decoration: dateTime.isToday?TileStyles.ribbonsButtonSelectedDecoration.copyWith(borderRadius: BorderRadius.all(
+          const Radius.circular(10.0),
+        ),):TileStyles.ribbonsButtonDefaultDecoration,
         alignment: Alignment.center,
         height: 40,
         width: 40,
@@ -38,7 +40,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           style:TextStyle(
               fontSize: 20,
               fontFamily: TileStyles.rubikFontName,
-              color: Colors.black
+              color:  dateTime.isToday?Colors.white:Colors.black
           ),
         ),
       ),

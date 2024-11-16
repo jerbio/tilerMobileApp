@@ -1,3 +1,4 @@
+import 'package:emoji_regex/emoji_regex.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -40,7 +41,8 @@ class TileNameState extends State<TileName> {
       double fontSize = 16;
       String emojiString = subEvent.emojis!.trim();
       if (emojiString.length > 0) {
-        int emojiCount = Constants.emojiRegex.allMatches(emojiString).length;
+        int emojiCount = emojiRegex().allMatches(emojiString).length;
+        emojiCount = emojiCount == 0 ? 1 : emojiCount;
         fontSize = fontSize / emojiCount + 2;
       }
       emojiField = Text(emojiString,

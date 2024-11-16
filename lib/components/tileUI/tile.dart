@@ -235,7 +235,10 @@ class TileWidgetState extends State<TileWidget>
     }
 
     if (widget.subEvent.address != null &&
-        widget.subEvent.address!.isNotEmpty) {
+        widget.subEvent.address!.isNotEmpty
+        ||
+        subEvent.searchdDescription !=null &&
+        subEvent.searchdDescription!.isNotEmpty) {
       var addressWidget = Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TileAddress(widget.subEvent));

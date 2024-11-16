@@ -49,19 +49,7 @@ class _PrecedingWeeklyTileBatchState extends TileBatchState {
           allEvents.sort((a, b) => a.start!.compareTo(b.start!));
           if (allEvents.isNotEmpty) {
             allEvents.forEach((tile) {
-              childrenColumnWidgets.add(WeeklyTileWidget(subEvent: tile, onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EditTile(
-                          tileId: (tile.isFromTiler
-                              ? tile.id
-                              : tile.thirdpartyId) ??
-                              "",
-                          tileSource: tile.thirdpartyType,
-                          thirdPartyUserId: tile.thirdPartyUserId,
-                        )));
-              }));
+              childrenColumnWidgets.add(WeeklyTileWidget(subEvent: tile,isPreceding: true,));
             });
 
             retValue = Column(children: childrenColumnWidgets);

@@ -7,12 +7,19 @@ abstract class MonthlyUiDateManagerEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class UpdateSelectedMonth extends MonthlyUiDateManagerEvent {
+class UpdateSelectedMonthOnPicking extends MonthlyUiDateManagerEvent {
 
-  const UpdateSelectedMonth();
+  const UpdateSelectedMonthOnPicking();
 
   @override
   List<Object> get props => [];
+}
+class UpdateSelectedMonthOnSwiping extends MonthlyUiDateManagerEvent {
+  DateTime selectedTime;
+   UpdateSelectedMonthOnSwiping({required this.selectedTime});
+
+  @override
+  List<Object> get props => [selectedTime];
 }
 class ChangeYear extends MonthlyUiDateManagerEvent {
   final int year;

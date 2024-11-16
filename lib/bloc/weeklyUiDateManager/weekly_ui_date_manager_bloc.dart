@@ -17,16 +17,17 @@ class WeeklyUiDateManagerBloc extends Bloc<WeeklyUiDateManagerEvent, WeeklyUiDat
       tempSelectedWeek: currentWeek,
     );
   })()) {
-    on<UpdateSelectedWeek>(_onUpdateSelectedWeek);
+    on<UpdateSelectedWeekOnPicking>(_onUpdateSelectedWeekOnPicking);
+    on<UpdateSelectedWeekOnSwiping>(_onUpdateSelectedWeekOnSwiping);
     on<UpdateTempDate>(_onUpdateTempDate);
     on<LogOutWeeklyUiDateManagerEvent>(_onLogOutWeeklyUiDateManagerEvent);
     on<SetTempSelectedWeek>(_onSetTempSelectedWeek);
     on<ResetTempEvent>(_onResetTempState);
   }
 
-  void _onUpdateSelectedWeek(UpdateSelectedWeek event, Emitter<WeeklyUiDateManagerState> emit) {
+  void _onUpdateSelectedWeekOnPicking(UpdateSelectedWeekOnPicking event, Emitter<WeeklyUiDateManagerState> emit) {
     final selectedWeek = Utility.getDaysInWeek(event.selectedDate.dayDate);
-    if(!listEquals(selectedWeek, state.selectedWeek)||(listEquals(selectedWeek, state.selectedWeek)&&state.selectedDate.month!=state.tempDate.month)) {
+    if(Utility.isDateWithinPickerRange(event.selectedDate.dayDate) &&!listEquals(selectedWeek, state.selectedWeek)||(listEquals(selectedWeek, state.selectedWeek)&&state.selectedDate.month!=state.tempDate.month)) {
       emit(state.copyWith(
         selectedDate: state.tempDate,
         selectedWeek: selectedWeek,
@@ -34,14 +35,28 @@ class WeeklyUiDateManagerBloc extends Bloc<WeeklyUiDateManagerEvent, WeeklyUiDat
       ));
     }
   }
+  void _onUpdateSelectedWeekOnSwiping(UpdateSelectedWeekOnSwiping event, Emitter<WeeklyUiDateManagerState> emit) {
+    final selectedWeek = Utility.getDaysInWeek(event.selectedDate.dayDate);
+    if(Utility.isDateWithinPickerRange(event.selectedDate.dayDate)||(listEquals(selectedWeek, state.selectedWeek)&&state.selectedDate.month!=state.tempDate.month)) {
+      emit(state.copyWith(
+        selectedDate: event.selectedDate,
+        selectedWeek: selectedWeek,
+        tempSelectedWeek: selectedWeek,
+        tempDate: event.selectedDate
+      ));
+    }
+  }
   void _onUpdateTempDate(UpdateTempDate event, Emitter<WeeklyUiDateManagerState> emit) {
-    emit(state.copyWith(tempDate: event.tempDate));
+    if(Utility.isDateWithinPickerRange(event.tempDate))
+      emit(state.copyWith(tempDate: event.tempDate));
   }
 
 
   void _onSetTempSelectedWeek(SetTempSelectedWeek event, Emitter<WeeklyUiDateManagerState> emit) {
-    final tempWeek = Utility.getDaysInWeek(event.selectedDate.dayDate);
-    emit(state.copyWith(tempSelectedWeek: tempWeek));
+    if(Utility.isDateWithinPickerRange(event.selectedDate.dayDate)) {
+      final tempWeek = Utility.getDaysInWeek(event.selectedDate.dayDate);
+      emit(state.copyWith(tempSelectedWeek: tempWeek));
+    }
   }
 
   void _onResetTempState(ResetTempEvent event, Emitter<WeeklyUiDateManagerState> emit) {

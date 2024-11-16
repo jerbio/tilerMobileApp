@@ -124,6 +124,29 @@ class Utility {
     return retValue;
   }
 
+  static DateTime getFirstDate(){
+    DateTime firstDateInTheYear=DateTime(DateTime
+        .now()
+        .year - 5, 1,1);
+    List<DateTime> firstWeek=Utility.getDaysInWeek(firstDateInTheYear);
+    return firstWeek.first;
+
+  }
+
+  static DateTime getLastDate(){
+    DateTime lastDateInTheYear=DateTime(DateTime
+        .now()
+        .year + 5, 12, 31);
+    List<DateTime> lastWeek=Utility.getDaysInWeek(lastDateInTheYear);
+    return lastWeek.last;
+  }
+
+  static bool isDateWithinPickerRange(DateTime date) {
+    final firstDay = getFirstDate();
+    final lastDay = getLastDate();
+    return date.isAfter(firstDay) && date.isBefore(lastDay);
+  }
+
   static List<DateTime> getDaysInWeek(DateTime selectedDay) {
     final sunday =DateTime(selectedDay.year, selectedDay.month, selectedDay.day - selectedDay.weekday % 7);
     List<DateTime> weekDays=List.generate(7, (index) => DateTime(sunday.year, sunday.month, sunday.day + index).dayDate);
