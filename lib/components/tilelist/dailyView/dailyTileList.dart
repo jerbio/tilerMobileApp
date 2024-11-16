@@ -15,7 +15,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -51,16 +50,11 @@ class _DailyTileListState extends TileListState{
   @override
   void initState() {
     super.initState();
-    localNotificationService = LocalNotificationService();
     timeLine= Timeline.fromDateTimeAndDuration(Utility.currentTime().dayDate.add(Duration(days: -4)), Duration(days: 7));
     incrementalTilerScrollId= "incremental-get-schedule";
     previousTimeline = this.timeLine;
-    autoRefreshTileList(autoRefreshDuration);
   }
 
-  Timeline get _todayTimeLine {
-    return Utility.todayTimeline();
-  }
 
   String _generateIncrementalIdToMapping() {
     return incrementalTilerScrollId + "-" + Utility.msCurrentTime.toString();
@@ -329,7 +323,7 @@ class _DailyTileListState extends TileListState{
       dayToSleepTimeLines[dayIndex] = sleepTimeLine;
     });
     Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
-    mapTilesToDays(tileData.item2, _todayTimeLine);
+    mapTilesToDays(tileData.item2, todayTimeLine);
     List<TilerEvent> todayTiles = dayToTiles.item2;
     Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
     processUpcomingAndPrecedingTiles(dayIndexToTileDict,upcomingDayTilesDict,precedingDayTilesDict);

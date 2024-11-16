@@ -13,16 +13,21 @@ class MonthlyUiDateManagerBloc extends Bloc<MonthlyUiDateManagerEvent, MonthlyUi
         year: currentDate.year,
     );
   })()) {
-    on<UpdateSelectedMonth>(_onUpdateSelectedMonth);
+    on<UpdateSelectedMonthOnPicking>(_onUpdateSelectedMonth);
+    on<UpdateSelectedMonthOnSwiping>(_onUpdateSelectedMonthOnSwiping);
     on<ChangeYear>(_onChangeYear);
     on<ChangeMonth>(_onChangeMonth);
     on<ResetTempEvent>(_onResetTempState);
     on<LogOutMonthlyUiDateManagerEvent>(_onLogOutMonthlyUiDateManagerEvent);
   }
 
-  void _onUpdateSelectedMonth(UpdateSelectedMonth event, Emitter<MonthlyUiDateManagerState> emit) {
-    if(state.tempDate.month!=state.selectedDate.month)
+  void _onUpdateSelectedMonth(UpdateSelectedMonthOnPicking event, Emitter<MonthlyUiDateManagerState> emit) {
+    if(state.tempDate.month!=state.selectedDate.month || state.tempDate.year!=state.selectedDate.year)
     emit(state.copyWith(selectedDate: state.tempDate));
+  }
+  void _onUpdateSelectedMonthOnSwiping(UpdateSelectedMonthOnSwiping event, Emitter<MonthlyUiDateManagerState> emit) {
+    if(event.selectedTime.month!=state.selectedDate.month || event.selectedTime.year!=state.selectedDate.year)
+      emit(state.copyWith(selectedDate: event.selectedTime,tempDate: event.selectedTime,year: event.selectedTime.year));
   }
 
   void _onChangeYear(ChangeYear event, Emitter<MonthlyUiDateManagerState> emit) {

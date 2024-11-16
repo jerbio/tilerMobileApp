@@ -39,7 +39,7 @@ class MonthlyDailyTile extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: TileName(subEvent),
             ),
-            if (subEvent.address != null && subEvent.address!.isNotEmpty)
+            if (subEvent.address != null && subEvent.address!.isNotEmpty||subEvent.searchdDescription !=null && subEvent.searchdDescription!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 child: TileAddress(subEvent,isMonthlyView: true,),

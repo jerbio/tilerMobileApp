@@ -90,9 +90,10 @@ class MonthlyPickerDialog extends StatelessWidget {
         final month = index + 1;
         final isSelected = month == state.tempDate.month && state.tempDate.year ==state.year ;
         return GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () =>  context.read<MonthlyUiDateManagerBloc>().add(ChangeMonth(month: month)),
           child: Container(
-            margin: const EdgeInsets.all(8.0),
+            margin: const EdgeInsets.all(5.0),
             decoration:  isSelected ? BoxDecoration(
               border:Border.all(color: TileStyles.primaryColor, width: 2),
               borderRadius: BorderRadius.circular(12),
@@ -120,7 +121,7 @@ class MonthlyPickerDialog extends StatelessWidget {
         child: ElevatedButton(
           onPressed: () {
             context.read<MonthlyUiDateManagerBloc>().add(
-                UpdateSelectedMonth()
+                UpdateSelectedMonthOnPicking()
             );
             Navigator.of(context).pop();
           },

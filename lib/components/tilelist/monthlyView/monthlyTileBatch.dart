@@ -137,7 +137,7 @@ class MonthlyTileBatchState extends TileBatchState {
         removedItemBuilder: _buildRemovedItem,
       );
     }
-
+    int todayDayIndex = Utility.getDayIndex(DateTime.now());
     dayContent =  GestureDetector(
       onTap: () {
         if (_list!.toList().length>0) {
@@ -186,7 +186,7 @@ class MonthlyTileBatchState extends TileBatchState {
         height:195,
         padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
         decoration: BoxDecoration(
-          color: Color.fromRGBO(240, 240, 240, 1),
+          color: todayDayIndex==widget.dayIndex?TileStyles.primaryColor:Color.fromRGBO(240, 240, 240, 1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: Colors.white,
