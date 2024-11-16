@@ -16,8 +16,7 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-
-import '../../../constants.dart';
+import 'package:tiler_app/constants.dart';
 
 class WithinNowBatch extends TileBatch {
   TileWidget? _currentWidget;

@@ -55,7 +55,7 @@ class WeeklyUiDateManagerBloc extends Bloc<WeeklyUiDateManagerEvent, WeeklyUiDat
   void _onSetTempSelectedWeek(SetTempSelectedWeek event, Emitter<WeeklyUiDateManagerState> emit) {
     if(Utility.isDateWithinPickerRange(event.selectedDate.dayDate)) {
       final tempWeek = Utility.getDaysInWeek(event.selectedDate.dayDate);
-      emit(state.copyWith(tempSelectedWeek: tempWeek));
+      emit(state.copyWith(tempDate:event.selectedDate,tempSelectedWeek: tempWeek));
     }
   }
 
