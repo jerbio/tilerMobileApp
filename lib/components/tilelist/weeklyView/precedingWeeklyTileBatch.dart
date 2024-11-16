@@ -5,7 +5,6 @@ import 'package:tiler_app/components/tileUI/weeklyTile.dart';
 import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 
 
 class PrecedingWeeklyTileBatch extends TileBatch {
