@@ -8,9 +8,9 @@ import 'package:tiler_app/util.dart';
 class ContactInputFieldWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactUpdate;
-  final double contentHeight;
+  final double? contentHeight;
   ContactInputFieldWidget(
-      {this.onContactUpdate, this.contentHeight = 100, this.contacts});
+      {this.onContactUpdate, this.contentHeight, this.contacts});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -40,6 +40,10 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   }
 
   void _addContact(String contactVal) {
+    if (contactVal.isEmpty) {
+      return;
+    }
+    var priorContact = _contacts.toList();
     if (_isValidContact(contactVal)) {
       setState(() {
         final contactObj = Contact();
@@ -54,7 +58,10 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
       _controller
           .clear(); // Clear the text input field after adding the contact
     }
-    if (this.widget.onContactUpdate != null) {
+    if (this.widget.onContactUpdate != null &&
+        !priorContact.any((eachContact) =>
+            eachContact.email == contactVal ||
+            eachContact.phoneNumber == contactVal)) {
       this.widget.onContactUpdate!(_contacts);
     }
   }
@@ -77,6 +84,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           Container(
             height: this.widget.contentHeight,
             child: ListView(
+              shrinkWrap: true,
               reverse: true,
               children: [
                 Wrap(
@@ -106,23 +114,26 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           .width), // You can adjust the width or make it responsive
       height: TileStyles.inputHeight,
       child: TextField(
-        style: TileStyles.inputTextStyle,
-        controller: _controller,
-        decoration: InputDecoration(
-            hintStyle: TextStyle(
-                fontSize: TileStyles.inputFontSize,
-                fontFamily: TileStyles.rubikFontName,
-                color: TileStyles.inputFieldTextColor,
-                fontWeight: FontWeight.w100),
-            hintText: AppLocalizations.of(context)!.addContact,
-            border: InputBorder.none),
-        onSubmitted: (value) {
-          _addContact(value);
-        },
-        onEditingComplete: () {
-          _addContact(_controller.text);
-        },
-      ),
+          style: TileStyles.inputTextStyle,
+          controller: _controller,
+          textInputAction: TextInputAction.done,
+          decoration: InputDecoration(
+              hintStyle: TextStyle(
+                  fontSize: TileStyles.inputFontSize,
+                  fontFamily: TileStyles.rubikFontName,
+                  color: TileStyles.inputFieldTextColor,
+                  fontWeight: FontWeight.w100),
+              hintText: AppLocalizations.of(context)!.addContact,
+              border: InputBorder.none),
+          onSubmitted: (value) {
+            _addContact(value);
+          },
+          onEditingComplete: () {
+            _addContact(_controller.text);
+          },
+          onTapOutside: (PointerDownEvent event) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          }),
     );
   }
 

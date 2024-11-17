@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -114,10 +115,14 @@ class SignInComponentState extends State<SignInComponent>
   final authApi = AuthorizationApi();
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
+  LocalizationService? localizationService;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      localizationService = LocalizationService(AppLocalizations.of(context)!);
+    });
     signinInAnimationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -248,7 +253,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -326,7 +331,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -528,7 +533,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus();
+        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
         Navigator.pop(context);
         Navigator.push(
           context,

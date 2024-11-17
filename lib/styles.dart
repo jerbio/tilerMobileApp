@@ -16,9 +16,14 @@ class TileStyles {
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
+  static const Color inactiveTextColor = Color(0xFF4A4A4A);
+  static const Color black = Colors.black;
+
   static const Color appBarColor = primaryColor;
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
+  static const Color errorBackgroundColor = Colors.black54;
+  static const Color errorTxtColor = Colors.red;
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
@@ -99,7 +104,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
     overlayColor: MaterialStateProperty.resolveWith((states) {
       return primaryColorLightHSL.toColor();
@@ -108,7 +113,7 @@ class TileStyles {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
-      return primaryColorDarkHSL.toColor();
+      return primaryColorHSL.toColor();
     }),
   );
 
@@ -305,4 +310,19 @@ class TileStyles {
     multiShareIcon,
     color: TileStyles.primaryContrastColor,
   );
+
+  static BoxDecoration configUpdate_notSelected = BoxDecoration(
+      color: Colors.transparent,
+      border: Border.all(
+        color: TileStyles.primaryColor,
+        width: 1,
+      ),
+      borderRadius: const BorderRadius.all(
+        const Radius.circular(10.0),
+      ));
+  static const BoxDecoration configUpdate_Selected = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      color: TileStyles.primaryColor);
 }

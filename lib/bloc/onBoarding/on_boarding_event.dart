@@ -1,7 +1,5 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
+part of 'on_boarding_bloc.dart';
 
-import '../../data/location.dart';
 
 abstract class OnboardingEvent extends Equatable {
   const OnboardingEvent();

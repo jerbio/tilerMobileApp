@@ -292,8 +292,9 @@ class _TileListState extends State<TileList> {
           height: 250,
           width: 300,
           decoration: BoxDecoration(
-            color: bgroundColor,
-          ),
+              color: bgroundColor,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10), topRight: Radius.circular(10))),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -357,10 +358,12 @@ class _TileListState extends State<TileList> {
           eachSubEventA.start!.compareTo(eachSubEventB.start!));
 
       Map<int, Timeline> dayToSleepTimeLines = {};
-      sleepTimelines.forEach((sleepTimeLine) {
-        int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
-        dayToSleepTimeLines[dayIndex] = sleepTimeLine;
-      });
+      sleepTimelines.forEach(
+        (sleepTimeLine) {
+          int dayIndex = Utility.getDayIndex(sleepTimeLine.startTime);
+          dayToSleepTimeLines[dayIndex] = sleepTimeLine;
+        },
+      );
 
       Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
           mapTilesToDays(tileData.item2, _todayTimeLine);
@@ -390,6 +393,7 @@ class _TileListState extends State<TileList> {
       dayIndexToTileDict.keys.toList();
       dayIndexes.sort();
 
+      // Top Section(Date and other section)
       for (int i = 0; i < dayIndexes.length; i++) {
         int dayIndex = dayIndexes[i];
         dayIndex += startIndex;
@@ -544,13 +548,16 @@ class _TileListState extends State<TileList> {
               Tuple2<int, Widget>? tileBatchTupleData;
               DateTime currentTime = Utility.currentTime().dayDate;
 
-              this.dayIndexToCarouselIndex.forEach((key, value) {
-                if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
-                  dayIndexOfTileBatch = key;
-                  tileBatchTupleData = value;
-                  currentTime = Utility.getTimeFromIndex(key);
-                }
-              });
+              this.dayIndexToCarouselIndex.forEach(
+                (key, value) {
+                  if (value.item1 == pageNumber &&
+                      dayIndexOfTileBatch == null) {
+                    dayIndexOfTileBatch = key;
+                    tileBatchTupleData = value;
+                    currentTime = Utility.getTimeFromIndex(key);
+                  }
+                },
+              );
 
               if (carouselData == CarouselPageChangedReason.manual &&
                   dayIndexOfTileBatch != null &&
@@ -847,7 +854,7 @@ class _TileListState extends State<TileList> {
     }
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
-    print('After queryTimeline ' + queryTimeline.toString());
+    Utility.debugPrint('After queryTimeline ' + queryTimeline.toString());
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
         previousSubEvents: subEvents,
         previousTimeline: previousTimeLine,

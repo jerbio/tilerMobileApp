@@ -1,24 +1,31 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import '../../data/location.dart';
-import '../../data/onBoarding.dart';
-import '../../services/api/onBoardingApi.dart';
-import '../../services/onBoardingHelper.dart';
-import 'on_boarding_event.dart';
-import 'on_boarding_state.dart';
-import '../../../constants.dart' as Constants;
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/onBoarding.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/services/api/onBoardingApi.dart';
+import 'package:tiler_app/services/onBoardingHelper.dart';
+import 'package:equatable/equatable.dart';
+import 'package:tiler_app/constants.dart' as Constants;
+import 'package:tiler_app/services/localizationService.dart';
+
+part 'on_boarding_event.dart';
+part 'on_boarding_state.dart';
 
 class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
-  final OnBoardingApi onBoardingApi;
-  OnboardingBloc(this.onBoardingApi)
+
+  final LocalizationService localizationService;
+  late OnBoardingApi onBoardingApi;
+  OnboardingBloc(this.localizationService)
       : super(OnboardingState(
             step: OnboardingStep.initial,
             pageNumber: 0,
-            preferredDaySection: "Morning",
+            preferredDaySection:"Morning",
             wakeUpTime: TimeOfDay(hour: 7, minute: 0),
             startingWorkDayTime:TimeOfDay(hour: 9, minute: 0),
 
   )) {
+    onBoardingApi= OnBoardingApi(localizationService);
     on<NextPageEvent>(_onNextPageChanged);
     on<PreviousPageEvent>(_onPreviousPageEvent);
     on<WakeUpTimeUpdated>(_onWakeUpTimeUpdated);
@@ -117,10 +124,10 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           await onBoardingApi.sendOnboardingData(onboardingContent);
      emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
-      print(e.toString());
+      print( e is TilerError?e.message:localizationService.errorOccurred);
       emit(state.copyWith(
         step: OnboardingStep.error,
-        error: e.toString(),
+        error: e is TilerError?e.message:localizationService.errorOccurred,
       ));
     }
   }

@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:ui';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -14,6 +17,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -22,6 +26,8 @@ import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
+
+import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -36,6 +42,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
+
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
         altitudeAccuracy: 777.0,
@@ -55,10 +62,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
-
+  late AppLinks _appLinks;
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
     super.initState();
+    initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
       localNotificationService.subscribeToRemoteNotification(this.context);
@@ -75,6 +85,21 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     //     });
     //   }
     // });
+  }
+
+  void openAppLink(Uri uri) {
+    RedirectHandler.routePage(context, uri);
+  }
+
+  Future<void> initDeepLinks() async {
+    // return;
+    _appLinks = AppLinks();
+
+    // Handle links
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('onAppLink: $uri');
+      openAppLink(uri);
+    });
   }
 
   void _onBottomNavigationTap(int index) {
@@ -125,18 +150,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
-        onTap: () {
-          setState(() {
-            isAddButtonClicked = false;
-          });
-        },
-        child: Container(
-            height: MediaQuery.of(this.context).size.height,
-            width: MediaQuery.of(this.context).size.width,
-            color: Colors.amber,
-            child: Stack(children: <Widget>[
-              AutoAddTile(),
-            ])));
+      onTap: () {
+        setState(() {
+          isAddButtonClicked = false;
+        });
+      },
+      child: Container(
+        height: MediaQuery.of(this.context).size.height,
+        width: MediaQuery.of(this.context).size.width,
+        color: Colors.amber,
+        child: Stack(
+          children: <Widget>[
+            AutoAddTile(),
+          ],
+        ),
+      ),
+    );
 
     return containerWrapper;
   }
@@ -193,23 +222,26 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // GestureDetector(
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     Navigator.of(context).pushNamed('/ForecastPreview');
-                //   },
-                //   child: ListTile(
-                //     leading: Image.asset('assets/images/binocular.png'),
-                //     title: Text(
-                //       AppLocalizations.of(context)!.forecast,
-                //       style: TextStyle(
-                //           fontSize: 20,
-                //           fontFamily: TileStyles.rubikFontName,
-                //           fontWeight: FontWeight.w300,
-                //           color: Colors.white),
-                //     ),
-                //   ),
-                // ),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.of(context).pushNamed('/ForecastPreview');
+                  },
+                  child: ListTile(
+                    leading: SvgPicture.asset('assets/images/binocular.svg'),
+                    title: Container(
+                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
+                      child: Text(
+                        AppLocalizations.of(context)!.forecast,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.w300,
+                            color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
                 GestureDetector(
                   onTap: () {
                     AnalysticsSignal.send('REVISE_BUTTON');
@@ -368,17 +400,18 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   @override
   Widget build(BuildContext context) {
-    // print('isLocationRequestTriggered $isLocationRequestTriggered');
-    // print('locationAccess $locationAccess');
-    // if (!isLocationRequestTriggered &&
-    //     !locationAccess.item2 &&
-    //     locationAccess.item3) {
-    //   return renderLocationRequest(accessManager);
-    // }
+    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    double height = MediaQuery.of(context).size.height;
+    if (!isLocationRequestTriggered &&
+        !locationAccess.item2 &&
+        locationAccess.item3) {
+      return renderLocationRequest(accessManager);
+    }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
-      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
+      TileList(),
+      // //this is the default and we need to switch these to routes and so we dont loose back button support
       Container(
         margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
         decoration: BoxDecoration(
@@ -395,12 +428,66 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           autoUpdateAnchorDate: true,
         ),
       ),
+
+      Positioned(
+        right: 0,
+        child: GestureDetector(
+          onTap: () {
+            uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+          },
+          child: Container(
+            height: 50,
+            width: 38,
+            color: TileStyles.primaryContrastColor,
+            padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+            child: LayoutBuilder(
+              builder: (context, constraints) => Stack(
+                children: [
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: constraints.maxWidth * 0.9,
+                      child: Icon(
+                        FontAwesomeIcons.calendar,
+                        size: constraints.maxWidth,
+                        color: TileStyles.primaryColor,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: constraints.maxHeight * 0.125,
+                    left: (constraints.maxWidth * 0.05),
+                    child: Center(
+                      child: Container(
+                        height: constraints.maxHeight * 0.55,
+                        width: constraints.maxHeight * 0.55,
+                        child: Center(
+                          child: Text(
+                            (Utility.currentTime().day).toString(),
+                            style: TextStyle(
+                              fontFamily: TileStyles.rubikFontName,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      )
     ];
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
     }
     dayStatusWidget.onDayStatusChange(DateTime.now());
 
+    // Bottom Navbar Widget
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
@@ -414,14 +501,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
         child: Container(
           decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
                 Colors.white,
                 Colors.white,
                 Colors.white,
-              ])),
+              ],
+            ),
+          ),
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(

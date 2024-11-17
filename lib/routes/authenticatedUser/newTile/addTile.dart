@@ -53,8 +53,10 @@ class AddTileState extends State<AddTile> {
   bool isAppointment = false;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
+  final Color inputFieldIconColor = Color(0xFFEF3054); // Changed to #EF3054
+  final Color iconColor = Color(0xFFEF3054);
+  // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+  // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
   final Color populatedTextColor = Colors.white;
   final CarouselController tilerCarouselController = CarouselController();
   String tileNameText = '';
@@ -62,27 +64,8 @@ class AddTileState extends State<AddTile> {
   final LocationApi locationApi = LocationApi();
   Location? _homeLocation;
   Location? _workLocation;
-  final BoxDecoration boxDecoration = BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.05),
-      border: Border.all(
-        color: TileStyles.primaryColorDarkHSL.toColor(),
-        width: 1,
-      ),
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ));
-  final BoxDecoration populatedDecoration = BoxDecoration(
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          TileStyles.primaryColorDarkHSL.toColor(),
-          TileStyles.primaryColorLightHSL.toColor()
-        ],
-      ));
+  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
+  final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCountController = TextEditingController();
@@ -443,18 +426,19 @@ class AddTileState extends State<AddTile> {
             child: TextField(
               controller: tileNameController,
               style: TextStyle(
-                color: TileStyles.primaryColorDarkHSL.toColor(),
+                color: TileStyles.black,
                 fontSize: 20,
                 fontFamily: TileStyles.rubikFontName,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,
-                hintStyle:
-                    TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
+                hintStyle: TextStyle(color: TileStyles.inactiveTextColor
+                    // TileStyles.primaryColorDarkHSL.toColor()
+                    ),
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
-                fillColor: textBackgroundColor,
+                fillColor: TileStyles.primaryContrastColor,
                 border: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(
                     const Radius.circular(50.0),
@@ -482,55 +466,54 @@ class AddTileState extends State<AddTile> {
 
   Widget getSplitCountWidget() {
     Widget splitCountContainer = FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
-        child: Container(
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(AppLocalizations.of(context)!.howManyTimes,
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                SizedBox(
-                    width: 60,
-                    child: TextField(
-                      controller: splitCountController,
-                      keyboardType: TextInputType.numberWithOptions(
-                          signed: true, decimal: true),
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.once,
-                        hintStyle: TextStyle(
-                            color: TileStyles.oPrimaryColorHSL.toColor()),
-                        filled: true,
-                        isDense: true,
-                        contentPadding: EdgeInsets.all(10),
-                        fillColor: textBackgroundColor,
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(50.0),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(5.0),
-                          ),
-                          borderSide:
-                              BorderSide(color: Colors.white, width: 0.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(5.0),
-                          ),
-                          borderSide:
-                              BorderSide(color: textBorderColor, width: 0.5),
-                        ),
+      widthFactor: TileStyles.widthRatio,
+      child: Container(
+        height: 60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(AppLocalizations.of(context)!.howManyTimes,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+            SizedBox(
+                width: 60,
+                child: TextField(
+                  controller: splitCountController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: true, decimal: true),
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.once,
+                    hintStyle: TextStyle(color: TileStyles.primaryColor),
+                    filled: true,
+                    isDense: true,
+                    contentPadding: EdgeInsets.all(10),
+                    fillColor: textBackgroundColor,
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(50.0),
                       ),
-                    ))
-              ],
-            )));
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(5.0),
+                      ),
+                      borderSide: BorderSide(color: Colors.white, width: 0.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(5.0),
+                      ),
+                      borderSide:
+                          BorderSide(color: textBorderColor, width: 0.5),
+                    ),
+                  ),
+                ))
+          ],
+        ),
+      ),
+    );
     return splitCountContainer;
   }
 
@@ -569,43 +552,52 @@ class AddTileState extends State<AddTile> {
       }
     }
     Widget retValue = new GestureDetector(
-        onTap: setDuration,
-        child: FractionallySizedBox(
-            widthFactor: TileStyles.widthRatio,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
+      onTap: setDuration,
+      child: FractionallySizedBox(
+        widthFactor: TileStyles.widthRatio,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          decoration: BoxDecoration(
+              color: TileStyles.primaryContrastColor,
+              borderRadius: const BorderRadius.all(
+                const Radius.circular(8.0),
+              ),
+              border: Border.all(
+                color: textBorderColor,
+                width: 1.5,
+              )),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
+              Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: 20,
                     ),
-                    border: Border.all(
-                      color: textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: setDuration,
-                          child: Text(
-                            textButtonString,
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                            ),
-                          ),
-                        ))
-                  ],
-                ))));
+                  ),
+                  onPressed: setDuration,
+                  child: Text(
+                    textButtonString,
+                    style: textButtonString ==
+                            AppLocalizations.of(context)!.durationStar
+                        ? TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            color: TileStyles.inactiveTextColor)
+                        : TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            color: TileStyles.black),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
     return retValue;
   }
 
@@ -750,6 +742,7 @@ class AddTileState extends State<AddTile> {
             isSubmissionReady();
           });
         });
+
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
         prefixIcon: Icon(
@@ -773,6 +766,7 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
+
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
@@ -831,17 +825,18 @@ class AddTileState extends State<AddTile> {
         255 - selectedColor.green, 255 - selectedColor.blue, 1);
     if (isColorConfigSet) {
       colorConfigUpdateDecoration = BoxDecoration(
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          ),
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              selectedColor.withLightness(0.5),
-              selectedColor.withLightness(0.8)
-            ],
-          ));
+        borderRadius: BorderRadius.all(
+          const Radius.circular(10.0),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            selectedColor.withLightness(0.5),
+            selectedColor.withLightness(0.8)
+          ],
+        ),
+      );
     }
 
     Widget colorPickerConfigButton = ConfigUpdateButton(
@@ -1179,43 +1174,53 @@ class AddTileState extends State<AddTile> {
         ? AppLocalizations.of(context)!.deadline_anytime
         : DateFormat.yMMMd().format(this._endTime!);
     Widget deadlineContainer = new GestureDetector(
-        onTap: this.onEndDateTap,
-        child: FractionallySizedBox(
-            widthFactor: TileStyles.widthRatio,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
+      onTap: this.onEndDateTap,
+      child: FractionallySizedBox(
+        widthFactor: TileStyles.widthRatio,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          decoration: BoxDecoration(
+            color: TileStyles.primaryContrastColor,
+            borderRadius: const BorderRadius.all(
+              const Radius.circular(8.0),
+            ),
+            border: Border.all(
+              color: textBorderColor,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.calendar_month, color: inputFieldIconColor),
+              Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: 20,
                     ),
-                    border: Border.all(
-                      color: textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.calendar_month, color: inputFieldIconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: onEndDateTap,
-                          child: Text(
-                            textButtonString,
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                            ),
-                          ),
-                        ))
-                  ],
-                ))));
+                  ),
+                  onPressed: onEndDateTap,
+                  // TODO: work on this
+                  child: Text(
+                    textButtonString,
+                    style: this._endTime == null
+                        ? TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            color: TileStyles.inactiveTextColor)
+                        : TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            color: Colors.black),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
     return deadlineContainer;
   }
 
@@ -1329,32 +1334,35 @@ class AddTileState extends State<AddTile> {
         items: tabButtons,
         onChanged: onTabTypeChange,
         value: switchUpvalue,
-        color: TileStyles.oPrimaryColorHSL.toColor(),
+        color: TileStyles.primaryColor,
+        backgroundColor: TileStyles.primaryContrastColor,
+        // TileStyles.oPrimaryColorHSL.toColor(),
       ),
     );
 
     Widget tileTypeCarousel = CarouselSlider(
-        carouselController: tilerCarouselController,
-        items: carouselItems,
-        options: CarouselOptions(
-          height:
-              isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
-          aspectRatio: 16 / 9,
-          viewportFraction: 1,
-          initialPage: 0,
-          enableInfiniteScroll: false,
-          reverse: false,
-          onPageChanged: (pageNumber, carouselData) {
-            if (carouselData == CarouselPageChangedReason.manual) {
-              if (pageNumber == 0) {
-                setAsTile();
-              } else {
-                setAsAppointment();
-              }
+      carouselController: tilerCarouselController,
+      items: carouselItems,
+      options: CarouselOptions(
+        height:
+            isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
+        aspectRatio: 16 / 9,
+        viewportFraction: 1,
+        initialPage: 0,
+        enableInfiniteScroll: false,
+        reverse: false,
+        onPageChanged: (pageNumber, carouselData) {
+          if (carouselData == CarouselPageChangedReason.manual) {
+            if (pageNumber == 0) {
+              setAsTile();
+            } else {
+              setAsAppointment();
             }
-          },
-          scrollDirection: Axis.horizontal,
-        ));
+          }
+        },
+        scrollDirection: Axis.horizontal,
+      ),
+    );
 
     childrenWidgets.add(tileTypeCarousel);
     childrenWidgets.add(switchUp);
@@ -1365,7 +1373,10 @@ class AddTileState extends State<AddTile> {
         backgroundColor: TileStyles.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
-          style: TileStyles.titleBarStyle,
+          style: TextStyle(
+              color: TileStyles.appBarTextColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 22),
         ),
         centerTitle: true,
         elevation: 0,
