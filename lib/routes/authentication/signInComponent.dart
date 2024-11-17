@@ -18,7 +18,7 @@ import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
@@ -120,9 +120,6 @@ class SignInComponentState extends State<SignInComponent>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      localizationService = LocalizationService(AppLocalizations.of(context)!);
-    });
     signinInAnimationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -263,7 +260,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.username != null &&
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
-                    : ""),
+                    : "", localizationService: localizationService!,),
             // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
@@ -341,7 +338,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.username != null &&
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
-                    : ""),
+                    : "", localizationService: localizationService!,),
             // nextPage ? AuthorizedRoute() : OnboardingView()
           ),
         );
@@ -543,7 +540,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.displayName != null &&
                         authenticationData.displayName.isNotEmpty)
                     ? authenticationData.displayName
-                    : ""),
+                    : "", localizationService: localizationService!,),
             // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
