@@ -95,13 +95,15 @@ class UserPasswordAuthenticationData extends AuthenticationData {
       Constants.userName = userName;
       return retValue;
     } else {
-      var jsonResult = jsonDecode(response.body);
-      if (jsonResult.containsKey('error') &&
-          jsonResult.containsKey('error_description') &&
-          jsonResult['error_description'] != null &&
-          jsonResult['error_description'].isNotEmpty) {
-        retValue.errorMessage = jsonResult['error_description'];
-      }
+      try {
+        var jsonResult = jsonDecode(response.body);
+        if (jsonResult.containsKey('error') &&
+            jsonResult.containsKey('error_description') &&
+            jsonResult['error_description'] != null &&
+            jsonResult['error_description'].isNotEmpty) {
+          retValue.errorMessage = jsonResult['error_description'];
+        }
+      } catch (e) {}
       return retValue;
     }
   }

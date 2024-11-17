@@ -134,7 +134,7 @@
       "placeholders": {
         "duration": {
           "type": "String",
-          "example": "5 Hours"
+          "example": "Starts in 5 Hours"
         }
       }},
     "concludesAtTime": "🏁 {tileName} concludes soon",
@@ -362,8 +362,6 @@
     "skip":"Skip",
     "morningPerson":"🌅 Morning person",
     "morning":"Morning",
-    "midday":"Midday",
-    "neutral":"Neutral",
     "middayPerson":"🌞 Midday person",
     "nightPerson":"🌃 Night person",
     "enterAddress":"Enter your address",
@@ -371,6 +369,7 @@
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
+    "incompleteRequest":"Did not send complete request",
     "addContact": "Add contact",
     "deadlineTime": "Deadline: {time}",
     "@deadlineTime": {

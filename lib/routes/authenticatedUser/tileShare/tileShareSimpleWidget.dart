@@ -64,7 +64,9 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                         size: 16,
                       ),
                       rowSpacer,
-                      Text('@${creatorInfo}',
+                      Text(
+                          (creatorInfo.contains('@') ? '' : '@') +
+                              '${creatorInfo}',
                           style: TileStyles.defaultTextStyle)
                     ],
                   ),

@@ -9,6 +9,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -176,22 +177,14 @@ class _CreateTileShareClusterWidgetState
   }
 
   Widget addContacts() {
-    return ListView(
-      children: [
-        ContactInputFieldWidget(
-          contentHeight: this.contacts.isEmpty
-              ? 0
-              : this.contacts.length < 3
-                  ? 50
-                  : 100,
-          onContactUpdate: (List<Contact> updatedContacts) {
-            updateProceed();
-            setState(() {
-              this.contacts = updatedContacts;
-            });
-          },
-        )
-      ],
+    return ContactListView(
+      contacts: this.contacts,
+      onContactListUpdate: (List<Contact> updatedContacts) {
+        updateProceed();
+        setState(() {
+          this.contacts = updatedContacts;
+        });
+      },
     );
   }
 
@@ -232,21 +225,21 @@ class _CreateTileShareClusterWidgetState
 
   Widget generatedTopRightButton() {
     if (this.isMultiTilette) {
-      if (onProceedResponse != null) {
-        return ElevatedButton.icon(
-            style: TileStyles.enabledButtonStyle,
-            onPressed: () {
-              if (onProceedResponse != null) {
-                onProceedResponse!();
-              }
-              Navigator.of(context).pop(false);
-            },
-            icon: Icon(
-              Icons.save,
-              color: TileStyles.primaryContrastColor,
-            ),
-            label: SizedBox.shrink());
-      }
+      // if (onProceedResponse != null) {
+      //   return ElevatedButton.icon(
+      //       style: TileStyles.enabledButtonStyle,
+      //       onPressed: () {
+      //         if (onProceedResponse != null) {
+      //           onProceedResponse!();
+      //         }
+      //         Navigator.of(context).pop(false);
+      //       },
+      //       icon: Icon(
+      //         Icons.save,
+      //         color: TileStyles.primaryContrastColor,
+      //       ),
+      //       label: SizedBox.shrink());
+      // }
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
@@ -292,14 +285,8 @@ class _CreateTileShareClusterWidgetState
         ));
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
-          centerTitle: true,
-          leading: TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Icon(
-              Icons.close,
-              color: TileStyles.appBarTextColor,
-            ),
-          ),
+          // centerTitle: true,
+          automaticallyImplyLeading: false,
           actions: [selectionButtonWidgets],
           backgroundColor: TileStyles.appBarColor,
           title: Row(
@@ -319,7 +306,6 @@ class _CreateTileShareClusterWidgetState
           )),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
-      hideButtons: isMultiTilette == true ? true : false,
     );
   }
 }
