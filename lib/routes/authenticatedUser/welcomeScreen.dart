@@ -7,17 +7,20 @@ import '../../util.dart';
 import '../authentication/AuthorizedRoute.dart';
 import '../authentication/onBoarding.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 enum WelcomeType { register, login }
 
 class WelcomeScreen extends StatefulWidget {
   final WelcomeType welcomeType;
   final String firstName;
+  final LocalizationService localizationService;
 
   const WelcomeScreen({
     super.key,
     required this.welcomeType,
     required this.firstName,
+    required this.localizationService
   });
 
   @override
@@ -36,7 +39,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     await Future.delayed(Duration(seconds: 3));
 
     // Then check the onboarding status
-    bool nextPage = await Utility.checkOnboardingStatus();
+    bool nextPage = await Utility.checkOnboardingStatus(widget.localizationService);
 
     Navigator.push(
       context,
@@ -65,7 +68,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               height: height *
                   0.3), // Adjust this value to move the text up or down
           Text(
-            widget.welcomeType == WelcomeType.register ? AppLocalizations.of(context)!.welcome : AppLocalizations.of(context)!.hi,
+            widget.welcomeType == WelcomeType.register
+                ? AppLocalizations.of(context)!.welcome
+                : AppLocalizations.of(context)!.hi,
             style: TextStyle(
               color: Colors.white,
               fontFamily: TileStyles.rubikFontName,
