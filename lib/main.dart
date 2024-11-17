@@ -87,11 +87,10 @@ class TilerApp extends StatefulWidget {
 class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
-  OnBoardingApi? onBoardingApi;
+  LocalizationService? localizationService;
   NotificationOverlayMessage? notificationOverlayMessage;
   @override
   void initState() {
-    onBoardingApi = OnBoardingApi();
     notificationOverlayMessage = NotificationOverlayMessage();
     super.initState();
   }
