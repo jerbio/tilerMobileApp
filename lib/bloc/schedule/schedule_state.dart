@@ -132,6 +132,20 @@ class DelayedScheduleLoadedState extends ScheduleLoadedState {
             previousLookupTimeline: previousLookupTimeline);
 }
 
+class ScheduleLoadingTaskState extends ScheduleState {
+  @override
+  List<Object> get props => [];
+}
+
+class ScheduleCompleteTaskState extends ScheduleState {
+  final SubCalendarEvent completedEvent;
+
+  ScheduleCompleteTaskState({required this.completedEvent});
+
+  @override
+  List<Object> get props => [completedEvent];
+}
+
 class FailedScheduleLoadedState extends ScheduleLoadedState {
   DateTime evaluationTime;
   FailedScheduleLoadedState(

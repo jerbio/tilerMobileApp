@@ -1,8 +1,8 @@
 import 'dart:ffi';
+import 'dart:math';
 
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:switch_up/switch_up.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -52,7 +52,7 @@ class DurationDialState extends State<DurationDial> {
     });
   }
 
-  resetSselectedPresetValue() {
+  resetSelectedPresetValue() {
     if (_selectedPresetValue != null) {
       switchUpID = ValueKey(Utility.getUuid);
     }
@@ -76,10 +76,11 @@ class DurationDialState extends State<DurationDial> {
       Expanded(
           child: DurationPicker(
         duration: _duration,
+        key: ValueKey((_selectedPresetValue?.inMinutes ?? "custom-selection")),
         onChange: (val) {
           setState(() {
             _duration = val;
-            resetSselectedPresetValue();
+            resetSelectedPresetValue();
           });
         },
         snapToMins: 5.0,
@@ -123,7 +124,7 @@ class DurationDialState extends State<DurationDial> {
             items: durationTextCollection,
             onChanged: onTabTypeChange,
             value: switchUpvalue,
-            color: TileStyles.oPrimaryColorHSL.toColor(),
+            color: TileStyles.primaryColor,
           ),
         );
         widgetColumn.insert(0, switchUp);

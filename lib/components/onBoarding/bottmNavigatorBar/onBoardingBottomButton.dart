@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../../styles.dart';
+import 'package:tiler_app/styles.dart';
 
 enum WidgetOrder { iconText, textIcon }
 

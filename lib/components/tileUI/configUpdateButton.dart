@@ -74,21 +74,23 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
     // Widget ooo = ElevatedButton(onPressed: onPressed, child: child)
 
     Widget retValue = new ElevatedButton(
-        style: TileStyles.strippedButtonStyle,
-        onPressed: () {
-          if (this.widget.onPress != null) {
-            this.widget.onPress!();
-          }
-        },
-        child: Container(
-            constraints: BoxConstraints(
-                minWidth: (MediaQuery.of(context).size.width * 0.30)),
-            decoration: this.widget.decoration,
-            padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              children: childWidgets,
-            )));
+      style: TileStyles.strippedButtonStyle,
+      onPressed: () {
+        if (this.widget.onPress != null) {
+          this.widget.onPress!();
+        }
+      },
+      child: Container(
+        constraints: BoxConstraints(
+            minWidth: (MediaQuery.of(context).size.width * 0.30)),
+        decoration: this.widget.decoration,
+        padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          children: childWidgets,
+        ),
+      ),
+    );
 
     return retValue;
   }

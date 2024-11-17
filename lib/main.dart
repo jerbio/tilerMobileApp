@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -15,6 +17,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
@@ -33,7 +36,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/api/onBoardingApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -44,13 +47,11 @@ import 'routes/authenticatedUser/welcomeScreen.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
-
-final log = Logger('ExampleLogger');
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -156,7 +157,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => LocationBloc()),
           BlocProvider(create: (context) => IntegrationsBloc()),
           BlocProvider(create: (context) => TileListCarouselBloc()),
-          BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
+          BlocProvider(create: (context) => ForecastBloc())
         ],
         child: MaterialApp(
           title: 'Tiler',
@@ -207,6 +208,8 @@ class _TilerAppState extends State<TilerApp> {
           home: FutureBuilder<Tuple2<bool, String>>(
               future: authenticateUser(context),
               builder: (context, AsyncSnapshot<Tuple2<bool, String>> snapshot) {
+                localizationService =
+                    LocalizationService(AppLocalizations.of(context)!);
                 Widget retValue;
                 if (snapshot.hasData) {
                   if (!snapshot.data!.item1) {
@@ -228,7 +231,8 @@ class _TilerAppState extends State<TilerApp> {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
                     AnalysticsSignal.send('LOGIN-VERIFIED');
                     retValue = FutureBuilder<bool>(
-                      future: Utility.checkOnboardingStatus(),
+                      future:
+                          Utility.checkOnboardingStatus(localizationService!),
                       builder:
                           (context, AsyncSnapshot<bool> onboardingSnapshot) {
                         if (onboardingSnapshot.connectionState ==

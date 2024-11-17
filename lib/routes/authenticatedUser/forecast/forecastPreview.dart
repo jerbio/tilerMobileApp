@@ -1,156 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/components/forecastTemplate/DatePickerWidget.dart';
-import 'package:tiler_app/components/forecastTemplate/durationWidget.dart';
+import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/util.dart';
 
+import '../../../bloc/forecast/forecast_bloc.dart';
+import '../../../bloc/forecast/forecast_event.dart';
+import '../../../bloc/forecast/forecast_state.dart';
+import '../../../components/PendingWidget.dart';
+import '../../../components/forecastTemplate/customForecastField.dart';
 import '../../../styles.dart';
 
-class ForecastPreview extends StatefulWidget {
-  ForecastPreview({Key? key}) : super(key: key);
-
-  @override
-  _ForecastPreviewState createState() => _ForecastPreviewState();
-}
-
-class _ForecastPreviewState extends State<ForecastPreview> {
-  TextEditingController date = TextEditingController();
-  Duration _duration = Duration(hours: 0, minutes: 0);
-  DateTime? _endTime;
-
-  Widget generateDeadline() {
-    void onEndDateTap() async {
-      DateTime _endDate = this._endTime == null
-          ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
-          : this._endTime!;
-      DateTime firstDate = _endDate.add(Duration(days: -14));
-      DateTime lastDate = _endDate.add(Duration(days: 90));
-      final DateTime? revisedEndDate = await showDatePicker(
-        context: context,
-        initialDate: _endDate,
-        firstDate: firstDate,
-        lastDate: lastDate,
-        helpText: AppLocalizations.of(context)!.whenQ,
-      );
-      if (revisedEndDate != null) {
-        DateTime updatedEndTime = new DateTime(
-            revisedEndDate.year,
-            revisedEndDate.month,
-            revisedEndDate.day,
-            _endDate.hour,
-            _endDate.minute);
-        setState(() => _endTime = updatedEndTime);
-      }
-    }
-
-    String textButtonString = this._endTime == null
-        ? AppLocalizations.of(context)!.deadline_anytime
-        : DateFormat.yMMMd().format(this._endTime!);
-    Widget deadlineContainer = new GestureDetector(
-        onTap: onEndDateTap,
-        child: FractionallySizedBox(
-            widthFactor: 0.85,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: TileStyles.textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    border: Border.all(
-                      color: TileStyles.textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.calendar_month, color: TileStyles.iconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: onEndDateTap,
-                          child: Text(textButtonString),
-                        ))
-                  ],
-                ))));
-    return deadlineContainer;
-  }
-
-  Widget generateDurationPicker() {
-    final void Function()? setDuration = () async {
-      Map<String, dynamic> durationParams = {'duration': _duration};
-      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
-          .whenComplete(() {
-        Duration? populatedDuration = durationParams['duration'] as Duration?;
-        setState(() {
-          if (populatedDuration != null) {
-            _duration = populatedDuration;
-          }
-        });
-      });
-    };
-    String textButtonString = 'Duration';
-    if (_duration.inMinutes > 1) {
-      textButtonString = "";
-      int hour = _duration.inHours.floor();
-      int minute = _duration.inMinutes.remainder(60);
-      if (hour > 0) {
-        textButtonString = '${hour}h';
-        if (minute > 0) {
-          textButtonString = '${textButtonString} : ${minute}m';
-        }
-      } else {
-        if (minute > 0) {
-          textButtonString = '${minute}m';
-        }
-      }
-    }
-    Widget retValue = new GestureDetector(
-        onTap: setDuration,
-        child: FractionallySizedBox(
-            widthFactor: 0.85,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: TileStyles.textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
-                    ),
-                    border: Border.all(
-                      color: TileStyles.textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.timelapse_outlined, color: TileStyles.iconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: setDuration,
-                          child: Text(textButtonString),
-                        ))
-                  ],
-                ))));
-    return retValue;
-  }
+class ForecastPreview extends StatelessWidget {
+  const ForecastPreview({super.key});
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ForecastBloc(),
+      child: ForecastView(),
+    );
+  }
+}
+
+class ForecastView extends StatelessWidget {
+  const ForecastView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
@@ -165,22 +48,397 @@ class _ForecastPreviewState extends State<ForecastPreview> {
         elevation: 0,
         automaticallyImplyLeading: false,
       ),
-      child: Container(
-        margin: TileStyles.topMargin,
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            generateDurationPicker(),
-            generateDeadline(),
-          ],
+      child: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: height / (height / 25),
+          ),
+          alignment: Alignment.topCenter,
+          child: Column(
+            children: [
+              SizedBox(
+                height: height / (height / 40),
+              ),
+              generateDeadline(context, width, height),
+              generateDurationPicker(context, width, height),
+              BlocBuilder<ForecastBloc, ForecastState>(
+                builder: (context, state) {
+                  Utility.debugPrint('Current state: $state');
+                  if (state is ForecastInitial) {
+                    return SizedBox.shrink();
+                  } else if (state is ForecastLoading) {
+                    return SizedBox(
+                        height: height / (height / 450),
+                        width: width,
+                        child: Center(
+                          child: PendingWidget(
+                            imageAsset: TileStyles.evaluatingScheduleAsset,
+                          ),
+                        ));
+                  } else if (state is ForecastLoaded) {
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: height / (height / 20),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppLocalizations.of(context)!.analysis,
+                              style: TextStyle(
+                                fontFamily: TileStyles.rubikFontName,
+                                fontSize: height / (height / 17),
+                                fontWeight: FontWeight.w500,
+                                color: TileStyles.defaultTextColor,
+                              ),
+                            )
+                          ],
+                        ),
+                        SizedBox(
+                          height: height / (height / 10),
+                        ),
+                        state.isViable
+                            ? Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      AnalysisCheckState(
+                                        height: height,
+                                        isPass: true,
+                                      ),
+                                      SizedBox(
+                                        width: height / (height / 10),
+                                      ),
+                                      Text(
+                                        AppLocalizations.of(context)!
+                                            .thisFitsInYourSchedule,
+                                        style: TextStyle(
+                                          fontFamily: TileStyles.rubikFontName,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: height / (height / 15),
+                                          color: TileStyles.defaultTextColor,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: height / (height / 20),
+                                  ),
+                                  state.subCalEvents.isNotEmpty
+                                      ? Row(
+                                          children: [
+                                            AnalysisCheckState(
+                                              height: height,
+                                              isWarning: true,
+                                            ),
+                                            SizedBox(
+                                              width: height / (height / 10),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  TextSpan(
+                                                    text: AppLocalizations.of(
+                                                            context)!
+                                                        .warningColon,
+                                                    style: TextStyle(
+                                                      fontFamily: TileStyles
+                                                          .rubikFontName,
+                                                      fontWeight:
+                                                          FontWeight.w500,
+                                                      fontSize: height /
+                                                          (height / 15),
+                                                      color: TileStyles
+                                                          .defaultTextColor,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: state.subCalEvents
+                                                                .length ==
+                                                            1
+                                                        ? AppLocalizations.of(
+                                                                context)!
+                                                            .oneEventAtRisk
+                                                        : AppLocalizations.of(
+                                                                context)!
+                                                            .countEventAtRisk(
+                                                                state
+                                                                    .subCalEvents
+                                                                    .length
+                                                                    .toString()),
+                                                    style: TextStyle(
+                                                      fontFamily: TileStyles
+                                                          .rubikFontName,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      fontSize: height /
+                                                          (height / 15),
+                                                      color: TileStyles
+                                                          .defaultTextColor,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : SizedBox.shrink(),
+                                  SizedBox(
+                                    height: height / (height / 20),
+                                  ),
+                                  state.subCalEvents.isNotEmpty
+                                      ? Column(
+                                          children: state.subCalEvents
+                                              .map((subEvent) {
+                                            return TileSummary(subEvent);
+                                          }).toList(),
+                                        )
+                                      : SizedBox.shrink(),
+                                  SizedBox(
+                                    height: height / (height / 20),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Map<String, dynamic> newTileParams = {
+                                        'newTile': null
+                                      };
+                                      Navigator.pushNamed(context, '/AddTile',
+                                          arguments: newTileParams);
+                                    },
+                                    child: Container(
+                                      width: width,
+                                      height: height / (height / 52),
+                                      decoration: BoxDecoration(
+                                        color: TileStyles.primaryColor,
+                                        borderRadius: BorderRadius.circular(
+                                            height / (height / 6)),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          AppLocalizations.of(context)!.create,
+                                          style: TextStyle(
+                                            fontFamily:
+                                                TileStyles.rubikFontName,
+                                            fontSize: height / (height / 15),
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 100,
+                                  ),
+                                ],
+                              )
+                            : Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      AnalysisCheckState(
+                                        height: height,
+                                        isConflict: true,
+                                      ),
+                                      SizedBox(
+                                        width: height / (height / 10),
+                                      ),
+                                      RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text:
+                                                  AppLocalizations.of(context)!
+                                                      .thisEventWouldCause,
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    TileStyles.rubikFontName,
+                                                fontWeight: FontWeight.w400,
+                                                fontSize:
+                                                    height / (height / 15),
+                                                color:
+                                                    TileStyles.defaultTextColor,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  state.subCalEvents.length == 1
+                                                      ? AppLocalizations.of(
+                                                              context)!
+                                                          .oneConflict
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .countConflict(state
+                                                              .subCalEvents
+                                                              .length
+                                                              .toString()),
+                                              style: TextStyle(
+                                                fontFamily:
+                                                    TileStyles.rubikFontName,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize:
+                                                    height / (height / 15),
+                                                color:
+                                                    TileStyles.defaultTextColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+                                    height: height / (height / 20),
+                                  ),
+                                  state.subCalEvents.isNotEmpty
+                                      ? Column(
+                                          children: state.subCalEvents
+                                              .map((subEvent) {
+                                            return TileSummary(subEvent);
+                                          }).toList(),
+                                        )
+                                      : SizedBox.shrink(),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Map<String, dynamic> newTileParams = {
+                                        'newTile': null
+                                      };
+                                      Navigator.pushNamed(context, '/AddTile',
+                                          arguments: newTileParams);
+                                    },
+                                    child: Container(
+                                      width: width,
+                                      height: height / (height / 52),
+                                      decoration: BoxDecoration(
+                                        color: TileStyles.primaryColor,
+                                        borderRadius: BorderRadius.circular(
+                                            height / (height / 6)),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          AppLocalizations.of(context)!.create,
+                                          style: TextStyle(
+                                            fontFamily:
+                                                TileStyles.rubikFontName,
+                                            fontSize: height / (height / 15),
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    height: 100,
+                                  ),
+                                ],
+                              )
+                      ],
+                    );
+                  } else if (state is ForecastError) {
+                    return Center(
+                        child: Text(AppLocalizations.of(context)!
+                            .errorMessage(state.error)));
+                  } else {
+                    return SizedBox.shrink();
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  @override
-  void dispose() {
-    date.dispose();
-    super.dispose();
+  Widget generateDeadline(BuildContext context, double width, double height) {
+    final state = context.watch<ForecastBloc>().state;
+    final endTime = state.endTime;
+
+    void onEndDateTap() async {
+      DateTime _endDate = endTime == null
+          ? Utility.todayTimeline().endTime.add(Utility.oneDay)
+          : endTime;
+      DateTime firstDate = _endDate.add(Duration(days: -14));
+      DateTime lastDate = _endDate.add(Duration(days: 90));
+      final DateTime? revisedEndDate = await showDatePicker(
+        context: context,
+        initialDate: _endDate,
+        firstDate: firstDate,
+        lastDate: lastDate,
+        helpText: AppLocalizations.of(context)!.whenQ,
+      );
+      if (revisedEndDate != null) {
+        DateTime updatedEndTime = DateTime(
+            revisedEndDate.year,
+            revisedEndDate.month,
+            revisedEndDate.day,
+            _endDate.hour,
+            _endDate.minute);
+        context.read<ForecastBloc>().add(UpdateDateTime(updatedEndTime));
+      }
+    }
+
+    String textButtonString = endTime == null
+        ? AppLocalizations.of(context)!.whenQ
+        : DateFormat.yMMMd().format(endTime);
+
+    // Revised
+    Widget deadlineContainer = GestureDetector(
+      onTap: onEndDateTap,
+      child: CustomForcastField(
+        leadingIconPath: 'assets/images/Calendar.svg',
+        textButtonString: textButtonString,
+        height: height,
+        width: width,
+      ),
+    );
+    return deadlineContainer;
+  }
+
+  Widget generateDurationPicker(
+      BuildContext context, double width, double height) {
+    final state = context.watch<ForecastBloc>().state;
+    final duration = state.duration ?? Duration(minutes: 0);
+
+    final void Function()? setDuration = () async {
+      Map<String, dynamic> durationParams = {'duration': duration};
+      Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
+          .whenComplete(() {
+        Duration? populatedDuration = durationParams['duration'] as Duration?;
+        if (populatedDuration != null) {
+          context.read<ForecastBloc>().add(UpdateDuration(populatedDuration));
+        }
+      });
+    };
+    String textButtonString = 'Duration';
+    if (duration.inMinutes > 1) {
+      textButtonString = "";
+      int hour = duration.inHours.floor();
+      int minute = duration.inMinutes.remainder(60);
+      if (hour > 0) {
+        textButtonString = '${hour}h';
+        if (minute > 0) {
+          textButtonString = '${textButtonString} : ${minute}m';
+        }
+      } else {
+        if (minute > 0) {
+          textButtonString = '${minute}m';
+        }
+      }
+    }
+
+    // Revised
+    Widget retValue = GestureDetector(
+      onTap: setDuration,
+      child: CustomForcastField(
+        leadingIconPath: 'assets/images/timecircle.svg',
+        textButtonString: textButtonString,
+        height: height,
+        width: width,
+      ),
+    );
+    return retValue;
   }
 }
