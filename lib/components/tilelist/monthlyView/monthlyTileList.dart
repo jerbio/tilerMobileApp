@@ -21,7 +21,6 @@ class MonthlyTileList extends TileList {
   static final String routeName = '/MonthlyTileList';
   MonthlyTileList();
 
-
   @override
   _MonthlyTileListState createState() =>
       _MonthlyTileListState();
@@ -37,7 +36,6 @@ class _MonthlyTileListState extends TileListState  {
     timeLine=Timeline.fromDateTime(daysInMonth.first, daysInMonth.last.add(Duration(days: 1)));
     incrementalTilerScrollId="monthly-incremental-get-schedule";
   }
-
 
   reloadSchedule({required DateTime dateManageSelectedMonth}) {
     List<DateTime> selectedDaysInMonth=Utility.getDaysInMonth(dateManageSelectedMonth);
@@ -112,6 +110,7 @@ class _MonthlyTileListState extends TileListState  {
     }
     return monthRows;
   }
+
   Widget buildMonthlyRenderSubCalendarTiles(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData ) {
     List<Widget> monthRows =generateMonthRows(tileData);
     return GestureDetector(
@@ -165,7 +164,6 @@ class _MonthlyTileListState extends TileListState  {
         ),
       ),
     );
-
   }
 
   @override
@@ -187,6 +185,14 @@ class _MonthlyTileListState extends TileListState  {
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
+          final summaryState = context.watch<ScheduleSummaryBloc>().state;
+
+          if(summaryState is ScheduleDaySummaryLoading &&
+              !isAutoRefresh &&
+              !isManualRefreshed) {
+            isManualRefreshed = false;
+            return renderPending();
+          }
 
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -213,9 +219,8 @@ class _MonthlyTileListState extends TileListState  {
               Timeline monthlySelectedTimeline=Timeline.fromDateTime(daysInMonth.first, daysInMonth.last.add(Duration(days: 1)));
               showPendingUI=showPendingUI || !(state.previousLookupTimeline.isStartAndEndEqual(monthlySelectedTimeline));
             }
-            final currentScheduleSummaryState = this.context.read<ScheduleSummaryBloc>().state;
-            if (showPendingUI || currentScheduleSummaryState is ScheduleDaySummaryLoading && !isAutoRefresh && !isManualRefreshed) {
-              isManualRefreshed=false;
+
+            if (showPendingUI ) {
               return renderPending();
             }
             return Stack(children: [
