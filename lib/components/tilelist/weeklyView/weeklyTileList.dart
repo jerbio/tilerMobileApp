@@ -105,6 +105,7 @@ class _WeeklyTileListState extends TileListState {
     }).toList();
     return rowItems;
   }
+
   Widget buildWeeklyRenderSubCalendarTiles(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     List<Widget> rowItems = buildRows(tileData);
     return GestureDetector(
@@ -163,7 +164,6 @@ class _WeeklyTileListState extends TileListState {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
@@ -182,6 +182,15 @@ class _WeeklyTileListState extends TileListState {
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
+          final summaryState = context.watch<ScheduleSummaryBloc>().state;
+
+          if(summaryState is ScheduleDaySummaryLoading &&
+              !isAutoRefresh &&
+              !isManualRefreshed) {
+            isManualRefreshed = false;
+            return renderPending();
+          }
+
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
                 scheduleTimeline: timeLine,
@@ -206,8 +215,7 @@ class _WeeklyTileListState extends TileListState {
               Timeline weeklySelectedTimeline=Timeline.fromDateTime(weeklyDateMangerSelectedWeek.first, weeklyDateMangerSelectedWeek.last.add(Duration(days:1)));
               showPendingUI=showPendingUI || !(state.previousLookupTimeline.isStartAndEndEqual(weeklySelectedTimeline));
             }
-            final currentScheduleSummaryState = this.context.read<ScheduleSummaryBloc>().state;
-            if (showPendingUI || currentScheduleSummaryState is ScheduleDaySummaryLoading && !isAutoRefresh && !isManualRefreshed) {
+            if (showPendingUI ) {
               {
                 isManualRefreshed=false;
                 return renderPending();

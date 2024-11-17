@@ -5,6 +5,7 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
+import 'package:tiler_app/constants.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -29,7 +30,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
   String incrementalTilerScrollId = "";
   SubCalendarEvent? notificationSubEvent;
   SubCalendarEvent? concludingSubEvent;
-  final Duration autoRefreshDuration = const Duration(minutes: 1);
+  final Duration autoRefreshDuration = const Duration(minutes: 5);
   StreamSubscription? autoRefreshList;
   late final LocalNotificationService localNotificationService;
   bool isAutoRefresh = false;
@@ -44,6 +45,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
     localNotificationService = LocalNotificationService();
     autoRefreshTileList(autoRefreshDuration);
   }
+
   @override
   void dispose() {
     swipingAnimationController?.dispose();
@@ -117,14 +119,14 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
         this.context.read<ScheduleSummaryBloc>().add(
           GetScheduleDaySummaryEvent(
               timeline: lookupTimeline,
-              requestId: incrementalTilerScrollId
           ),
         );
       }
     }
+
     autoRefreshTileList(
         Duration(
-            minutes: 1
+            minutes: autoRefreshSubEventDurationInMinutes
         ));
   }
 
@@ -181,8 +183,6 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
     }
   }
 
-
-
   Widget renderPending({String? message}) {
     List<Widget> centerElements = [
       Center(
@@ -208,6 +208,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
       child: Center(child: Stack(children: centerElements)),
     );
   }
+
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
     double currentTime = Utility.msCurrentTime.toDouble();
@@ -216,6 +217,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
         .map((eachTile) => eachTile as SubCalendarEvent)
         .toList();
   }
+
   void createNextTileNotification(SubCalendarEvent nextTile) {
 
     if (this.notificationSubEvent != null &&
@@ -226,6 +228,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
 
     this.notificationSubEvent = nextTile;
   }
+
   void createConclusionTileNotification(SubCalendarEvent concludingTile) {
     if (this.concludingSubEvent != null &&
         this.concludingSubEvent!.id == concludingTile.id &&
@@ -244,6 +247,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
         title: notificationMessage);
     this.concludingSubEvent = concludingTile;
   }
+
   void handleNotifications(List<SubCalendarEvent> tiles) {
     double currentTimeMs = Utility.msCurrentTime.toDouble();
     List<TilerEvent> orderedByStartTiles = tiles
@@ -297,6 +301,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
     handleNotifications(tiles);
     handleAutoRefresh(tiles);
   }
+
   void showSubEventModal( SubCalendarTileState state) {
     if (state is NewSubCalendarTilesLoadedState) {
       if (state.subEvent != null) {
@@ -361,5 +366,4 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
       }
     }
   }
-
 }
