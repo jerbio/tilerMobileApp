@@ -104,21 +104,22 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
     if (toBeRenderedElementCount == 0) {
       return renderEmpty();
     }
-    return ListView.builder(
-        controller: _scrollController,
-        itemCount: toBeRenderedElementCount,
-        itemBuilder: (context, index) {
-          if (index < designatedTiles.length) {
-            return DesignatedTileWidget(designatedTiles[index]);
-          }
-          return renderPending();
-        });
+    return Container(
+      child: ListView.builder(
+          shrinkWrap: true,
+          controller: _scrollController,
+          itemCount: toBeRenderedElementCount,
+          itemBuilder: (context, index) {
+            if (index < designatedTiles.length) {
+              return DesignatedTileWidget(designatedTiles[index]);
+            }
+            return renderPending();
+          }),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: renderBody(),
-    );
+    return renderBody();
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
@@ -46,7 +45,10 @@ class _TileShareListState extends State<TileShareList> {
   Future getTileShareCluster() async {
     tileClusterApi
         .getTileShareClusters(
-            index: index, pageSize: pageSize, isOutbox: this.isOubox)
+            index: index,
+            pageSize: pageSize,
+            isOutbox: this.isOubox,
+            isInbox: !this.isOubox)
         .then((value) {
       updateTileShareClusters(updatedTileShareClusters: value);
     }).whenComplete(() {

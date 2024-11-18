@@ -26,27 +26,24 @@ class _ContactListViewState extends State<ContactListView> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      shrinkWrap: true,
-      children: [
-        ContactInputFieldWidget(
-          contacts: contacts,
-          // contentHeight: this.widget.contentHeight ??
-          //     (contacts.isEmpty
-          //         ? 0
-          //         : contacts.length < 3
-          //             ? 50
-          //             : 100),
-          onContactUpdate: (List<Contact> updatedContacts) {
-            setState(() {
-              this.contacts = updatedContacts;
-            });
-            if (this.widget.onContactListUpdate != null) {
-              this.widget.onContactListUpdate!(updatedContacts);
-            }
-          },
-        )
-      ],
+    return Container(
+      child: ListView(
+        shrinkWrap: true,
+        children: [
+          ContactInputFieldWidget(
+            readOnly: this.widget.isReadOnly,
+            contacts: contacts,
+            onContactUpdate: (List<Contact> updatedContacts) {
+              setState(() {
+                this.contacts = updatedContacts;
+              });
+              if (this.widget.onContactListUpdate != null) {
+                this.widget.onContactListUpdate!(updatedContacts);
+              }
+            },
+          )
+        ],
+      ),
     );
   }
 }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -43,6 +42,8 @@ class _SingleTiletteTileShareDetailWidget
   final verticalSpacer = SizedBox(height: 8);
   ScrollController _contactControllerfinal = ScrollController();
   late List<Contact> contacts;
+  bool showDesignatedTileList = false;
+  bool isReadOnly = false;
 
   @override
   void initState() {
@@ -98,6 +99,11 @@ class _SingleTiletteTileShareDetailWidget
           Utility.debugPrint("Success getting tileShare list ");
           tilerError = null;
           designatedTileList = value;
+          showDesignatedTileList = value.any((element) =>
+              element.user != null &&
+              element.user?.username != tileShareCluster.creator?.username &&
+              element.isTilable != false);
+          isReadOnly = showDesignatedTileList;
           isTileListLoading = false;
         });
       }).catchError((onError) {
@@ -130,22 +136,6 @@ class _SingleTiletteTileShareDetailWidget
 
   Widget renderNotFound() {
     return Text("Resource not found");
-  }
-
-  Widget _buildContactPill(Contact contact) {
-    return Chip(
-      avatar: Icon(
-        (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
-            ? Icons.messenger_outline
-            : Icons.email_outlined),
-        color: TileStyles.primaryContrastColor,
-      ),
-      label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: null,
-      side: BorderSide.none,
-      backgroundColor: TileStyles.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
-    );
   }
 
   Widget renderTileShareCluster() {
@@ -196,10 +186,17 @@ class _SingleTiletteTileShareDetailWidget
                       style: TileStyles.defaultTextStyle)
                 ],
               ),
+            if (this.showDesignatedTileList) ...[
+              verticalSpacer,
+              DesignatedTileList(
+                designatedTiles: this.designatedTileList ?? <DesignatedTile>[],
+              ),
+            ] else
+              SizedBox.shrink(),
             verticalSpacer,
             Expanded(
               child: addContacts(),
-            )
+            ),
           ],
         ));
   }
@@ -285,7 +282,7 @@ class _SingleTiletteTileShareDetailWidget
 
   Widget addContacts() {
     return ContactListView(
-      isReadOnly: true,
+      isReadOnly: isReadOnly,
       contacts: (contacts).toList(),
       onContactListUpdate: (List<Contact> updatedContacts) {
         Set<Contact> newContacts = Set();
@@ -317,6 +314,8 @@ class _SingleTiletteTileShareDetailWidget
             removedContacts.add(eachContact);
           }
         });
+
+        Utility.debugPrint("new contact " + newContacts.toString());
 
         if (this.designatedTileList?.firstOrNull != null &&
             this.designatedTileList!.first.id.isNot_NullEmptyOrWhiteSpace()) {

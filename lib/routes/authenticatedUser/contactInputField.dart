@@ -9,8 +9,12 @@ class ContactInputFieldWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactUpdate;
   final double? contentHeight;
+  final bool readOnly;
   ContactInputFieldWidget(
-      {this.onContactUpdate, this.contentHeight, this.contacts});
+      {this.onContactUpdate,
+      this.contentHeight,
+      this.contacts,
+      this.readOnly = false});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -19,10 +23,12 @@ class ContactInputFieldWidget extends StatefulWidget {
 class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   final TextEditingController _controller = TextEditingController();
   late List<Contact> _contacts = [];
+  late bool isReadOnly;
 
   @override
   void initState() {
     super.initState();
+    this.isReadOnly = this.widget.readOnly;
     if (this.widget.contacts != null) {
       this._contacts = this.widget.contacts!;
     }
@@ -100,7 +106,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
               ],
             ),
           ),
-          _buildTextField(),
+          if (!this.isReadOnly) _buildTextField(),
         ],
       ),
     );
@@ -146,12 +152,14 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         color: TileStyles.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: Icon(
-        Icons.close,
-        color: TileStyles.primaryContrastColor,
-      ),
+      deleteIcon: this.isReadOnly
+          ? null
+          : Icon(
+              Icons.close,
+              color: TileStyles.primaryContrastColor,
+            ),
       side: BorderSide.none,
-      onDeleted: () => _removeContact(contact),
+      onDeleted: this.isReadOnly ? null : () => _removeContact(contact),
       backgroundColor: TileStyles.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
