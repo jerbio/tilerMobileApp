@@ -63,7 +63,7 @@ class ForecastView extends StatelessWidget {
               generateDurationPicker(context, width, height),
               BlocBuilder<ForecastBloc, ForecastState>(
                 builder: (context, state) {
-                  print('Current state: $state');
+                  Utility.debugPrint('Current state: $state');
                   if (state is ForecastInitial) {
                     return SizedBox.shrink();
                   } else if (state is ForecastLoading) {
@@ -85,7 +85,7 @@ class ForecastView extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              'Analysis',
+                              AppLocalizations.of(context)!.analysis,
                               style: TextStyle(
                                 fontFamily: TileStyles.rubikFontName,
                                 fontSize: height / (height / 17),
@@ -111,7 +111,8 @@ class ForecastView extends StatelessWidget {
                                         width: height / (height / 10),
                                       ),
                                       Text(
-                                        'This fits in your schedule.',
+                                        AppLocalizations.of(context)!
+                                            .thisFitsInYourSchedule,
                                         style: TextStyle(
                                           fontFamily: TileStyles.rubikFontName,
                                           fontWeight: FontWeight.w400,
@@ -138,7 +139,9 @@ class ForecastView extends StatelessWidget {
                                               text: TextSpan(
                                                 children: [
                                                   TextSpan(
-                                                    text: 'Warning: ',
+                                                    text: AppLocalizations.of(
+                                                            context)!
+                                                        .warningColon,
                                                     style: TextStyle(
                                                       fontFamily: TileStyles
                                                           .rubikFontName,
@@ -154,8 +157,16 @@ class ForecastView extends StatelessWidget {
                                                     text: state.subCalEvents
                                                                 .length ==
                                                             1
-                                                        ? '${state.subCalEvents.length} event at risk'
-                                                        : '${state.subCalEvents.length} events at risk',
+                                                        ? AppLocalizations.of(
+                                                                context)!
+                                                            .oneEventAtRisk
+                                                        : AppLocalizations.of(
+                                                                context)!
+                                                            .countEventAtRisk(
+                                                                state
+                                                                    .subCalEvents
+                                                                    .length
+                                                                    .toString()),
                                                     style: TextStyle(
                                                       fontFamily: TileStyles
                                                           .rubikFontName,
@@ -205,7 +216,7 @@ class ForecastView extends StatelessWidget {
                                       ),
                                       child: Center(
                                         child: Text(
-                                          'Create',
+                                          AppLocalizations.of(context)!.create,
                                           style: TextStyle(
                                             fontFamily:
                                                 TileStyles.rubikFontName,
@@ -237,7 +248,9 @@ class ForecastView extends StatelessWidget {
                                         text: TextSpan(
                                           children: [
                                             TextSpan(
-                                              text: 'This event would cause ',
+                                              text:
+                                                  AppLocalizations.of(context)!
+                                                      .thisEventWouldCause,
                                               style: TextStyle(
                                                 fontFamily:
                                                     TileStyles.rubikFontName,
@@ -249,10 +262,17 @@ class ForecastView extends StatelessWidget {
                                               ),
                                             ),
                                             TextSpan(
-                                              text: state.subCalEvents.length ==
-                                                      1
-                                                  ? '${state.subCalEvents.length} conflict'
-                                                  : '${state.subCalEvents.length} conflicts',
+                                              text:
+                                                  state.subCalEvents.length == 1
+                                                      ? AppLocalizations.of(
+                                                              context)!
+                                                          .oneConflict
+                                                      : AppLocalizations.of(
+                                                              context)!
+                                                          .countConflict(state
+                                                              .subCalEvents
+                                                              .length
+                                                              .toString()),
                                               style: TextStyle(
                                                 fontFamily:
                                                     TileStyles.rubikFontName,
@@ -297,7 +317,7 @@ class ForecastView extends StatelessWidget {
                                       ),
                                       child: Center(
                                         child: Text(
-                                          'Create',
+                                          AppLocalizations.of(context)!.create,
                                           style: TextStyle(
                                             fontFamily:
                                                 TileStyles.rubikFontName,
@@ -317,7 +337,9 @@ class ForecastView extends StatelessWidget {
                       ],
                     );
                   } else if (state is ForecastError) {
-                    return Center(child: Text('Error: ${state.error}'));
+                    return Center(
+                        child: Text(AppLocalizations.of(context)!
+                            .errorMessage(state.error)));
                   } else {
                     return SizedBox.shrink();
                   }
@@ -336,7 +358,7 @@ class ForecastView extends StatelessWidget {
 
     void onEndDateTap() async {
       DateTime _endDate = endTime == null
-          ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+          ? Utility.todayTimeline().endTime.add(Utility.oneDay)
           : endTime;
       DateTime firstDate = _endDate.add(Duration(days: -14));
       DateTime lastDate = _endDate.add(Duration(days: 90));
@@ -378,7 +400,7 @@ class ForecastView extends StatelessWidget {
   Widget generateDurationPicker(
       BuildContext context, double width, double height) {
     final state = context.watch<ForecastBloc>().state;
-    final duration = state.duration;
+    final duration = state.duration ?? Duration(minutes: 0);
 
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {'duration': duration};
