@@ -144,15 +144,17 @@ class Utility {
   static bool isDateWithinPickerRange(DateTime date) {
     final firstDay = getFirstDate();
     final lastDay = getLastDate();
-    return date.isAfter(firstDay) && date.isBefore(lastDay);
+    return (date.isAtSameMomentAs(firstDay)|| date.isAfter(firstDay))&& (date.isAtSameMomentAs(lastDay)||date.isBefore(lastDay));
   }
 
+  static DateTime getWeekSunday(DateTime selectedDay){
+    return DateTime(selectedDay.year, selectedDay.month, selectedDay.day - selectedDay.weekday % 7);
+  }
   static List<DateTime> getDaysInWeek(DateTime selectedDay) {
-    final sunday =DateTime(selectedDay.year, selectedDay.month, selectedDay.day - selectedDay.weekday % 7);
+    final sunday =getWeekSunday(selectedDay);
     List<DateTime> weekDays=List.generate(7, (index) => DateTime(sunday.year, sunday.month, sunday.day + index).dayDate);
     return weekDays;
   }
-
 
   static List<DateTime> getDaysInMonth(DateTime selectedMonth) {
     final days = <DateTime>[];
@@ -172,10 +174,12 @@ class Utility {
             .round();
     return retValue;
   }
+
   static int getDayOfMonthFromIndex(int dayIndex) {
     DateTime date = Utility._beginningOfTime.add(Duration(days: dayIndex));
     return date.day;
   }
+
   static DateTime getTimeFromIndex(int dayIndex) {
     Duration totalDuration = Duration(days: dayIndex);
     DateTime retValueShifted =
