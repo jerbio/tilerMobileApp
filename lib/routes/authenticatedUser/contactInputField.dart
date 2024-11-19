@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
+import 'package:tiler_app/components/tilelist/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
@@ -9,9 +8,9 @@ import 'package:tiler_app/util.dart';
 class ContactInputFieldWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactUpdate;
-  final double contentHeight;
+  final double? contentHeight;
   ContactInputFieldWidget(
-      {this.onContactUpdate, this.contentHeight = 100, this.contacts});
+      {this.onContactUpdate, this.contentHeight, this.contacts});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -41,6 +40,10 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   }
 
   void _addContact(String contactVal) {
+    if (contactVal.isEmpty) {
+      return;
+    }
+    var priorContact = _contacts.toList();
     if (_isValidContact(contactVal)) {
       setState(() {
         final contactObj = Contact();
@@ -55,7 +58,10 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
       _controller
           .clear(); // Clear the text input field after adding the contact
     }
-    if (this.widget.onContactUpdate != null) {
+    if (this.widget.onContactUpdate != null &&
+        !priorContact.any((eachContact) =>
+            eachContact.email == contactVal ||
+            eachContact.phoneNumber == contactVal)) {
       this.widget.onContactUpdate!(_contacts);
     }
   }
@@ -78,6 +84,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           Container(
             height: this.widget.contentHeight,
             child: ListView(
+              shrinkWrap: true,
               reverse: true,
               children: [
                 Wrap(

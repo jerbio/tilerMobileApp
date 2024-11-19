@@ -737,8 +737,7 @@ class _SummaryPage extends State<SummaryPage> {
           Container(
             margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
             child: Text(
-              AppLocalizations.of(context)!
-                  .numberOfUnScheduledTiles(tiles.length.toString()),
+              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
                 fontFamily: TileStyles.rubikFontName,

@@ -5,6 +5,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class DesignatedTileWidget extends StatefulWidget {
   final DesignatedTile designatedTile;
@@ -112,8 +113,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   }
 
   Widget designatedTileDetails() {
+    const spaceDivider = SizedBox(height: 10);
     const supplementalTextStyle =
         TextStyle(fontSize: 12, fontFamily: TileStyles.rubikFontName);
+    String? designatedUsename = designatedTile.user?.username;
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -128,7 +131,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: 10),
+          spaceDivider,
           designatedTile.endTime != null
               ? Text(
                   AppLocalizations.of(context)!.deadlineTime(
@@ -136,14 +139,45 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   style: supplementalTextStyle,
                 )
               : SizedBox.shrink(),
-          SizedBox(height: 10),
-          designatedTile.clusterOwner?.username != null
-              ? Text("@${designatedTile.clusterOwner!.username!}",
-                  style: supplementalTextStyle)
-              : designatedTile.clusterOwner?.email != null
-                  ? Text(designatedTile.clusterOwner!.email!)
-                  : SizedBox.shrink(),
-          SizedBox(height: 10),
+          spaceDivider,
+          designatedUsename.isNot_NullEmptyOrWhiteSpace()
+              ? Row(
+                  children: [
+                    Text((designatedUsename!.contains('@') ? '' : '@') +
+                        "$designatedUsename"),
+                    designatedTile.invitationStatus
+                                .isNot_NullEmptyOrWhiteSpace() &&
+                            designatedTile.invitationStatus!.toLowerCase() !=
+                                InvitationStatus.none.name
+                                    .toString()
+                                    .toLowerCase() &&
+                            designatedTile.isTilable == false
+                        ? Container(
+                            margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                            padding: EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  TileStyles.borderRadius),
+                            ),
+                            child: Text(
+                              designatedTile.invitationStatus!.capitalize(),
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  color: designatedTile.invitationStatus!
+                                              .toLowerCase() ==
+                                          InvitationStatus.accepted.name
+                                              .toString()
+                                              .toLowerCase()
+                                      ? Colors.green
+                                      : Colors.red),
+                            ),
+                          )
+                        : SizedBox.shrink()
+                  ],
+                )
+              : SizedBox.shrink(),
+          spaceDivider,
           if (_responseMessage.isEmpty)
             SizedBox.shrink()
           else
@@ -153,7 +187,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   color: Colors.blue,
                   fontWeight: FontWeight.bold,
                   fontFamily: TileStyles.rubikFontName),
-            )
+            ),
         ],
       ),
     );
