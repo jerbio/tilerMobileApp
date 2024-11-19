@@ -23,7 +23,7 @@ class TileStyles {
 
   static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static const Color errorBackgroundColor = Colors.black54;
-  static const Color errorTxtColor = Colors.red;
+  static const Color errorTxtColor=Colors.red;
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
@@ -308,7 +308,7 @@ class TileStyles {
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
       SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
-      SizedBox(height: 150);
+  SizedBox(height: 150);
 
   static BoxShadow inputFieldBoxShadow = BoxShadow(
     color: Color.fromRGBO(168, 168, 168, 0.54),
