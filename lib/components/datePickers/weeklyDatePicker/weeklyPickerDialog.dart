@@ -9,9 +9,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WeeklyPickerDialog extends StatelessWidget {
 
-
-
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
@@ -44,8 +41,9 @@ class WeeklyPickerDialog extends StatelessWidget {
                     (state.tempSelectedWeek ).any((d) =>
                         isSameDay(d, day)),
                 onDaySelected: (selectedDay, _) {
+                  DateTime selectedDate=Utility.getWeekSunday(selectedDay);
                   context.read<WeeklyUiDateManagerBloc>().add(
-                      SetTempSelectedWeek(selectedDate: selectedDay));
+                      SetTempSelectedWeek(selectedDate: selectedDate));
                 },
                 onPageChanged: (focusedDay) {
                   context.read<WeeklyUiDateManagerBloc>().add(UpdateTempDate(tempDate: focusedDay.dayDate));
@@ -169,6 +167,7 @@ class WeeklyPickerDialog extends StatelessWidget {
       ),
     );
   }
+
   Future<void> _selectYear(BuildContext context) async {
     final bloc = context.read<WeeklyUiDateManagerBloc>();
     final state = bloc.state;
