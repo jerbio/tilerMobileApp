@@ -189,7 +189,7 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
                   _isCarouselChange = true;
                   _loadExtraMonths(index);
                   context.read<WeeklyUiDateManagerBloc>().add(
-                        UpdateSelectedWeekOnSwiping(
+                        UpdateSelectedWeek(
                              selectedDate: index == 0
                                 ? _weeks[index].last
                                 : _weeks[index].first),

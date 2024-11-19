@@ -117,7 +117,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<WeeklyUiDateManagerBloc>().add(UpdateSelectedWeekOnPicking(
+                      context.read<WeeklyUiDateManagerBloc>().add(UpdateSelectedWeek(
                           selectedDate: state.tempSelectedWeek.first)
                       );
                       Navigator.of(context).pop();
