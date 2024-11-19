@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -140,7 +138,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(startString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor))),
           Lottie.asset(lottieAsset, height: 85),
@@ -149,7 +147,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(endString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor)))
         ],
@@ -236,7 +234,10 @@ class TileWidgetState extends State<TileWidget>
     }
 
     if (widget.subEvent.address != null &&
-        widget.subEvent.address!.isNotEmpty) {
+        widget.subEvent.address!.isNotEmpty
+        ||
+        subEvent.searchdDescription !=null &&
+        subEvent.searchdDescription!.isNotEmpty) {
       var addressWidget = Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TileAddress(widget.subEvent));
