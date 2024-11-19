@@ -122,7 +122,7 @@ class _WeeklyTileListState extends TileListState {
             newWeek=DateTime(newWeek.year,newWeek.month,newWeek.day-7);
           }
           context.read<WeeklyUiDateManagerBloc>().add(
-              UpdateSelectedWeekOnSwiping(
+              UpdateSelectedWeek(
                   selectedDate: newWeek));
           swipingAnimationController?.reset();
         });
