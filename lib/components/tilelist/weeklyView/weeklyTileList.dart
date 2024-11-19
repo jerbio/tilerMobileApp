@@ -110,24 +110,22 @@ class _WeeklyTileListState extends TileListState {
     List<Widget> rowItems = buildRows(tileData);
     return GestureDetector(
       onHorizontalDragEnd: (details) {
-
         setState(() {
           swipeDirection = details.primaryVelocity! > 0 ? 1 : -1;
         });
         swipingAnimationController?.forward().then((_) {
           final weeklyUiState = context.read<WeeklyUiDateManagerBloc>().state;
-          int newWeek=0;
+          DateTime newWeek=weeklyUiState.selectedDate.dayDate;
           if (swipeDirection < 0) {
-            newWeek=7;
+            newWeek=DateTime(newWeek.year,newWeek.month,newWeek.day+7);
           } else if (swipeDirection > 0) {
-            newWeek=-7;
+            newWeek=DateTime(newWeek.year,newWeek.month,newWeek.day-7);
           }
           context.read<WeeklyUiDateManagerBloc>().add(
               UpdateSelectedWeekOnSwiping(
-                  selectedDate: weeklyUiState.selectedDate.add(Duration(days: newWeek))));
+                  selectedDate: newWeek));
           swipingAnimationController?.reset();
         });
-
       },
       child:  AnimatedBuilder(
         animation: swipingAnimationController!,
