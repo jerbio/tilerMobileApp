@@ -15,33 +15,53 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
   }
 
   void _onUpdateDuration(UpdateDuration event, Emitter<ForecastState> emit) {
-    print("Updating duration: ${event.duration}");
     final newState = state;
-    emit(ForecastLoading(duration: event.duration, endTime: newState.endTime));
-    _checkAndTriggerEvent(event.duration, newState.endTime);
+    if (event.duration.inMinutes > 0 &&
+        newState.endTime != null &&
+        newState.endTime!.isAfter(Utility.currentTime())) {
+      emit(
+          ForecastLoading(duration: event.duration, endTime: newState.endTime));
+      _checkAndTriggerEvent(event.duration, newState.endTime);
+    } else {
+      emit(
+          ForecastInitial(duration: event.duration, endTime: newState.endTime));
+    }
   }
 
   void _onUpdateDateTime(UpdateDateTime event, Emitter<ForecastState> emit) {
-    print("Updating end time: ${event.dateTime}");
-    final newState = state;
-    emit(ForecastLoading(duration: newState.duration, endTime: event.dateTime));
-    _checkAndTriggerEvent(newState.duration, event.dateTime);
+    Utility.debugPrint("Updating end time: ${event.dateTime}");
+    final currentState = state;
+    if (currentState.duration != null &&
+        currentState.duration!.inMinutes > 0 &&
+        event.dateTime.isAfter(Utility.currentTime())) {
+      emit(ForecastLoading(
+          duration: currentState.duration!, endTime: event.dateTime));
+      _checkAndTriggerEvent(currentState.duration!, event.dateTime);
+    } else {
+      emit(ForecastInitial(
+          duration: currentState.duration, endTime: event.dateTime));
+    }
   }
 
   void _checkAndTriggerEvent(Duration duration, DateTime? endTime) {
     if (duration >= Duration(minutes: 1) && endTime != null) {
-      print("Emitting FetchData event");
+      Utility.debugPrint("Emitting FetchData event");
       add(FetchData());
     }
   }
 
   Future<void> _onFetchData(
       FetchData event, Emitter<ForecastState> emit) async {
+    if (state.duration == null || state.endTime == null) {
+      return;
+    }
+    Duration duration = state.duration!;
+    DateTime endTime = state.endTime!;
     try {
-      emit(ForecastLoading(duration: state.duration, endTime: state.endTime));
-      print('Fetching data...');
+      emit(ForecastLoading(duration: duration, endTime: endTime));
+      Utility.debugPrint('Fetching data...');
 
-      DateTime now = DateTime.now();
+      DateTime now = Utility.currentTime();
       int currentMinute = now.minute;
       int currentHour = now.hour;
       int currentDay = now.day;
@@ -50,9 +70,9 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
       int endDay = state.endTime!.day;
       int endMonth = state.endTime!.month;
       int endYear = state.endTime!.year;
-      var durInHours = state.duration.inHours;
-      var durrInMilliseconds = state.duration.inMilliseconds;
-      var durInUtc = durationToUtcString(state.duration);
+      var durInHours = duration.inHours;
+      var durrInMilliseconds = duration.inMilliseconds;
+      var durInUtc = durationToUtcString(duration);
 
       Map<String, Object> queryParams = {
         "StartMinute": currentMinute.toString(),
@@ -69,7 +89,7 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
       };
 
       final val = await WhatIfApi().forecastNewTile(queryParams);
-      print('Data fetched: $val');
+      Utility.debugPrint('Data fetched: $val');
 
       final isViable = val[0] as bool;
       final subCalEvents = val[1] as List<SubCalendarEvent>;
@@ -77,13 +97,13 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
       emit(ForecastLoaded(
         isViable: isViable,
         subCalEvents: subCalEvents,
-        duration: state.duration,
+        duration: duration,
         endTime: state.endTime,
       ));
     } catch (e) {
       emit(ForecastError(
         'An error occurred while fetching data. Please try again later.',
-        duration: state.duration,
+        duration: duration,
         endTime: state.endTime,
       ));
     }

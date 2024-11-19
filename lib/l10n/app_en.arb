@@ -134,7 +134,7 @@
       "placeholders": {
         "duration": {
           "type": "String",
-          "example": "5 Hours"
+          "example": "Starts in 5 Hours"
         }
       }},
     "concludesAtTime": "🏁 {tileName} concludes soon",
@@ -425,5 +425,38 @@
           "type": "String",
           "example": "5 Unscheduled Tiles"
         }
-      }}
+      }},
+      "thisFitsInYourSchedule": "This fits in your schedule.",
+      "warningColon": "Warning: ",
+      "oneEventAtRisk": "1 event at risk",
+      "countEventAtRisk": "{number} events at risk",
+      "@countEventAtRisk": {
+        "description": "Number of event at risk",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "5 events at risk"
+          }
+        }},
+      "oneConflict": "1 Conflict",
+      "countConflict": "{number} Conflicts",
+      "@countConflict": {
+        "description": "Number of conflict",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "1 Conflicts"
+          }
+        }},
+      "create": "Create",
+      "thisEventWouldCause": "This event would cause ",
+      "errorMessage": "Error: {message}",
+      "@errorMessage": {
+        "description": "Error message string",
+        "placeholders": {
+          "message": {
+            "type": "String",
+            "example": "Error: Message"
+          }
+        }}
   }

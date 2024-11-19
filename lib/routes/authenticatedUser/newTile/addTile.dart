@@ -64,34 +64,8 @@ class AddTileState extends State<AddTile> {
   final LocationApi locationApi = LocationApi();
   Location? _homeLocation;
   Location? _workLocation;
-  final BoxDecoration boxDecoration = BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.05),
-      border: Border.all(
-        color: TileStyles.primaryColor,
-        width: 1,
-      ),
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ));
-  final BoxDecoration populatedDecoration = BoxDecoration(
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          TileStyles.primaryColor,
-          HSLColor.fromColor(TileStyles.primaryColor)
-              .withLightness(
-                  HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
-              .toColor(),
-
-          // OLD
-          // TileStyles.primaryColorDarkHSL.toColor(),
-          // TileStyles.primaryColorLightHSL.toColor()
-        ],
-      ));
+  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
+  final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCountController = TextEditingController();
@@ -511,8 +485,7 @@ class AddTileState extends State<AddTile> {
                   ],
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
-                    hintStyle:
-                        TextStyle(color: TileStyles.primaryColor),
+                    hintStyle: TextStyle(color: TileStyles.primaryColor),
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
@@ -769,7 +742,7 @@ class AddTileState extends State<AddTile> {
             isSubmissionReady();
           });
         });
-    
+
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
         prefixIcon: Icon(
@@ -793,7 +766,7 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
-    
+
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
@@ -1362,7 +1335,7 @@ class AddTileState extends State<AddTile> {
         onChanged: onTabTypeChange,
         value: switchUpvalue,
         color: TileStyles.primaryColor,
-       backgroundColor: TileStyles.primaryContrastColor, 
+        backgroundColor: TileStyles.primaryContrastColor,
         // TileStyles.oPrimaryColorHSL.toColor(),
       ),
     );
