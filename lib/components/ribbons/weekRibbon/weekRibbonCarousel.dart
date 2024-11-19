@@ -19,7 +19,7 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
   bool _isManualJump = false;
   List<List<DateTime>> nextMonthWeeks=[];
   List<List<DateTime>> prevMonthWeeks=[];
-  int? i=null;
+  int? prevAnchorMonth=null;
 
   @override
   void initState() {
@@ -45,6 +45,7 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
     );
     return weeksInMonth;
   }
+
   Widget _buildWeekWidget(List<DateTime> week) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -56,6 +57,7 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
       )).toList(),
     );
   }
+
   void _loadNextMonth() {
     final lastDate = _weeks.last.first;
     int nextMonth = lastDate.month + 1;
@@ -111,10 +113,10 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
         });
     }
   }
-  void _trimWeeksOnPreviousLoad(int selectedItem, int? i) {
-    if (prevMonthWeeks.isEmpty || i==null) return;
+  void _trimWeeksOnPreviousLoad(int selectedItem, int? prevAnchorMonth) {
+    if (prevMonthWeeks.isEmpty || prevAnchorMonth==null) return;
     int startRangeIndex=prevMonthWeeks.length-1;
-    if(prevMonthWeeks.last.last.month != i)
+    if(prevMonthWeeks.last.last.month != prevAnchorMonth)
       startRangeIndex-=1;
 
     if (listEquals(_weeks[selectedItem], prevMonthWeeks[startRangeIndex])) {
@@ -130,13 +132,13 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
 
   void _loadExtraMonths(int selectedItem){
     if (selectedItem == 0 && Utility.isDateWithinPickerRange(_weeks.first.first.add(Duration(days: -1)))) {
-        i = _weeks.first.first.month;
+      prevAnchorMonth = _weeks.first.first.month;
       _loadPreviousMonth();
     } else if (selectedItem == _weeks.length - 1 && Utility.isDateWithinPickerRange(_weeks.last.last.add(Duration(days: 1)))) {
       _loadNextMonth();
     }
     _trimWeeksOnNextLoad(selectedItem);
-    _trimWeeksOnPreviousLoad(selectedItem,i);
+    _trimWeeksOnPreviousLoad(selectedItem,prevAnchorMonth);
   }
 
   @override
@@ -188,7 +190,7 @@ class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
                   _loadExtraMonths(index);
                   context.read<WeeklyUiDateManagerBloc>().add(
                         UpdateSelectedWeekOnSwiping(
-                            selectedDate: index == 0
+                             selectedDate: index == 0
                                 ? _weeks[index].last
                                 : _weeks[index].first),
                       );

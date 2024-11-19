@@ -14,6 +14,7 @@ class UpdateSelectedWeekOnPicking extends WeeklyUiDateManagerEvent {
   @override
   List<Object> get props => [selectedDate];
 }
+
 class UpdateSelectedWeekOnSwiping extends WeeklyUiDateManagerEvent {
   final DateTime selectedDate;
   const UpdateSelectedWeekOnSwiping({required this.selectedDate});
