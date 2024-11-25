@@ -5,6 +5,7 @@ import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/util.dart';
 
@@ -76,266 +77,7 @@ class ForecastView extends StatelessWidget {
                           ),
                         ));
                   } else if (state is ForecastLoaded) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          height: height / (height / 20),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!.analysis,
-                              style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
-                                fontSize: height / (height / 17),
-                                fontWeight: FontWeight.w500,
-                                color: TileStyles.defaultTextColor,
-                              ),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          height: height / (height / 10),
-                        ),
-                        state.isViable
-                            ? Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      AnalysisCheckState(
-                                        height: height,
-                                        isPass: true,
-                                      ),
-                                      SizedBox(
-                                        width: height / (height / 10),
-                                      ),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .thisFitsInYourSchedule,
-                                        style: TextStyle(
-                                          fontFamily: TileStyles.rubikFontName,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: height / (height / 15),
-                                          color: TileStyles.defaultTextColor,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Row(
-                                          children: [
-                                            AnalysisCheckState(
-                                              height: height,
-                                              isWarning: true,
-                                            ),
-                                            SizedBox(
-                                              width: height / (height / 10),
-                                            ),
-                                            RichText(
-                                              text: TextSpan(
-                                                children: [
-                                                  TextSpan(
-                                                    text: AppLocalizations.of(
-                                                            context)!
-                                                        .warningColon,
-                                                    style: TextStyle(
-                                                      fontFamily: TileStyles
-                                                          .rubikFontName,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: height /
-                                                          (height / 15),
-                                                      color: TileStyles
-                                                          .defaultTextColor,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: state.subCalEvents
-                                                                .length ==
-                                                            1
-                                                        ? AppLocalizations.of(
-                                                                context)!
-                                                            .oneEventAtRisk
-                                                        : AppLocalizations.of(
-                                                                context)!
-                                                            .countEventAtRisk(
-                                                                state
-                                                                    .subCalEvents
-                                                                    .length
-                                                                    .toString()),
-                                                    style: TextStyle(
-                                                      fontFamily: TileStyles
-                                                          .rubikFontName,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: height /
-                                                          (height / 15),
-                                                      color: TileStyles
-                                                          .defaultTextColor,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : SizedBox.shrink(),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Column(
-                                          children: state.subCalEvents
-                                              .map((subEvent) {
-                                            return TileSummary(subEvent);
-                                          }).toList(),
-                                        )
-                                      : SizedBox.shrink(),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Map<String, dynamic> newTileParams = {
-                                        'newTile': null
-                                      };
-                                      Navigator.pushNamed(context, '/AddTile',
-                                          arguments: newTileParams);
-                                    },
-                                    child: Container(
-                                      width: width,
-                                      height: height / (height / 52),
-                                      decoration: BoxDecoration(
-                                        color: TileStyles.primaryColor,
-                                        borderRadius: BorderRadius.circular(
-                                            height / (height / 6)),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          AppLocalizations.of(context)!.create,
-                                          style: TextStyle(
-                                            fontFamily:
-                                                TileStyles.rubikFontName,
-                                            fontSize: height / (height / 15),
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 100,
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      AnalysisCheckState(
-                                        height: height,
-                                        isConflict: true,
-                                      ),
-                                      SizedBox(
-                                        width: height / (height / 10),
-                                      ),
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text:
-                                                  AppLocalizations.of(context)!
-                                                      .thisEventWouldCause,
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    TileStyles.rubikFontName,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize:
-                                                    height / (height / 15),
-                                                color:
-                                                    TileStyles.defaultTextColor,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text:
-                                                  state.subCalEvents.length == 1
-                                                      ? AppLocalizations.of(
-                                                              context)!
-                                                          .oneConflict
-                                                      : AppLocalizations.of(
-                                                              context)!
-                                                          .countConflict(state
-                                                              .subCalEvents
-                                                              .length
-                                                              .toString()),
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    TileStyles.rubikFontName,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize:
-                                                    height / (height / 15),
-                                                color:
-                                                    TileStyles.defaultTextColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Column(
-                                          children: state.subCalEvents
-                                              .map((subEvent) {
-                                            return TileSummary(subEvent);
-                                          }).toList(),
-                                        )
-                                      : SizedBox.shrink(),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Map<String, dynamic> newTileParams = {
-                                        'newTile': null
-                                      };
-                                      Navigator.pushNamed(context, '/AddTile',
-                                          arguments: newTileParams);
-                                    },
-                                    child: Container(
-                                      width: width,
-                                      height: height / (height / 52),
-                                      decoration: BoxDecoration(
-                                        color: TileStyles.primaryColor,
-                                        borderRadius: BorderRadius.circular(
-                                            height / (height / 6)),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          AppLocalizations.of(context)!.create,
-                                          style: TextStyle(
-                                            fontFamily:
-                                                TileStyles.rubikFontName,
-                                            fontSize: height / (height / 15),
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 100,
-                                  ),
-                                ],
-                              )
-                      ],
-                    );
+                    return RenderLoadedForecast(height, context, state, width);
                   } else if (state is ForecastError) {
                     return Center(
                         child: Text(AppLocalizations.of(context)!
@@ -349,6 +91,243 @@ class ForecastView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Column RenderLoadedForecast(
+      double height, BuildContext context, ForecastLoaded state, double width) {
+    List<SubCalendarEvent> subEvents = state.subCalEvents.toList();
+    Timeline todayTimeline = Utility.todayTimeline();
+    List<SubCalendarEvent> todaySubEvents = subEvents
+        .where((element) => element.isInterfering(todayTimeline))
+        .toList();
+    List<SubCalendarEvent> todayAtRiskSubEvents = todaySubEvents
+        .where((eachSubEvent) => eachSubEvent.isViable != true)
+        .toList();
+    List<SubCalendarEvent> todayLateSubEvents = todaySubEvents
+        .where((eachSubEvent) => eachSubEvent.isTardy == true)
+        .toList();
+    return Column(
+      children: [
+        SizedBox(
+          height: height / (height / 20),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.analysis,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontSize: height / (height / 17),
+                fontWeight: FontWeight.w500,
+                color: TileStyles.defaultTextColor,
+              ),
+            )
+          ],
+        ),
+        SizedBox(
+          height: height / (height / 10),
+        ),
+        state.isViable
+            ? Column(
+                children: [
+                  Row(
+                    children: [
+                      AnalysisCheckState(
+                        height: height,
+                        isPass: true,
+                      ),
+                      SizedBox(
+                        width: height / (height / 10),
+                      ),
+                      Text(
+                        AppLocalizations.of(context)!.thisFitsInYourSchedule,
+                        style: TextStyle(
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.w400,
+                          fontSize: height / (height / 15),
+                          color: TileStyles.defaultTextColor,
+                        ),
+                      )
+                    ],
+                  ),
+                  SizedBox(
+                    height: height / (height / 20),
+                  ),
+                  state.subCalEvents.isNotEmpty
+                      ? Row(
+                          children: [
+                            AnalysisCheckState(
+                              height: height,
+                              isWarning: true,
+                            ),
+                            SizedBox(
+                              width: height / (height / 10),
+                            ),
+                            RichText(
+                              text: TextSpan(
+                                children: [
+                                  TextSpan(
+                                    text: AppLocalizations.of(context)!
+                                        .warningColon,
+                                    style: TextStyle(
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: height / (height / 15),
+                                      color: TileStyles.defaultTextColor,
+                                    ),
+                                  ),
+                                  TextSpan(
+                                    text: todayAtRiskSubEvents.length == 1
+                                        ? AppLocalizations.of(context)!
+                                            .oneEventAtRisk
+                                        : AppLocalizations.of(context)!
+                                            .countEventAtRisk(
+                                                todayAtRiskSubEvents.length
+                                                    .toString()),
+                                    style: TextStyle(
+                                      fontFamily: TileStyles.rubikFontName,
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: height / (height / 15),
+                                      color: TileStyles.defaultTextColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : SizedBox.shrink(),
+                  SizedBox(
+                    height: height / (height / 20),
+                  ),
+                  todayAtRiskSubEvents.isNotEmpty
+                      ? Column(
+                          children: todayAtRiskSubEvents.map((subEvent) {
+                            return TileSummary(subEvent);
+                          }).toList(),
+                        )
+                      : SizedBox.shrink(),
+                  SizedBox(
+                    height: height / (height / 20),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Map<String, dynamic> newTileParams = {'newTile': null};
+                      Navigator.pushNamed(context, '/AddTile',
+                          arguments: newTileParams);
+                    },
+                    child: Container(
+                      width: width,
+                      height: height / (height / 52),
+                      decoration: BoxDecoration(
+                        color: TileStyles.primaryColor,
+                        borderRadius:
+                            BorderRadius.circular(height / (height / 6)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.create,
+                          style: TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            fontSize: height / (height / 15),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 100,
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  Row(
+                    children: [
+                      AnalysisCheckState(
+                        height: height,
+                        isConflict: true,
+                      ),
+                      SizedBox(
+                        width: height / (height / 10),
+                      ),
+                      RichText(
+                        text: TextSpan(
+                          children: [
+                            TextSpan(
+                              text: AppLocalizations.of(context)!
+                                  .thisEventWouldCause,
+                              style: TextStyle(
+                                fontFamily: TileStyles.rubikFontName,
+                                fontWeight: FontWeight.w400,
+                                fontSize: height / (height / 15),
+                                color: TileStyles.defaultTextColor,
+                              ),
+                            ),
+                            TextSpan(
+                              text: state.subCalEvents.length == 1
+                                  ? AppLocalizations.of(context)!.oneConflict
+                                  : AppLocalizations.of(context)!.countConflict(
+                                      state.subCalEvents.length.toString()),
+                              style: TextStyle(
+                                fontFamily: TileStyles.rubikFontName,
+                                fontWeight: FontWeight.w500,
+                                fontSize: height / (height / 15),
+                                color: TileStyles.defaultTextColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: height / (height / 20),
+                  ),
+                  state.subCalEvents.isNotEmpty
+                      ? Column(
+                          children: state.subCalEvents.map((subEvent) {
+                            return TileSummary(subEvent);
+                          }).toList(),
+                        )
+                      : SizedBox.shrink(),
+                  GestureDetector(
+                    onTap: () {
+                      Map<String, dynamic> newTileParams = {'newTile': null};
+                      Navigator.pushNamed(context, '/AddTile',
+                          arguments: newTileParams);
+                    },
+                    child: Container(
+                      width: width,
+                      height: height / (height / 52),
+                      decoration: BoxDecoration(
+                        color: TileStyles.primaryColor,
+                        borderRadius:
+                            BorderRadius.circular(height / (height / 6)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          AppLocalizations.of(context)!.create,
+                          style: TextStyle(
+                            fontFamily: TileStyles.rubikFontName,
+                            fontSize: height / (height / 15),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 100,
+                  ),
+                ],
+              )
+      ],
     );
   }
 
