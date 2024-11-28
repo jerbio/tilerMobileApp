@@ -18,7 +18,7 @@ import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/localizationService.dart';
+// import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
@@ -115,7 +115,7 @@ class SignInComponentState extends State<SignInComponent>
   final authApi = AuthorizationApi();
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
-  LocalizationService? localizationService;
+  // LocalizationService? localizationService;
 
   @override
   void initState() {
@@ -250,7 +250,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -260,7 +260,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.username != null &&
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
-                    : "", localizationService: localizationService!,),
+                    : "",),
             // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
@@ -328,7 +328,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -338,7 +338,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.username != null &&
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
-                    : "", localizationService: localizationService!,),
+                    : "",),
             // nextPage ? AuthorizedRoute() : OnboardingView()
           ),
         );
@@ -530,7 +530,7 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -540,7 +540,7 @@ class SignInComponentState extends State<SignInComponent>
                 firstName: (authenticationData.displayName != null &&
                         authenticationData.displayName.isNotEmpty)
                     ? authenticationData.displayName
-                    : "", localizationService: localizationService!,),
+                    : "",),
             // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
