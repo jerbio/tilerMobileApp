@@ -14,13 +14,13 @@ enum WelcomeType { register, login }
 class WelcomeScreen extends StatefulWidget {
   final WelcomeType welcomeType;
   final String firstName;
-  final LocalizationService localizationService;
+  // final LocalizationService localizationService;
 
   const WelcomeScreen({
     super.key,
     required this.welcomeType,
     required this.firstName,
-    required this.localizationService
+    // required this.localizationService
   });
 
   @override
@@ -39,7 +39,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     await Future.delayed(Duration(seconds: 3));
 
     // Then check the onboarding status
-    bool nextPage = await Utility.checkOnboardingStatus(widget.localizationService);
+    bool nextPage = await Utility.checkOnboardingStatus();
 
     Navigator.push(
       context,
