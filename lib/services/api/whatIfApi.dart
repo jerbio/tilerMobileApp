@@ -22,17 +22,18 @@ class WhatIfApi extends AppApi {
   Future<dynamic> forecastNewTile(Map<String, Object> externalParams) async {
     List<String> subCalEventIds = [];
     List<SubCalendarEvent> updatedSubCalEvents = [];
+    print('externalParams');
+    print(externalParams);
+
     var queryParams = {
-      "Address": "3333 Walnut rd Boulder CO",
-      "LocationId": "ew32-4232rh-32423dq-323r3",
-      "Name": "We can see the future",
-      "Count": "5",
+      "Name": "Test tile",
+      "Count": "1",
       "EndMinute": "59",
       "EndHour": "23",
       "isRestricted": "false",
       "isEveryDay": "False",
-      "DurationDays": "0",
-      "DurationMinute": "0",
+      // "DurationDays": "0",
+      // "DurationMinute": "0",
       "NewTime": -1,
       "User": {
         "MobileApp": false,
@@ -41,7 +42,7 @@ class WhatIfApi extends AppApi {
         "IsTimeZoneAdjusted": "false",
         "getTimeSpan": "00:00:00"
       },
-      "MobileApp": false,
+      "MobileApp": true,
       "TimeZoneOffset": 0,
       "TimeZone": "UTC",
       "IsTimeZoneAdjusted": "false",
@@ -75,9 +76,6 @@ class WhatIfApi extends AppApi {
             });
           }
         }
-
-        
-       
 
         // Perform concurrent GET requests using the populated subCalEventIds
         final results = await Future.wait(
