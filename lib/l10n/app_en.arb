@@ -453,5 +453,14 @@
             "type": "String",
             "example": "Error: Message"
           }
-        }}
+        }},
+      "numberOfMoreUsers": "+{number} more",
+      "@numberOfMoreUsers": {
+          "description": "Number of more users",
+          "placeholders": {
+            "number": {
+              "type": "String",
+              "example": "+5 more"
+            }
+          }}
   }
