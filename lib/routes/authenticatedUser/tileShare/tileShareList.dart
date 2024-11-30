@@ -7,6 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidg
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class TileShareList extends StatefulWidget {
   final List<TileShareClusterData>? clusters;
@@ -149,22 +150,65 @@ class _TileShareListState extends State<TileShareList> {
     if (toBeRenderedElementCount == 0) {
       return renderEmpty();
     }
+
     return ListView.builder(
         controller: _scrollController,
         itemCount: toBeRenderedElementCount,
         itemBuilder: (context, index) {
           if (index < tileShareClusters.length) {
+            Widget simpleTileShareWidget = TileShareSimpleWidget(
+              tileShareCluster: tileShareClusters[index],
+              isReadOnly: true,
+            );
+            Widget dismissibleSimpleTileShareWidget = Dismissible(
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  padding: EdgeInsets.all(10),
+                  alignment: Alignment.centerRight,
+                  color: Colors.redAccent,
+                  child: Icon(
+                    Icons.delete,
+                    color: TileStyles.primaryContrastColor,
+                    size: 40,
+                  ),
+                ),
+                key: ValueKey<String>(
+                    tileShareClusters[index].id ?? Utility.getUuid),
+                onDismissed: (DismissDirection direction) {
+                  {
+                    TileShareClusterData tileShareClusterData =
+                        tileShareClusters[index];
+                    if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
+                      this
+                          .tileClusterApi
+                          .deleteCluster(tileShareClusterData.id!)
+                          .then((value) {
+                        getTileShareCluster().then((value) {
+                          setState(() {
+                            tileShareClusters.removeWhere(
+                                (eachTileShareCluster) =>
+                                    eachTileShareCluster.id ==
+                                    tileShareClusterData.id);
+                          });
+                        });
+                      });
+                    }
+                  }
+                },
+                child: simpleTileShareWidget);
             return InkWell(
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => TileShareDetailWidget.byId(
-                            tileShareClusters[index].id!)));
+                              tileShareId: tileShareClusters[index].id!,
+                              isOutBox: this.widget.isOutBox != false,
+                            )));
               },
-              child: TileShareSimpleWidget(
-                tileShareCluster: tileShareClusters[index],
-              ),
+              child: isOubox
+                  ? dismissibleSimpleTileShareWidget
+                  : simpleTileShareWidget,
             );
           }
           return renderPending();

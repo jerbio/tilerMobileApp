@@ -4,6 +4,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/util.dart';
@@ -13,7 +14,8 @@ class TileShareClusterData {
   String? name;
   UserProfile? creator;
   List<Contact>? contacts;
-  List<NewTile>? tileTemplates;
+  List<NewTile>? newTileTemplates;
+  List<TileShareTemplate>? tileShareTemplates;
   int? durationInMs;
   int? startTimeInMs;
   int? endTimeInMs;
@@ -58,6 +60,14 @@ class TileShareClusterData {
     if (json.containsKey('isMultiTilette')) {
       isMultiTilette = json['isMultiTilette'];
     }
+    if (json.containsKey('tileShareTemplates') &&
+        json['tileShareTemplates'] != null &&
+        json['tileShareTemplates'] is Iterable) {
+      tileShareTemplates = (json['tileShareTemplates'] as Iterable)
+          .where((element) => element != null)
+          .map<TileShareTemplate>((e) => TileShareTemplate.fromJson(e!))
+          .toList();
+    }
     if (json.containsKey('truncatedUser') && json['truncatedUser'] != null) {
       var trucatedUsers = json['truncatedUser'];
       if (json['truncatedUser'] is String) {
@@ -94,7 +104,7 @@ class TileShareClusterData {
     templateClusterModel.Contacts =
         this.contacts?.map<ContactModel>((e) => e.toContactModel()).toList();
     templateClusterModel.ClusterTemplateTileModels = this
-        .tileTemplates
+        .newTileTemplates
         ?.map<ClusterTemplateTileModel>((e) => e.toClusterTemplateTileModel())
         .toList();
 

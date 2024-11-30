@@ -1,20 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
+import 'package:tiler_app/routes/authenticatedUser/userListView.dart';
 import 'package:tiler_app/styles.dart';
 
-class TileShareSimpleWidget extends StatefulWidget {
-  final TileShareClusterData? tileShareCluster;
+class TileShareTemplateSimpleWidget extends StatefulWidget {
+  final TileShareTemplate? tileShareTemplate;
   final bool? isReadOnly;
   final Function? onDelete;
 
-  TileShareSimpleWidget(
-      {required this.tileShareCluster, this.isReadOnly, this.onDelete});
+  TileShareTemplateSimpleWidget(
+      {required this.tileShareTemplate, this.isReadOnly, this.onDelete});
 
   @override
-  _TileShareState createState() => _TileShareState();
+  _TileShareTemplateState createState() => _TileShareTemplateState();
 }
 
-class _TileShareState extends State<TileShareSimpleWidget> {
+class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
   late bool isReadOnly = false;
   final rowSpacer = SizedBox.square(
     dimension: 8,
@@ -27,8 +32,8 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
-    String creatorInfo = widget.tileShareCluster?.creator?.username ??
-        widget.tileShareCluster?.creator?.email ??
+    String creatorInfo = widget.tileShareTemplate?.creator?.username ??
+        widget.tileShareTemplate?.creator?.email ??
         "";
 
     return Card(
@@ -43,11 +48,11 @@ class _TileShareState extends State<TileShareSimpleWidget> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.tileShareCluster?.name ?? ""}',
+                  Text('${widget.tileShareTemplate?.name ?? ""}',
                       style: TextStyle(
                           fontSize: 24, fontFamily: TileStyles.rubikFontName)),
                   SizedBox(height: 8),
-                  if (widget.tileShareCluster?.endTimeInMs != null)
+                  if (widget.tileShareTemplate?.start != null)
                     Row(
                       children: [
                         Icon(
@@ -58,7 +63,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                         Text(
                           MaterialLocalizations.of(context).formatFullDate(
                               DateTime.fromMillisecondsSinceEpoch(
-                                  widget.tileShareCluster!.endTimeInMs!)),
+                                  widget.tileShareTemplate!.end!)),
                           style: TileStyles.defaultTextStyle,
                         )
                       ],
@@ -66,31 +71,21 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                   else
                     SizedBox.shrink(),
                   SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person_2_outlined,
-                        size: 16,
-                      ),
-                      rowSpacer,
-                      Text(
-                          (creatorInfo.contains('@') ? '' : '@') +
-                              '${creatorInfo}',
-                          style: TileStyles.defaultTextStyle)
-                    ],
-                  ),
+                  if (widget.tileShareTemplate != null &&
+                      widget.tileShareTemplate?.designatedUsers != null &&
+                      widget.tileShareTemplate!.designatedUsers!.isNotEmpty)
+                    UserListViewWidget(
+                      contacts: widget.tileShareTemplate!.designatedUsers!
+                          .map((e) => e.toContact())
+                          .where((element) => element != null)
+                          .map<Contact>((e) => e!)
+                          .toList(),
+                      // isReadOnly: true,
+                    )
+                  else
+                    SizedBox.shrink()
                 ],
               ),
-              if (this.widget.tileShareCluster?.isMultiTilette == true)
-                Positioned(
-                  child: Icon(
-                    TileStyles.multiShareIcon,
-                    color: TileStyles.primaryColor,
-                  ),
-                  right: 0,
-                )
-              else
-                SizedBox.shrink(),
               if (isReadOnly == false)
                 Positioned(
                   child: IconButton(

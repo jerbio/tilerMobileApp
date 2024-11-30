@@ -1,18 +1,14 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/inboxMultiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
@@ -21,13 +17,15 @@ import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
   late final String? tileShareId;
+  bool isOutBox;
   late final TileShareClusterData? tileShareClusterData;
-  TileShareDetailWidget.byId(String tileShareId) {
-    this.tileShareId = tileShareId;
+  TileShareDetailWidget.byId(
+      {required this.tileShareId, this.isOutBox = true}) {
     this.tileShareClusterData = null;
   }
   TileShareDetailWidget.byTileShareData(
-      {required final TileShareClusterData tileShareClusterData}) {
+      {required final TileShareClusterData tileShareClusterData,
+      this.isOutBox = true}) {
     this.tileShareClusterData = tileShareClusterData;
     this.tileShareId = null;
   }
@@ -221,9 +219,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     return CircularProgressIndicator();
   }
 
-  void renderModal(
-      // {NewTile? currentTile}
-      ) {
+  void renderModal() {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
@@ -249,7 +245,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                           newTile.toClusterTemplateTileModel();
                       clusterTemplate.ClusterId = tileShareCluster?.id;
                       clusterApi
-                          .createTileTemplate(clusterTemplate)
+                          .createDesignatedTileTemplate(clusterTemplate)
                           .then((value) {
                         getTileShareCluster();
                         setState(() {
@@ -286,6 +282,14 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     );
   }
 
+  bool get _isReadOnly {
+    return this.widget.isOutBox != true;
+  }
+
+  bool get _isOutBox {
+    return this.widget.isOutBox != false;
+  }
+
   Widget addTileShare() {
     return ElevatedButton.icon(
         style: TileStyles.enabledButtonStyle,
@@ -307,11 +311,19 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     }
     if (this.tileShareCluster != null) {
       if (this.tileShareCluster!.isMultiTilette == true) {
-        return MultiTiletteTileShareDetailWidget(
-            tileShareClusterData: this.tileShareCluster!);
+        if (this._isOutBox) {
+          return MultiTiletteTileShareDetailWidget(
+              tileShareClusterData: this.tileShareCluster!,
+              isReadOnly: this._isReadOnly);
+        } else {
+          return InboxMultiTiletteTileShareDetailWidget(
+              tileShareClusterData: this.tileShareCluster!);
+        }
       } else {
         return SingleTiletteTileShareDetailWidget(
-            tileShareClusterData: this.tileShareCluster!);
+          tileShareClusterData: this.tileShareCluster!,
+          isReadOnly: this._isReadOnly,
+        );
       }
     }
 
