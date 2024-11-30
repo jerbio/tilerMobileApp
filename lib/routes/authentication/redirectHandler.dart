@@ -36,7 +36,7 @@ class RedirectHandler {
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      TileShareDetailWidget.byId(tileShareId)));
+                      TileShareDetailWidget.byId(tileShareId: tileShareId)));
           return;
         }
 

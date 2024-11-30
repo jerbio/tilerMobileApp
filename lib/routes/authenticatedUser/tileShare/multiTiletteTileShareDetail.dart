@@ -2,20 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
 import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class MultiTiletteTileShareDetailWidget extends StatefulWidget {
   late final TileShareClusterData tileShareClusterData;
-  MultiTiletteTileShareDetailWidget({required this.tileShareClusterData});
+  bool isReadOnly;
+  MultiTiletteTileShareDetailWidget(
+      {required this.tileShareClusterData, this.isReadOnly = true});
   @override
   _MultiTiletteTileShareDetailWidget createState() =>
       _MultiTiletteTileShareDetailWidget();
@@ -28,7 +30,7 @@ class _MultiTiletteTileShareDetailWidget
   late bool? isLoading;
   TilerError? tilerError;
   late bool? isTileListLoading;
-  List<DesignatedTile>? designatedTileList = null;
+  List<TileShareTemplate>? tileShareTemplateList = null;
   final rowSpacer = SizedBox.square(
     dimension: 8,
   );
@@ -75,14 +77,14 @@ class _MultiTiletteTileShareDetailWidget
       });
 
       clusterApi
-          .getDesignatedTiles(clusterId: this.widget.tileShareClusterData.id)
+          .getTileShareTemplates(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
         setState(() {
-          Utility.debugPrint("Success getting tileShare list ");
+          Utility.debugPrint("Success getting tileShareTemplate list ");
           tilerError = null;
-          designatedTileList = value;
-          Utility.debugPrint("Success getting tileShare list " +
-              designatedTileList.toString());
+          tileShareTemplateList = value;
+          Utility.debugPrint("Success getting tileShareTemplate list " +
+              tileShareTemplateList.toString());
           isTileListLoading = false;
         });
       }).catchError((onError) {
@@ -180,29 +182,7 @@ class _MultiTiletteTileShareDetailWidget
                       (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
                       style: TileStyles.defaultTextStyle)
                 ],
-              ),
-            verticalSpacer,
-            Container(
-              height: 50,
-              child: ListView(
-                controller: _contactControllerfinal,
-                children: [
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: [
-                      ...(cluster.contacts ?? [])
-                          .map((contact) => _buildContactPill(contact))
-                          .toList(),
-                    ],
-                  ),
-                  // ContactListView(
-                  //   contacts: cluster.contacts,
-                  // )
-                ],
-              ),
-            ),
-            verticalSpacer,
+              )
           ],
         ));
   }
@@ -239,7 +219,7 @@ class _MultiTiletteTileShareDetailWidget
                           newTile.toClusterTemplateTileModel();
                       clusterTemplate.ClusterId = tileShareCluster?.id;
                       clusterApi
-                          .createTileTemplate(clusterTemplate)
+                          .createDesignatedTileTemplate(clusterTemplate)
                           .then((value) {
                         getTileShareCluster();
                         setState(() {
@@ -317,9 +297,10 @@ class _MultiTiletteTileShareDetailWidget
                         ? heightOfTileClusterDetails
                         : MediaQuery.sizeOf(context).height -
                             heightOfTileClusterDetails,
-                    child: DesignatedTileList(
-                      designatedTiles:
-                          this.designatedTileList ?? <DesignatedTile>[],
+                    child: TileShareTemplateListWidget(
+                      isReadOnly: this.widget.isReadOnly,
+                      tileShareTemplates:
+                          this.tileShareTemplateList ?? <TileShareTemplate>[],
                     )),
               ),
             Divider(),

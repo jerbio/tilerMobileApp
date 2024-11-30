@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareList.dart';
 import 'package:tiler_app/styles.dart';
@@ -100,6 +99,7 @@ class _TileShareState extends State<TileShareRoute> {
           ),
         ),
         body: TabBarView(
+          physics: NeverScrollableScrollPhysics(),
           children: [
             TileShareList(
               key: outBoxKey,
@@ -107,6 +107,7 @@ class _TileShareState extends State<TileShareRoute> {
             ),
             TileShareList(
               key: inBoxKey,
+              isOutBox: false,
             )
           ],
         ),
