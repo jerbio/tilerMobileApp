@@ -24,30 +24,30 @@ class WhatIfApi extends AppApi {
     List<SubCalendarEvent> updatedSubCalEvents = [];
     print('externalParams');
     print(externalParams);
-
-    var queryParams = {
-      "Name": "Test tile",
-      "Count": "1",
-      "EndMinute": "59",
-      "EndHour": "23",
-      "isRestricted": "false",
-      "isEveryDay": "False",
-      // "DurationDays": "0",
-      // "DurationMinute": "0",
-      "NewTime": -1,
-      "User": {
-        "MobileApp": false,
-        "TimeZoneOffset": 0,
-        "TimeZone": "UTC",
-        "IsTimeZoneAdjusted": "false",
-        "getTimeSpan": "00:00:00"
-      },
-      "MobileApp": true,
-      "TimeZoneOffset": 0,
-      "TimeZone": "UTC",
-      "IsTimeZoneAdjusted": "false",
-      "getTimeSpan": "00:00:00"
-    };
+    var queryParams = {};
+    // var queryParams = {
+    //   "Name": "Test tile",
+    //   "Count": "1",
+    //   "EndMinute": "59",
+    //   "EndHour": "23",
+    //   "isRestricted": "false",
+    //   "isEveryDay": "False",
+    //   // "DurationDays": "0",
+    //   // "DurationMinute": "0",
+    //   "NewTime": -1,
+    //   "User": {
+    //     "MobileApp": false,
+    //     "TimeZoneOffset": 0,
+    //     "TimeZone": "UTC",
+    //     "IsTimeZoneAdjusted": "false",
+    //     "getTimeSpan": "00:00:00"
+    //   },
+    //   "MobileApp": true,
+    //   "TimeZoneOffset": 0,
+    //   "TimeZone": "UTC",
+    //   "IsTimeZoneAdjusted": "false",
+    //   "getTimeSpan": "00:00:00"
+    // };
 
     // Merge externalParams with queryParams
     queryParams.addAll(externalParams);
