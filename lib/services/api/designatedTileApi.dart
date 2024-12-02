@@ -1,7 +1,4 @@
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
-import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
