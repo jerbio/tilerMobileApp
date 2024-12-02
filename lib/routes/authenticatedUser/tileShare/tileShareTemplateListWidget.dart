@@ -4,6 +4,7 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/simpleTileShareTemplareWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateDetail.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareTemplateListWidget extends StatefulWidget {
@@ -134,6 +135,10 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
         itemCount: toBeRenderedElementCount,
         itemBuilder: (context, index) {
           if (index < tileShareTemplates.length) {
+            if (tileShareTemplates[index].id == null) {
+              return SizedBox.shrink();
+            }
+            String tileShareTemplateId = tileShareTemplates[index].id!;
             return InkWell(
               onTap: () {
                 Navigator.push(
@@ -146,9 +151,25 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                   getTileShareTemplates(resetList: true);
                 });
               },
-              child: TileShareTemplateSimpleWidget(
-                tileShareTemplate: tileShareTemplates[index],
-              ),
+              child: Dismissible(
+                  key: Key(tileShareTemplateId),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    padding: EdgeInsets.all(10),
+                    alignment: Alignment.centerRight,
+                    color: TileStyles.deletedBackgroundColor,
+                    child: Icon(
+                      Icons.delete,
+                      color: TileStyles.primaryContrastColor,
+                      size: 40,
+                    ),
+                  ),
+                  onDismissed: (direction) {
+                    tileClusterApi.deleteTileShareTemplate(tileShareTemplateId);
+                  },
+                  child: TileShareTemplateSimpleWidget(
+                    tileShareTemplate: tileShareTemplates[index],
+                  )),
             );
           }
           return renderPending();

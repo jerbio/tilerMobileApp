@@ -144,6 +144,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         Padding(
           padding: TileStyles.inpuPadding,
           child: ContactInputFieldWidget(
+              isReadOnly: false,
               contentHeight: this.contacts.isEmpty
                   ? 0
                   : this.contacts.length < 3
