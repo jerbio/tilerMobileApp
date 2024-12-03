@@ -7,29 +7,28 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/api/designatedTileApi.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class SingleTiletteTileShareDetailWidget extends StatefulWidget {
+class InboxMultiTiletteTileShareDetailWidget extends StatefulWidget {
   late final TileShareClusterData tileShareClusterData;
   bool isReadOnly;
-  SingleTiletteTileShareDetailWidget(
+  InboxMultiTiletteTileShareDetailWidget(
       {required this.tileShareClusterData, this.isReadOnly = true});
-
   @override
-  _SingleTiletteTileShareDetailWidget createState() =>
-      _SingleTiletteTileShareDetailWidget();
+  _InboxMultiTiletteTileShareDetailWidget createState() =>
+      _InboxMultiTiletteTileShareDetailWidget();
 }
 
-class _SingleTiletteTileShareDetailWidget
-    extends State<SingleTiletteTileShareDetailWidget> {
+class _InboxMultiTiletteTileShareDetailWidget
+    extends State<InboxMultiTiletteTileShareDetailWidget> {
   final TileShareClusterApi clusterApi = TileShareClusterApi();
-  final DesignatedTileApi designatedTileApi = DesignatedTileApi();
-  late TileShareClusterData tileShareCluster;
+  TileShareClusterData? tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
   late bool? isTileListLoading;
@@ -39,17 +38,17 @@ class _SingleTiletteTileShareDetailWidget
   );
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
-  late List<Contact> contacts;
+  ScrollController _contactControllerfinal = ScrollController();
 
   @override
   void initState() {
     super.initState();
     isTileListLoading = false;
-    isLoading = false;
-    tileShareCluster = this.widget.tileShareClusterData;
-    isLoading = true;
-    getTileShareCluster();
-    contacts = this.tileShareCluster.contacts ?? [];
+    if (this.widget.tileShareClusterData != null) {
+      tileShareCluster = this.widget.tileShareClusterData;
+      isLoading = true;
+      getTileShareCluster();
+    }
   }
 
   Future getTileShareCluster() async {
@@ -59,21 +58,12 @@ class _SingleTiletteTileShareDetailWidget
       clusterApi
           .getTileShareClusters(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
-        if (value.isNotEmpty) {
-          Utility.debugPrint("Success getting tile cluster");
-          setState(() {
-            tilerError = null;
-            tileShareCluster = value.firstOrNull!;
-            isLoading = false;
-            contacts = value.first.contacts ?? [];
-          });
-        } else {
-          setState(() {
-            tilerError = TilerError(
-                message:
-                    AppLocalizations.of(context)!.failedToLoadTileShareCluster);
-          });
-        }
+        Utility.debugPrint("Success getting tile cluster");
+        setState(() {
+          tilerError = null;
+          tileShareCluster = value.firstOrNull;
+          isLoading = false;
+        });
       }).catchError((onError) {
         Utility.debugPrint("Failed to get tile cluster");
         setState(() {
@@ -92,14 +82,15 @@ class _SingleTiletteTileShareDetailWidget
           .getDesignatedTiles(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
         setState(() {
-          Utility.debugPrint(
-              "Success getting tileShare list - Single tilette  ");
+          Utility.debugPrint("Success getting tileShare list ");
           tilerError = null;
           designatedTileList = value;
+          Utility.debugPrint("Success getting tileShare list " +
+              designatedTileList.toString());
           isTileListLoading = false;
         });
       }).catchError((onError) {
-        Utility.debugPrint("Error getting tileShare list - Single tilette ");
+        Utility.debugPrint("Error getting tileShare list ");
         setState(() {
           if (onError is TilerError) {
             tilerError = onError;
@@ -195,9 +186,27 @@ class _SingleTiletteTileShareDetailWidget
                 ],
               ),
             verticalSpacer,
-            Expanded(
-              child: addContacts(),
-            )
+            Container(
+              height: 50,
+              child: ListView(
+                controller: _contactControllerfinal,
+                children: [
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      ...(cluster.contacts ?? [])
+                          .map((contact) => _buildContactPill(contact))
+                          .toList(),
+                    ],
+                  ),
+                  // ContactListView(
+                  //   contacts: cluster.contacts,
+                  // )
+                ],
+              ),
+            ),
+            verticalSpacer,
           ],
         ));
   }
@@ -206,7 +215,9 @@ class _SingleTiletteTileShareDetailWidget
     return CircularProgressIndicator();
   }
 
-  void renderModal() {
+  void renderModal(
+      // {NewTile? currentTile}
+      ) {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
@@ -279,70 +290,9 @@ class _SingleTiletteTileShareDetailWidget
         label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
-  Widget addContacts() {
-    return ContactListView(
-      isReadOnly: this.widget.isReadOnly,
-      contacts: (contacts).toList(),
-      onContactListUpdate: (List<Contact> updatedContacts) {
-        Set<Contact> newContacts = Set();
-        Set<Contact> removedContacts = Set();
-        updatedContacts.forEach((eachContact) {
-          if (!contacts
-                  .where((element) =>
-                      element.phoneNumber.isNot_NullEmptyOrWhiteSpace())
-                  .any((element) =>
-                      element.phoneNumber == eachContact.phoneNumber) &&
-              !contacts
-                  .where(
-                      (element) => element.email.isNot_NullEmptyOrWhiteSpace())
-                  .any((element) => element.email == eachContact.email)) {
-            newContacts.add(eachContact);
-          }
-        });
-
-        contacts.forEach((eachContact) {
-          if (!updatedContacts
-                  .where((element) =>
-                      element.phoneNumber.isNot_NullEmptyOrWhiteSpace())
-                  .any((element) =>
-                      element.phoneNumber == eachContact.phoneNumber) &&
-              !updatedContacts
-                  .where(
-                      (element) => element.email.isNot_NullEmptyOrWhiteSpace())
-                  .any((element) => element.email == eachContact.email)) {
-            removedContacts.add(eachContact);
-          }
-        });
-
-        if (this.designatedTileList?.firstOrNull != null &&
-            this.designatedTileList!.first.tileTemplate != null) {
-          for (var newContact in newContacts) {
-            if (this
-                .designatedTileList!
-                .first
-                .tileTemplate!
-                .id
-                .isNot_NullEmptyOrWhiteSpace()) {
-              designatedTileApi.addContact(
-                  this.designatedTileList!.first.tileTemplate!.id!,
-                  newContact.toContactModel());
-            }
-          }
-          for (var deletedContact in removedContacts) {
-            designatedTileApi.deleteContact(this.designatedTileList!.first.id!,
-                deletedContact.toContactModel());
-          }
-        }
-
-        setState(() {
-          contacts = updatedContacts.toList();
-        });
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    const double heightOfTileClusterDetails = 400;
     Widget? widgetContent = SizedBox.shrink();
     if (this.tilerError != null) {
       widgetContent = Center(child: renderError());
@@ -353,9 +303,34 @@ class _SingleTiletteTileShareDetailWidget
     } else {
       widgetContent = Padding(
         padding: const EdgeInsets.all(4.0),
-        child: Container(
-          height: MediaQuery.sizeOf(context).height,
-          child: renderTileShareCluster(),
+        child: Flex(
+          direction: Axis.vertical,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            renderTileShareCluster(),
+            Divider(),
+            if (this.isTileListLoading == true)
+              CircularProgressIndicator()
+            else
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                child: SizedBox(
+                    width: MediaQuery.sizeOf(context).width,
+                    height: MediaQuery.sizeOf(context).height <
+                            heightOfTileClusterDetails
+                        ? heightOfTileClusterDetails
+                        : MediaQuery.sizeOf(context).height -
+                            heightOfTileClusterDetails,
+                    child: DesignatedTileList(
+                      designatedTiles:
+                          this.designatedTileList ?? <DesignatedTile>[],
+                    )),
+              ),
+            Divider(),
+            Center(
+              child: addTileShare(),
+            ),
+          ],
         ),
       );
     }
@@ -372,16 +347,16 @@ class _SingleTiletteTileShareDetailWidget
               color: TileStyles.appBarTextColor,
             ),
           ),
-          title: this.tileShareCluster.name != null
+          title: this.tileShareCluster?.name != null
               ? Text(
-                  this.tileShareCluster.name ??
+                  this.tileShareCluster?.name ??
                       AppLocalizations.of(context)!.tileShare,
                   style: TileStyles.titleBarStyle,
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (this.tileShareCluster.name == null)
+                    if (this.tileShareCluster?.name == null)
                       Icon(
                         Icons.share,
                         color: TileStyles.appBarTextColor,
@@ -392,7 +367,7 @@ class _SingleTiletteTileShareDetailWidget
                       dimension: 5,
                     ),
                     Text(
-                      this.tileShareCluster.name ??
+                      this.tileShareCluster?.name ??
                           AppLocalizations.of(context)!.tileShare,
                       style: TileStyles.titleBarStyle,
                     )

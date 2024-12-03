@@ -4,9 +4,7 @@ import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
-import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 
@@ -36,7 +34,7 @@ class DesignatedTileApi extends AppApi {
             includeLocationParams: false);
         Utility.debugPrint("injectRequestParams Designated Tile Template api" +
             contactUpdate.toString());
-        Uri uri = Uri.https(url, 'api/DesignatedTile/contact');
+        Uri uri = Uri.https(url, 'api/TileshareTemplate/contact');
         var header = this.getHeaders();
         Utility.debugPrint(
             "headers Tilecluster api" + contactUpdate.toString());

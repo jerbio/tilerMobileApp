@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 
@@ -58,7 +59,7 @@ class TileShareClusterApi extends AppApi {
     throw error;
   }
 
-  Future<DesignatedTile> createTileTemplate(
+  Future<DesignatedTile> createDesignatedTileTemplate(
       ClusterTemplateTileModel templateTileModel) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";
@@ -141,6 +142,8 @@ class TileShareClusterApi extends AppApi {
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
+            Utility.debugPrint("We have a result");
+            print(jsonResult);
             if (jsonResult['Content'].containsKey('designatedTiles')) {
               List designatedTilesJson =
                   jsonResult['Content']['designatedTiles'];
@@ -148,7 +151,59 @@ class TileShareClusterApi extends AppApi {
                   .where((element) => element != null)
                   .map<DesignatedTile>((e) => DesignatedTile.fromJson(e))
                   .toList();
+              print("jsonParseComplete");
+              print(designatedTiles);
+
               return designatedTiles;
+            }
+          }
+        }
+        throw TilerError(
+            message: 'Tiler disagrees with you, please try again later');
+      }
+    }
+    throw TilerError(
+        message: 'Tiler disagrees with you, please try again later');
+  }
+
+  Future<List<TileShareTemplate>> getTileShareTemplates(
+      {String? tileShareTemplateId, String? clusterId}) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        final queryParameters = {
+          'Id': tileShareTemplateId,
+          'TileShareClusterId': clusterId
+        };
+
+        Uri uri = Uri.https(url, 'api/TileshareTemplate', queryParameters);
+
+        var header = this.getHeaders();
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+
+        var response = await http.get(uri, headers: header);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            if (jsonResult['Content'].containsKey('tileShareTemplates')) {
+              List designatedTilesJson =
+                  jsonResult['Content']['tileShareTemplates'];
+              List<TileShareTemplate> designatedTiles = designatedTilesJson
+                  .where((element) => element != null)
+                  .map<TileShareTemplate>((e) => TileShareTemplate.fromJson(e))
+                  .toList();
+              return designatedTiles;
+            }
+
+            if (jsonResult['Content'].containsKey('tileShareTemplate')) {
+              return [
+                TileShareTemplate.fromJson(
+                    jsonResult['Content']['tileShareTemplate'])
+              ];
             }
           }
         }
@@ -272,6 +327,49 @@ class TileShareClusterApi extends AppApi {
             }
             return null;
           }
+        }
+        if (isTilerRequestError(jsonResult)) {
+          var errorJson = jsonResult['Error'];
+          error = TilerError.fromJson(errorJson);
+          throw FormatException(error.message!);
+        } else {
+          error.message = "Issues with reaching Tiler servers";
+        }
+      }
+    }
+    throw error;
+  }
+
+  Future deleteCluster(String clusterId) async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
+    if (userIsAuthenticated) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        final deleteclusterUpdate = {'ClusterId': clusterId};
+
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
+            deleteclusterUpdate,
+            includeLocationParams: false);
+
+        Uri uri = Uri.https(url, 'api/TileShareCluster');
+        var header = this.getHeaders();
+
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+        var response = await http.delete(uri,
+            headers: header, body: jsonEncode(injectedParameters));
+
+        var jsonResult = jsonDecode(response.body);
+        error.message = "Issues with reaching Tiler servers";
+        if (isJsonResponseOk(jsonResult)) {
+          return;
         }
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];

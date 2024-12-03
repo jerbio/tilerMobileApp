@@ -286,6 +286,27 @@
             "example": "Error: Message"
           }
         }},
+    "unScheduledTiles": "Unscheduled Tiles",
+    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
+    "@numberOfUnScheduledTiles": {
+      "description": "Number of Unscheduled Tiles",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Unscheduled Tiles"
+        }
+      }
+    },
+    "numberOfMoreUsers": "+{number} more",
+    "@numberOfMoreUsers": {
+      "description": "Number of more users",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "+5 more"
+        }
+      }
+    },
     "unScheduled": "Unscheduled",
     "allScheduled": "All Scheduled",
     "getOnIt": "Get on it",
