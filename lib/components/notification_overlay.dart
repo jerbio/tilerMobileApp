@@ -65,7 +65,8 @@ class _NotificationOverlayWidget extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _NotificationOverlayWidgetState createState() => _NotificationOverlayWidgetState();
+  _NotificationOverlayWidgetState createState() =>
+      _NotificationOverlayWidgetState();
 }
 
 class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
@@ -83,7 +84,8 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
     );
 
     // Define the opacity animation
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(_animationController);
+    _opacityAnimation =
+        Tween<double>(begin: 1.0, end: 0.0).animate(_animationController);
 
     // Start the fade-out animation after a delay
     Future.delayed(Duration(milliseconds: 2500), () {
@@ -122,67 +124,127 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
       child: Material(
         color: Colors.transparent,
         child: FadeTransition(
-          opacity: _opacityAnimation,
-          child: Container(
-            height: calculateSizeByHeight(58),
-            padding: const EdgeInsets.symmetric(
-              vertical: 10.0,
-              horizontal: 20.0,
-            ),
-            decoration: BoxDecoration(
-              color: _getNotificationColor(widget.messageType),
-              border: Border.all(
-                color: _getNotificationBorderColor(widget.messageType),
-                width: height / (height / 1),
+            opacity: _opacityAnimation,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                vertical: calculateSizeByHeight(10),
+                horizontal: calculateSizeByHeight(20),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      height: height / (height / 20),
-                      width: height / (height / 20),
-                      margin: EdgeInsets.only(right: height / (height / 10)),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _getNotificationBorderColor(widget.messageType),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          _getNotificationIconData(widget.messageType),
-                          size: height / (height / 10),
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      widget.message,
-                      style: TextStyle(
-                          color: _getNotificationBorderColor(widget.messageType),
-                          fontFamily: TileStyles.rubikFontName),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+              decoration: BoxDecoration(
+                color: _getNotificationColor(widget.messageType),
+                border: Border.all(
+                  color: _getNotificationBorderColor(widget.messageType),
+                  width: height / (height / 1),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    // Remove the overlay immediately when the close icon is tapped
-                    widget.onDismiss();
-                  },
-                  child: Icon(
-                    Icons.close,
-                    color: _getNotificationBorderColor(widget.messageType),
-                    size: calculateSizeByHeight(20),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: calculateSizeByHeight(20),
+                    width: calculateSizeByHeight(20),
+                    margin: EdgeInsets.only(right: calculateSizeByHeight(10)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _getNotificationBorderColor(widget.messageType),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        _getNotificationIconData(widget.messageType),
+                        size: calculateSizeByHeight(10),
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                )
-              ],
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          EdgeInsets.only(right: calculateSizeByHeight(10)),
+                      child: Text(
+                        widget.message,
+                        style: TextStyle(
+                          color:
+                              _getNotificationBorderColor(widget.messageType),
+                          fontFamily: TileStyles.rubikFontName,
+                        ),
+                        softWrap: true,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: widget.onDismiss,
+                    child: Icon(
+                      Icons.close,
+                      color: _getNotificationBorderColor(widget.messageType),
+                      size: calculateSizeByHeight(20),
+                    ),
+                  ),
+                ],
+              ),
+            )
+            // child: Container(
+            //   height: calculateSizeByHeight(58),
+            //   padding: const EdgeInsets.symmetric(
+            //     vertical: 10.0,
+            //     horizontal: 20.0,
+            //   ),
+            //   decoration: BoxDecoration(
+            //     color: _getNotificationColor(widget.messageType),
+            //     border: Border.all(
+            //       color: _getNotificationBorderColor(widget.messageType),
+            //       width: height / (height / 1),
+            //     ),
+            //     borderRadius: BorderRadius.circular(12),
+            //   ),
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            //     crossAxisAlignment: CrossAxisAlignment.center,
+            //     children: [
+            //       Row(
+            //         children: [
+            //           Container(
+            //             height: height / (height / 20),
+            //             width: height / (height / 20),
+            //             margin: EdgeInsets.only(right: height / (height / 10)),
+            //             decoration: BoxDecoration(
+            //               shape: BoxShape.circle,
+            //               color: _getNotificationBorderColor(widget.messageType),
+            //             ),
+            //             child: Center(
+            //               child: Icon(
+            //                 _getNotificationIconData(widget.messageType),
+            //                 size: height / (height / 10),
+            //                 color: Colors.white,
+            //               ),
+            //             ),
+            //           ),
+            //           Text(
+            //             widget.message,
+            //             style: TextStyle(
+            //                 color: _getNotificationBorderColor(widget.messageType),
+            //                 fontFamily: TileStyles.rubikFontName),
+            //             textAlign: TextAlign.center,
+            //           ),
+            //         ],
+            //       ),
+            //       GestureDetector(
+            //         onTap: () {
+            //           // Remove the overlay immediately when the close icon is tapped
+            //           widget.onDismiss();
+            //         },
+            //         child: Icon(
+            //           Icons.close,
+            //           color: _getNotificationBorderColor(widget.messageType),
+            //           size: calculateSizeByHeight(20),
+            //         ),
+            //       )
+            //     ],
+            //   ),
+            // ),
             ),
-          ),
-        ),
       ),
     );
   }

@@ -36,7 +36,6 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-// import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -71,11 +70,11 @@ Future main() async {
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
-  // await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: ".env");
   if (!Constants.isDebug) {
-    // await Firebase.initializeApp(
-    //     // options: DefaultFirebaseOptions.currentPlatform,
-    //     );
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+        );
   }
   runApp(TilerApp());
 }
@@ -88,12 +87,11 @@ class TilerApp extends StatefulWidget {
 class _TilerAppState extends State<TilerApp> {
   bool isAuthenticated = false;
   Authentication? authentication;
-  // LocalizationService? localizationService;
   NotificationOverlayMessage? notificationOverlayMessage;
   OnBoardingApi? onBoardingApi;
   @override
   void initState() {
-     onBoardingApi = OnBoardingApi();
+    onBoardingApi = OnBoardingApi();
     notificationOverlayMessage = NotificationOverlayMessage();
     super.initState();
   }
@@ -250,8 +248,7 @@ class _TilerAppState extends State<TilerApp> {
                     context.read<ScheduleBloc>().add(LogInScheduleEvent());
                     AnalysticsSignal.send('LOGIN-VERIFIED');
                     retValue = FutureBuilder<bool>(
-                      future:
-                          Utility.checkOnboardingStatus(),
+                      future: Utility.checkOnboardingStatus(),
                       builder:
                           (context, AsyncSnapshot<bool> onboardingSnapshot) {
                         if (onboardingSnapshot.connectionState ==
