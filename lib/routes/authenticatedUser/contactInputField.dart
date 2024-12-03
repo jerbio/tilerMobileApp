@@ -9,8 +9,12 @@ class ContactInputFieldWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactUpdate;
   final double? contentHeight;
+  final bool isReadOnly;
   ContactInputFieldWidget(
-      {this.onContactUpdate, this.contentHeight, this.contacts});
+      {this.onContactUpdate,
+      this.contentHeight,
+      this.contacts,
+      this.isReadOnly = true});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -67,11 +71,13 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   }
 
   void _removeContact(Contact contact) {
-    setState(() {
-      _contacts.remove(contact);
-    });
-    if (this.widget.onContactUpdate != null) {
-      this.widget.onContactUpdate!(_contacts);
+    if (!this.widget.isReadOnly) {
+      setState(() {
+        _contacts.remove(contact);
+      });
+      if (this.widget.onContactUpdate != null) {
+        this.widget.onContactUpdate!(_contacts);
+      }
     }
   }
 
@@ -100,7 +106,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
               ],
             ),
           ),
-          _buildTextField(),
+          if (!this.widget.isReadOnly) _buildTextField(),
         ],
       ),
     );
@@ -146,12 +152,14 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         color: TileStyles.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: Icon(
-        Icons.close,
-        color: TileStyles.primaryContrastColor,
-      ),
+      deleteIcon: this.widget.isReadOnly
+          ? null
+          : Icon(
+              Icons.close,
+              color: TileStyles.primaryContrastColor,
+            ),
       side: BorderSide.none,
-      onDeleted: () => _removeContact(contact),
+      onDeleted: this.widget.isReadOnly ? null : () => _removeContact(contact),
       backgroundColor: TileStyles.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );

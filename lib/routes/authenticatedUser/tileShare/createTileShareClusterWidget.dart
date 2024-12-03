@@ -61,7 +61,7 @@ class _CreateTileShareClusterWidgetState
 
   Future proceedRequest() {
     tileClusterData.contacts = contacts;
-    tileClusterData.tileTemplates = _tileTemplates;
+    tileClusterData.newTileTemplates = _tileTemplates;
     tileClusterData.endTimeInMs = this._endTime?.millisecondsSinceEpoch;
     tileClusterData.startTimeInMs = Utility.msCurrentTime;
     tileClusterData.isMultiTilette = this.isMultiTilette;

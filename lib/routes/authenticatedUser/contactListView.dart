@@ -31,12 +31,7 @@ class _ContactListViewState extends State<ContactListView> {
       children: [
         ContactInputFieldWidget(
           contacts: contacts,
-          // contentHeight: this.widget.contentHeight ??
-          //     (contacts.isEmpty
-          //         ? 0
-          //         : contacts.length < 3
-          //             ? 50
-          //             : 100),
+          isReadOnly: this.widget.isReadOnly,
           onContactUpdate: (List<Contact> updatedContacts) {
             setState(() {
               this.contacts = updatedContacts;
