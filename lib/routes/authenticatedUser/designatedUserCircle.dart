@@ -26,32 +26,35 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
   }
 
   Widget _subScriptWidget() {
+    const double top = 30;
     const double left = 35;
-    const double top = 25;
+
+    // this.widget.designatedUser.rsvpStatus = InvitationStatus.accepted;
+    this.widget.designatedUser.completionPercentage = 55;
     if (this.widget.designatedUser.completionPercentage != null) {
       double pct = this.widget.designatedUser.completionPercentage!;
       return Positioned(
-        top: 25,
-        left: 30,
+        top: 35,
+        left: 35,
         child: Container(
-          padding: EdgeInsets.all(2),
           alignment: Alignment.center,
-          height: 24,
-          width: 24,
-          child: Text(
-            "${pct.toInt()}%",
-            style: TextStyle(
-                fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
-                color: Colors.white),
-          ),
+          height: 17,
+          width: 30,
           decoration: BoxDecoration(
-            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 1),
+            borderRadius: BorderRadius.circular(5),
             color: pct > 65
                 ? Colors.green
                 : pct > 33
-                    ? Colors.amber
+                    ? Colors.orange
                     : TileStyles.primaryColor,
+          ),
+          child: Text(
+            "${pct.toInt()}%",
+            style: TextStyle(
+                fontSize: 10,
+                fontFamily: TileStyles.rubikFontName,
+                color: Colors.white),
           ),
         ),
       );
@@ -61,22 +64,42 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
       return Positioned(
         top: top,
         left: left,
-        child: Icon(
-          Icons.check,
-          color: Colors.green,
-          size: 20,
-          weight: 50,
+        child: Container(
+          padding: EdgeInsets.all(2),
+          alignment: Alignment.center,
+          height: 24,
+          width: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.lightGreen,
+          ),
+          child: Icon(
+            Icons.check,
+            color: Colors.white,
+            size: 20,
+            weight: 50,
+          ),
         ),
       );
     else if (this.widget.designatedUser.rsvpStatus == InvitationStatus.declined)
       return Positioned(
         top: top,
         left: left,
-        child: Icon(
-          Icons.dnd_forwardslash_outlined,
-          color: Colors.red,
-          size: 20,
-          weight: 50,
+        child: Container(
+          padding: EdgeInsets.all(2),
+          alignment: Alignment.center,
+          height: 24,
+          width: 24,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.redAccent,
+          ),
+          child: Icon(
+            Icons.dnd_forwardslash_outlined,
+            color: Colors.white,
+            size: 20,
+            weight: 50,
+          ),
         ),
       );
     else
@@ -96,8 +119,8 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
       Container(
           margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
           alignment: Alignment.center,
-          width: 50,
-          height: 50,
+          width: 55,
+          height: 55,
           decoration: this.widget.decoration ?? inActiveDecoration,
           child: Text(
               e.displayedIdentifier.isNot_NullEmptyOrWhiteSpace(minLength: 1)
