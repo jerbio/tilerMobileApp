@@ -7,8 +7,7 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/services/localizationService.dart';
 
 class OnBoardingApi extends AppApi {
-  final LocalizationService localizationService;
-  OnBoardingApi(this.localizationService);
+  OnBoardingApi();
   Future<OnboardingContent?> fetchOnboardingData() async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
@@ -19,18 +18,26 @@ class OnBoardingApi extends AppApi {
 
         var headers = this.getHeaders();
         if (headers == null) {
-          throw TilerError(message:localizationService.authenticationIssues);
+          throw TilerError(
+              message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
         print('Request headers: $headers');
         var response = await http.get(uri, headers: headers);
         print('Response from fetchOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
-        throw TilerError(message: localizationService.userIsNotAuthenticated);
+        throw TilerError(
+            message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception occurred in fetchOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
-      throw TilerError(message: e is TilerError?e.message:localizationService.errorOccurred);
+      print(
+          'Exception occurred in fetchOnboardingData: ${e is TilerError ? e.message : "Unknown error"}');
+      throw TilerError(
+          message: e is TilerError
+              ? e.message
+              : LocalizationService.instance.translations.errorOccurred);
     }
   }
 
@@ -44,18 +51,26 @@ class OnBoardingApi extends AppApi {
         Uri uri = Uri.https(Constants.tilerDomain, 'api/User/Onboarding');
         var headers = this.getHeaders();
         if (headers == null) {
-          throw TilerError(message: localizationService.authenticationIssues);
+          throw TilerError(
+              message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
         http.Response response = await http.post(uri,
             headers: headers, body: jsonEncode(requestParams));
         print('Response from sendOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
-        throw TilerError(message: localizationService.userIsNotAuthenticated);
+        throw TilerError(
+            message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception occurred in sendOnboardingData: ${e is TilerError?e.message:"Unknown error"}');
-      throw TilerError(message: e is TilerError?e.message:localizationService.errorOccurred);
+      print(
+          'Exception occurred in sendOnboardingData: ${e is TilerError ? e.message : "Unknown error"}');
+      throw TilerError(
+          message: e is TilerError
+              ? e.message
+              : LocalizationService.instance.translations.errorOccurred);
     }
   }
 
@@ -64,15 +79,19 @@ class OnBoardingApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (jsonResult.containsKey('Content')) {
         OnboardingContent onboardingContent =
-        OnboardingContent.fromJson(jsonResult['Content']);
+            OnboardingContent.fromJson(jsonResult['Content']);
         return onboardingContent;
       } else {
-        throw TilerError(message: localizationService.responseContentError);
+        throw TilerError(
+            message:
+                LocalizationService.instance.translations.responseContentError);
       }
-    } else if(response.statusCode==404){
-        return null;
-    }else {
-      throw TilerError(message: localizationService.responseHandlingError);
+    } else if (response.statusCode == 404) {
+      return null;
+    } else {
+      throw TilerError(
+          message:
+              LocalizationService.instance.translations.responseHandlingError);
     }
   }
 
@@ -87,4 +106,3 @@ class OnBoardingApi extends AppApi {
         (onboardingContent.workLocation?.address?.isNotEmpty ?? false);
   }
 }
-

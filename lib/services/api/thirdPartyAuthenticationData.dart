@@ -17,7 +17,7 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
   ThirdPartyAuthenticationData.initializedWithRestData(String accessToken,
       String tokenType, this.providerKey, int expirationTime, String provider)
       : super.initializedWithRestData(
-            accessToken, tokenType, expirationTime, provider);
+            accessToken, tokenType, expirationTime, provider,);
 
   ThirdPartyAuthenticationData.initializedWithLocalStorage(
       String accessToken,
@@ -55,11 +55,12 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
   }
 
   static Future<ThirdPartyAuthenticationData> getThirdPartyuthentication(
-      String accessToken,
-      String refreshToken,
-      String email,
-      String provider,
-      String providerKey) async {
+    String accessToken,
+    String refreshToken,
+    String email,
+    String provider,
+    String providerKey,
+  ) async {
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
     String timeZone = await FlutterTimezone.getLocalTimezone();
@@ -88,7 +89,8 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
           jsonResult['token_type'],
           providerKey,
           jsonResult['expires_in'],
-          provider);
+          provider,
+          );
       return retValue;
     } else {
       var jsonResult = jsonDecode(response.body);
