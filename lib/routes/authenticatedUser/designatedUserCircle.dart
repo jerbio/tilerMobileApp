@@ -29,8 +29,6 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
     const double top = 30;
     const double left = 35;
 
-    // this.widget.designatedUser.rsvpStatus = InvitationStatus.accepted;
-    this.widget.designatedUser.completionPercentage = 55;
     if (this.widget.designatedUser.completionPercentage != null) {
       double pct = this.widget.designatedUser.completionPercentage!;
       return Positioned(
@@ -43,14 +41,14 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(5),
-            color: pct > 65
+            color: pct > 66.66
                 ? Colors.green
-                : pct > 33
+                : pct > 33.33
                     ? Colors.orange
                     : TileStyles.primaryColor,
           ),
           child: Text(
-            "${pct.toInt()}%",
+            "${pct.round()}%",
             style: TextStyle(
                 fontSize: 10,
                 fontFamily: TileStyles.rubikFontName,
