@@ -18,14 +18,11 @@ import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-// import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
 import '../../styles.dart';
 import '../../util.dart';
-import 'AuthorizedRoute.dart';
-import 'onBoarding.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -115,7 +112,6 @@ class SignInComponentState extends State<SignInComponent>
   final authApi = AuthorizationApi();
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
-  // LocalizationService? localizationService;
 
   @override
   void initState() {
@@ -230,7 +226,6 @@ class SignInComponentState extends State<SignInComponent>
           AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
             hideButtonsTemporarily();
-            // showErrorMessage(authenticationData.errorMessage!);
             notificationOverlayMessage.showToast(
               context,
               authenticationData.errorMessage!,
@@ -261,7 +256,6 @@ class SignInComponentState extends State<SignInComponent>
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
                     : "",),
-            // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
         print(isValidSignIn);
@@ -274,8 +268,6 @@ class SignInComponentState extends State<SignInComponent>
             isPendingSigning = false;
           });
           hideButtonsTemporarily();
-          // showErrorMessage(
-          //     AppLocalizations.of(context)!.invalidUsernameOrPassword);
           notificationOverlayMessage.showToast(
             context,
             AppLocalizations.of(context)!.invalidUsernameOrPassword,
@@ -314,7 +306,6 @@ class SignInComponentState extends State<SignInComponent>
         if (!authenticationData.isValid) {
           if (authenticationData.errorMessage != null) {
             hideButtonsTemporarily();
-            // showErrorMessage(authenticationData.errorMessage!);
             notificationOverlayMessage.showToast(
               context,
               authenticationData.errorMessage!,
@@ -339,7 +330,6 @@ class SignInComponentState extends State<SignInComponent>
                         authenticationData.username!.isNotEmpty)
                     ? authenticationData.username!
                     : "",),
-            // nextPage ? AuthorizedRoute() : OnboardingView()
           ),
         );
 
@@ -350,8 +340,6 @@ class SignInComponentState extends State<SignInComponent>
         });
         if (TilerError.isUnexpectedCharacter(e)) {
           hideButtonsTemporarily();
-          // showErrorMessage(
-          //     AppLocalizations.of(context)!.issuesConnectingToTiler);
           notificationOverlayMessage.showToast(
             context,
             AppLocalizations.of(context)!.issuesConnectingToTiler,
@@ -378,7 +366,6 @@ class SignInComponentState extends State<SignInComponent>
         if (result.error.code == "0") {
           AnalysticsSignal.send('FORGOT_PASSWORD_SUCCESS');
           hideButtonsTemporarily();
-          // showMessage(result.error.message);
           notificationOverlayMessage.showToast(
             context,
             result.error.message,
@@ -392,7 +379,6 @@ class SignInComponentState extends State<SignInComponent>
         } else {
           AnalysticsSignal.send('FORGOT_PASSWORD_ERROR');
           hideButtonsTemporarily();
-          // showErrorMessage(result.error.message);
           notificationOverlayMessage.showToast(
             context,
             result.error.message,
@@ -402,7 +388,6 @@ class SignInComponentState extends State<SignInComponent>
       } catch (e) {
         AnalysticsSignal.send('FORGOT_PASSWORD_SERVER_ERROR');
         hideButtonsTemporarily();
-        // showErrorMessage("Error: $e");
         notificationOverlayMessage.showToast(
           context,
           "Error: $e",
@@ -513,7 +498,6 @@ class SignInComponentState extends State<SignInComponent>
       });
       AnalysticsSignal.send('GOOGLE_SIGNUP_FAILED');
       hideButtonsTemporarily();
-      // showErrorMessage(onError.message);
       notificationOverlayMessage.showToast(
         context,
         onError.message,
@@ -541,7 +525,6 @@ class SignInComponentState extends State<SignInComponent>
                         authenticationData.displayName.isNotEmpty)
                     ? authenticationData.displayName
                     : "",),
-            // nextPage ? AuthorizedRoute() : OnboardingView(),
           ),
         );
       }
@@ -700,25 +683,6 @@ class SignInComponentState extends State<SignInComponent>
             return AppLocalizations.of(context)!.passwordsDontMatch;
           }
 
-          // if (value.length < minPasswordLength) {
-          //   return AppLocalizations.of(context)!
-          //       .passwordNeedToBeAtLeastSevenCharacters;
-          // }
-          // if (!value.contains(RegExp(r'[A-Z]+'))) {
-          //   return AppLocalizations.of(context)!
-          //       .passwordNeedsToHaveUpperCaseChracters;
-          // }
-          // if (!value.contains(RegExp(r'[a-z]+'))) {
-          //   return AppLocalizations.of(context)!
-          //       .passwordNeedsToHaveLowerCaseChracters;
-          // }
-          // if (!value.contains(RegExp(r'[0-9]+'))) {
-          //   return AppLocalizations.of(context)!.passwordNeedsToHaveNumber;
-          // }
-          // if (!value.contains(RegExp(r'[^a-zA-Z0-9]'))) {
-          //   return AppLocalizations.of(context)!
-          //       .passwordNeedsToHaveASpecialCharacter;
-          // }
 
           if (value.length < minPasswordLength) {
             return "";
