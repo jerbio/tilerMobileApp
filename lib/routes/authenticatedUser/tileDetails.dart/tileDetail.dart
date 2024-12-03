@@ -26,6 +26,8 @@ class TileDetail extends StatefulWidget {
   final String tileId;
   final bool loadSubEvents;
   TileDetail({required this.tileId, this.loadSubEvents = true});
+  TileDetail.byDesignatedTileId(
+      {required this.tileId, this.loadSubEvents = true});
 
   @override
   State<StatefulWidget> createState() => _TileDetailState();
