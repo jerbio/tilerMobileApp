@@ -21,19 +21,15 @@ class DesignatedTile {
 
   DesignatedTile.fromJson(Map<String, dynamic> json) {
     id = '';
-    Utility.debugPrint(0.toString());
     if (json.containsKey('id')) {
       id = json['id'];
     }
-    Utility.debugPrint(2.toString());
     if (json.containsKey('name')) {
       name = json['name'];
     }
-    Utility.debugPrint(3.toString());
     if (json.containsKey('template') && json['template'] != null) {
       tileTemplate = TileShareTemplate.fromJson(json['template']);
     }
-    Utility.debugPrint(4.toString());
     if (json.containsKey('displayedIdentifier')) {
       displayedIdentifier = json['displayedIdentifier'];
     }

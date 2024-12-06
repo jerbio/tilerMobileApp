@@ -382,4 +382,46 @@ class TileShareClusterApi extends AppApi {
     }
     throw error;
   }
+
+  Future deleteTileShareTemplate(String tileShareTemplateId) async {
+    TilerError error = new TilerError();
+    error.message = "Did not send request";
+    bool userIsAuthenticated = true;
+    userIsAuthenticated =
+        (await this.authentication.isUserAuthenticated()).item1;
+    if (userIsAuthenticated) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        final contactUpdate = {'Id': tileShareTemplateId};
+        Map<String, dynamic> injectedParameters = await injectRequestParams(
+            contactUpdate,
+            includeLocationParams: false);
+        Uri uri = Uri.https(url, 'api/TileshareTemplate');
+        var header = this.getHeaders();
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+        var response = await http.delete(uri,
+            headers: header, body: jsonEncode(injectedParameters));
+
+        var jsonResult = jsonDecode(response.body);
+        error.message = "Issues with reaching Tiler servers";
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            return;
+          }
+        }
+        if (isTilerRequestError(jsonResult)) {
+          var errorJson = jsonResult['Error'];
+          error = TilerError.fromJson(errorJson);
+          throw FormatException(error.message!);
+        } else {
+          error.message = "Issues with reaching Tiler servers";
+        }
+      }
+    }
+    throw error;
+  }
 }

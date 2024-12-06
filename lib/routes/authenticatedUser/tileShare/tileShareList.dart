@@ -165,7 +165,7 @@ class _TileShareListState extends State<TileShareList> {
                 background: Container(
                   padding: EdgeInsets.all(10),
                   alignment: Alignment.centerRight,
-                  color: Colors.redAccent,
+                  color: TileStyles.deletedBackgroundColor,
                   child: Icon(
                     Icons.delete,
                     color: TileStyles.primaryContrastColor,

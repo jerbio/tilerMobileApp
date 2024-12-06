@@ -36,6 +36,7 @@ class TileStyles {
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
+  static const Color deletedBackgroundColor = Colors.red;
   static ButtonStyle disabledButtonStyle = ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith((states) {
       return Color.fromRGBO(154, 158, 159, 1);
@@ -325,4 +326,17 @@ class TileStyles {
         const Radius.circular(10.0),
       ),
       color: TileStyles.primaryColor);
+  static const List<Color> randomDefaultHues = [
+    Color.fromRGBO(239, 131, 84, 1),
+    Color.fromRGBO(79, 93, 117, 1),
+    Color.fromRGBO(239, 176, 167, 1),
+    Color.fromRGBO(148, 168, 154, 1),
+    Color.fromRGBO(23, 190, 187, 1),
+    Color.fromRGBO(205, 83, 52, 1),
+    Color.fromRGBO(237, 184, 139, 1),
+    Color.fromRGBO(55, 114, 255, 1),
+    Color.fromRGBO(85, 40, 111, 1),
+    Color.fromRGBO(56, 174, 204, 1),
+    Color.fromRGBO(102, 195, 84, 1)
+  ];
 }
