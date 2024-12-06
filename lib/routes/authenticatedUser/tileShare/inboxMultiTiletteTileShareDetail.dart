@@ -292,7 +292,7 @@ class _InboxMultiTiletteTileShareDetailWidget
 
   @override
   Widget build(BuildContext context) {
-    const double heightOfTileClusterDetails = 400;
+    const double heightOfTileClusterDetails = 319;
     Widget? widgetContent = SizedBox.shrink();
     if (this.tilerError != null) {
       widgetContent = Center(child: renderError());
@@ -325,11 +325,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                       designatedTiles:
                           this.designatedTileList ?? <DesignatedTile>[],
                     )),
-              ),
-            Divider(),
-            Center(
-              child: addTileShare(),
-            ),
+              )
           ],
         ),
       );

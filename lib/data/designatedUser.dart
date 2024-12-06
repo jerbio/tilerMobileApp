@@ -7,6 +7,7 @@ class DesignatedUser {
   String? id;
   String? displayedName;
   String? designatedTileTemplateId;
+  double? completionPercentage;
   InvitationStatus? rsvpStatus;
   UserProfile? userProfile;
 
@@ -30,6 +31,10 @@ class DesignatedUser {
 
     if (json.containsKey('rsvpStatus') && json['rsvpStatus'] != null) {
       rsvpStatus = DesignatedTile.stringToInvitationStatus(json['rsvpStatus']);
+    }
+
+    if (json.containsKey('completionPct') && json['completionPct'] != null) {
+      completionPercentage = json['completionPct'];
     }
   }
 
