@@ -317,15 +317,15 @@ class PlayBackState extends State<PlayBack> {
   procrastinate() async {
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     if (subTile.id != null && subTile.id!.isNotEmpty) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => TileProcrastinateRoute(
-                    tileId: subTile.id!,
-                    callBack: this.widget.callBack,
-                  )));
+      if(widget.isWeeklyView) Navigator.pop(context);
+        Navigator.of(context).push(
+           MaterialPageRoute(
+               builder: (context) =>
+                   TileProcrastinateRoute(
+                     tileId: subTile.id!,
+                     callBack: this.widget.callBack,
+                   )));
     }
-    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   @override

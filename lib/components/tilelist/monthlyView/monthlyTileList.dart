@@ -93,6 +93,7 @@ class _MonthlyTileListState extends TileListState  {
           selectedDateIndex < todayDayIndex
               ? PrecedingMonthlyTileBatch(
             dayIndex: selectedDateIndex,
+            tiles: tilesForDay,
             key: Key("monthly_$selectedDateIndex"),
           )
               : MonthlyTileBatch(
@@ -146,7 +147,7 @@ class _MonthlyTileListState extends TileListState  {
           );
         },
         child: Container(
-          margin: EdgeInsets.only(top: 150, right: 10, left: 10),
+          margin: EdgeInsets.only(top: 150, right: 5, left: 5),
           child:RefreshIndicator(
             onRefresh: handleRefresh,
             child: CustomScrollView(
@@ -168,6 +169,7 @@ class _MonthlyTileListState extends TileListState  {
 
   @override
   Widget build(BuildContext context) {
+
     return MultiBlocListener(
       listeners: [
         BlocListener<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
@@ -175,6 +177,7 @@ class _MonthlyTileListState extends TileListState  {
             previous.selectedDate != current.selectedDate,
             listener: (context, state) {
               reloadSchedule(dateManageSelectedMonth: state.selectedDate);
+              isInitialLoad=true;
             }
         ),
         BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
@@ -186,13 +189,10 @@ class _MonthlyTileListState extends TileListState  {
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           final summaryState = context.watch<ScheduleSummaryBloc>().state;
-
-          if(summaryState is ScheduleDaySummaryLoading &&
-              !isAutoRefresh &&
-              !isManualRefreshed) {
-            isManualRefreshed = false;
+          if(summaryState is ScheduleDaySummaryLoading && isInitialLoad ) {
             return renderPending();
           }
+          isInitialLoad=false;
 
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(

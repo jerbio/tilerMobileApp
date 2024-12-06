@@ -33,8 +33,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
   final Duration autoRefreshDuration = const Duration(minutes: 5);
   StreamSubscription? autoRefreshList;
   late final LocalNotificationService localNotificationService;
-  bool isAutoRefresh = false;
-  bool isManualRefreshed=false;
+  bool isInitialLoad=true;
   AnimationController? swipingAnimationController;
   Animation<double>? swipingAnimation;
   int swipeDirection = 0;
@@ -68,7 +67,6 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
   }
 
   void autoRefreshTileList(Duration duration) {
-    isAutoRefresh = true;
     Future onTileExpiredCallBack = Future.delayed(duration,callScheduleRefresh);
     // ignore: cancel_subscriptions
     autoRefreshList = onTileExpiredCallBack.asStream().listen((_) {});
@@ -87,7 +85,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
           previousTimeline: currentState.lookupTimeline,
         ));
         lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline,isTriggeredByAutoRefresh: true);
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
       }
 
       if (currentState is ScheduleLoadedState) {
@@ -98,7 +96,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
           previousTimeline: currentState.lookupTimeline,
         ));
         lookupTimeline = currentState.lookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline,isTriggeredByAutoRefresh: true);
+        refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
       }
 
       if (currentState is ScheduleLoadingState) {
@@ -109,7 +107,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
           previousTimeline: currentState.previousLookupTimeline,
         ));
         lookupTimeline = currentState.previousLookupTimeline;
-        refreshScheduleSummary(lookupTimeline: currentState.previousLookupTimeline,isTriggeredByAutoRefresh: true);
+        refreshScheduleSummary(lookupTimeline: currentState.previousLookupTimeline);
       }
       final currentScheduleSummaryState =
           this.context.read<ScheduleSummaryBloc>().state;
@@ -130,9 +128,7 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
         ));
   }
 
-  void refreshScheduleSummary({Timeline? lookupTimeline,isTriggeredByAutoRefresh=false}) {
-    if(!isTriggeredByAutoRefresh)
-      isAutoRefresh =false;
+  void refreshScheduleSummary({Timeline? lookupTimeline}){
     final currentScheduleSummaryState =
         this.context.read<ScheduleSummaryBloc>().state;
 
@@ -147,7 +143,6 @@ abstract class TileListState<T extends TileList> extends State<T> with TickerPro
   }
 
   Future<void> handleRefresh() async {
-    isManualRefreshed=true;
     final currentState = this.context
         .read<ScheduleBloc>()
         .state;
