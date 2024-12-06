@@ -189,6 +189,8 @@ class TileStyles {
   static const String rubikFontName = 'Rubik';
   static Color defaultTextColor = Color.fromRGBO(31, 31, 31, 1);
   static Color lateTextColor = Color.fromRGBO(209, 24, 25, 1);
+  static TextStyle daySummaryStyle = const TextStyle(
+      fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
   static TextStyle fullScreenTextFieldStyle = TextStyle(
       color: defaultTextColor,
       fontSize: textFontSize,

@@ -141,6 +141,16 @@ class Utility {
     return lastWeek.last;
   }
 
+  static String splittingEmoji(String emojis){
+    String emojiString="";
+    if (emojis!.contains(':')) {
+      emojiString = emojis!.split(':')[1].trim();
+    } else {
+      emojiString = emojis!..trim();;
+    }
+    return emojiString;
+  }
+
   static bool isDateWithinPickerRange(DateTime date) {
     final firstDay = getFirstDate();
     final lastDay = getLastDate();
