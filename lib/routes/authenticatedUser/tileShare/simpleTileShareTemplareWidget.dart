@@ -1,11 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
-import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:tiler_app/routes/authenticatedUser/userListView.dart';
+import 'package:tiler_app/routes/authenticatedUser/designatedUserCircle.dart';
 import 'package:tiler_app/styles.dart';
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileShareTemplateSimpleWidget extends StatefulWidget {
   final TileShareTemplate? tileShareTemplate;
@@ -24,10 +26,35 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
   final rowSpacer = SizedBox.square(
     dimension: 8,
   );
+  final int maxContactItems = 5;
   @override
   void initState() {
     super.initState();
     isReadOnly = this.widget.isReadOnly ?? true;
+  }
+
+  Widget generateUserCircles(List<DesignatedUser> designatedUsers) {
+    List<Widget> allCircleWidgets = [];
+    for (int i = 0; i < maxContactItems && i < designatedUsers.length; i++) {
+      allCircleWidgets.add(DesignatedUserCircle(
+        designatedUser: designatedUsers[i],
+        color: TileStyles
+            .randomDefaultHues[i % TileStyles.randomDefaultHues.length],
+      ));
+    }
+    return Row(
+      children: [
+        ...allCircleWidgets,
+        if (designatedUsers.length > maxContactItems)
+          Text(
+            AppLocalizations.of(context)!.numberOfMoreUsers(
+                (designatedUsers.length - maxContactItems).toString()),
+            style: TileStyles.defaultTextStyle,
+          )
+        else
+          SizedBox.shrink()
+      ],
+    );
   }
 
   @override
@@ -74,16 +101,12 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                   if (widget.tileShareTemplate != null &&
                       widget.tileShareTemplate?.designatedUsers != null &&
                       widget.tileShareTemplate!.designatedUsers!.isNotEmpty)
-                    UserListViewWidget(
-                      contacts: widget.tileShareTemplate!.designatedUsers!
-                          .map((e) => e.toContact())
-                          .where((element) => element != null)
-                          .map<Contact>((e) => e!)
-                          .toList(),
-                      // isReadOnly: true,
-                    )
-                  else
-                    SizedBox.shrink()
+                    generateUserCircles(
+                        widget.tileShareTemplate!.designatedUsers!),
+                  // isReadOnly: true,
+                  // ),
+                  // else
+                  //   SizedBox.shrink()
                 ],
               ),
               if (isReadOnly == false)
