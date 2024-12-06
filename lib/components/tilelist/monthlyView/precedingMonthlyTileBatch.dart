@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/monthlyDailyTile.dart';
 import 'package:tiler_app/components/tileUI/monthlyTile.dart';
@@ -10,8 +11,8 @@ import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class PrecedingMonthlyTileBatch extends TileBatch {
-  PrecedingMonthlyTileBatch({required int dayIndex, Key? key})
-      : super(dayIndex: dayIndex, key: key);
+  PrecedingMonthlyTileBatch({required int dayIndex,List<TilerEvent>? tiles, Key? key})
+      : super(dayIndex: dayIndex,tiles: tiles, key: key);
 
   @override
   TileBatchState createState() => _PrecedingMonthlyTileBatchState();
@@ -31,7 +32,7 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double calculatedWidth =( screenWidth * 0.136).floorToDouble();
+    double calculatedWidth = (screenWidth-10)/7-4;
     return BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
         builder: (context, state) {
           childrenColumnWidgets.clear();
@@ -60,6 +61,9 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
           List<TilerEvent> allEvents = [];
           if(dayData!.complete !=null) {
             allEvents.addAll(dayData!.complete!);
+          }
+          if (widget.tiles != null) {
+            allEvents.addAll(widget.tiles!);
           }
           allEvents.sort((a, b) => a.start!.compareTo(b.start!));
           if (allEvents.isNotEmpty) {
@@ -100,9 +104,22 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                               .viewInsets
                               .bottom),
                           child: Column(
-                            children: allEvents.toList().map((event) {
+                            children: [
+                              FractionallySizedBox(
+                                widthFactor: TileStyles.tileWidthRatio,
+                                child: Text(
+                                  DateFormat('d MMM yyyy')
+                                      .format(Utility.getTimeFromIndex(widget.dayIndex!)),
+                                  textAlign: TextAlign.left,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              ...allEvents.toList().map((event) {
                               return MonthlyDailyTile(event);
-                            }).toList(),
+                            }).toList(),]
                           ),
                         ),
                       ),
@@ -115,23 +132,18 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                 width:calculatedWidth,
                 height:195,
                 padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
+                margin: EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(220, 220, 220, 1),
+                  color: Color.fromRGBO(240, 240, 240, 1),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.white,
+                    color: Colors.green,
                     width: 2,
                   ),
                 ),
-                child: ColorFiltered(
-                  colorFilter: ColorFilter.mode(
-                    Color.fromRGBO(220, 220, 220,0.7) ,
-                    BlendMode.srcATop
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: childrenColumnWidgets
-                  ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: childrenColumnWidgets
                 ),
             ),
           );

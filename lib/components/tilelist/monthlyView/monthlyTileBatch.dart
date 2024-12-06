@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/monthlyDailyTile.dart';
 import 'package:tiler_app/components/tileUI/monthlyTile.dart';
@@ -74,7 +75,7 @@ class MonthlyTileBatchState extends TileBatchState {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double calculatedWidth =( screenWidth * 0.136).floorToDouble();
+    double calculatedWidth = (screenWidth-10)/7-4;
     renderedTiles.clear();
     var initialItems=[];
     if (widget.tiles != null) {
@@ -167,9 +168,23 @@ class MonthlyTileBatchState extends TileBatchState {
                         .viewInsets
                         .bottom),
                     child: Column(
-                      children: _list!.toList().map((event) {
+                      children:
+                      [
+                        FractionallySizedBox(
+                          widthFactor: TileStyles.tileWidthRatio,
+                          child: Text(
+                            DateFormat('d MMM yyyy')
+                                .format(Utility.getTimeFromIndex(widget.dayIndex!)),
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        ..._list!.toList().map((event) {
                         return MonthlyDailyTile(event);
-                      }).toList(),
+                      }).toList(),]
                     ),
                   ),
                 ),
@@ -185,6 +200,7 @@ class MonthlyTileBatchState extends TileBatchState {
         width:calculatedWidth,
         height:195,
         padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
+        margin: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: todayDayIndex==widget.dayIndex?TileStyles.primaryColor:Color.fromRGBO(240, 240, 240, 1),
           borderRadius: BorderRadius.circular(8),

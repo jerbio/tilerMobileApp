@@ -12,6 +12,8 @@ import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
+import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -72,34 +74,94 @@ class _WeeklyTileListState extends TileListState {
     refreshScheduleSummary(lookupTimeline: queryTimeline);
   }
 
+  Widget _buildDaySummaryIcon(int dayIndex) {
+    return BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
+      buildWhen: (previous, current) => current is ScheduleDaySummaryLoaded,
+      builder: (context, state) {
+        TimelineSummary dayData = (state is ScheduleDaySummaryLoaded)
+            ? state.dayData?.firstWhere(
+              (summary) => summary.dayIndex == dayIndex,
+          orElse: () => TimelineSummary(),
+        ) ?? TimelineSummary()
+            : TimelineSummary();
+        if ((dayData.nonViable?.length ?? 0) > 0) {
+          return GestureDetector(
+            onTap: (){
+              DateTime start = Utility.getTimeFromIndex(dayIndex);
+              DateTime end = Utility.getTimeFromIndex(dayIndex).endOfDay;
+              Timeline timeline = Timeline(
+                  start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SummaryPage(
+                        timeline: timeline,
+                      ),
+                  ),
+              );
+            },
+            child: Center(
+              child: Container(
+                child: Row(
+                  children: [
+                    Icon(
+                        Icons.error,
+                        color: Colors.redAccent,
+                        size: 20.0
+                    ),
+                    Text(
+                      (dayData.nonViable?.length ?? 0).toString(),
+                      style: TileStyles.daySummaryStyle.copyWith(fontSize: 20),
+                    )
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+        return SizedBox(height: 28);
+      },
+    );
+  }
+
   List<Widget> buildRows(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData){
     List<Widget> rowItems = [];
     List<DateTime> selectedWeek = context.read<WeeklyUiDateManagerBloc>().state.selectedWeek;
     int todayDayIndex = Utility.getDayIndex(DateTime.now());
     rowItems = selectedWeek.map<Widget>((selectedDate) {
       int selectedDateIndex = Utility.getDayIndex(selectedDate);
+      List<TilerEvent> tilesForDay = tileData!.item2
+          .where((tile) =>
+      Utility.getDayIndex(tile.startTime.dayDate) ==
+          selectedDateIndex)
+          .toList();
+
       if (selectedDateIndex < todayDayIndex) {
-        return PrecedingWeeklyTileBatch(
-          dayIndex: selectedDateIndex,
-          key: Key("weekly_" + selectedDateIndex.toString()),
+        return Column(
+          children: [
+            _buildDaySummaryIcon(selectedDateIndex!),
+            PrecedingWeeklyTileBatch(
+              dayIndex: selectedDateIndex,
+              tiles: tilesForDay,
+              key: Key("weekly_" + selectedDateIndex.toString()),
+            ),
+          ],
         );
       } else {
-        List<TilerEvent> tilesForDay;
-        if(todayDayIndex==selectedDateIndex) {
+        if (todayDayIndex == selectedDateIndex) {
           tilesForDay = tileData!.item2
               .where((tile) => todayTimeLine.isInterfering(tile))
               .toList();
-        }else {
-          tilesForDay = tileData!.item2
-              .where((tile) =>
-          Utility.getDayIndex(tile.startTime.dayDate) ==
-              selectedDateIndex)
-              .toList();
         }
-        return WeeklyTileBatch(
-          dayIndex: selectedDateIndex,
-          tiles: tilesForDay,
-          key: Key("weekly_" + selectedDateIndex.toString()),
+        return Column(
+          children: [
+            _buildDaySummaryIcon(selectedDateIndex!),
+            WeeklyTileBatch(
+              dayIndex: selectedDateIndex,
+              tiles: tilesForDay,
+              key: Key("weekly_" + selectedDateIndex.toString()),
+            ),
+          ],
         );
       }
     }).toList();
@@ -139,7 +201,7 @@ class _WeeklyTileListState extends TileListState {
           );
         },
         child: Container(
-          margin: EdgeInsets.only(top: 200, right: 10, left: 10),
+          margin: EdgeInsets.only(top: 200,right:5,left:5),
           child: RefreshIndicator(
             onRefresh: handleRefresh,
             child: ListView(
@@ -170,6 +232,7 @@ class _WeeklyTileListState extends TileListState {
             listenWhen: (previous, current) => !listEquals(previous.selectedWeek, current.selectedWeek),
             listener: (context, state) {
               reloadSchedule(dateManageSelectedWeek: state.selectedWeek);
+              isInitialLoad=true;
             }
         ),
         BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
@@ -180,14 +243,12 @@ class _WeeklyTileListState extends TileListState {
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
-          final summaryState = context.watch<ScheduleSummaryBloc>().state;
 
-          if(summaryState is ScheduleDaySummaryLoading &&
-              !isAutoRefresh &&
-              !isManualRefreshed) {
-            isManualRefreshed = false;
+          final summaryState = context.watch<ScheduleSummaryBloc>().state;
+          if(summaryState is ScheduleDaySummaryLoading && isInitialLoad ) {
             return renderPending();
           }
+          isInitialLoad=false;
 
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -196,6 +257,7 @@ class _WeeklyTileListState extends TileListState {
             refreshScheduleSummary(lookupTimeline: timeLine);
             return renderPending();
           }
+
           if (state is ScheduleLoadedState) {
             if (!(state is DelayedScheduleLoadedState)) {
               handleNotificationsAndNextTile(state.subEvents);
@@ -206,6 +268,7 @@ class _WeeklyTileListState extends TileListState {
               ],
             );
           }
+
           if (state is ScheduleLoadingState) {
             bool showPendingUI = !state.isAlreadyLoaded;
             if(state.currentView==AuthorizedRouteTileListPage.Weekly){
@@ -215,7 +278,6 @@ class _WeeklyTileListState extends TileListState {
             }
             if (showPendingUI ) {
               {
-                isManualRefreshed=false;
                 return renderPending();
               }
             }

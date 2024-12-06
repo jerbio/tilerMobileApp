@@ -7,11 +7,11 @@ class MonthlyRibbon extends StatelessWidget {
     final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+      margin: EdgeInsets.fromLTRB(16, 50, 16, 0),
       width: MediaQuery.of(context).size.width,
       height: 50,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: weekdays.map((day) => _buildDayText(day)).toList(),
       ),
     );

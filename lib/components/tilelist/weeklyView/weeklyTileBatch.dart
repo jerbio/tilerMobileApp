@@ -51,6 +51,7 @@ class WeeklyTileBatchState extends TileBatchState {
       sizeFactor: animation,
       child: Align(
           alignment: Alignment.topCenter, child: WeeklyTileWidget(subEvent: _list![index],onTap: () {
+        if(_list![index].name == null || _list![index].name!.isEmpty) return;
         _showBottomSheet(context, _list![index]);
       },)),
     );
@@ -59,7 +60,7 @@ class WeeklyTileBatchState extends TileBatchState {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double calculatedWidth =( screenWidth * 0.136).floorToDouble();
+    double calculatedWidth = (screenWidth-10)/7;
     renderedTiles.clear();
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
@@ -102,7 +103,6 @@ class WeeklyTileBatchState extends TileBatchState {
           removedItemBuilder: _buildRemovedItem,
         );
       }
-
       dayContent = Container(
         width: calculatedWidth,
         child: Column(
@@ -112,7 +112,7 @@ class WeeklyTileBatchState extends TileBatchState {
         ),
       );
     } else {
-      dayContent = Container(width: calculatedWidth);
+      dayContent = SizedBox(width: calculatedWidth);
     }
 
 
@@ -244,6 +244,7 @@ class WeeklyTileBatchState extends TileBatchState {
       }
     }
   }
+
   void _showBottomSheet(BuildContext context, TilerEvent event) {
     showModalBottomSheet(
       context: context,

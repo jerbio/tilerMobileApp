@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
 
 class MonthlyTileWidget extends StatefulWidget {
@@ -21,6 +22,11 @@ class MonthlyTileWidgetState extends State<MonthlyTileWidget> {
     int redColor = widget.subEvent.colorRed ?? 127;
     int greenColor = widget.subEvent.colorGreen ?? 127;
     int blueColor = widget.subEvent.colorBlue ?? 127;
+    String tileName = widget.subEvent.name == null || widget.subEvent.name!.isEmpty
+        ? ((widget.subEvent.isProcrastinate ?? false)
+        ? AppLocalizations.of(context)!.procrastinateBlockOut
+        : "")
+        : widget.subEvent.name!;
     return Container(
       width: calculatedWidth,
       margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
@@ -31,7 +37,7 @@ class MonthlyTileWidgetState extends State<MonthlyTileWidget> {
 
       padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 1),
       child: Text(
-        widget.subEvent.name!,
+        tileName,
         maxLines: 1,
         style: TextStyle(
           fontSize: 10,
