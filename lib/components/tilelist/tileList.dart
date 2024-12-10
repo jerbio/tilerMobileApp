@@ -405,7 +405,9 @@ class _TileListState extends State<TileList> {
               tiles = dayIndexToTileDict[dayIndex]!;
             }
             var allTiles = tiles.toList();
-            String headerString = Utility.getTimeFromIndex(dayIndex).humanDate;
+            String headerString =
+                Utility.getTimeFromIndex(dayIndex).humanDate(context);
+            ;
             Key key = Key(dayIndex.toString());
             TileBatch upcomingTileBatch = TileBatch(
                 header: headerString,
@@ -415,7 +417,9 @@ class _TileListState extends State<TileList> {
             upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
           }
         } else {
-          String dayBatchDate = Utility.getTimeFromIndex(dayIndex).humanDate;
+          String dayBatchDate =
+              Utility.getTimeFromIndex(dayIndex).humanDate(context);
+          ;
           if (!preceedingDayTilesDict.containsKey(dayIndex)) {
             var tiles = <TilerEvent>[];
             if (dayIndexToTileDict.containsKey(dayIndex)) {

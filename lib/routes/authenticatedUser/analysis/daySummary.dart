@@ -167,7 +167,8 @@ class _DaySummaryState extends State<DaySummary> {
           }
 
           Widget dayDateText = Container(
-            child: Text(Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
+            child: Text(
+                Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
                 style: TextStyle(
                     fontSize: 30,
                     fontFamily: TileStyles.rubikFontName,

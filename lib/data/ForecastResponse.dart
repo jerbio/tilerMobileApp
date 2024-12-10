@@ -1,4 +1,5 @@
 import 'package:tiler_app/data/calendarEvent.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/travelTimeAndDistance.dart';
 import 'package:tiler_app/util.dart';
 
@@ -65,23 +66,78 @@ class ForecastResponse {
 class PeekDay {
   double? duration;
   double? durationRatio;
-  int? dayIndex;
   double? sleepTime;
+  int? dayIndex;
+  int? _endTimeInMs;
+  bool? isOptimized;
+  double? travelTime;
+  double? travelDistance;
+  int? outHomeStart;
+  int? outHomeEnd;
+  int? unallocatedTime;
+  List<SubCalendarEvent>? subEvents;
 
-  PeekDay({
-    this.duration,
-    this.durationRatio,
-    this.dayIndex,
-    this.sleepTime,
-  });
+  PeekDay(
+      {this.duration,
+      this.durationRatio,
+      this.dayIndex,
+      this.sleepTime,
+      this.travelTime,
+      this.travelDistance,
+      int? endTime})
+      : _endTimeInMs = endTime;
 
   // fromJson factory constructor
   factory PeekDay.fromJson(Map<String, dynamic> json) {
-    return PeekDay(
-      duration: (json['duration'] as num?)?.toDouble(),
-      durationRatio: (json['durationRatio'] as num?)?.toDouble(),
-      dayIndex: json['dayIndex'] as int?,
-      sleepTime: (json['sleepTime'] as num?)?.toDouble(),
-    );
+    PeekDay peekDayInstance = PeekDay(
+        duration: (json['duration'] as num?)?.toDouble(),
+        durationRatio: (json['durationRatio'] as num?)?.toDouble(),
+        dayIndex: json['dayIndex'] as int?,
+        sleepTime: (json['sleepTime'] as num?)?.toDouble(),
+        travelTime: (json['travelTime'] as num?)?.toDouble(),
+        travelDistance: (json['distance'] as num?)?.toDouble(),
+        endTime: (json['endTime'] as num?)?.toInt());
+
+    String isOptimizedKey = "isOptimized";
+    if (json.containsKey(isOptimizedKey) && json[isOptimizedKey] != null) {
+      peekDayInstance.isOptimized = Utility.cast<bool>(json[isOptimizedKey])!;
+    }
+
+    String subEventKey = 'subEvents';
+    peekDayInstance.subEvents =
+        json[subEventKey] != null && json[subEventKey] is Iterable
+            ? (json[subEventKey] as Iterable)
+                .where((element) => element != null)
+                .map((e) => SubCalendarEvent.fromJson(e))
+                .toList()
+            : null;
+
+    String outsideHomeStartKey = 'outsideHomeStart';
+    if (json.containsKey(outsideHomeStartKey) &&
+        json[outsideHomeStartKey] != null) {
+      peekDayInstance.outHomeStart =
+          Utility.cast<int>(json[outsideHomeStartKey])!;
+    }
+
+    String outsideHomeEndKey = 'outsideHomeEnd';
+    if (json.containsKey(outsideHomeEndKey) &&
+        json[outsideHomeEndKey] != null) {
+      peekDayInstance.outHomeEnd = Utility.cast<int>(json[outsideHomeEndKey])!;
+    }
+
+    String unallocatedTimeKey = "unallocatedTime";
+    if (json.containsKey(unallocatedTimeKey) &&
+        json[unallocatedTimeKey] != null) {
+      peekDayInstance.unallocatedTime =
+          Utility.cast<double?>(json[unallocatedTimeKey])!.toInt();
+    }
+    return peekDayInstance;
+  }
+
+  DateTime? get endTime {
+    if (this._endTimeInMs != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this._endTimeInMs!);
+    }
+    return null;
   }
 }
