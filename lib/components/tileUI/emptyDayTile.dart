@@ -129,7 +129,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
         Container(
           height: (MediaQuery.of(context).size.height) * 0.80,
           width: (MediaQuery.of(context).size.width) * 0.80,
-          padding: EdgeInsets.all(20),
+          padding: EdgeInsets.all(15),
           child: Stack(
             children: [
               Center(

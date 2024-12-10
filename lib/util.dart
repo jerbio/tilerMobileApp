@@ -24,6 +24,7 @@ import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Utility {
   final List<String> months = [
@@ -39,6 +40,15 @@ class Utility {
     'October',
     'November',
     'December'
+  ];
+  final List<String> weekdays = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday"
   ];
   static final Faker _faker = Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
@@ -317,12 +327,12 @@ class Utility {
 
       String hourString = 'hours';
       if (abbreviations) {
-        hourString = 'hrs';
+        hourString = 'h';
       }
       if (hours == 1) {
         hourString = 'hour';
         if (abbreviations) {
-          hourString = 'hr';
+          hourString = 'h';
         }
       }
       stringArr.add('$hours $hourString');
@@ -335,12 +345,12 @@ class Utility {
 
       String minuteString = 'minutes';
       if (abbreviations) {
-        minuteString = 'mins';
+        minuteString = 'm';
       }
       if (minute == 1) {
         minuteString = 'minute';
         if (abbreviations) {
-          minuteString = 'min';
+          minuteString = 'm';
         }
       }
       stringArr.add('$minute $minuteString');
@@ -738,6 +748,26 @@ extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
     return this.weekday % Utility.daysInAweek;
   }
+
+  String tilerDayOfWeekName(BuildContext context) {
+    switch (this.tilerDayOfWeek) {
+      case 0:
+        return AppLocalizations.of(context)!.sunday;
+      case 1:
+        return AppLocalizations.of(context)!.monday;
+      case 2:
+        return AppLocalizations.of(context)!.tuesday;
+      case 3:
+        return AppLocalizations.of(context)!.wednesday;
+      case 4:
+        return AppLocalizations.of(context)!.thursday;
+      case 5:
+        return AppLocalizations.of(context)!.friday;
+      case 6:
+        return AppLocalizations.of(context)!.saturday;
+    }
+    return "";
+  }
 }
 
 extension DurationInMS on TimeOfDay {
@@ -788,14 +818,14 @@ extension DateTimeHuman on DateTime {
         this.microsecondsSinceEpoch < end.microsecondsSinceEpoch;
   }
 
-  String get humanDate {
+  String humanDate(BuildContext context) {
     String dayString = '';
     if (this.isToday) {
-      dayString = 'Today';
+      dayString = AppLocalizations.of(context)!.today;
     } else if (this.isYesterday) {
-      dayString = 'Yesterday';
+      dayString = AppLocalizations.of(context)!.yesterday;
     } else if (this.isTomorrow) {
-      dayString = 'Tomorrow';
+      dayString = AppLocalizations.of(context)!.tomorrow;
     } else {
       DateTime now = DateTime.now();
       bool isSameYear = now.year == this.year;
@@ -806,26 +836,6 @@ extension DateTimeHuman on DateTime {
       }
     }
 
-    return dayString;
-  }
-
-  String get dateDateWeek {
-    String dayString = '';
-    if (this.isToday) {
-      dayString = 'Today';
-    } else if (this.isYesterday) {
-      dayString = 'Yesterday';
-    } else if (this.isTomorrow) {
-      dayString = 'Tomorrow';
-    } else {
-      DateTime now = DateTime.now();
-      bool isSameYear = now.year == this.year;
-      if (isSameYear) {
-        dayString = DateFormat('d').format(this);
-      } else {
-        dayString = DateFormat('EEE, MMM d, ' 'yy').format(this);
-      }
-    }
     return dayString;
   }
 

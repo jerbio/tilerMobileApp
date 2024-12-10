@@ -422,6 +422,7 @@
         }
       }},
       "thisFitsInYourSchedule": "This fits in your schedule.",
+      "nonViableTimeSlot": "No viable timeslot",
       "warningColon": "Warning: ",
       "oneEventAtRisk": "1 event at risk",
       "countEventAtRisk": "{number} events at risk",
@@ -462,5 +463,21 @@
               "type": "String",
               "example": "+5 more"
             }
-          }}
+          }},
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "tomorrow": "Tomorrow",
+      "travel": "Travel",
+      "numberOfDayForecast": "{number}-day Forecast",
+      "@numberOfDayForecast": {
+          "description": "Number-day Forecast",
+          "placeholders": {
+            "number": {
+              "type": "String",
+              "example": "5-day Forecast"
+            }
+          }},
+      "knotDuration": "--",
+      "failedToGetPreview": "Failed to get preview",
+      "noDriving": "No driving"
   }

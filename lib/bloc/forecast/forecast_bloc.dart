@@ -88,15 +88,12 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
         "Duration": durInUtc.toString(),
       };
 
-      final val = await WhatIfApi().forecastNewTile(queryParams);
-      Utility.debugPrint('Data fetched: $val');
-
-      final isViable = val[0] as bool;
-      final subCalEvents = val[1] as List<SubCalendarEvent>;
+      final forecastResponse = await WhatIfApi().forecastNewTile(queryParams);
+      Utility.debugPrint('Data fetched: $forecastResponse');
 
       emit(ForecastLoaded(
-        isViable: isViable,
-        subCalEvents: subCalEvents,
+        isViable: forecastResponse.isViable ?? false,
+        foreCastResponse: forecastResponse,
         duration: duration,
         endTime: state.endTime,
       ));

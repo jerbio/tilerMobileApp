@@ -4,8 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/util.dart';
 
@@ -36,6 +38,31 @@ class ForecastView extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
+      bottomWidget: GestureDetector(
+        onTap: () {
+          Map<String, dynamic> newTileParams = {'newTile': null};
+          Navigator.pushNamed(context, '/AddTile', arguments: newTileParams);
+        },
+        child: Container(
+          width: width,
+          height: height / (height / 52),
+          decoration: BoxDecoration(
+            color: TileStyles.primaryColor,
+            borderRadius: BorderRadius.circular(height / (height / 6)),
+          ),
+          child: Center(
+            child: Text(
+              AppLocalizations.of(context)!.create,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontSize: height / (height / 15),
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
         title: Text(
@@ -96,17 +123,7 @@ class ForecastView extends StatelessWidget {
 
   Column RenderLoadedForecast(
       double height, BuildContext context, ForecastLoaded state, double width) {
-    List<SubCalendarEvent> subEvents = state.subCalEvents.toList();
-    Timeline todayTimeline = Utility.todayTimeline();
-    List<SubCalendarEvent> todaySubEvents = subEvents
-        .where((element) => element.isInterfering(todayTimeline))
-        .toList();
-    List<SubCalendarEvent> todayAtRiskSubEvents = todaySubEvents
-        .where((eachSubEvent) => eachSubEvent.isViable != true)
-        .toList();
-    List<SubCalendarEvent> todayLateSubEvents = todaySubEvents
-        .where((eachSubEvent) => eachSubEvent.isTardy == true)
-        .toList();
+    List<PeekDay> forecastDays = state.foreCastResponse.peekDays ?? [];
     return Column(
       children: [
         SizedBox(
@@ -129,204 +146,42 @@ class ForecastView extends StatelessWidget {
         SizedBox(
           height: height / (height / 10),
         ),
-        state.isViable
-            ? Column(
-                children: [
-                  Row(
-                    children: [
-                      AnalysisCheckState(
-                        height: height,
-                        isPass: true,
-                      ),
-                      SizedBox(
-                        width: height / (height / 10),
-                      ),
-                      Text(
-                        AppLocalizations.of(context)!.thisFitsInYourSchedule,
-                        style: TextStyle(
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.w400,
-                          fontSize: height / (height / 15),
-                          color: TileStyles.defaultTextColor,
-                        ),
-                      )
-                    ],
+        Column(
+          children: [
+            Row(
+              children: [
+                AnalysisCheckState(
+                  height: height,
+                  isWarning: state.foreCastResponse.isViable == false,
+                  isPass: state.foreCastResponse.isViable == true,
+                ),
+                SizedBox(
+                  width: height / (height / 10),
+                ),
+                Text(
+                  state.foreCastResponse.isViable == true
+                      ? AppLocalizations.of(context)!.thisFitsInYourSchedule
+                      : AppLocalizations.of(context)!.nonViableTimeSlot,
+                  style: TextStyle(
+                    fontFamily: TileStyles.rubikFontName,
+                    fontWeight: FontWeight.w400,
+                    fontSize: height / (height / 15),
+                    color: TileStyles.defaultTextColor,
                   ),
-                  SizedBox(
-                    height: height / (height / 20),
-                  ),
-                  state.subCalEvents.isNotEmpty
-                      ? Row(
-                          children: [
-                            AnalysisCheckState(
-                              height: height,
-                              isWarning: true,
-                            ),
-                            SizedBox(
-                              width: height / (height / 10),
-                            ),
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: AppLocalizations.of(context)!
-                                        .warningColon,
-                                    style: TextStyle(
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: height / (height / 15),
-                                      color: TileStyles.defaultTextColor,
-                                    ),
-                                  ),
-                                  TextSpan(
-                                    text: todayAtRiskSubEvents.length == 1
-                                        ? AppLocalizations.of(context)!
-                                            .oneEventAtRisk
-                                        : AppLocalizations.of(context)!
-                                            .countEventAtRisk(
-                                                todayAtRiskSubEvents.length
-                                                    .toString()),
-                                    style: TextStyle(
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w400,
-                                      fontSize: height / (height / 15),
-                                      color: TileStyles.defaultTextColor,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        )
-                      : SizedBox.shrink(),
-                  SizedBox(
-                    height: height / (height / 20),
-                  ),
-                  todayAtRiskSubEvents.isNotEmpty
-                      ? Column(
-                          children: todayAtRiskSubEvents.map((subEvent) {
-                            return TileSummary(subEvent);
-                          }).toList(),
-                        )
-                      : SizedBox.shrink(),
-                  SizedBox(
-                    height: height / (height / 20),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Map<String, dynamic> newTileParams = {'newTile': null};
-                      Navigator.pushNamed(context, '/AddTile',
-                          arguments: newTileParams);
-                    },
-                    child: Container(
-                      width: width,
-                      height: height / (height / 52),
-                      decoration: BoxDecoration(
-                        color: TileStyles.primaryColor,
-                        borderRadius:
-                            BorderRadius.circular(height / (height / 6)),
-                      ),
-                      child: Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.create,
-                          style: TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
-                            fontSize: height / (height / 15),
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 100,
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  Row(
-                    children: [
-                      AnalysisCheckState(
-                        height: height,
-                        isConflict: true,
-                      ),
-                      SizedBox(
-                        width: height / (height / 10),
-                      ),
-                      RichText(
-                        text: TextSpan(
-                          children: [
-                            TextSpan(
-                              text: AppLocalizations.of(context)!
-                                  .thisEventWouldCause,
-                              style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
-                                fontWeight: FontWeight.w400,
-                                fontSize: height / (height / 15),
-                                color: TileStyles.defaultTextColor,
-                              ),
-                            ),
-                            TextSpan(
-                              text: state.subCalEvents.length == 1
-                                  ? AppLocalizations.of(context)!.oneConflict
-                                  : AppLocalizations.of(context)!.countConflict(
-                                      state.subCalEvents.length.toString()),
-                              style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
-                                fontWeight: FontWeight.w500,
-                                fontSize: height / (height / 15),
-                                color: TileStyles.defaultTextColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    height: height / (height / 20),
-                  ),
-                  state.subCalEvents.isNotEmpty
-                      ? Column(
-                          children: state.subCalEvents.map((subEvent) {
-                            return TileSummary(subEvent);
-                          }).toList(),
-                        )
-                      : SizedBox.shrink(),
-                  GestureDetector(
-                    onTap: () {
-                      Map<String, dynamic> newTileParams = {'newTile': null};
-                      Navigator.pushNamed(context, '/AddTile',
-                          arguments: newTileParams);
-                    },
-                    child: Container(
-                      width: width,
-                      height: height / (height / 52),
-                      decoration: BoxDecoration(
-                        color: TileStyles.primaryColor,
-                        borderRadius:
-                            BorderRadius.circular(height / (height / 6)),
-                      ),
-                      child: Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.create,
-                          style: TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
-                            fontSize: height / (height / 15),
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 100,
-                  ),
-                ],
-              )
+                )
+              ],
+            ), //viable status
+            SizedBox(
+              height: height / (height / 20),
+            ),
+            forecastDays.isNotEmpty
+                ? TileForecast(forecastDays: forecastDays)
+                : SizedBox.shrink(),
+            SizedBox(
+              height: height / (height / 20),
+            )
+          ],
+        )
       ],
     );
   }
@@ -366,7 +221,7 @@ class ForecastView extends StatelessWidget {
     // Revised
     Widget deadlineContainer = GestureDetector(
       onTap: onEndDateTap,
-      child: CustomForcastField(
+      child: CustomForecastField(
         leadingIconPath: 'assets/images/Calendar.svg',
         textButtonString: textButtonString,
         height: height,
@@ -391,7 +246,7 @@ class ForecastView extends StatelessWidget {
         }
       });
     };
-    String textButtonString = 'Duration';
+    String textButtonString = AppLocalizations.of(context)!.duration;
     if (duration.inMinutes > 1) {
       textButtonString = "";
       int hour = duration.inHours.floor();
@@ -411,7 +266,7 @@ class ForecastView extends StatelessWidget {
     // Revised
     Widget retValue = GestureDetector(
       onTap: setDuration,
-      child: CustomForcastField(
+      child: CustomForecastField(
         leadingIconPath: 'assets/images/timecircle.svg',
         textButtonString: textButtonString,
         height: height,

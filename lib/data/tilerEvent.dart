@@ -103,8 +103,12 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('searchdDescription')) {
       searchdDescription = json['searchdDescription'];
     }
-    start = cast<int>(json['start'])!.toInt();
-    end = cast<int>(json['end'])!.toInt();
+    if (json['start'] != null) {
+      start = cast<int>(json['start'])!.toInt();
+    }
+    if (json['end'] != null) {
+      end = cast<int>(json['end'])!.toInt();
+    }
     if (json.containsKey('colorOpacity')) {
       colorOpacity = cast<double>(json['colorOpacity']);
     }
