@@ -21,6 +21,7 @@ class SignInRouteState extends State<SignInRoute> {
   // current value of the TextField.
   final userNameEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
+
   void adHocSignin() async {
     UserPasswordAuthenticationData authenticationData =
         await UserPasswordAuthenticationData.getAuthenticationInfo(
@@ -59,54 +60,67 @@ class SignInRouteState extends State<SignInRoute> {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
     return Scaffold(
-        body: SafeArea(
-            child: Stack(
-      children: [
-        Positioned.fill(
-            child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 10),
-          child: SizedBox(),
-        )),
-        RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
-        Positioned.fill(
-            child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
-          child: SizedBox(),
-        )),
-        Container(
-            decoration: BoxDecoration(
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 10),
+                child: SizedBox(),
+              ),
+            ),
+            RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
+                child: SizedBox(),
+              ),
+            ),
+            Container(
+              decoration: BoxDecoration(
                 gradient: paintGradient.LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                  Colors.white,
-                  Colors.white,
-                  Colors.white,
-                  Color.fromRGBO(179, 194, 242, 1),
-                  Color.fromRGBO(179, 194, 242, 1),
-                  Color.fromRGBO(179, 194, 242, 1),
-                  Color.fromRGBO(239, 48, 84, 1),
-                  Color.fromRGBO(239, 48, 84, 1),
-                  Color.fromRGBO(239, 48, 84, 1)
-                ])),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [Container(height: 50), SignInComponent()],
-            )),
-        Container(
-          padding: EdgeInsets.fromLTRB(0, 40, 0, 0),
-          alignment: Alignment.topCenter,
-          child: _keyboardIsVisible()
-              ? SizedBox.shrink()
-              : Image.asset(
-                  'assets/images/tiler_logo_black.png',
-                  scale: 4,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white,
+                    Colors.white,
+                    Colors.white,
+                    Color.fromRGBO(179, 194, 242, 1),
+                    Color.fromRGBO(179, 194, 242, 1),
+                    Color.fromRGBO(179, 194, 242, 1),
+                    Color.fromRGBO(239, 48, 84, 1),
+                    Color.fromRGBO(239, 48, 84, 1),
+                    Color.fromRGBO(239, 48, 84, 1)
+                  ],
                 ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Container(
+                  //   height: height / (height / 50),
+                  // ),
+                  SignInComponent()
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.fromLTRB(0, height / (height / 40), 0, 0),
+              alignment: Alignment.topCenter,
+              child: _keyboardIsVisible()
+                  ? SizedBox.shrink()
+                  : Image.asset(
+                      'assets/images/tiler_logo_black.png',
+                      scale: 4,
+                    ),
+            ),
+          ],
         ),
-      ],
-    )));
+      ),
+    );
   }
 }

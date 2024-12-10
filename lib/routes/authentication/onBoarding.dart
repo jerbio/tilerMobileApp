@@ -69,67 +69,66 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   @override
   Widget build(BuildContext context) {
-    final localizationService = LocalizationService(AppLocalizations.of(context)!);
-    return BlocProvider(
-      create: (context) => OnboardingBloc(localizationService),
-      child: BlocConsumer<OnboardingBloc, OnboardingState>(
-        listener: (context, state) {
-          if (state.step == OnboardingStep.skipped ||
-              state.step == OnboardingStep.submitted) {
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => AuthorizedRoute()));
-          }
-          if (state.step == OnboardingStep.error && state.error != null) {
-            showErrorMessage(state.error.toString());
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            body: Stack(
-              children: [
-                SafeArea(
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 16.0, horizontal: 30.0),
-                        child: OnBoardingProgressIndicator(
-                            currentPage: state.pageNumber ?? 0,
-                            totalPages: pages.length),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: AnimatedSwitcher(
-                            duration: Duration(milliseconds: 300),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                            child: Padding(
-                              key: ValueKey<int>(state.pageNumber ?? 0),
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 30.0),
-                              child: pages[state.pageNumber ?? 0],
-                            ),
+    // final localizationService = LocalizationService(AppLocalizations.of(context)!);
+    return BlocConsumer<OnboardingBloc, OnboardingState>(
+      listener: (context, state) {
+        if (state.step == OnboardingStep.skipped ||
+            state.step == OnboardingStep.submitted) {
+          Navigator.pushReplacement(context,
+              MaterialPageRoute(builder: (context) => AuthorizedRoute()));
+        }
+        if (state.step == OnboardingStep.error && state.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error!)),
+          );
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16.0, horizontal: 30.0),
+                      child: OnBoardingProgressIndicator(
+                          currentPage: state.pageNumber ?? 0,
+                          totalPages: pages.length),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: AnimatedSwitcher(
+                          duration: Duration(milliseconds: 300),
+                          transitionBuilder:
+                              (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                          child: Padding(
+                            key: ValueKey<int>(state.pageNumber ?? 0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 30.0),
+                            child: pages[state.pageNumber ?? 0],
                           ),
                         ),
                       ),
-                      OnboardingBottomNavigationBar(
-                        currentPage: state.pageNumber ?? 0,
-                        totalPages: pages.length,
-                      ),
-                    ],
-                  ),
+                    ),
+                    OnboardingBottomNavigationBar(
+                      currentPage: state.pageNumber ?? 0,
+                      totalPages: pages.length,
+                    ),
+                  ],
                 ),
-                if (state.step == OnboardingStep.loading) renderPending(),
-              ],
-            ),
-          );
-        },
-      ),
+              ),
+              if (state.step == OnboardingStep.loading) renderPending(),
+            ],
+          ),
+        );
+      },
     );
   }
 }
