@@ -475,5 +475,9 @@
     "passwordConditionNumbers": "numbers",
     "passwordConditionSpecialCharacter": "a special character",
     "listSeparator": ", ",
-    "listFinalSeparator": ", and "
+    "listFinalSeparator": ", and ",
+    "save":"Save",
+    "selectWeek":"Select a Week",
+    "selectYear":"Select Year",
+    "retrievingDataIssue":"Issue with retrieving data"
   }

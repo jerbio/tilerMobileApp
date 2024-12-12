@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
@@ -8,7 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 class TileAddress extends StatefulWidget {
   SubCalendarEvent subEvent;
-  TileAddress(this.subEvent) {
+  bool isMonthlyView;
+  TileAddress(this.subEvent,{this.isMonthlyView=false}) {
     assert(this.subEvent != null);
   }
   @override
@@ -86,13 +86,13 @@ class TileAddressState extends State<TileAddress> {
             Container(
               width: 25,
               height: 25,
-              decoration: TileStyles.tileIconContainerBoxDecoration,
+              decoration: widget.isMonthlyView? TileStyles.tileIconContainerBoxDecorationMonthly: TileStyles.tileIconContainerBoxDecoration,
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 !isAddressTexturl
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
-                color: TileStyles.defaultTextColor,
+                color: widget.isMonthlyView?Colors.grey[600]:TileStyles.defaultTextColor,
                 size: TileStyles.tileIconSize,
               ),
             ),
@@ -105,7 +105,7 @@ class TileAddressState extends State<TileAddress> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 15,
-                            fontFamily: 'Rubik',
+                            fontFamily: TileStyles.rubikFontName,
                             fontWeight: FontWeight.normal,
                             color: Color.fromRGBO(31, 31, 31, 1)),
                       ),

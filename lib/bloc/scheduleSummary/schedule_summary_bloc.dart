@@ -8,6 +8,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/util.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 import '../../data/subCalendarEvent.dart';
 import '../../data/tilerEvent.dart';
@@ -20,7 +21,7 @@ class ScheduleSummaryBloc
   ScheduleApi scheduleApi = ScheduleApi();
   SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
   ScheduleSummaryBloc() : super(ScheduleSummaryInitial()) {
-    on<GetScheduleDaySummaryEvent>(_onGetDayData);
+    on<GetScheduleDaySummaryEvent>(_onGetDayData,transformer:restartable() );
     on<LogOutScheduleDaySummaryEvent>(_onLogOutScheduleDaySummaryEvent);
     on<GetElapsedTasksEvent>(_onGetElapsedTasks);
     on<CompleteTaskEvent>(_onCompleteTask);
