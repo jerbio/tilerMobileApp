@@ -14,6 +14,7 @@ import 'package:tiler_app/services/api/appApi.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../../data/forgot_password_response.dart';
+import 'thirdPartyAuthResult.dart';
 
 class AuthorizationApi extends AppApi {
   Future<UserPasswordAuthenticationData> registerUser(
@@ -65,7 +66,7 @@ class AuthorizationApi extends AppApi {
     }
   }
 
-  Future<AuthenticationData?> signInToGoogle() async {
+  Future<AuthResult?> signInToGoogle() async {
     return await processAndroidGoogleLogin();
   }
 
@@ -215,7 +216,7 @@ class AuthorizationApi extends AppApi {
     }
   }
 
-  Future<AuthenticationData?> processAndroidGoogleLogin() async {
+  Future<AuthResult?> processAndroidGoogleLogin() async {
     try {
       if (GoogleSignInApi.googleUser != null) {
         GoogleSignInApi.googleUser!.clearAuthCache();
@@ -240,7 +241,7 @@ class AuthorizationApi extends AppApi {
       if (refreshToken != null && accessToken != null && googleUser != null) {
         String providerName = 'Google';
         String timeZone = await FlutterTimezone.getLocalTimezone();
-        return await getBearerToken(
+        ThirdPartyAuthenticationData authData = await getBearerToken(
             accessToken: accessToken,
             email: googleUser.email,
             providerId: googleUser.id,
@@ -248,6 +249,8 @@ class AuthorizationApi extends AppApi {
             displayName: googleUser.displayName!,
             timeZone: timeZone,
             thirdpartyType: providerName);
+
+        return AuthResult(authData, googleUser.displayName!);
       }
 
       throw TilerError();

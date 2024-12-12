@@ -1,15 +1,26 @@
-
+import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LocalizationService {
-  final AppLocalizations localizations;
+  static LocalizationService? _instance;
 
-  LocalizationService(this.localizations);
+  LocalizationService._internal();
 
-  String get errorOccurred => localizations.errorOccurred;
-  String get authenticationIssues => localizations.authenticationIssues;
-  String get userIsNotAuthenticated => localizations.userIsNotAuthenticated;
-  String get responseContentError => localizations.responseContentError;
-  String get responseHandlingError => localizations.responseHandlingError;
+  // Singleton getter
+  static LocalizationService get instance {
+    _instance ??= LocalizationService._internal();
+    return _instance!;
+  }
 
+  AppLocalizations get translations {
+    return lookupAppLocalizations(Locale('en'));
+  }
+
+  AppLocalizations getTranslationsForLocale(Locale locale) {
+    return lookupAppLocalizations(locale);
+  }
+
+  String translate(String Function(AppLocalizations) translator) {
+    return translator(translations);
+  }
 }
