@@ -8,6 +8,7 @@ part 'tileShareClusterModel.g.dart';
 @JsonSerializable(explicitToJson: true)
 class TileShareClusterModel {
   TileShareClusterModel();
+  String? Id;
   String? Name;
   int? StartTime;
   int? EndTime;

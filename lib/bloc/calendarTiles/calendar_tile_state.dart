@@ -18,7 +18,9 @@ class CalendarTileLoaded extends CalendarTileState {
 
 // ignore: must_be_immutable
 class CalendarTileLoading extends CalendarTileState {
-  final String calEventId;
+  final String? calEventId;
+  final String? designatedTileTemplateId;
   TilerEvent? calEvent;
-  CalendarTileLoading({required this.calEventId, this.calEvent});
+  CalendarTileLoading(
+      {this.calEventId, this.designatedTileTemplateId, this.calEvent});
 }

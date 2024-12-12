@@ -18,6 +18,7 @@ class DesignatedTile {
   UserProfile? user;
   UserProfile? clusterOwner;
   TilerEvent? tilerEvent;
+  double? completionPercentage;
 
   DesignatedTile.fromJson(Map<String, dynamic> json) {
     id = '';
@@ -56,6 +57,11 @@ class DesignatedTile {
 
     if (json.containsKey('tilerEvent') && json['tilerEvent'] != null) {
       tilerEvent = TilerEvent.fromJson(json['tilerEvent']);
+    }
+
+    if (json.containsKey('completionPercent') &&
+        json['completionPercent'] != null) {
+      completionPercentage = json['completionPercent'];
     }
   }
 

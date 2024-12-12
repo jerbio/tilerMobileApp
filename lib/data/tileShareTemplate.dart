@@ -1,10 +1,12 @@
 import 'package:tiler_app/data/designatedUser.dart';
+import 'package:tiler_app/data/tileShareTemplateMiscData.dart';
 import 'package:tiler_app/data/userProfile.dart';
 
 class TileShareTemplate {
   String? id;
   String? clusterId;
   String? name;
+  TileShareTemplateMiscData? miscData;
   UserProfile? creator;
   List<DesignatedUser>? designatedUsers;
   int? start;
@@ -13,7 +15,6 @@ class TileShareTemplate {
   TileShareTemplate.fromJson(Map<String, dynamic> json) {
     id = '';
     print("TileShareTemplate");
-    print(json);
     if (json.containsKey('id')) {
       id = json['id'];
     }
@@ -43,6 +44,11 @@ class TileShareTemplate {
 
     if (json.containsKey('end')) {
       end = json['end'];
+    }
+
+    String miscDataKey = 'miscData';
+    if (json.containsKey(miscDataKey) && json[miscDataKey] != null) {
+      miscData = TileShareTemplateMiscData.fromJson(json['miscData']);
     }
   }
 }

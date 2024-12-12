@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
@@ -188,6 +189,51 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   fontWeight: FontWeight.bold,
                   fontFamily: TileStyles.rubikFontName),
             ),
+          spaceDivider,
+          if (designatedTile.invitationStatus ==
+              InvitationStatus.accepted.name.toString())
+            Row(
+              children: [
+                if (this.designatedTile.id.isNot_NullEmptyOrWhiteSpace())
+                  ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    TileDetail.byDesignatedTileId(
+                                      designatedTileTemplateId:
+                                          this.designatedTile.id!,
+                                      loadSubEvents: true,
+                                    )));
+                      },
+                      icon: Icon(
+                        Icons.style_outlined,
+                        color: TileStyles.primaryColor,
+                      ),
+                      label: this.designatedTile.completionPercentage != null
+                          ? Text(
+                              "${this.designatedTile.completionPercentage!.round()}%",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  color: this
+                                              .designatedTile
+                                              .completionPercentage! >
+                                          66.66
+                                      ? Colors.green
+                                      : this
+                                                  .designatedTile
+                                                  .completionPercentage! >
+                                              33.33
+                                          ? Colors.orange
+                                          : TileStyles.primaryColor),
+                            )
+                          : SizedBox.shrink())
+              ],
+            )
+          else
+            SizedBox.shrink()
         ],
       ),
     );
