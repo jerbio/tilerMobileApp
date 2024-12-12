@@ -148,6 +148,16 @@ class ReloadLocalScheduleEvent extends ScheduleEvent {
 //       required this.scheduleStatus});
 // }
 
+class ChangeViewEvent extends ScheduleEvent {
+  final AuthorizedRouteTileListPage newView;
+
+  ChangeViewEvent(this.newView, );
+
+  @override
+  List<Object> get props => [newView];
+
+}
+
 class LogOutScheduleEvent extends ScheduleEvent {
   LogOutScheduleEvent();
 

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 const bool isProduction = true;
 const bool isDebug = !isProduction;
 // const bool isDebug = true;
@@ -29,7 +28,6 @@ String googleClientIdKey =
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
 String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
-
 final List<String> googleApiScopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/calendar',

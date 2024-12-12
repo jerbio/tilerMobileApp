@@ -1,6 +1,4 @@
 import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -8,7 +6,7 @@ import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
-import 'package:tiler_app/components/tilelist/tileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -19,8 +17,7 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-
-import '../../constants.dart';
+import 'package:tiler_app/constants.dart';
 
 class WithinNowBatch extends TileBatch {
   TileWidget? _currentWidget;
@@ -28,14 +25,11 @@ class WithinNowBatch extends TileBatch {
   TimelineSummary? dayData;
 
   WithinNowBatch(
-      {String? header = '',
-      String? footer = 'Upcoming',
+      {
       List<TilerEvent>? tiles,
       TimelineSummary? dayData,
       Key? key})
       : super(
-            header: header,
-            footer: footer,
             key: key,
             tiles: tiles,
             dayData: dayData,
