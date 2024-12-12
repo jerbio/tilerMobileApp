@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
@@ -5,6 +6,7 @@ import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -107,6 +109,18 @@ class _MultiTiletteTileShareDetailWidget
     });
   }
 
+  Future updateDeadline(DateTime deadline) {
+    if (tileShareCluster == null) {
+      return Future.value(null);
+    }
+    TileShareClusterModel dateUpdated = TileShareClusterModel();
+    dateUpdated.Id = tileShareCluster!.id;
+    dateUpdated.EndTime = deadline.millisecondsSinceEpoch;
+    return this.clusterApi.updateTileShareCluster(dateUpdated).then((value) {
+      return getTileShareCluster();
+    });
+  }
+
   Widget renderAuthorization() {
     throw UnimplementedError();
   }
@@ -159,11 +173,34 @@ class _MultiTiletteTileShareDetailWidget
                     size: 16,
                   ),
                   rowSpacer,
-                  Text(
-                    MaterialLocalizations.of(context).formatFullDate(
-                        DateTime.fromMillisecondsSinceEpoch(
-                            cluster.endTimeInMs!)),
-                    style: TileStyles.defaultTextStyle,
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? revisedEndDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.fromMillisecondsSinceEpoch(
+                            cluster.endTimeInMs ?? Utility.msCurrentTime),
+                        firstDate: DateTime.fromMillisecondsSinceEpoch(
+                            cluster.startTimeInMs ?? 0),
+                        lastDate:
+                            Utility.currentTime().add(Duration(days: 1000)),
+                        helpText: AppLocalizations.of(context)!.selectADeadline,
+                      );
+                      if (revisedEndDate != null) {
+                        if (revisedEndDate.millisecondsSinceEpoch !=
+                            cluster.endTimeInMs) {
+                          updateDeadline(revisedEndDate).then((value) {
+                            cluster.endTimeInMs =
+                                revisedEndDate.millisecondsSinceEpoch;
+                          });
+                        }
+                      }
+                    },
+                    child: Text(
+                      MaterialLocalizations.of(context).formatFullDate(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              cluster.endTimeInMs!)),
+                      style: TileStyles.defaultTextStyle,
+                    ),
                   )
                 ],
               )

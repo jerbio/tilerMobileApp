@@ -15,6 +15,8 @@ class ClusterTemplateTileModel {
   int? OrderedIndex;
   int? DurationInMs;
   AddressModel? AddressData;
+  String? NoteMiscData;
+
   List<ContactModel>? Contacts;
 
   factory ClusterTemplateTileModel.fromJson(Map<String, dynamic> json) =>

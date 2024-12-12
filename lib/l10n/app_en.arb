@@ -462,5 +462,6 @@
               "type": "String",
               "example": "+5 more"
             }
-          }}
+          }},
+      "tileShareNoteEllipsis": "Note..."
   }
