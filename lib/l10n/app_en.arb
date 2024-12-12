@@ -243,6 +243,70 @@
           "example": "5 tiles"
         }
       }},
+    "numberOfTilesSelected": "{number} Tiles selected",
+    "@numberOfTilesSelected": {
+      "description": "Number of Tiles selected",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Tiles selected"
+        }
+      }},
+    "completeTiles":"Complete Tiles",
+    "thisFitsInYourSchedule": "This fits in your schedule.",
+      "warningColon": "Warning: ",
+      "oneEventAtRisk": "1 event at risk",
+      "countEventAtRisk": "{number} events at risk",
+      "@countEventAtRisk": {
+        "description": "Number of event at risk",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "5 events at risk"
+          }
+        }},
+    "oneConflict": "1 Conflict",
+    "countConflict": "{number} Conflicts",
+      "@countConflict": {
+        "description": "Number of conflict",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "1 Conflicts"
+          }
+        }},
+    "create": "Create",
+    "thisEventWouldCause": "This event would cause ",
+    "errorMessage": "Error: {message}",
+      "@errorMessage": {
+        "description": "Error message string",
+        "placeholders": {
+          "message": {
+            "type": "String",
+            "example": "Error: Message"
+          }
+        }},
+    "unScheduledTiles": "Unscheduled Tiles",
+    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
+    "@numberOfUnScheduledTiles": {
+      "description": "Number of Unscheduled Tiles",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Unscheduled Tiles"
+        }
+      }
+    },
+    "numberOfMoreUsers": "+{number} more",
+    "@numberOfMoreUsers": {
+      "description": "Number of more users",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "+5 more"
+        }
+      }
+    },
     "unScheduled": "Unscheduled",
     "allScheduled": "All Scheduled",
     "getOnIt": "Get on it",
@@ -400,68 +464,16 @@
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
     "responseHandlingError":"Failed to handle the response.",
-    "numberOfTilesSelected": "{number} Tiles selected",
-    "@numberOfTilesSelected": {
-      "description": "Number of Tiles selected",
-      "placeholders": {
-        "number": {
-          "type": "String",
-          "example": "5 Tiles selected"
-        }
-      }},
-      "completeTiles":"Complete Tiles",
-
-    "unScheduledTiles": "Unscheduled Tiles",
-    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
-    "@numberOfUnScheduledTiles": {
-      "description": "Number of Unscheduled Tiles",
-      "placeholders": {
-        "number": {
-          "type": "String",
-          "example": "5 Unscheduled Tiles"
-        }
-      }},
-      "thisFitsInYourSchedule": "This fits in your schedule.",
-      "warningColon": "Warning: ",
-      "oneEventAtRisk": "1 event at risk",
-      "countEventAtRisk": "{number} events at risk",
-      "@countEventAtRisk": {
-        "description": "Number of event at risk",
-        "placeholders": {
-          "number": {
-            "type": "String",
-            "example": "5 events at risk"
-          }
-        }},
-      "oneConflict": "1 Conflict",
-      "countConflict": "{number} Conflicts",
-      "@countConflict": {
-        "description": "Number of conflict",
-        "placeholders": {
-          "number": {
-            "type": "String",
-            "example": "1 Conflicts"
-          }
-        }},
-      "create": "Create",
-      "thisEventWouldCause": "This event would cause ",
-      "errorMessage": "Error: {message}",
-      "@errorMessage": {
-        "description": "Error message string",
-        "placeholders": {
-          "message": {
-            "type": "String",
-            "example": "Error: Message"
-          }
-        }},
-      "numberOfMoreUsers": "+{number} more",
-      "@numberOfMoreUsers": {
-          "description": "Number of more users",
-          "placeholders": {
-            "number": {
-              "type": "String",
-              "example": "+5 more"
-            }
-          }},
-      "tileShareNoteEllipsis": "Note..."
+      "tileShareNoteEllipsis": "Note...",
+    "hi": "Hi",
+    "welcome": "Welcome",
+    "passwordCreationMessagePart1": "Create a strong, unique password with ",
+    "passwordConditionMinLength": "at least six characters",
+    "passwordCreationMessageIncluding": ", including ",
+    "passwordConditionUppercaseLetters": "uppercase letters",
+    "passwordConditionLowercaseLetters": "lowercase letters",
+    "passwordConditionNumbers": "numbers",
+    "passwordConditionSpecialCharacter": "a special character",
+    "listSeparator": ", ",
+    "listFinalSeparator": ", and "
   }
