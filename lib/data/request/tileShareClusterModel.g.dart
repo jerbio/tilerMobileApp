@@ -9,6 +9,7 @@ part of 'tileShareClusterModel.dart';
 TileShareClusterModel _$TileShareClusterModelFromJson(
         Map<String, dynamic> json) =>
     TileShareClusterModel()
+      ..Id = json['Id'] as String?
       ..Name = json['Name'] as String?
       ..StartTime = (json['StartTime'] as num?)?.toInt()
       ..EndTime = (json['EndTime'] as num?)?.toInt()
@@ -31,6 +32,7 @@ TileShareClusterModel _$TileShareClusterModelFromJson(
 Map<String, dynamic> _$TileShareClusterModelToJson(
         TileShareClusterModel instance) =>
     <String, dynamic>{
+      'Id': instance.Id,
       'Name': instance.Name,
       'StartTime': instance.StartTime,
       'EndTime': instance.EndTime,

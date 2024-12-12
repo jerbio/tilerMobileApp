@@ -19,6 +19,7 @@ ClusterTemplateTileModel _$ClusterTemplateTileModelFromJson(
       ..AddressData = json['AddressData'] == null
           ? null
           : AddressModel.fromJson(json['AddressData'] as Map<String, dynamic>)
+      ..NoteMiscData = json['NoteMiscData'] as String?
       ..Contacts = (json['Contacts'] as List<dynamic>?)
           ?.map((e) => ContactModel.fromJson(e as Map<String, dynamic>))
           .toList();
@@ -34,5 +35,6 @@ Map<String, dynamic> _$ClusterTemplateTileModelToJson(
       'OrderedIndex': instance.OrderedIndex,
       'DurationInMs': instance.DurationInMs,
       'AddressData': instance.AddressData?.toJson(),
+      'NoteMiscData': instance.NoteMiscData,
       'Contacts': instance.Contacts?.map((e) => e.toJson()).toList(),
     };
