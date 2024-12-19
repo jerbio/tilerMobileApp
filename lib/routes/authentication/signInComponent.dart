@@ -9,18 +9,20 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/localizationService.dart';
-import 'package:tiler_app/util.dart';
-import 'AuthorizedRoute.dart';
-import 'onBoarding.dart';
+
+import '../../services/api/thirdPartyAuthResult.dart';
+import '../../styles.dart';
+import '../../util.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -38,10 +40,18 @@ class SignInComponentState extends State<SignInComponent>
   final passwordEditingController = TextEditingController();
   final emailEditingController = TextEditingController();
   final confirmPasswordEditingController = TextEditingController();
+
+  final FocusNode _passwordFocusNode = FocusNode();
+  bool isPassWordFieldFocused = false;
+
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
+  bool isConfirmPassWordFieldFocused = false;
+
   late AnimationController signinInAnimationController;
+
   bool isRegistrationScreen = false;
   bool isForgetPasswordScreen = false;
-  final double registrationContainerHeight = 450;
+  final double registrationContainerHeight = 550;
   final double signInContainerHeight = 400;
   final double forgotPasswordContainerHeight = 300;
 
@@ -55,15 +65,57 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingRegistration = false;
   bool isPendingResetPassword = false;
   bool isGoogleSignInEnabled = false;
+  bool _isPasswordVisible = false;
+  bool shouldHideButtons = false;
+
+  // Registration Password Validator Rules
+  bool isMinLength = false;
+  bool isUpperCase = false;
+  bool isLowerCase = false;
+  bool isNumber = false;
+  bool isSpecialChar = false;
+  bool isPasswordValid = false;
+  bool isPasswordsMatch = false;
+
+  bool hasMinLength(String value, int minLength) {
+    return value.length >= minLength;
+  }
+
+  bool hasUppercase(String value) {
+    return value.contains(RegExp(r'[A-Z]'));
+  }
+
+  bool hasLowercase(String value) {
+    return value.contains(RegExp(r'[a-z]'));
+  }
+
+  bool hasNumber(String value) {
+    return value.contains(RegExp(r'[0-9]'));
+  }
+
+  bool hasSpecialCharacter(String value) {
+    return value.contains(RegExp(r'[^a-zA-Z0-9]'));
+  }
+
+  bool passwordsMatch(String password, String confirmPassword) {
+    return password == confirmPassword;
+  }
+
+  bool checkIfPasswordValid() {
+    return isMinLength &&
+        isUpperCase &&
+        isLowerCase &&
+        isNumber &&
+        isSpecialChar;
+  }
+
   final authApi = AuthorizationApi();
-  LocalizationService? localizationService;
+  NotificationOverlayMessage notificationOverlayMessage =
+      NotificationOverlayMessage();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      localizationService = LocalizationService(AppLocalizations.of(context)!);
-    });
     signinInAnimationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -88,6 +140,46 @@ class SignInComponentState extends State<SignInComponent>
     }
     credentialManagerHeight = signInContainerHeight;
     credentialButtonHeight = signInContainerButtonHeight;
+
+    _onPasswordFocusChange();
+    _onConfirmPasswordFocusChange();
+  }
+
+  void _onPasswordFocusChange() {
+    _passwordFocusNode.addListener(() {
+      setState(() {
+        if (_passwordFocusNode.hasFocus) {
+          isPassWordFieldFocused = true;
+        } else {
+          isPassWordFieldFocused = false;
+        }
+      });
+    });
+  }
+
+  void _onConfirmPasswordFocusChange() {
+    _confirmPasswordFocusNode.addListener(() {
+      setState(() {
+        if (_confirmPasswordFocusNode.hasFocus) {
+          isConfirmPassWordFieldFocused = true;
+        } else {
+          isConfirmPassWordFieldFocused = false;
+        }
+      });
+    });
+  }
+
+  void hideButtonsTemporarily({int duration = 3}) {
+    if (!mounted) return;
+    setState(() {
+      shouldHideButtons = true;
+    });
+    Future.delayed(Duration(seconds: duration), () {
+      if (!mounted) return;
+      setState(() {
+        shouldHideButtons = false;
+      });
+    });
   }
 
   void showMessage(String message) {
@@ -133,7 +225,12 @@ class SignInComponentState extends State<SignInComponent>
         if (!authenticationData.isValid) {
           AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
-            showErrorMessage(authenticationData.errorMessage!);
+            hideButtonsTemporarily();
+            notificationOverlayMessage.showToast(
+              context,
+              authenticationData.errorMessage!,
+              NotificationOverlayMessageType.error,
+            );
             return;
           }
         }
@@ -148,13 +245,18 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  nextPage ? AuthorizedRoute() : OnboardingView()),
+            builder: (context) => WelcomeScreen(
+                welcomeType: WelcomeType.login,
+                firstName: (authenticationData.username != null &&
+                        authenticationData.username!.isNotEmpty)
+                    ? authenticationData.username!
+                    : "",),
+          ),
         );
         print(isValidSignIn);
         setState(() {
@@ -165,8 +267,12 @@ class SignInComponentState extends State<SignInComponent>
           setState(() {
             isPendingSigning = false;
           });
-          showErrorMessage(
-              AppLocalizations.of(context)!.invalidUsernameOrPassword);
+          hideButtonsTemporarily();
+          notificationOverlayMessage.showToast(
+            context,
+            AppLocalizations.of(context)!.invalidUsernameOrPassword,
+            NotificationOverlayMessageType.error,
+          );
         }
       }
     }
@@ -199,7 +305,12 @@ class SignInComponentState extends State<SignInComponent>
             authenticationData.isValid.toString();
         if (!authenticationData.isValid) {
           if (authenticationData.errorMessage != null) {
-            showErrorMessage(authenticationData.errorMessage!);
+            hideButtonsTemporarily();
+            notificationOverlayMessage.showToast(
+              context,
+              authenticationData.errorMessage!,
+              NotificationOverlayMessageType.error,
+            );
             return;
           }
         }
@@ -208,13 +319,18 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  nextPage ? AuthorizedRoute() : OnboardingView()),
+            builder: (context) => WelcomeScreen(
+                welcomeType: WelcomeType.register,
+                firstName: (authenticationData.username != null &&
+                        authenticationData.username!.isNotEmpty)
+                    ? authenticationData.username!
+                    : "",),
+          ),
         );
 
         print(isValidSignIn);
@@ -223,8 +339,12 @@ class SignInComponentState extends State<SignInComponent>
           isPendingRegistration = false;
         });
         if (TilerError.isUnexpectedCharacter(e)) {
-          showErrorMessage(
-              AppLocalizations.of(context)!.issuesConnectingToTiler);
+          hideButtonsTemporarily();
+          notificationOverlayMessage.showToast(
+            context,
+            AppLocalizations.of(context)!.issuesConnectingToTiler,
+            NotificationOverlayMessageType.error,
+          );
           setState(() {
             isPendingRegistration = false;
           });
@@ -245,7 +365,12 @@ class SignInComponentState extends State<SignInComponent>
             emailEditingController.text);
         if (result.error.code == "0") {
           AnalysticsSignal.send('FORGOT_PASSWORD_SUCCESS');
-          showMessage(result.error.message);
+          hideButtonsTemporarily();
+          notificationOverlayMessage.showToast(
+            context,
+            result.error.message,
+            NotificationOverlayMessageType.error,
+          );
           Future.delayed(Duration(seconds: 2), () {
             setState(() {
               setAsSignInScreen();
@@ -253,11 +378,21 @@ class SignInComponentState extends State<SignInComponent>
           });
         } else {
           AnalysticsSignal.send('FORGOT_PASSWORD_ERROR');
-          showErrorMessage(result.error.message);
+          hideButtonsTemporarily();
+          notificationOverlayMessage.showToast(
+            context,
+            result.error.message,
+            NotificationOverlayMessageType.error,
+          );
         }
       } catch (e) {
         AnalysticsSignal.send('FORGOT_PASSWORD_SERVER_ERROR');
-        showErrorMessage("Error: $e");
+        hideButtonsTemporarily();
+        notificationOverlayMessage.showToast(
+          context,
+          "Error: $e",
+          NotificationOverlayMessageType.error,
+        );
       } finally {
         Future.delayed(Duration(seconds: 2), () {
           setState(() {
@@ -290,6 +425,11 @@ class SignInComponentState extends State<SignInComponent>
       isRegistrationScreen = true;
       credentialManagerHeight = registrationContainerHeight;
       credentialButtonHeight = registrationContainerButtonHeight;
+      isMinLength = false;
+      isUpperCase = false;
+      isLowerCase = false;
+      isNumber = false;
+      isSpecialChar = false;
     });
   }
 
@@ -327,6 +467,20 @@ class SignInComponentState extends State<SignInComponent>
     )));
   }
 
+  String validatorCondition(String condition, bool value) {
+    if (value) {
+      return "";
+    } else {
+      return condition;
+    }
+  }
+
+  Widget spacer(double height) {
+    return SizedBox(
+      height: height,
+    );
+  }
+
   Future signInToGoogle() async {
     SystemChannels.textInput.invokeMethod('TextInput.hide');
     AnalysticsSignal.send('GOOGLE_SIGNUP_INITIALIZE');
@@ -334,7 +488,7 @@ class SignInComponentState extends State<SignInComponent>
       isPendingSigning = true;
     });
     AuthorizationApi authorizationApi = AuthorizationApi();
-    AuthenticationData? authenticationData =
+    AuthResult? authenticationData =
         await authorizationApi.signInToGoogle().then((value) {
       AnalysticsSignal.send('GOOGLE_SIGNUP_SUCCESSFUL');
       return value;
@@ -343,25 +497,35 @@ class SignInComponentState extends State<SignInComponent>
         isPendingSigning = false;
       });
       AnalysticsSignal.send('GOOGLE_SIGNUP_FAILED');
-      showErrorMessage(onError.message);
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        onError.message,
+        NotificationOverlayMessageType.error,
+      );
       return null;
     });
 
     if (authenticationData != null) {
-      if (authenticationData.isValid) {
+      if (authenticationData.authData.isValid) {
         Authentication localAuthentication = new Authentication();
-        await localAuthentication.saveCredentials(authenticationData);
+        await localAuthentication.saveCredentials(authenticationData.authData);
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
         context.read<ScheduleBloc>().add(LogInScheduleEvent());
-        bool nextPage = await Utility.checkOnboardingStatus(localizationService!);
+        bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (context) =>
-                  nextPage ? AuthorizedRoute() : OnboardingView()),
+            builder: (context) => WelcomeScreen(
+                welcomeType: WelcomeType.login,
+                firstName: (authenticationData.displayName != null &&
+                        authenticationData.displayName.isNotEmpty)
+                    ? authenticationData.displayName
+                    : "",),
+          ),
         );
       }
     }
@@ -377,11 +541,88 @@ class SignInComponentState extends State<SignInComponent>
     emailEditingController.dispose();
     confirmPasswordEditingController.dispose();
     signinInAnimationController.dispose();
+    notificationOverlayMessage.dispose();
+    _passwordFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+
+    // Function to dynamically calculate height according to screen size
+    double calculateSizeByHeight(double value) {
+      return height / (height / value);
+    }
+
+    List<String> unmetConditions = [];
+
+    if (!isUpperCase) {
+      unmetConditions
+          .add(AppLocalizations.of(context)!.passwordConditionUppercaseLetters);
+    }
+    if (!isLowerCase) {
+      unmetConditions
+          .add(AppLocalizations.of(context)!.passwordConditionLowercaseLetters);
+    }
+    if (!isNumber) {
+      unmetConditions
+          .add(AppLocalizations.of(context)!.passwordConditionNumbers);
+    }
+    if (!isSpecialChar) {
+      unmetConditions
+          .add(AppLocalizations.of(context)!.passwordConditionSpecialCharacter);
+    }
+
+    String formatConditionsList(BuildContext context, List<String> conditions) {
+      String separator = AppLocalizations.of(context)!.listSeparator;
+      String finalSeparator = AppLocalizations.of(context)!.listFinalSeparator;
+
+      if (conditions.length == 1) {
+        return conditions.first;
+      } else if (conditions.length == 2) {
+        return conditions.join(finalSeparator.trim());
+      } else {
+        return conditions.sublist(0, conditions.length - 1).join(separator) +
+            finalSeparator +
+            conditions.last;
+      }
+    }
+
+    String instructionMessage = '';
+
+    if (!isMinLength || unmetConditions.isNotEmpty) {
+      instructionMessage =
+          AppLocalizations.of(context)!.passwordCreationMessagePart1;
+
+      if (!isMinLength) {
+        instructionMessage +=
+            AppLocalizations.of(context)!.passwordConditionMinLength;
+      }
+
+      if (unmetConditions.isNotEmpty) {
+        if (!isMinLength) {
+          instructionMessage +=
+              AppLocalizations.of(context)!.passwordCreationMessageIncluding;
+        } else {
+          // Add "including" without leading comma if min length is met
+          instructionMessage += AppLocalizations.of(context)!
+              .passwordCreationMessageIncluding
+              .trim();
+        }
+
+        String conditionsList = formatConditionsList(context, unmetConditions);
+        instructionMessage += conditionsList;
+      }
+
+      // Ensure the message ends with a period
+      if (!instructionMessage.endsWith('.')) {
+        instructionMessage += '.';
+      }
+    }
+
     var usernameTextField = TextFormField(
       textInputAction: TextInputAction.next,
       validator: (value) {
@@ -441,30 +682,38 @@ class SignInComponentState extends State<SignInComponent>
           if (value != confirmPasswordEditingController.text) {
             return AppLocalizations.of(context)!.passwordsDontMatch;
           }
-          if (value.length < minPasswordLength) {
-            return AppLocalizations.of(context)!
-                .passwordNeedToBeAtLeastSevenCharacters;
-          }
 
+
+          if (value.length < minPasswordLength) {
+            return "";
+          }
           if (!value.contains(RegExp(r'[A-Z]+'))) {
-            return AppLocalizations.of(context)!
-                .passwordNeedsToHaveUpperCaseChracters;
+            return "";
           }
           if (!value.contains(RegExp(r'[a-z]+'))) {
-            return AppLocalizations.of(context)!
-                .passwordNeedsToHaveLowerCaseChracters;
+            return "";
           }
           if (!value.contains(RegExp(r'[0-9]+'))) {
-            return AppLocalizations.of(context)!.passwordNeedsToHaveNumber;
+            return "";
           }
           if (!value.contains(RegExp(r'[^a-zA-Z0-9]'))) {
-            return AppLocalizations.of(context)!
-                .passwordNeedsToHaveASpecialCharacter;
+            return "";
           }
         }
 
         return null;
       },
+      onChanged: (value) {
+        setState(() {
+          isMinLength = hasMinLength(value, 6);
+          isUpperCase = hasUppercase(value);
+          isLowerCase = hasLowercase(value);
+          isNumber = hasNumber(value);
+          isSpecialChar = hasSpecialCharacter(value);
+          isPasswordValid = checkIfPasswordValid();
+        });
+      },
+      focusNode: _passwordFocusNode,
       controller: passwordEditingController,
       autofillHints: [
         this.isRegistrationScreen
@@ -472,7 +721,7 @@ class SignInComponentState extends State<SignInComponent>
             : AutofillHints.password
       ],
       onEditingComplete: () => TextInput.finishAutofillContext(),
-      obscureText: true,
+      obscureText: !_isPasswordVisible,
       keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.password,
@@ -480,10 +729,21 @@ class SignInComponentState extends State<SignInComponent>
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.lock),
+        suffixIcon: IconButton(
+          icon: Icon(
+            _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+          ),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        ),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: Color.fromRGBO(255, 255, 255, .75),
       ),
     );
+
     var forgetPasswordTextButton = GestureDetector(
       onTap: () => setAsForgetPasswordScreen(),
       child: Container(
@@ -496,10 +756,47 @@ class SignInComponentState extends State<SignInComponent>
         ),
       ),
     );
+
+    var passwordValidatorRules = SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: !isPasswordValid
+          ? Text(
+              instructionMessage,
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.w300,
+                fontSize: calculateSizeByHeight(12),
+                color: Colors.red,
+              ),
+            )
+          : SizedBox.shrink(),
+    );
+
+    var confirmPasswordValidatorRules = SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: !isPasswordsMatch
+          ? Text(
+              "Passwords must match",
+              textAlign: TextAlign.start,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.w300,
+                fontSize: calculateSizeByHeight(12),
+                color: Colors.red,
+              ),
+            )
+          : SizedBox.shrink(),
+    );
+
     List<Widget> textFields = [
+      spacer(20),
       usernameTextField,
+      spacer(20),
       passwordTextField,
-      forgetPasswordTextButton
+      spacer(10),
+      forgetPasswordTextButton,
+      spacer(40),
     ];
 
     var signUpButton = SizedBox(
@@ -556,6 +853,7 @@ class SignInComponentState extends State<SignInComponent>
       icon: Icon(Icons.person_add),
       onPressed: registerUser,
     );
+
     List<Widget> buttons = [
       signInButton,
       signUpButton,
@@ -568,6 +866,7 @@ class SignInComponentState extends State<SignInComponent>
       ];
       buttons = [forgetPasswordButton, backToSignInButton];
     }
+
     if (isRegistrationScreen) {
       var confirmPasswordTextField = TextFormField(
         keyboardType: TextInputType.visiblePassword,
@@ -577,9 +876,17 @@ class SignInComponentState extends State<SignInComponent>
           }
           return null;
         },
+        onChanged: (value) {
+          setState(() {
+            isPasswordsMatch = passwordsMatch(passwordEditingController.text,
+                confirmPasswordEditingController.text);
+          });
+        },
+        focusNode: _confirmPasswordFocusNode,
         controller: confirmPasswordEditingController,
-        obscureText: true,
+        obscureText: !_isPasswordVisible,
         autofillHints: [AutofillHints.newPassword],
+        cursorColor: Colors.purple,
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.confirmPassword,
           labelText: AppLocalizations.of(context)!.confirmPassword,
@@ -590,11 +897,29 @@ class SignInComponentState extends State<SignInComponent>
           fillColor: Color.fromRGBO(255, 255, 255, .75),
         ),
       );
+
       textFields = [
         emailTextField,
+        spacer(10),
         passwordTextField,
+        spacer(10),
+
+        // Conditional rendering for the password validation rules
+        if (isPassWordFieldFocused) ...[
+          passwordValidatorRules,
+          spacer(10),
+        ],
+
         confirmPasswordTextField,
-        usernameTextField
+        spacer(10),
+
+        if (isConfirmPassWordFieldFocused) ...[
+          confirmPasswordValidatorRules,
+          spacer(10),
+        ],
+
+        usernameTextField,
+        spacer(10),
       ];
       buttons = [registerUserButton, backToSignInButton];
     }
@@ -622,48 +947,67 @@ class SignInComponentState extends State<SignInComponent>
       ];
     }
     return Form(
-        key: _formKey,
+      key: _formKey,
+      child: SingleChildScrollView(
         child: Container(
-            alignment: Alignment.topCenter,
-            height: credentialManagerHeight,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40.0),
-                  topRight: Radius.circular(40.0)),
-              color: Color.fromRGBO(245, 245, 245, 0.2),
-              boxShadow: [
-                BoxShadow(
-                    color: Color.fromRGBO(245, 245, 245, 0.25),
-                    spreadRadius: 5),
+          alignment: Alignment.topCenter,
+          // height: credentialManagerHeight,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(40.0),
+                topRight: Radius.circular(40.0)),
+            color: Color.fromRGBO(245, 245, 245, 0.2),
+            boxShadow: [
+              BoxShadow(
+                  color: Color.fromRGBO(245, 245, 245, 0.25), spreadRadius: 5),
+            ],
+          ),
+          padding: EdgeInsets.symmetric(
+              vertical: isRegistrationScreen ? calculateSizeByHeight(10) : 0.0,
+              horizontal: calculateSizeByHeight(10)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Container(
+                  // height: isRegistrationScreen
+                  //     ? height / (height / 200)
+                  //     : credentialButtonHeight,
+                  padding: EdgeInsets.symmetric(
+                      vertical: calculateSizeByHeight(5),
+                      horizontal: calculateSizeByHeight(20)),
+                  child: AutofillGroup(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: isRegistrationScreen
+                          ? MainAxisAlignment.start
+                          : MainAxisAlignment.spaceAround,
+                      children: textFields,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: !shouldHideButtons
+                        ? buttons
+                        : [
+                            SizedBox(
+                              width: width,
+                              height: calculateSizeByHeight(120),
+                            )
+                          ],
+                  ),
+                ),
               ],
             ),
-            padding: EdgeInsets.symmetric(
-                vertical: isRegistrationScreen ? 10.0 : 0.0, horizontal: 10),
-            child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Container(
-                      height: credentialButtonHeight,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 5.0, horizontal: 20),
-                      child: AutofillGroup(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: textFields,
-                        ),
-                      ),
-                    ),
-                    Flex(
-                      direction: Axis.vertical,
-                      children: [
-                        Column(
-                          children: buttons,
-                        )
-                      ],
-                    ),
-                  ],
-                ))));
+          ),
+        ),
+      ),
+    );
   }
 }

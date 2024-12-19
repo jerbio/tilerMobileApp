@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileSheet.dart';
 import 'package:tiler_app/data/contact.dart';
@@ -6,6 +8,7 @@ import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
+import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -16,7 +19,7 @@ import 'package:tiler_app/util.dart';
 
 class TileShareTemplateDetailWidget extends StatefulWidget {
   final TileShareTemplate tileShareTemplate;
-  bool isReadOnly;
+  final bool isReadOnly;
   TileShareTemplateDetailWidget(
       {required this.tileShareTemplate, this.isReadOnly = true});
 
@@ -30,6 +33,7 @@ class _TileShareTemplateDetailState
   final TileShareClusterApi clusterApi = TileShareClusterApi();
   final DesignatedTileApi designatedTileApi = DesignatedTileApi();
   late TileShareTemplate tileShareTemplate;
+  late TileShareClusterData tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
   late bool? isTileListLoading;
@@ -41,6 +45,12 @@ class _TileShareTemplateDetailState
   late List<DesignatedUser> designatedUsers;
   Map<Contact, DesignatedUser> designatedUsersToContact = {};
 
+  bool hasTextChanged = false;
+  String? noteResult = null;
+  String? focusedText = null;
+  TextEditingController noteFieldController = TextEditingController();
+  FocusNode notesFieldFocusNode = FocusNode();
+
   @override
   void initState() {
     super.initState();
@@ -48,7 +58,7 @@ class _TileShareTemplateDetailState
     isLoading = false;
     tileShareTemplate = this.widget.tileShareTemplate;
     isLoading = true;
-    getTileShareTemplates();
+    getTileShareTemplate();
     designatedUsers = this.tileShareTemplate.designatedUsers ?? [];
     designatedUsersToContact = {};
     designatedUsers.forEach((element) {
@@ -57,31 +67,98 @@ class _TileShareTemplateDetailState
         designatedUsersToContact[eachContact] = element;
       }
     });
+    noteFieldController.addListener(() {
+      onNoteFieldChange();
+    });
+    notesFieldFocusNode.addListener(() {
+      onNoteFieldOutOfFocus();
+    });
   }
 
-  Future getTileShareTemplates() async {
+  void onNoteFieldChange() {
+    if (noteFieldController.text != noteResult) {
+      setState(() {
+        noteResult = noteFieldController.text;
+        hasTextChanged = true;
+      });
+    }
+  }
+
+  void onNoteFieldOutOfFocus() {
+    Utility.debugPrint("Focus detected");
+    String? priorFocusText = focusedText;
+    focusedText = this.noteFieldController.text;
+    if (hasTextChanged &&
+        !notesFieldFocusNode.hasFocus &&
+        priorFocusText != focusedText) {
+      hasTextChanged = false;
+      ClusterTemplateTileModel dateUpdated = ClusterTemplateTileModel();
+      dateUpdated.Id = tileShareTemplate.id;
+      dateUpdated.NoteMiscData = noteResult;
+      this.clusterApi.updateTileShareTemplate(dateUpdated).then((value) {
+        return getTileShareTemplate(silentRefresh: true);
+      });
+    }
+  }
+
+  Future updateDeadline(DateTime deadline) {
+    ClusterTemplateTileModel dateUpdated = ClusterTemplateTileModel();
+    dateUpdated.Id = tileShareTemplate.id;
+    dateUpdated.EndTime = deadline.millisecondsSinceEpoch;
+    return this.clusterApi.updateTileShareTemplate(dateUpdated).then((value) {
+      return getTileShareTemplate(silentRefresh: false);
+    });
+  }
+
+  Future getTileShareTemplate({bool silentRefresh = false}) async {
     bool tileLoadingState = false;
+    var updateAllData = (value) {
+      tilerError = null;
+      tileShareTemplate = value[0];
+      noteResult = tileShareTemplate.miscData?.userNote;
+      if (noteResult != null) {
+        noteFieldController.value = TextEditingValue(text: noteResult!);
+      }
+      isLoading = false;
+      designatedUsers = value.first.designatedUsers ?? [];
+      designatedUsersToContact = {};
+      designatedUsers.forEach((element) {
+        Contact? eachContact = element.toContact();
+        if (eachContact != null) {
+          designatedUsersToContact[eachContact] = element;
+        }
+      });
+    };
+    var setToNonLoading = () {
+      isLoading = false;
+      tilerError = null;
+      isTileListLoading = false;
+      tileLoadingState = false;
+    };
+
+    var setToLoading = () {
+      isLoading = true;
+      tilerError = null;
+      isTileListLoading = tileLoadingState;
+    };
     if (this.widget.tileShareTemplate.id.isNot_NullEmptyOrWhiteSpace()) {
       tileLoadingState = true;
       clusterApi
           .getTileShareTemplates(
-              tileShareTemplateId: this.widget.tileShareTemplate.id!)
-          .then((value) {
+              tileShareTemplateId: this.widget.tileShareTemplate.id!,
+              Format: "full")
+          .then((List<TileShareTemplate> value) {
         if (value.isNotEmpty) {
           Utility.debugPrint("Success getting tile cluster");
-          setState(() {
-            tilerError = null;
-            tileShareTemplate = value.firstOrNull!;
-            isLoading = false;
-            designatedUsers = value.first.designatedUsers ?? [];
-            designatedUsersToContact = {};
-            designatedUsers.forEach((element) {
-              Contact? eachContact = element.toContact();
-              if (eachContact != null) {
-                designatedUsersToContact[eachContact] = element;
-              }
+          if (silentRefresh == false) {
+            setState(() {
+              tileShareTemplate = value[0];
+              tilerError = null;
+              updateAllData(value);
             });
-          });
+          } else {
+            updateAllData(value);
+          }
         } else {
           setState(() {
             tilerError = TilerError(
@@ -106,11 +183,15 @@ class _TileShareTemplateDetailState
       clusterApi
           .getDesignatedTiles(clusterId: this.widget.tileShareTemplate.id)
           .then((value) {
-        setState(() {
-          Utility.debugPrint("Success getting tileShare list ");
-          tilerError = null;
-          isTileListLoading = false;
-        });
+        Utility.debugPrint("Success getting tileShare list ");
+        if (silentRefresh) {
+          setToNonLoading();
+        } else {
+          setState(() {
+            setToNonLoading();
+            isLoading = false;
+          });
+        }
       }).catchError((onError) {
         Utility.debugPrint("Error getting tileShare list ");
         setState(() {
@@ -124,11 +205,13 @@ class _TileShareTemplateDetailState
       });
     }
     isTileListLoading = tileLoadingState;
-    setState(() {
-      isLoading = true;
-      tilerError = null;
-      isTileListLoading = tileLoadingState;
-    });
+    if (silentRefresh) {
+      setToLoading();
+    } else {
+      setState(() {
+        setToLoading();
+      });
+    }
   }
 
   Widget renderAuthorization() {
@@ -153,6 +236,7 @@ class _TileShareTemplateDetailState
     String creatorInfo = tileShareTemplate.creator?.username ??
         tileShareTemplate.creator?.email ??
         "";
+    print("TileShareEnd " + tileShareTemplate.end.toString());
     return Padding(
         padding: EdgeInsets.all(25),
         child: Column(
@@ -167,11 +251,34 @@ class _TileShareTemplateDetailState
                     size: 16,
                   ),
                   rowSpacer,
-                  Text(
-                    MaterialLocalizations.of(context).formatFullDate(
-                        DateTime.fromMillisecondsSinceEpoch(
-                            tileShareTemplate.end!)),
-                    style: TileStyles.defaultTextStyle,
+                  GestureDetector(
+                    onTap: () async {
+                      final DateTime? revisedEndDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.fromMillisecondsSinceEpoch(
+                            tileShareTemplate.end ?? Utility.msCurrentTime),
+                        firstDate: DateTime.fromMillisecondsSinceEpoch(
+                            tileShareTemplate.start ?? 0),
+                        lastDate:
+                            Utility.currentTime().add(Duration(days: 1000)),
+                        helpText: AppLocalizations.of(context)!.selectADeadline,
+                      );
+                      if (revisedEndDate != null) {
+                        if (revisedEndDate.millisecondsSinceEpoch !=
+                            tileShareTemplate.end) {
+                          updateDeadline(revisedEndDate).then((value) {
+                            tileShareTemplate.end =
+                                revisedEndDate.millisecondsSinceEpoch;
+                          });
+                        }
+                      }
+                    },
+                    child: Text(
+                      MaterialLocalizations.of(context).formatFullDate(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              tileShareTemplate.end!)),
+                      style: TileStyles.defaultTextStyle,
+                    ),
                   )
                 ],
               )
@@ -194,6 +301,10 @@ class _TileShareTemplateDetailState
             verticalSpacer,
             Expanded(
               child: addContacts(),
+            ),
+            verticalSpacer,
+            Expanded(
+              child: addNotes(),
             )
           ],
         ));
@@ -231,7 +342,7 @@ class _TileShareTemplateDetailState
                       clusterApi
                           .createDesignatedTileTemplate(clusterTemplate)
                           .then((value) {
-                        getTileShareTemplates();
+                        getTileShareTemplate();
                         setState(() {
                           isAddingTiletteLoading = false;
                         });
@@ -264,16 +375,6 @@ class _TileShareTemplateDetailState
         );
       },
     );
-  }
-
-  Widget addTileShare() {
-    return ElevatedButton.icon(
-        style: TileStyles.enabledButtonStyle,
-        onPressed: () {
-          renderModal();
-        },
-        icon: Icon(Icons.add),
-        label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
   Widget addContacts() {
@@ -336,7 +437,7 @@ class _TileShareTemplateDetailState
                 .addContact(
                     this.tileShareTemplate.id!, newContact.toContactModel())
                 .then((value) {
-              getTileShareTemplates();
+              getTileShareTemplate();
             });
             ;
           }
@@ -352,12 +453,23 @@ class _TileShareTemplateDetailState
                           .designatedTileTemplateId!,
                       deletedContact.toContactModel())
                   .then((value) {
-                getTileShareTemplates();
+                getTileShareTemplate();
               });
             }
           }
         }
       },
+    );
+  }
+
+  Widget addNotes() {
+    return TextFormField(
+      minLines: 5,
+      maxLines: 10,
+      controller: noteFieldController,
+      focusNode: notesFieldFocusNode,
+      decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.tileShareNoteEllipsis),
     );
   }
 
