@@ -36,6 +36,10 @@ class DesignatedUser {
     if (json.containsKey('completionPct') && json['completionPct'] != null) {
       completionPercentage = json['completionPct'];
     }
+    if (json.containsKey('completionPercent') &&
+        json['completionPercent'] != null) {
+      completionPercentage = json['completionPercent'];
+    }
   }
 
   Contact? toContact() {
