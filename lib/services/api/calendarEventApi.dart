@@ -145,7 +145,8 @@ class CalendarEventApi extends AppApi {
     });
   }
 
-  Future<CalendarEvent> getCalEvent(String id) async {
+  Future<CalendarEvent> getCalEvent(
+      {String? id, String? designatedTileId}) async {
     String tilerDomain = Constants.tilerDomain;
     // String url = tilerDomain + 'api/SubCalendarEvent';
     // return getAdHocSubEventId(id);
@@ -155,6 +156,7 @@ class CalendarEventApi extends AppApi {
       String url = tilerDomain;
       final queryParameters = {
         'EventID': id,
+        'TileShareTemplateId': designatedTileId
       };
       Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,

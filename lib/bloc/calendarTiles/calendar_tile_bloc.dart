@@ -16,6 +16,9 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
     on<DeleteCalendarTileEvent>(_onDeleteCalendarTileEvent);
     on<CompleteCalendarTileEvent>(_onCompleteCalendarTileEvent);
     on<GetCalendarTileEvent>(_onGetCalendarTileEvent);
+    on<GetCalendarTileEventByDesignatedTileTemplate>(
+        _onGetCalendarTileEventByDesignatedTileTemplateId);
+
     on<LogOutCalendarTileEvent>(_onLogOutCalendarTileEvent);
   }
 
@@ -48,7 +51,20 @@ class CalendarTileBloc extends Bloc<CalendarTileEvent, CalendarTileState> {
   _onGetCalendarTileEvent(
       GetCalendarTileEvent event, Emitter<CalendarTileState> emit) async {
     emit(CalendarTileLoading(calEventId: event.calEventId));
-    await calendarEventApi.getCalEvent(event.calEventId).then((value) async {
+    await calendarEventApi
+        .getCalEvent(id: event.calEventId)
+        .then((value) async {
+      emit(CalendarTileLoaded(calEvent: value));
+    });
+  }
+
+  _onGetCalendarTileEventByDesignatedTileTemplateId(
+      GetCalendarTileEventByDesignatedTileTemplate event,
+      Emitter<CalendarTileState> emit) async {
+    emit(CalendarTileLoading(designatedTileTemplateId: event.tileTemplateId));
+    await calendarEventApi
+        .getCalEvent(designatedTileId: event.tileTemplateId)
+        .then((value) async {
       emit(CalendarTileLoaded(calEvent: value));
     });
   }

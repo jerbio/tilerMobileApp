@@ -23,11 +23,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 
 class TileDetail extends StatefulWidget {
-  final String tileId;
-  final bool loadSubEvents;
+  String? tileId;
+  String? designatedTileTemplateId;
+  bool loadSubEvents = false;
   TileDetail({required this.tileId, this.loadSubEvents = true});
+  TileDetail.byTileId(
+      {required this.designatedTileTemplateId, this.loadSubEvents = true});
   TileDetail.byDesignatedTileId(
-      {required this.tileId, this.loadSubEvents = true});
+      {required this.designatedTileTemplateId, this.loadSubEvents = false});
 
   @override
   State<StatefulWidget> createState() => _TileDetailState();
@@ -51,25 +54,41 @@ class _TileDetailState extends State<TileDetail> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color inputFieldIconColor = TileStyles.primaryColor;
+  bool reloadOtherEntitiesAfterLoadingCalevent = false;
 
   @override
   void initState() {
     super.initState();
-    this
-        .context
-        .read<CalendarTileBloc>()
-        .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
-    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
-        calEventId: this.widget.tileId, blocSessionId: requestId));
-    if (this.widget.loadSubEvents) {
-      this.context.read<SubCalendarTileBloc>().add(
-          GetListOfCalendarTilesSubTilesBlocEvent(
-              calEventId: this.widget.tileId, requestId: requestId));
+    if (this.widget.tileId != null) {
+      this
+          .context
+          .read<CalendarTileBloc>()
+          .add(GetCalendarTileEvent(calEventId: this.widget.tileId!));
+      getCalendarEventLocation(this.widget.tileId!);
+      if (this.widget.loadSubEvents) {
+        getSubEvents(this.widget.tileId!);
+      }
+    } else if (this.widget.designatedTileTemplateId != null) {
+      reloadOtherEntitiesAfterLoadingCalevent = true;
+      this.context.read<CalendarTileBloc>().add(
+          GetCalendarTileEventByDesignatedTileTemplate(
+              tileTemplateId: this.widget.designatedTileTemplateId!));
     }
   }
 
   void onInputCountChange() {
     dataChange();
+  }
+
+  void getCalendarEventLocation(String tileId) {
+    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
+        calEventId: tileId, blocSessionId: requestId));
+  }
+
+  void getSubEvents(String tileId) {
+    this.context.read<SubCalendarTileBloc>().add(
+        GetListOfCalendarTilesSubTilesBlocEvent(
+            calEventId: tileId, requestId: requestId));
   }
 
   void updateProceed() {
@@ -421,6 +440,13 @@ class _TileDetailState extends State<TileDetail> {
                     }
                   }
                 });
+                if (this.reloadOtherEntitiesAfterLoadingCalevent &&
+                    state.calEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+                  getCalendarEventLocation(state.calEvent.id!);
+                  if (this.widget.loadSubEvents) {
+                    getSubEvents(state.calEvent.id!);
+                  }
+                }
               }
             },
           ),
