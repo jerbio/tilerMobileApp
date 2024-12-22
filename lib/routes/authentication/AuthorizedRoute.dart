@@ -144,20 +144,25 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               break;
             case AuthorizedRouteTileListPage.Weekly:
               newView = AuthorizedRouteTileListPage.Monthly;
-              context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
+              context
+                  .read<MonthlyUiDateManagerBloc>()
+                  .add(LogOutMonthlyUiDateManagerEvent());
               break;
             case AuthorizedRouteTileListPage.Monthly:
-              context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
+              context
+                  .read<WeeklyUiDateManagerBloc>()
+                  .add(LogOutWeeklyUiDateManagerEvent());
               newView = AuthorizedRouteTileListPage.Daily;
               break;
             default:
               newView = AuthorizedRouteTileListPage.Daily;
           }
-            context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
+          context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
         }
         break;
     }
   }
+
   Widget _buildTileList(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
@@ -480,65 +485,63 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     List<Widget> widgetChildren = [
       BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
-          return Stack(
-            children: [
-              _buildTileList(state.currentView),
-              _ribbonCarousel(state.currentView),
-              if (state.currentView == AuthorizedRouteTileListPage.Daily)
-                Positioned(
-                  right: 0,
-                  child: GestureDetector(
-                    onTap: () {
-                      uiDateManagerBloc.onDateButtonTapped(DateTime.now());
-                    },
-                    child: Container(
-                      height: 50,
-                      width: 38,
-                      color: TileStyles.primaryContrastColor,
-                      padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) => Stack(
-                          children: [
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              top: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: constraints.maxWidth * 0.9,
-                                child: Icon(
-                                  FontAwesomeIcons.calendar,
-                                  size: constraints.maxWidth,
-                                  color: TileStyles.primaryColor,
-                                ),
+          return Stack(children: [
+            _buildTileList(state.currentView),
+            _ribbonCarousel(state.currentView),
+            if (state.currentView == AuthorizedRouteTileListPage.Daily)
+              Positioned(
+                right: 0,
+                child: GestureDetector(
+                  onTap: () {
+                    uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+                  },
+                  child: Container(
+                    height: 50,
+                    width: 38,
+                    color: TileStyles.primaryContrastColor,
+                    padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: constraints.maxWidth * 0.9,
+                              child: Icon(
+                                FontAwesomeIcons.calendar,
+                                size: constraints.maxWidth,
+                                color: TileStyles.primaryColor,
                               ),
                             ),
-                            Positioned(
-                              bottom: constraints.maxHeight * 0.125,
-                              left: (constraints.maxWidth * 0.05),
-                              child: Center(
-                                child: Container(
-                                  height: constraints.maxHeight * 0.55,
-                                  width: constraints.maxHeight * 0.55,
-                                  child: Center(
-                                    child: Text(
-                                      (Utility.currentTime().day).toString(),
-                                      style: TextStyle(
-                                        fontFamily: TileStyles.rubikFontName,
-                                      ),
+                          ),
+                          Positioned(
+                            bottom: constraints.maxHeight * 0.125,
+                            left: (constraints.maxWidth * 0.05),
+                            child: Center(
+                              child: Container(
+                                height: constraints.maxHeight * 0.55,
+                                width: constraints.maxHeight * 0.55,
+                                child: Center(
+                                  child: Text(
+                                    (Utility.currentTime().day).toString(),
+                                    style: TextStyle(
+                                      fontFamily: TileStyles.rubikFontName,
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-            ]
-          );
+              ),
+          ]);
         },
       ),
     ];
@@ -584,14 +587,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 label: '',
               ),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings,
-                      color: TileStyles.primaryColor),
+                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
                   label: ''),
               BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_month,
                       color: TileStyles.primaryColor),
                   label: ''),
-
             ],
             unselectedItemColor: Colors.white,
             selectedItemColor: Colors.black,
