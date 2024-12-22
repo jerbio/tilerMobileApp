@@ -1,5 +1,6 @@
 import 'dart:io';
-const bool isProduction = true;
+
+const bool isProduction = false;
 const bool isDebug = !isProduction;
 // const bool isDebug = true;
 const bool isStaging = true;
