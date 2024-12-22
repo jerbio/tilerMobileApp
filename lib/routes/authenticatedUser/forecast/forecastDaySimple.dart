@@ -31,7 +31,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
         style: TextStyle(
             fontSize: 17,
             fontFamily: TileStyles.rubikFontName,
-            fontWeight: FontWeight.w300),
+            fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -126,10 +126,6 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       ],
     );
   }
-
-  // Widget renderExitPoint() {
-
-  // }
 
   Widget renderEntryAndExit() {
     if (peekDay.outHomeEnd == null && peekDay.outHomeEnd == null) {

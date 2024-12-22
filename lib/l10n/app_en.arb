@@ -491,5 +491,6 @@
     "passwordConditionNumbers": "numbers",
     "passwordConditionSpecialCharacter": "a special character",
     "listSeparator": ", ",
-    "listFinalSeparator": ", and "
+    "listFinalSeparator": ", and ",
+    "nonViableTimeSlot": "No viable timeslot"
   }
