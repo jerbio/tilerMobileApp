@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/noteData.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/data/location.dart';
 import '../util.dart';
 
 enum TilePriority { low, medium, high }
@@ -27,6 +28,7 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isRigid = false;
   bool _isComplete = false;
   bool _isEnabled = true;
+  Location? location;
   TilePriority _tilePriority = TilePriority.medium;
 
   bool? get isReadOnly {
@@ -150,6 +152,10 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('locationId')) {
       locationId = json['locationId'];
+    }
+
+    if (json.containsKey('location')) {
+      location = Location.fromJson(json['location']);
     }
     if (json.containsKey('tileShareDesignatedId')) {
       tileShareDesignatedId = json['tileShareDesignatedId'];
