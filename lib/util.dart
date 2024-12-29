@@ -178,6 +178,15 @@ class Utility {
     return Duration(milliseconds: durationInMs);
   }
 
+  static Color get randomColor {
+    return HSLColor.fromAHSL(
+            1,
+            (Utility.randomizer.nextDouble() * 360),
+            Utility.randomizer.nextDouble(),
+            (1 - (Utility.randomizer.nextDouble() * 0.35)))
+        .toColor();
+  }
+
   static Position getDefaultPosition() {
     return _defaultPosition;
   }
