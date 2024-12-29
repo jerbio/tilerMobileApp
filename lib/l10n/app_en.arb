@@ -464,19 +464,19 @@
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
     "responseHandlingError":"Failed to handle the response.",
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "tomorrow": "Tomorrow",
-      "travel": "Travel",
-      "numberOfDayForecast": "{number}-day Forecast",
-      "@numberOfDayForecast": {
-          "description": "Number-day Forecast",
-          "placeholders": {
-            "number": {
-              "type": "String",
-              "example": "5-day Forecast"
-            }
-          }},
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "travel": "Travel",
+    "numberOfDayForecast": "{number}-day Forecast",
+    "@numberOfDayForecast": {
+        "description": "Number-day Forecast",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "5-day Forecast"
+          }
+        }},
       "knotDuration": "--",
       "failedToGetPreview": "Failed to get preview",
       "noDriving": "No driving",
@@ -492,5 +492,24 @@
     "passwordConditionSpecialCharacter": "a special character",
     "listSeparator": ", ",
     "listFinalSeparator": ", and ",
-    "nonViableTimeSlot": "No viable timeslot"
+    "nonViableTimeSlot": "No viable timeslot",
+    "numberAm": "{number}AM",
+    "@numberAm": {
+        "description": "Time in AM",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "6AM"
+          }
+        }},
+    "numberPm": "{number}PM",
+    "@numberPm": {
+        "description": "Time in PM",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "6PM"
+          }
+        }},
+    "dayCast": "DayCast"
   }

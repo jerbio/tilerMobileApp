@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/dayCast.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDaySimple.dart';
 import 'package:tiler_app/styles.dart';
 
@@ -50,7 +51,13 @@ class _ForecastState extends State<TileForecast> {
           shrinkWrap: true,
           itemCount: forecastDays.length,
           itemBuilder: (context, index) {
-            return Container(
+            return InkWell(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DayCast(forecastDays[index])));
+              },
               child: ForecastDaySimpleWidget(peekDay: forecastDays[index]),
             );
           }),

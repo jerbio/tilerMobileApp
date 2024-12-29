@@ -339,4 +339,7 @@ class TileStyles {
     Color.fromRGBO(56, 174, 204, 1),
     Color.fromRGBO(102, 195, 84, 1)
   ];
+  static const Color gridLineColor = primaryColor;
+  static const double thickness = 1.0;
+  static const double timeOfDayCellWidth = 35;
 }

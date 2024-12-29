@@ -140,7 +140,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(startString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor))),
           Lottie.asset(lottieAsset, height: 85),
@@ -149,7 +149,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(endString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor)))
         ],

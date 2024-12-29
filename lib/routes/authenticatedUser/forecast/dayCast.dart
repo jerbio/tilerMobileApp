@@ -5,16 +5,21 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 // import 'package:google_map/helperClass.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/ForecastResponse.dart';
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/executionConstants.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/googleMap.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/helperClass.dart';
+import 'package:tiler_app/util.dart';
+import 'package:tiler_app/styles.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'googleMapSingleRoute.dart';
 
 class DayCast extends StatefulWidget {
-  PeekDay? peekDay;
+  PeekDay peekDay;
   DayCast(this.peekDay);
   @override
   _WidgetGoogleMapState createState() => _WidgetGoogleMapState();
@@ -31,19 +36,57 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
   GoogleMapController? mapController;
 
-  List<LatLng> listLocations = [
-    // const LatLng(42.6322502, 21.1520452),
-    // const LatLng(42.6322645, 21.1520443),
-    // const LatLng(42.6681639, 21.1622024),
-    // const LatLng(42.631820, 21.154757),
-    // const LatLng(42.629210, 21.155494),
-  ];
+  List<LatLng> listLocations = [];
+  LatitudeAndLongitude? defaultLocation;
+  double minLevel = 1;
+  double maxLevel = 14;
+  double zoomLevel = 14;
 
   @override
   void initState() {
     super.initState();
     if (this.widget.peekDay != null) {
-      // this.widget.peekDay!.subEvents?.map((e) => e)
+      if (this.widget.peekDay.subEvents != null) {
+        LatitudeAndLongitude? previousLocation = null;
+        List<LatitudeAndLongitude> latitudeAndLongitudes = [];
+        for (var eachSubEvent in this.widget.peekDay!.subEvents!) {
+          if (eachSubEvent.location != null &&
+              eachSubEvent.location!.isNotNullAndNotDefault &&
+              eachSubEvent.location!.latitude != null &&
+              eachSubEvent.location!.longitude != null) {
+            LatitudeAndLongitude? currentLocation =
+                eachSubEvent.location!.toLatitudeAndLongitude;
+            if (currentLocation != null) {
+              bool isSameLocation = false;
+              if (previousLocation != null) {
+                double travelDistance = LatitudeAndLongitude.distance(
+                    previousLocation, currentLocation);
+                if (travelDistance < sameLocationRadius) {
+                  isSameLocation = true;
+                }
+              }
+
+              if (!isSameLocation) {
+                LatLng latLong = LatLng(eachSubEvent.location!.latitude!,
+                    eachSubEvent.location!.longitude!);
+                listLocations.add(latLong);
+                LatitudeAndLongitude? eachLatLong =
+                    eachSubEvent.location!.toLatitudeAndLongitude;
+                if (eachLatLong != null) {
+                  latitudeAndLongitudes.add(eachLatLong);
+                }
+              }
+              previousLocation = currentLocation;
+            }
+          }
+        }
+        if (listLocations.isNotEmpty) {
+          defaultLocation = LatitudeAndLongitude.averageLatLong(listLocations
+              .map((e) => LatitudeAndLongitude(e.latitude, e.longitude))
+              .toList());
+        }
+        updateZoomLevel(latitudeAndLongitudes);
+      }
     }
     _determinePosition().then((value) {
       setState(() {
@@ -53,26 +96,148 @@ class _WidgetGoogleMapState extends State<DayCast> {
     });
   }
 
+  updateZoomLevel(List<LatitudeAndLongitude> LatitudeAndLongitudes) {
+    const double y = 14.0 + (13 / 12799);
+    const double x = (-13 / 6400.0);
+    if (LatitudeAndLongitudes.isNotEmpty && defaultLocation != null) {
+      double maxDistance = -1;
+      LatitudeAndLongitudes.forEach((eachLongLat) {
+        double distance =
+            LatitudeAndLongitude.distance(eachLongLat, defaultLocation!);
+        if (distance > maxDistance) {
+          maxDistance = distance;
+        }
+      });
+      // maxDistance = 1200;
+      if (maxDistance > 0.1) {
+        double updatedZoomLevel = (y + (maxDistance * x));
+        zoomLevel = updatedZoomLevel;
+        if (updatedZoomLevel > maxLevel) {
+          zoomLevel = maxLevel;
+        }
+        if (updatedZoomLevel < minLevel) {
+          zoomLevel = minLevel;
+        }
+        print("zoomLevel - " + zoomLevel.toString());
+        print("maxDistance - " + maxDistance.toString());
+      }
+    }
+  }
+
+  Widget renderMap() {
+    return GoogleMap(
+      polylines: Set<Polyline>.of(polyLines.values),
+      markers: markers,
+      mapToolbarEnabled: true,
+      zoomControlsEnabled: true,
+      zoomGesturesEnabled: true,
+      onMapCreated: (c) {
+        mapController = c;
+      },
+      myLocationEnabled: true,
+      initialCameraPosition: CameraPosition(
+        target: defaultLocation != null
+            ? LatLng(defaultLocation!.latitude, defaultLocation!.longitude)
+            : source!,
+        zoom: zoomLevel,
+      ),
+      mapType: MapType.normal,
+    );
+  }
+
+  Widget renderTiles() {
+    return DayGridWidget(
+      peekDay: this.widget.peekDay,
+    );
+  }
+
+  Widget renderLandScape() {
+    double padding = 20;
+    double mapHeight = 250;
+    double restOfWidth =
+        MediaQuery.sizeOf(context).width - mapHeight - (padding * 2) - 120;
+    double gridWIdth = restOfWidth;
+    if (restOfWidth < 100) {
+      gridWIdth = 400;
+    }
+    List<Widget> widgets = [
+      Container(
+          padding: EdgeInsets.all(padding), width: 400, child: renderMap()),
+      Container(
+          padding: EdgeInsets.all(padding),
+          width: gridWIdth,
+          child: renderTiles())
+    ];
+    if (restOfWidth < 100) {
+      return ListView(
+        scrollDirection: Axis.horizontal,
+        children: widgets,
+      );
+    }
+    return Row(
+      children: widgets,
+    );
+  }
+
+  Widget renderPortrait() {
+    double padding = 20;
+    double mapHeight = 250;
+    double restOfHeight =
+        MediaQuery.sizeOf(context).height - mapHeight - (padding * 2) - 65;
+    double gridHeight = restOfHeight;
+    double minHeight = 200;
+    if (restOfHeight < minHeight) {
+      gridHeight = 400;
+    }
+    List<Widget> widgets = [
+      Container(
+          padding: EdgeInsets.all(padding),
+          height: mapHeight,
+          child: renderMap()),
+      Container(
+          padding: EdgeInsets.all(padding),
+          height: gridHeight,
+          child: renderTiles())
+    ];
+    if (restOfHeight < minHeight) {
+      return ListView(
+        scrollDirection: Axis.vertical,
+        children: widgets,
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: widgets,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          leading: TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Icon(
+              Icons.close,
+              color: TileStyles.appBarTextColor,
+            ),
+          ),
+          backgroundColor: TileStyles.appBarColor,
+          title: Text(
+            AppLocalizations.of(context)!.dayCast,
+            style: TileStyles.titleBarStyle,
+          ),
+        ),
         body: source == null
             ? const Center(
                 child: CircularProgressIndicator(),
               )
-            : GoogleMap(
-                polylines: Set<Polyline>.of(polyLines.values),
-                markers: markers,
-                onMapCreated: (c) {
-                  mapController = c;
-                },
-                myLocationEnabled: true,
-                initialCameraPosition: CameraPosition(
-                  target: source!,
-                  zoom: 14.0,
-                ),
-                mapType: MapType.normal,
-              ));
+            : MediaQuery.of(context).orientation == Orientation.portrait
+                ? renderPortrait()
+                : renderLandScape());
   }
 
   void sendRequest() {
