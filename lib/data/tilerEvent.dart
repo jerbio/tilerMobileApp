@@ -2,8 +2,11 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/noteData.dart';
+import 'package:tiler_app/data/repetition.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tileObject.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
+import 'package:tiler_app/data/uiConfig.dart';
 import '../util.dart';
 
 enum TilePriority { low, medium, high }
@@ -28,6 +31,8 @@ class TilerEvent extends TilerObj with TimeRange {
   bool _isComplete = false;
   bool _isEnabled = true;
   TilePriority _tilePriority = TilePriority.medium;
+  Repetition? repetition;
+  RestrictionProfile? restrictionProfile;
 
   bool? get isReadOnly {
     return _isReadOnly;
@@ -54,11 +59,11 @@ class TilerEvent extends TilerObj with TimeRange {
   }
 
   bool? isRecurring = false;
-
-  double? colorOpacity = 1;
-  int? colorRed = 127;
-  int? colorGreen = 127;
-  int? colorBlue = 127;
+  int? _colorRed = 127;
+  int? _colorGreen = 127;
+  int? _colorBlue = 127;
+  double? _colorOpacity = 1;
+  UIConfig? uiConfig;
 
   static T? cast<T>(x) => x is T ? x : null;
 
@@ -106,16 +111,16 @@ class TilerEvent extends TilerObj with TimeRange {
     start = cast<int>(json['start'])!.toInt();
     end = cast<int>(json['end'])!.toInt();
     if (json.containsKey('colorOpacity')) {
-      colorOpacity = cast<double>(json['colorOpacity']);
+      _colorOpacity = cast<double>(json['colorOpacity']);
     }
-    if (json.containsKey('colorRed')) {
-      colorRed = cast<int>(json['colorRed']);
+    if (json.containsKey('_colorRed')) {
+      _colorRed = cast<int>(json['_colorRed']);
     }
-    if (json.containsKey('colorGreen')) {
-      colorGreen = cast<int>(json['colorGreen']);
+    if (json.containsKey('_colorGreen')) {
+      _colorGreen = cast<int>(json['_colorGreen']);
     }
-    if (json.containsKey('colorBlue')) {
-      colorBlue = cast<int>(json['colorBlue']);
+    if (json.containsKey('_colorBlue')) {
+      _colorBlue = cast<int>(json['_colorBlue']);
     }
     if (json.containsKey('isRecurring')) {
       isRecurring = json['isRecurring'];
@@ -150,6 +155,14 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('tileShareDesignatedId')) {
       tileShareDesignatedId = json['tileShareDesignatedId'];
     }
+    if (json.containsKey('restrictionProfile') &&
+        json['restrictionProfile'] != null) {
+      restrictionProfile =
+          RestrictionProfile.fromJson(json['restrictionProfile']);
+    }
+    if (json.containsKey('uiConfig') && json['uiConfig'] != null) {
+      uiConfig = UIConfig.fromJson(json['uiConfig']);
+    }
     if (json.containsKey('priority')) {
       TilePriority priority = TilePriority.medium;
       switch (json['priority']) {
@@ -165,6 +178,10 @@ class TilerEvent extends TilerObj with TimeRange {
       }
       this._tilePriority = priority;
     }
+    String repetitionKey = "repetition";
+    if (json.containsKey(repetitionKey) && json[repetitionKey] != null) {
+      this.repetition = Repetition.fromJson(json[repetitionKey]);
+    }
   }
 
   Color? get color {
@@ -175,6 +192,29 @@ class TilerEvent extends TilerObj with TimeRange {
           this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
     }
     return null;
+  }
+
+  set color(Color? color) {
+    this._colorBlue = color?.blue;
+    this._colorGreen = color?.green;
+    this._colorRed = color?.red;
+    this._colorOpacity = color?.opacity;
+  }
+
+  int? get colorRed {
+    return uiConfig?.tileColor?.red ?? _colorRed;
+  }
+
+  int? get colorGreen {
+    return uiConfig?.tileColor?.green ?? _colorGreen;
+  }
+
+  int? get colorBlue {
+    return uiConfig?.tileColor?.blue ?? _colorBlue;
+  }
+
+  double? get colorOpacity {
+    return uiConfig?.tileColor?.opacity ?? _colorOpacity;
   }
 
   TilePriority get priority {
@@ -230,9 +270,9 @@ class TilerEvent extends TilerObj with TimeRange {
 //         "rangeEnd": 1615118400000,
 //         "thirdpartyType": "tiler",
 //         "colorOpacity": 1.0,
-//         "colorRed": 38,
-//         "colorGreen": 255,
-//         "colorBlue": 128,
+//         "_colorRed": 38,
+//         "_colorGreen": 255,
+//         "_colorBlue": 128,
 //         "isPaused": false,
 //         "isComplete": true,
 //         "isRecurring": true
@@ -240,15 +280,15 @@ class TilerEvent extends TilerObj with TimeRange {
 // }
 
     String subEventString =
-        "{\"Error\":{\"code\":\"0\",\"Message\":\"\"},\"Content\":{\"id\":\"0a78ae5d-2858-4842-94b5-cb60edd1d65e_7_07d5f9b3-a71a-4eb9-bd33-096c4ff51b00_22bf7ae0-1299-4de0-b49d-8897edcb69ef\",\"start\":1615306440000,\"end\":1615313640000,\"name\":\"Morning 203 plans\",\"travelTimeBefore\":600000,\"travelTimeAfter\":0,\"address\":\"1240 hover st #200, longmont, co 80501, united states\",\"addressDescription\":\"1240 hover st #200, longmont, co 80501, united states\",\"searchdDescription\":\"gym\",\"rangeStart\":1615118400000,\"rangeEnd\":1615118400000,\"thirdpartyType\":\"tiler\",\"colorOpacity\":1,\"colorRed\":38,\"colorGreen\":255,\"colorBlue\":128,\"isPaused\":false,\"isComplete\":true,\"isRecurring\":true}}";
+        "{\"Error\":{\"code\":\"0\",\"Message\":\"\"},\"Content\":{\"id\":\"0a78ae5d-2858-4842-94b5-cb60edd1d65e_7_07d5f9b3-a71a-4eb9-bd33-096c4ff51b00_22bf7ae0-1299-4de0-b49d-8897edcb69ef\",\"start\":1615306440000,\"end\":1615313640000,\"name\":\"Morning 203 plans\",\"travelTimeBefore\":600000,\"travelTimeAfter\":0,\"address\":\"1240 hover st #200, longmont, co 80501, united states\",\"addressDescription\":\"1240 hover st #200, longmont, co 80501, united states\",\"searchdDescription\":\"gym\",\"rangeStart\":1615118400000,\"rangeEnd\":1615118400000,\"thirdpartyType\":\"tiler\",\"colorOpacity\":1,\"_colorRed\":38,\"_colorGreen\":255,\"_colorBlue\":128,\"isPaused\":false,\"isComplete\":true,\"isRecurring\":true}}";
 
     Map<String, dynamic> subEventMap = jsonDecode(subEventString);
     subEventMap['Content']['id'] = id;
 
     TilerEvent retValue = TilerEvent.fromJson(subEventMap['Content']);
-    retValue.colorBlue = Random().nextInt(255);
-    retValue.colorGreen = Random().nextInt(255);
-    retValue.colorRed = Random().nextInt(255);
+    retValue._colorBlue = Random().nextInt(255);
+    retValue._colorGreen = Random().nextInt(255);
+    retValue._colorRed = Random().nextInt(255);
 
     int timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;

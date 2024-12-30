@@ -636,7 +636,7 @@ class AddTileState extends State<AddTile> {
     }
 
     if (_repetitionData != null) {
-      isRepetitionSet = true;
+      isRepetitionSet = _repetitionData!.isEnabled;
     }
 
     Widget locationConfigButton = ConfigUpdateButton(
@@ -1000,7 +1000,7 @@ class AddTileState extends State<AddTile> {
             .map((dayIndex) => dayIndex % 7)
             .join(',');
       }
-      tile.RepeatData = _repetitionData!.isAutoRepetitionEnd.toString();
+      tile.RepeatData = _repetitionData!.isForever.toString();
       tile.RepeatType = _repetitionData!.frequency.name;
     }
 

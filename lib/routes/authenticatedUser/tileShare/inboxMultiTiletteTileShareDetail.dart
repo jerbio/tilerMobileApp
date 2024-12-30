@@ -34,10 +34,10 @@ class _InboxMultiTiletteTileShareDetailWidget
   late bool? isTileListLoading;
   List<DesignatedTile>? designatedTileList = null;
   final rowSpacer = SizedBox.square(
-    dimension: 8,
+    dimension: 4,
   );
   bool isAddingTiletteLoading = false;
-  final verticalSpacer = SizedBox(height: 8);
+  final verticalSpacer = SizedBox(height: 4);
   ScrollController _contactControllerfinal = ScrollController();
 
   @override
@@ -138,6 +138,7 @@ class _InboxMultiTiletteTileShareDetailWidget
   }
 
   Widget renderTileShareCluster() {
+    const double fontSize = 16;
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
           message: AppLocalizations.of(context)!.missingTileShareCluster);
@@ -148,7 +149,7 @@ class _InboxMultiTiletteTileShareDetailWidget
     String creatorInfo =
         cluster.creator?.username ?? cluster.creator?.email ?? "";
     return Padding(
-        padding: EdgeInsets.all(25),
+        padding: EdgeInsets.all(15),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +159,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.calendar_today,
-                    size: 16,
+                    size: fontSize,
                   ),
                   rowSpacer,
                   Text(
@@ -177,7 +178,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.person_2_outlined,
-                    size: 16,
+                    size: fontSize,
                   ),
                   rowSpacer,
                   Text(

@@ -106,7 +106,7 @@ class _EditTileState extends State<EditTile> {
           tiles.isEmpty
               ? AppLocalizations.of(context)!.late
               : AppLocalizations.of(context)!
-                  .lateDate(tiles.first.startTime!.humanDate),
+                  .lateDate(tiles.first.startTime.humanDate),
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,

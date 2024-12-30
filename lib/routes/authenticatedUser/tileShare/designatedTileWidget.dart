@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -73,11 +76,13 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   final double lrPadding = 12;
   ButtonStyle generateButtonStyle(bool isSelected, Color defaultColor) {
     ButtonStyle retValue = ElevatedButton.styleFrom(
-        padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+        // padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+        padding: EdgeInsets.all(0),
         foregroundColor: defaultColor);
     if (isSelected) {
       retValue = ElevatedButton.styleFrom(
-          padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+          // padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
+          padding: EdgeInsets.all(0),
           backgroundColor: defaultColor,
           foregroundColor: Colors.white);
     }
@@ -85,6 +90,9 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   }
 
   Widget renderButtons() {
+    const double iconSize = 10;
+    const buttonTextStyle =
+        TextStyle(fontSize: 12, fontFamily: TileStyles.rubikFontName);
     if (_isLoading)
       return CircularProgressIndicator();
     else
@@ -94,16 +102,23 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
           children: [
             ElevatedButton.icon(
                 onPressed: _handleAccept,
-                icon: Icon(Icons.check),
-                label: Text(AppLocalizations.of(context)!.accept),
+                icon: Icon(
+                  Icons.check,
+                  size: iconSize,
+                ),
+                label: Text(AppLocalizations.of(context)!.accept,
+                    style: buttonTextStyle),
                 style: generateButtonStyle(
                     this.designatedTile.invitationStatus ==
                         InvitationStatus.accepted.name.toString(),
                     Colors.green)),
             ElevatedButton.icon(
                 onPressed: _handleDecline,
-                icon: Icon(Icons.close),
-                label: Text(AppLocalizations.of(context)!.decline),
+                icon: Icon(Icons.close, size: iconSize),
+                label: Text(
+                  AppLocalizations.of(context)!.decline,
+                  style: buttonTextStyle,
+                ),
                 style: generateButtonStyle(
                     this.designatedTile.invitationStatus ==
                         InvitationStatus.declined.name.toString(),
@@ -114,9 +129,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   }
 
   Widget designatedTileDetails() {
-    const spaceDivider = SizedBox(height: 10);
+    const double fontSize = 10;
+    const spaceDivider = SizedBox(height: 5);
     const supplementalTextStyle =
-        TextStyle(fontSize: 12, fontFamily: TileStyles.rubikFontName);
+        TextStyle(fontSize: 8, fontFamily: TileStyles.rubikFontName);
     String? designatedUsename = designatedTile.user?.username;
     return Expanded(
       child: Column(
@@ -126,7 +142,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
           Text(
             designatedTile.name ?? "",
             style: TextStyle(
-                fontSize: 18,
+                fontSize: fontSize,
                 fontWeight: FontWeight.w500,
                 fontFamily: TileStyles.rubikFontName),
             maxLines: 2,
@@ -144,8 +160,11 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
           designatedUsename.isNot_NullEmptyOrWhiteSpace()
               ? Row(
                   children: [
-                    Text((designatedUsename!.contains('@') ? '' : '@') +
-                        "$designatedUsename"),
+                    Text(
+                      (designatedUsename!.contains('@') ? '' : '@') +
+                          "$designatedUsename",
+                      style: supplementalTextStyle,
+                    ),
                     designatedTile.invitationStatus
                                 .isNot_NullEmptyOrWhiteSpace() &&
                             designatedTile.invitationStatus!.toLowerCase() !=
@@ -155,7 +174,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                             designatedTile.isTilable == false
                         ? Container(
                             margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                            padding: EdgeInsets.all(5),
+                            padding: EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(
                                   TileStyles.borderRadius),
@@ -163,7 +182,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                             child: Text(
                               designatedTile.invitationStatus!.capitalize(),
                               style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 8,
                                   fontFamily: TileStyles.rubikFontName,
                                   color: designatedTile.invitationStatus!
                                               .toLowerCase() ==
@@ -194,6 +213,34 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
               InvitationStatus.accepted.name.toString())
             Row(
               children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  child: ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: FaIcon(
+                        FontAwesomeIcons.binoculars,
+                        color: TileStyles.primaryColor,
+                      ),
+                      label: this.designatedTile.completionPercentage != null
+                          ? Text(
+                              "${this.designatedTile.completionPercentage!.round()}%",
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  fontFamily: TileStyles.rubikFontName,
+                                  color: this
+                                              .designatedTile
+                                              .completionPercentage! >
+                                          66.66
+                                      ? Colors.green
+                                      : this
+                                                  .designatedTile
+                                                  .completionPercentage! >
+                                              33.33
+                                          ? Colors.orange
+                                          : TileStyles.primaryColor),
+                            )
+                          : SizedBox.shrink()),
+                ),
                 if (this.designatedTile.id.isNot_NullEmptyOrWhiteSpace())
                   ElevatedButton.icon(
                       onPressed: () {
