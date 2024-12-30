@@ -17,7 +17,7 @@ import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
-import 'package:faker/faker.dart';
+import 'package:faker/faker.dart' as faker;
 import 'data/request/TilerError.dart';
 import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
@@ -50,7 +50,7 @@ class Utility {
     "friday",
     "saturday"
   ];
-  static final Faker _faker = Faker();
+  static final faker.Faker _faker = faker.Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
   static final Random randomizer = Random.secure();
@@ -134,6 +134,61 @@ class Utility {
     return retValue;
   }
 
+  static DateTime getFirstDate() {
+    DateTime firstDateInTheYear = DateTime(DateTime.now().year - 5, 1, 1);
+    List<DateTime> firstWeek = Utility.getDaysInWeek(firstDateInTheYear);
+    return firstWeek.first;
+  }
+
+  static DateTime getLastDate() {
+    DateTime lastDateInTheYear = DateTime(DateTime.now().year + 5, 12, 31);
+    List<DateTime> lastWeek = Utility.getDaysInWeek(lastDateInTheYear);
+    return lastWeek.last;
+  }
+
+  static String splittingEmoji(String emojis) {
+    String emojiString = "";
+    if (emojis!.contains(':')) {
+      emojiString = emojis!.split(':')[1].trim();
+    } else {
+      emojiString = emojis!..trim();
+      ;
+    }
+    return emojiString;
+  }
+
+  static bool isDateWithinPickerRange(DateTime date) {
+    final firstDay = getFirstDate();
+    final lastDay = getLastDate();
+    return (date.isAtSameMomentAs(firstDay) || date.isAfter(firstDay)) &&
+        (date.isAtSameMomentAs(lastDay) || date.isBefore(lastDay));
+  }
+
+  static DateTime getWeekSunday(DateTime selectedDay) {
+    return DateTime(selectedDay.year, selectedDay.month,
+        selectedDay.day - selectedDay.weekday % 7);
+  }
+
+  static List<DateTime> getDaysInWeek(DateTime selectedDay) {
+    final sunday = getWeekSunday(selectedDay);
+    List<DateTime> weekDays = List.generate(
+        7,
+        (index) =>
+            DateTime(sunday.year, sunday.month, sunday.day + index).dayDate);
+    return weekDays;
+  }
+
+  static List<DateTime> getDaysInMonth(DateTime selectedMonth) {
+    final days = <DateTime>[];
+    var currentDay =
+        DateTime(selectedMonth.year, selectedMonth.month, 1).dayDate;
+    while (currentDay.month == selectedMonth.month) {
+      days.addAll(getDaysInWeek(currentDay));
+      currentDay = days.last.add(Duration(days: 1));
+    }
+    return days;
+  }
+
   static int getDayIndex(DateTime time) {
     var spanInMicroSecond = time.dayDate.microsecondsSinceEpoch -
         Utility._beginningOfTime.dayDate.microsecondsSinceEpoch;
@@ -141,6 +196,11 @@ class Utility {
         (spanInMicroSecond.toDouble() / Duration.microsecondsPerDay.toDouble())
             .round();
     return retValue;
+  }
+
+  static int getDayOfMonthFromIndex(int dayIndex) {
+    DateTime date = Utility._beginningOfTime.add(Duration(days: dayIndex));
+    return date.day;
   }
 
   static DateTime getTimeFromIndex(int dayIndex) {
