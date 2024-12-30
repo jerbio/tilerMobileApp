@@ -40,6 +40,16 @@ class Utility {
     'November',
     'December'
   ];
+
+  static final List<String> weekdays = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday'
+  ];
   static final faker.Faker _faker = faker.Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
@@ -91,6 +101,25 @@ class Utility {
     retValue &= editTilerEvent.address == tilerEvent.address;
     retValue &=
         editTilerEvent.addressDescription == tilerEvent.addressDescription;
+    if (editTilerEvent.restrictionProfile != null &&
+        tilerEvent.restrictionProfile != null) {
+      retValue &= editTilerEvent.restrictionProfile!
+          .isEquivalent(tilerEvent.restrictionProfile!);
+    } else {
+      retValue &=
+          editTilerEvent.restrictionProfile == tilerEvent.restrictionProfile;
+    }
+    if (editTilerEvent.repetition != null && tilerEvent.repetition != null) {
+      retValue &=
+          editTilerEvent.repetition!.isEquivalent(tilerEvent.repetition!);
+    } else {
+      retValue &= editTilerEvent.repetition == tilerEvent.repetition;
+    }
+    if (editTilerEvent.uiConfig != null && tilerEvent.uiConfig != null) {
+      retValue &= editTilerEvent.uiConfig!.isEquivalent(tilerEvent.uiConfig!);
+    } else {
+      retValue &= editTilerEvent.uiConfig == tilerEvent.uiConfig;
+    }
     return retValue;
   }
 
@@ -286,9 +315,8 @@ class Utility {
               Utility.oneMin.inMilliseconds.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorGreen = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorRed = Random().nextInt(255);
+      adHocInterferringWithNowTile.color = Color.fromRGBO(Random().nextInt(255),
+          Random().nextInt(255), Random().nextInt(255), 1);
       adHocInterferringWithNowTile.id = Utility.getUuid;
       refreshedSubEvents.add(adHocInterferringWithNowTile);
     }
@@ -344,9 +372,8 @@ class Utility {
           end: end.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      subEvent.colorBlue = Random().nextInt(255);
-      subEvent.colorGreen = Random().nextInt(255);
-      subEvent.colorRed = Random().nextInt(255);
+      subEvent.color = Color.fromRGBO(Random().nextInt(255),
+          Random().nextInt(255), Random().nextInt(255), 1);
       subEvent.id = Utility.getUuid;
       refreshedSubEvents.add(subEvent);
     }

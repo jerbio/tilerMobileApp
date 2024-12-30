@@ -27,6 +27,11 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
+    const double iconSize = 12;
+    const TextStyle textStyle = TextStyle(
+        fontSize: 12,
+        fontFamily: TileStyles.rubikFontName,
+        color: const Color.fromRGBO(40, 40, 40, 1));
     String creatorInfo = widget.tileShareCluster?.creator?.username ??
         widget.tileShareCluster?.creator?.email ??
         "";
@@ -35,9 +40,9 @@ class _TileShareState extends State<TileShareSimpleWidget> {
       surfaceTintColor: Colors.transparent,
       color: Colors.white,
       elevation: 5,
-      margin: EdgeInsets.all(10),
+      margin: EdgeInsets.all(5),
       child: Padding(
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(10),
           child: Stack(
             children: [
               Column(
@@ -45,21 +50,21 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                 children: [
                   Text('${widget.tileShareCluster?.name ?? ""}',
                       style: TextStyle(
-                          fontSize: 24, fontFamily: TileStyles.rubikFontName)),
+                          fontSize: 12, fontFamily: TileStyles.rubikFontName)),
                   SizedBox(height: 8),
                   if (widget.tileShareCluster?.endTimeInMs != null)
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 16,
+                          size: iconSize,
                         ),
                         rowSpacer,
                         Text(
                           MaterialLocalizations.of(context).formatFullDate(
                               DateTime.fromMillisecondsSinceEpoch(
                                   widget.tileShareCluster!.endTimeInMs!)),
-                          style: TileStyles.defaultTextStyle,
+                          style: textStyle,
                         )
                       ],
                     )
@@ -70,13 +75,13 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                     children: [
                       Icon(
                         Icons.person_2_outlined,
-                        size: 16,
+                        size: iconSize,
                       ),
                       rowSpacer,
                       Text(
                           (creatorInfo.contains('@') ? '' : '@') +
                               '${creatorInfo}',
-                          style: TileStyles.defaultTextStyle)
+                          style: textStyle)
                     ],
                   ),
                 ],

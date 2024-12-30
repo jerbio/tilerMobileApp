@@ -367,4 +367,6 @@ class TileStyles {
     Color.fromRGBO(56, 174, 204, 1),
     Color.fromRGBO(102, 195, 84, 1)
   ];
+
+  static IconData restrictionProfileIcon = Icons.switch_left;
 }

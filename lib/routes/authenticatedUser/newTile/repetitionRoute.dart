@@ -345,7 +345,8 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                           applicableRepetitions[index].item1] = true;
                       RepetitionData? updatedRepetitionData = repetitionData ??
                           RepetitionData(
-                              frequency: applicableRepetitions[index].item1);
+                              frequency: applicableRepetitions[index].item1,
+                              isEnabled: true);
                       updatedRepetitionData.frequency =
                           applicableRepetitions[index].item1;
                       if (applicableRepetitions[index].item1 ==
