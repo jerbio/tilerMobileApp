@@ -62,7 +62,9 @@ class SignInComponentState extends State<SignInComponent>
   late double credentialManagerHeight = 400;
   double credentialButtonHeight = 175;
   bool isPendingSigning = false;
+  bool isSuccessfulSignin = false;
   bool isPendingRegistration = false;
+  bool isSuccessfulRegistration = false;
   bool isPendingResetPassword = false;
   bool isGoogleSignInEnabled = false;
   bool _isPasswordVisible = false;
@@ -222,6 +224,7 @@ class SignInComponentState extends State<SignInComponent>
         });
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
+        isSuccessfulSignin = authenticationData.isValid;
         if (!authenticationData.isValid) {
           AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
@@ -251,11 +254,12 @@ class SignInComponentState extends State<SignInComponent>
           context,
           MaterialPageRoute(
             builder: (context) => WelcomeScreen(
-                welcomeType: WelcomeType.login,
-                firstName: (authenticationData.username != null &&
-                        authenticationData.username!.isNotEmpty)
-                    ? authenticationData.username!
-                    : "",),
+              welcomeType: WelcomeType.login,
+              firstName: (authenticationData.username != null &&
+                      authenticationData.username!.isNotEmpty)
+                  ? authenticationData.username!
+                  : "",
+            ),
           ),
         );
         print(isValidSignIn);
@@ -303,6 +307,7 @@ class SignInComponentState extends State<SignInComponent>
         });
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
+        isSuccessfulRegistration = authenticationData.isValid;
         if (!authenticationData.isValid) {
           if (authenticationData.errorMessage != null) {
             hideButtonsTemporarily();
@@ -325,11 +330,12 @@ class SignInComponentState extends State<SignInComponent>
           context,
           MaterialPageRoute(
             builder: (context) => WelcomeScreen(
-                welcomeType: WelcomeType.register,
-                firstName: (authenticationData.username != null &&
-                        authenticationData.username!.isNotEmpty)
-                    ? authenticationData.username!
-                    : "",),
+              welcomeType: WelcomeType.register,
+              firstName: (authenticationData.username != null &&
+                      authenticationData.username!.isNotEmpty)
+                  ? authenticationData.username!
+                  : "",
+            ),
           ),
         );
 
@@ -520,11 +526,12 @@ class SignInComponentState extends State<SignInComponent>
           context,
           MaterialPageRoute(
             builder: (context) => WelcomeScreen(
-                welcomeType: WelcomeType.login,
-                firstName: (authenticationData.displayName != null &&
-                        authenticationData.displayName.isNotEmpty)
-                    ? authenticationData.displayName
-                    : "",),
+              welcomeType: WelcomeType.login,
+              firstName: (authenticationData.displayName != null &&
+                      authenticationData.displayName.isNotEmpty)
+                  ? authenticationData.displayName
+                  : "",
+            ),
           ),
         );
       }
@@ -682,7 +689,6 @@ class SignInComponentState extends State<SignInComponent>
           if (value != confirmPasswordEditingController.text) {
             return AppLocalizations.of(context)!.passwordsDontMatch;
           }
-
 
           if (value.length < minPasswordLength) {
             return "";
@@ -924,7 +930,7 @@ class SignInComponentState extends State<SignInComponent>
       buttons = [registerUserButton, backToSignInButton];
     }
 
-    if (this.isPendingSigning) {
+    if (this.isPendingSigning || this.isSuccessfulSignin) {
       buttons = [
         Spacer(),
         createSignInPendingComponent(AppLocalizations.of(context)!.signingIn),

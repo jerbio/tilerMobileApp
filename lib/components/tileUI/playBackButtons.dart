@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -18,7 +17,8 @@ class PlayBack extends StatefulWidget {
   SubCalendarEvent subEvent;
   List<PlaybackOptions>? forcedOption;
   Function? callBack;
-  PlayBack(this.subEvent, {this.forcedOption, this.callBack});
+  bool isWeeklyView;
+  PlayBack(this.subEvent, {this.forcedOption, this.callBack,this.isWeeklyView=false});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -97,6 +97,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: request));
+    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   resumeTile() async {
@@ -149,6 +150,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: request));
+    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   setAsNowTile() async {
@@ -201,6 +203,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: requestFuture));
+    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   completeTile() async {
@@ -252,6 +255,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: requestFuture));
+    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   deleteTile() async {
@@ -307,18 +311,20 @@ class PlayBackState extends State<PlayBack> {
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
     }
+    if(widget.isWeeklyView) Navigator.pop(context);
   }
 
   procrastinate() async {
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     if (subTile.id != null && subTile.id!.isNotEmpty) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => TileProcrastinateRoute(
-                    tileId: subTile.id!,
-                    callBack: this.widget.callBack,
-                  )));
+      if(widget.isWeeklyView) Navigator.pop(context);
+        Navigator.of(context).push(
+           MaterialPageRoute(
+               builder: (context) =>
+                   TileProcrastinateRoute(
+                     tileId: subTile.id!,
+                     callBack: this.widget.callBack,
+                   )));
     }
   }
 
