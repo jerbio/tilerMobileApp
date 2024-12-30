@@ -511,5 +511,9 @@
             "example": "6PM"
           }
         }},
-    "dayCast": "DayCast"
+    "dayCast": "DayCast",
+    "save":"Save",
+    "selectWeek":"Select a Week",
+    "selectYear":"Select Year",
+    "retrievingDataIssue":"Issue with retrieving data"
   }

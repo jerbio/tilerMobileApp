@@ -50,8 +50,7 @@ class _DaySummaryState extends State<DaySummary> {
           width: 30.0,
           height: 30.0,
         ));
-    const textStyle = const TextStyle(
-        fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
+
     Widget? warnWidget = isPending ? pendingShimmer : null;
     if ((dayData?.nonViable?.length ?? 0) > 0) {
       warnWidget = Container(
@@ -64,7 +63,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.nonViable?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileStyles.daySummaryStyle,
             )
           ],
         ),
@@ -85,7 +84,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.complete?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileStyles.daySummaryStyle,
             )
           ],
         ),
@@ -108,7 +107,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.tardy?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileStyles.daySummaryStyle,
             )
           ],
         ),
