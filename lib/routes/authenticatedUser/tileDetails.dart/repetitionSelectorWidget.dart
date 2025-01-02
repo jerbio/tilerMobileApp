@@ -5,7 +5,6 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class RepetitionSelectorWidget extends StatefulWidget {
@@ -107,20 +106,23 @@ class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
           _repetitionData = isRepetitionEndValid ? updatedRepetitionData : null;
           if (_repetitionData != null &&
               this.widget.onRepetitionUpdate != null) {
-            this.widget.onRepetitionUpdate!(
-                Repetition.fromRepetitionData(_repetitionData!));
+            Repetition dataToRepetition =
+                Repetition.fromRepetitionData(_repetitionData!);
+            dataToRepetition.tileTimeline =
+                this.widget.repetition?.tileTimeline;
+
+            this.widget.onRepetitionUpdate!(dataToRepetition);
+            _repetition = dataToRepetition;
           }
         });
       }
       if (!isRepetitionEndValid) {
         setState(() {
-          _repetitionData = null;
+          _repetition = null;
         });
       }
     });
   }
-
-  // Widget redirect
 
   @override
   Widget build(BuildContext context) {

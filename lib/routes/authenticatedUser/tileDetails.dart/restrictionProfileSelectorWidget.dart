@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 
 class RestrictionProfileSelectorWidget extends StatefulWidget {
   final RestrictionProfile? restrictionProfile;
@@ -23,26 +25,40 @@ class RestrictionProfileSelectorWidget extends StatefulWidget {
 
 class _RestrictionProfileSelectorWidget
     extends State<RestrictionProfileSelectorWidget> {
-  RestrictionProfile? _restrictionProfile;
-  RestrictionProfile? _workRestrictionProfile;
-  RestrictionProfile? _personalRestrictionProfile;
   @override
   void initState() {
     super.initState();
-    this._restrictionProfile = this.widget.restrictionProfile;
-    this._workRestrictionProfile = this.widget.workProfile;
-    this._personalRestrictionProfile = this.widget.personalProfile;
+  }
+
+  RestrictionProfile? get _restrictionProfile {
+    return this.widget.restrictionProfile;
+  }
+
+  RestrictionProfile? get _workRestrictionProfile {
+    return this.widget.workProfile;
+  }
+
+  RestrictionProfile? get _personalRestrictionProfile {
+    return this.widget.personalProfile;
   }
 
   Widget renderRestrictionProfileInfo() {
     String _restrictionProfileName = AppLocalizations.of(context)!.customHours;
-    if (_workRestrictionProfile != null &&
-        _workRestrictionProfile == _restrictionProfile) {
+    if ((_workRestrictionProfile != null &&
+            _workRestrictionProfile == _restrictionProfile) ||
+        (_workRestrictionProfile != null &&
+            _restrictionProfile != null &&
+            _restrictionProfile?.id != null &&
+            _restrictionProfile?.id == _workRestrictionProfile?.id)) {
       _restrictionProfileName = AppLocalizations.of(context)!.workProfileHours;
     }
 
-    if (_personalRestrictionProfile != null &&
-        _personalRestrictionProfile == _restrictionProfile) {
+    if ((_personalRestrictionProfile != null &&
+            _personalRestrictionProfile == _restrictionProfile) ||
+        (_personalRestrictionProfile != null &&
+            _restrictionProfile != null &&
+            _restrictionProfile?.id != null &&
+            _restrictionProfile?.id == _personalRestrictionProfile?.id)) {
       _restrictionProfileName = AppLocalizations.of(context)!.personalHours;
     }
 
@@ -57,34 +73,55 @@ class _RestrictionProfileSelectorWidget
         ),
       ),
       onPressed: () {
+        List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile =
+            [];
+        if (_workRestrictionProfile != null) {
+          _listedRestrictionProfile.add(new Tuple2(
+              AppLocalizations.of(context)!.workProfileHours,
+              _workRestrictionProfile!));
+        }
+        if (_personalRestrictionProfile != null) {
+          _listedRestrictionProfile.add(new Tuple2(
+              AppLocalizations.of(context)!.personalHours,
+              _personalRestrictionProfile!));
+        }
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': _restrictionProfile,
+          'namedRestrictionProfiles': _listedRestrictionProfile
         };
 
         Navigator.pushNamed(context, '/TimeRestrictionRoute',
                 arguments: restrictionParams)
             .whenComplete(() {
           RestrictionProfile? populatedRestrictionProfile;
-          if (restrictionParams.containsKey('routeRestrictionProfile')) {
+          if (restrictionParams.containsKey('routeRestrictionProfile') ||
+              restrictionParams["isAnyTime"] == true) {
             populatedRestrictionProfile =
                 restrictionParams['routeRestrictionProfile']
                     as RestrictionProfile?;
+            if (restrictionParams["isAnyTime"] == true) {
+              populatedRestrictionProfile = this._restrictionProfile?.clone();
+              if (populatedRestrictionProfile != null) {
+                populatedRestrictionProfile.isEnabled = false;
+              }
+            }
             restrictionParams.remove('routeRestrictionProfile');
             setState(() {
-              _restrictionProfile = populatedRestrictionProfile;
               if (_workRestrictionProfile != null &&
-                  _workRestrictionProfile == _restrictionProfile) {
+                  _workRestrictionProfile == populatedRestrictionProfile) {
                 _restrictionProfileName =
                     AppLocalizations.of(context)!.workProfileHours;
               }
 
               if (_personalRestrictionProfile != null &&
-                  _personalRestrictionProfile == _restrictionProfile) {
+                  _personalRestrictionProfile == populatedRestrictionProfile) {
                 _restrictionProfileName =
                     AppLocalizations.of(context)!.personalHours;
               }
               if (this.widget.onRestrictionProfileUpdate != null) {
-                this.widget.onRestrictionProfileUpdate!(_restrictionProfile);
+                this
+                    .widget
+                    .onRestrictionProfileUpdate!(populatedRestrictionProfile);
               }
             });
           }
