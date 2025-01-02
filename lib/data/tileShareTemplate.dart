@@ -11,6 +11,7 @@ class TileShareTemplate {
   List<DesignatedUser>? designatedUsers;
   int? start;
   int? end;
+  int? durationInMs;
 
   TileShareTemplate.fromJson(Map<String, dynamic> json) {
     id = '';
@@ -46,6 +47,9 @@ class TileShareTemplate {
       end = json['end'];
     }
 
+    if (json.containsKey('duration')) {
+      durationInMs = json['duration'];
+    }
     String miscDataKey = 'miscData';
     if (json.containsKey(miscDataKey) && json[miscDataKey] != null) {
       miscData = TileShareTemplateMiscData.fromJson(json['miscData']);

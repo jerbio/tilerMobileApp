@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
+import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -21,12 +24,16 @@ class DesignatedTileWidget extends StatefulWidget {
 
 class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isLoading = false;
+  bool _isForeCastLoading = false;
+  bool _isForeCastError = false;
   bool showNotes = false;
   bool showForecasts = false;
   final TileShareClusterApi tileClusterApi = TileShareClusterApi();
   final ScheduleApi scheduleApi = ScheduleApi();
+  final WhatIfApi whatIfApi = WhatIfApi();
   String _responseMessage = '';
   late DesignatedTile designatedTile;
+  ForecastResponse? forecastResponse = null;
   @override
   void initState() {
     super.initState();
@@ -152,13 +159,21 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     );
   }
 
+  Widget renderTileForeCast() {
+    if (this.forecastResponse != null &&
+        this.forecastResponse!.peekDays != null) {
+      return TileForecast(forecastDays: this.forecastResponse!.peekDays!);
+    }
+    return SizedBox.shrink();
+  }
+
   Widget bottomPanel() {
     if (this.showNotes) {
       return bottomNotes();
     }
 
     if (this.showForecasts) {
-      return bottomNotes();
+      return renderTileForeCast();
     }
 
     return SizedBox.shrink();
@@ -268,20 +283,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
               ),
               if (designatedTile.invitationStatus !=
                   InvitationStatus.accepted.name.toString())
-                Padding(
-                  padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                  child: ElevatedButton(
-                      child: FaIcon(
-                        FontAwesomeIcons.binoculars,
-                        color: TileStyles.primaryColor,
-                        size: iconSize,
-                      ),
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.all(0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      )),
-                ),
+                renderForeCastButton(iconSize),
               if (designatedTile.invitationStatus ==
                   InvitationStatus.accepted.name.toString()) ...[
                 Padding(
@@ -332,6 +334,87 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
         ],
       ),
     );
+  }
+
+  onForeCastButtonPress() {
+    setState(() {
+      showForecasts = !showForecasts;
+    });
+    if (!_isForeCastLoading && showForecasts) {
+      if (this.designatedTile.tileTemplate?.durationInMs != null &&
+          this.designatedTile.tileTemplate?.end != null) {
+        DateTime now = Utility.currentTime();
+        int currentMinute = now.minute;
+        int currentHour = now.hour;
+        int currentDay = now.day;
+        int currentMonth = now.month;
+        int currentYear = now.year;
+        Duration duration = Duration(
+            milliseconds: this.designatedTile.tileTemplate!.durationInMs!);
+        DateTime endTime = DateTime.fromMillisecondsSinceEpoch(
+            this.designatedTile.tileTemplate!.end!);
+        int endDay = endTime.day;
+        int endMonth = endTime.month;
+        int endYear = endTime.year;
+        var durInHours = duration.inHours;
+        var durrInMilliseconds = duration.inMilliseconds;
+        // var durInUtc = durationToUtcString(duration);
+
+        Map<String, Object> queryParams = {
+          "StartMinute": currentMinute.toString(),
+          "StartHour": currentHour.toString(),
+          "StartDay": currentDay.toString(),
+          "StartMonth": currentMonth.toString(),
+          "StartYear": currentYear.toString(),
+          "EndDay": endDay.toString(),
+          "EndMonth": endMonth.toString(),
+          "EndYear": endYear.toString(),
+          "DurationHours": durInHours.toString(),
+          "DurationInMs": durrInMilliseconds.toString(),
+          // "Duration": durInUtc.toString(),
+        };
+
+        setState(() {
+          _isForeCastLoading = true;
+          _isForeCastError = false;
+        });
+        whatIfApi.forecastNewTile(queryParams).then((value) {
+          forecastResponse = value;
+          setState(() {
+            _isForeCastLoading = false;
+            _isForeCastError = false;
+          });
+        }).catchError((error) {
+          setState(() {
+            _isForeCastError = true;
+            _isForeCastLoading = false;
+          });
+        });
+      }
+    }
+  }
+
+  Widget renderForeCastButton(double iconSize) {
+    if ((this.designatedTile.tileTemplate?.durationInMs != null &&
+        this.designatedTile.tileTemplate?.end != null)) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+        child: _isForeCastLoading
+            ? CircularProgressIndicator()
+            : ElevatedButton(
+                child: FaIcon(
+                  FontAwesomeIcons.binoculars,
+                  color: TileStyles.primaryColor,
+                  size: iconSize,
+                ),
+                onPressed: onForeCastButtonPress,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(0),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                )),
+      );
+    }
+    return SizedBox.shrink();
   }
 
   @override
