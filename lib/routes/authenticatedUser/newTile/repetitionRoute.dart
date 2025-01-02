@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -351,7 +350,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                           applicableRepetitions[index].item1;
                       if (applicableRepetitions[index].item1 ==
                           RepetitionFrequency.none) {
-                        updatedRepetitionData = null;
+                        updatedRepetitionData.isEnabled = false;
+                      } else {
+                        updatedRepetitionData.isEnabled = true;
                       }
 
                       setState(() {

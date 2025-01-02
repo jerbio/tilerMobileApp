@@ -369,4 +369,5 @@ class TileStyles {
   ];
 
   static IconData restrictionProfileIcon = Icons.switch_left;
+  static IconData repetitionIcon = Icons.repeat_outlined;
 }

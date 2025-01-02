@@ -440,11 +440,9 @@ class _TileDetailState extends State<TileDetail> {
   }
 
   Widget renderRepetitionTapable() {
-    Widget recurIcon = Icon(Icons.sync, color: inputFieldIconColor);
-    if (this.editTilerEvent?.repetition == null ||
-        this.editTilerEvent?.repetition?.isEnabled != true) {
-      recurIcon = Icon(Icons.sync_disabled, color: inputFieldIconColor);
-    }
+    Widget recurIcon =
+        Icon(TileStyles.repetitionIcon, color: inputFieldIconColor);
+
     return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -543,8 +541,10 @@ class _TileDetailState extends State<TileDetail> {
                 onRestrictionProfileUpdate:
                     (RestrictionProfile? updatedRestrictionProfile) {
                   if (updatedRestrictionProfile != null) {
-                    editTilerEvent!.restrictionProfile =
-                        updatedRestrictionProfile;
+                    setState(() {
+                      editTilerEvent!.restrictionProfile =
+                          updatedRestrictionProfile;
+                    });
                   }
                   dataChange();
                 },

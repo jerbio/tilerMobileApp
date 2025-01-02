@@ -32,8 +32,8 @@ class RepetitionData {
     RepetitionData retValue = RepetitionData(frequency: this.frequency);
     retValue.isForever = this.isForever;
     retValue.repetitionStart = this.repetitionStart;
+    retValue.repetitionEnd = this.repetitionEnd;
     retValue.isEnabled = this.isEnabled;
-    retValue.isForever = this.isForever;
     if (this.weeklyRepetition != null) {
       retValue.weeklyRepetition = Set.from(this.weeklyRepetition!);
     }
