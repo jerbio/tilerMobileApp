@@ -487,5 +487,7 @@
     "weeklyReurring":"Weekly",
     "biweeklyReurring":"Bi-Weekly",
     "monthlyReurring":"Monthly",
-    "yearlyReurring":"Yearly"
+    "yearlyReurring":"Yearly",
+    "ellipsisEmprtNotes":"Notes...",
+    "tileShareDelete":"Delete"
   }
