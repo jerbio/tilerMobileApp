@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
+import 'package:tiler_app/components/tileUI/weeklyDetailsTile.dart';
 
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
@@ -60,6 +62,30 @@ class TileGridWidgetState extends GridPositionableState {
         this.widget.height;
   }
 
+  void onTapPreviewTile(TilerEvent tile) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(TileStyles.borderRadius)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
+              child: PreviewDetailsTileWidget(tile),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (this.tilerEvent != null) {
@@ -69,7 +95,11 @@ class TileGridWidgetState extends GridPositionableState {
         child: Container(
           height: this.widgetHeight,
           width: widgetWidth,
-          child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!),
+          child: InkWell(
+              onTap: () {
+                onTapPreviewTile(tilerEvent!);
+              },
+              child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!)),
         ),
       );
     }

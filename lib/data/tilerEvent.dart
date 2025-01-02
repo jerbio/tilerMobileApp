@@ -119,14 +119,14 @@ class TilerEvent extends TilerObj with TimeRange {
     if (json.containsKey('colorOpacity')) {
       _colorOpacity = cast<double>(json['colorOpacity']);
     }
-    if (json.containsKey('_colorRed')) {
-      _colorRed = cast<int>(json['_colorRed']);
+    if (json.containsKey('colorRed')) {
+      _colorRed = cast<int>(json['colorRed']);
     }
-    if (json.containsKey('_colorGreen')) {
-      _colorGreen = cast<int>(json['_colorGreen']);
+    if (json.containsKey('colorGreen')) {
+      _colorGreen = cast<int>(json['colorGreen']);
     }
-    if (json.containsKey('_colorBlue')) {
-      _colorBlue = cast<int>(json['_colorBlue']);
+    if (json.containsKey('colorBlue')) {
+      _colorBlue = cast<int>(json['colorBlue']);
     }
     if (json.containsKey('isRecurring')) {
       isRecurring = json['isRecurring'];

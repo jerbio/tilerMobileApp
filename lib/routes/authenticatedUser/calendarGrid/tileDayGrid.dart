@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
 
 class TileDayGrid extends DayGridWidget {
   final List<TilerEvent>? tilerEvents;
-  TileDayGrid({this.tilerEvents});
+  TileDayGrid({this.tilerEvents}) : super(peekDay: PeekDay());
 }
 
 class TileDayGridState extends State<DayGridWidget> {
@@ -17,7 +19,7 @@ class TileDayGridState extends State<DayGridWidget> {
     List<TimeCellWidget> allDayTimeTiles = [];
     List<TimeCellWidget> tileTimeCell = [];
     int timeCellCount = 24;
-    double heightPerCell = TimeCellWidget.defaultTimeCelHeight;
+    double heightPerCell = GridPositionableWidget.defaultHeigtPerDuration;
     TimeOfDay currentTOD = TimeOfDay(hour: 0, minute: 00);
     for (int i = 0; i < timeCellCount; i++) {
       allDayTimeTiles.add(TimeOfDayTimeCellWidget(start: currentTOD));
