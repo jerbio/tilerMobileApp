@@ -5,7 +5,6 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 class Repetition extends TilerObj {
-  String? id;
   bool? isEnabled;
   bool? isForever;
   RepetitionFrequency? frequency;
@@ -67,6 +66,7 @@ class Repetition extends TilerObj {
   Repetition.fromRepetitionData(RepetitionData repetitionData) {
     this.isForever = repetitionData.isForever;
     this.frequency = repetitionData.frequency;
+    this.isEnabled = repetitionData.isEnabled;
 
     if (repetitionData.repetitionEnd != null &&
         repetitionData.repetitionStart != null) {
@@ -127,10 +127,8 @@ class Repetition extends TilerObj {
       return false;
     }
 
-    if (this.repetitionTimeline != null &&
-        other.repetitionTimeline != null &&
-        this.repetitionTimeline!.isEquivalent(other.repetitionTimeline!)) {
-      return false;
+    if (this.repetitionTimeline != null && other.repetitionTimeline != null) {
+      return this.repetitionTimeline!.isEquivalent(other.repetitionTimeline!);
     } else if (this.repetitionTimeline != other.repetitionTimeline) {
       return false;
     }

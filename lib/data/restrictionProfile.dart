@@ -82,6 +82,15 @@ class RestrictionProfile extends TilerObj {
     }
   }
 
+  RestrictionProfile clone() {
+    RestrictionProfile retValue = RestrictionProfile.fromJson({});
+    retValue.daySelection = this.daySelection.toList();
+    retValue.timeZone = this.timeZone;
+    retValue.isEnabled = this.isEnabled;
+
+    return retValue;
+  }
+
   RestrictionWeekConfig? toRestrictionWeekConfig() {
     RestrictionWeekConfig retValue = RestrictionWeekConfig();
     bool isRestrictionEnabled = false;
@@ -102,12 +111,17 @@ class RestrictionProfile extends TilerObj {
       retValue.timeZone = this.timeZone;
     }
     retValue.isEnabled = isRestrictionEnabled.toString();
+    retValue.restrictionProfileId = this.id;
     return retValue;
   }
 
   bool isEquivalent(RestrictionProfile other) {
     bool retValue = true;
     if (this == other) {
+      return true;
+    }
+
+    if (this.isEnabled != true && this.isEnabled == other.isEnabled) {
       return true;
     }
 

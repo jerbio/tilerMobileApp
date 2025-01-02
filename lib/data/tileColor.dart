@@ -35,7 +35,8 @@ class TileColor extends TilerObj {
 
   Color? get toColor {
     if (this.blue != null && this.green != null && this.red != null) {
-      return Color.fromRGBO(this.red!, this.green!, this.blue!, 1);
+      return Color.fromRGBO(
+          this.red!, this.green!, this.blue!, this.opacity ?? 1);
     }
     return null;
   }
@@ -45,7 +46,7 @@ class TileColor extends TilerObj {
       return true;
     }
     return this.blue == tilerColor.blue &&
-        this.green == tilerColor.blue &&
+        this.green == tilerColor.green &&
         this.red == tilerColor.red &&
         this.opacity == tilerColor.opacity;
   }

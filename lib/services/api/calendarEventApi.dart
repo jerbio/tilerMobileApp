@@ -96,7 +96,8 @@ class CalendarEventApi extends AppApi {
       'CalAddressDescription': calEvent.addressDescription?.toString(),
       'IsCalAddressVerified': calEvent.isAddressVerified?.toString(),
       'IsLocationCleared': clearLocation,
-      'RestrictiveWeek': calEvent.restrictionProfile?.toRestrictionWeekConfig(),
+      'RestrictiveWeek':
+          calEvent.restrictionProfile?.toRestrictionWeekConfig()?.toJson(),
       'RepetitionConfig': calEvent.repetition?.toRequestJson(),
       'ColorConfig': calEvent.uiConfig?.tileColor?.toRequestJson(),
     };
@@ -104,6 +105,7 @@ class CalendarEventApi extends AppApi {
       queryParameters['Duration'] =
           calEvent.tileDuration!.inMilliseconds.toString();
     }
+
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
