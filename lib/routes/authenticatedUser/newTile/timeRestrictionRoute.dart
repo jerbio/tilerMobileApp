@@ -279,7 +279,7 @@ class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
         if (stateWidget.isAnyTime) {
           if (restrictionProfileParams != null) {
             restrictionProfileParams['routeRestrictionProfile'] = null;
-            restrictionProfileParams['isAnytTime'] = true;
+            restrictionProfileParams['isAnyTime'] = true;
           }
           return;
         }

@@ -155,6 +155,7 @@
     "edit": "Edit",
     "workProfileHours": "Work Hours",
     "personalHours": "Personal Hours",
+    "customHours": "Custom Hours",
     "logout": "Logout",
     "bedTime": "Bed Time",
     "noteEllipsis": "Note...",
@@ -515,5 +516,14 @@
     "save":"Save",
     "selectWeek":"Select a Week",
     "selectYear":"Select Year",
-    "retrievingDataIssue":"Issue with retrieving data"
+    "retrievingDataIssue":"Issue with retrieving data",
+    "recurring":"Recurring",
+    "nonRecurring":"Non-Recurring",
+    "dailyReurring":"Daily",
+    "weeklyReurring":"Weekly",
+    "biweeklyReurring":"Bi-Weekly",
+    "monthlyReurring":"Monthly",
+    "yearlyReurring":"Yearly",
+    "ellipsisEmprtNotes":"Notes...",
+    "tileShareDelete":"Delete"
   }

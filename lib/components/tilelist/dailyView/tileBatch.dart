@@ -17,8 +17,6 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
-
 class TileBatch extends StatefulWidget {
   static final TextStyle dayHeaderTextStyle = TextStyle(
       fontSize: 40,
@@ -32,19 +30,17 @@ class TileBatch extends StatefulWidget {
   ConnectionState? connectionState;
 
   TileBatch(
-      {
-        this.dayIndex,
-        this.tiles,
-        this.sleepTimeline,
-        this.connectionState,
-        this.dayData,
-        Key? key})
+      {this.dayIndex,
+      this.tiles,
+      this.sleepTimeline,
+      this.connectionState,
+      this.dayData,
+      Key? key})
       : super(key: key);
 
   @override
   TileBatchState createState() => TileBatchState();
 }
-
 
 class TileBatchState extends State<TileBatch> {
   String uniqueKey = Utility.getUuid;
@@ -54,7 +50,7 @@ class TileBatchState extends State<TileBatch> {
   Map<String, TilerEvent> latestBuildTiles = new Map<String, TilerEvent>();
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
   Map<String, Tuple2<TilerEvent, RemovalType>> removedTiles =
-  new Map<String, Tuple2<TilerEvent, RemovalType>>();
+      new Map<String, Tuple2<TilerEvent, RemovalType>>();
   List<Widget> childrenColumnWidgets = [];
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late ListModel<TilerEvent>? _list;
@@ -89,10 +85,6 @@ class TileBatchState extends State<TileBatch> {
       sleepTimeline = timeline;
       uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
     });
-    // print('---sleep TL 0 -- ' +
-    //     sleepTimeline!.startTime.toString() +
-    //     ' - ' +
-    //     uniqueKey);
   }
 
   Widget _buildRemovedItem(
@@ -155,11 +147,10 @@ class TileBatchState extends State<TileBatch> {
         currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
         currentScheduleSummaryState is ScheduleDaySummaryLoading) {
       this.context.read<ScheduleSummaryBloc>().add(
-        GetScheduleDaySummaryEvent(timeline: lookupTimeline),
-      );
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -300,37 +291,37 @@ class TileBatchState extends State<TileBatch> {
           final currentState = this.context.read<ScheduleBloc>().state;
           if (currentState is ScheduleEvaluationState) {
             this.context.read<ScheduleBloc>().add(
-              GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.lookupTimeline,
-                  previousTimeline: currentState.lookupTimeline,
-                  forceRefresh: true),
-            );
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.lookupTimeline,
+                      previousTimeline: currentState.lookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadedState) {
             this.context.read<ScheduleBloc>().add(
-              GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.lookupTimeline,
-                  previousTimeline: currentState.lookupTimeline,
-                  forceRefresh: true),
-            );
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.lookupTimeline,
+                      previousTimeline: currentState.lookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
           }
 
           if (currentState is ScheduleLoadingState) {
             this.context.read<ScheduleBloc>().add(
-              GetScheduleEvent(
-                  isAlreadyLoaded: true,
-                  previousSubEvents: currentState.subEvents,
-                  scheduleTimeline: currentState.previousLookupTimeline,
-                  previousTimeline: currentState.previousLookupTimeline,
-                  forceRefresh: true),
-            );
+                  GetScheduleEvent(
+                      isAlreadyLoaded: true,
+                      previousSubEvents: currentState.subEvents,
+                      scheduleTimeline: currentState.previousLookupTimeline,
+                      previousTimeline: currentState.previousLookupTimeline,
+                      forceRefresh: true),
+                );
             refreshScheduleSummary(
                 lookupTimeline: currentState.previousLookupTimeline);
           }
@@ -361,9 +352,9 @@ class TileBatchState extends State<TileBatch> {
     if (!this._pendingRendering && this.pendingRenderedTiles != null) {
       Timer(
         Duration(milliseconds: 1000),
-            () {
+        () {
           WidgetsBinding.instance.addPostFrameCallback(
-                (_) {
+            (_) {
               if (mounted) {
                 setState(() {
                   this.pendingRenderedTiles = null;
@@ -390,9 +381,9 @@ class TileBatchState extends State<TileBatch> {
       bool pendingRendering) {
     if (timeSectionTiles != null && !pendingRendering) {
       List<Tuple3<TilerEvent, int?, int?>> changeInTilerEventOrdering =
-      timeSectionTiles.values
-          .where((element) => element.item2 != element.item3)
-          .toList();
+          timeSectionTiles.values
+              .where((element) => element.item2 != element.item3)
+              .toList();
       bool allNewEntries = isAllNewEntries(timeSectionTiles);
       if (allNewEntries) {
         List finalOrederedTileValues = timeSectionTiles.values.toList();
