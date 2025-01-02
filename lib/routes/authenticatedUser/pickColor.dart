@@ -132,9 +132,7 @@ class PickColorState extends State<PickColor> {
     );
     Widget retValue = Container(
       alignment: Alignment.center,
-      // height: 450,
       child: ListView(
-        // mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Container(
             padding: EdgeInsets.all(20),
