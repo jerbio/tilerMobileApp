@@ -186,6 +186,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     const supplementalTextStyle =
         TextStyle(fontSize: 8, fontFamily: TileStyles.rubikFontName);
     String? designatedUsename = designatedTile.user?.username;
+    print(designatedTile.invitationStatus.toString());
     return Expanded(
       child: Column(
         mainAxisSize: MainAxisSize.min,

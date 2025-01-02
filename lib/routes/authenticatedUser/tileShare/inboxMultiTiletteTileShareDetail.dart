@@ -58,14 +58,12 @@ class _InboxMultiTiletteTileShareDetailWidget
       clusterApi
           .getTileShareClusters(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
-        Utility.debugPrint("Success getting tile cluster");
         setState(() {
           tilerError = null;
           tileShareCluster = value.firstOrNull;
           isLoading = false;
         });
       }).catchError((onError) {
-        Utility.debugPrint("Failed to get tile cluster");
         setState(() {
           tilerError = TilerError(
               message:
@@ -82,15 +80,11 @@ class _InboxMultiTiletteTileShareDetailWidget
           .getDesignatedTiles(clusterId: this.widget.tileShareClusterData.id)
           .then((value) {
         setState(() {
-          Utility.debugPrint("Success getting tileShare list ");
           tilerError = null;
           designatedTileList = value;
-          Utility.debugPrint("Success getting tileShare list " +
-              designatedTileList.toString());
           isTileListLoading = false;
         });
       }).catchError((onError) {
-        Utility.debugPrint("Error getting tileShare list ");
         setState(() {
           if (onError is TilerError) {
             tilerError = onError;
