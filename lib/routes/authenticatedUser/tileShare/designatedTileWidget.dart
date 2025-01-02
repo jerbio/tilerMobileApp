@@ -21,6 +21,8 @@ class DesignatedTileWidget extends StatefulWidget {
 
 class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isLoading = false;
+  bool showNotes = false;
+  bool showForecasts = false;
   final TileShareClusterApi tileClusterApi = TileShareClusterApi();
   final ScheduleApi scheduleApi = ScheduleApi();
   String _responseMessage = '';
@@ -76,13 +78,11 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   final double lrPadding = 12;
   ButtonStyle generateButtonStyle(bool isSelected, Color defaultColor) {
     ButtonStyle retValue = ElevatedButton.styleFrom(
-        // padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
-        padding: EdgeInsets.all(0),
+        padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
         foregroundColor: defaultColor);
     if (isSelected) {
       retValue = ElevatedButton.styleFrom(
-          // padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
-          padding: EdgeInsets.all(0),
+          padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
           backgroundColor: defaultColor,
           foregroundColor: Colors.white);
     }
@@ -90,7 +90,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   }
 
   Widget renderButtons() {
-    const double iconSize = 10;
+    const double iconSize = 14;
     const buttonTextStyle =
         TextStyle(fontSize: 12, fontFamily: TileStyles.rubikFontName);
     if (_isLoading)
@@ -128,8 +128,45 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       );
   }
 
+  Widget bottomNotes() {
+    String noteText = "";
+    if (this.designatedTile.tileTemplate?.miscData?.userNote != null) {
+      noteText = this.designatedTile.tileTemplate!.miscData!.userNote!;
+    }
+    if (!noteText.isNot_NullEmptyOrWhiteSpace()) {
+      return Text(AppLocalizations.of(context)!.ellipsisEmprtNotes);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black12,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(5),
+            topRight: Radius.circular(5),
+            bottomLeft: Radius.circular(5),
+            bottomRight: Radius.circular(5)),
+      ),
+      padding: EdgeInsets.all(10),
+      width: double.infinity,
+      child: Text(noteText),
+    );
+  }
+
+  Widget bottomPanel() {
+    if (this.showNotes) {
+      return bottomNotes();
+    }
+
+    if (this.showForecasts) {
+      return bottomNotes();
+    }
+
+    return SizedBox.shrink();
+  }
+
   Widget designatedTileDetails() {
     const double fontSize = 10;
+    const double iconSize = 14;
     const spaceDivider = SizedBox(height: 5);
     const supplementalTextStyle =
         TextStyle(fontSize: 8, fontFamily: TileStyles.rubikFontName);
@@ -209,17 +246,62 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                   fontFamily: TileStyles.rubikFontName),
             ),
           spaceDivider,
-          if (designatedTile.invitationStatus ==
-              InvitationStatus.accepted.name.toString())
-            Row(
-              children: [
+          Row(
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                child: ElevatedButton(
+                    child: FaIcon(
+                      FontAwesomeIcons.noteSticky,
+                      color: TileStyles.primaryColor,
+                      size: iconSize,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        showNotes = !showNotes;
+                      });
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(0),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    )),
+              ),
+              if (designatedTile.invitationStatus !=
+                  InvitationStatus.accepted.name.toString())
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  child: ElevatedButton(
+                      child: FaIcon(
+                        FontAwesomeIcons.binoculars,
+                        color: TileStyles.primaryColor,
+                        size: iconSize,
+                      ),
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.all(0),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      )),
+                ),
+              if (designatedTile.invitationStatus ==
+                  InvitationStatus.accepted.name.toString()) ...[
                 Padding(
                   padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
                   child: ElevatedButton.icon(
-                      onPressed: () {},
-                      icon: FaIcon(
-                        FontAwesomeIcons.binoculars,
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    TileDetail.byDesignatedTileId(
+                                      designatedTileTemplateId:
+                                          this.designatedTile.id!,
+                                      loadSubEvents: true,
+                                    )));
+                      },
+                      icon: Icon(
+                        Icons.style_outlined,
                         color: TileStyles.primaryColor,
+                        size: iconSize,
                       ),
                       label: this.designatedTile.completionPercentage != null
                           ? Text(
@@ -241,46 +323,12 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                             )
                           : SizedBox.shrink()),
                 ),
-                if (this.designatedTile.id.isNot_NullEmptyOrWhiteSpace())
-                  ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    TileDetail.byDesignatedTileId(
-                                      designatedTileTemplateId:
-                                          this.designatedTile.id!,
-                                      loadSubEvents: true,
-                                    )));
-                      },
-                      icon: Icon(
-                        Icons.style_outlined,
-                        color: TileStyles.primaryColor,
-                      ),
-                      label: this.designatedTile.completionPercentage != null
-                          ? Text(
-                              "${this.designatedTile.completionPercentage!.round()}%",
-                              style: TextStyle(
-                                  fontSize: 10,
-                                  fontFamily: TileStyles.rubikFontName,
-                                  color: this
-                                              .designatedTile
-                                              .completionPercentage! >
-                                          66.66
-                                      ? Colors.green
-                                      : this
-                                                  .designatedTile
-                                                  .completionPercentage! >
-                                              33.33
-                                          ? Colors.orange
-                                          : TileStyles.primaryColor),
-                            )
-                          : SizedBox.shrink())
-              ],
-            )
-          else
-            SizedBox.shrink()
+              ] else
+                SizedBox.shrink(),
+            ],
+          ),
+          spaceDivider,
+          bottomPanel()
         ],
       ),
     );
