@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
@@ -17,7 +18,8 @@ class TileShareList extends StatefulWidget {
   State<StatefulWidget> createState() => _TileShareListState();
 }
 
-class _TileShareListState extends State<TileShareList> {
+class _TileShareListState extends State<TileShareList>
+    with SingleTickerProviderStateMixin {
   TileShareClusterApi tileClusterApi = TileShareClusterApi();
   ScrollController? _scrollController;
   int index = 0;
@@ -25,7 +27,10 @@ class _TileShareListState extends State<TileShareList> {
   bool hasMore = true;
   bool isLoading = false;
   List<TileShareClusterData> tileShareClusters = [];
+  Set deletedTileShareIds = Set();
   late bool isOubox;
+
+  late final controller = SlidableController(this);
 
   @override
   void initState() {
@@ -82,9 +87,14 @@ class _TileShareListState extends State<TileShareList> {
         }
       });
       setState(() {
-        tileShareClusters =
-            tileShareClusters.followedBy(nonNullTileShareClusters).toList();
-        index = tileShareClusters.length;
+        tileShareClusters = [];
+        for (var tileShare
+            in tileShareClusters.followedBy(nonNullTileShareClusters)) {
+          if (tileShare.id.isNot_NullEmptyOrWhiteSpace() &&
+              !deletedTileShareIds.contains(tileShare.id!)) {
+            tileShareClusters.add(tileShare);
+          }
+        }
         if (nonNullTileShareClusters.length < pageSize) {
           hasMore = false;
         }
@@ -139,6 +149,87 @@ class _TileShareListState extends State<TileShareList> {
     );
   }
 
+  Widget renderSlidableTileShare(TileShareClusterData tileShareClusterData) {
+    var deleteTileShare = (BuildContext context) {
+      if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
+        this
+            .tileClusterApi
+            .deleteCluster(tileShareClusterData.id!)
+            .then((value) {
+          getTileShareCluster().then((value) {
+            setState(() {
+              if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
+                deletedTileShareIds.add(tileShareClusterData.id);
+              }
+              tileShareClusters.removeWhere((eachTileShareCluster) =>
+                  eachTileShareCluster.id == tileShareClusterData.id);
+            });
+          });
+        });
+      }
+    };
+    return Slidable(
+        // Specify a key if the Slidable is dismissible.
+        key: ValueKey<String>(tileShareClusterData.id ?? Utility.getUuid),
+
+        // The end action pane is the one at the right or the bottom side.
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          dismissible: DismissiblePane(onDismissed: () {}),
+          children: [
+            SlidableAction(
+              onPressed: deleteTileShare,
+              backgroundColor: TileStyles.deletedBackgroundColor,
+              foregroundColor: Colors.white,
+              icon: Icons.delete,
+              label: AppLocalizations.of(context)!.tileShareDelete,
+            ),
+          ],
+        ),
+        child: TileShareSimpleWidget(
+          tileShareCluster: tileShareClusterData,
+          isReadOnly: true,
+        ));
+  }
+
+  Widget renderDismissibleTileShare(TileShareClusterData tileShareClusterData) {
+    Widget dismissibleSimpleTileShareWidget = Dismissible(
+        direction: DismissDirection.endToStart,
+        background: Container(
+          padding: EdgeInsets.all(10),
+          alignment: Alignment.centerRight,
+          color: TileStyles.deletedBackgroundColor,
+          child: Icon(
+            Icons.delete,
+            color: TileStyles.primaryContrastColor,
+            size: 40,
+          ),
+        ),
+        key: ValueKey<String>(tileShareClusterData.id ?? Utility.getUuid),
+        onDismissed: (DismissDirection direction) {
+          {
+            if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
+              this
+                  .tileClusterApi
+                  .deleteCluster(tileShareClusterData.id!)
+                  .then((value) {
+                getTileShareCluster().then((value) {
+                  setState(() {
+                    tileShareClusters.removeWhere((eachTileShareCluster) =>
+                        eachTileShareCluster.id == tileShareClusterData.id);
+                  });
+                });
+              });
+            }
+          }
+        },
+        child: TileShareSimpleWidget(
+          tileShareCluster: tileShareClusterData,
+          isReadOnly: true,
+        ));
+    return dismissibleSimpleTileShareWidget;
+  }
+
   Widget renderBody() {
     int toBeRenderedElementCount = tileShareClusters.length;
     if (isLoading) {
@@ -152,6 +243,7 @@ class _TileShareListState extends State<TileShareList> {
     }
 
     return ListView.builder(
+        key: ValueKey(Utility.getUuid),
         controller: _scrollController,
         itemCount: toBeRenderedElementCount,
         itemBuilder: (context, index) {
@@ -160,43 +252,9 @@ class _TileShareListState extends State<TileShareList> {
               tileShareCluster: tileShareClusters[index],
               isReadOnly: true,
             );
-            Widget dismissibleSimpleTileShareWidget = Dismissible(
-                direction: DismissDirection.endToStart,
-                background: Container(
-                  padding: EdgeInsets.all(10),
-                  alignment: Alignment.centerRight,
-                  color: TileStyles.deletedBackgroundColor,
-                  child: Icon(
-                    Icons.delete,
-                    color: TileStyles.primaryContrastColor,
-                    size: 40,
-                  ),
-                ),
-                key: ValueKey<String>(
-                    tileShareClusters[index].id ?? Utility.getUuid),
-                onDismissed: (DismissDirection direction) {
-                  {
-                    TileShareClusterData tileShareClusterData =
-                        tileShareClusters[index];
-                    if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
-                      this
-                          .tileClusterApi
-                          .deleteCluster(tileShareClusterData.id!)
-                          .then((value) {
-                        getTileShareCluster().then((value) {
-                          setState(() {
-                            tileShareClusters.removeWhere(
-                                (eachTileShareCluster) =>
-                                    eachTileShareCluster.id ==
-                                    tileShareClusterData.id);
-                          });
-                        });
-                      });
-                    }
-                  }
-                },
-                child: simpleTileShareWidget);
+
             return InkWell(
+              key: ValueKey(Utility.getUuid),
               onTap: () {
                 Navigator.push(
                     context,
@@ -207,7 +265,8 @@ class _TileShareListState extends State<TileShareList> {
                             )));
               },
               child: isOubox
-                  ? dismissibleSimpleTileShareWidget
+                  // ? renderDismissibleTileShare(tileShareClusters[index])
+                  ? renderSlidableTileShare(tileShareClusters[index])
                   : simpleTileShareWidget,
             );
           }

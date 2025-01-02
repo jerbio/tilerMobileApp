@@ -47,7 +47,7 @@ class TileStyles {
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith((states) {
-      return primaryColor;
+      return Colors.white;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.white;
@@ -370,4 +370,7 @@ class TileStyles {
   static const Color gridLineColor = primaryColor;
   static const double thickness = 1.0;
   static const double timeOfDayCellWidth = 35;
+
+  static IconData restrictionProfileIcon = Icons.switch_left;
+  static IconData repetitionIcon = Icons.repeat_outlined;
 }

@@ -139,9 +139,9 @@ class _SettingState extends State<Setting> {
 
             if (restrictionProfile != null &&
                 (populatedRestrictionProfile == null ||
-                    (restrictionParams.containsKey('isAnytTime') &&
-                        restrictionParams['isAnytTime'] != null))) {
-              restrictionProfile.isEnabled = !restrictionParams['isAnytTime'];
+                    (restrictionParams.containsKey('isAnyTime') &&
+                        restrictionParams['isAnyTime'] != null))) {
+              restrictionProfile.isEnabled = !restrictionParams['isAnyTime'];
               populatedRestrictionProfile = restrictionProfile;
             }
 
@@ -239,8 +239,14 @@ class _SettingState extends State<Setting> {
         .read<SubCalendarTileBloc>()
         .add(LogOutSubCalendarTileBlocEvent());
     this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-    this.context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
-    this.context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
+    this
+        .context
+        .read<WeeklyUiDateManagerBloc>()
+        .add(LogOutWeeklyUiDateManagerEvent());
+    this
+        .context
+        .read<MonthlyUiDateManagerBloc>()
+        .add(LogOutMonthlyUiDateManagerEvent());
     this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
     this
         .context
