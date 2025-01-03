@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/data/deviceLocationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
@@ -41,6 +44,11 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   statusCheck: statusCheck,
                   denyAccess: false)
               .then((value) {
+            DeviceLocationProfile deviceLocationProfile =
+                DeviceLocationProfile();
+            BlocProvider.of<DeviceSettingBloc>(context).add(
+                LoadedProfileDeviceSettingEvent(
+                    deviceLocationProfile: DeviceLocationProfile()));
             setState(() {
               if (!mounted) return;
               if (value != null) {
@@ -112,6 +120,11 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                 onPressed: () {
                   if (this.widget.onChange != null) {
                     this.widget.onChange!(locationAccess);
+                    DeviceLocationProfile deviceLocationProfile =
+                        DeviceLocationProfile();
+                    BlocProvider.of<DeviceSettingBloc>(context).add(
+                        LoadedProfileDeviceSettingEvent(
+                            deviceLocationProfile: DeviceLocationProfile()));
                   }
                 },
                 child: Text(AppLocalizations.of(context)!.dismiss,
