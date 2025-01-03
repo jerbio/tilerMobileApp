@@ -1,15 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
+import 'package:async/async.dart'; // Import necessary packages.
+import 'package:cancelable/cancelable.dart';
 
 import '../../constants.dart' as Constants;
 
@@ -20,7 +26,8 @@ abstract class AppApi {
   List<Tuple3<StreamSubscription, Future, String>>? pendingFuture;
   late Authentication authentication;
   late AccessManager accessManager;
-  AppApi() {
+  Function? getContextCallBack;
+  AppApi({this.getContextCallBack}) {
     authentication = new Authentication();
     accessManager = AccessManager();
   }
@@ -96,6 +103,44 @@ abstract class AppApi {
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
     if (includeLocationParams) {
+      if (this.getContextCallBack != null) {
+        BuildContext? buildContext = this.getContextCallBack!();
+        if (buildContext != null) {
+          var awaitableUiChanges = CancelableOperation.fromFuture(
+              Future.delayed(const Duration(seconds: 50)));
+
+          BlocProvider.of<DeviceSettingBloc>(buildContext).add(
+              GetLocationProfileDeviceSettingEvent(
+                  showLocationPermissionWidget: true,
+                  callBacks: <Function>[
+                () {
+                  print("cancellable called");
+                  awaitableUiChanges.cancel();
+                }
+              ]));
+
+          print("before cancellable");
+          await awaitableUiChanges.valueOrCancellation();
+          print("after cancellable");
+        }
+      }
+
+      // CancelableCompleter completer = CancelableCompleter(onCancel: () {
+      //   print('onCancel');
+      // });
+
+      // // completer.operation.cancel(); // comment/uncomment this to log the different callbacks
+
+      // completer.complete(Future.value('future result'));
+      // print('isCanceled: ${completer.isCanceled}');
+      // print('isCompleted: ${completer.isCompleted}');
+      // completer.operation.value.then((value) => {
+      //       print('then: $value'),
+      //     });
+      // completer.operation.value.whenComplete(() => {
+      //       print('onDone'),
+      //     });
+
       var locationAccessResult = await accessManager.locationAccess();
       if (locationAccessResult != null) {
         isLocationVerified = locationAccessResult.item2;

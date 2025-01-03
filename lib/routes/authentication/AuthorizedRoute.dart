@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
@@ -42,6 +43,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final ScheduleApi scheduleApi = new ScheduleApi();
   final AccessManager accessManager = AccessManager();
+  bool renderLocationPermissionOverLay = false;
 
   Tuple3<Position, bool, bool> locationAccess = Tuple3(
       Position(
@@ -74,6 +76,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       localNotificationService.subscribeToRemoteNotification(this.context);
     });
     localNotificationService.initialize(this.context);
+    final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
+    scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
 
     // accessManager.locationAccess(statusCheck: true).then((value) {
     //   if (this.mounted) {
@@ -395,18 +401,18 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   Widget renderLocationRequest(AccessManager accessManager) {
+    print("Outputing LocationAccessWidget");
     return LocationAccessWidget(accessManager, locationUpdate);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget renderAuthorizedUserPageView() {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
-    double height = MediaQuery.of(context).size.height;
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // double height = MediaQuery.of(context).size.height;
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
@@ -564,5 +570,39 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<DeviceSettingBloc, DeviceSettingState>(
+            listener: (context, state) {
+              print('DeviceSettingBloc listener');
+              print("render loading ui " + state.toString());
+              if (state is DeviceLocationSettingLoading) {
+                print("render loading ui " + state.renderLoadingUI.toString());
+                if (state.renderLoadingUI == true) {
+                  setState(() {
+                    renderLocationPermissionOverLay = true;
+                  });
+                }
+              }
+
+              if (state is DeviceSettingLoaded) {
+                setState(() {
+                  renderLocationPermissionOverLay = false;
+                });
+              }
+            },
+          )
+        ],
+        child:
+            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+          if (renderLocationPermissionOverLay) {
+            return renderLocationRequest(accessManager);
+          }
+          return renderAuthorizedUserPageView();
+        }));
   }
 }

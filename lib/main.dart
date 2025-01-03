@@ -11,6 +11,7 @@ import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
@@ -150,7 +151,6 @@ class _TilerAppState extends State<TilerApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => SubCalendarTileBloc()),
-        BlocProvider(create: (context) => ScheduleBloc()),
         BlocProvider(create: (context) => CalendarTileBloc()),
         BlocProvider(create: (context) => UiDateManagerBloc()),
         BlocProvider(create: (context) => ScheduleSummaryBloc()),
@@ -158,7 +158,15 @@ class _TilerAppState extends State<TilerApp> {
         BlocProvider(create: (context) => IntegrationsBloc()),
         BlocProvider(create: (context) => TileListCarouselBloc()),
         BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
-        BlocProvider(create: (context) => ForecastBloc())
+        BlocProvider(create: (context) => ForecastBloc()),
+        BlocProvider(
+            create: (context) => DeviceSettingBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => ScheduleBloc(getContextCallBack: () {
+                  return this.context;
+                })),
       ],
       child: MaterialApp(
         title: 'Tiler',
