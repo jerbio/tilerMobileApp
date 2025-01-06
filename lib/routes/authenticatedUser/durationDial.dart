@@ -132,6 +132,7 @@ class DurationDialState extends State<DurationDial> {
     }
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+        routeName: "durationDial",
         appBar: AppBar(
           backgroundColor: TileStyles.primaryColor,
           title: Text(

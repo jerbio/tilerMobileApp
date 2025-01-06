@@ -72,6 +72,8 @@ class _TileDetailState extends State<TileDetail> {
       fontFamily: TileStyles.rubikFontName,
       fontWeight: FontWeight.normal,
       fontSize: 24);
+  static final String tileDetailCancelAndProceedRouteName =
+      "tileDetailCancelAndProceedRouteName";
 
   @override
   void initState() {
@@ -657,6 +659,7 @@ class _TileDetailState extends State<TileDetail> {
           })
         ],
         child: CancelAndProceedTemplateWidget(
+          routeName: tileDetailCancelAndProceedRouteName,
           onProceed: this.onProceed,
           appBar: AppBar(
             backgroundColor: TileStyles.primaryColor,

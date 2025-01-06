@@ -47,6 +47,9 @@ class _SettingState extends State<Setting> {
   bool isTimeOfDayLoaded = false;
   bool isAllRestrictionProfileLoaded = false;
 
+  static final String settingCancelAndProceedRouteName =
+      "settingCancelAndProceedRouteName";
+
   void showMessage(String message) {
     Fluttertoast.showToast(
         msg: message,
@@ -399,6 +402,7 @@ class _SettingState extends State<Setting> {
     childElements.add(logoutButton);
     childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(
+      routeName: settingCancelAndProceedRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.appBarColor,
         title: Text(

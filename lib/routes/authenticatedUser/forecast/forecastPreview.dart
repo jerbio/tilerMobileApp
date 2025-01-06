@@ -31,6 +31,8 @@ class ForecastPreview extends StatelessWidget {
 }
 
 class ForecastView extends StatelessWidget {
+  static final String forecastCancelAndProceedRouteName =
+      "forecastCancelAndProceed";
   const ForecastView({super.key});
 
   @override
@@ -38,6 +40,7 @@ class ForecastView extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
+      routeName: forecastCancelAndProceedRouteName,
       bottomWidget: GestureDetector(
         onTap: () {
           Map<String, dynamic> newTileParams = {'newTile': null};

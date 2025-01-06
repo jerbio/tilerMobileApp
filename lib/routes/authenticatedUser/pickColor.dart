@@ -40,6 +40,7 @@ class PickColorState extends State<PickColor> {
       .toColor();
   Color? initialColor;
   bool _isInitialize = false;
+  final String _colorPickernRouteName = "PickColorRoute";
 
   @override
   void initState() {
@@ -196,6 +197,7 @@ class PickColorState extends State<PickColor> {
     }
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      routeName: _colorPickernRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
         title: Text(
