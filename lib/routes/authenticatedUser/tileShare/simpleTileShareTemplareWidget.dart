@@ -79,7 +79,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                       style: TextStyle(
                           fontSize: 24, fontFamily: TileStyles.rubikFontName)),
                   SizedBox(height: 8),
-                  if (widget.tileShareTemplate?.start != null)
+                  if (widget.tileShareTemplate?.end != null)
                     Row(
                       children: [
                         Icon(

@@ -34,6 +34,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   bool isLoadedFromInitializer = false;
   Timeline? tileTimeline;
 
+  static final String repetitionCancelAndProceedRouteName =
+      "repetitionCancelAndProceedRouteName";
+
   @override
   void initState() {
     DateTime currentTime = Utility.currentTime();
@@ -318,6 +321,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       return applicableRepetitionsSelectedMap[eachApplicableRepetition.item1]!;
     }).toList();
     return CancelAndProceedTemplateWidget(
+      routeName: repetitionCancelAndProceedRouteName,
       child: Container(
           alignment: Alignment.topCenter,
           child: Column(

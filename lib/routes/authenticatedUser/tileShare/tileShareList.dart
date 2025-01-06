@@ -23,7 +23,7 @@ class _TileShareListState extends State<TileShareList>
   TileShareClusterApi tileClusterApi = TileShareClusterApi();
   ScrollController? _scrollController;
   int index = 0;
-  final int pageSize = 10;
+  final int requestPageSize = 10;
   bool hasMore = true;
   bool isLoading = false;
   List<TileShareClusterData> tileShareClusters = [];
@@ -49,10 +49,12 @@ class _TileShareListState extends State<TileShareList>
     }
   }
 
-  Future getTileShareCluster() async {
+  Future getTileShareCluster({int? pageIndex, int? pageSize}) async {
     tileClusterApi
         .getTileShareClusters(
-            index: index, pageSize: pageSize, isOutbox: this.isOubox)
+            index: pageIndex ?? index,
+            pageSize: pageSize ?? requestPageSize,
+            isOutbox: this.isOubox)
         .then((value) {
       updateTileShareClusters(updatedTileShareClusters: value);
     }).whenComplete(() {
@@ -95,7 +97,7 @@ class _TileShareListState extends State<TileShareList>
             tileShareClusters.add(tileShare);
           }
         }
-        if (nonNullTileShareClusters.length < pageSize) {
+        if (nonNullTileShareClusters.length < requestPageSize) {
           hasMore = false;
         }
       });
@@ -175,7 +177,9 @@ class _TileShareListState extends State<TileShareList>
         // The end action pane is the one at the right or the bottom side.
         endActionPane: ActionPane(
           motion: const ScrollMotion(),
-          dismissible: DismissiblePane(onDismissed: () {}),
+          dismissible: DismissiblePane(onDismissed: () {
+            deleteTileShare(this.context);
+          }),
           children: [
             SlidableAction(
               onPressed: deleteTileShare,
@@ -265,7 +269,6 @@ class _TileShareListState extends State<TileShareList>
                             )));
               },
               child: isOubox
-                  // ? renderDismissibleTileShare(tileShareClusters[index])
                   ? renderSlidableTileShare(tileShareClusters[index])
                   : simpleTileShareWidget,
             );

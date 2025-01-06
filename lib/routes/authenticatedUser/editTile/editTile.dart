@@ -67,6 +67,7 @@ class _EditTileState extends State<EditTile> {
   List<NextTileSuggestion>? nextTileSuggestions;
   Preview? beforePreview;
   Preview? afterPreview;
+  static final String editTileCancelAndProceedName = "";
 
   TextStyle labelStyle = const TextStyle(
       color: Color.fromRGBO(31, 31, 31, 1),
@@ -739,6 +740,7 @@ class _EditTileState extends State<EditTile> {
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
+        routeName: editTileCancelAndProceedName,
         hideButtons: hideButtons,
         child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
           listener: (context, state) {

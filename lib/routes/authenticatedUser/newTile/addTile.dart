@@ -91,6 +91,8 @@ class AddTileState extends State<AddTile> {
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
   TilePriority priority = TilePriority.medium;
+  static final String addTileCancelAndProceedRouteName =
+      "addTileCancelAndProceedRouteName";
 
   @override
   void initState() {
@@ -1370,6 +1372,7 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(extraConfigCollection);
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      routeName: addTileCancelAndProceedRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.appBarColor,
         title: Text(
