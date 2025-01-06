@@ -36,6 +36,9 @@ class _CreateTileShareClusterWidgetState
   Duration? _duration;
   Function? onProceedResponse;
   bool isMultiTilette = false;
+
+  static final String createTileShareCancelAndProceedRouteName =
+      "createTileShareCancelAndProceedRouteName";
   @override
   void initState() {
     super.initState();
@@ -225,27 +228,11 @@ class _CreateTileShareClusterWidgetState
 
   Widget generatedTopRightButton() {
     if (this.isMultiTilette) {
-      // if (onProceedResponse != null) {
-      //   return ElevatedButton.icon(
-      //       style: TileStyles.enabledButtonStyle,
-      //       onPressed: () {
-      //         if (onProceedResponse != null) {
-      //           onProceedResponse!();
-      //         }
-      //         Navigator.of(context).pop(false);
-      //       },
-      //       icon: Icon(
-      //         Icons.save,
-      //         color: TileStyles.primaryContrastColor,
-      //       ),
-      //       label: SizedBox.shrink());
-      // }
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
           style: TileStyles.enabledButtonStyle,
           onPressed: () {
-            Navigator.of(context).pop(false);
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -253,7 +240,9 @@ class _CreateTileShareClusterWidgetState
                           isMultiTilette: true,
                           onAddTileCluster: this.widget.onAddTileCluster,
                           onAddingTilette: this.widget.onAddingTilette,
-                        )));
+                        ))).whenComplete(() {
+              Navigator.of(context).pop(false);
+            });
           },
           icon: TileStyles.multiShareWidget,
           label: SizedBox.shrink());
@@ -284,6 +273,7 @@ class _CreateTileShareClusterWidgetState
           children: clusterInputWidgets,
         ));
     return CancelAndProceedTemplateWidget(
+      routeName: createTileShareCancelAndProceedRouteName,
       appBar: AppBar(
           // centerTitle: true,
           automaticallyImplyLeading: false,

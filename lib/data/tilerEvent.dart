@@ -159,7 +159,7 @@ class TilerEvent extends TilerObj with TimeRange {
       locationId = json['locationId'];
     }
 
-    if (json.containsKey('location')) {
+    if (json.containsKey('location') && json['location'] != null) {
       location = Location.fromJson(json['location']);
     }
     if (json.containsKey('tileShareDesignatedId')) {
