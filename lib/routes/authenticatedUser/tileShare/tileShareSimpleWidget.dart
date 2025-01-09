@@ -28,8 +28,9 @@ class _TileShareState extends State<TileShareSimpleWidget> {
   @override
   Widget build(BuildContext context) {
     const double iconSize = 12;
+    const double fontSize = 12;
     const TextStyle textStyle = TextStyle(
-        fontSize: 12,
+        fontSize: fontSize,
         fontFamily: TileStyles.rubikFontName,
         color: const Color.fromRGBO(40, 40, 40, 1));
     String creatorInfo = widget.tileShareCluster?.creator?.username ??
@@ -38,8 +39,8 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
     return Card(
       surfaceTintColor: Colors.transparent,
-      color: Colors.white,
-      elevation: 5,
+      color: TileStyles.defaultWidgetBackgroundColor,
+      elevation: TileStyles.defaultCardElevation,
       margin: EdgeInsets.all(5),
       child: Padding(
           padding: EdgeInsets.all(10),
