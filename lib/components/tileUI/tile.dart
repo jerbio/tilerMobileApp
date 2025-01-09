@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -172,7 +173,7 @@ class TileWidgetState extends State<TileWidget>
     int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
-        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+        Color.fromRGBO(redColor, greenColor, blueColor, 1);
     bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true));
 
     Widget editButton = IconButton(
@@ -369,7 +370,18 @@ class TileWidgetState extends State<TileWidget>
               child: Container(
                 padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                 decoration: BoxDecoration(
-                  color: tileBackGroundColor,
+                  gradient: RadialGradient(
+                    radius: 2.5,
+                    center: FractionalOffset.fromOffsetAndRect(
+                        Offset.fromDirection(0.3), Rect.fromLTRB(0, 0, 10, 05)),
+                    colors: <Color>[
+                      tileBackGroundColor.withLightness(0.7),
+                      tileBackGroundColor.withLightness(0.7),
+                      tileBackGroundColor.withLightness(0.5),
+                      tileBackGroundColor.withLightness(0.30),
+                      tileBackGroundColor.withLightness(0.25),
+                    ],
+                  ),
                   border: Border.all(
                     color: Colors.white,
                     width: 0.5,

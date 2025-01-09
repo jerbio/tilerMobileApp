@@ -42,6 +42,9 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
 
   // Function to handle API calls with status updates
   Future<void> _statusUpdate(InvitationStatus status) async {
+    if (_isLoading) {
+      return;
+    }
     setState(() {
       _isLoading = true;
       _responseMessage = '';
@@ -180,11 +183,11 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   }
 
   Widget designatedTileDetails() {
-    const double fontSize = 10;
+    const double fontSize = 14;
     const double iconSize = 14;
     const spaceDivider = SizedBox(height: 5);
     const supplementalTextStyle =
-        TextStyle(fontSize: 8, fontFamily: TileStyles.rubikFontName);
+        TextStyle(fontSize: 11.6, fontFamily: TileStyles.rubikFontName);
     String? designatedUsename = designatedTile.user?.username;
     print(designatedTile.invitationStatus.toString());
     return Expanded(
@@ -397,7 +400,8 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
 
   Widget renderForeCastButton(double iconSize) {
     if ((this.designatedTile.tileTemplate?.durationInMs != null &&
-        this.designatedTile.tileTemplate?.end != null)) {
+        this.designatedTile.tileTemplate?.end != null &&
+        this.designatedTile.tileTemplate!.end! > Utility.msCurrentTime)) {
       return Padding(
         padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
         child: _isForeCastLoading
