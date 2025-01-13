@@ -25,6 +25,7 @@ class TilerEvent extends TilerObj with TimeRange {
   String? locationId = '';
   String? tileShareDesignatedId = '';
   int? split;
+  bool? isWhatIf;
   NoteData? noteData;
   bool _isReadOnly = false;
   bool _isProcrastinate = false;
@@ -164,6 +165,10 @@ class TilerEvent extends TilerObj with TimeRange {
     }
     if (json.containsKey('tileShareDesignatedId')) {
       tileShareDesignatedId = json['tileShareDesignatedId'];
+    }
+
+    if (json.containsKey('isWhatIf')) {
+      isWhatIf = json['isWhatIf'];
     }
     if (json.containsKey('restrictionProfile') &&
         json['restrictionProfile'] != null) {

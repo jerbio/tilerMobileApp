@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileShareSimpleWidget extends StatefulWidget {
   final TileShareClusterData? tileShareCluster;
@@ -25,6 +29,24 @@ class _TileShareState extends State<TileShareSimpleWidget> {
     isReadOnly = this.widget.isReadOnly ?? true;
   }
 
+  String getTileShareContactString() {
+    String retValue = "";
+    if (this.widget.tileShareCluster != null) {
+      List<Contact> contacts =
+          (this.widget.tileShareCluster!.contacts ?? <Contact>[]).toList();
+
+      retValue = (contacts.map((e) => e.displayedIdentifier ?? ''))
+          .join(AppLocalizations.of(context)!.commaDelimiter);
+      if (this.widget.tileShareCluster!.isMoreContact == true) {
+        if (contacts.isNotEmpty) {
+          retValue += AppLocalizations.of(context)!.commaDelimiter +
+              Utility.ellipsisText;
+        }
+      }
+    }
+    return retValue;
+  }
+
   @override
   Widget build(BuildContext context) {
     const double iconSize = 12;
@@ -32,10 +54,8 @@ class _TileShareState extends State<TileShareSimpleWidget> {
     const TextStyle textStyle = TextStyle(
         fontSize: fontSize,
         fontFamily: TileStyles.rubikFontName,
+        overflow: TextOverflow.ellipsis,
         color: const Color.fromRGBO(40, 40, 40, 1));
-    String creatorInfo = widget.tileShareCluster?.creator?.username ??
-        widget.tileShareCluster?.creator?.email ??
-        "";
 
     return Card(
       surfaceTintColor: Colors.transparent,
@@ -61,11 +81,14 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                           size: iconSize,
                         ),
                         rowSpacer,
-                        Text(
-                          MaterialLocalizations.of(context).formatFullDate(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  widget.tileShareCluster!.endTimeInMs!)),
-                          style: textStyle,
+                        Expanded(
+                          child: Text(
+                            maxLines: 1,
+                            MaterialLocalizations.of(context).formatFullDate(
+                                DateTime.fromMillisecondsSinceEpoch(
+                                    widget.tileShareCluster!.endTimeInMs!)),
+                            style: textStyle,
+                          ),
                         )
                       ],
                     )
@@ -79,10 +102,11 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                         size: iconSize,
                       ),
                       rowSpacer,
-                      Text(
-                          (creatorInfo.contains('@') ? '' : '@') +
-                              '${creatorInfo}',
-                          style: textStyle)
+                      Expanded(
+                          child: Text(
+                              maxLines: 1,
+                              getTileShareContactString(),
+                              style: textStyle))
                     ],
                   ),
                 ],

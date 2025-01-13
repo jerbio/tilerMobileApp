@@ -1,8 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
-import 'package:tiler_app/components/tileUI/weeklyDetailsTile.dart';
 
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
@@ -12,10 +10,12 @@ import 'package:tiler_app/styles.dart';
 class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
   final double? tileGridHeight;
+  final Function? onTap;
   TileGridWidget(
       {required this.tilerEvent,
       double? left,
       this.tileGridHeight,
+      this.onTap,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             left: left,
@@ -29,7 +29,7 @@ class TileGridWidget extends GridPositionableWidget {
 
 class TileGridWidgetState extends GridPositionableState {
   late TilerEvent? tilerEvent;
-  static final Duration minDuration = Duration(minutes: 15);
+  static final Duration minDuration = Duration(minutes: 20);
   @override
   void initState() {
     super.initState();
@@ -98,6 +98,12 @@ class TileGridWidgetState extends GridPositionableState {
           child: InkWell(
               onTap: () {
                 onTapPreviewTile(tilerEvent!);
+                if (this.widget is TileGridWidget) {
+                  if ((this.widget as TileGridWidget).onTap != null) {
+                    (this.widget as TileGridWidget).onTap!(
+                        tilerEvent: this.tilerEvent);
+                  }
+                }
               },
               child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!)),
         ),
@@ -122,7 +128,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
     EdgeInsets gridPadding = EdgeInsets.all(10);
     if (this.tilerEvent.duration.inMilliseconds <=
         TileGridWidgetState.minDuration.inMilliseconds) {
-      gridPadding = EdgeInsets.fromLTRB(10, 0.5, 0, 0);
+      gridPadding = EdgeInsets.fromLTRB(10, 5, 0, 0);
     }
     return Container(
         decoration: BoxDecoration(
@@ -131,9 +137,9 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.2),
-              spreadRadius: 5,
-              blurRadius: 5,
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 0.5,
+              blurRadius: 1,
               offset: Offset(0, 1),
             ),
           ],

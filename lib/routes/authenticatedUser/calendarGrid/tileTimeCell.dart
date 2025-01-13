@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/util.dart';
 
 class TileTimeCellWidget extends TimeCellWidget {
   TileTimeCellWidget(

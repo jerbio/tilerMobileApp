@@ -563,6 +563,7 @@ class Utility {
   static Map<int, List<AutoTile>>? _adHocAutoTilesByDuration;
   static Map<String, AutoTile>? _adHocAutoTiles;
   static List<AutoTile>? _lastCards;
+  static final String ellipsisText = '...';
 
   static List<AutoTile> get autoTiles {
     if (_adHocAutoTiles == null) {

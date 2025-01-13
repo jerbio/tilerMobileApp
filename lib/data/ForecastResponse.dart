@@ -68,12 +68,13 @@ class PeekDay {
   double? durationRatio;
   double? sleepTime;
   int? dayIndex;
+  int? _startTimeInMs;
   int? _endTimeInMs;
   bool? isOptimized;
   double? travelTime;
   double? travelDistance;
-  int? outHomeStart;
-  int? outHomeEnd;
+  int? _outHomeStart;
+  int? _outHomeEnd;
   int? unallocatedTime;
   List<SubCalendarEvent>? subEvents;
 
@@ -84,8 +85,10 @@ class PeekDay {
       this.sleepTime,
       this.travelTime,
       this.travelDistance,
+      int? startTime,
       int? endTime})
-      : _endTimeInMs = endTime;
+      : _endTimeInMs = endTime,
+        _startTimeInMs = startTime;
 
   // fromJson factory constructor
   factory PeekDay.fromJson(Map<String, dynamic> json) {
@@ -96,6 +99,7 @@ class PeekDay {
         sleepTime: (json['sleepTime'] as num?)?.toDouble(),
         travelTime: (json['travelTime'] as num?)?.toDouble(),
         travelDistance: (json['distance'] as num?)?.toDouble(),
+        startTime: (json['startTime'] as num?)?.toInt(),
         endTime: (json['endTime'] as num?)?.toInt());
 
     String isOptimizedKey = "isOptimized";
@@ -115,14 +119,14 @@ class PeekDay {
     String outsideHomeStartKey = 'outsideHomeStart';
     if (json.containsKey(outsideHomeStartKey) &&
         json[outsideHomeStartKey] != null) {
-      peekDayInstance.outHomeStart =
+      peekDayInstance._outHomeStart =
           Utility.cast<int>(json[outsideHomeStartKey])!;
     }
 
     String outsideHomeEndKey = 'outsideHomeEnd';
     if (json.containsKey(outsideHomeEndKey) &&
         json[outsideHomeEndKey] != null) {
-      peekDayInstance.outHomeEnd = Utility.cast<int>(json[outsideHomeEndKey])!;
+      peekDayInstance._outHomeEnd = Utility.cast<int>(json[outsideHomeEndKey])!;
     }
 
     String unallocatedTimeKey = "unallocatedTime";
@@ -133,10 +137,30 @@ class PeekDay {
     }
     return peekDayInstance;
   }
+  DateTime? get startTime {
+    if (this._startTimeInMs != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this._startTimeInMs!);
+    }
+    return null;
+  }
 
   DateTime? get endTime {
     if (this._endTimeInMs != null) {
       return DateTime.fromMillisecondsSinceEpoch(this._endTimeInMs!);
+    }
+    return null;
+  }
+
+  DateTime? get outHomeStartTime {
+    if (this._outHomeStart != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this._outHomeStart!);
+    }
+    return null;
+  }
+
+  DateTime? get outHomeEndTime {
+    if (this._outHomeEnd != null) {
+      return DateTime.fromMillisecondsSinceEpoch(this._outHomeEnd!);
     }
     return null;
   }
