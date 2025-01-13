@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 
-import 'googleMap.dart';
+import '../../../constants.dart' as Constants;
 
 class HelperClass {
   List _decodePoly(String poly) {
@@ -104,6 +105,8 @@ class HelperClass {
 
   Future<String> _getRoute(LatLng l1, LatLng l2) async {
     String polyPoints;
+
+    String APIKEY = dotenv.env[Constants.googleMapsApiKey] ?? "";
     String url =
         "https://maps.googleapis.com/maps/api/directions/json?origin=${l1.latitude},${l1.longitude}&destination=${l2.latitude},${l2.longitude}&key=$APIKEY";
     http.Response response = await http.get(Uri.parse(url));

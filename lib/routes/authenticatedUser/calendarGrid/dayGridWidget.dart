@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
 
 class DayGridWidget extends StatefulWidget {
   final PeekDay peekDay;
-  DayGridWidget({required this.peekDay});
+  Function? onTileTap;
+  DayGridWidget({required this.peekDay, this.onTileTap});
   @override
   DayGridWidgetState createState() => DayGridWidgetState();
 }
@@ -24,6 +28,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
   double heightPerCell = GridPositionableWidget.defaultHeigtPerDuration;
   double? animatedHeight = null;
   double activeHour = 8;
+  Map<String, SubCalendarEvent> selectedSubEvent = {};
+  bool isInitialRun = true;
 
   @override
   void initState() {
@@ -44,20 +50,61 @@ class DayGridWidgetState extends State<DayGridWidget> {
       heightPerCell = allDayTimeTiles.first.height;
     }
     animatedHeight = heightPerCell * activeHour;
+  }
 
-    if (this.widget.peekDay.subEvents != null &&
-        this.widget.peekDay.subEvents!.isNotEmpty) {
-      var subEvents = this.widget.peekDay.subEvents!;
-      subEvents.sort((a, b) => (a.start ?? 0).compareTo((b.start ?? 0)));
-      subEvents.forEach((element) {
-        tileGridWidgetCell.add(TileGridWidget(tilerEvent: element));
-      });
-      animatedHeight = heightPerCell * subEvents.first.startTime.hour;
+  void onTileGridTap({TilerEvent? tilerEvent}) {
+    if (tilerEvent != null && tilerEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+      if (tilerEvent is SubCalendarEvent &&
+          tilerEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+        setState(() {
+          selectedSubEvent = {};
+          selectedSubEvent[tilerEvent.id!] = tilerEvent;
+        });
+      }
+    }
+    if (this.widget.onTileTap != null) {
+      this.widget.onTileTap!(tilerEvent: tilerEvent);
+    }
+  }
+
+  void _initialRun() {
+    if (isInitialRun) {
+      if (this.widget.peekDay.subEvents != null &&
+          this.widget.peekDay.subEvents!.isNotEmpty) {
+        var subEvents = this.widget.peekDay.subEvents!;
+        subEvents.sort((a, b) => (a.start ?? 0).compareTo((b.start ?? 0)));
+        setState(() {
+          isInitialRun = false;
+          animatedHeight = heightPerCell * subEvents.first.startTime.hour;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (this.widget.peekDay.subEvents != null &&
+        this.widget.peekDay.subEvents!.isNotEmpty) {
+      var subEvents = this.widget.peekDay.subEvents!;
+      subEvents.sort((a, b) => (a.start ?? 0).compareTo((b.start ?? 0)));
+      subEvents.forEach((element) {
+        if (element.id.isNot_NullEmptyOrWhiteSpace() &&
+            !selectedSubEvent.containsKey(element.id)) {
+          tileGridWidgetCell.add(TileGridWidget(
+            tilerEvent: element,
+            onTap: onTileGridTap,
+          ));
+        }
+      });
+      tileGridWidgetCell.addAll(selectedSubEvent.values.map((eachTile) {
+        return TileGridWidget(
+          tilerEvent: eachTile,
+          onTap: onTileGridTap,
+        );
+      }));
+    }
+    _initialRun();
+
     Widget retValue = SingleChildScrollView(
       controller: _scrollController,
       child: Stack(

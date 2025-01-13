@@ -14,6 +14,7 @@ class TileShareClusterData {
   String? name;
   UserProfile? creator;
   List<Contact>? contacts;
+  bool? isMoreContact;
   List<NewTile>? newTileTemplates;
   List<TileShareTemplate>? tileShareTemplates;
   int? durationInMs;
@@ -84,6 +85,11 @@ class TileShareClusterData {
             Contact contact = Contact();
             contact.phoneNumber = eachTruncatedUser as String;
             contacts!.add(contact);
+          }
+          if (eachTruncatedUser is String) {
+            if (eachTruncatedUser.contains(Utility.ellipsisText)) {
+              isMoreContact = true;
+            }
           }
         });
       }

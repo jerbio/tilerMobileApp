@@ -371,15 +371,16 @@ class TileWidgetState extends State<TileWidget>
                 padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    radius: 2.5,
-                    center: FractionalOffset.fromOffsetAndRect(
-                        Offset.fromDirection(0.3), Rect.fromLTRB(0, 0, 10, 05)),
+                    radius: 1.5,
+                    center: Alignment.bottomRight,
                     colors: <Color>[
-                      tileBackGroundColor.withLightness(0.7),
-                      tileBackGroundColor.withLightness(0.7),
-                      tileBackGroundColor.withLightness(0.5),
-                      tileBackGroundColor.withLightness(0.30),
-                      tileBackGroundColor.withLightness(0.25),
+                      tileBackGroundColor.withLightness(0.65),
+                      tileBackGroundColor.withLightness(0.675),
+                      tileBackGroundColor.withLightness(0.70),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
                     ],
                   ),
                   border: Border.all(

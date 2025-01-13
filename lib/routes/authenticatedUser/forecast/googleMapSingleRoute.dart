@@ -2,13 +2,14 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:ui' as ui;
 import 'package:http/http.dart' as http;
-import 'package:tiler_app/routes/authenticatedUser/forecast/googleMap.dart';
+import '../../../constants.dart' as Constants;
 
 // WidgetLocationOnMap this class is created to show route on google map
 // we are creating the route from the current location to the destination i.e. booking location
@@ -76,6 +77,7 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
         widget.currentLocation.latitude, widget.currentLocation.longitude);
     final finishPoint = PointLatLng(widget.destinationLocation!.latitude,
         widget.destinationLocation!.longitude);
+    String APIKEY = dotenv.env[Constants.googleMapsApiKey] ?? "";
 
     final result = await polylinePoints.getRouteBetweenCoordinates(
       APIKEY,
