@@ -1,20 +1,21 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
-// import 'package:google_map/helperClass.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/executionConstants.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/forecast/googleMap.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/helperClass.dart';
-import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/util.dart';
+import '../../../constants.dart' as Constants;
 
 import 'googleMapSingleRoute.dart';
 
@@ -118,8 +119,6 @@ class _WidgetGoogleMapState extends State<DayCast> {
         if (updatedZoomLevel < minLevel) {
           zoomLevel = minLevel;
         }
-        print("zoomLevel - " + zoomLevel.toString());
-        print("maxDistance - " + maxDistance.toString());
       }
     }
   }
@@ -148,7 +147,24 @@ class _WidgetGoogleMapState extends State<DayCast> {
   Widget renderTiles() {
     return DayGridWidget(
       peekDay: this.widget.peekDay,
+      onTileTap: onTileGridTap,
     );
+  }
+
+  void onTileGridTap({TilerEvent? tilerEvent}) {
+    if (tilerEvent != null && tilerEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+      if (mapController != null) {
+        if (tilerEvent.location?.isNotNullAndNotDefault == true) {
+          LatitudeAndLongitude? latitudeAndLongitudetilerEvent =
+              tilerEvent.location?.toLatitudeAndLongitude;
+          if (latitudeAndLongitudetilerEvent != null) {
+            mapController!.animateCamera(CameraUpdate.newLatLng(LatLng(
+                latitudeAndLongitudetilerEvent.latitude,
+                latitudeAndLongitudetilerEvent.longitude)));
+          }
+        }
+      }
+    }
   }
 
   Widget renderLandScape() {
@@ -317,6 +333,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
     final startPoint = PointLatLng(start.latitude, start.longitude);
     final finishPoint = PointLatLng(finish.latitude, finish.longitude);
+    String APIKEY = dotenv.env[Constants.googleMapsApiKey] ?? "";
 
     final result = await polylinePoints.getRouteBetweenCoordinates(
       APIKEY,

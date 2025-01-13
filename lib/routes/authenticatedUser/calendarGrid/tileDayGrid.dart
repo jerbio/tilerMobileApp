@@ -30,7 +30,7 @@ class TileDayGridState extends State<DayGridWidget> {
       currentTOD = TimeOfDay(hour: currentTOD.hour + 1, minute: 0);
     }
     if (allDayTimeTiles.isNotEmpty && allDayTimeTiles.first.height != null) {
-      heightPerCell = allDayTimeTiles.first.height!;
+      heightPerCell = allDayTimeTiles.first.height;
     }
     return SingleChildScrollView(
       child: Stack(

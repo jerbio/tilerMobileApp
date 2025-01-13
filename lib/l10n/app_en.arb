@@ -525,5 +525,6 @@
     "monthlyReurring":"Monthly",
     "yearlyReurring":"Yearly",
     "ellipsisEmprtNotes":"Notes...",
-    "tileShareDelete":"Delete"
+    "tileShareDelete":"Delete",
+    "commaDelimiter":","
   }

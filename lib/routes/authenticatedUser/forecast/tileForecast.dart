@@ -6,7 +6,7 @@ import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDaySimple.da
 import 'package:tiler_app/styles.dart';
 
 class TileForecast extends StatefulWidget {
-  List<PeekDay> forecastDays;
+  final List<PeekDay> forecastDays;
   TileForecast({required this.forecastDays});
   @override
   _ForecastState createState() => _ForecastState();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
@@ -46,7 +45,9 @@ class _TileShareListState extends State<TileShareList>
     } else {
       _scrollController = ScrollController();
       this.getTileShareCluster();
+      _scrollController!.addListener(handleScrollToEnd);
     }
+    // handleScrollToEnd();
   }
 
   Future getTileShareCluster({int? pageIndex, int? pageSize}) async {
@@ -68,12 +69,11 @@ class _TileShareListState extends State<TileShareList>
   }
 
   void handleScrollToEnd() {
-    if (_scrollController == null) {
-      while (_scrollController!.offset >=
-              _scrollController!.position.maxScrollExtent &&
-          !isLoading) {
+    if (_scrollController != null) {
+      if (_scrollController!.offset >=
+          _scrollController!.position.maxScrollExtent) {
         if (!isLoading) {
-          getTileShareCluster();
+          getTileShareCluster(pageIndex: tileShareClusters.length);
         }
       }
     }
@@ -89,10 +89,13 @@ class _TileShareListState extends State<TileShareList>
         }
       });
       setState(() {
-        tileShareClusters = [];
+        Set<String> alreadyAddedId = Set.from(tileShareClusters
+            .where((e) => e.id.isNot_NullEmptyOrWhiteSpace())
+            .map((e) => e.id));
         for (var tileShare
             in tileShareClusters.followedBy(nonNullTileShareClusters)) {
           if (tileShare.id.isNot_NullEmptyOrWhiteSpace() &&
+              !alreadyAddedId.contains(tileShare.id!) &&
               !deletedTileShareIds.contains(tileShare.id!)) {
             tileShareClusters.add(tileShare);
           }
@@ -247,7 +250,6 @@ class _TileShareListState extends State<TileShareList>
     }
 
     return ListView.builder(
-        key: ValueKey(Utility.getUuid),
         controller: _scrollController,
         itemCount: toBeRenderedElementCount,
         itemBuilder: (context, index) {
@@ -282,5 +284,13 @@ class _TileShareListState extends State<TileShareList>
     return Scaffold(
       body: renderBody(),
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (this._scrollController != null) {
+      this._scrollController!.dispose();
+    }
   }
 }
