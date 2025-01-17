@@ -169,6 +169,9 @@ class TilerEvent extends TilerObj with TimeRange {
 
     if (json.containsKey('isWhatIf')) {
       isWhatIf = json['isWhatIf'];
+      if (isWhatIf == true) {
+        print("What if was found");
+      }
     }
     if (json.containsKey('restrictionProfile') &&
         json['restrictionProfile'] != null) {

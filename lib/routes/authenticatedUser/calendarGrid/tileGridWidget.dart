@@ -6,16 +6,20 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/util.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
   final double? tileGridHeight;
+  BoxDecoration? decoration;
   final Function? onTap;
   TileGridWidget(
       {required this.tilerEvent,
       double? left,
       this.tileGridHeight,
       this.onTap,
+      this.decoration,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             left: left,
@@ -121,7 +125,8 @@ class TileGridWidgetState extends GridPositionableState {
 
 class _TilerEventInnerGridWidget extends StatelessWidget {
   final TilerEvent tilerEvent;
-  _TilerEventInnerGridWidget({required this.tilerEvent});
+  final Decoration? decoration;
+  _TilerEventInnerGridWidget({required this.tilerEvent, this.decoration});
 
   @override
   Widget build(BuildContext context) {
@@ -130,10 +135,12 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
         TileGridWidgetState.minDuration.inMilliseconds) {
       gridPadding = EdgeInsets.fromLTRB(10, 5, 0, 0);
     }
-    return Container(
-        decoration: BoxDecoration(
-          color: Color.fromRGBO(tilerEvent.colorRed ?? 255,
-              tilerEvent.colorGreen ?? 255, tilerEvent.colorGreen ?? 255, 1),
+    Color color = Color.fromRGBO(tilerEvent.colorRed ?? 255,
+        tilerEvent.colorGreen ?? 255, tilerEvent.colorGreen ?? 255, 1);
+    String name = this.tilerEvent.name ?? "--no--name";
+    Decoration uiDecoration = this.decoration ??
+        BoxDecoration(
+          color: color,
           borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
@@ -143,10 +150,26 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
               offset: Offset(0, 1),
             ),
           ],
-        ),
+        );
+    if (tilerEvent.isWhatIf == true) {
+      color = Utility.randomColor;
+      name = AppLocalizations.of(context)!.foreCastTile;
+      if (this.decoration == null) {
+        uiDecoration = BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: TileStyles.primaryContrastColor,
+          border: Border.all(
+            color: TileStyles.primaryColor,
+            width: 1,
+          ),
+        );
+      }
+    }
+    return Container(
+        decoration: uiDecoration,
         padding: gridPadding,
         child: Text(
-          (this.tilerEvent.name ?? "--no--name"),
+          name,
           overflow: TextOverflow.ellipsis,
           style: new TextStyle(
             fontSize: 13.0,

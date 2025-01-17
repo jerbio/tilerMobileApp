@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
+import 'dart:math' as Math;
 import 'package:tiler_app/services/localizationService.dart';
 
 import '../../../constants.dart' as Constants;
@@ -54,7 +54,7 @@ class Utility {
   static final faker.Faker _faker = faker.Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
-  static final Random randomizer = Random.secure();
+  static final Math.Random randomizer = Math.Random.secure();
   static final log = Logger();
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
@@ -309,9 +309,9 @@ class Utility {
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
-    int subEventCount = Random().nextInt(2);
+    int subEventCount = Math.Random().nextInt(2);
     while (subEventCount < 1) {
-      subEventCount = Random().nextInt(2);
+      subEventCount = Math.Random().nextInt(2);
     }
 
     List<Timeline> sleepTimeLines = [];
@@ -325,17 +325,20 @@ class Utility {
               Utility.oneMin.inMilliseconds.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      adHocInterferringWithNowTile.color = Color.fromRGBO(Random().nextInt(255),
-          Random().nextInt(255), Random().nextInt(255), 1);
+      adHocInterferringWithNowTile.color = Color.fromRGBO(
+          Math.Random().nextInt(255),
+          Math.Random().nextInt(255),
+          Math.Random().nextInt(255),
+          1);
       adHocInterferringWithNowTile.id = Utility.getUuid;
       refreshedSubEvents.add(adHocInterferringWithNowTile);
     }
 
     int maxDuration = Duration.millisecondsPerHour * 3;
     for (int i = 0; i < subEventCount; i++) {
-      int durationMs = Random().nextInt(maxDuration);
+      int durationMs = Math.Random().nextInt(maxDuration);
       while (durationMs < 1) {
-        durationMs = Random().nextInt(maxDuration);
+        durationMs = Math.Random().nextInt(maxDuration);
       }
       int startLimit =
           timeLine.start! - durationMs - Utility.oneMin.inMilliseconds;
@@ -343,7 +346,7 @@ class Utility {
       int durationLimit = endLimit - startLimit;
       int durationInSec = durationLimit ~/
           1000; // we need to use seconds because of the random.nextInt of requiring an integer
-      int start = startLimit + ((Random().nextInt(durationInSec)) * 1000);
+      int start = startLimit + ((Math.Random().nextInt(durationInSec)) * 1000);
       int end = start + durationMs;
       int dayCount =
           (durationLimit / Utility.oneDay.inMilliseconds).toDouble().ceil();
@@ -382,8 +385,8 @@ class Utility {
           end: end.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      subEvent.color = Color.fromRGBO(Random().nextInt(255),
-          Random().nextInt(255), Random().nextInt(255), 1);
+      subEvent.color = Color.fromRGBO(Math.Random().nextInt(255),
+          Math.Random().nextInt(255), Math.Random().nextInt(255), 1);
       subEvent.id = Utility.getUuid;
       refreshedSubEvents.add(subEvent);
     }
@@ -504,6 +507,12 @@ class Utility {
     map[key] = entries;
     entries.add(entry);
   }
+
+  static double logBase(num x, num base) {
+    return Math.log(x) / Math.log(base);
+  }
+
+  static double log2(num x) => logBase(x, 2);
 
   static void _initializeAutotile() {
     _adHocAutoTiles = {};
@@ -822,9 +831,9 @@ extension ListEnhance on List {
   List getRandomize({int? seed}) {
     List retValue = [];
     List listCopy = this.toList();
-    Random randomizer = Utility.randomizer;
+    Math.Random randomizer = Utility.randomizer;
     if (seed != null) {
-      randomizer = Random(seed);
+      randomizer = Math.Random(seed);
     }
     while (listCopy.length > 0) {
       int index = randomizer.nextInt(listCopy.length);

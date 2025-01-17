@@ -1012,8 +1012,12 @@ class AddTileState extends State<AddTile> {
 
     if (this.isAppointment) {
       tile.Rigid = true.toString();
-      startTime = this._startTime!;
-      _endTime = this._endTime!;
+      if (this._startTime != null) {
+        startTime = this._startTime!;
+        if (this._duration != null) {
+          _endTime = this._startTime!.add(this._duration!);
+        }
+      }
     }
 
     tile.EndYear = _endTime?.year.toString();
