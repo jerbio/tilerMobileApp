@@ -526,5 +526,6 @@
     "yearlyReurring":"Yearly",
     "ellipsisEmprtNotes":"Notes...",
     "tileShareDelete":"Delete",
-    "commaDelimiter":","
+    "commaDelimiter":",",
+    "foreCastTile":"Forecast Tile"    
   }

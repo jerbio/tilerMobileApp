@@ -8,6 +8,7 @@ abstract class TimeCellWidget extends GridPositionableWidget {
   final double? timeCellHeight;
   final double? top;
   final double? left;
+  final BoxDecoration? decoration;
   final Widget? child;
   TimeCellWidget(
       {this.start,
@@ -15,6 +16,7 @@ abstract class TimeCellWidget extends GridPositionableWidget {
       this.timeCellHeight = GridPositionableWidget.defaultHeigtPerDuration,
       this.top,
       this.left,
+      this.decoration,
       this.durationPerCell = const Duration(hours: 1)})
       : super(
             left: left,
@@ -44,7 +46,10 @@ abstract class TimeCellWidgetState extends GridPositionableState {
       left: this.leftPosition,
       child: Container(
         height: widgetHeight,
-        color: Utility.randomColor,
+        decoration: (this.widget as TimeCellWidget).decoration ??
+            BoxDecoration(
+              color: Utility.randomColor,
+            ),
         width: widgetWidth,
         child: this.widget.child,
       ),

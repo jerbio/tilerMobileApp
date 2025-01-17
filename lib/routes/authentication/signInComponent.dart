@@ -12,8 +12,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
-import 'package:tiler_app/services/api/authenticationData.dart';
-import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
@@ -444,12 +442,12 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
-    setState(() => {
-          isRegistrationScreen = false,
-          isForgetPasswordScreen = false,
-          credentialManagerHeight = signInContainerHeight,
-          credentialButtonHeight = signInContainerButtonHeight
-        });
+    setState(() {
+      isRegistrationScreen = false;
+      isForgetPasswordScreen = false;
+      credentialManagerHeight = signInContainerHeight;
+      credentialButtonHeight = signInContainerButtonHeight;
+    });
   }
 
   Widget createSignInPendingComponent(String message) {
@@ -957,7 +955,7 @@ class SignInComponentState extends State<SignInComponent>
       child: SingleChildScrollView(
         child: Container(
           alignment: Alignment.topCenter,
-          // height: credentialManagerHeight,
+          height: credentialManagerHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(40.0),
