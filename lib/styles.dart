@@ -48,7 +48,7 @@ class TileStyles {
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
     backgroundColor: MaterialStateProperty.resolveWith((states) {
-      return Colors.white;
+      return primaryColor;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return Colors.white;

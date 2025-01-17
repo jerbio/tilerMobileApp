@@ -247,14 +247,23 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   print(" " +
-    //       containerSizeKey.currentContext!.size!.height.toString() +
-    //       "x" +
-    //       containerSizeKey.currentContext!.size!.width.toString());
-    // });
+    bool containsWhatIfTile = false;
+    if (peekDay.subEvents != null) {
+      containsWhatIfTile =
+          peekDay.subEvents!.any((element) => element.isWhatIf == true);
+    }
 
     return Container(
+      padding: EdgeInsets.fromLTRB(10, 5, 5, 5),
+      decoration: containsWhatIfTile == true
+          ? BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: Colors.greenAccent,
+                width: 1,
+              ),
+            )
+          : null,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [

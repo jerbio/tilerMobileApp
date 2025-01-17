@@ -8,12 +8,14 @@ class TileTimeCellWidget extends TimeCellWidget {
       double? height,
       double? top,
       double? left,
+      BoxDecoration? decoration,
       Duration durationPerCell = const Duration(hours: 1)})
       : super(
             start: start,
             left: left,
             top: top,
             durationPerCell: durationPerCell,
+            decoration: decoration,
             timeCellHeight: height);
   @override
   _TileTimeCellState createState() => _TileTimeCellState();
@@ -32,12 +34,13 @@ class _TileTimeCellState extends TimeCellWidgetState {
       top: topPosition,
       left: this.leftPosition,
       child: Container(
-        decoration: BoxDecoration(
-          border: Border(
-              top: BorderSide(
-                  color: TileStyles.gridLineColor,
-                  width: TileStyles.thickness)),
-        ),
+        decoration: (this.widget as TileTimeCellWidget).decoration ??
+            BoxDecoration(
+              border: Border(
+                  top: BorderSide(
+                      color: TileStyles.gridLineColor,
+                      width: TileStyles.thickness)),
+            ),
         height: this.widgetHeight,
         width: MediaQuery.sizeOf(context).width - TileStyles.timeOfDayCellWidth,
         child: this.widget.child,
