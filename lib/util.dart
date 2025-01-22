@@ -252,6 +252,17 @@ class Utility {
     return retValue;
   }
 
+  static Timeline restOfTodayTimeline() {
+    DateTime currentTime = Utility.currentTime();
+    DateTime begin = new DateTime(currentTime.year, currentTime.month,
+        currentTime.day, currentTime.hour, currentTime.minute);
+    DateTime end = begin.add(Utility.oneDay);
+
+    Timeline retValue =
+        Timeline(begin.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+    return retValue;
+  }
+
   static Duration durationDifference(DateTime a, DateTime b) {
     int durationInMs = utcEpochMillisecondsFromDateTime(a) -
         utcEpochMillisecondsFromDateTime(b);

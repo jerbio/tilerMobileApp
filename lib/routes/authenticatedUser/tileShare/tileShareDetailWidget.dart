@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/newTileSheet.dart';
+import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -224,7 +224,6 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
-        print("is pending " + isAddingTiletteLoading.toString());
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(
@@ -235,7 +234,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                     topRight: Radius.circular(10))),
             child: Stack(
               children: <Widget>[
-                NewTileSheetWidget(
+                NewTileShareSheetWidget(
                   onAddTile: (NewTile? newTile) {
                     if (newTile != null && tileShareCluster != null) {
                       setState(() {

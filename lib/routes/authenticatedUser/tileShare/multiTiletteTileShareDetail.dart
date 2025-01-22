@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/newTileSheet.dart';
+import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -246,7 +246,7 @@ class _MultiTiletteTileShareDetailWidget
                     topRight: Radius.circular(10))),
             child: Stack(
               children: <Widget>[
-                NewTileSheetWidget(
+                NewTileShareSheetWidget(
                   onAddTile: (NewTile? newTile) {
                     if (newTile != null && tileShareCluster != null) {
                       setState(() {

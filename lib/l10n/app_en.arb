@@ -117,15 +117,15 @@
           "example": "5:14 PM"
         }
       }},
-      "endsAtTime": "Ends at {time}",
-      "@endsAtTime": {
-        "description": "Ends at time",
-        "placeholders": {
-          "time": {
-            "type": "String",
-            "example": "5:14 PM"
-          }
-        }},
+    "endsAtTime": "Ends at {time}",
+    "@endsAtTime": {
+      "description": "Ends at time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "5:14 PM"
+        }
+      }},
     "startsInTenMinutes": "Starts in ten minutes",
     "endsInTenMinutes": "Ends in five minutes",
     "startsInDuration": "Starts in {duration}",
@@ -527,5 +527,113 @@
     "ellipsisEmprtNotes":"Notes...",
     "tileShareDelete":"Delete",
     "commaDelimiter":",",
-    "foreCastTile":"Forecast Tile"    
+    "foreCastTile":"Forecast Tile",
+    "previewOthers":"Others",
+    "goodMorning":"GOod Morning",
+    "goodDay":"Good Day",
+    "goodEvening":"Good Evening",
+    "youHaveXBlocks": "You have {count} blocks coming up.",
+    "@youHaveXBlocks": {
+      "description": "Number of Blocks",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveXTiles": "You have {count} tiles coming up.",
+    "@youHaveXTiles": {
+      "description": "Number of tiles",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveXTileShares": "You have {count} tileshares coming up.",
+    "@youHaveXTileShares": {
+      "description": "Number of tileshares",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "countTileShare": "{count} tileshares",
+    "@countTileShare": {
+      "description": "Number of tileshares",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksAndCountTiles": "You have {blockCount} blocks and {tileCount} tiles coming up.",
+    "@youHaveCountBlocksAndCountTiles": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksAndCountTileShares": "You have {blockCount} blocks and {tileShareCount} tileshares coming up.",
+    "@youHaveCountBlocksAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountTilesAndCountTileShares": "You have {tileCount} tiles and {tileShareCount} tileshares coming up.",
+    "@youHaveCountTilesAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksCountTilesAndCountTileShares": "You have {blockCount} blocks, {tileCount} tiles and {tileShareCount} tileshares coming up.",
+    "@youHaveCountBlocksCountTilesAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+      "noTilesPreview": "You have nothing coming up for the rest of today.",
+      "previewEllipsisText": "{shortenedText}...",
+      "@previewEllipsisText": {
+        "description": "Shortened text",
+        "placeholders": {
+          "shortenedText": {
+            "type": "String",
+            "example": "1"
+          }
+        }},
+      "createTile": "Create Tile"
+
   }
