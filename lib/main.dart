@@ -10,6 +10,7 @@ import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
@@ -159,7 +160,8 @@ class _TilerAppState extends State<TilerApp> {
         BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
         BlocProvider(create: (context) => ForecastBloc()),
         BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
-        BlocProvider(create: (context) => MonthlyUiDateManagerBloc())
+        BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
+        BlocProvider(create: (context) => PreviewSummaryBloc())
       ],
       child: MaterialApp(
         title: 'Tiler',

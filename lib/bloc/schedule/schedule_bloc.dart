@@ -4,6 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
+import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -15,24 +16,36 @@ import '../../services/api/subCalendarEventApi.dart';
 
 part 'schedule_event.dart';
 part 'schedule_state.dart';
-enum AuthorizedRouteTileListPage{Daily,Weekly,Monthly}
+
+enum AuthorizedRouteTileListPage { Daily, Weekly, Monthly }
+
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
   ScheduleApi scheduleApi = ScheduleApi();
+  PreviewApi previewApi = PreviewApi();
   SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  ScheduleBloc() : super(ScheduleInitialState(currentView: AuthorizedRouteTileListPage.Daily)) {
+  ScheduleBloc()
+      : super(ScheduleInitialState(
+            currentView: AuthorizedRouteTileListPage.Daily)) {
     on<GetScheduleEvent>(_onGetSchedule, transformer: restartable());
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
+    on<ShuffleScheduleEvent>(_onShuffleeSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
-    on<ChangeViewEvent>(_onChangeView,transformer: restartable());;
+    on<ChangeViewEvent>(_onChangeView, transformer: restartable());
+    ;
     on<CompleteTaskEvent>(_onCompleteTask);
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
       getSubTiles(Timeline timeLine) async {
+    DateTime nextDay = Utility.currentTime().add(Duration(days: 1));
+    DateTime endTime =
+        DateTime(nextDay.year, nextDay.month, nextDay.day, 0, 0, 0);
+    previewApi
+        .getSummary(Timeline.fromDateTime(Utility.currentTime(), endTime));
     return scheduleApi.getSubEvents(timeLine);
   }
 
@@ -144,7 +157,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           timelines: [],
           lookupTimeline: Timeline.fromDateTime(
               DateTime.now(), DateTime.now().add(Duration(days: 1))),
-          currentView:state.currentView ,
+          currentView: state.currentView,
           scheduleStatus: null));
     }
   }
@@ -316,6 +329,41 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
   }
 
+  Future<void> _onShuffleeSchedule(
+      ShuffleScheduleEvent event, Emitter<ScheduleState> emit) async {
+    final state = this.state;
+
+    print("shufflng your schedule");
+    print("current state is ");
+    print(state);
+    var priorSscheduleState = ScheduleState.generatePriorScheduleState(state);
+    List<SubCalendarEvent> subEvents = priorSscheduleState.subEvents;
+    List<Timeline> timelines = priorSscheduleState.timelines;
+    Timeline lookupTimeline = priorSscheduleState.previousLookupTimeline;
+    ScheduleStatus? scheduleStatus = priorSscheduleState.scheduleStatus;
+    String? message;
+    if (subEvents != null && timelines != null && lookupTimeline != null) {
+      emit(ScheduleEvaluationState(
+          subEvents: subEvents,
+          timelines: timelines,
+          lookupTimeline: lookupTimeline,
+          evaluationTime: Utility.currentTime(),
+          scheduleStatus: scheduleStatus,
+          currentView: state.currentView,
+          message: message));
+      await this.scheduleApi.shuffleSchedule().then((value) async {
+        await this._onGetSchedule(
+            GetScheduleEvent(
+              isAlreadyLoaded: true,
+              previousSubEvents: subEvents,
+              previousTimeline: lookupTimeline,
+              scheduleTimeline: lookupTimeline,
+            ),
+            emit);
+      });
+    }
+  }
+
   // void _onDelayedGetSchedule(
   //     DelayedGetSchedule event, Emitter<ScheduleState> emit) async {
   //   var setTimeOutResult = Utility.setTimeOut(duration: event.delayDuration!);
@@ -339,9 +387,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   //         emit);
   //   });
   // }
-  void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async{
+  void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async {
     scheduleApi = ScheduleApi();
     emit(ScheduleInitialState(currentView: event.newView));
-
   }
 }
