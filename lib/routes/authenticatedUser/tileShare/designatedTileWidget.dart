@@ -408,7 +408,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             ? CircularProgressIndicator()
             : ElevatedButton(
                 child: FaIcon(
-                  FontAwesomeIcons.binoculars,
+                  TileStyles.forecastIcon,
                   color: TileStyles.primaryColor,
                   size: iconSize,
                 ),

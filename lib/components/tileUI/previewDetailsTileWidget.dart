@@ -38,28 +38,6 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
     int greenColor = subEvent.colorGreen ?? 127;
     var tileBackGroundColor =
         Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
-    // Widget editButton = IconButton(
-    //     icon: Icon(
-    //       Icons.edit_outlined,
-    //       color: TileStyles.defaultTextColor,
-    //       size: 24.0,
-    //     ),
-    //     onPressed: () {
-    //       if (isEditable) {
-    //         Navigator.push(
-    //             context,
-    //             MaterialPageRoute(
-    //                 builder: (context) => EditTile(
-    //                       tileId: (this.widget.subEvent.isFromTiler
-    //                               ? this.widget.subEvent.id
-    //                               : this.widget.subEvent.thirdpartyId) ??
-    //                           "",
-    //                       tileSource: this.widget.subEvent.thirdpartyType,
-    //                       thirdPartyUserId:
-    //                           this.widget.subEvent.thirdPartyUserId,
-    //                     )));
-    //       }
-    //     });
     List<Widget> allElements = [
       Container(
         width: MediaQuery.of(context).size.width,

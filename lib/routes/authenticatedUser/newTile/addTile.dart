@@ -11,6 +11,7 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
+import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -37,12 +38,12 @@ import '../../../constants.dart' as Constants;
 class AddTile extends StatefulWidget {
   Function? onAddTileClose;
   Function? onAddingATile;
-  AutoTile? autoTile;
+  PreTile? preTile;
   DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.autoTile, this.autoDeadline});
+  AddTile({this.preTile, this.autoDeadline});
   @override
   AddTileState createState() => AddTileState();
 }
@@ -99,35 +100,41 @@ class AddTileState extends State<AddTile> {
     if (this.widget.autoDeadline != null) {
       _endTime = this.widget.autoDeadline!;
     }
-    if (this.widget.autoTile != null) {
-      _location = this.widget.autoTile!.location;
+    if (this.widget.preTile != null) {
+      _location = this.widget.preTile!.location;
       tileNameController =
-          TextEditingController(text: this.widget.autoTile!.description);
-      _duration = this.widget.autoTile!.duration;
-      _startTime = this.widget.autoTile!.startTime ?? Utility.currentTime();
+          TextEditingController(text: this.widget.preTile!.description);
+      _duration = this.widget.preTile!.duration;
+      _startTime = this.widget.preTile!.startTime ?? Utility.currentTime();
       if (_location == null) {
         var future = new Future.delayed(
             const Duration(milliseconds: Constants.onTextChangeDelayInMs));
         // ignore: cancel_subscriptions
         StreamSubscription streamSubScription =
             future.asStream().listen((event) {
-          this
-              .scheduleApi
-              .getAutoResult(this.widget.autoTile!.description)
-              .then((remoteTileResponse) {
-            Location? _locationResponse;
-            if (remoteTileResponse.item2.isNotEmpty) {
-              _locationResponse = remoteTileResponse.item2.last;
-            }
-            if (mounted) {
-              setState(() {
-                if (!_isLocationManuallySet) {
-                  updateLocation(_locationResponse);
-                }
-              });
-              isSubmissionReady();
-            }
-          });
+          if (this
+              .widget
+              .preTile!
+              .description
+              .isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
+            this
+                .scheduleApi
+                .getAutoResult(this.widget.preTile!.description!)
+                .then((remoteTileResponse) {
+              Location? _locationResponse;
+              if (remoteTileResponse.item2.isNotEmpty) {
+                _locationResponse = remoteTileResponse.item2.last;
+              }
+              if (mounted) {
+                setState(() {
+                  if (!_isLocationManuallySet) {
+                    updateLocation(_locationResponse);
+                  }
+                });
+                isSubmissionReady();
+              }
+            });
+          }
         });
 
         setState(() {
@@ -346,9 +353,9 @@ class AddTileState extends State<AddTile> {
 
     Function retValue = () async {
       if (_isDurationManuallySet && _isLocationManuallySet ||
-          (this.widget.autoTile != null &&
-              this.widget.autoTile!.duration != null &&
-              this.widget.autoTile!.location != null)) {
+          (this.widget.preTile != null &&
+              this.widget.preTile!.duration != null &&
+              this.widget.preTile!.location != null)) {
         return;
       }
       var future = new Future.delayed(

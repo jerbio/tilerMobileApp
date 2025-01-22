@@ -227,7 +227,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                         padding:
                                             EdgeInsets.fromLTRB(20, 10, 20, 0),
                                         child: Text(
-                                          autoTile.description,
+                                          autoTile.description ?? "",
                                           style: TileStyles
                                               .fullScreenTextFieldStyle,
                                         ))),
@@ -287,7 +287,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                         context,
                         MaterialPageRoute(
                             builder: (context) => AddTile(
-                                autoTile: autoTile,
+                                preTile: autoTile,
                                 autoDeadline: this.widget.deadline)));
                   }
                 },
