@@ -7,7 +7,7 @@ sealed class PreviewSummaryEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class GetPreviewSummaryEvent extends Equatable {
+class GetPreviewSummaryEvent extends PreviewSummaryEvent {
   final Timeline timeline;
   const GetPreviewSummaryEvent({required this.timeline});
 
@@ -15,7 +15,7 @@ class GetPreviewSummaryEvent extends Equatable {
   List<Object> get props => [timeline];
 }
 
-class PreviewSummaryLoadingEvent extends Equatable {
+class PreviewSummaryLoadingEvent extends PreviewSummaryEvent {
   final PreviewSummary? previewSummary;
   const PreviewSummaryLoadingEvent({required this.previewSummary});
 
@@ -23,7 +23,7 @@ class PreviewSummaryLoadingEvent extends Equatable {
   List<Object> get props => [previewSummary ?? PreviewSummary.fromJson({})];
 }
 
-class PreviewSummaryLoadedEvent extends Equatable {
+class PreviewSummaryLoadedEvent extends PreviewSummaryEvent {
   final PreviewSummary? previewSummary;
   const PreviewSummaryLoadedEvent({required this.previewSummary});
 
