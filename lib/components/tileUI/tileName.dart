@@ -17,7 +17,7 @@ class TileName extends StatefulWidget {
 
 class TileNameState extends State<TileName> {
   TextStyle textStyle = TextStyle(
-      fontSize: 20,
+      fontSize: 15,
       fontFamily: TileStyles.rubikFontName,
       fontWeight: FontWeight.w500,
       color: Color.fromRGBO(31, 31, 31, 1));
