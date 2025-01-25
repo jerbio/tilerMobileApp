@@ -3,7 +3,7 @@ import 'dart:ffi';
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:switch_up/switch_up.dart';
+// import 'package:switch_up/switch_up.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
@@ -119,12 +119,13 @@ class DurationDialState extends State<DurationDial> {
           padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
           key: switchUpID,
           width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-          child: SwitchUp(
-            items: durationTextCollection,
-            onChanged: onTabTypeChange,
-            value: switchUpvalue,
-            color: TileStyles.primaryColor,
-          ),
+          child: SizedBox.shrink(),
+          // child: SwitchUp(
+          //   items: durationTextCollection,
+          //   onChanged: onTabTypeChange,
+          //   value: switchUpvalue,
+          //   color: TileStyles.primaryColor,
+          // ),
         );
         widgetColumn.insert(0, switchUp);
       }

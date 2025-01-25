@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:switch_up/switch_up.dart';
+// import 'package:switch_up/switch_up.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -1356,15 +1356,16 @@ class AddTileState extends State<AddTile> {
     String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
     Widget switchUp = Container(
       width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: SwitchUp(
-        key: switchUpKey,
-        items: tabButtons,
-        onChanged: onTabTypeChange,
-        value: switchUpvalue,
-        color: TileStyles.primaryColor,
-        backgroundColor: TileStyles.primaryContrastColor,
-        // TileStyles.oPrimaryColorHSL.toColor(),
-      ),
+      child: SizedBox.shrink(),
+      // child: SwitchUp(
+      //   key: switchUpKey,
+      //   items: tabButtons,
+      //   onChanged: onTabTypeChange,
+      //   value: switchUpvalue,
+      //   color: TileStyles.primaryColor,
+      //   backgroundColor: TileStyles.primaryContrastColor,
+      //   // TileStyles.oPrimaryColorHSL.toColor(),
+      // ),
     );
 
     Widget tileTypeCarousel = CarouselSlider(
