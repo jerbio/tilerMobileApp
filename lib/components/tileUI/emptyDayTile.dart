@@ -182,116 +182,116 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       )),
                 ),
               ),
-              AppinioSwiper(
-                cards: autoTiles
-                    .where((autoTile) => autoTile.image != null)
-                    .map((autoTile) {
-                  return Container(
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  topRight: Radius.circular(8),
-                                ),
-                                child: Image.asset(
-                                  autoTile.image!,
-                                  fit: BoxFit.cover,
-                                ))),
-                        FractionallySizedBox(
-                          alignment: FractionalOffset.center,
-                          widthFactor: 1,
-                          child: Container(
-                            height: 250,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(10),
-                                  bottomRight: Radius.circular(10)),
-                              color: Colors.white,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black87.withOpacity(0.2),
-                                  spreadRadius: 1,
-                                  blurRadius: 1,
-                                  blurStyle: BlurStyle.normal,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 10, 20, 0),
-                                        child: Text(
-                                          autoTile.description,
-                                          style: TileStyles
-                                              .fullScreenTextFieldStyle,
-                                        ))),
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                        child: Text(
-                                          autoTile.isLastCard
-                                              ? '   '
-                                              : (autoTile.duration?.toHuman ??
-                                                  ''),
-                                          style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                              fontFamily:
-                                                  TileStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500),
-                                        ))),
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                        child: Text(
-                                          autoTile.isLastCard
-                                              ? '   '
-                                              : '(' +
-                                                  AppLocalizations.of(context)!
-                                                      .swipeRightToTileIt +
-                                                  ')',
-                                          style: TextStyle(
-                                              color: Colors.grey,
-                                              fontSize: 16,
-                                              fontFamily:
-                                                  TileStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500),
-                                        )))
-                              ],
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onSwipe: (index, direction) {
-                  AutoTile autoTile = autoTiles[index];
-                  if (autoTile.isLastCard) {
-                    return;
-                  }
-                  if (AppinioSwiperDirection.right == direction) {
-                    AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
-                      'description': autoTile.description,
-                      'duration': autoTile.duration?.inMilliseconds ?? -1
-                    });
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AddTile(
-                                autoTile: autoTile,
-                                autoDeadline: this.widget.deadline)));
-                  }
-                },
-              )
+              // AppinioSwiper(
+              //   cards: autoTiles
+              //       .where((autoTile) => autoTile.image != null)
+              //       .map((autoTile) {
+              //     return Container(
+              //       child: Column(
+              //         children: [
+              //           Expanded(
+              //               child: ClipRRect(
+              //                   borderRadius: const BorderRadius.only(
+              //                     topLeft: Radius.circular(8),
+              //                     topRight: Radius.circular(8),
+              //                   ),
+              //                   child: Image.asset(
+              //                     autoTile.image!,
+              //                     fit: BoxFit.cover,
+              //                   ))),
+              //           FractionallySizedBox(
+              //             alignment: FractionalOffset.center,
+              //             widthFactor: 1,
+              //             child: Container(
+              //               height: 250,
+              //               decoration: BoxDecoration(
+              //                 borderRadius: BorderRadius.only(
+              //                     bottomLeft: Radius.circular(10),
+              //                     bottomRight: Radius.circular(10)),
+              //                 color: Colors.white,
+              //                 boxShadow: [
+              //                   BoxShadow(
+              //                     color: Colors.black87.withOpacity(0.2),
+              //                     spreadRadius: 1,
+              //                     blurRadius: 1,
+              //                     blurStyle: BlurStyle.normal,
+              //                     offset: Offset(0, 1),
+              //                   ),
+              //                 ],
+              //               ),
+              //               child: Column(
+              //                 crossAxisAlignment: CrossAxisAlignment.start,
+              //                 children: [
+              //                   Flexible(
+              //                       child: Container(
+              //                           padding:
+              //                               EdgeInsets.fromLTRB(20, 10, 20, 0),
+              //                           child: Text(
+              //                             autoTile.description,
+              //                             style: TileStyles
+              //                                 .fullScreenTextFieldStyle,
+              //                           ))),
+              //                   Flexible(
+              //                       child: Container(
+              //                           padding:
+              //                               EdgeInsets.fromLTRB(20, 10, 20, 10),
+              //                           child: Text(
+              //                             autoTile.isLastCard
+              //                                 ? '   '
+              //                                 : (autoTile.duration?.toHuman ??
+              //                                     ''),
+              //                             style: TextStyle(
+              //                                 color: Colors.grey,
+              //                                 fontSize: 16,
+              //                                 fontFamily:
+              //                                     TileStyles.rubikFontName,
+              //                                 fontWeight: FontWeight.w500),
+              //                           ))),
+              //                   Flexible(
+              //                       child: Container(
+              //                           padding:
+              //                               EdgeInsets.fromLTRB(20, 0, 20, 0),
+              //                           child: Text(
+              //                             autoTile.isLastCard
+              //                                 ? '   '
+              //                                 : '(' +
+              //                                     AppLocalizations.of(context)!
+              //                                         .swipeRightToTileIt +
+              //                                     ')',
+              //                             style: TextStyle(
+              //                                 color: Colors.grey,
+              //                                 fontSize: 16,
+              //                                 fontFamily:
+              //                                     TileStyles.rubikFontName,
+              //                                 fontWeight: FontWeight.w500),
+              //                           )))
+              //                 ],
+              //               ),
+              //             ),
+              //           )
+              //         ],
+              //       ),
+              //     );
+              //   }).toList(),
+              //   onSwipe: (index, direction) {
+              //     AutoTile autoTile = autoTiles[index];
+              //     if (autoTile.isLastCard) {
+              //       return;
+              //     }
+              //     if (AppinioSwiperDirection.right == direction) {
+              //       AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
+              //         'description': autoTile.description,
+              //         'duration': autoTile.duration?.inMilliseconds ?? -1
+              //       });
+              //       Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //               builder: (context) => AddTile(
+              //                   autoTile: autoTile,
+              //                   autoDeadline: this.widget.deadline)));
+              //     }
+              //   },
+              // )
             ],
           ),
         ),
