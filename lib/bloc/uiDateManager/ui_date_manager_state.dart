@@ -20,6 +20,14 @@ class UiDateManagerUpdated extends UiDateManagerState {
       this.dateChangeTrigger});
   @override
   List<Object> get props => [currentDate, previousDate];
+
+  // @override
+  // String toString() {
+  //   return 'previousDate ' +
+  //       previousDate.toString() +
+  //       " || currentDate " +
+  //       currentDate.toString();
+  // }
 }
 
 class LoggedOutUiDateManagerUpdated extends UiDateManagerState {
