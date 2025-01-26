@@ -16,9 +16,9 @@ import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class EmptyDayTile extends StatefulWidget {
-  DateTime? deadline;
-  int? dayIndex;
-  EmptyDayTile({this.deadline, this.dayIndex});
+  final DateTime? deadline;
+  final int dayIndex;
+  EmptyDayTile({this.deadline, required this.dayIndex});
   @override
   EmptyDayTileState createState() => EmptyDayTileState();
 }
@@ -55,7 +55,9 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
   void disableTileListCarousel() {
     if (this.mounted) {
-      context.read<TileListCarouselBloc>().add(DisableCarouselScrollEvent());
+      context
+          .read<TileListCarouselBloc>()
+          .add(DisableCarouselScrollEvent(dayIndex: this.widget.dayIndex));
     }
   }
 
