@@ -24,11 +24,7 @@ class WithinNowBatch extends TileBatch {
   WithinNowBatchState? _state;
   TimelineSummary? dayData;
 
-  WithinNowBatch(
-      {
-      List<TilerEvent>? tiles,
-      TimelineSummary? dayData,
-      Key? key})
+  WithinNowBatch({List<TilerEvent>? tiles, TimelineSummary? dayData, Key? key})
       : super(
             key: key,
             tiles: tiles,
@@ -220,22 +216,25 @@ class WithinNowBatchState extends TileBatchState {
         }
       });
     }
-    return Flex(
-      direction: Axis.vertical,
-      children: [
-        AnimatedOpacity(
-          opacity: _emptyDayOpacity,
-          duration: const Duration(milliseconds: 500),
-          child: Container(
-              height: MediaQuery.of(context).size.height - heightMargin,
-              child: EmptyDayTile(
-                deadline:
-                    Utility.getTimeFromIndex(this.widget.dayIndex!).endOfDay,
-                dayIndex: this.widget.dayIndex,
-              )),
-        )
-      ],
-    );
+    if (this.widget.dayIndex != null) {
+      return Flex(
+        direction: Axis.vertical,
+        children: [
+          AnimatedOpacity(
+            opacity: _emptyDayOpacity,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+                height: MediaQuery.of(context).size.height - heightMargin,
+                child: EmptyDayTile(
+                  deadline:
+                      Utility.getTimeFromIndex(this.widget.dayIndex!).endOfDay,
+                  dayIndex: this.widget.dayIndex!,
+                )),
+          )
+        ],
+      );
+    }
+    return SizedBox.shrink();
   }
 
   bool internalBreak = false;
