@@ -29,10 +29,10 @@ class DailyTileList extends TileList {
   _DailyTileListState createState() => _DailyTileListState();
 }
 
-class _DailyTileListState extends TileListState{
+class _DailyTileListState extends TileListState {
   Map? contextParams;
   BoxDecoration previousTileBatchDecoration =
-  BoxDecoration(color: Colors.white);
+      BoxDecoration(color: Colors.white);
   Key carouselKey = ValueKey(Utility.getUuid);
   Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
@@ -41,39 +41,39 @@ class _DailyTileListState extends TileListState{
   List<SubCalendarEvent> loadedSubCalendarEvent = [];
   late Timeline previousTimeline;
   late bool disableDayCarouselSlide = false;
-  late bool? pendingCarouselDisabled = disableDayCarouselSlide;
+  int? disableDayIndex;
+  // late bool? pendingCarouselDisabled = disableDayCarouselSlide;
   int _forceRefreshCounter = 0;
   final CarouselController tileListDayCarouselController = CarouselController();
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
 
-
   @override
   void initState() {
     super.initState();
-    timeLine= Timeline.fromDateTimeAndDuration(Utility.currentTime().dayDate.add(Duration(days: -4)), Duration(days: 7));
-    incrementalTilerScrollId= "incremental-get-schedule";
+    timeLine = Timeline.fromDateTimeAndDuration(
+        Utility.currentTime().dayDate.add(Duration(days: -4)),
+        Duration(days: 7));
+    incrementalTilerScrollId = "incremental-get-schedule";
     previousTimeline = this.timeLine;
   }
-
 
   String _generateIncrementalIdToMapping() {
     return incrementalTilerScrollId + "-" + Utility.msCurrentTime.toString();
   }
 
-
   updateDayCarouselSlide({int? universalDayIndex}) {
     setState(() {
-      if (pendingCarouselDisabled != null) {
-        disableDayCarouselSlide = pendingCarouselDisabled!;
-        pendingCarouselDisabled = null;
-      }
+      // if (pendingCarouselDisabled != null) {
+      //   disableDayCarouselSlide = pendingCarouselDisabled!;
+      //   pendingCarouselDisabled = null;
+      // }
     });
   }
 
   reloadSchedule(DateTime dateManageCurrentDate,
       {bool forceRenderingPage = true,
-        Timeline? forcedTimeline = null,
-        bool incremental = false}) {
+      Timeline? forcedTimeline = null,
+      bool incremental = false}) {
     var scheduleSubEventState = this.context.read<ScheduleBloc>().state;
     List<SubCalendarEvent> subEvents = [];
     Timeline todayTimeLine = Utility.todayTimeline();
@@ -81,46 +81,51 @@ class _DailyTileListState extends TileListState{
     DateTime startDateTime = todayTimeLine.startTime;
     DateTime endDateTime = todayTimeLine.endTime;
     List<Timeline> evaluatedDayTimelines = [];
-    AuthorizedRouteTileListPage currentPage=AuthorizedRouteTileListPage.Daily;
+    AuthorizedRouteTileListPage currentPage = AuthorizedRouteTileListPage.Daily;
     ScheduleStatus scheduleStatus = ScheduleStatus();
     Timeline previousTimeLine = timeLine;
     if (scheduleSubEventState is ScheduleLoadedState) {
       subEvents = scheduleSubEventState.subEvents;
       startDateTime = scheduleSubEventState.lookupTimeline.startTime;
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
-      previousTimeLine = Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+      previousTimeLine =
+          Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       currentTimeline = scheduleSubEventState.lookupTimeline;
-      currentPage=scheduleSubEventState.currentView;
+      currentPage = scheduleSubEventState.currentView;
     }
     if (scheduleSubEventState is ScheduleEvaluationState) {
       subEvents = scheduleSubEventState.subEvents;
       startDateTime = scheduleSubEventState.lookupTimeline.startTime;
       endDateTime = scheduleSubEventState.lookupTimeline.endTime;
-      previousTimeLine = Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
+      previousTimeLine =
+          Timeline.fromTimeRange(scheduleSubEventState.lookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       currentTimeline = scheduleSubEventState.lookupTimeline;
-      currentPage=scheduleSubEventState.currentView;
+      currentPage = scheduleSubEventState.currentView;
     }
 
     if (scheduleSubEventState is ScheduleLoadingState) {
       subEvents = scheduleSubEventState.subEvents;
-      previousTimeLine = Timeline.fromTimeRange(scheduleSubEventState.previousLookupTimeline);
+      previousTimeLine =
+          Timeline.fromTimeRange(scheduleSubEventState.previousLookupTimeline);
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       scheduleStatus = scheduleSubEventState.scheduleStatus;
       evaluatedDayTimelines = scheduleSubEventState.timelines;
       currentTimeline = scheduleSubEventState.previousLookupTimeline;
-      currentPage=scheduleSubEventState.currentView;
+      currentPage = scheduleSubEventState.currentView;
     }
 
     int dayDelta = Constants.numberOfDaysToLoad ~/ 2;
     int daySplit = (dayDelta.toDouble()).round();
-    startDateTime = dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
-    endDateTime = startDateTime.add(Duration(days: Constants.numberOfDaysToLoad));
+    startDateTime =
+        dateManageCurrentDate.dayDate.add(-Duration(days: daySplit));
+    endDateTime =
+        startDateTime.add(Duration(days: Constants.numberOfDaysToLoad));
     bool emitOnlyLoadedStated = true;
     if (daySplit == 0) {
       startDateTime = dateManageCurrentDate.dayDate.add(Duration(days: -1));
@@ -138,7 +143,7 @@ class _DailyTileListState extends TileListState{
     if (incremental) {
       loopIncrementalIdToMapping = _generateIncrementalIdToMapping();
       if (previousTimeLine.startTime.millisecondsSinceEpoch <=
-          newTimeline.startTime.millisecondsSinceEpoch &&
+              newTimeline.startTime.millisecondsSinceEpoch &&
           previousTimeLine.endTime.millisecondsSinceEpoch >=
               newTimeline.endTime.millisecondsSinceEpoch) {
         newTimeline = previousTimeLine;
@@ -156,7 +161,7 @@ class _DailyTileListState extends TileListState{
         endDateTime = newTimeline.endTime;
       }
       if (newTimeline.startTime.millisecondsSinceEpoch <
-          previousTimeLine.startTime.millisecondsSinceEpoch &&
+              previousTimeLine.startTime.millisecondsSinceEpoch &&
           newTimeline.endTime.millisecondsSinceEpoch >
               previousTimeLine.endTime.millisecondsSinceEpoch) {
         startDateTime = newTimeline.startTime;
@@ -176,11 +181,12 @@ class _DailyTileListState extends TileListState{
 
     Timeline queryTimeline = Timeline.fromDateTime(startDateTime, endDateTime);
     this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-      previousSubEvents: subEvents,
-      previousTimeline: previousTimeLine,
-      isAlreadyLoaded: !forceRenderingPage,
-      emitOnlyLoadedStated: emitOnlyLoadedStated,
-      scheduleTimeline: queryTimeline,));
+          previousSubEvents: subEvents,
+          previousTimeline: previousTimeLine,
+          isAlreadyLoaded: !forceRenderingPage,
+          emitOnlyLoadedStated: emitOnlyLoadedStated,
+          scheduleTimeline: queryTimeline,
+        ));
     refreshScheduleSummary(lookupTimeline: queryTimeline);
     if (loopIncrementalIdToMapping != null) {
       setState(() {
@@ -188,22 +194,23 @@ class _DailyTileListState extends TileListState{
         incrementalIdToMapping_cpy.addAll(incrementalIdToMapping);
         incrementalIdToMapping_cpy[loopIncrementalIdToMapping!] =
             ScheduleLoadedState(
-              lookupTimeline: currentTimeline,
-              subEvents: subEvents,
-              scheduleStatus: scheduleStatus,
-              previousLookupTimeline: previousTimeLine,
-              timelines: evaluatedDayTimelines,
-              currentView: currentPage,
-            );
+          lookupTimeline: currentTimeline,
+          subEvents: subEvents,
+          scheduleStatus: scheduleStatus,
+          previousLookupTimeline: previousTimeLine,
+          timelines: evaluatedDayTimelines,
+          currentView: currentPage,
+        );
         incrementalIdToMapping = incrementalIdToMapping_cpy;
       });
     }
   }
+
   Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> mapTilesToDays(
       List<TilerEvent> tiles, Timeline? todayTimeline) {
     List<TilerEvent> todaySubEvents = [];
     Map<int, List<TilerEvent>> dayIndexToTiles =
-    new Map<int, List<TilerEvent>>();
+        new Map<int, List<TilerEvent>>();
     for (var tile in tiles) {
       DateTime? referenceTime = tile.startTime;
       if (todayTimeline != null) {
@@ -228,12 +235,13 @@ class _DailyTileListState extends TileListState{
       tilesForDay!.add(tile);
     }
     Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> retValue =
-    new Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>>(
-        dayIndexToTiles, todaySubEvents);
+        new Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>>(
+            dayIndexToTiles, todaySubEvents);
 
     return retValue;
   }
-  Timeline getRelevantTimeLine(){
+
+  Timeline getRelevantTimeLine() {
     final currentState = context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadingState) {
       return currentState.previousLookupTimeline;
@@ -245,7 +253,9 @@ class _DailyTileListState extends TileListState{
   }
 
   void processUpcomingAndPrecedingTiles(
-      Map<int, List<TilerEvent>> dayIndexToTileDict, Map<int, TileBatch> upcomingDayTilesDict, Map<int,TileBatch> precedingDayTilesDict ){
+      Map<int, List<TilerEvent>> dayIndexToTileDict,
+      Map<int, TileBatch> upcomingDayTilesDict,
+      Map<int, TileBatch> precedingDayTilesDict) {
     Timeline relevantTimeline = getRelevantTimeLine();
     int todayDayIndex = Utility.getDayIndex(DateTime.now());
     int startIndex = Utility.getDayIndex(
@@ -269,10 +279,8 @@ class _DailyTileListState extends TileListState{
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch upcomingTileBatch = TileBatch(
-              dayIndex: dayIndex,
-              tiles: allTiles,
-              key: key);
+          TileBatch upcomingTileBatch =
+              TileBatch(dayIndex: dayIndex, tiles: allTiles, key: key);
           upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
         }
       } else {
@@ -283,22 +291,22 @@ class _DailyTileListState extends TileListState{
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch precedingDayTileBatch = TileBatch(
-              dayIndex: dayIndex,
-              key: key,
-              tiles: allTiles);
+          TileBatch precedingDayTileBatch =
+              TileBatch(dayIndex: dayIndex, key: key, tiles: allTiles);
           precedingDayTilesDict[dayIndex] = precedingDayTileBatch;
         }
       }
     }
   }
+
   WithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
 
     for (TilerEvent eachSubEvent in todayTiles) {
-      if (eachSubEvent.endTime.millisecondsSinceEpoch > currentTime.millisecondsSinceEpoch) {
+      if (eachSubEvent.endTime.millisecondsSinceEpoch >
+          currentTime.millisecondsSinceEpoch) {
         notElapsedTiles.add(eachSubEvent);
       } else {
         elapsedTiles.add(eachSubEvent);
@@ -310,7 +318,8 @@ class _DailyTileListState extends TileListState{
     );
   }
 
-  Tuple2<int,List<Widget>> buildCarousel(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData){
+  Tuple2<int, List<Widget>> buildCarousel(
+      Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     Map<int, TileBatch> precedingDayTilesDict = new Map<int, TileBatch>();
     Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
     Map<int, Widget> dayIndexToWidget = {};
@@ -323,10 +332,11 @@ class _DailyTileListState extends TileListState{
       dayToSleepTimeLines[dayIndex] = sleepTimeLine;
     });
     Tuple2<Map<int, List<TilerEvent>>, List<TilerEvent>> dayToTiles =
-    mapTilesToDays(tileData.item2, todayTimeLine);
+        mapTilesToDays(tileData.item2, todayTimeLine);
     List<TilerEvent> todayTiles = dayToTiles.item2;
     Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
-    processUpcomingAndPrecedingTiles(dayIndexToTileDict,upcomingDayTilesDict,precedingDayTilesDict);
+    processUpcomingAndPrecedingTiles(
+        dayIndexToTileDict, upcomingDayTilesDict, precedingDayTilesDict);
     List<TileBatch> precedingDayTiles = precedingDayTilesDict.values.toList();
     precedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
         eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
@@ -367,7 +377,7 @@ class _DailyTileListState extends TileListState{
     }
     childTileBatches.addAll(upcomingDayTiles);
     upcomingDayTiles.forEach(
-          (tileBatch) {
+      (tileBatch) {
         {
           Widget widget = Container(
             height: MediaQuery.of(context).size.height,
@@ -403,16 +413,25 @@ class _DailyTileListState extends TileListState{
       initialCarouselIndex = 0;
     }
     return Tuple2(initialCarouselIndex, carouselItems);
+  }
 
-}
-
-  Widget buildDailyRenderSubCalendarTiles(Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
-    Tuple2<int,List<Widget>> carouselData= buildCarousel(tileData);
-    int initialCarouselIndex=carouselData.item1;
-    List<Widget> carouselItems=carouselData.item2;
+  Widget buildDailyRenderSubCalendarTiles(
+      Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
+    Tuple2<int, List<Widget>> carouselData = buildCarousel(tileData);
+    int initialCarouselIndex = carouselData.item1;
+    List<Widget> carouselItems = carouselData.item2;
     if (tileData == null) {
       return ListView(children: []);
     }
+
+    bool scrollerIsDisabled = disableDayCarouselSlide &&
+        disableDayIndex != null &&
+        this.context.read<UiDateManagerBloc>().state is UiDateManagerUpdated &&
+        (this.context.read<UiDateManagerBloc>().state as UiDateManagerUpdated)
+                .currentDate
+                .universalDayIndex ==
+            disableDayIndex;
+    print(this.context.read<UiDateManagerBloc>().state);
     return CarouselSlider(
         key: carouselKey,
         carouselController: tileListDayCarouselController,
@@ -465,13 +484,11 @@ class _DailyTileListState extends TileListState{
             updateDayCarouselSlide(
                 universalDayIndex: currentTime.universalDayIndex);
           },
-          scrollPhysics: (disableDayCarouselSlide)
-              ? NeverScrollableScrollPhysics()
-              : null,
+          scrollPhysics:
+              (scrollerIsDisabled) ? NeverScrollableScrollPhysics() : null,
           scrollDirection: Axis.horizontal,
         ));
   }
-
 
   List<SubCalendarEvent> dedupeAndMergeSubEvents(
       List<SubCalendarEvent> destination, List<SubCalendarEvent> source) {
@@ -569,81 +586,80 @@ class _DailyTileListState extends TileListState{
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
-        BlocListener<ScheduleBloc, ScheduleState>(
-            listener: (context, state) {
-              Utility.debugPrint("ScheduleBloc state is " + state.toString());
+        BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
+          Utility.debugPrint("ScheduleBloc state is " + state.toString());
 
-              if (state is ScheduleLoadingState) {
-                if (state.message != null) {
-                  Fluttertoast.showToast(
-                      msg: state.message!,
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.SNACKBAR,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.black45,
-                      textColor: Colors.white,
-                      fontSize: 16.0);
-                }
+          if (state is ScheduleLoadingState) {
+            if (state.message != null) {
+              Fluttertoast.showToast(
+                  msg: state.message!,
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.SNACKBAR,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.black45,
+                  textColor: Colors.white,
+                  fontSize: 16.0);
+            }
+          }
+          if (state is ScheduleLoadedState) {
+            dayIndexToSubEvents = {};
+            String? statusId = state.scheduleStatus.evaluationId;
+            Map<String, SubCalendarEvent> idToSubEventByStatus = {};
+            bool isNewStatusId = true;
+            if (statusId != null) {
+              if (statusToSubEvents.containsKey(statusId) &&
+                  statusToSubEvents[statusId] != null) {
+                idToSubEventByStatus = statusToSubEvents[statusId]!;
+                isNewStatusId = false;
               }
-              if (state is ScheduleLoadedState) {
-                dayIndexToSubEvents = {};
-                String? statusId = state.scheduleStatus.evaluationId;
-                Map<String, SubCalendarEvent> idToSubEventByStatus = {};
-                bool isNewStatusId = true;
+              statusToSubEvents[statusId] = idToSubEventByStatus;
+            }
+            int startIndex = state.lookupTimeline.startTime.universalDayIndex;
+            int endIndex = state.lookupTimeline.endTime.universalDayIndex;
+            if (startIndex < endIndex - 1) {
+              startIndex -= 1;
+              if (startIndex < endIndex - 1) {
+                endIndex -= 1;
+              }
+            }
+            Utility.debugPrint(
+                "Loaded timeline is " + state.lookupTimeline.toString());
+            int currentIndex = startIndex;
+            do {
+              dayIndexToSubEvents[currentIndex] = [];
+              ++currentIndex;
+            } while (currentIndex < endIndex);
+            List<SubCalendarEvent> subEvents = state.subEvents;
+            if (statusId != null &&
+                statusToSubEvents[statusId] != null &&
+                !isNewStatusId) {
+              subEvents = (statusToSubEvents[statusId] ?? {}).values.toList();
+            }
+            Utility.debugPrint("Loaded timeline subevent Count " +
+                subEvents.length.toString());
+            if (state.eventId != null && state.eventId!.isNotEmpty) {
+              String eventId = state.eventId!;
+              if (eventId.contains(incrementalTilerScrollId) &&
+                  incrementalIdToMapping.containsKey(eventId)) {
+                augmentLoadedState(state, context,
+                    currentLoadedState: incrementalIdToMapping[eventId]);
+                incrementalIdToMapping.remove(eventId);
+              }
+            } else {
+              setState(() {
+                loadedTimeline = state.timelines;
+                loadedSubCalendarEvent = state.subEvents;
+                if (state.previousLookupTimeline != null) {
+                  previousTimeline = state.previousLookupTimeline!;
+                }
                 if (statusId != null) {
-                  if (statusToSubEvents.containsKey(statusId) &&
-                      statusToSubEvents[statusId] != null) {
-                    idToSubEventByStatus = statusToSubEvents[statusId]!;
-                    isNewStatusId = false;
-                  }
-                  statusToSubEvents[statusId] = idToSubEventByStatus;
+                  String carouselId = _generateCarouselKeyId(statusId);
+                  carouselKey = ValueKey(carouselId);
                 }
-                int startIndex = state.lookupTimeline.startTime.universalDayIndex;
-                int endIndex = state.lookupTimeline.endTime.universalDayIndex;
-                if (startIndex < endIndex - 1) {
-                  startIndex -= 1;
-                  if (startIndex < endIndex - 1) {
-                    endIndex -= 1;
-                  }
-                }
-                Utility.debugPrint(
-                    "Loaded timeline is " + state.lookupTimeline.toString());
-                int currentIndex = startIndex;
-                do {
-                  dayIndexToSubEvents[currentIndex] = [];
-                  ++currentIndex;
-                } while (currentIndex < endIndex);
-                List<SubCalendarEvent> subEvents = state.subEvents;
-                if (statusId != null &&
-                    statusToSubEvents[statusId] != null &&
-                    !isNewStatusId) {
-                  subEvents = (statusToSubEvents[statusId] ?? {}).values.toList();
-                }
-                Utility.debugPrint("Loaded timeline subevent Count " +
-                    subEvents.length.toString());
-                if (state.eventId != null && state.eventId!.isNotEmpty) {
-                  String eventId = state.eventId!;
-                  if (eventId.contains(incrementalTilerScrollId) &&
-                      incrementalIdToMapping.containsKey(eventId)) {
-                    augmentLoadedState(state, context,
-                        currentLoadedState: incrementalIdToMapping[eventId]);
-                    incrementalIdToMapping.remove(eventId);
-                  }
-                } else {
-                  setState(() {
-                    loadedTimeline = state.timelines;
-                    loadedSubCalendarEvent = state.subEvents;
-                    if (state.previousLookupTimeline != null) {
-                      previousTimeline = state.previousLookupTimeline!;
-                    }
-                    if (statusId != null) {
-                      String carouselId = _generateCarouselKeyId(statusId);
-                      carouselKey = ValueKey(carouselId);
-                    }
-                  });
-                }
-              }
-            }),
+              });
+            }
+          }
+        }),
         BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
           listener: (context, state) {
             showSubEventModal(state);
@@ -658,12 +674,8 @@ class _DailyTileListState extends TileListState{
                 forceRenderingPage = false;
                 tileListDayCarouselController.animateToPage(
                     dayIndexToCarouselIndex[
-                    state.currentDate.universalDayIndex]!
+                            state.currentDate.universalDayIndex]!
                         .item1);
-              }
-              if (pendingCarouselDisabled != null) {
-                disableDayCarouselSlide = pendingCarouselDisabled!;
-                pendingCarouselDisabled = null;
               }
               if (state.dateChangeTrigger == DateChangeTrigger.buttonPress) {
                 if (this.mounted) {
@@ -679,43 +691,24 @@ class _DailyTileListState extends TileListState{
         ),
         BlocListener<TileListCarouselBloc, TileListCarouselState>(
             listener: (context, state) {
-              bool isCarouselDisabled = false;
-              bool isImmediate = false;
-              if (state is TileListCarouselDisabled) {
-                isCarouselDisabled = true;
-                isImmediate = state.isImmediate;
-              }
+          bool isCarouselDisabled = false;
+          disableDayIndex = null;
 
-              if (state is TileListCarouselEnable) {
-                isCarouselDisabled = false;
-                isImmediate = state.isImmediate;
-              }
+          if (state is TileListCarouselDisabled) {
+            isCarouselDisabled = true;
+            disableDayIndex = state.dayIndex;
+          }
 
-              if (!isCarouselDisabled) {
-                setState(() {
-                  disableDayCarouselSlide = isCarouselDisabled;
-                  pendingCarouselDisabled = null;
-                });
-                return;
-              }
-              if (isCarouselDisabled
-              ) {
-                pendingCarouselDisabled = isCarouselDisabled;
-              }
-              if (isImmediate) {
-                setState(() {
-                  if (pendingCarouselDisabled != null) {
-                    disableDayCarouselSlide = pendingCarouselDisabled!;
-                    pendingCarouselDisabled = null;
-                  }
-                });
-              }
-            }),
+          if (state is TileListCarouselEnable) {
+            isCarouselDisabled = false;
+          }
+          setState(() {
+            disableDayCarouselSlide = isCarouselDisabled;
+          });
+        }),
       ],
-
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
-
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
                 scheduleTimeline: timeLine,
@@ -730,7 +723,8 @@ class _DailyTileListState extends TileListState{
             }
             return Stack(
               children: [
-                buildDailyRenderSubCalendarTiles(Tuple2(loadedTimeline, loadedSubCalendarEvent))
+                buildDailyRenderSubCalendarTiles(
+                    Tuple2(loadedTimeline, loadedSubCalendarEvent))
               ],
             );
           }
@@ -738,23 +732,26 @@ class _DailyTileListState extends TileListState{
           if (state is ScheduleLoadingState) {
             bool showPendingUI = !state.isAlreadyLoaded;
             final dateMangerBloc = this.context.read<UiDateManagerBloc>().state;
-            if (dateMangerBloc is UiDateManagerUpdated && state.currentView==AuthorizedRouteTileListPage.Daily) {
+            if (dateMangerBloc is UiDateManagerUpdated &&
+                state.currentView == AuthorizedRouteTileListPage.Daily) {
               showPendingUI = showPendingUI ||
                   !state.previousLookupTimeline
                       .isDateTimeWithin(dateMangerBloc.currentDate);
             }
-            if (showPendingUI ) {
+            if (showPendingUI) {
               return renderPending();
             }
             return Stack(children: [
-              buildDailyRenderSubCalendarTiles(Tuple2(state.timelines, state.subEvents))
+              buildDailyRenderSubCalendarTiles(
+                  Tuple2(state.timelines, state.subEvents))
             ]);
           }
 
           if (state is ScheduleEvaluationState) {
             return Stack(
               children: [
-                buildDailyRenderSubCalendarTiles(Tuple2(state.timelines, state.subEvents)),
+                buildDailyRenderSubCalendarTiles(
+                    Tuple2(state.timelines, state.subEvents)),
                 PendingWidget(
                   imageAsset: TileStyles.evaluatingScheduleAsset,
                 ),
@@ -773,4 +770,3 @@ class _DailyTileListState extends TileListState{
     super.dispose();
   }
 }
-
