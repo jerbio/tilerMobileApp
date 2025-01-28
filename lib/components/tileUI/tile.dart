@@ -14,6 +14,7 @@ import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
@@ -279,6 +280,28 @@ class TileWidgetState extends State<TileWidget>
       ),
     );
     allElements.add(tileTimeFrame);
+    if (widget.subEvent.tileShareDesignatedId.isNot_NullEmptyOrWhiteSpace()) {
+      allElements.add(
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    TileShareDetailWidget.byDesignatedTileShareId(
+                  designatedTileShareId: widget.subEvent.tileShareDesignatedId,
+                ),
+              ),
+            );
+          },
+          child: Icon(
+            Icons.share,
+            size: 20,
+          ),
+        ),
+      );
+    }
+
     if (isEditable) {
       if (isMoreDetailEnabled || (this.widget.subEvent.isCurrent)) {
         // Timescrub to show that it is elapsed
@@ -308,7 +331,6 @@ class TileWidgetState extends State<TileWidget>
           ),
         );
 
-        //
         allElements.add(GestureDetector(
             onTap: () {
               setState(() {

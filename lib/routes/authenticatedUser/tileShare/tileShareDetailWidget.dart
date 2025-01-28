@@ -11,16 +11,23 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/inboxMultiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
+import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
-  late final String? tileShareId;
+  String? tileShareId;
+  String? designatedTileShareId;
   bool isOutBox;
   late final TileShareClusterData? tileShareClusterData;
   TileShareDetailWidget.byId(
       {required this.tileShareId, this.isOutBox = true}) {
+    this.tileShareClusterData = null;
+  }
+
+  TileShareDetailWidget.byDesignatedTileShareId(
+      {required this.designatedTileShareId, this.isOutBox = false}) {
     this.tileShareClusterData = null;
   }
   TileShareDetailWidget.byTileShareData(
@@ -35,6 +42,7 @@ class TileShareDetailWidget extends StatefulWidget {
 
 class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   final TileShareClusterApi clusterApi = TileShareClusterApi();
+  final DesignatedTileApi designatedTileShareApi = DesignatedTileApi();
   TileShareClusterData? tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
@@ -50,23 +58,29 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   @override
   void initState() {
     super.initState();
+    isLoading = false;
     isTileListLoading = false;
     if (this.widget.tileShareClusterData != null) {
       isLoading = false;
       tileShareCluster = this.widget.tileShareClusterData;
-    } else {
+    } else if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
       isLoading = true;
       getTileShareCluster();
+    } else if (this
+        .widget
+        .designatedTileShareId
+        .isNot_NullEmptyOrWhiteSpace()) {
+      isLoading = true;
+      getDesignatedTileShareId(this.widget.designatedTileShareId!);
     }
   }
 
-  Future getTileShareCluster() async {
+  Future getTileShareCluster({String? tileShareId}) async {
     bool tileLoadingState = false;
-    if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
+    String? lookupClusterId = tileShareId ?? this.widget.tileShareId;
+    if (lookupClusterId.isNot_NullEmptyOrWhiteSpace()) {
       tileLoadingState = true;
-      clusterApi
-          .getTileShareClusters(clusterId: this.widget.tileShareId)
-          .then((value) {
+      clusterApi.getTileShareClusters(clusterId: lookupClusterId).then((value) {
         Utility.debugPrint("Success getting tile cluster");
         setState(() {
           tilerError = null;
@@ -113,6 +127,19 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       isLoading = true;
       tilerError = null;
       isTileListLoading = tileLoadingState;
+    });
+  }
+
+  Future getDesignatedTileShareId(String designatedTileShareId) async {
+    designatedTileShareApi
+        .getDesignatedTiles(designatedTileId: designatedTileShareId)
+        .then((value) {
+      if (value.isNotEmpty) {
+        String? clusterShareId = value.first.tileTemplate?.clusterId;
+        if (clusterShareId.isNot_NullEmptyOrWhiteSpace()) {
+          getTileShareCluster(tileShareId: clusterShareId);
+        }
+      }
     });
   }
 
