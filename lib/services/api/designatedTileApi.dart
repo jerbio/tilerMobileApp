@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
+import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
@@ -112,5 +114,69 @@ class DesignatedTileApi extends AppApi {
       }
     }
     throw error;
+  }
+
+  Future<List<DesignatedTile>> getDesignatedTiles(
+      {int index = 0,
+      int pageSize = 50,
+      String? designatedTileId,
+      bool? isOutbox}) async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+      if (this.authentication.cachedCredentials != null) {
+        String? username = '';
+        final queryParameters = {
+          'UserName': username,
+          'MobileApp': true.toString(),
+          'PageSize': pageSize.toString(),
+          'Index': index.toString()
+        };
+        if (designatedTileId.isNot_NullEmptyOrWhiteSpace()) {
+          queryParameters["DesignatedTileTemplateId"] = designatedTileId!;
+        }
+
+        if (isOutbox != null) {
+          queryParameters["IsOutbox"] = isOutbox.toString();
+        }
+        Uri uri =
+            Uri.https(url, 'api/DesignatedTile/designated', queryParameters);
+
+        var header = this.getHeaders();
+        if (header == null) {
+          throw TilerError(message: 'Issues with authentication');
+        }
+
+        Response response = await http.get(uri, headers: header);
+        HandleHttpStatusFailure(response);
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            if (designatedTileId.isNot_NullEmptyOrWhiteSpace()) {
+              String designatedTileKey = 'designatedTile';
+              if (jsonResult['Content'].containsKey(designatedTileKey)) {
+                DesignatedTile designatedTilesJson = DesignatedTile.fromJson(
+                    jsonResult['Content'][designatedTileKey]);
+                return <DesignatedTile>[designatedTilesJson];
+              }
+            } else {
+              String designatedTileKey = 'designatedTiles';
+              if (jsonResult['Content'].containsKey(designatedTileKey)) {
+                List designatedTilesJson =
+                    jsonResult['Content'][designatedTileKey];
+                List<DesignatedTile> designatedTiles = designatedTilesJson
+                    .where((element) => element != null)
+                    .map<DesignatedTile>((e) => DesignatedTile.fromJson(e))
+                    .toList();
+                return designatedTiles;
+              }
+            }
+          }
+        }
+        throw TilerError(message: 'Issues reaching Tiler Servers');
+      }
+    }
+    throw TilerError(message: 'Issues reaching Tiler Servers');
   }
 }
