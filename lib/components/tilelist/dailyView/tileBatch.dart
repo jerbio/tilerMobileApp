@@ -258,22 +258,23 @@ class TileBatchState extends State<TileBatch> {
           endOfDayTime = evaluatedEndOfTime;
         }
       }
-
-      dayContent = Flex(
-        direction: Axis.vertical,
-        children: [
-          AnimatedOpacity(
-            opacity: _emptyDayOpacity,
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-                height: MediaQuery.of(context).size.height - heightMargin,
-                child: EmptyDayTile(
-                  deadline: endOfDayTime,
-                  dayIndex: this.widget.dayIndex,
-                )),
-          )
-        ],
-      );
+      if (this.widget.dayIndex != null) {
+        dayContent = Flex(
+          direction: Axis.vertical,
+          children: [
+            AnimatedOpacity(
+              opacity: _emptyDayOpacity,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                  height: MediaQuery.of(context).size.height - heightMargin,
+                  child: EmptyDayTile(
+                    deadline: endOfDayTime,
+                    dayIndex: this.widget.dayIndex!,
+                  )),
+            )
+          ],
+        );
+      }
       if (_emptyDayOpacity == 0) {
         Timer(Duration(milliseconds: 200), () {
           if (mounted) {
