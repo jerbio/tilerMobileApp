@@ -251,7 +251,6 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
-        print("is pending " + isAddingTiletteLoading.toString());
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(

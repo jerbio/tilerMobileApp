@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
+import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
@@ -154,6 +158,85 @@ class _TileShareListState extends State<TileShareList>
     );
   }
 
+  Future updateShareCluster(TileShareClusterData tileShareCluster,
+      {String? clusterName, DateTime? deadline}) {
+    if (tileShareCluster == null) {
+      return Future.value(null);
+    }
+    TileShareClusterModel dateUpdated = TileShareClusterModel();
+    dateUpdated.Id = tileShareCluster.id;
+    dateUpdated.EndTime = deadline?.millisecondsSinceEpoch;
+    dateUpdated.Name = clusterName;
+    return tileClusterApi.updateTileShareCluster(dateUpdated).then((value) {
+      return getTileShareCluster();
+    });
+  }
+
+  void displayDialog(TileShareClusterData cluster) {
+    showModalBottomSheet<void>(
+        isScrollControlled: true,
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+              height: 250,
+              child: NameAndDateSheetWidget(
+                appBar: AppBar(
+                  centerTitle: true,
+                  elevation: 0,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: TileStyles.appBarColor,
+                  title: Text(
+                    AppLocalizations.of(context)!.edit,
+                    style: TextStyle(
+                        color: TileStyles.appBarTextColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22),
+                  ),
+                ),
+                endTime: cluster.endTimeInMs != null
+                    ? DateTime.fromMillisecondsSinceEpoch(cluster.endTimeInMs!)
+                    : null,
+                name: cluster.name,
+                onAddTileShare: (NameAndEndTimeUpdate? update) {
+                  Navigator.pop(context);
+                  if (update != null) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    updateShareCluster(cluster,
+                            clusterName: update.Name, deadline: update.EndTime)
+                        .then((value) {
+                      return this
+                          .tileClusterApi
+                          .getTileShareClusters(clusterId: cluster.id!)
+                          .then((value) {
+                        if (value.isNotEmpty) {
+                          setState(() {
+                            for (int i = 0; i < tileShareClusters.length; i++) {
+                              if (tileShareClusters[i]
+                                      .id
+                                      .isNot_NullEmptyOrWhiteSpace() &&
+                                  tileShareClusters[i].id == cluster.id) {
+                                setState(() {
+                                  tileShareClusters[i] = value.first;
+                                });
+                                break;
+                              }
+                            }
+                          });
+                        }
+                      });
+                    }).whenComplete(() {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    });
+                  }
+                },
+              ));
+        });
+  }
+
   Widget renderSlidableTileShare(TileShareClusterData tileShareClusterData) {
     var deleteTileShare = (BuildContext context) {
       if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
@@ -173,6 +256,12 @@ class _TileShareListState extends State<TileShareList>
         });
       }
     };
+
+    var editTileShare = (BuildContext context) {
+      if (tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
+        displayDialog(tileShareClusterData);
+      }
+    };
     return Slidable(
         // Specify a key if the Slidable is dismissible.
         key: ValueKey<String>(tileShareClusterData.id ?? Utility.getUuid),
@@ -184,6 +273,13 @@ class _TileShareListState extends State<TileShareList>
             deleteTileShare(this.context);
           }),
           children: [
+            SlidableAction(
+              onPressed: editTileShare,
+              backgroundColor: TileStyles.accentColor,
+              foregroundColor: TileStyles.primaryContrastColor,
+              icon: Icons.edit,
+              label: AppLocalizations.of(context)!.edit,
+            ),
             SlidableAction(
               onPressed: deleteTileShare,
               backgroundColor: TileStyles.deletedBackgroundColor,

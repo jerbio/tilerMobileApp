@@ -10,8 +10,12 @@ class EditTileDate extends StatefulWidget {
   _EditTileDateState? _state;
   Function? onInputChange;
   bool isReadOnly = false;
+  TextStyle? textStyle;
   EditTileDate(
-      {required this.time, this.onInputChange, this.isReadOnly = false});
+      {required this.time,
+      this.onInputChange,
+      this.isReadOnly = false,
+      this.textStyle});
 
   @override
   State<EditTileDate> createState() {
@@ -65,7 +69,8 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TileStyles.editTimeOrDateTimeStyle;
+    TextStyle textStyle =
+        this.widget.textStyle ?? TileStyles.editTimeOrDateTimeStyle;
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
