@@ -686,7 +686,9 @@ class _TileDetailState extends State<TileDetail> {
               _editTileName = EditTileName(
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               DateTime startTime =

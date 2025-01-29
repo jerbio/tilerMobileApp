@@ -798,7 +798,9 @@ class _EditTileState extends State<EditTile> {
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
                 isReadOnly: !this.subEvent!.isActive,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               BoxDecoration containerClusterStyle = BoxDecoration(
