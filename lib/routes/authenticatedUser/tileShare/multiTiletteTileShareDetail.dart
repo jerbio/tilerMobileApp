@@ -38,7 +38,6 @@ class _MultiTiletteTileShareDetailWidget
   );
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
-  ScrollController _contactControllerfinal = ScrollController();
 
   @override
   void initState() {
