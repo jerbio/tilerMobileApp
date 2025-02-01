@@ -11,21 +11,35 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tileColor.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/uiConfig.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileCarousel.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/colorSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/restrictionProfileSelectorWidget.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
+import '../../../constants.dart' as Constants;
 
 class TileDetail extends StatefulWidget {
-  final String tileId;
-  final bool loadSubEvents;
+  String? tileId;
+  String? designatedTileTemplateId;
+  bool loadSubEvents = false;
   TileDetail({required this.tileId, this.loadSubEvents = true});
+  TileDetail.byTileId(
+      {required this.designatedTileTemplateId, this.loadSubEvents = true});
+  TileDetail.byDesignatedTileId(
+      {required this.designatedTileTemplateId, this.loadSubEvents = false});
 
   @override
   State<StatefulWidget> createState() => _TileDetailState();
@@ -49,25 +63,81 @@ class _TileDetailState extends State<TileDetail> {
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color inputFieldIconColor = TileStyles.primaryColor;
+  bool reloadOtherEntitiesAfterLoadingCalevent = false;
+  SettingsApi settingsApi = SettingsApi();
+  List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
+  RestrictionProfile? _workRestrictionProfile;
+  RestrictionProfile? _personalRestrictionProfile;
+  final TextStyle defaultFontStyle = TextStyle(
+      fontFamily: TileStyles.rubikFontName,
+      fontWeight: FontWeight.normal,
+      fontSize: 24);
+  static final String tileDetailCancelAndProceedRouteName =
+      "tileDetailCancelAndProceedRouteName";
 
   @override
   void initState() {
     super.initState();
-    this
-        .context
-        .read<CalendarTileBloc>()
-        .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
-    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
-        calEventId: this.widget.tileId, blocSessionId: requestId));
-    if (this.widget.loadSubEvents) {
-      this.context.read<SubCalendarTileBloc>().add(
-          GetListOfCalendarTilesSubTilesBlocEvent(
-              calEventId: this.widget.tileId, requestId: requestId));
+    if (this.widget.tileId != null) {
+      this
+          .context
+          .read<CalendarTileBloc>()
+          .add(GetCalendarTileEvent(calEventId: this.widget.tileId!));
+      getCalendarEventLocation(this.widget.tileId!);
+      if (this.widget.loadSubEvents) {
+        getSubEvents(this.widget.tileId!);
+      }
+    } else if (this.widget.designatedTileTemplateId != null) {
+      reloadOtherEntitiesAfterLoadingCalevent = true;
+      this.context.read<CalendarTileBloc>().add(
+          GetCalendarTileEventByDesignatedTileTemplate(
+              tileTemplateId: this.widget.designatedTileTemplateId!));
     }
+
+    settingsApi.getUserRestrictionProfile().then((response) {
+      if (response.length > 0) {
+        setState(() {
+          _listedRestrictionProfile = response.entries
+              .map<Tuple2<String, RestrictionProfile>>(
+                  (e) => Tuple2<String, RestrictionProfile>(e.key, e.value))
+              .toList();
+          if (_listedRestrictionProfile != null) {
+            _workRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.workProfileNickName)
+                .firstOrNull
+                ?.item2;
+            _personalRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.homeProfileNickName)
+                .firstOrNull
+                ?.item2;
+          }
+        });
+        return response;
+      }
+      setState(() {
+        _listedRestrictionProfile = null;
+      });
+      return response;
+    });
   }
 
   void onInputCountChange() {
     dataChange();
+  }
+
+  void getCalendarEventLocation(String tileId) {
+    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
+        calEventId: tileId, blocSessionId: requestId));
+  }
+
+  void getSubEvents(String tileId) {
+    this.context.read<SubCalendarTileBloc>().add(
+        GetListOfCalendarTilesSubTilesBlocEvent(
+            calEventId: tileId, requestId: requestId));
   }
 
   void updateProceed() {
@@ -347,9 +417,7 @@ class _TileDetailState extends State<TileDetail> {
                   onPressed: loadLocationRoute,
                   child: Text(
                     locationString,
-                    style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
-                    ),
+                    style: defaultFontStyle,
                   ),
                 ))
           ],
@@ -371,6 +439,121 @@ class _TileDetailState extends State<TileDetail> {
     }, (locationLoadedError) {
       return locationButton(AppLocalizations.of(context)!.dashEmptyString);
     });
+  }
+
+  Widget renderRepetitionTapable() {
+    Widget recurIcon =
+        Icon(TileStyles.repetitionIcon, color: inputFieldIconColor);
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+      decoration: BoxDecoration(
+          color: textBackgroundColor,
+          borderRadius: const BorderRadius.all(
+            const Radius.circular(8.0),
+          ),
+          border: Border.all(
+            color: textBorderColor,
+            width: 1.5,
+          )),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          recurIcon,
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: RepetitionSelectorWidget(
+                onRepetitionUpdate: (repetition) {
+                  if (this.editTilerEvent != null) {
+                    this.editTilerEvent!.repetition = repetition;
+                    dataChange();
+                  }
+                },
+                repetition: this.editTilerEvent?.repetition,
+                textStyle: defaultFontStyle,
+              ))
+        ],
+      ),
+    );
+  }
+
+  Widget renderHueTapable() {
+    Widget hueIcon =
+        Icon(Icons.format_color_fill_outlined, color: inputFieldIconColor);
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+      decoration: BoxDecoration(
+          color: textBackgroundColor,
+          borderRadius: const BorderRadius.all(
+            const Radius.circular(8.0),
+          ),
+          border: Border.all(
+            color: textBorderColor,
+            width: 1.5,
+          )),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          hueIcon,
+          Container(
+              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: ColorSelectorWidget(
+                  onColorUpdate: (Color? updatedColor) {
+                    if (updatedColor != null) {
+                      editTilerEvent!.uiConfig = UIConfig.fromJson({});
+                      editTilerEvent!.uiConfig!.tileColor =
+                          TileColor.fromColor(updatedColor);
+                    }
+                    dataChange();
+                  },
+                  color: editTilerEvent!.uiConfig!.tileColor!.toColor!))
+        ],
+      ),
+    );
+  }
+
+  Widget renderRestrictionProfileTapable() {
+    Widget restrictionProfileIcon =
+        Icon(TileStyles.restrictionProfileIcon, color: inputFieldIconColor);
+    return Container(
+      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+      decoration: BoxDecoration(
+          color: textBackgroundColor,
+          borderRadius: const BorderRadius.all(
+            const Radius.circular(8.0),
+          ),
+          border: Border.all(
+            color: textBorderColor,
+            width: 1.5,
+          )),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          restrictionProfileIcon,
+          Container(
+              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              child: RestrictionProfileSelectorWidget(
+                restrictionProfile: this.editTilerEvent?.restrictionProfile,
+                personalProfile: _personalRestrictionProfile,
+                workProfile: _workRestrictionProfile,
+                textStyle: this.defaultFontStyle,
+                onRestrictionProfileUpdate:
+                    (RestrictionProfile? updatedRestrictionProfile) {
+                  if (updatedRestrictionProfile != null) {
+                    setState(() {
+                      editTilerEvent!.restrictionProfile =
+                          updatedRestrictionProfile;
+                    });
+                  }
+                  dataChange();
+                },
+              ))
+        ],
+      ),
+    );
   }
 
   @override
@@ -403,6 +586,10 @@ class _TileDetailState extends State<TileDetail> {
                     editTilerEvent!.note = '';
                     editTilerEvent!.tileDuration = calEvent!.tileDuration;
                     _tileDuration = calEvent!.tileDuration;
+                    editTilerEvent!.repetition = calEvent!.repetition;
+                    editTilerEvent!.uiConfig = calEvent!.uiConfig;
+                    editTilerEvent!.restrictionProfile =
+                        calEvent!.restrictionProfile;
                     if (calEvent!.noteData != null) {
                       editTilerEvent!.note = calEvent!.noteData!.note;
                     }
@@ -419,6 +606,13 @@ class _TileDetailState extends State<TileDetail> {
                     }
                   }
                 });
+                if (this.reloadOtherEntitiesAfterLoadingCalevent &&
+                    state.calEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+                  getCalendarEventLocation(state.calEvent.id!);
+                  if (this.widget.loadSubEvents) {
+                    getSubEvents(state.calEvent.id!);
+                  }
+                }
               }
             },
           ),
@@ -465,6 +659,7 @@ class _TileDetailState extends State<TileDetail> {
           })
         ],
         child: CancelAndProceedTemplateWidget(
+          routeName: tileDetailCancelAndProceedRouteName,
           onProceed: this.onProceed,
           appBar: AppBar(
             backgroundColor: TileStyles.primaryColor,
@@ -491,7 +686,9 @@ class _TileDetailState extends State<TileDetail> {
               _editTileName = EditTileName(
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               DateTime startTime =
@@ -664,6 +861,28 @@ class _TileDetailState extends State<TileDetail> {
               if (locationWidget != null) {
                 inputChildWidgets.add(locationWidget);
               }
+
+              inputChildWidgets.add(FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: renderRestrictionProfileTapable())));
+
+              Widget repetitionWidget = FractionallySizedBox(
+                  widthFactor: TileStyles.tileWidthRatio,
+                  child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: renderRepetitionTapable()));
+
+              inputChildWidgets.add(repetitionWidget);
+              if (editTilerEvent?.uiConfig?.tileColor?.toColor != null) {
+                inputChildWidgets.add(FractionallySizedBox(
+                    widthFactor: TileStyles.tileWidthRatio,
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: renderHueTapable())));
+              }
+
               if (splitWidget != null) {
                 inputChildWidgets.add(splitWidget);
               }

@@ -52,8 +52,11 @@ class PendingWidget extends StatelessWidget {
             width: (MediaQuery.of(context).size.width),
             height: (MediaQuery.of(context).size.height),
             child: centerRenderWidget,
-            decoration:
-                new BoxDecoration(color: Colors.grey.shade200.withOpacity(0.5)),
+            decoration: new BoxDecoration(
+                color: Colors.grey.shade200.withOpacity(0.5),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10))),
           ),
         ))));
 

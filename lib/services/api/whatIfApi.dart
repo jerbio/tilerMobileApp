@@ -19,36 +19,9 @@ class WhatIfApi extends AppApi {
     pendingFuture = <Tuple3<StreamSubscription, Future, String>>[];
   }
 
-  Future<dynamic> forecastNewTile(Map<String, Object> externalParams) async {
-    List<String> subCalEventIds = [];
-    List<SubCalendarEvent> updatedSubCalEvents = [];
-    var queryParams = {
-      "Address": "3333 Walnut rd Boulder CO",
-      "LocationId": "ew32-4232rh-32423dq-323r3",
-      "Name": "We can see the future",
-      "Count": "5",
-      "EndMinute": "59",
-      "EndHour": "23",
-      "isRestricted": "false",
-      "isEveryDay": "False",
-      "DurationDays": "0",
-      "DurationMinute": "0",
-      "NewTime": -1,
-      "User": {
-        "MobileApp": false,
-        "TimeZoneOffset": 0,
-        "TimeZone": "UTC",
-        "IsTimeZoneAdjusted": "false",
-        "getTimeSpan": "00:00:00"
-      },
-      "MobileApp": false,
-      "TimeZoneOffset": 0,
-      "TimeZone": "UTC",
-      "IsTimeZoneAdjusted": "false",
-      "getTimeSpan": "00:00:00"
-    };
-
-    // Merge externalParams with queryParams
+  Future<ForecastResponse> forecastNewTile(
+      Map<String, Object> externalParams) async {
+    var queryParams = {};
     queryParams.addAll(externalParams);
 
     try {
@@ -61,47 +34,12 @@ class WhatIfApi extends AppApi {
         Map<String, dynamic> editJson = jsonResult['Content'];
         ForecastResponse forecastResponse = ForecastResponse.fromJson(editJson);
 
-        // Collect sub event IDs
-        if (forecastResponse.isViable == true) {
-          for (var riskEvent in forecastResponse.riskCalendarEvents!) {
-            riskEvent.subEvents!.forEach((e) {
-              subCalEventIds.add(e.id!);
-            });
-          }
-        } else {
-          for (var conflictEvent in forecastResponse.conflicts!) {
-            conflictEvent.subEvents!.forEach((e) {
-              subCalEventIds.add(e.id!);
-            });
-          }
-        }
-
-        
-       
-
-        // Perform concurrent GET requests using the populated subCalEventIds
-        final results = await Future.wait(
-          subCalEventIds.map((id) async {
-            try {
-              return await getSubCalEvent(id);
-            } catch (e) {
-              return null; // Handle the error as needed, maybe return a default value or null
-            }
-          }),
-        );
-
-        // Filter out null values if any
-        updatedSubCalEvents = results
-            .where((event) => event != null)
-            .cast<SubCalendarEvent>()
-            .toList();
-
-        return [forecastResponse.isViable, updatedSubCalEvents];
+        return forecastResponse;
       }
 
       return ForecastResponse();
     } catch (e) {
-      return ForecastResponse();
+      throw TilerError(message: "Failed to get preview");
     }
   }
 

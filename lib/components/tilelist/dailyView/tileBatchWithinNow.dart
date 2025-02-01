@@ -1,13 +1,12 @@
 import 'dart:async';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
-import 'package:tiler_app/components/tilelist/tileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -18,23 +17,15 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
-
-import '../../constants.dart';
+import 'package:tiler_app/constants.dart';
 
 class WithinNowBatch extends TileBatch {
   TileWidget? _currentWidget;
   WithinNowBatchState? _state;
   TimelineSummary? dayData;
 
-  WithinNowBatch(
-      {String? header = '',
-      String? footer = 'Upcoming',
-      List<TilerEvent>? tiles,
-      TimelineSummary? dayData,
-      Key? key})
+  WithinNowBatch({List<TilerEvent>? tiles, TimelineSummary? dayData, Key? key})
       : super(
-            header: header,
-            footer: footer,
             key: key,
             tiles: tiles,
             dayData: dayData,
@@ -72,6 +63,8 @@ class WithinNowBatchState extends TileBatchState {
   AnimatedList? preceedingAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? preceedingOrderedTiles;
 
+  double _emptyDayOpacity = 0;
+  double heightMargin = 262;
   bool _pendingRendering = false;
   @override
   void initState() {
@@ -213,6 +206,37 @@ class WithinNowBatchState extends TileBatchState {
     processPopulatedAnimatedList(_animatedListType, collection);
   }
 
+  renderEmptyDayTile() {
+    if (_emptyDayOpacity == 0) {
+      Timer(Duration(milliseconds: 200), () {
+        if (mounted) {
+          setState(() {
+            _emptyDayOpacity = 1;
+          });
+        }
+      });
+    }
+    if (this.widget.dayIndex != null) {
+      return Flex(
+        direction: Axis.vertical,
+        children: [
+          AnimatedOpacity(
+            opacity: _emptyDayOpacity,
+            duration: const Duration(milliseconds: 500),
+            child: Container(
+                height: MediaQuery.of(context).size.height - heightMargin,
+                child: EmptyDayTile(
+                  deadline:
+                      Utility.getTimeFromIndex(this.widget.dayIndex!).endOfDay,
+                  dayIndex: this.widget.dayIndex!,
+                )),
+          )
+        ],
+      );
+    }
+    return SizedBox.shrink();
+  }
+
   bool internalBreak = false;
   @override
   Widget build(BuildContext context) {
@@ -276,6 +300,8 @@ class WithinNowBatchState extends TileBatchState {
       orderedRenderedTiles.forEach((eachTile) {
         precedingTiles.add(eachTile);
       });
+    } else {
+      precedingTileWidgets.add(renderEmptyDayTile());
     }
     processAnimatedList(_AnimatedListType.preceeding, precedingTiles);
 

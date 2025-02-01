@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
@@ -15,6 +14,7 @@ import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
@@ -140,7 +140,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(startString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor))),
           Lottie.asset(lottieAsset, height: 85),
@@ -149,7 +149,7 @@ class TileWidgetState extends State<TileWidget>
               child: Text(endString,
                   style: TextStyle(
                       fontSize: 20,
-                      fontFamily: 'Rubik',
+                      fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.normal,
                       color: textColor)))
         ],
@@ -174,7 +174,7 @@ class TileWidgetState extends State<TileWidget>
     int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
-        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+        Color.fromRGBO(redColor, greenColor, blueColor, 1);
     bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true));
 
     Widget editButton = IconButton(
@@ -236,7 +236,9 @@ class TileWidgetState extends State<TileWidget>
     }
 
     if (widget.subEvent.address != null &&
-        widget.subEvent.address!.isNotEmpty) {
+            widget.subEvent.address!.isNotEmpty ||
+        subEvent.searchdDescription != null &&
+            subEvent.searchdDescription!.isNotEmpty) {
       var addressWidget = Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TileAddress(widget.subEvent));
@@ -278,6 +280,28 @@ class TileWidgetState extends State<TileWidget>
       ),
     );
     allElements.add(tileTimeFrame);
+    if (widget.subEvent.tileShareDesignatedId.isNot_NullEmptyOrWhiteSpace()) {
+      allElements.add(
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    TileShareDetailWidget.byDesignatedTileShareId(
+                  designatedTileShareId: widget.subEvent.tileShareDesignatedId,
+                ),
+              ),
+            );
+          },
+          child: Icon(
+            Icons.share,
+            size: 20,
+          ),
+        ),
+      );
+    }
+
     if (isEditable) {
       if (isMoreDetailEnabled || (this.widget.subEvent.isCurrent)) {
         // Timescrub to show that it is elapsed
@@ -307,7 +331,6 @@ class TileWidgetState extends State<TileWidget>
           ),
         );
 
-        //
         allElements.add(GestureDetector(
             onTap: () {
               setState(() {
@@ -369,7 +392,19 @@ class TileWidgetState extends State<TileWidget>
               child: Container(
                 padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
                 decoration: BoxDecoration(
-                  color: tileBackGroundColor,
+                  gradient: RadialGradient(
+                    radius: 1.5,
+                    center: Alignment.bottomRight,
+                    colors: <Color>[
+                      tileBackGroundColor.withLightness(0.65),
+                      tileBackGroundColor.withLightness(0.675),
+                      tileBackGroundColor.withLightness(0.70),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                    ],
+                  ),
                   border: Border.all(
                     color: Colors.white,
                     width: 0.5,

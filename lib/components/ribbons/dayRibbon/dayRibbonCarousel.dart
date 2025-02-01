@@ -1,9 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
-import 'package:tiler_app/components/dayRibbon/dayButton.dart';
+import 'package:tiler_app/components/ribbons/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
@@ -236,7 +235,17 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
             initialCarouselIndex = 0;
           }
           return Container(
-            color: Colors.white,
+            margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.08),
+                  blurRadius: 7,
+                  offset: const Offset(0, 7),
+                ),
+              ],
+            ),
             width: MediaQuery.of(context).size.width,
             height: 130,
             child: CarouselSlider(

@@ -29,6 +29,7 @@ class EndTimeDurationDial extends StatefulWidget {
 class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
   late Duration _duration;
   late DateTime _end;
+  final String endTimeDurationRouteName = "endTimeDuration";
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
       onInputChange: onEndTimeChange,
     );
     return CancelAndProceedTemplateWidget(
+        routeName: endTimeDurationRouteName,
         appBar: AppBar(
           backgroundColor: TileStyles.primaryColor,
           title: Text(

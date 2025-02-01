@@ -1,4 +1,4 @@
-import 'package:tiler_app/data/tileTemplate.dart';
+import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/util.dart';
@@ -14,25 +14,23 @@ class DesignatedTile {
   bool? isViable;
   bool? isTilable;
   String? displayedIdentifier;
-  TileTemplate? tileTemplate;
+  TileShareTemplate? tileTemplate;
   UserProfile? user;
   UserProfile? clusterOwner;
   TilerEvent? tilerEvent;
+  double? completionPercentage;
 
   DesignatedTile.fromJson(Map<String, dynamic> json) {
     id = '';
     if (json.containsKey('id')) {
       id = json['id'];
     }
-
     if (json.containsKey('name')) {
       name = json['name'];
     }
-
     if (json.containsKey('template') && json['template'] != null) {
-      tileTemplate = TileTemplate.fromJson(json['template']);
+      tileTemplate = TileShareTemplate.fromJson(json['template']);
     }
-
     if (json.containsKey('displayedIdentifier')) {
       displayedIdentifier = json['displayedIdentifier'];
     }
@@ -60,6 +58,11 @@ class DesignatedTile {
     if (json.containsKey('tilerEvent') && json['tilerEvent'] != null) {
       tilerEvent = TilerEvent.fromJson(json['tilerEvent']);
     }
+
+    if (json.containsKey('completionPercent') &&
+        json['completionPercent'] != null) {
+      completionPercentage = json['completionPercent'];
+    }
   }
 
   DateTime? get startTime {
@@ -80,5 +83,10 @@ class DesignatedTile {
       return DateTime.fromMillisecondsSinceEpoch(tileTemplate!.end!);
     }
     return null;
+  }
+
+  static InvitationStatus? stringToInvitationStatus(String value) {
+    return InvitationStatus.values.firstWhere(
+        (element) => element.name.toLowerCase() == value.toLowerCase());
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 mixin TimeRange {
@@ -15,6 +16,17 @@ mixin TimeRange {
     }
 
     return retValue;
+  }
+
+  TimeRange? interferingTimeRange(TimeRange timeRange) {
+    if (this.isInterfering(timeRange)) {
+      int start =
+          this.start! > timeRange.start! ? this.start! : timeRange.start!;
+      int end = this.end! < timeRange.end! ? this.end! : timeRange.end!;
+      return Timeline.fromDateTime(DateTime.fromMillisecondsSinceEpoch(start),
+          DateTime.fromMillisecondsSinceEpoch(end));
+    }
+    return null;
   }
 
   bool isDateTimeWithin(DateTime time) {
