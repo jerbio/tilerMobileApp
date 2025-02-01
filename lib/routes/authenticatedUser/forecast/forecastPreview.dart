@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/util.dart';
 
@@ -28,6 +31,8 @@ class ForecastPreview extends StatelessWidget {
 }
 
 class ForecastView extends StatelessWidget {
+  static final String forecastCancelAndProceedRouteName =
+      "forecastCancelAndProceed";
   const ForecastView({super.key});
 
   @override
@@ -35,6 +40,32 @@ class ForecastView extends StatelessWidget {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
+      routeName: forecastCancelAndProceedRouteName,
+      bottomWidget: GestureDetector(
+        onTap: () {
+          Map<String, dynamic> newTileParams = {'newTile': null};
+          Navigator.pushNamed(context, '/AddTile', arguments: newTileParams);
+        },
+        child: Container(
+          width: width,
+          height: height / (height / 52),
+          decoration: BoxDecoration(
+            color: TileStyles.primaryColor,
+            borderRadius: BorderRadius.circular(height / (height / 6)),
+          ),
+          child: Center(
+            child: Text(
+              AppLocalizations.of(context)!.create,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontSize: height / (height / 15),
+                fontWeight: FontWeight.w500,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
+      ),
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
         title: Text(
@@ -63,7 +94,7 @@ class ForecastView extends StatelessWidget {
               generateDurationPicker(context, width, height),
               BlocBuilder<ForecastBloc, ForecastState>(
                 builder: (context, state) {
-                  print('Current state: $state');
+                  Utility.debugPrint('Current state: $state');
                   if (state is ForecastInitial) {
                     return SizedBox.shrink();
                   } else if (state is ForecastLoading) {
@@ -76,248 +107,11 @@ class ForecastView extends StatelessWidget {
                           ),
                         ));
                   } else if (state is ForecastLoaded) {
-                    return Column(
-                      children: [
-                        SizedBox(
-                          height: height / (height / 20),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Analysis',
-                              style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
-                                fontSize: height / (height / 17),
-                                fontWeight: FontWeight.w500,
-                                color: TileStyles.defaultTextColor,
-                              ),
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          height: height / (height / 10),
-                        ),
-                        state.isViable
-                            ? Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      AnalysisCheckState(
-                                        height: height,
-                                        isPass: true,
-                                      ),
-                                      SizedBox(
-                                        width: height / (height / 10),
-                                      ),
-                                      Text(
-                                        'This fits in your schedule.',
-                                        style: TextStyle(
-                                          fontFamily: TileStyles.rubikFontName,
-                                          fontWeight: FontWeight.w400,
-                                          fontSize: height / (height / 15),
-                                          color: TileStyles.defaultTextColor,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Row(
-                                          children: [
-                                            AnalysisCheckState(
-                                              height: height,
-                                              isWarning: true,
-                                            ),
-                                            SizedBox(
-                                              width: height / (height / 10),
-                                            ),
-                                            RichText(
-                                              text: TextSpan(
-                                                children: [
-                                                  TextSpan(
-                                                    text: 'Warning: ',
-                                                    style: TextStyle(
-                                                      fontFamily: TileStyles
-                                                          .rubikFontName,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: height /
-                                                          (height / 15),
-                                                      color: TileStyles
-                                                          .defaultTextColor,
-                                                    ),
-                                                  ),
-                                                  TextSpan(
-                                                    text: state.subCalEvents
-                                                                .length ==
-                                                            1
-                                                        ? '${state.subCalEvents.length} event at risk'
-                                                        : '${state.subCalEvents.length} events at risk',
-                                                    style: TextStyle(
-                                                      fontFamily: TileStyles
-                                                          .rubikFontName,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize: height /
-                                                          (height / 15),
-                                                      color: TileStyles
-                                                          .defaultTextColor,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : SizedBox.shrink(),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Column(
-                                          children: state.subCalEvents
-                                              .map((subEvent) {
-                                            return TileSummary(subEvent);
-                                          }).toList(),
-                                        )
-                                      : SizedBox.shrink(),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Map<String, dynamic> newTileParams = {
-                                        'newTile': null
-                                      };
-                                      Navigator.pushNamed(context, '/AddTile',
-                                          arguments: newTileParams);
-                                    },
-                                    child: Container(
-                                      width: width,
-                                      height: height / (height / 52),
-                                      decoration: BoxDecoration(
-                                        color: TileStyles.primaryColor,
-                                        borderRadius: BorderRadius.circular(
-                                            height / (height / 6)),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          'Create',
-                                          style: TextStyle(
-                                            fontFamily:
-                                                TileStyles.rubikFontName,
-                                            fontSize: height / (height / 15),
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 100,
-                                  ),
-                                ],
-                              )
-                            : Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      AnalysisCheckState(
-                                        height: height,
-                                        isConflict: true,
-                                      ),
-                                      SizedBox(
-                                        width: height / (height / 10),
-                                      ),
-                                      RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: 'This event would cause ',
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    TileStyles.rubikFontName,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize:
-                                                    height / (height / 15),
-                                                color:
-                                                    TileStyles.defaultTextColor,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: state.subCalEvents.length ==
-                                                      1
-                                                  ? '${state.subCalEvents.length} conflict'
-                                                  : '${state.subCalEvents.length} conflicts',
-                                              style: TextStyle(
-                                                fontFamily:
-                                                    TileStyles.rubikFontName,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize:
-                                                    height / (height / 15),
-                                                color:
-                                                    TileStyles.defaultTextColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: height / (height / 20),
-                                  ),
-                                  state.subCalEvents.isNotEmpty
-                                      ? Column(
-                                          children: state.subCalEvents
-                                              .map((subEvent) {
-                                            return TileSummary(subEvent);
-                                          }).toList(),
-                                        )
-                                      : SizedBox.shrink(),
-                                  GestureDetector(
-                                    onTap: () {
-                                      Map<String, dynamic> newTileParams = {
-                                        'newTile': null
-                                      };
-                                      Navigator.pushNamed(context, '/AddTile',
-                                          arguments: newTileParams);
-                                    },
-                                    child: Container(
-                                      width: width,
-                                      height: height / (height / 52),
-                                      decoration: BoxDecoration(
-                                        color: TileStyles.primaryColor,
-                                        borderRadius: BorderRadius.circular(
-                                            height / (height / 6)),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          'Create',
-                                          style: TextStyle(
-                                            fontFamily:
-                                                TileStyles.rubikFontName,
-                                            fontSize: height / (height / 15),
-                                            fontWeight: FontWeight.w500,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    height: 100,
-                                  ),
-                                ],
-                              )
-                      ],
-                    );
+                    return RenderLoadedForecast(height, context, state, width);
                   } else if (state is ForecastError) {
-                    return Center(child: Text('Error: ${state.error}'));
+                    return Center(
+                        child: Text(AppLocalizations.of(context)!
+                            .errorMessage(state.error)));
                   } else {
                     return SizedBox.shrink();
                   }
@@ -330,13 +124,78 @@ class ForecastView extends StatelessWidget {
     );
   }
 
+  Column RenderLoadedForecast(
+      double height, BuildContext context, ForecastLoaded state, double width) {
+    List<PeekDay> forecastDays = state.foreCastResponse.peekDays ?? [];
+    return Column(
+      children: [
+        SizedBox(
+          height: height / (height / 20),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.analysis,
+              style: TextStyle(
+                fontFamily: TileStyles.rubikFontName,
+                fontSize: height / (height / 17),
+                fontWeight: FontWeight.w500,
+                color: TileStyles.defaultTextColor,
+              ),
+            )
+          ],
+        ),
+        SizedBox(
+          height: height / (height / 10),
+        ),
+        Column(
+          children: [
+            Row(
+              children: [
+                AnalysisCheckState(
+                  height: height,
+                  isWarning: state.foreCastResponse.isViable == false,
+                  isPass: state.foreCastResponse.isViable == true,
+                ),
+                SizedBox(
+                  width: height / (height / 10),
+                ),
+                Text(
+                  state.foreCastResponse.isViable == true
+                      ? AppLocalizations.of(context)!.thisFitsInYourSchedule
+                      : AppLocalizations.of(context)!.nonViableTimeSlot,
+                  style: TextStyle(
+                    fontFamily: TileStyles.rubikFontName,
+                    fontWeight: FontWeight.w400,
+                    fontSize: height / (height / 15),
+                    color: TileStyles.defaultTextColor,
+                  ),
+                )
+              ],
+            ), //viable status
+            SizedBox(
+              height: height / (height / 20),
+            ),
+            forecastDays.isNotEmpty
+                ? TileForecast(forecastDays: forecastDays)
+                : SizedBox.shrink(),
+            SizedBox(
+              height: height / (height / 20),
+            )
+          ],
+        )
+      ],
+    );
+  }
+
   Widget generateDeadline(BuildContext context, double width, double height) {
     final state = context.watch<ForecastBloc>().state;
     final endTime = state.endTime;
 
     void onEndDateTap() async {
       DateTime _endDate = endTime == null
-          ? Utility.todayTimeline().endTime!.add(Utility.oneDay)
+          ? Utility.todayTimeline().endTime.add(Utility.oneDay)
           : endTime;
       DateTime firstDate = _endDate.add(Duration(days: -14));
       DateTime lastDate = _endDate.add(Duration(days: 90));
@@ -365,7 +224,7 @@ class ForecastView extends StatelessWidget {
     // Revised
     Widget deadlineContainer = GestureDetector(
       onTap: onEndDateTap,
-      child: CustomForcastField(
+      child: CustomForecastField(
         leadingIconPath: 'assets/images/Calendar.svg',
         textButtonString: textButtonString,
         height: height,
@@ -378,7 +237,7 @@ class ForecastView extends StatelessWidget {
   Widget generateDurationPicker(
       BuildContext context, double width, double height) {
     final state = context.watch<ForecastBloc>().state;
-    final duration = state.duration;
+    final duration = state.duration ?? Duration(minutes: 0);
 
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {'duration': duration};
@@ -390,7 +249,7 @@ class ForecastView extends StatelessWidget {
         }
       });
     };
-    String textButtonString = 'Duration';
+    String textButtonString = AppLocalizations.of(context)!.duration;
     if (duration.inMinutes > 1) {
       textButtonString = "";
       int hour = duration.inHours.floor();
@@ -410,7 +269,7 @@ class ForecastView extends StatelessWidget {
     // Revised
     Widget retValue = GestureDetector(
       onTap: setDuration,
-      child: CustomForcastField(
+      child: CustomForecastField(
         leadingIconPath: 'assets/images/timecircle.svg',
         textButtonString: textButtonString,
         height: height,

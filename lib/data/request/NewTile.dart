@@ -202,8 +202,40 @@ class NewTile {
           int.parse(this.EndMinute ?? "59"));
       clusterTemplateTileModel.EndTime = end.millisecondsSinceEpoch;
     }
+    clusterTemplateTileModel.DurationInMs = this.getDuration()?.inMilliseconds;
     clusterTemplateTileModel.Contacts = this.contacts?.toList();
     return clusterTemplateTileModel;
+  }
+
+  Duration? getDuration() {
+    int dayInMinutes = Duration.minutesPerDay;
+    int hourInMinutes = Duration.minutesPerHour;
+    int? totalMinutes;
+    if (this.DurationDays != null && this.DurationDays!.isNotEmpty) {
+      int? days = int.tryParse(this.DurationDays!);
+      if (days != null) {
+        totalMinutes = (totalMinutes ?? 0) + dayInMinutes * days;
+      }
+    }
+
+    if (this.DurationHours != null && this.DurationHours!.isNotEmpty) {
+      int? hours = int.tryParse(this.DurationHours!);
+      if (hours != null) {
+        totalMinutes = (totalMinutes ?? 0) + hourInMinutes * hours;
+      }
+    }
+
+    if (this.DurationMinute != null && this.DurationMinute!.isNotEmpty) {
+      int? minutes = int.tryParse(this.DurationMinute!);
+      if (minutes != null) {
+        totalMinutes = (totalMinutes ?? 0) + minutes;
+      }
+    }
+
+    if (totalMinutes != null) {
+      return Duration(minutes: totalMinutes);
+    }
+    return null;
   }
 
   factory NewTile.fromJson(Map<String, dynamic> json) =>

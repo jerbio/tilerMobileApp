@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:tiler_app/components/tilelist/tileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
@@ -9,9 +8,13 @@ import 'package:tiler_app/util.dart';
 class ContactInputFieldWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactUpdate;
-  final double contentHeight;
+  final double? contentHeight;
+  final bool isReadOnly;
   ContactInputFieldWidget(
-      {this.onContactUpdate, this.contentHeight = 100, this.contacts});
+      {this.onContactUpdate,
+      this.contentHeight,
+      this.contacts,
+      this.isReadOnly = true});
   @override
   _ContactInputFieldWidgetState createState() =>
       _ContactInputFieldWidgetState();
@@ -41,6 +44,10 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   }
 
   void _addContact(String contactVal) {
+    if (contactVal.isEmpty) {
+      return;
+    }
+    var priorContact = _contacts.toList();
     if (_isValidContact(contactVal)) {
       setState(() {
         final contactObj = Contact();
@@ -55,17 +62,22 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
       _controller
           .clear(); // Clear the text input field after adding the contact
     }
-    if (this.widget.onContactUpdate != null) {
+    if (this.widget.onContactUpdate != null &&
+        !priorContact.any((eachContact) =>
+            eachContact.email == contactVal ||
+            eachContact.phoneNumber == contactVal)) {
       this.widget.onContactUpdate!(_contacts);
     }
   }
 
   void _removeContact(Contact contact) {
-    setState(() {
-      _contacts.remove(contact);
-    });
-    if (this.widget.onContactUpdate != null) {
-      this.widget.onContactUpdate!(_contacts);
+    if (!this.widget.isReadOnly) {
+      setState(() {
+        _contacts.remove(contact);
+      });
+      if (this.widget.onContactUpdate != null) {
+        this.widget.onContactUpdate!(_contacts);
+      }
     }
   }
 
@@ -78,6 +90,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           Container(
             height: this.widget.contentHeight,
             child: ListView(
+              shrinkWrap: true,
               reverse: true,
               children: [
                 Wrap(
@@ -93,7 +106,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
               ],
             ),
           ),
-          _buildTextField(),
+          if (!this.widget.isReadOnly) _buildTextField(),
         ],
       ),
     );
@@ -139,12 +152,14 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         color: TileStyles.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: Icon(
-        Icons.close,
-        color: TileStyles.primaryContrastColor,
-      ),
+      deleteIcon: this.widget.isReadOnly
+          ? null
+          : Icon(
+              Icons.close,
+              color: TileStyles.primaryContrastColor,
+            ),
       side: BorderSide.none,
-      onDeleted: () => _removeContact(contact),
+      onDeleted: this.widget.isReadOnly ? null : () => _removeContact(contact),
       backgroundColor: TileStyles.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );

@@ -12,12 +12,14 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Widget? bottomWidget;
   Widget? pendingWidget;
   bool hideButtons = false;
+  String routeName;
 
   Widget? child;
   PreferredSizeWidget? appBar;
 
   CancelAndProceedTemplateWidget(
-      {this.onCancel,
+      {required this.routeName,
+      this.onCancel,
       this.onProceed,
       this.child,
       this.isProceedAllowed,
@@ -30,12 +32,64 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
       CancelAndProceedTemplateWidgetState();
 }
 
+enum CancelAndProceedPathRoute { cancel, proceed }
+
 class CancelAndProceedTemplateWidgetState
     extends State<CancelAndProceedTemplateWidget> {
   bool showLoading = false;
+  final String cancelAndProceedMapKey = 'cancelAndProceedData';
+  final String historyKey = 'history';
+  final String exitRouteKey = 'exitRoute';
 
   bool _keyboardIsVisible() {
     return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
+  Map<String, dynamic>? _getCancelAndProceedData() {
+    var routeParams = ModalRoute.of(context)?.settings.arguments as Map?;
+    if (routeParams != null) {
+      if (!routeParams.containsKey(cancelAndProceedMapKey) ||
+          routeParams[cancelAndProceedMapKey] == null) {
+        routeParams[cancelAndProceedMapKey] = <String, dynamic>{};
+      }
+      Map<String, dynamic> cancelAndProceedData =
+          routeParams[cancelAndProceedMapKey];
+      if (routeParams[cancelAndProceedMapKey] == null) {
+        cancelAndProceedData = {};
+        cancelAndProceedData[historyKey] = [];
+        routeParams[cancelAndProceedMapKey] = cancelAndProceedData;
+      }
+      return cancelAndProceedData;
+    }
+    return null;
+  }
+
+  List? _getRouteHistory() {
+    Map<String, dynamic>? cancelAndProceedData = _getCancelAndProceedData();
+    if (cancelAndProceedData != null) {
+      return cancelAndProceedData[historyKey];
+    }
+    return null;
+  }
+
+  Map<String, dynamic> _generateRouteInfo() {
+    return {"routeName": this.widget.routeName};
+  }
+
+  void _setRouteAsProceed() {
+    var routeHistory = this._getRouteHistory();
+    if (routeHistory != null) {
+      Map<String, dynamic> routeInfo = _generateRouteInfo();
+      routeInfo[exitRouteKey] = CancelAndProceedPathRoute.proceed;
+    }
+  }
+
+  void _setRouteAsCancelled() {
+    var routeHistory = this._getRouteHistory();
+    if (routeHistory != null) {
+      Map<String, dynamic> routeInfo = _generateRouteInfo();
+      routeInfo[exitRouteKey] = CancelAndProceedPathRoute.cancel;
+    }
   }
 
   Widget build(BuildContext context) {
@@ -51,18 +105,7 @@ class CancelAndProceedTemplateWidgetState
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(10),
                 bottomRight: Radius.circular(10)),
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                TileStyles.primaryColor,
-                HSLColor.fromColor(TileStyles.primaryColor)
-                    .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
-                            0.3)
-                    .toColor()
-              ],
-            )),
+            color: TileStyles.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
@@ -85,6 +128,7 @@ class CancelAndProceedTemplateWidgetState
             ),
           )),
           onPressed: () async {
+            _setRouteAsCancelled();
             if (this.widget.onCancel != null) {
               Navigator.pop(context);
               this.widget.onCancel!();
@@ -104,28 +148,16 @@ class CancelAndProceedTemplateWidgetState
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                HSLColor.fromColor(TileStyles.primaryColor)
-                    .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
-                            0.3)
-                    .toColor(),
-                TileStyles.primaryColor,
-              ],
-            )),
+            color: TileStyles.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
-            elevation: 0.0,
-            foregroundColor: Colors.transparent,
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent, // foreground
-          ),
-          child: Center(
-              child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+              elevation: 0.0,
+              foregroundColor: Colors.transparent,
+              backgroundColor: Colors.transparent,
+              shadowColor: Colors.transparent, // foreground
+              alignment: Alignment.topLeft),
+          child: Container(
+            alignment: Alignment.centerLeft,
             child: IconButton(
               icon: Icon(
                 Icons.check,
@@ -133,8 +165,9 @@ class CancelAndProceedTemplateWidgetState
               ),
               onPressed: null,
             ),
-          )),
+          ),
           onPressed: () async {
+            _setRouteAsProceed();
             if (this.widget.onProceed != null) {
               var proceedResult = this.widget.onProceed!();
               if (proceedResult is Future) {

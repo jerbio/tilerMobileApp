@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
@@ -350,28 +351,19 @@ class EventNameSearchState extends SearchWidgetState {
           ],
         ),
         child: Center(
-          child: Stack(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Positioned(
-                  top: 1,
-                  bottom: 0,
-                  left: 0,
-                  child: IconButton(
-                      icon: Transform.rotate(
-                        angle: -pi / 2,
-                        child: Icon(
-                          Icons.chevron_right,
-                          color: Colors.grey,
-                          size: 35,
-                        ),
-                      ),
-                      onPressed: () => {setAsNowCallBack()})),
-              Positioned(
-                  top: 4,
-                  bottom: 0,
-                  left: 50,
-                  child: Text(AppLocalizations.of(context)!.now,
-                      style: TextStyle(fontSize: 15)))
+              Icon(
+                FontAwesomeIcons.chevronUp,
+                size: 20,
+                color: Colors.black,
+              ),
+              SizedBox.square(
+                dimension: 5,
+              ),
+              Text(AppLocalizations.of(context)!.now,
+                  style: TextStyle(fontSize: 15))
             ],
           ),
         ),

@@ -1,24 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
+import 'package:tiler_app/components/newTileSheet.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
+import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/inboxMultiTiletteTileShareDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
+import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
-  late final String? tileShareId;
+  String? tileShareId;
+  String? designatedTileShareId;
+  bool isOutBox;
   late final TileShareClusterData? tileShareClusterData;
-  TileShareDetailWidget.byId(String tileShareId) {
-    this.tileShareId = tileShareId;
+  TileShareDetailWidget.byId(
+      {required this.tileShareId, this.isOutBox = true}) {
+    this.tileShareClusterData = null;
+  }
+
+  TileShareDetailWidget.byDesignatedTileShareId(
+      {required this.designatedTileShareId, this.isOutBox = false}) {
     this.tileShareClusterData = null;
   }
   TileShareDetailWidget.byTileShareData(
-      {required final TileShareClusterData tileShareClusterData}) {
+      {required final TileShareClusterData tileShareClusterData,
+      this.isOutBox = true}) {
     this.tileShareClusterData = tileShareClusterData;
     this.tileShareId = null;
   }
@@ -28,6 +42,7 @@ class TileShareDetailWidget extends StatefulWidget {
 
 class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   final TileShareClusterApi clusterApi = TileShareClusterApi();
+  final DesignatedTileApi designatedTileShareApi = DesignatedTileApi();
   TileShareClusterData? tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
@@ -36,27 +51,36 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   final rowSpacer = SizedBox.square(
     dimension: 8,
   );
+  bool isAddingTiletteLoading = false;
+  final verticalSpacer = SizedBox(height: 8);
+  ScrollController _contactControllerfinal = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    isLoading = false;
     isTileListLoading = false;
     if (this.widget.tileShareClusterData != null) {
       isLoading = false;
       tileShareCluster = this.widget.tileShareClusterData;
-    } else {
+    } else if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
       isLoading = true;
       getTileShareCluster();
+    } else if (this
+        .widget
+        .designatedTileShareId
+        .isNot_NullEmptyOrWhiteSpace()) {
+      isLoading = true;
+      getDesignatedTileShareId(this.widget.designatedTileShareId!);
     }
   }
 
-  Future getTileShareCluster() async {
+  Future getTileShareCluster({String? tileShareId}) async {
     bool tileLoadingState = false;
-    if (this.widget.tileShareId.isNot_NullEmptyOrWhiteSpace()) {
+    String? lookupClusterId = tileShareId ?? this.widget.tileShareId;
+    if (lookupClusterId.isNot_NullEmptyOrWhiteSpace()) {
       tileLoadingState = true;
-      clusterApi
-          .getTileShareClusters(clusterId: this.widget.tileShareId)
-          .then((value) {
+      clusterApi.getTileShareClusters(clusterId: lookupClusterId).then((value) {
         Utility.debugPrint("Success getting tile cluster");
         setState(() {
           tilerError = null;
@@ -103,6 +127,19 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       isLoading = true;
       tilerError = null;
       isTileListLoading = tileLoadingState;
+    });
+  }
+
+  Future getDesignatedTileShareId(String designatedTileShareId) async {
+    designatedTileShareApi
+        .getDesignatedTiles(designatedTileId: designatedTileShareId)
+        .then((value) {
+      if (value.isNotEmpty) {
+        String? clusterShareId = value.first.tileTemplate?.clusterId;
+        if (clusterShareId.isNot_NullEmptyOrWhiteSpace()) {
+          getTileShareCluster(tileShareId: clusterShareId);
+        }
+      }
     });
   }
 
@@ -168,7 +205,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
               )
             else
               SizedBox.shrink(),
-            SizedBox(height: 8),
+            verticalSpacer,
             if (creatorInfo.isNot_NullEmptyOrWhiteSpace())
               Row(
                 children: [
@@ -177,22 +214,30 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                     size: 16,
                   ),
                   rowSpacer,
-                  Text('@${creatorInfo}', style: TileStyles.defaultTextStyle)
+                  Text(
+                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                      style: TileStyles.defaultTextStyle)
                 ],
               ),
-            SizedBox(height: 8),
-            Wrap(
-              spacing: 8.0,
-              alignment: WrapAlignment.start,
-              crossAxisAlignment: WrapCrossAlignment.start,
-              runSpacing: 8.0,
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              children: [
-                ...(cluster.contacts ?? [])
-                    .map((contact) => _buildContactPill(contact))
-                    .toList(),
-              ],
-            )
+            verticalSpacer,
+            Container(
+              height: 50,
+              child: ListView(
+                controller: _contactControllerfinal,
+                children: [
+                  Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      ...(cluster.contacts ?? [])
+                          .map((contact) => _buildContactPill(contact))
+                          .toList(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            verticalSpacer,
           ],
         ));
   }
@@ -201,84 +246,117 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     return CircularProgressIndicator();
   }
 
+  void renderModal() {
+    showModalBottomSheet<void>(
+      isScrollControlled: true,
+      context: context,
+      builder: (BuildContext context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            height: 515,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10))),
+            child: Stack(
+              children: <Widget>[
+                NewTileSheetWidget(
+                  onAddTile: (NewTile? newTile) {
+                    if (newTile != null && tileShareCluster != null) {
+                      setState(() {
+                        isAddingTiletteLoading = true;
+                      });
+                      ClusterTemplateTileModel clusterTemplate =
+                          newTile.toClusterTemplateTileModel();
+                      clusterTemplate.ClusterId = tileShareCluster?.id;
+                      clusterApi
+                          .createDesignatedTileTemplate(clusterTemplate)
+                          .then((value) {
+                        getTileShareCluster();
+                        setState(() {
+                          isAddingTiletteLoading = false;
+                        });
+                        Navigator.pop(context);
+                      }).catchError((onError) {
+                        setState(() {
+                          isAddingTiletteLoading = false;
+                        });
+                      });
+                      setState(() {
+                        isAddingTiletteLoading = true;
+                      });
+                    }
+                  },
+                  onCancel: () => {Navigator.pop(context)},
+                ),
+                if (isAddingTiletteLoading)
+                  PendingWidget(
+                    backgroundDecoration: BoxDecoration(
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10))),
+                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                  )
+                else
+                  SizedBox.shrink()
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  bool get _isReadOnly {
+    return this.widget.isOutBox != true;
+  }
+
+  bool get _isOutBox {
+    return this.widget.isOutBox != false;
+  }
+
+  Widget addTileShare() {
+    return ElevatedButton.icon(
+        style: TileStyles.enabledButtonStyle,
+        onPressed: () {
+          renderModal();
+        },
+        icon: Icon(Icons.add),
+        label: Text(AppLocalizations.of(context)!.addTilette));
+  }
+
   @override
   Widget build(BuildContext context) {
-    const double heightOfTileClusterDetails = 310;
-    Widget? widgetContent = SizedBox.shrink();
-    if (this.tilerError != null) {
-      widgetContent = Center(child: renderError());
-    } else if (this.isLoading == true || this.isTileListLoading == true) {
-      widgetContent = Center(
-        child: renderLoading(),
+    if (this.isLoading == true) {
+      return Scaffold(
+        body: Center(
+          child: renderLoading(),
+        ),
       );
-    } else {
-      widgetContent = Flex(
-        direction: Axis.vertical,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          renderTileShareCluster(),
-          Divider(),
-          if (this.isTileListLoading == true)
-            CircularProgressIndicator()
-          else
-            Padding(
-              padding: EdgeInsets.all(15),
-              child: SizedBox(
-                width: MediaQuery.sizeOf(context).width,
-                height: MediaQuery.sizeOf(context).height <
-                        heightOfTileClusterDetails
-                    ? heightOfTileClusterDetails
-                    : MediaQuery.sizeOf(context).height -
-                        heightOfTileClusterDetails,
-                child: DesignatedTileList(
-                  designatedTiles:
-                      this.designatedTileList ?? <DesignatedTile>[],
-                ),
-              ),
-            )
-        ],
-      );
+    }
+    if (this.tileShareCluster != null) {
+      if (this.tileShareCluster!.isMultiTilette == true) {
+        if (this._isOutBox) {
+          return MultiTiletteTileShareDetailWidget(
+              tileShareClusterData: this.tileShareCluster!,
+              isReadOnly: this._isReadOnly);
+        } else {
+          return InboxMultiTiletteTileShareDetailWidget(
+              tileShareClusterData: this.tileShareCluster!);
+        }
+      } else {
+        return SingleTiletteTileShareDetailWidget(
+          tileShareClusterData: this.tileShareCluster!,
+          isReadOnly: this._isReadOnly,
+        );
+      }
     }
 
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-          leading: TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Icon(
-              Icons.close,
-              color: TileStyles.appBarTextColor,
-            ),
-          ),
-          title: this.tileShareCluster?.name != null
-              ? Text(
-                  this.tileShareCluster?.name ??
-                      AppLocalizations.of(context)!.tileShare,
-                  style: TileStyles.titleBarStyle,
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (this.tileShareCluster?.name == null)
-                      Icon(
-                        Icons.share,
-                        color: TileStyles.appBarTextColor,
-                      )
-                    else
-                      SizedBox.shrink(),
-                    SizedBox.square(
-                      dimension: 5,
-                    ),
-                    Text(
-                      this.tileShareCluster?.name ??
-                          AppLocalizations.of(context)!.tileShare,
-                      style: TileStyles.titleBarStyle,
-                    )
-                  ],
-                ),
-        ),
-        body: widgetContent);
+      body: Center(
+        child: renderError(),
+      ),
+    );
   }
 }

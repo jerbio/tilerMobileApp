@@ -17,6 +17,11 @@ class GetCalendarTileEvent extends CalendarTileEvent {
   GetCalendarTileEvent({required this.calEventId});
 }
 
+class GetCalendarTileEventByDesignatedTileTemplate extends CalendarTileEvent {
+  final String tileTemplateId;
+  GetCalendarTileEventByDesignatedTileTemplate({required this.tileTemplateId});
+}
+
 class DeleteCalendarTileEvent extends CalendarTileEvent {
   final String calEventId;
   final String thirdPartyId;

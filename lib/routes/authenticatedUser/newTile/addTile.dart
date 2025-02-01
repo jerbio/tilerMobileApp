@@ -65,34 +65,8 @@ class AddTileState extends State<AddTile> {
   final LocationApi locationApi = LocationApi();
   Location? _homeLocation;
   Location? _workLocation;
-  final BoxDecoration boxDecoration = BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.05),
-      border: Border.all(
-        color: TileStyles.primaryColor,
-        width: 1,
-      ),
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ));
-  final BoxDecoration populatedDecoration = BoxDecoration(
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          TileStyles.primaryColor,
-          HSLColor.fromColor(TileStyles.primaryColor)
-              .withLightness(
-                  HSLColor.fromColor(TileStyles.primaryColor).lightness + 0.3)
-              .toColor(),
-
-          // OLD
-          // TileStyles.primaryColorDarkHSL.toColor(),
-          // TileStyles.primaryColorLightHSL.toColor()
-        ],
-      ));
+  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
+  final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCountController = TextEditingController();
@@ -118,6 +92,8 @@ class AddTileState extends State<AddTile> {
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
   TilePriority priority = TilePriority.medium;
+  static final String addTileCancelAndProceedRouteName =
+      "addTileCancelAndProceedRouteName";
 
   @override
   void initState() {
@@ -663,7 +639,7 @@ class AddTileState extends State<AddTile> {
     }
 
     if (_repetitionData != null) {
-      isRepetitionSet = true;
+      isRepetitionSet = _repetitionData!.isEnabled;
     }
 
     Widget locationConfigButton = ConfigUpdateButton(
@@ -717,7 +693,7 @@ class AddTileState extends State<AddTile> {
     Widget repetitionConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.repetition,
         prefixIcon: Icon(
-          Icons.repeat_outlined,
+          TileStyles.repetitionIcon,
           color: isRepetitionSet ? populatedTextColor : iconColor,
         ),
         decoration: isRepetitionSet
@@ -755,7 +731,8 @@ class AddTileState extends State<AddTile> {
             }
 
             repetitionParams['updatedRepetition'] as RepetitionData?;
-            if (updatedRepetitionData != null) {
+            if (updatedRepetitionData != null &&
+                updatedRepetitionData.isEnabled) {
               setState(() {
                 _repetitionData =
                     isRepetitionEndValid ? updatedRepetitionData : null;
@@ -1027,7 +1004,7 @@ class AddTileState extends State<AddTile> {
             .map((dayIndex) => dayIndex % 7)
             .join(',');
       }
-      tile.RepeatData = _repetitionData!.isAutoRepetitionEnd.toString();
+      tile.RepeatData = _repetitionData!.isForever.toString();
       tile.RepeatType = _repetitionData!.frequency.name;
     }
 
@@ -1036,8 +1013,12 @@ class AddTileState extends State<AddTile> {
 
     if (this.isAppointment) {
       tile.Rigid = true.toString();
-      startTime = this._startTime!;
-      _endTime = this._endTime!;
+      if (this._startTime != null) {
+        startTime = this._startTime!;
+        if (this._duration != null) {
+          _endTime = this._startTime!.add(this._duration!);
+        }
+      }
     }
 
     tile.EndYear = _endTime?.year.toString();
@@ -1397,6 +1378,7 @@ class AddTileState extends State<AddTile> {
     childrenWidgets.add(extraConfigCollection);
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      routeName: addTileCancelAndProceedRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.appBarColor,
         title: Text(

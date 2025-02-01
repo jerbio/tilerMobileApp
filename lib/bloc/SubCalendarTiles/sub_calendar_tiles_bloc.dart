@@ -19,6 +19,7 @@ class SubCalendarTileBloc
     on<GetSubCalendarTileBlocEvent>(_onLoadSubCalendarTile);
     on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
     on<GetListOfSubCalendarTilesBlocEvent>(_onLoadListOfSubCalendarTiles);
+
     on<NewSubCalendarTileBlocEvent>(_onNewSubTileCreatedState);
     on<GetListOfCalendarTilesSubTilesBlocEvent>(
         _onLoadListOfSubCalendarByCalendarEventId);

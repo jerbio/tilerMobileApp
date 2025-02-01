@@ -7,11 +7,16 @@ part 'clusterTemplateTileModel.g.dart';
 @JsonSerializable(explicitToJson: true)
 class ClusterTemplateTileModel {
   ClusterTemplateTileModel();
+  String? Id;
   String? Name;
+  String? ClusterId;
   int? StartTime;
   int? EndTime;
   int? OrderedIndex;
+  int? DurationInMs;
   AddressModel? AddressData;
+  String? NoteMiscData;
+
   List<ContactModel>? Contacts;
 
   factory ClusterTemplateTileModel.fromJson(Map<String, dynamic> json) =>

@@ -196,7 +196,7 @@ class _SummaryPage extends State<SummaryPage> {
             child: Text(
               (subCalendarEventTile.calendarEventEndTime ??
                       subCalendarEventTile.startTime)
-                  .humanDate,
+                  .humanDate(context),
               style: TextStyle(
                   fontSize: 12,
                   color: Color.fromRGBO(31, 31, 31, 0.8),
@@ -1262,7 +1262,7 @@ class _SummaryPage extends State<SummaryPage> {
         appBar: AppBar(
           backgroundColor: TileStyles.primaryColor,
           title: Text(
-            this.widget.timeline.startTime.humanDate,
+            this.widget.timeline.startTime.humanDate(context),
             style: TextStyle(
                 color: TileStyles.appBarTextColor,
                 fontWeight: FontWeight.w800,
@@ -1546,7 +1546,7 @@ class _TileToBeCompletedState extends State<TileToBeCompleted> {
             child: Text(
               (subCalendarEventTile.calendarEventEndTime ??
                       subCalendarEventTile.startTime)
-                  .humanDate,
+                  .humanDate(context),
               style: TextStyle(
                   fontSize: 12,
                   color: Color.fromRGBO(31, 31, 31, 0.8),
