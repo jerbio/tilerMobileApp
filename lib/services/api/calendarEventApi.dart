@@ -96,11 +96,16 @@ class CalendarEventApi extends AppApi {
       'CalAddressDescription': calEvent.addressDescription?.toString(),
       'IsCalAddressVerified': calEvent.isAddressVerified?.toString(),
       'IsLocationCleared': clearLocation,
+      'RestrictiveWeek':
+          calEvent.restrictionProfile?.toRestrictionWeekConfig()?.toJson(),
+      'RepetitionConfig': calEvent.repetition?.toRequestJson(),
+      'ColorConfig': calEvent.uiConfig?.tileColor?.toRequestJson(),
     };
     if (calEvent.tileDuration != null) {
       queryParameters['Duration'] =
           calEvent.tileDuration!.inMilliseconds.toString();
     }
+
     return sendPostRequest('api/CalendarEvent/Update', queryParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -145,7 +150,8 @@ class CalendarEventApi extends AppApi {
     });
   }
 
-  Future<CalendarEvent> getCalEvent(String id) async {
+  Future<CalendarEvent> getCalEvent(
+      {String? id, String? designatedTileId}) async {
     String tilerDomain = Constants.tilerDomain;
     // String url = tilerDomain + 'api/SubCalendarEvent';
     // return getAdHocSubEventId(id);
@@ -155,6 +161,7 @@ class CalendarEventApi extends AppApi {
       String url = tilerDomain;
       final queryParameters = {
         'EventID': id,
+        'TileShareTemplateId': designatedTileId
       };
       Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
@@ -168,6 +175,8 @@ class CalendarEventApi extends AppApi {
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
+          print("cal event data");
+          print(jsonResult['Content'].toString());
           return CalendarEvent.fromJson(jsonResult['Content']);
         }
       }

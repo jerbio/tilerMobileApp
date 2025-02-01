@@ -6,6 +6,7 @@ class UserProfile {
   String? email;
   String? endOfDay;
   String? fullName;
+  String? phoneNumber;
 
   UserProfile.fromJson(Map<String, dynamic> json) {
     id = '';
@@ -36,6 +37,10 @@ class UserProfile {
 
     if (json.containsKey('fullName') && json['fullName'] != null) {
       fullName = json['fullName'];
+    }
+
+    if (json.containsKey('phoneNumber') && json['phoneNumber'] != null) {
+      phoneNumber = json['phoneNumber'];
     }
   }
 }

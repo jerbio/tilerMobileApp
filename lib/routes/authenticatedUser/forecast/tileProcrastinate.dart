@@ -33,6 +33,8 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
   Duration? _selectedPresetValue = null;
   Map<String, Duration> durationStringToDuration = {};
   SubCalendarEventApi _subCalendarEventApi = new SubCalendarEventApi();
+  static final String tileProcrastinateCancelAndProceedRouteName =
+      "tileProcrastinateCancelAndProceed";
 
   void showMessage(String message) {
     Fluttertoast.showToast(
@@ -169,6 +171,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     ];
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+        routeName: tileProcrastinateCancelAndProceedRouteName,
         appBar: AppBar(
           backgroundColor: TileStyles.primaryColor,
           title: Text(

@@ -268,10 +268,13 @@ class TimeRestrictionRoute extends StatefulWidget {
 
 class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
   late _PreloadedRestrictionsRoute stateWidget;
+  static final String timeRestrictionCancelAndProceedRouteName =
+      "timeRestrictionCancelAndProceedRouteName";
   @override
   Widget build(BuildContext context) {
     stateWidget = _PreloadedRestrictionsRoute();
     return CancelAndProceedTemplateWidget(
+      routeName: timeRestrictionCancelAndProceedRouteName,
       child: stateWidget,
       onProceed: () {
         Map? restrictionProfileParams =
@@ -279,7 +282,7 @@ class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
         if (stateWidget.isAnyTime) {
           if (restrictionProfileParams != null) {
             restrictionProfileParams['routeRestrictionProfile'] = null;
-            restrictionProfileParams['isAnytTime'] = true;
+            restrictionProfileParams['isAnyTime'] = true;
           }
           return;
         }

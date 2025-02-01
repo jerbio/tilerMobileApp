@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/components/listModel.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -19,8 +17,6 @@ import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../constants.dart';
-
 class TileBatch extends StatefulWidget {
   static final TextStyle dayHeaderTextStyle = TextStyle(
       fontSize: 40,
@@ -29,16 +25,12 @@ class TileBatch extends StatefulWidget {
       fontWeight: FontWeight.w700);
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
-  String? header;
-  String? footer;
   int? dayIndex;
   TimelineSummary? dayData;
   ConnectionState? connectionState;
 
   TileBatch(
-      {this.header,
-      this.footer,
-      this.dayIndex,
+      {this.dayIndex,
       this.tiles,
       this.sleepTimeline,
       this.connectionState,
@@ -93,10 +85,6 @@ class TileBatchState extends State<TileBatch> {
       sleepTimeline = timeline;
       uniqueKey = uniqueKey + " || " + this.widget.dayIndex.toString();
     });
-    // print('---sleep TL 0 -- ' +
-    //     sleepTimeline!.startTime.toString() +
-    //     ' - ' +
-    //     uniqueKey);
   }
 
   Widget _buildRemovedItem(
@@ -163,7 +151,6 @@ class TileBatchState extends State<TileBatch> {
           );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -271,22 +258,23 @@ class TileBatchState extends State<TileBatch> {
           endOfDayTime = evaluatedEndOfTime;
         }
       }
-
-      dayContent = Flex(
-        direction: Axis.vertical,
-        children: [
-          AnimatedOpacity(
-            opacity: _emptyDayOpacity,
-            duration: const Duration(milliseconds: 500),
-            child: Container(
-                height: MediaQuery.of(context).size.height - heightMargin,
-                child: EmptyDayTile(
-                  deadline: endOfDayTime,
-                  dayIndex: this.widget.dayIndex,
-                )),
-          )
-        ],
-      );
+      if (this.widget.dayIndex != null) {
+        dayContent = Flex(
+          direction: Axis.vertical,
+          children: [
+            AnimatedOpacity(
+              opacity: _emptyDayOpacity,
+              duration: const Duration(milliseconds: 500),
+              child: Container(
+                  height: MediaQuery.of(context).size.height - heightMargin,
+                  child: EmptyDayTile(
+                    deadline: endOfDayTime,
+                    dayIndex: this.widget.dayIndex!,
+                  )),
+            )
+          ],
+        );
+      }
       if (_emptyDayOpacity == 0) {
         Timer(Duration(milliseconds: 200), () {
           if (mounted) {

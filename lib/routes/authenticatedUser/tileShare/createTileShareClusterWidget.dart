@@ -9,6 +9,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -35,6 +36,9 @@ class _CreateTileShareClusterWidgetState
   Duration? _duration;
   Function? onProceedResponse;
   bool isMultiTilette = false;
+
+  static final String createTileShareCancelAndProceedRouteName =
+      "createTileShareCancelAndProceedRouteName";
   @override
   void initState() {
     super.initState();
@@ -60,7 +64,7 @@ class _CreateTileShareClusterWidgetState
 
   Future proceedRequest() {
     tileClusterData.contacts = contacts;
-    tileClusterData.tileTemplates = _tileTemplates;
+    tileClusterData.newTileTemplates = _tileTemplates;
     tileClusterData.endTimeInMs = this._endTime?.millisecondsSinceEpoch;
     tileClusterData.startTimeInMs = Utility.msCurrentTime;
     tileClusterData.isMultiTilette = this.isMultiTilette;
@@ -176,22 +180,14 @@ class _CreateTileShareClusterWidgetState
   }
 
   Widget addContacts() {
-    return ListView(
-      children: [
-        ContactInputFieldWidget(
-          contentHeight: this.contacts.isEmpty
-              ? 0
-              : this.contacts.length < 3
-                  ? 50
-                  : 100,
-          onContactUpdate: (List<Contact> updatedContacts) {
-            updateProceed();
-            setState(() {
-              this.contacts = updatedContacts;
-            });
-          },
-        )
-      ],
+    return ContactListView(
+      contacts: this.contacts,
+      onContactListUpdate: (List<Contact> updatedContacts) {
+        updateProceed();
+        setState(() {
+          this.contacts = updatedContacts;
+        });
+      },
     );
   }
 
@@ -232,27 +228,11 @@ class _CreateTileShareClusterWidgetState
 
   Widget generatedTopRightButton() {
     if (this.isMultiTilette) {
-      // if (onProceedResponse != null) {
-      //   return ElevatedButton.icon(
-      //       style: TileStyles.enabledButtonStyle,
-      //       onPressed: () {
-      //         if (onProceedResponse != null) {
-      //           onProceedResponse!();
-      //         }
-      //         Navigator.of(context).pop(false);
-      //       },
-      //       icon: Icon(
-      //         Icons.save,
-      //         color: TileStyles.primaryContrastColor,
-      //       ),
-      //       label: SizedBox.shrink());
-      // }
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
           style: TileStyles.enabledButtonStyle,
           onPressed: () {
-            Navigator.of(context).pop(false);
             Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -260,7 +240,9 @@ class _CreateTileShareClusterWidgetState
                           isMultiTilette: true,
                           onAddTileCluster: this.widget.onAddTileCluster,
                           onAddingTilette: this.widget.onAddingTilette,
-                        )));
+                        ))).whenComplete(() {
+              Navigator.of(context).pop(false);
+            });
           },
           icon: TileStyles.multiShareWidget,
           label: SizedBox.shrink());
@@ -291,6 +273,7 @@ class _CreateTileShareClusterWidgetState
           children: clusterInputWidgets,
         ));
     return CancelAndProceedTemplateWidget(
+      routeName: createTileShareCancelAndProceedRouteName,
       appBar: AppBar(
           // centerTitle: true,
           automaticallyImplyLeading: false,

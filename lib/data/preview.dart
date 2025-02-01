@@ -57,10 +57,32 @@ class SleepTimeline {
   }
 }
 
+class DayDetails {
+  Timeline? sleepTimeline;
+  Timeline? maximumSleepTimeline;
+
+  DayDetails({
+    this.sleepTimeline,
+    this.maximumSleepTimeline,
+  });
+
+  factory DayDetails.fromJson(Map<String, dynamic> json) {
+    return DayDetails(
+      sleepTimeline: json['sleepTimeline'] != null
+          ? Timeline.fromJson(json['sleepTimeline'])
+          : null,
+      maximumSleepTimeline: json['maximumSleepTimeLine'] != null
+          ? Timeline.fromJson(json['maximumSleepTimeLine'])
+          : null,
+    );
+  }
+}
+
 class Sleep {
   List<SleepTimeline>? sleepTimeline;
   List<SleepTimeline>? maximumSleepTimeline;
   List<TilerEvent>? subEvents;
+  Map<String, DayDetails>? days;
   double? sleepScore;
 
   Sleep.fromJson(Map<String, dynamic> json) {
@@ -71,7 +93,7 @@ class Sleep {
           .map<int>((timeAsJsString) => int.parse(timeAsJsString))
           .toList() as List<int>;
       epochJSTimes.sort();
-      String maxSleepTimelineKey = 'MaximumSleepTimeLine';
+      String maxSleepTimelineKey = 'maximumSleepTimeLine';
       maximumSleepTimeline = epochJSTimes
           .where((jsTime) =>
               json[dayKey][jsTime.toString()].containsKey(maxSleepTimelineKey))
@@ -82,7 +104,7 @@ class Sleep {
 
         return retValue;
       }).toList();
-      String sleepTimelineKey = 'SleepTimeline';
+      String sleepTimelineKey = 'sleepTimeline';
       sleepTimeline = epochJSTimes
           .where((jsTime) =>
               json[dayKey][jsTime.toString()].containsKey(sleepTimelineKey))
@@ -91,7 +113,7 @@ class Sleep {
             jsTime,
             Timeline.fromJson(
                 json[dayKey][jsTime.toString()][sleepTimelineKey]));
-        String lostSleepKey = 'LostSleep';
+        String lostSleepKey = 'lostSleep';
         if (json[dayKey][jsTime.toString()].containsKey(lostSleepKey)) {
           retValue.lostSleepDuration = Duration(
               milliseconds: Utility.cast<double>(
@@ -136,11 +158,43 @@ class Tardy {
   }
 }
 
+class TravelData {
+  Map<String, TravelDetails>? travel;
+
+  TravelData({this.travel});
+
+  factory TravelData.fromJson(Map<String, dynamic>? json) {
+    return TravelData(
+      travel: (json)?.map(
+        (key, value) => MapEntry(key, TravelDetails.fromJson(value)),
+      ),
+    );
+  }
+}
+
+class TravelDetails {
+  int? travelTime;
+  double? totalDistance;
+
+  TravelDetails({
+    this.travelTime,
+    this.totalDistance,
+  });
+
+  factory TravelDetails.fromJson(Map<String, dynamic> json) {
+    return TravelDetails(
+      travelTime: json['travelTime'] as int?,
+      totalDistance: (json['totalDistance'] as num?)?.toDouble(),
+    );
+  }
+}
+
 class Preview {
   Conflict? conflict;
   Sleep? sleep;
   Tardy? tardies;
   List<TilerEvent>? nonViable;
+  TravelData? travelData;
   double? scheduleScore;
 
   Preview.fromJson(Map<String, dynamic> json) {
@@ -170,6 +224,11 @@ class Preview {
     String scoreKey = 'score';
     if (json.containsKey(scoreKey)) {
       scheduleScore = Utility.cast<double>(json[scoreKey])!.toDouble();
+    }
+
+    String travelKey = 'travel';
+    if (json.containsKey(travelKey) && json[travelKey] != null) {
+      travelData = TravelData.fromJson(json[travelKey]);
     }
   }
 }
