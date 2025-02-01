@@ -45,7 +45,7 @@ dependencies:
     path: thirdParty/duration_picker
   scroll_to_index: ^3.0.1
   flutter_colorpicker: ^1.1.0
-  maps_launcher: ^2.0.1
+  maps_launcher: ^3.0.0
   flutter_bloc: ^8.1.1
   equatable: ^2.0.5
   fluttertoast: ^8.1.2
