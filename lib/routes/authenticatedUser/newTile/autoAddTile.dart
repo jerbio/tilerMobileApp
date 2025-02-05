@@ -20,8 +20,14 @@ class AutoAddTileState extends State<AutoAddTile> {
   Location? _location;
   Duration? _duration;
   TextEditingController tileNameController = TextEditingController();
-  ScheduleApi scheduleApi = ScheduleApi();
+  late ScheduleApi scheduleApi;
   StreamSubscription? pendingSendTextRequest;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
+  }
 
   Function generateCallToServer() {
     if (pendingSendTextRequest != null) {

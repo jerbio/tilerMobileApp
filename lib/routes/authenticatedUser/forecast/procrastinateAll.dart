@@ -17,7 +17,13 @@ class ProcrastinateAll extends StatefulWidget {
 
 class _ProcrastinateAllState extends State<ProcrastinateAll> {
   Duration _duration = Duration();
-  ScheduleApi _scheduleApi = ScheduleApi();
+  late ScheduleApi _scheduleApi;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleApi = ScheduleApi(getContextCallBack: () => context);
+  }
 
   void showMessage(String message) {
     Fluttertoast.showToast(

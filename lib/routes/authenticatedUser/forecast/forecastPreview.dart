@@ -22,7 +22,9 @@ class ForecastPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ForecastBloc(),
+      create: (_) => ForecastBloc(
+        getContextCallBack: () => context,
+      ),
       child: ForecastView(),
     );
   }

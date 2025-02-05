@@ -27,8 +27,8 @@ class SingleTiletteTileShareDetailWidget extends StatefulWidget {
 
 class _SingleTiletteTileShareDetailWidget
     extends State<SingleTiletteTileShareDetailWidget> {
-  final TileShareClusterApi clusterApi = TileShareClusterApi();
-  final DesignatedTileApi designatedTileApi = DesignatedTileApi();
+  late final TileShareClusterApi clusterApi;
+  late final DesignatedTileApi designatedTileApi;
   late TileShareClusterData tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
@@ -44,6 +44,10 @@ class _SingleTiletteTileShareDetailWidget
   @override
   void initState() {
     super.initState();
+    clusterApi = TileShareClusterApi(getContextCallBack: () => this.context);
+    designatedTileApi =
+        DesignatedTileApi(getContextCallBack: () => this.context);
+
     isTileListLoading = false;
     isLoading = false;
     tileShareCluster = this.widget.tileShareClusterData;

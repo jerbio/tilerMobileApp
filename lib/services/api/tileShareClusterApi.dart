@@ -13,6 +13,8 @@ import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class TileShareClusterApi extends AppApi {
+  TileShareClusterApi({required Function? getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future createCluster(TileShareClusterData tileCluster) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";

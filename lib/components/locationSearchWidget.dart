@@ -39,7 +39,7 @@ class LocationSearchWidget extends SearchWidget {
 class LocationSearchState extends SearchWidgetState {
   Function? onChange;
   Location? selectedLocation;
-  LocationApi locationNameApi = new LocationApi();
+  late LocationApi locationNameApi;
   List<Widget> locationSearchResult = [];
   TextEditingController textController = TextEditingController();
   bool isRequestEnabled = true;
@@ -47,6 +47,7 @@ class LocationSearchState extends SearchWidgetState {
   @override
   void initState() {
     super.initState();
+    locationNameApi = LocationApi(getContextCallBack: () => this.context);
     onChange = this.widget.onChanged;
   }
 

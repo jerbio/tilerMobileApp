@@ -18,8 +18,9 @@ part 'schedule_state.dart';
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
   late ScheduleApi scheduleApi;
-  SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  ScheduleBloc({Function? getContextCallBack}) : super(ScheduleInitialState()) {
+  late SubCalendarEventApi subCalendarEventApi;
+  ScheduleBloc({required Function getContextCallBack})
+      : super(ScheduleInitialState()) {
     on<GetScheduleEvent>(_onGetSchedule);
     on<LogInScheduleEvent>(_onInitialLogInScheduleEvent);
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
@@ -28,6 +29,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<EvaluateSchedule>(_onEvaluateSchedule);
     on<CompleteTaskEvent>(_onCompleteTask);
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
+    subCalendarEventApi =
+        SubCalendarEventApi(getContextCallBack: getContextCallBack);
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
@@ -75,7 +78,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLoggedOutScheduleEvent(
       LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
-    scheduleApi = ScheduleApi();
+    scheduleApi =
+        ScheduleApi(getContextCallBack: () => event.getContextCallBack);
     emit(ScheduleLoggedOutState());
   }
 

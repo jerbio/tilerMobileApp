@@ -7,12 +7,14 @@ part 'integrations_event.dart';
 part 'integrations_state.dart';
 
 class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
-  IntegrationApi integrationApi = IntegrationApi();
-  IntegrationsBloc() : super(IntegrationsInitial()) {
+  late IntegrationApi integrationApi;
+  IntegrationsBloc({required Function getContextCallBack})
+      : super(IntegrationsInitial()) {
     on<GetIntegrationsEvent>(_getIntegrations);
     on<DeleteIntegrationsEvent>(_deleteIntegration);
     on<PendingIntegrationsEvent>(_updateIntegrationEvent);
     on<ResetIntegrationsEvent>(_resetIntegration);
+    integrationApi = new IntegrationApi(getContextCallBack: getContextCallBack);
   }
 
   void _getIntegrations(

@@ -15,6 +15,7 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
@@ -40,26 +41,12 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
-  final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
-  final ScheduleApi scheduleApi = new ScheduleApi();
+  late final SubCalendarEventApi subCalendarEventApi;
+  late final ScheduleApi scheduleApi;
   final AccessManager accessManager = AccessManager();
   bool renderLocationPermissionOverLay = false;
 
-  Tuple3<Position, bool, bool> locationAccess = Tuple3(
-      Position(
-        altitudeAccuracy: 777.0,
-        headingAccuracy: 0.0,
-        longitude: Location.fromDefault().longitude!,
-        latitude: Location.fromDefault().latitude!,
-        timestamp: Utility.currentTime(),
-        heading: 0,
-        accuracy: 0,
-        altitude: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      ),
-      false,
-      true);
+  LocationProfile locationAccess = LocationProfile.empty();
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
@@ -70,6 +57,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   @override
   void initState() {
     super.initState();
+    scheduleApi = new ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () {
+      return this.context;
+    });
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
@@ -77,6 +70,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
     localNotificationService.initialize(this.context);
     final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    deviceSettingBloc
+        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc"));
     scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
       return this.context;
     });
@@ -393,16 +389,11 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  void locationUpdate(Tuple3<Position, bool, bool> update) {
+  void locationUpdate(LocationProfile locationProfile) {
     setState(() {
-      locationAccess = update;
+      locationAccess = locationProfile;
       isLocationRequestTriggered = true;
     });
-  }
-
-  Widget renderLocationRequest(AccessManager accessManager) {
-    print("Outputing LocationAccessWidget");
-    return LocationAccessWidget(accessManager, locationUpdate);
   }
 
   Widget renderAuthorizedUserPageView() {
@@ -580,7 +571,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             listener: (context, state) {
               print('DeviceSettingBloc listener');
               print("render loading ui " + state.toString());
-              if (state is DeviceLocationSettingLoading) {
+              if (state is DeviceLocationSettingUIPending) {
                 print("render loading ui " + state.renderLoadingUI.toString());
                 if (state.renderLoadingUI == true) {
                   setState(() {
@@ -599,9 +590,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ],
         child:
             BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          if (renderLocationPermissionOverLay) {
-            return renderLocationRequest(accessManager);
-          }
           return renderAuthorizedUserPageView();
         }));
   }

@@ -27,7 +27,7 @@ class MultiTiletteTileShareDetailWidget extends StatefulWidget {
 
 class _MultiTiletteTileShareDetailWidget
     extends State<MultiTiletteTileShareDetailWidget> {
-  final TileShareClusterApi clusterApi = TileShareClusterApi();
+  late final TileShareClusterApi clusterApi;
   TileShareClusterData? tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
@@ -43,6 +43,7 @@ class _MultiTiletteTileShareDetailWidget
   @override
   void initState() {
     super.initState();
+    clusterApi = TileShareClusterApi(getContextCallBack: () => context);
     isTileListLoading = false;
     if (this.widget.tileShareClusterData != null) {
       tileShareCluster = this.widget.tileShareClusterData;

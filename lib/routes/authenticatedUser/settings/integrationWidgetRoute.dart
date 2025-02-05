@@ -23,12 +23,16 @@ class IntegrationWidgetRoute extends StatefulWidget {
 
 class _IntegrationWidgetRouteState extends State<IntegrationWidgetRoute> {
   final String blocEventId = "IntegrationId";
-  final AuthorizationApi authorizationApi = AuthorizationApi();
-  final IntegrationApi integrationApi = IntegrationApi();
+  late final AuthorizationApi authorizationApi;
+  late final IntegrationApi integrationApi;
   List<CalendarIntegration> integrations = [];
   @override
   void initState() {
     super.initState();
+    integrationApi = IntegrationApi(
+        getContextCallBack: () => this.context.read<IntegrationsBloc>());
+    authorizationApi = AuthorizationApi(
+        getContextCallBack: () => this.context.read<IntegrationsBloc>());
     emitGetIntegrations();
   }
 
