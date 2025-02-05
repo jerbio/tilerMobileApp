@@ -7,7 +7,7 @@ import 'package:tiler_app/data/onBoarding.dart';
 import 'package:tiler_app/services/localizationService.dart';
 
 class OnBoardingApi extends AppApi {
-  OnBoardingApi();
+  OnBoardingApi() : super(getContextCallBack: () => null);
   Future<OnboardingContent?> fetchOnboardingData() async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();

@@ -5,11 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
-import 'package:tiler_app/data/deviceLocationProfile.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../styles.dart';
 
@@ -23,8 +22,7 @@ class LocationAccessWidget extends StatefulWidget {
 
 class LocationAccessWidgetState extends State<LocationAccessWidget> {
   late AccessManager accessManager;
-  Tuple3<Position, bool, bool> locationAccess =
-      Tuple3(Utility.getDefaultPosition(), false, true);
+  LocationProfile locationAccess = LocationProfile.empty();
   bool isLocationRequestTriggered = false;
   @override
   void initState() {
@@ -35,37 +33,49 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
   VoidCallback generateCallBack(
       {bool forceDeviceCheck = false,
       bool statusCheck = false,
-      bool denyAccess = false,
+      bool? denyAccess,
       bool doNotCallAgain = false}) {
-    VoidCallback retValue = () async => {
-          await accessManager
-              .locationAccess(
-                  forceDeviceCheck: forceDeviceCheck,
-                  statusCheck: statusCheck,
-                  denyAccess: false)
-              .then((value) {
-            DeviceLocationProfile deviceLocationProfile =
-                DeviceLocationProfile();
-            BlocProvider.of<DeviceSettingBloc>(context).add(
-                LoadedProfileDeviceSettingEvent(
-                    deviceLocationProfile: DeviceLocationProfile()));
-            setState(() {
-              if (!mounted) return;
-              if (value != null) {
-                locationAccess = value;
-                isLocationRequestTriggered = true;
-                if (this.widget.onChange != null) {
-                  this.widget.onChange!(value);
-                }
-                return;
-              }
-              if (!doNotCallAgain) {
-                generateCallBack(
-                    forceDeviceCheck: true, doNotCallAgain: true)();
-              }
-            });
-          })
-        };
+    VoidCallback retValue = () async {
+      setState(() {
+        isLocationRequestTriggered = true;
+      });
+      await accessManager
+          .locationAccess(
+              forceDeviceCheck: forceDeviceCheck,
+              statusCheck: statusCheck,
+              denyAccess: denyAccess ?? false)
+          .then((value) {
+        String loadedId = Utility.getUuid;
+        if (BlocProvider.of<DeviceSettingBloc>(context)
+                is DeviceLocationSettingLoading &&
+            (BlocProvider.of<DeviceSettingBloc>(context)
+                        as DeviceLocationSettingLoading)
+                    .id !=
+                null) {
+          loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
+                  as DeviceLocationSettingLoading)
+              .id!;
+        }
+        BlocProvider.of<DeviceSettingBloc>(context).add(
+            LoadedLocationProfileDeviceSettingEvent(
+                deviceLocationProfile: value ?? LocationProfile.empty(),
+                id: loadedId));
+
+        setState(() {
+          if (!mounted) return;
+          if (value != null) {
+            locationAccess = value;
+            if (this.widget.onChange != null) {
+              this.widget.onChange!(value);
+            }
+            return;
+          }
+          if (!doNotCallAgain) {
+            generateCallBack(forceDeviceCheck: true, doNotCallAgain: true)();
+          }
+        });
+      });
+    };
 
     return retValue;
   }
@@ -97,7 +107,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           width: buttonWidth,
           child: ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-              onPressed: generateCallBack(denyAccess: false),
+              onPressed: generateCallBack(denyAccess: true),
               child: Text(AppLocalizations.of(context)!.deny,
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -108,6 +118,13 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         ),
       )
     ];
+    if (isLocationRequestTriggered) {
+      acceptDenyButtons = [
+        Container(
+            margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
+            child: CircularProgressIndicator())
+      ];
+    }
 
     if (Platform.isIOS) {
       acceptDenyButtons = [
@@ -119,12 +136,23 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
                 onPressed: () {
                   if (this.widget.onChange != null) {
+                    String loadedId = Utility.getUuid;
+                    if (BlocProvider.of<DeviceSettingBloc>(context)
+                            is DeviceLocationSettingLoading &&
+                        (BlocProvider.of<DeviceSettingBloc>(context)
+                                    as DeviceLocationSettingLoading)
+                                .id !=
+                            null) {
+                      loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
+                              as DeviceLocationSettingLoading)
+                          .id!;
+                    }
+
                     this.widget.onChange!(locationAccess);
-                    DeviceLocationProfile deviceLocationProfile =
-                        DeviceLocationProfile();
                     BlocProvider.of<DeviceSettingBloc>(context).add(
-                        LoadedProfileDeviceSettingEvent(
-                            deviceLocationProfile: DeviceLocationProfile()));
+                        LoadedLocationProfileDeviceSettingEvent(
+                            id: loadedId,
+                            deviceLocationProfile: locationAccess));
                   }
                 },
                 child: Text(AppLocalizations.of(context)!.dismiss,

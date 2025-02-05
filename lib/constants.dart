@@ -48,3 +48,4 @@ final int autoCompleteMinCharLength = 3;
 final int numberOfDaysToLoad = 8;
 String? userId = "";
 String? userName = "";
+final Duration retryPermissionCheck = Duration(minutes: 60);

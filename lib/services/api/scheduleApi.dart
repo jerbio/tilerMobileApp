@@ -22,7 +22,7 @@ import '../../constants.dart' as Constants;
 
 class ScheduleApi extends AppApi {
   bool preserveSubEventList = true;
-  ScheduleApi({Function? getContextCallBack})
+  ScheduleApi({required Function getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
 

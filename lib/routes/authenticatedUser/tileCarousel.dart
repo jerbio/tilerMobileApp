@@ -27,7 +27,7 @@ class _TileCarouselState extends State<TileCarousel> {
   final ItemPositionsListener dayPositionsListener =
       ItemPositionsListener.create();
 
-  SubCalendarEventApi subEventApi = new SubCalendarEventApi();
+  late SubCalendarEventApi subEventApi;
   List<SubCalendarEvent>? subEvents;
   Map<
       int,
@@ -36,6 +36,7 @@ class _TileCarouselState extends State<TileCarousel> {
   @override
   void initState() {
     super.initState();
+    subEventApi = new SubCalendarEventApi(getContextCallBack: () => context);
     this
         .context
         .read<SubCalendarTileBloc>()
