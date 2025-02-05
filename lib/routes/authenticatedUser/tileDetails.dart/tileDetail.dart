@@ -64,7 +64,7 @@ class _TileDetailState extends State<TileDetail> {
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color inputFieldIconColor = TileStyles.primaryColor;
   bool reloadOtherEntitiesAfterLoadingCalevent = false;
-  SettingsApi settingsApi = SettingsApi();
+  late final SettingsApi settingsApi;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   RestrictionProfile? _workRestrictionProfile;
   RestrictionProfile? _personalRestrictionProfile;
@@ -80,6 +80,7 @@ class _TileDetailState extends State<TileDetail> {
     super.initState();
     calendarEventApi = new CalendarEventApi(
         getContextCallBack: () => this.context.read<CalendarTileBloc>());
+    settingsApi = new SettingsApi(getContextCallBack: () => this.context);
     if (this.widget.tileId != null) {
       this
           .context
