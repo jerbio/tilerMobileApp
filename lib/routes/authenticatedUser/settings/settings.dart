@@ -7,10 +7,12 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
+import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -44,6 +46,9 @@ class _SettingState extends State<Setting> {
   String? localTimeZone;
   bool isTimeOfDayLoaded = false;
   bool isAllRestrictionProfileLoaded = false;
+
+  static final String settingCancelAndProceedRouteName =
+      "settingCancelAndProceedRouteName";
 
   void showMessage(String message) {
     Fluttertoast.showToast(
@@ -137,9 +142,9 @@ class _SettingState extends State<Setting> {
 
             if (restrictionProfile != null &&
                 (populatedRestrictionProfile == null ||
-                    (restrictionParams.containsKey('isAnytTime') &&
-                        restrictionParams['isAnytTime'] != null))) {
-              restrictionProfile.isEnabled = !restrictionParams['isAnytTime'];
+                    (restrictionParams.containsKey('isAnyTime') &&
+                        restrictionParams['isAnyTime'] != null))) {
+              restrictionProfile.isEnabled = !restrictionParams['isAnyTime'];
               populatedRestrictionProfile = restrictionProfile;
             }
 
@@ -240,6 +245,14 @@ class _SettingState extends State<Setting> {
         .read<SubCalendarTileBloc>()
         .add(LogOutSubCalendarTileBlocEvent());
     this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+    this
+        .context
+        .read<WeeklyUiDateManagerBloc>()
+        .add(LogOutWeeklyUiDateManagerEvent());
+    this
+        .context
+        .read<MonthlyUiDateManagerBloc>()
+        .add(LogOutMonthlyUiDateManagerEvent());
     this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
     this
         .context
@@ -392,6 +405,7 @@ class _SettingState extends State<Setting> {
     childElements.add(logoutButton);
     childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(
+      routeName: settingCancelAndProceedRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.appBarColor,
         title: Text(

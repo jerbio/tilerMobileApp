@@ -4,16 +4,22 @@ import 'package:tiler_app/util.dart';
 class RepetitionData {
   RepetitionFrequency frequency;
   DateTime? repetitionEnd;
-  bool isAutoRepetitionEnd = false;
+  DateTime? repetitionStart;
+  bool isForever = false;
+  bool isEnabled = false;
   Set<int>? weeklyRepetition = Set();
   RepetitionData(
-      {required this.frequency, this.repetitionEnd, this.weeklyRepetition}) {
+      {required this.frequency,
+      this.repetitionStart,
+      this.repetitionEnd,
+      this.weeklyRepetition,
+      this.isEnabled = false}) {
     if (this.repetitionEnd == null) {
       this.repetitionEnd = Utility.currentTime().add(Duration(days: 180));
-      isAutoRepetitionEnd = true;
+      isForever = true;
       if (this.frequency == RepetitionFrequency.yearly) {
         this.repetitionEnd = Utility.currentTime().add(Duration(days: 3650));
-        isAutoRepetitionEnd = true;
+        isForever = true;
       }
     }
 
@@ -24,8 +30,10 @@ class RepetitionData {
 
   RepetitionData clone() {
     RepetitionData retValue = RepetitionData(frequency: this.frequency);
-    retValue.isAutoRepetitionEnd = this.isAutoRepetitionEnd;
+    retValue.isForever = this.isForever;
+    retValue.repetitionStart = this.repetitionStart;
     retValue.repetitionEnd = this.repetitionEnd;
+    retValue.isEnabled = this.isEnabled;
     if (this.weeklyRepetition != null) {
       retValue.weeklyRepetition = Set.from(this.weeklyRepetition!);
     }

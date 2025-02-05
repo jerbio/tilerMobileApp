@@ -3,8 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../styles.dart';
 
-class CustomForcastField extends StatelessWidget {
-  const CustomForcastField({
+class CustomForecastField extends StatelessWidget {
+  const CustomForecastField({
     super.key,
     required this.leadingIconPath,
     required this.textButtonString,

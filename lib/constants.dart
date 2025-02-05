@@ -29,7 +29,8 @@ String googleClientIdKey =
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
 String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
-
+String googleMapsApiKey =
+    isProduction ? 'GOOGLE_MAPS_API_KEY' : 'GOOGLE_MAPS_API_KEY_DEV';
 final List<String> googleApiScopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/calendar',

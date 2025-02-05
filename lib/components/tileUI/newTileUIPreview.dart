@@ -47,10 +47,10 @@ class _CreatedTileSheetState extends State<CreatedTileSheet> {
                     ),
                   ),
                   Text(
-                    this.widget.subEvent.startTime.humanDate,
+                    this.widget.subEvent.startTime.humanDate(context),
                     style: TextStyle(
                         fontSize: 15,
-                        fontFamily: 'Rubik',
+                        fontFamily: TileStyles.rubikFontName,
                         fontWeight: FontWeight.normal,
                         color: Color.fromRGBO(31, 31, 31, 1)),
                   )
