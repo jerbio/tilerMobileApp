@@ -173,7 +173,7 @@ class _TileCarouselState extends State<TileCarousel> {
                                 margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
                                 child: Text(
                                     Utility.getTimeFromIndex(dayIndexes[index])
-                                        .humanDate,
+                                        .humanDate(context),
                                     style: TextStyle(
                                         fontSize: 25,
                                         fontFamily: TileStyles.rubikFontName,

@@ -25,6 +25,9 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     _scheduleApi = ScheduleApi(getContextCallBack: () => context);
   }
 
+  static final String procrastinateAllCancelAndProceedRouteName =
+      "procrastinateAllCancelAndProceed";
+
   void showMessage(String message) {
     Fluttertoast.showToast(
         msg: message,
@@ -60,6 +63,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
       };
     }
     return CancelAndProceedTemplateWidget(
+      routeName: procrastinateAllCancelAndProceedRouteName,
       appBar: AppBar(
         backgroundColor: TileStyles.primaryColor,
         title: Text(

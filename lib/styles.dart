@@ -33,6 +33,7 @@ class TileStyles {
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
   static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
+  static Color defaultWidgetBackgroundColor = Colors.white;
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
@@ -190,6 +191,8 @@ class TileStyles {
   static const String rubikFontName = 'Rubik';
   static Color defaultTextColor = Color.fromRGBO(31, 31, 31, 1);
   static Color lateTextColor = Color.fromRGBO(209, 24, 25, 1);
+  static TextStyle daySummaryStyle = const TextStyle(
+      fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
   static TextStyle fullScreenTextFieldStyle = TextStyle(
       color: defaultTextColor,
       fontSize: textFontSize,
@@ -222,6 +225,29 @@ class TileStyles {
   static final titleBarStyle = TextStyle(
     color: TileStyles.appBarTextColor,
   );
+  static const datePickersMainStyle =
+      TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
+  static const datePickersSaveStyle =
+      TextStyle(fontFamily: rubikFontName, color: primaryColor);
+  static final BoxDecoration ribbonsButtonDefaultDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromRGBO(240, 240, 240, 1),
+            Color.fromRGBO(240, 240, 240, 1),
+          ]));
+  static final ribbonsButtonSelectedDecoration = BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(20.0),
+      ),
+      gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [TileStyles.primaryColor, TileStyles.primaryColor]));
   static final BoxDecoration invalidBoxDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
@@ -237,6 +263,9 @@ class TileStyles {
   static final BoxDecoration tileIconContainerBoxDecoration = BoxDecoration(
       color: Color.fromRGBO(31, 31, 31, 0.1),
       borderRadius: BorderRadius.circular(8));
+  static final BoxDecoration tileIconContainerBoxDecorationMonthly =
+      BoxDecoration(
+          color: Color.fromRGBO(31, 31, 31, 0.1), shape: BoxShape.circle);
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(
@@ -339,4 +368,11 @@ class TileStyles {
     Color.fromRGBO(56, 174, 204, 1),
     Color.fromRGBO(102, 195, 84, 1)
   ];
+  static const Color gridLineColor = primaryColor;
+  static const double thickness = 1.0;
+  static const double timeOfDayCellWidth = 35;
+
+  static IconData restrictionProfileIcon = Icons.switch_left;
+  static IconData repetitionIcon = Icons.repeat_outlined;
+  static const double defaultCardElevation = 5.0;
 }

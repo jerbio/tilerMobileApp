@@ -51,6 +51,9 @@ class CustomTimeRestrictionRouteState
   RestrictionProfile? restrictionProfileParams;
   bool isMapOfDayRestrictionInitialized = false;
   static String routeName = '/CustomRestrictionsRoute';
+
+  static final String customTimeRestrictionRouteName =
+      "customTimeRestrictionRouteName";
   @override
   void initState() {
     super.initState();
@@ -292,6 +295,7 @@ class CustomTimeRestrictionRouteState
     }
 
     return CancelAndProceedTemplateWidget(
+        routeName: customTimeRestrictionRouteName,
         onProceed: isProceedReady() ? onProceed : null,
         child: Scaffold(
           body: Stack(

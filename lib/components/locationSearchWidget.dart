@@ -109,7 +109,7 @@ class LocationSearchState extends SearchWidgetState {
                           maxLines: 1,
                           style: TextStyle(
                               fontSize: 15,
-                              fontFamily: 'Rubik',
+                              fontFamily: TileStyles.rubikFontName,
                               color: Color.fromRGBO(31, 31, 31, 1)),
                           overflow: TextOverflow.ellipsis,
                         ))

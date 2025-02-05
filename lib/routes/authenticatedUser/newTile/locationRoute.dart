@@ -34,6 +34,8 @@ class LocationRouteState extends State<LocationRoute> {
   bool isLocationVerified = false;
   String? addressText;
   String? lookupNickNameText;
+  static final String locationCancelAndProceedRouteName =
+      "locationCancelAndProceedRouteName";
 
   onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
     setState(() {
@@ -240,12 +242,12 @@ class LocationRouteState extends State<LocationRoute> {
                 ),
               ),
             )));
-    
+
     Widget locationAddressWidget = Container(
       alignment: Alignment.topCenter,
       child: locationSearchWidget,
     );
-    
+
     List<Widget> routeStackWidgets = <Widget>[
       locationNickNameWidget,
       locationAddressWidget
@@ -319,6 +321,7 @@ class LocationRouteState extends State<LocationRoute> {
       children: routeStackWidgets,
     );
     return CancelAndProceedTemplateWidget(
+      routeName: locationCancelAndProceedRouteName,
       bottomWidget: clearAll(),
       child: Container(
         child: columnOfItems,

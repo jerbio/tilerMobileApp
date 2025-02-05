@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 import 'package:tiler_app/data/location.dart';
+import 'dart:math' as Math;
 import 'package:tiler_app/services/localizationService.dart';
 
 import '../../../constants.dart' as Constants;
@@ -18,13 +18,14 @@ import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
-import 'package:faker/faker.dart';
+import 'package:faker/faker.dart' as faker;
 import 'data/request/TilerError.dart';
 import 'data/tilerEvent.dart';
 import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Utility {
   final List<String> months = [
@@ -41,10 +42,20 @@ class Utility {
     'November',
     'December'
   ];
-  static final Faker _faker = Faker();
+
+  static final List<String> weekdays = [
+    'sunday',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday'
+  ];
+  static final faker.Faker _faker = faker.Faker();
   static final DateTime _beginningOfTime = DateTime(0, 1, 1);
   static final DateTime _jsBeginningOfTime = DateTime(1970, 1, 1);
-  static final Random randomizer = Random.secure();
+  static final Math.Random randomizer = Math.Random.secure();
   static final log = Logger();
 
   static DateTime currentTime({bool minuteLimitAccuracy = true}) {
@@ -92,6 +103,25 @@ class Utility {
     retValue &= editTilerEvent.address == tilerEvent.address;
     retValue &=
         editTilerEvent.addressDescription == tilerEvent.addressDescription;
+    if (editTilerEvent.restrictionProfile != null &&
+        tilerEvent.restrictionProfile != null) {
+      retValue &= editTilerEvent.restrictionProfile!
+          .isEquivalent(tilerEvent.restrictionProfile!);
+    } else {
+      retValue &=
+          editTilerEvent.restrictionProfile == tilerEvent.restrictionProfile;
+    }
+    if (editTilerEvent.repetition != null && tilerEvent.repetition != null) {
+      retValue &=
+          editTilerEvent.repetition!.isEquivalent(tilerEvent.repetition!);
+    } else {
+      retValue &= editTilerEvent.repetition == tilerEvent.repetition;
+    }
+    if (editTilerEvent.uiConfig != null && tilerEvent.uiConfig != null) {
+      retValue &= editTilerEvent.uiConfig!.isEquivalent(tilerEvent.uiConfig!);
+    } else {
+      retValue &= editTilerEvent.uiConfig == tilerEvent.uiConfig;
+    }
     return retValue;
   }
 
@@ -125,6 +155,61 @@ class Utility {
     return retValue;
   }
 
+  static DateTime getFirstDate() {
+    DateTime firstDateInTheYear = DateTime(DateTime.now().year - 5, 1, 1);
+    List<DateTime> firstWeek = Utility.getDaysInWeek(firstDateInTheYear);
+    return firstWeek.first;
+  }
+
+  static DateTime getLastDate() {
+    DateTime lastDateInTheYear = DateTime(DateTime.now().year + 5, 12, 31);
+    List<DateTime> lastWeek = Utility.getDaysInWeek(lastDateInTheYear);
+    return lastWeek.last;
+  }
+
+  static String splittingEmoji(String emojis) {
+    String emojiString = "";
+    if (emojis!.contains(':')) {
+      emojiString = emojis!.split(':')[1].trim();
+    } else {
+      emojiString = emojis!..trim();
+      ;
+    }
+    return emojiString;
+  }
+
+  static bool isDateWithinPickerRange(DateTime date) {
+    final firstDay = getFirstDate();
+    final lastDay = getLastDate();
+    return (date.isAtSameMomentAs(firstDay) || date.isAfter(firstDay)) &&
+        (date.isAtSameMomentAs(lastDay) || date.isBefore(lastDay));
+  }
+
+  static DateTime getWeekSunday(DateTime selectedDay) {
+    return DateTime(selectedDay.year, selectedDay.month,
+        selectedDay.day - selectedDay.weekday % 7);
+  }
+
+  static List<DateTime> getDaysInWeek(DateTime selectedDay) {
+    final sunday = getWeekSunday(selectedDay);
+    List<DateTime> weekDays = List.generate(
+        7,
+        (index) =>
+            DateTime(sunday.year, sunday.month, sunday.day + index).dayDate);
+    return weekDays;
+  }
+
+  static List<DateTime> getDaysInMonth(DateTime selectedMonth) {
+    final days = <DateTime>[];
+    var currentDay =
+        DateTime(selectedMonth.year, selectedMonth.month, 1).dayDate;
+    while (currentDay.month == selectedMonth.month) {
+      days.addAll(getDaysInWeek(currentDay));
+      currentDay = days.last.add(Duration(days: 1));
+    }
+    return days;
+  }
+
   static int getDayIndex(DateTime time) {
     var spanInMicroSecond = time.dayDate.microsecondsSinceEpoch -
         Utility._beginningOfTime.dayDate.microsecondsSinceEpoch;
@@ -132,6 +217,11 @@ class Utility {
         (spanInMicroSecond.toDouble() / Duration.microsecondsPerDay.toDouble())
             .round();
     return retValue;
+  }
+
+  static int getDayOfMonthFromIndex(int dayIndex) {
+    DateTime date = Utility._beginningOfTime.add(Duration(days: dayIndex));
+    return date.day;
   }
 
   static DateTime getTimeFromIndex(int dayIndex) {
@@ -167,6 +257,15 @@ class Utility {
     int durationInMs = utcEpochMillisecondsFromDateTime(a) -
         utcEpochMillisecondsFromDateTime(b);
     return Duration(milliseconds: durationInMs);
+  }
+
+  static Color get randomColor {
+    return HSLColor.fromAHSL(
+            1,
+            (Utility.randomizer.nextDouble() * 360),
+            Utility.randomizer.nextDouble(),
+            (1 - (Utility.randomizer.nextDouble() * 0.35)))
+        .toColor();
   }
 
   static Position getDefaultPosition() {
@@ -211,9 +310,9 @@ class Utility {
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
-    int subEventCount = Random().nextInt(2);
+    int subEventCount = Math.Random().nextInt(2);
     while (subEventCount < 1) {
-      subEventCount = Random().nextInt(2);
+      subEventCount = Math.Random().nextInt(2);
     }
 
     List<Timeline> sleepTimeLines = [];
@@ -227,18 +326,20 @@ class Utility {
               Utility.oneMin.inMilliseconds.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      adHocInterferringWithNowTile.colorBlue = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorGreen = Random().nextInt(255);
-      adHocInterferringWithNowTile.colorRed = Random().nextInt(255);
+      adHocInterferringWithNowTile.color = Color.fromRGBO(
+          Math.Random().nextInt(255),
+          Math.Random().nextInt(255),
+          Math.Random().nextInt(255),
+          1);
       adHocInterferringWithNowTile.id = Utility.getUuid;
       refreshedSubEvents.add(adHocInterferringWithNowTile);
     }
 
     int maxDuration = Duration.millisecondsPerHour * 3;
     for (int i = 0; i < subEventCount; i++) {
-      int durationMs = Random().nextInt(maxDuration);
+      int durationMs = Math.Random().nextInt(maxDuration);
       while (durationMs < 1) {
-        durationMs = Random().nextInt(maxDuration);
+        durationMs = Math.Random().nextInt(maxDuration);
       }
       int startLimit =
           timeLine.start! - durationMs - Utility.oneMin.inMilliseconds;
@@ -246,7 +347,7 @@ class Utility {
       int durationLimit = endLimit - startLimit;
       int durationInSec = durationLimit ~/
           1000; // we need to use seconds because of the random.nextInt of requiring an integer
-      int start = startLimit + ((Random().nextInt(durationInSec)) * 1000);
+      int start = startLimit + ((Math.Random().nextInt(durationInSec)) * 1000);
       int end = start + durationMs;
       int dayCount =
           (durationLimit / Utility.oneDay.inMilliseconds).toDouble().ceil();
@@ -285,9 +386,8 @@ class Utility {
           end: end.toInt(),
           address: Utility.randomName,
           addressDescription: Utility.randomName);
-      subEvent.colorBlue = Random().nextInt(255);
-      subEvent.colorGreen = Random().nextInt(255);
-      subEvent.colorRed = Random().nextInt(255);
+      subEvent.color = Color.fromRGBO(Math.Random().nextInt(255),
+          Math.Random().nextInt(255), Math.Random().nextInt(255), 1);
       subEvent.id = Utility.getUuid;
       refreshedSubEvents.add(subEvent);
     }
@@ -318,12 +418,12 @@ class Utility {
 
       String hourString = 'hours';
       if (abbreviations) {
-        hourString = 'hrs';
+        hourString = 'h';
       }
       if (hours == 1) {
         hourString = 'hour';
         if (abbreviations) {
-          hourString = 'hr';
+          hourString = 'h';
         }
       }
       stringArr.add('$hours $hourString');
@@ -336,12 +436,12 @@ class Utility {
 
       String minuteString = 'minutes';
       if (abbreviations) {
-        minuteString = 'mins';
+        minuteString = 'm';
       }
       if (minute == 1) {
         minuteString = 'minute';
         if (abbreviations) {
-          minuteString = 'min';
+          minuteString = 'm';
         }
       }
       stringArr.add('$minute $minuteString');
@@ -409,6 +509,12 @@ class Utility {
     entries.add(entry);
   }
 
+  static double logBase(num x, num base) {
+    return Math.log(x) / Math.log(base);
+  }
+
+  static double log2(num x) => logBase(x, 2);
+
   static void _initializeAutotile() {
     _adHocAutoTiles = {};
     _adHocAutoTilesByCategory = {};
@@ -467,6 +573,7 @@ class Utility {
   static Map<int, List<AutoTile>>? _adHocAutoTilesByDuration;
   static Map<String, AutoTile>? _adHocAutoTiles;
   static List<AutoTile>? _lastCards;
+  static final String ellipsisText = '...';
 
   static List<AutoTile> get autoTiles {
     if (_adHocAutoTiles == null) {
@@ -735,9 +842,9 @@ extension ListEnhance on List {
   List getRandomize({int? seed}) {
     List retValue = [];
     List listCopy = this.toList();
-    Random randomizer = Utility.randomizer;
+    Math.Random randomizer = Utility.randomizer;
     if (seed != null) {
-      randomizer = Random(seed);
+      randomizer = Math.Random(seed);
     }
     while (listCopy.length > 0) {
       int index = randomizer.nextInt(listCopy.length);
@@ -758,6 +865,26 @@ extension StringEnhance on String {
 extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
     return this.weekday % Utility.daysInAweek;
+  }
+
+  String tilerDayOfWeekName(BuildContext context) {
+    switch (this.tilerDayOfWeek) {
+      case 0:
+        return AppLocalizations.of(context)!.sunday;
+      case 1:
+        return AppLocalizations.of(context)!.monday;
+      case 2:
+        return AppLocalizations.of(context)!.tuesday;
+      case 3:
+        return AppLocalizations.of(context)!.wednesday;
+      case 4:
+        return AppLocalizations.of(context)!.thursday;
+      case 5:
+        return AppLocalizations.of(context)!.friday;
+      case 6:
+        return AppLocalizations.of(context)!.saturday;
+    }
+    return "";
   }
 }
 
@@ -809,14 +936,14 @@ extension DateTimeHuman on DateTime {
         this.microsecondsSinceEpoch < end.microsecondsSinceEpoch;
   }
 
-  String get humanDate {
+  String humanDate(BuildContext context) {
     String dayString = '';
     if (this.isToday) {
-      dayString = 'Today';
+      dayString = AppLocalizations.of(context)!.today;
     } else if (this.isYesterday) {
-      dayString = 'Yesterday';
+      dayString = AppLocalizations.of(context)!.yesterday;
     } else if (this.isTomorrow) {
-      dayString = 'Tomorrow';
+      dayString = AppLocalizations.of(context)!.tomorrow;
     } else {
       DateTime now = DateTime.now();
       bool isSameYear = now.year == this.year;
@@ -827,26 +954,6 @@ extension DateTimeHuman on DateTime {
       }
     }
 
-    return dayString;
-  }
-
-  String get dateDateWeek {
-    String dayString = '';
-    if (this.isToday) {
-      dayString = 'Today';
-    } else if (this.isYesterday) {
-      dayString = 'Yesterday';
-    } else if (this.isTomorrow) {
-      dayString = 'Tomorrow';
-    } else {
-      DateTime now = DateTime.now();
-      bool isSameYear = now.year == this.year;
-      if (isSameYear) {
-        dayString = DateFormat('d').format(this);
-      } else {
-        dayString = DateFormat('EEE, MMM d, ' 'yy').format(this);
-      }
-    }
     return dayString;
   }
 

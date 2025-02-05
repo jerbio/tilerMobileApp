@@ -110,6 +110,10 @@ class RestrictionTimeLine extends TilerObj {
         other.weekDay == weekDay;
   }
 
+  bool isEquivalent(RestrictionTimeLine other) {
+    return this == other;
+  }
+
   @override
   int get hashCode => _start.hashCode ^ _duration.hashCode ^ weekDay.hashCode;
 }

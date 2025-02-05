@@ -240,7 +240,7 @@ class _TileShareTemplateDetailState
     String creatorInfo = tileShareTemplate.creator?.username ??
         tileShareTemplate.creator?.email ??
         "";
-    print("TileShareEnd " + tileShareTemplate.end.toString());
+
     return Padding(
         padding: EdgeInsets.all(25),
         child: Column(
@@ -323,7 +323,6 @@ class _TileShareTemplateDetailState
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
-        print("is pending " + isAddingTiletteLoading.toString());
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(

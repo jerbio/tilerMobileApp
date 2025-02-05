@@ -82,6 +82,15 @@ class RestrictionProfile extends TilerObj {
     }
   }
 
+  RestrictionProfile clone() {
+    RestrictionProfile retValue = RestrictionProfile.fromJson({});
+    retValue.daySelection = this.daySelection.toList();
+    retValue.timeZone = this.timeZone;
+    retValue.isEnabled = this.isEnabled;
+
+    return retValue;
+  }
+
   RestrictionWeekConfig? toRestrictionWeekConfig() {
     RestrictionWeekConfig retValue = RestrictionWeekConfig();
     bool isRestrictionEnabled = false;
@@ -102,6 +111,65 @@ class RestrictionProfile extends TilerObj {
       retValue.timeZone = this.timeZone;
     }
     retValue.isEnabled = isRestrictionEnabled.toString();
+    retValue.restrictionProfileId = this.id;
     return retValue;
+  }
+
+  bool isEquivalent(RestrictionProfile other) {
+    bool retValue = true;
+    if (this == other) {
+      return true;
+    }
+
+    if (this.isEnabled != true && this.isEnabled == other.isEnabled) {
+      return true;
+    }
+
+    if (this.isEnabled != other.isEnabled) {
+      return false;
+    }
+
+    var daySelectionCpy =
+        this.daySelection.where((element) => element != null).toList();
+    var otherSelectionCpy =
+        other.daySelection.where((element) => element != null).toList();
+
+    if (daySelectionCpy.length != otherSelectionCpy.length) {
+      return false;
+    }
+
+    daySelectionCpy.sort(daySelectorComparator);
+    otherSelectionCpy.sort(daySelectorComparator);
+    for (int i = 0; i < daySelectionCpy.length; i++) {
+      if (daySelectionCpy[i]!.restrictionTimeLine ==
+              otherSelectionCpy[i]!.restrictionTimeLine &&
+          daySelectionCpy[i]!.weekday == otherSelectionCpy[i]!.weekday) {
+        continue; //this is because there is an operator overload only for == in restriction timeline
+      } else {
+        return false;
+      }
+    }
+    if (this.isAnyDayNotNull != other.isAnyDayNotNull) {
+      return false;
+    }
+
+    if (this.timeZone != other.timeZone) {
+      return false;
+    }
+
+    return retValue;
+  }
+
+  int daySelectorComparator(itemA, itemB) {
+    if (itemA!.weekday == null || itemB!.weekday == null) {
+      if (itemA.weekday == itemB!.weekday) {
+        return 0;
+      }
+      if (itemA.weekday == null) {
+        return -1;
+      }
+      return 1;
+    }
+    return itemA.weekday!.compareTo(itemB.weekday!);
   }
 }
