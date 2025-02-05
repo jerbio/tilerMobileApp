@@ -90,4 +90,11 @@ class Timeline with TimeRange {
     this.end = startTime.add(duration).millisecondsSinceEpoch.toInt();
     assert(this.start! <= this.end!);
   }
+
+  bool isEquivalent(Timeline other) {
+    if (this == other) {
+      return true;
+    }
+    return this.start == other.start && this.end == other.end;
+  }
 }

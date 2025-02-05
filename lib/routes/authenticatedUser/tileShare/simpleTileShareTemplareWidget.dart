@@ -59,39 +59,40 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
-    String creatorInfo = widget.tileShareTemplate?.creator?.username ??
-        widget.tileShareTemplate?.creator?.email ??
-        "";
-
+    const double fontSize = 12;
+    const double iconSize = 12;
+    const TextStyle textStyle = TextStyle(
+        fontSize: fontSize,
+        fontFamily: TileStyles.rubikFontName,
+        color: const Color.fromRGBO(40, 40, 40, 1));
     return Card(
       surfaceTintColor: Colors.transparent,
-      color: Colors.white,
-      elevation: 5,
+      color: TileStyles.defaultWidgetBackgroundColor,
+      elevation: TileStyles.defaultCardElevation,
       margin: EdgeInsets.all(10),
       child: Padding(
-          padding: EdgeInsets.all(15),
+          padding: EdgeInsets.all(10),
           child: Stack(
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('${widget.tileShareTemplate?.name ?? ""}',
-                      style: TextStyle(
-                          fontSize: 24, fontFamily: TileStyles.rubikFontName)),
+                      style: textStyle),
                   SizedBox(height: 8),
-                  if (widget.tileShareTemplate?.start != null)
+                  if (widget.tileShareTemplate?.end != null)
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          size: 16,
+                          size: iconSize,
                         ),
                         rowSpacer,
                         Text(
                           MaterialLocalizations.of(context).formatFullDate(
                               DateTime.fromMillisecondsSinceEpoch(
                                   widget.tileShareTemplate!.end!)),
-                          style: TileStyles.defaultTextStyle,
+                          style: textStyle,
                         )
                       ],
                     )
@@ -103,10 +104,6 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                       widget.tileShareTemplate!.designatedUsers!.isNotEmpty)
                     generateUserCircles(
                         widget.tileShareTemplate!.designatedUsers!),
-                  // isReadOnly: true,
-                  // ),
-                  // else
-                  //   SizedBox.shrink()
                 ],
               ),
               if (isReadOnly == false)

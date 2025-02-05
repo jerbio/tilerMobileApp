@@ -13,8 +13,6 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
-import 'package:tiler_app/services/api/authenticationData.dart';
-import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import '../../services/api/authorization.dart';
@@ -63,7 +61,9 @@ class SignInComponentState extends State<SignInComponent>
   late double credentialManagerHeight = 400;
   double credentialButtonHeight = 175;
   bool isPendingSigning = false;
+  bool isSuccessfulSignin = false;
   bool isPendingRegistration = false;
+  bool isSuccessfulRegistration = false;
   bool isPendingResetPassword = false;
   bool isGoogleSignInEnabled = false;
   bool _isPasswordVisible = false;
@@ -226,6 +226,7 @@ class SignInComponentState extends State<SignInComponent>
         });
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
+        isSuccessfulSignin = authenticationData.isValid;
         if (!authenticationData.isValid) {
           AnalysticsSignal.send('TILER_SIGNIN_USERNAMEPASSWORD_FAILED');
           if (authenticationData.errorMessage != null) {
@@ -321,6 +322,7 @@ class SignInComponentState extends State<SignInComponent>
         });
         String isValidSignIn = "Authentication data is valid:" +
             authenticationData.isValid.toString();
+        isSuccessfulRegistration = authenticationData.isValid;
         if (!authenticationData.isValid) {
           if (authenticationData.errorMessage != null) {
             hideButtonsTemporarily();
@@ -457,12 +459,12 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
-    setState(() => {
-          isRegistrationScreen = false,
-          isForgetPasswordScreen = false,
-          credentialManagerHeight = signInContainerHeight,
-          credentialButtonHeight = signInContainerButtonHeight
-        });
+    setState(() {
+      isRegistrationScreen = false;
+      isForgetPasswordScreen = false;
+      credentialManagerHeight = signInContainerHeight;
+      credentialButtonHeight = signInContainerButtonHeight;
+    });
   }
 
   Widget createSignInPendingComponent(String message) {
@@ -947,7 +949,7 @@ class SignInComponentState extends State<SignInComponent>
       buttons = [registerUserButton, backToSignInButton];
     }
 
-    if (this.isPendingSigning) {
+    if (this.isPendingSigning || this.isSuccessfulSignin) {
       buttons = [
         Spacer(),
         createSignInPendingComponent(AppLocalizations.of(context)!.signingIn),
@@ -974,7 +976,7 @@ class SignInComponentState extends State<SignInComponent>
       child: SingleChildScrollView(
         child: Container(
           alignment: Alignment.topCenter,
-          // height: credentialManagerHeight,
+          height: credentialManagerHeight,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(40.0),

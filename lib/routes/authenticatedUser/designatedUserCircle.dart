@@ -26,18 +26,20 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
   }
 
   Widget _subScriptWidget() {
-    const double top = 30;
-    const double left = 35;
+    const double top = 22.4;
+    const double left = 22.4;
 
-    if (this.widget.designatedUser.completionPercentage != null) {
+    if (this.widget.designatedUser.completionPercentage != null &&
+        this.widget.designatedUser.completionPercentage != 0) {
       double pct = this.widget.designatedUser.completionPercentage!;
       return Positioned(
-        top: 35,
-        left: 35,
+        top: 22.4,
+        left: 25,
         child: Container(
+          padding: EdgeInsets.all(2),
           alignment: Alignment.center,
-          height: 17,
-          width: 30,
+          height: 14,
+          width: 25,
           decoration: BoxDecoration(
             border: Border.all(color: Colors.white, width: 1),
             borderRadius: BorderRadius.circular(5),
@@ -50,7 +52,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           child: Text(
             "${pct.round()}%",
             style: TextStyle(
-                fontSize: 10,
+                fontSize: 7,
                 fontFamily: TileStyles.rubikFontName,
                 color: Colors.white),
           ),
@@ -65,8 +67,8 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
         child: Container(
           padding: EdgeInsets.all(2),
           alignment: Alignment.center,
-          height: 24,
-          width: 24,
+          height: 15.36,
+          width: 15.36,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.lightGreen,
@@ -74,8 +76,8 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           child: Icon(
             Icons.check,
             color: Colors.white,
-            size: 20,
-            weight: 50,
+            size: 12.8,
+            weight: 32,
           ),
         ),
       );
@@ -86,8 +88,8 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
         child: Container(
           padding: EdgeInsets.all(2),
           alignment: Alignment.center,
-          height: 24,
-          width: 24,
+          height: 15.36,
+          width: 15.36,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: Colors.redAccent,
@@ -95,8 +97,8 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           child: Icon(
             Icons.dnd_forwardslash_outlined,
             color: Colors.white,
-            size: 20,
-            weight: 50,
+            size: 12.8,
+            weight: 32,
           ),
         ),
       );
@@ -117,15 +119,15 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
       Container(
           margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
           alignment: Alignment.center,
-          width: 55,
-          height: 55,
+          width: 40,
+          height: 38,
           decoration: this.widget.decoration ?? inActiveDecoration,
           child: Text(
               e.displayedIdentifier.isNot_NullEmptyOrWhiteSpace(minLength: 1)
                   ? e.displayedIdentifier!.capitalize()[0]
                   : "",
               style: TextStyle(
-                  fontSize: 25,
+                  fontSize: 16,
                   fontFamily: TileStyles.rubikFontName,
                   color: Colors.white))),
       _subScriptWidget()

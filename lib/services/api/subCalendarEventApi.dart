@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
@@ -364,9 +365,8 @@ class SubCalendarEventApi extends AppApi {
 
     SubCalendarEvent retValue =
         SubCalendarEvent.fromJson(subEventMap['Content']);
-    retValue.colorBlue = Random().nextInt(255);
-    retValue.colorGreen = Random().nextInt(255);
-    retValue.colorRed = Random().nextInt(255);
+    retValue.color = Color.fromRGBO(
+        Random().nextInt(255), Random().nextInt(255), Random().nextInt(255), 1);
 
     int timeSpanDifference = retValue.end! - retValue.start!;
     int currentTime = Utility.msCurrentTime;

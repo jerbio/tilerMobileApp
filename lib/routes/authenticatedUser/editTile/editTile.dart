@@ -67,6 +67,7 @@ class _EditTileState extends State<EditTile> {
   List<NextTileSuggestion>? nextTileSuggestions;
   Preview? beforePreview;
   Preview? afterPreview;
+  static final String editTileCancelAndProceedName = "";
 
   TextStyle labelStyle = const TextStyle(
       color: Color.fromRGBO(31, 31, 31, 1),
@@ -111,7 +112,7 @@ class _EditTileState extends State<EditTile> {
           tiles.isEmpty
               ? AppLocalizations.of(context)!.late
               : AppLocalizations.of(context)!
-                  .lateDate(tiles.first.startTime!.humanDate),
+                  .lateDate(tiles.first.startTime.humanDate(context)),
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
@@ -307,7 +308,7 @@ class _EditTileState extends State<EditTile> {
             child: Text(
               (subCalendarEventTile.calendarEventEndTime ??
                       subCalendarEventTile.startTime)
-                  .humanDate,
+                  .humanDate(context),
               style: TextStyle(
                 fontSize: 12,
                 color: Color.fromRGBO(31, 31, 31, 0.8),
@@ -744,6 +745,7 @@ class _EditTileState extends State<EditTile> {
   @override
   Widget build(BuildContext context) {
     return CancelAndProceedTemplateWidget(
+        routeName: editTileCancelAndProceedName,
         hideButtons: hideButtons,
         child: BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
           listener: (context, state) {
@@ -801,7 +803,9 @@ class _EditTileState extends State<EditTile> {
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
                 isReadOnly: !this.subEvent!.isActive,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               BoxDecoration containerClusterStyle = BoxDecoration(
@@ -945,7 +949,7 @@ class _EditTileState extends State<EditTile> {
                             bottom: -20,
                             right: -20,
                             child: SvgPicture.asset(
-                              'assets/iconScout/block.svg',
+                              'assets/images/iconScout/block.svg',
                               height: 150,
                               colorFilter: ColorFilter.mode(
                                   Color.fromRGBO(0, 0, 0, 0.05),
@@ -986,7 +990,7 @@ class _EditTileState extends State<EditTile> {
                             bottom: -20,
                             right: -20,
                             child: SvgPicture.asset(
-                              'assets/iconScout/chart.svg',
+                              'assets/images/iconScout/chart.svg',
                               height: 150,
                               colorFilter: ColorFilter.mode(
                                   Color.fromRGBO(0, 0, 0, 0.05),
@@ -1025,7 +1029,7 @@ class _EditTileState extends State<EditTile> {
                         bottom: -20,
                         right: -20,
                         child: SvgPicture.asset(
-                          'assets/iconScout/deadline.svg',
+                          'assets/images/iconScout/deadline.svg',
                           height: 150,
                           colorFilter: ColorFilter.mode(
                               Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),
@@ -1050,7 +1054,7 @@ class _EditTileState extends State<EditTile> {
                           bottom: -20,
                           right: -20,
                           child: SvgPicture.asset(
-                            'assets/iconScout/notes.svg',
+                            'assets/images/iconScout/notes.svg',
                             height: 150,
                             colorFilter: ColorFilter.mode(
                                 Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),

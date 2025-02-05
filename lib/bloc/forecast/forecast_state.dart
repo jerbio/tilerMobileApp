@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 
 abstract class ForecastState extends Equatable {
@@ -24,17 +25,17 @@ class ForecastLoading extends ForecastState {
 
 class ForecastLoaded extends ForecastState {
   final bool isViable;
-  final List<SubCalendarEvent> subCalEvents;
+  final ForecastResponse foreCastResponse;
 
   const ForecastLoaded({
     required this.isViable,
-    required this.subCalEvents,
+    required this.foreCastResponse,
     required Duration duration,
     required DateTime? endTime,
   }) : super(duration: duration, endTime: endTime);
 
   @override
-  List<Object?> get props => [isViable, subCalEvents, duration, endTime];
+  List<Object?> get props => [isViable, foreCastResponse, duration, endTime];
 }
 
 class ForecastError extends ForecastState {

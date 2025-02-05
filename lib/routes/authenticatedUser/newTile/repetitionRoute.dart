@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -34,6 +33,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   late Animation<double> _animation;
   bool isLoadedFromInitializer = false;
   Timeline? tileTimeline;
+
+  static final String repetitionCancelAndProceedRouteName =
+      "repetitionCancelAndProceedRouteName";
 
   @override
   void initState() {
@@ -319,6 +321,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       return applicableRepetitionsSelectedMap[eachApplicableRepetition.item1]!;
     }).toList();
     return CancelAndProceedTemplateWidget(
+      routeName: repetitionCancelAndProceedRouteName,
       child: Container(
           alignment: Alignment.topCenter,
           child: Column(
@@ -345,12 +348,15 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                           applicableRepetitions[index].item1] = true;
                       RepetitionData? updatedRepetitionData = repetitionData ??
                           RepetitionData(
-                              frequency: applicableRepetitions[index].item1);
+                              frequency: applicableRepetitions[index].item1,
+                              isEnabled: true);
                       updatedRepetitionData.frequency =
                           applicableRepetitions[index].item1;
                       if (applicableRepetitions[index].item1 ==
                           RepetitionFrequency.none) {
-                        updatedRepetitionData = null;
+                        updatedRepetitionData.isEnabled = false;
+                      } else {
+                        updatedRepetitionData.isEnabled = true;
                       }
 
                       setState(() {

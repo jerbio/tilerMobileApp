@@ -75,7 +75,6 @@ class SignInRouteState extends State<SignInRoute> {
                 child: SizedBox(),
               ),
             ),
-            RiveAnimation.asset('assets/rive/fuzzySpinBground.riv'),
             Positioned.fill(
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 50, sigmaY: 50),
