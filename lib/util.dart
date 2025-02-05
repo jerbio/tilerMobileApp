@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/localizationService.dart';
 
 import '../../../constants.dart' as Constants;
@@ -709,6 +710,16 @@ class Utility {
 extension DurationHuman on Duration {
   String get toHuman {
     return Utility.toHuman(this, includeSeconds: false);
+  }
+}
+
+extension TilerLocation on Position {
+  Location? get toLocation {
+    if (this != Utility._defaultPosition) {
+      return Location.fromLatitudeAndLongitude(
+          latitude: latitude, longitude: longitude);
+    }
+    return null;
   }
 }
 

@@ -32,7 +32,14 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
   bool _isInitialize = false;
   Duration? _selectedPresetValue = null;
   Map<String, Duration> durationStringToDuration = {};
-  SubCalendarEventApi _subCalendarEventApi = new SubCalendarEventApi();
+  late SubCalendarEventApi _subCalendarEventApi;
+
+  @override
+  void initState() {
+    super.initState();
+    _subCalendarEventApi =
+        new SubCalendarEventApi(getContextCallBack: () => context);
+  }
 
   void showMessage(String message) {
     Fluttertoast.showToast(

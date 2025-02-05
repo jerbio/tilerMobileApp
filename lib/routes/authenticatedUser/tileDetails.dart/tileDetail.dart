@@ -41,7 +41,7 @@ class _TileDetailState extends State<TileDetail> {
   List<SubCalendarEvent>? subEvents;
   EditCalendarEvent? editTilerEvent;
   int? splitCount;
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late CalendarEventApi calendarEventApi;
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
   EditTileNote? _editTileNote;
@@ -59,6 +59,8 @@ class _TileDetailState extends State<TileDetail> {
   @override
   void initState() {
     super.initState();
+    calendarEventApi = new CalendarEventApi(
+        getContextCallBack: () => this.context.read<CalendarTileBloc>());
     if (this.widget.tileId != null) {
       this
           .context

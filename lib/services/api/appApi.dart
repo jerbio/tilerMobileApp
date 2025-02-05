@@ -8,14 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
-import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
 import 'package:async/async.dart'; // Import necessary packages.
-import 'package:cancelable/cancelable.dart';
 
 import '../../constants.dart' as Constants;
 
@@ -27,7 +27,7 @@ abstract class AppApi {
   late Authentication authentication;
   late AccessManager accessManager;
   Function? getContextCallBack;
-  AppApi({this.getContextCallBack}) {
+  AppApi({required this.getContextCallBack}) {
     authentication = new Authentication();
     accessManager = AccessManager();
   }
@@ -102,49 +102,46 @@ abstract class AppApi {
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
+    LocationProfile locationAccessResult = LocationProfile.empty();
     if (includeLocationParams) {
       if (this.getContextCallBack != null) {
         BuildContext? buildContext = this.getContextCallBack!();
-        if (buildContext != null) {
+        if (buildContext != null && buildContext.mounted) {
           var awaitableUiChanges = CancelableOperation.fromFuture(
               Future.delayed(const Duration(seconds: 50)));
 
           BlocProvider.of<DeviceSettingBloc>(buildContext).add(
               GetLocationProfileDeviceSettingEvent(
+                  id: 'injectRequestParams-' +
+                      Utility.msCurrentTime.toString() +
+                      '-' +
+                      Utility.getUuid,
                   showLocationPermissionWidget: true,
+                  context: buildContext,
                   callBacks: <Function>[
-                () {
-                  print("cancellable called");
+                (_) {
                   awaitableUiChanges.cancel();
                 }
               ]));
 
-          print("before cancellable");
           await awaitableUiChanges.valueOrCancellation();
-          print("after cancellable");
+          var deviceSettingState =
+              BlocProvider.of<DeviceSettingBloc>(buildContext).state;
+          if (deviceSettingState is DeviceSettingLoaded) {
+            if (deviceSettingState.sessionProfile?.locationProfile != null) {
+              locationAccessResult =
+                  deviceSettingState.sessionProfile!.locationProfile!;
+            }
+          }
         }
       }
 
-      // CancelableCompleter completer = CancelableCompleter(onCancel: () {
-      //   print('onCancel');
-      // });
-
-      // // completer.operation.cancel(); // comment/uncomment this to log the different callbacks
-
-      // completer.complete(Future.value('future result'));
-      // print('isCanceled: ${completer.isCanceled}');
-      // print('isCompleted: ${completer.isCompleted}');
-      // completer.operation.value.then((value) => {
-      //       print('then: $value'),
-      //     });
-      // completer.operation.value.whenComplete(() => {
-      //       print('onDone'),
-      //     });
-
-      var locationAccessResult = await accessManager.locationAccess();
-      if (locationAccessResult != null) {
-        isLocationVerified = locationAccessResult.item2;
-        position = locationAccessResult.item1;
+      if (locationAccessResult.permission != null) {
+        if (locationAccessResult.permission!.isGranted == true &&
+            locationAccessResult.position != null) {
+          isLocationVerified = true;
+          position = locationAccessResult.position!;
+        }
       }
     }
     if (!requestParams.containsKey('TimeZoneOffset')) {
@@ -198,14 +195,6 @@ abstract class AppApi {
             print("Concluded Sending POST REQUEST " + requestPath);
             if (analyze) {
               analyzeSchedule(injectLocation: injectLocation);
-              // String tilerDomain = Constants.tilerDomain;
-              // String analyzeUrl = tilerDomain;
-              // Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-              // Map<String, dynamic> analyzeParameters =
-              //     await injectRequestParams({},
-              //         includeLocationParams: injectLocation);
-              // http.post(analyzeUri,
-              //     headers: header, body: jsonEncode(analyzeParameters));
             }
             return value;
           }).catchError((onError) {

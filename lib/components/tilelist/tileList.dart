@@ -21,7 +21,6 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -32,7 +31,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// This renders the list of tiles on a given day
 class TileList extends StatefulWidget {
-  final ScheduleApi scheduleApi = new ScheduleApi();
   static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 

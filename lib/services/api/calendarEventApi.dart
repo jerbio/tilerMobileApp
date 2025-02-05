@@ -10,6 +10,8 @@ import 'dart:convert';
 import '../../constants.dart' as Constants;
 
 class CalendarEventApi extends AppApi {
+  CalendarEventApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<CalendarEvent> setAsNow(String eventId) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";

@@ -35,7 +35,11 @@ class SignInRouteState extends State<SignInRoute> {
       while (Navigator.canPop(context)) {
         Navigator.pop(context);
       }
-      context.read<ScheduleBloc>().add(LogInScheduleEvent());
+      context
+          .read<ScheduleBloc>()
+          .add(LogInScheduleEvent(getContextCallBack: () {
+        return this.context;
+      }));
       Navigator.pop(context);
       Navigator.push(
         context,

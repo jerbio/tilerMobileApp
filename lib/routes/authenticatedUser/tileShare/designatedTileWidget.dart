@@ -18,13 +18,19 @@ class DesignatedTileWidget extends StatefulWidget {
 
 class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isLoading = false;
-  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
-  final ScheduleApi scheduleApi = ScheduleApi();
+  late final TileShareClusterApi tileClusterApi;
+  late final ScheduleApi scheduleApi;
   String _responseMessage = '';
   late DesignatedTile designatedTile;
   @override
   void initState() {
     super.initState();
+    tileClusterApi = TileShareClusterApi(getContextCallBack: () {
+      return this.context;
+    });
+    scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
     this.designatedTile = this.widget.designatedTile;
   }
 
