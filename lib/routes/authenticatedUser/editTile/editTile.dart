@@ -45,14 +45,14 @@ class EditTile extends StatefulWidget {
 }
 
 class _EditTileState extends State<EditTile> {
-  WhatIfApi whatIfApi = new WhatIfApi();
+  late WhatIfApi whatIfApi;
   SubCalendarEvent? subEvent;
   TextEditingController? splitCountController;
   EditTilerEvent? editTilerEvent;
   Function? onProceed;
   int? splitCount;
-  SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late SubCalendarEventApi subCalendarEventApi;
+  late CalendarEventApi calendarEventApi;
   bool isPendingSubEventProcessing = false;
   EditTileName? _editTileName;
   Widget? bottomWidget;
@@ -78,6 +78,11 @@ class _EditTileState extends State<EditTile> {
   @override
   void initState() {
     super.initState();
+    this.calendarEventApi =
+        new CalendarEventApi(getContextCallBack: () => context);
+    this.subCalendarEventApi =
+        new SubCalendarEventApi(getContextCallBack: () => context);
+    this.whatIfApi = new WhatIfApi(getContextCallBack: () => context);
     print("Edit sub event with id ${this.widget.tileId}");
     this.context.read<SubCalendarTileBloc>().add(GetSubCalendarTileBlocEvent(
         subEventId: this.widget.tileId,
@@ -798,7 +803,9 @@ class _EditTileState extends State<EditTile> {
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
                 isReadOnly: !this.subEvent!.isActive,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               BoxDecoration containerClusterStyle = BoxDecoration(

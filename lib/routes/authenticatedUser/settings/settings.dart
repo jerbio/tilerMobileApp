@@ -37,9 +37,9 @@ class Setting extends StatefulWidget {
 
 class _SettingState extends State<Setting> {
   Authentication authentication = Authentication();
-  AuthorizationApi _authorizationApi = AuthorizationApi();
+  late AuthorizationApi _authorizationApi;
   SecureStorageManager secureStorageManager = SecureStorageManager();
-  SettingsApi settingsApi = SettingsApi();
+  late SettingsApi settingsApi;
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
   StartOfDay? endOfDay;
@@ -161,6 +161,9 @@ class _SettingState extends State<Setting> {
   @override
   void initState() {
     super.initState();
+    this.settingsApi = SettingsApi(getContextCallBack: () => context);
+    this._authorizationApi =
+        AuthorizationApi(getContextCallBack: () => context);
     settingsApi.getUserRestrictionProfile().then((value) {
       setState(() {
         isAllRestrictionProfileLoaded = true;
@@ -236,7 +239,7 @@ class _SettingState extends State<Setting> {
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
-    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
+    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
     this
         .context
         .read<SubCalendarTileBloc>()

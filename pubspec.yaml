@@ -92,6 +92,7 @@ dependencies:
 
   go_router: ^14.3.0
   app_links: ^6.3.2
+  cancelable: ^4.2.1
   google_maps_flutter: ^2.6.1
   flutter_polyline_points: ^1.0.0
   flutter_slidable: ^3.1.2

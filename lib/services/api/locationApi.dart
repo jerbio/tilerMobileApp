@@ -8,6 +8,8 @@ import 'package:tiler_app/data/location.dart';
 import '../../constants.dart' as Constants;
 
 class LocationApi extends AppApi {
+  LocationApi({required Function? getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<List<Location>>? chainPending;
   var nextRequestParams = [];
 

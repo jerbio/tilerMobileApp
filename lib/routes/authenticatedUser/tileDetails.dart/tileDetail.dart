@@ -50,7 +50,7 @@ class _TileDetailState extends State<TileDetail> {
   List<SubCalendarEvent>? subEvents;
   EditCalendarEvent? editTilerEvent;
   int? splitCount;
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late CalendarEventApi calendarEventApi;
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
   EditTileNote? _editTileNote;
@@ -64,7 +64,7 @@ class _TileDetailState extends State<TileDetail> {
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color inputFieldIconColor = TileStyles.primaryColor;
   bool reloadOtherEntitiesAfterLoadingCalevent = false;
-  SettingsApi settingsApi = SettingsApi();
+  late final SettingsApi settingsApi;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   RestrictionProfile? _workRestrictionProfile;
   RestrictionProfile? _personalRestrictionProfile;
@@ -78,6 +78,9 @@ class _TileDetailState extends State<TileDetail> {
   @override
   void initState() {
     super.initState();
+    calendarEventApi = new CalendarEventApi(
+        getContextCallBack: () => this.context.read<CalendarTileBloc>());
+    settingsApi = new SettingsApi(getContextCallBack: () => this.context);
     if (this.widget.tileId != null) {
       this
           .context
@@ -686,7 +689,9 @@ class _TileDetailState extends State<TileDetail> {
               _editTileName = EditTileName(
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               DateTime startTime =

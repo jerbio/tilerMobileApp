@@ -1,8 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:sealed_unions/factories/quartet_factory.dart';
-import 'package:sealed_unions/implementations/union_4_impl.dart';
-import 'package:sealed_unions/sealed_unions.dart';
 import 'package:tiler_app/bloc/location/location_state.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
@@ -11,10 +8,12 @@ import 'package:tiler_app/util.dart';
 part 'location_event.dart';
 
 class LocationBloc extends Bloc<LocationEvent, LocationState> {
-  LocationApi locationApi = new LocationApi();
-  LocationBloc() : super(LocationState.initial()) {
+  late LocationApi locationApi;
+  LocationBloc({required Function getContextCallBack})
+      : super(LocationState.initial()) {
     on<GetLocationEvent>(_onGetLocationEvent);
     on<SetLocationEvent>(_onSetLocationEvent);
+    locationApi = new LocationApi(getContextCallBack: getContextCallBack);
   }
 
   _onGetLocationEvent(

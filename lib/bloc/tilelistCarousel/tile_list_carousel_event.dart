@@ -8,9 +8,10 @@ abstract class TileListCarouselEvent extends Equatable {
 }
 
 class DisableCarouselScrollEvent extends TileListCarouselEvent {
-  final int? dayIndex;
+  final int dayIndex;
   final bool isImmediate;
-  const DisableCarouselScrollEvent({this.isImmediate = false, this.dayIndex});
+  const DisableCarouselScrollEvent(
+      {this.isImmediate = false, required this.dayIndex});
 
   @override
   List<Object> get props => [];

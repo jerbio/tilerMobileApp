@@ -62,7 +62,7 @@ class AddTileState extends State<AddTile> {
   final CarouselController tilerCarouselController = CarouselController();
   String tileNameText = '';
   String splitCountText = '';
-  final LocationApi locationApi = LocationApi();
+
   Location? _homeLocation;
   Location? _workLocation;
   final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
@@ -85,8 +85,9 @@ class AddTileState extends State<AddTile> {
   String? _restrictionProfileName;
   RestrictionProfile? _restrictionProfile;
   bool _isRestictionProfileManuallySet = false;
-  ScheduleApi scheduleApi = ScheduleApi();
-  SettingsApi settingsApi = SettingsApi();
+  late ScheduleApi scheduleApi;
+  late SettingsApi settingsApi;
+  late final LocationApi locationApi;
   StreamSubscription? pendingSendTextRequest;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
@@ -97,6 +98,9 @@ class AddTileState extends State<AddTile> {
 
   @override
   void initState() {
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
+    settingsApi = SettingsApi(getContextCallBack: () => context);
+    locationApi = LocationApi(getContextCallBack: () => context);
     if (this.widget.autoDeadline != null) {
       _endTime = this.widget.autoDeadline!;
     }

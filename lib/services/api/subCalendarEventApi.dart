@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
 class SubCalendarEventApi extends AppApi {
+  SubCalendarEventApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<SubCalendarEvent> getSubEvent(String id,
       {String calendarSource = "", String thirdPartyUserId = ""}) async {
     // return getAdHocSubEventId(id);

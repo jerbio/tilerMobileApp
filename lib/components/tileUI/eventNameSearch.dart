@@ -45,11 +45,18 @@ class EventNameSearchWidget extends SearchWidget {
 enum LookupStatus { NotStarted, Pending, Finished, Failed }
 
 class EventNameSearchState extends SearchWidgetState {
-  TileNameApi tileNameApi = new TileNameApi();
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late TileNameApi tileNameApi;
+  late CalendarEventApi calendarEventApi;
   TextEditingController textController = TextEditingController();
   List<Widget> nameSearchResult = [];
   LookupStatus _lookupStatus = LookupStatus.NotStarted;
+
+  @override
+  void initState() {
+    super.initState();
+    calendarEventApi = new CalendarEventApi(getContextCallBack: () => context);
+    tileNameApi = new TileNameApi(getContextCallBack: () => context);
+  }
 
   Tuple4<List<SubCalendarEvent>, List<Timeline>, Timeline, ScheduleStatus>
       getPriorStateVariables() {

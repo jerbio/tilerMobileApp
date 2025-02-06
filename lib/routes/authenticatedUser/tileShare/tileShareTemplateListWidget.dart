@@ -23,7 +23,7 @@ class TileShareTemplateListWidget extends StatefulWidget {
 }
 
 class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
-  TileShareClusterApi tileClusterApi = TileShareClusterApi();
+  late TileShareClusterApi tileClusterApi;
   List<TileShareTemplate> tileShareTemplates = [];
   ScrollController? _scrollController;
   int index = 0;
@@ -34,6 +34,8 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
   @override
   void initState() {
     super.initState();
+    tileClusterApi =
+        TileShareClusterApi(getContextCallBack: () => this.context);
     if (this.widget.tileShareTemplates == null) {
       _scrollController = new ScrollController();
       getTileShareTemplates();
