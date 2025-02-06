@@ -6,8 +6,6 @@ import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/sessionProfile.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
-import 'package:tiler_app/services/accessManager.dart';
-import 'package:tiler_app/services/api/userApi.dart';
 import 'package:tiler_app/util.dart';
 
 part 'device_setting_event.dart';
