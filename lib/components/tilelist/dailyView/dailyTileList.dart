@@ -37,8 +37,8 @@ class _DailyTileListState extends TileListState {
   Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
   Map<int, Tuple2<int, Widget>> dayIndexToCarouselIndex = {};
-  List<Timeline> loadedTimeline = [];
-  List<SubCalendarEvent> loadedSubCalendarEvent = [];
+  List<Timeline>? loadedTimeline = [];
+  List<SubCalendarEvent>? loadedSubCalendarEvent;
   late Timeline previousTimeline;
   late bool disableDayCarouselSlide = false;
   int? disableDayIndex;
@@ -721,10 +721,19 @@ class _DailyTileListState extends TileListState {
             if (!(state is DelayedScheduleLoadedState)) {
               handleNotificationsAndNextTile(state.subEvents);
             }
+            List<Timeline> scheduleTimelines = state.timelines;
+            List<SubCalendarEvent> scheduleSubCalendarEvent = state.subEvents;
+            if (loadedTimeline != null) {
+              scheduleTimelines = loadedTimeline!;
+            }
+
+            if (loadedSubCalendarEvent != null) {
+              scheduleSubCalendarEvent = loadedSubCalendarEvent!;
+            }
             return Stack(
               children: [
                 buildDailyRenderSubCalendarTiles(
-                    Tuple2(loadedTimeline, loadedSubCalendarEvent))
+                    Tuple2(scheduleTimelines, scheduleSubCalendarEvent))
               ],
             );
           }

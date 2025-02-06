@@ -262,7 +262,7 @@ class SignInComponentState extends State<SignInComponent>
               GetScheduleDaySummaryEvent(
                   timeline: Utility.initialScheduleTimeline),
             );
-        print(isValidSignIn);
+        print("is sign in valid" + isValidSignIn.toString());
         Navigator.pop(context);
         Navigator.push(
           context,
