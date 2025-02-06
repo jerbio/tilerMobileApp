@@ -31,7 +31,7 @@ class _CreateTileShareClusterWidgetState
   final TileShareClusterData tileClusterData = TileShareClusterData();
   List<Contact> contacts = <Contact>[];
   final List<NewTile> _tileTemplates = <NewTile>[];
-  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
+  late final TileShareClusterApi tileClusterApi;
   DateTime? _endTime;
   Duration? _duration;
   Function? onProceedResponse;
@@ -42,6 +42,8 @@ class _CreateTileShareClusterWidgetState
   @override
   void initState() {
     super.initState();
+    tileClusterApi =
+        TileShareClusterApi(getContextCallBack: () => this.context);
     if (this.widget.isMultiTilette != null) {
       isMultiTilette = this.widget.isMultiTilette!;
     }

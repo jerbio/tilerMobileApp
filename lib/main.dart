@@ -9,6 +9,7 @@ import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -42,7 +43,6 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
-import 'routes/authenticatedUser/welcomeScreen.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -149,22 +149,48 @@ class _TilerAppState extends State<TilerApp> {
     };
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => SubCalendarTileBloc()),
-        BlocProvider(create: (context) => ScheduleBloc()),
-        BlocProvider(create: (context) => CalendarTileBloc()),
+        BlocProvider(
+            create: (context) => SubCalendarTileBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => CalendarTileBloc(getContextCallBack: () {
+                  return this.context;
+                })),
         BlocProvider(create: (context) => UiDateManagerBloc()),
-        BlocProvider(create: (context) => ScheduleSummaryBloc()),
-        BlocProvider(create: (context) => LocationBloc()),
-        BlocProvider(create: (context) => IntegrationsBloc()),
+        BlocProvider(
+            create: (context) => ScheduleSummaryBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => LocationBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => IntegrationsBloc(getContextCallBack: () {
+                  return this.context;
+                })),
         BlocProvider(create: (context) => TileListCarouselBloc()),
         BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
-        BlocProvider(create: (context) => ForecastBloc()),
+        BlocProvider(
+            create: (context) => ForecastBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => DeviceSettingBloc(getContextCallBack: () {
+                  return this.context;
+                })),
+        BlocProvider(
+            create: (context) => ScheduleBloc(getContextCallBack: () {
+                  return this.context;
+                })),
         BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
         BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
         BlocProvider(create: (context) => PreviewSummaryBloc())
       ],
       child: MaterialApp(
         title: 'Tiler',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: TileStyles.rubikFontName,
           primarySwatch: MaterialColor(0xFF880E4F, color),
@@ -248,7 +274,11 @@ class _TilerAppState extends State<TilerApp> {
                     authentication?.deauthenticateCredentials();
                     retValue = SignInRoute();
                   } else {
-                    context.read<ScheduleBloc>().add(LogInScheduleEvent());
+                    context
+                        .read<ScheduleBloc>()
+                        .add(LogInScheduleEvent(getContextCallBack: () {
+                      return context;
+                    }));
                     AnalysticsSignal.send('LOGIN-VERIFIED');
                     retValue = FutureBuilder<bool>(
                       future: Utility.checkOnboardingStatus(),

@@ -8,7 +8,10 @@ import 'forecast_event.dart';
 import 'forecast_state.dart';
 
 class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
-  ForecastBloc() : super(ForecastInitial()) {
+  late WhatIfApi whatIfApi;
+  ForecastBloc({required Function getContextCallBack})
+      : super(ForecastInitial()) {
+    this.whatIfApi = WhatIfApi(getContextCallBack: getContextCallBack);
     on<UpdateDuration>(_onUpdateDuration);
     on<UpdateDateTime>(_onUpdateDateTime);
     on<FetchData>(_onFetchData);
@@ -88,7 +91,7 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
         "Duration": durInUtc.toString(),
       };
 
-      final forecastResponse = await WhatIfApi().forecastNewTile(queryParams);
+      final forecastResponse = await whatIfApi.forecastNewTile(queryParams);
       Utility.debugPrint('Data fetched: $forecastResponse');
 
       emit(ForecastLoaded(

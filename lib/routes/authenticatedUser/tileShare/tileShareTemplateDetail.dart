@@ -30,8 +30,8 @@ class TileShareTemplateDetailWidget extends StatefulWidget {
 
 class _TileShareTemplateDetailState
     extends State<TileShareTemplateDetailWidget> {
-  final TileShareClusterApi clusterApi = TileShareClusterApi();
-  final DesignatedTileApi designatedTileApi = DesignatedTileApi();
+  late final TileShareClusterApi clusterApi;
+  late final DesignatedTileApi designatedTileApi;
   late TileShareTemplate tileShareTemplate;
   late TileShareClusterData tileShareCluster;
   late bool? isLoading;
@@ -54,6 +54,10 @@ class _TileShareTemplateDetailState
   @override
   void initState() {
     super.initState();
+    clusterApi = TileShareClusterApi(getContextCallBack: () => this.context);
+    designatedTileApi =
+        DesignatedTileApi(getContextCallBack: () => this.context);
+
     isTileListLoading = false;
     isLoading = false;
     tileShareTemplate = this.widget.tileShareTemplate;
@@ -236,7 +240,7 @@ class _TileShareTemplateDetailState
     String creatorInfo = tileShareTemplate.creator?.username ??
         tileShareTemplate.creator?.email ??
         "";
-    print("TileShareEnd " + tileShareTemplate.end.toString());
+
     return Padding(
         padding: EdgeInsets.all(25),
         child: Column(
@@ -319,7 +323,6 @@ class _TileShareTemplateDetailState
       isScrollControlled: true,
       context: context,
       builder: (BuildContext context) {
-        print("is pending " + isAddingTiletteLoading.toString());
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(

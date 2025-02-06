@@ -1,16 +1,18 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
+import 'package:tuple/tuple.dart';
+
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
-import 'package:bloc_concurrency/bloc_concurrency.dart';
 
 import '../../services/api/subCalendarEventApi.dart';
 
@@ -21,10 +23,12 @@ enum AuthorizedRouteTileListPage { Daily, Weekly, Monthly }
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
-  ScheduleApi scheduleApi = ScheduleApi();
+
+  late ScheduleApi scheduleApi;
+  late SubCalendarEventApi subCalendarEventApi;
+  Function getContextCallBack;
   PreviewApi previewApi = PreviewApi();
-  SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  ScheduleBloc()
+  ScheduleBloc({required Function this.getContextCallBack})
       : super(ScheduleInitialState(
             currentView: AuthorizedRouteTileListPage.Daily)) {
     on<GetScheduleEvent>(_onGetSchedule, transformer: restartable());
@@ -37,6 +41,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<ChangeViewEvent>(_onChangeView, transformer: restartable());
     ;
     on<CompleteTaskEvent>(_onCompleteTask);
+    scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
+    subCalendarEventApi =
+        SubCalendarEventApi(getContextCallBack: getContextCallBack);
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
@@ -89,7 +96,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onLoggedOutScheduleEvent(
       LogOutScheduleEvent event, Emitter<ScheduleState> emit) async {
-    scheduleApi = ScheduleApi();
+    scheduleApi =
+        ScheduleApi(getContextCallBack: () => event.getContextCallBack);
     emit(ScheduleLoggedOutState());
   }
 
@@ -388,7 +396,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   //   });
   // }
   void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async {
-    scheduleApi = ScheduleApi();
+    scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
     emit(ScheduleInitialState(currentView: event.newView));
   }
 }
