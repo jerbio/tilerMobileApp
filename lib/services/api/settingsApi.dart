@@ -9,6 +9,8 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
 class SettingsApi extends AppApi {
+  SettingsApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<Map<String, RestrictionProfile>> getUserRestrictionProfile() async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();

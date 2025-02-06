@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -24,8 +25,8 @@ import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
@@ -37,7 +38,6 @@ import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
@@ -51,27 +51,14 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
-  PreviewSummary? previewSummary;
-  final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
   final PreviewApi previewApi = PreviewApi();
-  final ScheduleApi scheduleApi = ScheduleApi();
+  late final SubCalendarEventApi subCalendarEventApi;
+  late final ScheduleApi scheduleApi;
+  PreviewSummary? previewSummary;
   final AccessManager accessManager = AccessManager();
+  bool renderLocationPermissionOverLay = false;
 
-  Tuple3<Position, bool, bool> locationAccess = Tuple3(
-      Position(
-        altitudeAccuracy: 777.0,
-        headingAccuracy: 0.0,
-        longitude: Location.fromDefault().longitude!,
-        latitude: Location.fromDefault().latitude!,
-        timestamp: Utility.currentTime(),
-        heading: 0,
-        accuracy: 0,
-        altitude: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      ),
-      false,
-      true);
+  LocationProfile locationAccess = LocationProfile.empty();
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
@@ -82,6 +69,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   @override
   void initState() {
     super.initState();
+    scheduleApi = new ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () {
+      return this.context;
+    });
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
@@ -91,17 +84,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     previewApi.getSummary(Utility.todayTimeline()).then((value) {
       this.previewSummary = value;
     });
-
-    // accessManager.locationAccess(statusCheck: true).then((value) {
-    //   if (this.mounted) {
-    //     setState(() {
-    //       if (value != null) {
-    //         locationAccess = value;
-    //         return;
-    //       }
-    //     });
-    //   }
-    // });
+    final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    deviceSettingBloc
+        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc"));
+    scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
   }
 
   void openAppLink(Uri uri) {
@@ -285,26 +274,21 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  void locationUpdate(Tuple3<Position, bool, bool> update) {
+  void locationUpdate(LocationProfile locationProfile) {
     setState(() {
-      locationAccess = update;
+      locationAccess = locationProfile;
       isLocationRequestTriggered = true;
     });
   }
 
-  Widget renderLocationRequest(AccessManager accessManager) {
-    return LocationAccessWidget(accessManager, locationUpdate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget renderAuthorizedUserPageView() {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
-    double height = MediaQuery.of(context).size.height;
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
+    // double height = MediaQuery.of(context).size.height;
+    // if (!isLocationRequestTriggered &&
+    //     !locationAccess.item2 &&
+    //     locationAccess.item3) {
+    //   return renderLocationRequest(accessManager);
+    // }
 
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
@@ -456,5 +440,36 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<DeviceSettingBloc, DeviceSettingState>(
+            listener: (context, state) {
+              print('DeviceSettingBloc listener');
+              print("render loading ui " + state.toString());
+              if (state is DeviceLocationSettingUIPending) {
+                print("render loading ui " + state.renderLoadingUI.toString());
+                if (state.renderLoadingUI == true) {
+                  setState(() {
+                    renderLocationPermissionOverLay = true;
+                  });
+                }
+              }
+
+              if (state is DeviceSettingLoaded) {
+                setState(() {
+                  renderLocationPermissionOverLay = false;
+                });
+              }
+            },
+          )
+        ],
+        child:
+            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+          return renderAuthorizedUserPageView();
+        }));
   }
 }

@@ -15,7 +15,8 @@ import 'package:tuple/tuple.dart';
 import '../../constants.dart' as Constants;
 
 class WhatIfApi extends AppApi {
-  WhatIfApi() : super() {
+  WhatIfApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack) {
     pendingFuture = <Tuple3<StreamSubscription, Future, String>>[];
   }
 

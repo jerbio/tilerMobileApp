@@ -24,8 +24,15 @@ class PlayBack extends StatefulWidget {
 }
 
 class PlayBackState extends State<PlayBack> {
-  SubCalendarEventApi _subCalendarEventApi = new SubCalendarEventApi();
+  late SubCalendarEventApi _subCalendarEventApi;
   SubCalendarEvent? _subEvent;
+
+  @override
+  void initState() {
+    super.initState();
+    _subCalendarEventApi =
+        new SubCalendarEventApi(getContextCallBack: () => context);
+  }
 
   void showMessage(String message) {
     Fluttertoast.showToast(
