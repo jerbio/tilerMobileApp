@@ -188,6 +188,7 @@ class _TilerAppState extends State<TilerApp> {
       ],
       child: MaterialApp(
         title: 'Tiler',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           fontFamily: TileStyles.rubikFontName,
           primarySwatch: MaterialColor(0xFF880E4F, color),

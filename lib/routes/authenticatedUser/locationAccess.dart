@@ -28,13 +28,19 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
   void initState() {
     super.initState();
     accessManager = this.widget.accessManager ?? AccessManager();
+    if (Platform.isIOS) {
+      // this is needed because we want to trigger the native permission UI only for iOS.
+      //If this is added to the build function it'll cause an infinite call to setState.
+      generateCallBack(denyAccess: false, enableCallBack: false)();
+    }
   }
 
   VoidCallback generateCallBack(
       {bool forceDeviceCheck = false,
       bool statusCheck = false,
       bool? denyAccess,
-      bool doNotCallAgain = false}) {
+      bool doNotCallAgain = false,
+      bool enableCallBack = true}) {
     VoidCallback retValue = () async {
       setState(() {
         isLocationRequestTriggered = true;
@@ -65,7 +71,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           if (!mounted) return;
           if (value != null) {
             locationAccess = value;
-            if (this.widget.onChange != null) {
+            if (this.widget.onChange != null && enableCallBack) {
               this.widget.onChange!(value);
             }
             return;
@@ -127,6 +133,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     }
 
     if (Platform.isIOS) {
+      var iosCallBackButtonPress =
+          generateCallBack(denyAccess: false, statusCheck: true);
       acceptDenyButtons = [
         Container(
           margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
@@ -134,27 +142,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
             width: buttonWidth,
             child: ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                onPressed: () {
-                  if (this.widget.onChange != null) {
-                    String loadedId = Utility.getUuid;
-                    if (BlocProvider.of<DeviceSettingBloc>(context)
-                            is DeviceLocationSettingLoading &&
-                        (BlocProvider.of<DeviceSettingBloc>(context)
-                                    as DeviceLocationSettingLoading)
-                                .id !=
-                            null) {
-                      loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
-                              as DeviceLocationSettingLoading)
-                          .id!;
-                    }
-
-                    this.widget.onChange!(locationAccess);
-                    BlocProvider.of<DeviceSettingBloc>(context).add(
-                        LoadedLocationProfileDeviceSettingEvent(
-                            id: loadedId,
-                            deviceLocationProfile: locationAccess));
-                  }
-                },
+                onPressed: iosCallBackButtonPress,
                 child: Text(AppLocalizations.of(context)!.dismiss,
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -165,7 +153,13 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           ),
         )
       ];
-      generateCallBack(denyAccess: false)();
+      Utility.setTimeOut(
+          duration: Duration(seconds: 5),
+          callBack: () {
+            if (mounted) {
+              iosCallBackButtonPress();
+            }
+          });
     }
 
     Widget retValue = Scaffold(
