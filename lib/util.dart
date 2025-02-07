@@ -318,6 +318,10 @@ class Utility {
     return false;
   }
 
+  static bool isKeyboardVisible(BuildContext context) {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
+  }
+
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
       Timeline timeLine,
       {bool forceInterFerringWithNowTile = true}) {
