@@ -634,6 +634,12 @@
             "example": "1"
           }
         }},
-      "createTile": "Create Tile"
+      "createTile": "Create Tile",
+      "previewTileForecast": "Forecast",
+      "previewTileOptions": "Options",
+      "previewTileMore": "More",
+      "previewTileShuffle": "Shuffle",
+      "previewTileRevise": "Revise",
+      "previewTileDeferAll": "Defer All"
 
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
@@ -28,7 +29,7 @@ class PreviewAddWidget extends StatefulWidget {
 }
 
 class _PreviewAddWidgetState extends State<PreviewAddWidget> {
-  final double modalHeight = 370;
+  final double modalHeight = 390;
   bool isPendingAdd = false;
   NewTile? newTile;
   late final ScheduleApi scheduleApi;
@@ -69,6 +70,11 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   onSubmit(NewTile newTile) {
+    Color randomColor = Utility.randomColor;
+    newTile.RColor = randomColor.red.toString();
+    newTile.BColor = randomColor.blue.toString();
+    newTile.GColor = randomColor.green.toString();
+    newTile.Opacity = '1';
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
@@ -167,20 +173,33 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   Widget renderPending() {
-    return PendingWidget(
-      backgroundDecoration: BoxDecoration(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-      imageAsset: TileStyles.evaluatingScheduleAsset,
+    print("rendered pending UI");
+    return Container(
+      height: modalHeight,
+      width: MediaQuery.sizeOf(context).width,
+      child: PendingWidget(
+        backgroundDecoration: BoxDecoration(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10), topRight: Radius.circular(10))),
+        imageAsset: TileStyles.evaluatingScheduleAsset,
+      ),
     );
   }
 
   Widget renderForecastButton() {
     return ElevatedButton(
-        child: FaIcon(
-          TileStyles.forecastIcon,
-          color: TileStyles.primaryColor,
-          size: 20,
+        child: Column(
+          children: [
+            FaIcon(
+              TileStyles.forecastIcon,
+              color: TileStyles.primaryColor,
+              size: 20,
+            ),
+            Text(AppLocalizations.of(context)!.previewTileForecast,
+                style: TextStyle(
+                  fontSize: 9,
+                ))
+          ],
         ),
         onPressed: () {
           AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
@@ -195,32 +214,40 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   Widget renderProcastinateAllButton() {
     const Color cheveronColor = TileStyles.primaryColor;
     return ElevatedButton(
-        child: Container(
-          width: 60,
-          height: 40,
-          child: Stack(
-            children: [
-              Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  left: -15,
-                  child: Icon(Icons.chevron_right, color: cheveronColor)),
-              Positioned(
-                right: 0,
-                top: 0,
-                bottom: 0,
-                left: 0,
-                child: Icon(Icons.chevron_right, color: cheveronColor),
+        child: Column(
+          children: [
+            Container(
+              width: 60,
+              height: 20,
+              child: Stack(
+                children: [
+                  Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      left: -15,
+                      child: Icon(Icons.chevron_right, color: cheveronColor)),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    left: 0,
+                    child: Icon(Icons.chevron_right, color: cheveronColor),
+                  ),
+                  Positioned(
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      left: 15,
+                      child: Icon(Icons.chevron_right, color: cheveronColor)),
+                ],
               ),
-              Positioned(
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  left: 15,
-                  child: Icon(Icons.chevron_right, color: cheveronColor)),
-            ],
-          ),
+            ),
+            Text(AppLocalizations.of(context)!.previewTileDeferAll,
+                style: TextStyle(
+                  fontSize: 9,
+                ))
+          ],
         ),
         onPressed: () {
           AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
@@ -256,10 +283,18 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   Widget renderMoreSettingsButton() {
     return ElevatedButton(
-        child: Icon(
-          Icons.more_time,
-          color: TileStyles.primaryColor,
-          size: 20,
+        child: Column(
+          children: [
+            Icon(
+              Icons.more_time,
+              color: TileStyles.primaryColor,
+              size: 20,
+            ),
+            Text(AppLocalizations.of(context)!.previewTileOptions,
+                style: TextStyle(
+                  fontSize: 9,
+                ))
+          ],
         ),
         onPressed: () {
           AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
@@ -280,10 +315,18 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   Widget renderShuffleButton() {
     return ElevatedButton(
-        child: FaIcon(
-          FontAwesomeIcons.shuffle,
-          color: TileStyles.primaryColor,
-          size: 20,
+        child: Column(
+          children: [
+            FaIcon(
+              FontAwesomeIcons.shuffle,
+              color: TileStyles.primaryColor,
+              size: 20,
+            ),
+            Text(AppLocalizations.of(context)!.previewTileShuffle,
+                style: TextStyle(
+                  fontSize: 9,
+                ))
+          ],
         ),
         onPressed: () {
           AnalysticsSignal.send('SHUFFLE_BUTTON');
@@ -298,10 +341,18 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   Widget renderRefresh() {
     return ElevatedButton(
-        child: Icon(
-          Icons.refresh,
-          color: TileStyles.primaryColor,
-          size: 20,
+        child: Column(
+          children: [
+            Icon(
+              Icons.refresh,
+              color: TileStyles.primaryColor,
+              size: 20,
+            ),
+            Text(AppLocalizations.of(context)!.previewTileRevise,
+                style: TextStyle(
+                  fontSize: 9,
+                ))
+          ],
         ),
         onPressed: () {
           AnalysticsSignal.send('REVISE_BUTTON');
@@ -316,6 +367,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   Widget renderModal() {
     return Container(
+        alignment: Alignment.bottomCenter,
+        margin: EdgeInsets.fromLTRB(
+            0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
         decoration: BoxDecoration(
             gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -332,6 +386,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         width: MediaQuery.sizeOf(context).width,
         height: modalHeight,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Container(
               padding: EdgeInsets.all(10),
@@ -346,11 +401,15 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
                 ],
               ),
             ),
-            NewTileSheetWidget(
-              onAddTile: onSubmit,
-              onTileUpdate: onTileUpdate,
+            Stack(
+              children: [
+                NewTileSheetWidget(
+                  onAddTile: onSubmit,
+                  onTileUpdate: onTileUpdate,
+                ),
+                isPendingAdd ? renderPending() : SizedBox.shrink()
+              ],
             ),
-            isPendingAdd ? renderPending() : SizedBox.shrink()
           ],
         ));
   }
@@ -360,8 +419,11 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     return Stack(
       children: [
         Column(
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            renderPreview(),
+            Utility.isKeyboardVisible(context)
+                ? SizedBox.shrink()
+                : renderPreview(),
             renderModal(),
           ],
         )

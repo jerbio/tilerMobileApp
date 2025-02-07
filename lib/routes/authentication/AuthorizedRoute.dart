@@ -116,7 +116,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
-          // Navigator.pushNamed(context, '/AddTile');
           AnalysticsSignal.send('TILE_SHARE_BUTTON');
           Navigator.pushNamed(context, '/TileShare');
         }
@@ -287,13 +286,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget renderAuthorizedUserPageView() {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
-    // double height = MediaQuery.of(context).size.height;
-    // if (!isLocationRequestTriggered &&
-    //     !locationAccess.item2 &&
-    //     locationAccess.item3) {
-    //   return renderLocationRequest(accessManager);
-    // }
-
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       BlocBuilder<ScheduleBloc, ScheduleState>(
@@ -452,10 +444,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         listeners: [
           BlocListener<DeviceSettingBloc, DeviceSettingState>(
             listener: (context, state) {
-              print('DeviceSettingBloc listener');
-              print("render loading ui " + state.toString());
               if (state is DeviceLocationSettingUIPending) {
-                print("render loading ui " + state.renderLoadingUI.toString());
                 if (state.renderLoadingUI == true) {
                   setState(() {
                     renderLocationPermissionOverLay = true;
@@ -472,11 +461,14 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           ),
           BlocListener<ScheduleBloc, ScheduleState>(
             listener: (context, state) {
-              if (state is ScheduleLoadingState) {
+              if (state is ScheduleLoadingState ||
+                  state is ScheduleLoadedState) {
                 final previewSummaryBloc =
                     BlocProvider.of<PreviewSummaryBloc>(context);
-                previewSummaryBloc.add(
-                    GetPreviewSummaryEvent(timeline: Utility.todayTimeline()));
+                if (!(previewSummaryBloc.state is PreviewSummaryLoading)) {
+                  previewSummaryBloc.add(GetPreviewSummaryEvent(
+                      timeline: Utility.todayTimeline()));
+                }
               }
             },
           ),
