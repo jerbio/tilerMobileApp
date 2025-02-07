@@ -31,6 +31,13 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   final double modalHeight = 370;
   bool isPendingAdd = false;
   NewTile? newTile;
+  late final ScheduleApi scheduleApi;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
+  }
 
   Widget renderPreview() {
     var perviewHeight = MediaQuery.sizeOf(context).height - modalHeight;
@@ -62,7 +69,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   onSubmit(NewTile newTile) {
-    ScheduleApi scheduleApi = ScheduleApi();
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(

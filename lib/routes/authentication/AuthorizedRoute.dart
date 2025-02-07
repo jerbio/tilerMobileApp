@@ -51,7 +51,7 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
-  final PreviewApi previewApi = PreviewApi();
+  late final PreviewApi previewApi;
   late final SubCalendarEventApi subCalendarEventApi;
   late final ScheduleApi scheduleApi;
   PreviewSummary? previewSummary;
@@ -73,6 +73,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       return this.context;
     });
     subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () {
+      return this.context;
+    });
+    previewApi = PreviewApi(getContextCallBack: () {
       return this.context;
     });
     initDeepLinks();
