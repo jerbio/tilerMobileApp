@@ -9,9 +9,12 @@ part 'preview_summary_state.dart';
 
 class PreviewSummaryBloc
     extends Bloc<PreviewSummaryEvent, PreviewSummaryState> {
-  final PreviewApi previewApi = PreviewApi();
-  PreviewSummaryBloc() : super(PreviewSummaryInitial()) {
+  late final PreviewApi previewApi;
+  Function getContextCallBack;
+  PreviewSummaryBloc({required Function this.getContextCallBack})
+      : super(PreviewSummaryInitial()) {
     on<GetPreviewSummaryEvent>(_onGetPreviewSummary);
+    previewApi = PreviewApi(getContextCallBack: getContextCallBack);
   }
 
   Future _onGetPreviewSummary(
