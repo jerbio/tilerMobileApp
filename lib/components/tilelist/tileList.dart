@@ -320,7 +320,9 @@ abstract class TileListState<T extends TileList> extends State<T>
             var future = Future.delayed(
                 const Duration(milliseconds: Constants.autoHideInMs));
             var hideNewSheeTileFuture = future.asStream().listen((input) {
-              Navigator.pop(context);
+              if (context != null && context.mounted) {
+                Navigator.pop(context);
+              }
             });
 
             return ElevatedButton(
