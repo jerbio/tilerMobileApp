@@ -224,9 +224,10 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         ),
         onPressed: () {
           AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
-          Navigator.pop(context);
+
           Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
             var scheduleBloc = this.context.read<ScheduleBloc>().state;
+
             Timeline? lookupTimeline;
             if (scheduleBloc is ScheduleLoadedState) {
               this.context.read<ScheduleBloc>().add(GetScheduleEvent(
@@ -244,6 +245,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             }
 
             refreshScheduleSummary(lookupTimeline);
+            Navigator.pop(context);
           });
         },
         style: ElevatedButton.styleFrom(
