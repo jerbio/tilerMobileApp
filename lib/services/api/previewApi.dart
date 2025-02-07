@@ -10,9 +10,9 @@ import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class PreviewApi extends AppApi {
+  PreviewApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<PreviewSummary> getSummary(Timeline timeLine) async {
-    // Utility.debugPrint(
-    //     "|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
 

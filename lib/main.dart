@@ -186,7 +186,10 @@ class _TilerAppState extends State<TilerApp> {
                 })),
         BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
         BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
-        BlocProvider(create: (context) => PreviewSummaryBloc())
+        BlocProvider(
+            create: (context) => PreviewSummaryBloc(getContextCallBack: () {
+                  return this.context;
+                }))
       ],
       child: MaterialApp(
         title: 'Tiler',

@@ -27,7 +27,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   late ScheduleApi scheduleApi;
   late SubCalendarEventApi subCalendarEventApi;
   Function getContextCallBack;
-  PreviewApi previewApi = PreviewApi();
+  late PreviewApi previewApi;
   ScheduleBloc({required Function this.getContextCallBack})
       : super(ScheduleInitialState(
             currentView: AuthorizedRouteTileListPage.Daily)) {
@@ -44,6 +44,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
+    previewApi = PreviewApi(getContextCallBack: getContextCallBack);
   }
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
