@@ -276,8 +276,9 @@ class SubCalendarEventApi extends AppApi {
       error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          var deleteCalendarEventJson = jsonResult['Content'];
-          if (!deleteCalendarEventJson is String) {
+          Map<String, dynamic>? deleteCalendarEventJson =
+              jsonResult['Content'] as Map<String, dynamic>?;
+          if (deleteCalendarEventJson != null) {
             return CalendarEvent.fromJson(deleteCalendarEventJson);
           }
         } else {

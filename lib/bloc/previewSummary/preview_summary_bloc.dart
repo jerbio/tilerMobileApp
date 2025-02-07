@@ -29,7 +29,7 @@ class PreviewSummaryBloc
       emit(PreviewSummaryLoading(null));
     }
 
-    previewApi.getSummary(event.timeline).then((value) {
+    await previewApi.getSummary(event.timeline).then((value) {
       emit(PreviewSummaryLoaded(value));
     }).catchError((onError) {
       if (state is PreviewSummaryLoaded) {

@@ -9,6 +9,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -465,6 +466,25 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               if (state is DeviceSettingLoaded) {
                 setState(() {
                   renderLocationPermissionOverLay = false;
+                });
+              }
+            },
+          ),
+          BlocListener<ScheduleBloc, ScheduleState>(
+            listener: (context, state) {
+              if (state is ScheduleLoadingState) {
+                final previewSummaryBloc =
+                    BlocProvider.of<PreviewSummaryBloc>(context);
+                previewSummaryBloc.add(
+                    GetPreviewSummaryEvent(timeline: Utility.todayTimeline()));
+              }
+            },
+          ),
+          BlocListener<PreviewSummaryBloc, PreviewSummaryState>(
+            listener: (context, state) {
+              if (state is PreviewSummaryLoaded) {
+                setState(() {
+                  previewSummary = state.previewSummary;
                 });
               }
             },
