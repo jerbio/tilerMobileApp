@@ -235,6 +235,7 @@ class TileBatchState extends State<TileBatch> {
         height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
         width: MediaQuery.sizeOf(context).width,
         child: ListView(
+          shrinkWrap: true,
           children: [
             animatedList!,
             MediaQuery.of(context).orientation == Orientation.landscape
