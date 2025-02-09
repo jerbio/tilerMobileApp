@@ -176,8 +176,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
+        DateTime dayRibbonDate = Utility.currentTime().dayDate;
+        if (this.context.read<UiDateManagerBloc>().state
+            is UiDateManagerUpdated) {
+          dayRibbonDate = (this.context.read<UiDateManagerBloc>().state
+                  as UiDateManagerUpdated)
+              .currentDate;
+        }
         return DayRibbonCarousel(
-          Utility.currentTime().dayDate,
+          dayRibbonDate,
           autoUpdateAnchorDate: false,
         );
       case AuthorizedRouteTileListPage.Weekly:
@@ -214,10 +221,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
 
     return eventNameSearch;
-  }
-
-  bool _iskeyboardVisible() {
-    return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
   Widget generatePredictiveAdd() {

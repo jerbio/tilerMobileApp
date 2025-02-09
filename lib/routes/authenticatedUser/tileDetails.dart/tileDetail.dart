@@ -78,8 +78,8 @@ class _TileDetailState extends State<TileDetail> {
   @override
   void initState() {
     super.initState();
-    calendarEventApi = new CalendarEventApi(
-        getContextCallBack: () => this.context.read<CalendarTileBloc>());
+    calendarEventApi =
+        new CalendarEventApi(getContextCallBack: () => this.context);
     settingsApi = new SettingsApi(getContextCallBack: () => this.context);
     if (this.widget.tileId != null) {
       this
