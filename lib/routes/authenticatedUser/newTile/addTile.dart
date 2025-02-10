@@ -109,6 +109,9 @@ class AddTileState extends State<AddTile> {
           TextEditingController(text: this.widget.autoTile!.description);
       _duration = this.widget.autoTile!.duration;
       _startTime = this.widget.autoTile!.startTime ?? Utility.currentTime();
+      if (_duration != null) {
+        _isDurationManuallySet = true;
+      }
       if (_location == null) {
         var future = new Future.delayed(
             const Duration(milliseconds: Constants.onTextChangeDelayInMs));
