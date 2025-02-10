@@ -205,7 +205,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                           alignment: FractionalOffset.center,
                           widthFactor: 1,
                           child: Container(
-                            height: 120,
+                            height: 125,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(10),
