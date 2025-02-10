@@ -66,6 +66,7 @@ class WithinNowBatchState extends TileBatchState {
   double _emptyDayOpacity = 0;
   double heightMargin = 262;
   bool _pendingRendering = false;
+  bool _isEmptydayTile = false;
   @override
   void initState() {
     super.initState();
@@ -207,6 +208,7 @@ class WithinNowBatchState extends TileBatchState {
   }
 
   renderEmptyDayTile() {
+    _isEmptydayTile = true;
     if (_emptyDayOpacity == 0) {
       Timer(Duration(milliseconds: 200), () {
         if (mounted) {
@@ -348,6 +350,8 @@ class WithinNowBatchState extends TileBatchState {
         height: MediaQuery.of(context).size.height - 245,
         width: MediaQuery.of(context).size.width,
         child: ListView(
+          shrinkWrap: true,
+          physics: _isEmptydayTile ? NeverScrollableScrollPhysics() : null,
           children: [
             ...precedingTileWidgets,
             // this is needed to ensure there is spacing between animated list and the bottom of the screen
