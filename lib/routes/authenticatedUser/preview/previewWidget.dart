@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/previewGroup.dart';
 import 'package:tiler_app/data/previewSummary.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/preview/previewChart.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class PreviewWidget extends StatefulWidget {
   final PreviewSummary? previewSummary;
@@ -52,7 +53,7 @@ class _PreviewState extends State<PreviewWidget> {
         }
       });
     }
-    // return "";
+
     if (blockedTiles.isNotEmpty && tiles.isNotEmpty && tileShare.isNotEmpty) {
       return AppLocalizations.of(context)!
           .youHaveCountBlocksCountTilesAndCountTileShares(
@@ -105,59 +106,58 @@ class _PreviewState extends State<PreviewWidget> {
 
   Widget renderCharts() {
     if (_previewSummary != null) {
-      PreviewSummary previewSummary = _previewSummary!;
-      List<PieChartSectionData> pieChartData = [];
-      List<List<PreviewSection>> orderdByGrouping =
-          previewSummary.orderdByGrouping();
-      if (orderdByGrouping.isNotEmpty) {
-        orderdByGrouping.sort((a, b) => a.length.compareTo(b.length));
-        List<PreviewSection> previewGrouping = orderdByGrouping.last;
-        for (int i = 0; i < previewGrouping.length; i++) {
-          var locationGrouping = previewGrouping[i];
-          Color hueColor =
-              TileStyles.chartHues[i % TileStyles.chartHues.length];
-          if (locationGrouping.isNullGrouping == true) {
-            pieChartData.add(PieChartSectionData(
-                title: AppLocalizations.of(context)!.previewOthers,
-                value: (locationGrouping.tiles ?? [])
-                    .where((element) => element.isInterfering(_timeline))
-                    .length
-                    .toDouble()));
-          } else {
-            List relevalntTiles = (locationGrouping.tiles ?? [])
-                .where((element) =>
-                    element.isInterfering(_timeline) &&
-                    element.duration != null)
-                .toList();
-            Duration durationSum = Duration.zero;
-            if (relevalntTiles.isNotEmpty) {
-              durationSum = relevalntTiles
-                  .map((e) => e.duration)
-                  .reduce((value, element) {
-                return Duration(
-                    milliseconds:
-                        value.inMilliseconds + element.inMilliseconds);
-              });
-            }
-            String secotrName = locationGrouping.name ?? "";
-            if (secotrName.length >= 10) {
-              secotrName = AppLocalizations.of(context)!
-                  .previewEllipsisText(secotrName.substring(0, 10));
-            }
-            pieChartData.add(PieChartSectionData(
-                color: hueColor,
-                title: secotrName,
-                titleStyle: TextStyle(fontSize: 12, color: Colors.white),
-                value: durationSum.inMinutes.toDouble()));
-          }
-        }
-        return Container(
-          margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
-          width: 150,
-          height: 150,
-          child: PieChart(
-            PieChartData(sections: pieChartData),
+      List<Widget> carouselDayRibbonBatch = [];
+      if (_previewSummary!.classification != null &&
+          _previewSummary!.classification!.sections != null &&
+          _previewSummary!.classification!.sections!.isNotEmpty) {
+        carouselDayRibbonBatch.add(PreviewChart(
+          previewGrouping: _previewSummary!.classification!.sections!,
+          icon: Icon(
+            Icons.message,
+            color: Colors.white,
           ),
+          timeline: this._timeline,
+        ));
+      }
+
+      if (_previewSummary!.tag != null &&
+          _previewSummary!.tag!.sections != null &&
+          _previewSummary!.tag!.sections!.isNotEmpty) {
+        carouselDayRibbonBatch.add(PreviewChart(
+          previewGrouping: _previewSummary!.tag!.sections!,
+          icon: Icon(
+            Icons.discount_sharp,
+            color: Colors.white,
+          ),
+          timeline: this._timeline,
+        ));
+      }
+
+      if (_previewSummary!.location != null &&
+          _previewSummary!.location!.sections != null &&
+          _previewSummary!.location!.sections!.isNotEmpty) {
+        carouselDayRibbonBatch.add(PreviewChart(
+          previewGrouping: _previewSummary!.location!.sections!,
+          icon: Icon(
+            Icons.location_on_sharp,
+            color: Colors.white,
+          ),
+          timeline: this._timeline,
+        ));
+      }
+
+      if (carouselDayRibbonBatch.isNotEmpty) {
+        return CarouselSlider(
+          items: carouselDayRibbonBatch,
+          options: CarouselOptions(
+              viewportFraction: 1,
+              autoPlayInterval:
+                  Duration(seconds: carouselDayRibbonBatch.length * 10),
+              initialPage: 0,
+              enableInfiniteScroll: true,
+              reverse: false,
+              scrollDirection: Axis.horizontal,
+              autoPlay: true),
         );
       }
     }
