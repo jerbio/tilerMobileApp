@@ -110,7 +110,9 @@ class _SummaryPage extends State<SummaryPage> {
       analysis = value;
       if (analysis == null) {
         isLoadingAnalysis = false;
-        setState(() {});
+        if (this.mounted) {
+          setState(() {});
+        }
         return;
       }
 

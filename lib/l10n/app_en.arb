@@ -640,6 +640,7 @@
       "previewTileMore": "More",
       "previewTileShuffle": "Shuffle",
       "previewTileRevise": "Revise",
-      "previewTileDeferAll": "Defer All"
+      "previewTileDeferAll": "Defer All",
+      "previewLocationName": "Location"
 
   }

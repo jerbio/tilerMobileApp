@@ -125,13 +125,17 @@ abstract class AppApi {
               ]));
 
           await awaitableUiChanges.valueOrCancellation();
-          var deviceSettingState =
-              BlocProvider.of<DeviceSettingBloc>(buildContext).state;
-          if (deviceSettingState is DeviceSettingLoaded) {
-            if (deviceSettingState.sessionProfile?.locationProfile != null) {
-              locationAccessResult =
-                  deviceSettingState.sessionProfile!.locationProfile!;
+          if (buildContext.mounted) {
+            var deviceSettingState =
+                BlocProvider.of<DeviceSettingBloc>(buildContext).state;
+            if (deviceSettingState is DeviceSettingLoaded) {
+              if (deviceSettingState.sessionProfile?.locationProfile != null) {
+                locationAccessResult =
+                    deviceSettingState.sessionProfile!.locationProfile!;
+              }
             }
+          } else {
+            locationAccessResult = await accessManager.locationAccess();
           }
         }
       }
