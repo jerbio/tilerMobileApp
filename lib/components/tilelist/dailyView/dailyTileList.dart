@@ -184,7 +184,6 @@ class _DailyTileListState extends TileListState {
           previousSubEvents: subEvents,
           previousTimeline: previousTimeLine,
           isAlreadyLoaded: !forceRenderingPage,
-          emitOnlyLoadedStated: emitOnlyLoadedStated,
           scheduleTimeline: queryTimeline,
         ));
     refreshScheduleSummary(lookupTimeline: queryTimeline);
@@ -246,6 +245,10 @@ class _DailyTileListState extends TileListState {
     if (currentState is ScheduleLoadingState) {
       return currentState.previousLookupTimeline;
     }
+
+    if (currentState is ScheduleEvaluationState) {
+      return currentState.lookupTimeline;
+    }
     if (currentState is ScheduleLoadedState) {
       return currentState.lookupTimeline;
     }
@@ -257,7 +260,7 @@ class _DailyTileListState extends TileListState {
       Map<int, TileBatch> upcomingDayTilesDict,
       Map<int, TileBatch> precedingDayTilesDict) {
     Timeline relevantTimeline = getRelevantTimeLine();
-    int todayDayIndex = Utility.getDayIndex(DateTime.now());
+    int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
     int startIndex = Utility.getDayIndex(
         DateTime.fromMillisecondsSinceEpoch(relevantTimeline.start!.toInt()));
     int endIndex = Utility.getDayIndex(
@@ -266,6 +269,7 @@ class _DailyTileListState extends TileListState {
     if (numberOfDays <= 0) {
       numberOfDays = 1;
     }
+    print('relevantTimeline ' + relevantTimeline.toString());
     List<int> dayIndexes = List.generate(numberOfDays, (index) => index);
     for (int i = 0; i < dayIndexes.length; i++) {
       int dayIndex = dayIndexes[i];
@@ -397,6 +401,7 @@ class _DailyTileListState extends TileListState {
     if (uiManagedDateState is UiDateManagerUpdated) {
       currentDayIndex = uiManagedDateState.currentDate.universalDayIndex;
     }
+
     int itemCounter = 0;
     int initialCarouselIndex = -1;
     List<Widget> carouselItems = [];
@@ -587,7 +592,7 @@ class _DailyTileListState extends TileListState {
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
-          Utility.debugPrint("ScheduleBloc state is " + state.toString());
+          print("ScheduleBloc state is " + state.toString());
 
           if (state is ScheduleLoadingState) {
             if (state.message != null) {
@@ -622,8 +627,6 @@ class _DailyTileListState extends TileListState {
                 endIndex -= 1;
               }
             }
-            Utility.debugPrint(
-                "Loaded timeline is " + state.lookupTimeline.toString());
             int currentIndex = startIndex;
             do {
               dayIndexToSubEvents[currentIndex] = [];
@@ -635,8 +638,7 @@ class _DailyTileListState extends TileListState {
                 !isNewStatusId) {
               subEvents = (statusToSubEvents[statusId] ?? {}).values.toList();
             }
-            Utility.debugPrint("Loaded timeline subevent Count " +
-                subEvents.length.toString());
+
             if (state.eventId != null && state.eventId!.isNotEmpty) {
               String eventId = state.eventId!;
               if (eventId.contains(incrementalTilerScrollId) &&
@@ -709,6 +711,7 @@ class _DailyTileListState extends TileListState {
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
+          print("Day tile list refeshing " + state.toString());
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
                 scheduleTimeline: timeLine,

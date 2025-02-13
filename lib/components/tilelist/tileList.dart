@@ -70,6 +70,8 @@ abstract class TileListState<T extends TileList> extends State<T>
   }
 
   void autoRefreshTileList(Duration duration) {
+    print("Schedule auto refresh called " +
+        Utility.currentTime(minuteLimitAccuracy: false).toString());
     Future onTileExpiredCallBack =
         Future.delayed(duration, callScheduleRefresh);
     // ignore: cancel_subscriptions

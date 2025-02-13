@@ -130,7 +130,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
         buttonClickButton(this.emptyDayIndex - 1),
         Container(
           height: (MediaQuery.of(context).size.height) * 0.80,
-          width: (MediaQuery.of(context).size.width) * 0.80,
+          width: (MediaQuery.of(context).size.width) * 0.78,
           padding: EdgeInsets.all(15),
           child: Stack(
             children: [

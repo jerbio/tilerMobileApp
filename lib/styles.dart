@@ -23,9 +23,10 @@ class TileStyles {
 
   static const Color appBarColor = primaryColor;
 
-  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
+  static const Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static const Color errorBackgroundColor = Colors.black54;
   static const Color errorTxtColor = Colors.red;
+  static const Color loadColor = accentColor;
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
