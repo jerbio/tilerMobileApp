@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -32,7 +36,9 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late DateTime selectedDate;
   late int batchCount;
   late int numberOfDays;
-   final CarouselController dayRibbonCarouselController = CarouselController();
+  bool selected = false;
+  Curve curve = Curves.linear;
+  final CarouselController dayRibbonCarouselController = CarouselController();
   Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
   Map<int, Tuple2<int, Timeline>> dayBatchIndexToBatch = {};
   @override
@@ -169,6 +175,99 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     }
   }
 
+  double sliderWidth = 50;
+  double slideLeft = -30;
+  Duration uiRoll = Duration(seconds: 3);
+  double slideTop = 0;
+  Color loaderColor = TileStyles.accentColor;
+
+  Tuple2<Future, StreamSubscription?>? setTimeOutUpdate;
+  ValueKey animatedSliderKey = ValueKey(Utility.getUuid);
+  bool showLoader = false;
+
+  double get resetSlideLeft {
+    return (-sliderWidth) + 1;
+  }
+
+  double get finalSlideLeft {
+    return MediaQuery.of(context).size.width;
+  }
+
+  void infiniteCaller() {
+    setState(() {
+      slideLeft = finalSlideLeft;
+      slideTop = 0;
+    });
+    setTimeOutUpdate = Utility.setTimeOut(
+        duration: uiRoll,
+        callBack: () {
+          setState(() {
+            animatedSliderKey = ValueKey(Utility.getUuid);
+            slideTop = 0;
+            slideLeft = resetSlideLeft;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            infiniteCaller();
+          });
+        });
+  }
+
+  void startSlider() {
+    sliderWidth = MediaQuery.of(context).size.width / 3;
+    slideLeft = (-sliderWidth) + 5;
+    setState(() {
+      showLoader = true;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      infiniteCaller();
+    });
+  }
+
+  void stopSlider() {
+    if (setTimeOutUpdate != null) {
+      if (setTimeOutUpdate!.item2 != null) {
+        setTimeOutUpdate!.item2!.cancel();
+      }
+    }
+    setState(() {
+      showLoader = false;
+    });
+  }
+
+  Widget renderHorizontalLoader() {
+    if (!showLoader) {
+      return SizedBox.shrink();
+    }
+    return AnimatedPositioned(
+      key: animatedSliderKey,
+      bottom: slideTop,
+      left: slideLeft,
+      duration: uiRoll,
+      curve: curve,
+      child: Container(
+        width: sliderWidth,
+        height: 2.5,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: <Color>[
+              loaderColor.withLightness(1),
+              loaderColor.withLightness(0.95),
+              loaderColor.withLightness(0.75),
+              loaderColor.withLightness(0.75),
+              loaderColor.withLightness(0.55),
+              loaderColor.withLightness(0.35),
+            ],
+          ),
+          border: Border.all(
+            color: Colors.white,
+            width: 0.5,
+          ),
+          borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (this.widget.autoUpdateAnchorDate) {
@@ -189,6 +288,25 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           listener: (context, state) {
             if (state is UiDateManagerUpdated) {
               handleDateChange(state);
+            }
+          },
+        ),
+        BlocListener<ScheduleBloc, ScheduleState>(
+          listener: (context, state) {
+            if (state is ScheduleLoadingState) {
+              loaderColor = TileStyles.loadColor;
+              startSlider();
+            }
+
+            if (state is ScheduleLoadedState) {
+              if (state is FailedScheduleLoadedState) {
+                setState(() {
+                  loaderColor = TileStyles.errorTxtColor;
+                });
+                startSlider();
+              } else {
+                stopSlider();
+              }
             }
           },
         ),
@@ -231,7 +349,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           }
 
           if (initialCarouselIndex < 0) {
-            initialCarouselIndex = 0; 
+            initialCarouselIndex = 0;
           }
           return Container(
             margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
@@ -247,16 +365,24 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
             ),
             width: MediaQuery.of(context).size.width,
             height: 130,
-            child: CarouselSlider(
-              carouselController: dayRibbonCarouselController,
-              items: carouselDayRibbonBatch,
-              options: CarouselOptions(
-                viewportFraction: 1,
-                initialPage: initialCarouselIndex,
-                enableInfiniteScroll: false,
-                reverse: false,
-                scrollDirection: Axis.horizontal,
-              ),
+            child: Stack(
+              children: [
+                Container(
+                  width: MediaQuery.of(context).size.width,
+                  child: CarouselSlider(
+                    carouselController: dayRibbonCarouselController,
+                    items: carouselDayRibbonBatch,
+                    options: CarouselOptions(
+                      viewportFraction: 1,
+                      initialPage: initialCarouselIndex,
+                      enableInfiniteScroll: false,
+                      reverse: false,
+                      scrollDirection: Axis.horizontal,
+                    ),
+                  ),
+                ),
+                renderHorizontalLoader()
+              ],
             ),
           );
         }),

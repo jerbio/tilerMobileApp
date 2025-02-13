@@ -574,7 +574,6 @@ class _EditTileState extends State<EditTile> {
       Timeline? lookupTimeline = stateResult.item3;
       this.context.read<ScheduleBloc>().add(GetScheduleEvent(
           isAlreadyLoaded: true,
-          emitOnlyLoadedStated: true,
           previousSubEvents: subEvents,
           scheduleTimeline: lookupTimeline,
           previousTimeline: lookupTimeline,

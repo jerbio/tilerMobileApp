@@ -104,7 +104,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       if (currentState is ScheduleEvaluationState) {
         this.context.read<ScheduleBloc>().add(GetScheduleEvent(
               isAlreadyLoaded: true,
-              emitOnlyLoadedStated: true,
               previousSubEvents: currentState.subEvents,
               scheduleTimeline: currentState.lookupTimeline,
               previousTimeline: currentState.lookupTimeline,

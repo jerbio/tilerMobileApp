@@ -102,9 +102,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
         return this.calendarEventApi.setAsNow(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on setAsNow callback");
@@ -152,9 +150,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on delete callback");
@@ -201,9 +197,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
         return this.calendarEventApi.complete(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on complete callback");

@@ -61,7 +61,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
   late AppLinks _appLinks;
-  final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {

@@ -8,6 +8,7 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
@@ -264,6 +265,8 @@ class _SettingState extends State<Setting> {
         .context
         .read<ScheduleSummaryBloc>()
         .add(LogOutScheduleDaySummaryEvent());
+
+    this.context.read<PreviewSummaryBloc>().add(LogOutPreviewSummaryEvent());
   }
 
   Widget createLogOutButton() {
