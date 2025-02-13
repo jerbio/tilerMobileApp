@@ -29,3 +29,7 @@ final class PreviewSummaryFailed extends PreviewSummaryState {
   @override
   List<Object> get props => [previewSummary ?? PreviewSummary.fromJson({})];
 }
+
+final class PreviewSummaryLoggedOut extends PreviewSummaryState {
+  PreviewSummaryLoggedOut();
+}

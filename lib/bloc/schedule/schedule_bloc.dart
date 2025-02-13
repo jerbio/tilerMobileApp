@@ -77,6 +77,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       }
 
       bool retValue = !isAnalyisTheSame || !isEvaluationTheSame;
+      print("THere is a change to schedule: " + retValue.toString());
       return retValue;
     });
   }
@@ -183,6 +184,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     ScheduleStatus scheduleStatus = new ScheduleStatus();
     bool makeRemoteCall = false;
 
+    var preservedStateResult = preserveState(state);
+
     if (state is ScheduleInitialState) {
       isAlreadyLoaded = false;
       updateTimeline =
@@ -238,14 +241,27 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             eventId: eventId, previousTimeLine: event.previousTimeline);
         return;
       }
+      emit(LocalScheduleLoadedState(
+          subEvents: preservedStateResult.item1,
+          timelines: preservedStateResult.item2,
+          scheduleStatus: preservedStateResult.item5,
+          lookupTimeline: preservedStateResult.item3,
+          previousLookupTimeline: preservedStateResult.item3,
+          currentView: preservedStateResult.item6,
+          eventId: eventId));
       return;
     });
 
     return;
   }
 
-  static Tuple5<List<SubCalendarEvent>?, List<Timeline>?, Timeline?, String?,
-      ScheduleStatus> preserveState(ScheduleState state) {
+  static Tuple6<
+      List<SubCalendarEvent>?,
+      List<Timeline>?,
+      Timeline?,
+      String?,
+      ScheduleStatus,
+      AuthorizedRouteTileListPage> preserveState(ScheduleState state) {
     List<SubCalendarEvent>? subEvents;
     List<Timeline>? timelines;
     Timeline? lookupTimeline;
@@ -273,9 +289,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       scheduleStatus = ScheduleStatus();
     }
 
-    return Tuple5<List<SubCalendarEvent>?, List<Timeline>?, Timeline?, String?,
-            ScheduleStatus>(
-        subEvents, timelines, lookupTimeline, message, scheduleStatus);
+    return Tuple6<List<SubCalendarEvent>?, List<Timeline>?, Timeline?, String?,
+            ScheduleStatus, AuthorizedRouteTileListPage>(subEvents, timelines,
+        lookupTimeline, message, scheduleStatus, state.currentView);
   }
 
   Future<void> _onReviseSchedule(
@@ -324,11 +340,12 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         currentView: state.currentView,
         message: event.message));
     if (event.callBack != null) {
+      print("Calling _onEvaluateSchedule callback");
       await event.callBack!.whenComplete(() async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
-              emitOnlyLoadedStated: true,
+              // emitOnlyLoadedStated: true,
               previousSubEvents: event.renderedSubEvents,
               previousTimeline: event.renderedScheduleTimeline,
               scheduleTimeline: event.renderedScheduleTimeline,

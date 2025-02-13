@@ -30,3 +30,7 @@ class PreviewSummaryLoadedEvent extends PreviewSummaryEvent {
   @override
   List<Object> get props => [previewSummary ?? PreviewSummary.fromJson({})];
 }
+
+class LogOutPreviewSummaryEvent extends PreviewSummaryEvent {
+  const LogOutPreviewSummaryEvent();
+}

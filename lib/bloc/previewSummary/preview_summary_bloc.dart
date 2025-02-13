@@ -14,6 +14,7 @@ class PreviewSummaryBloc
   PreviewSummaryBloc({required Function this.getContextCallBack})
       : super(PreviewSummaryInitial()) {
     on<GetPreviewSummaryEvent>(_onGetPreviewSummary);
+    on<LogOutPreviewSummaryEvent>(_onLoggedOutPreviewSummary);
     previewApi = PreviewApi(getContextCallBack: getContextCallBack);
   }
 
@@ -42,5 +43,10 @@ class PreviewSummaryBloc
         emit(PreviewSummaryFailed(null));
       }
     });
+  }
+
+  Future _onLoggedOutPreviewSummary(LogOutPreviewSummaryEvent event,
+      Emitter<PreviewSummaryState> emit) async {
+    emit(PreviewSummaryLoggedOut());
   }
 }

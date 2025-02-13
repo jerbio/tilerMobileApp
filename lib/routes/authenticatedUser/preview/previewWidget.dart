@@ -151,10 +151,9 @@ class _PreviewState extends State<PreviewWidget> {
           items: carouselDayRibbonBatch,
           options: CarouselOptions(
               viewportFraction: 1,
-              autoPlayInterval:
-                  Duration(seconds: carouselDayRibbonBatch.length * 10),
+              autoPlayInterval: Duration(seconds: 10),
               initialPage: 0,
-              enableInfiniteScroll: true,
+              enableInfiniteScroll: false,
               reverse: false,
               scrollDirection: Axis.horizontal,
               autoPlay: true),

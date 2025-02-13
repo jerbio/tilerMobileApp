@@ -91,6 +91,7 @@ class ScheduleSummaryBloc
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: dayData));
 
     await scheduleApi.getDaySummary(timeline).then((value) async {
+      print("_onGetDayData completion " + value.toString());
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
       emit(ScheduleDaySummaryLoaded(
