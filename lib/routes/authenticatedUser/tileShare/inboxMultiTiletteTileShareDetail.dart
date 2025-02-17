@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/newTileSheet.dart';
+import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -27,7 +27,7 @@ class InboxMultiTiletteTileShareDetailWidget extends StatefulWidget {
 
 class _InboxMultiTiletteTileShareDetailWidget
     extends State<InboxMultiTiletteTileShareDetailWidget> {
-  final TileShareClusterApi clusterApi = TileShareClusterApi();
+  late final TileShareClusterApi clusterApi;
   TileShareClusterData? tileShareCluster;
   late bool? isLoading;
   TilerError? tilerError;
@@ -43,6 +43,7 @@ class _InboxMultiTiletteTileShareDetailWidget
   @override
   void initState() {
     super.initState();
+    clusterApi = TileShareClusterApi(getContextCallBack: () => this.context);
     isTileListLoading = false;
     if (this.widget.tileShareClusterData != null) {
       tileShareCluster = this.widget.tileShareClusterData;
@@ -228,7 +229,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                     topRight: Radius.circular(10))),
             child: Stack(
               children: <Widget>[
-                NewTileSheetWidget(
+                NewTileShareSheetWidget(
                   onAddTile: (NewTile? newTile) {
                     if (newTile != null && tileShareCluster != null) {
                       setState(() {

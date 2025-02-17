@@ -257,7 +257,6 @@
 //   }
 // }
 
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/styles.dart';
@@ -293,6 +292,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     await Future.delayed(Duration(seconds: 3));
     bool nextPage = await Utility.checkOnboardingStatus();
     if (mounted) {
+      Navigator.pop(context);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -302,7 +302,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     }
   }
 
-  Widget _buildPortraitLayout(BuildContext context, double height, double width) {
+  Widget _buildPortraitLayout(
+      BuildContext context, double height, double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -316,7 +317,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  Widget _buildLandscapeLayout(BuildContext context, double height, double width) {
+  Widget _buildLandscapeLayout(
+      BuildContext context, double height, double width) {
     return Row(
       children: [
         Expanded(
@@ -335,7 +337,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: SizedBox(
             height: height,
             child: Transform.scale(
-              scale: 1.5,  // Adjust this value as needed for your animation
+              scale: 1.5, // Adjust this value as needed for your animation
               child: Lottie.asset(
                 "assets/images/welcome-wave.json",
                 fit: BoxFit.contain,

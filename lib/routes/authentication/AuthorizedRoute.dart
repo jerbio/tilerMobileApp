@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -21,21 +19,22 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
-import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/previewSummary.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
@@ -49,52 +48,48 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
-  final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
-  final ScheduleApi scheduleApi = new ScheduleApi();
+  late final PreviewApi previewApi;
+  late final SubCalendarEventApi subCalendarEventApi;
+  late final ScheduleApi scheduleApi;
+  PreviewSummary? previewSummary;
   final AccessManager accessManager = AccessManager();
+  bool renderLocationPermissionOverLay = false;
 
-  Tuple3<Position, bool, bool> locationAccess = Tuple3(
-      Position(
-        altitudeAccuracy: 777.0,
-        headingAccuracy: 0.0,
-        longitude: Location.fromDefault().longitude!,
-        latitude: Location.fromDefault().latitude!,
-        timestamp: Utility.currentTime(),
-        heading: 0,
-        accuracy: 0,
-        altitude: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      ),
-      false,
-      true);
+  LocationProfile locationAccess = LocationProfile.empty();
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
   late AppLinks _appLinks;
-  final _navigatorKey = GlobalKey<NavigatorState>();
   StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
     super.initState();
+    scheduleApi = new ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () {
+      return this.context;
+    });
+    previewApi = PreviewApi(getContextCallBack: () {
+      return this.context;
+    });
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
       localNotificationService.subscribeToRemoteNotification(this.context);
     });
     localNotificationService.initialize(this.context);
-
-    // accessManager.locationAccess(statusCheck: true).then((value) {
-    //   if (this.mounted) {
-    //     setState(() {
-    //       if (value != null) {
-    //         locationAccess = value;
-    //         return;
-    //       }
-    //     });
-    //   }
-    // });
+    previewApi.getSummary(Utility.todayTimeline()).then((value) {
+      this.previewSummary = value;
+    });
+    final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    deviceSettingBloc
+        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc"));
+    scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
   }
 
   void openAppLink(Uri uri) {
@@ -116,7 +111,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (index) {
       case 0:
         {
-          // Navigator.pushNamed(context, '/AddTile');
           AnalysticsSignal.send('TILE_SHARE_BUTTON');
           Navigator.pushNamed(context, '/TileShare');
         }
@@ -177,8 +171,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
+        DateTime dayRibbonDate = Utility.currentTime().dayDate;
+        if (this.context.read<UiDateManagerBloc>().state
+            is UiDateManagerUpdated) {
+          dayRibbonDate = (this.context.read<UiDateManagerBloc>().state
+                  as UiDateManagerUpdated)
+              .currentDate;
+        }
         return DayRibbonCarousel(
-          Utility.currentTime().dayDate,
+          dayRibbonDate,
           autoUpdateAnchorDate: false,
         );
       case AuthorizedRouteTileListPage.Weekly:
@@ -217,10 +218,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return eventNameSearch;
   }
 
-  bool _iskeyboardVisible() {
-    return MediaQuery.of(context).viewInsets.bottom != 0;
-  }
-
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
       onTap: () {
@@ -257,230 +254,36 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   void displayDialog(Size screenSize) {
-    showGeneralDialog(
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.white70,
-      transitionDuration: Duration(milliseconds: 300),
-      pageBuilder: (ctx, anim1, anim2) => AlertDialog(
-        contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
-        insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
-        titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-        backgroundColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.white),
-          borderRadius: BorderRadius.all(
-            Radius.circular(20),
-          ),
-        ),
-        content: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 2),
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
-              colors: [
-                TileStyles.primaryColorHSL.toColor().withOpacity(0.75),
-                TileStyles.primaryColorHSL
-                    .withLightness(TileStyles.primaryColorHSL.lightness + .2)
-                    .toColor()
-                    .withOpacity(0.75),
-              ],
-            ),
-          ),
-          child: SizedBox(
-            height: screenSize.height * 0.3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.of(context).pushNamed('/ForecastPreview');
-                  },
-                  child: ListTile(
-                    leading: SvgPicture.asset('assets/images/binocular.svg'),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        AppLocalizations.of(context)!.forecast,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    AnalysticsSignal.send('REVISE_BUTTON');
-                    this
-                        .context
-                        .read<ScheduleBloc>()
-                        .add(ReviseScheduleEvent());
-                    Navigator.pop(context);
-                  },
-                  child: ListTile(
-                    leading: Icon(Icons.refresh, color: Colors.white),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        AppLocalizations.of(context)!.revise,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                    onTap: () {
-                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/Procrastinate')
-                          .whenComplete(() {
-                        var scheduleBloc =
-                            this.context.read<ScheduleBloc>().state;
-                        Timeline? lookupTimeline;
-                        if (scheduleBloc is ScheduleLoadedState) {
-                          this.context.read<ScheduleBloc>().add(
-                              GetScheduleEvent(
-                                  previousSubEvents: scheduleBloc.subEvents,
-                                  scheduleTimeline: scheduleBloc.lookupTimeline,
-                                  isAlreadyLoaded: true));
-                          lookupTimeline = scheduleBloc.lookupTimeline;
-                        }
-                        if (scheduleBloc is ScheduleInitialState) {
-                          this.context.read<ScheduleBloc>().add(
-                              GetScheduleEvent(
-                                  previousSubEvents: [],
-                                  scheduleTimeline:
-                                      Utility.initialScheduleTimeline,
-                                  isAlreadyLoaded: false));
-                          lookupTimeline = Utility.initialScheduleTimeline;
-                        }
-
-                        refreshScheduleSummary(lookupTimeline);
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.centerLeft,
-                      child: ListTile(
-                        leading: SizedBox(
-                          width: 50,
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  bottom: 0,
-                                  left: -15,
-                                  child: Icon(Icons.chevron_right,
-                                      color: Colors.white)),
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                bottom: 0,
-                                left: 0,
-                                child: Icon(Icons.chevron_right,
-                                    color: Colors.white),
-                              ),
-                              Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  bottom: 0,
-                                  left: 15,
-                                  child: Icon(Icons.chevron_right,
-                                      color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.all(5),
-                        title: Container(
-                          child: Text(
-                            AppLocalizations.of(context)!.deferAll,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontFamily: TileStyles.rubikFontName,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    )),
-                GestureDetector(
-                  onTap: () {
-                    AnalysticsSignal.send('NEW_ADD_TILE');
-                    Navigator.pop(context);
-                    Map<String, dynamic> newTileParams = {'newTile': null};
-
-                    Navigator.pushNamed(context, '/AddTile',
-                        arguments: newTileParams);
-                  },
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        AppLocalizations.of(context)!.addTile,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ),
-        elevation: 2,
-      ),
-      transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
-        filter:
-            ImageFilter.blur(sigmaX: 4 * anim1.value, sigmaY: 4 * anim1.value),
-        child: FadeTransition(
-          child: child,
-          opacity: anim1,
-        ),
-      ),
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(TileStyles.borderRadius)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          child: PreviewAddWidget(
+              previewSummary: previewSummary,
+              onSubmit: (_) {
+                Navigator.pop(context);
+              }),
+        );
+      },
     );
   }
 
-  void locationUpdate(Tuple3<Position, bool, bool> update) {
+  void locationUpdate(LocationProfile locationProfile) {
     setState(() {
-      locationAccess = update;
+      locationAccess = locationProfile;
       isLocationRequestTriggered = true;
     });
   }
 
-  Widget renderLocationRequest(AccessManager accessManager) {
-    return LocationAccessWidget(accessManager, locationUpdate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget renderAuthorizedUserPageView() {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
-    double height = MediaQuery.of(context).size.height;
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
-
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       BlocBuilder<ScheduleBloc, ScheduleState>(
@@ -631,5 +434,55 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<DeviceSettingBloc, DeviceSettingState>(
+            listener: (context, state) {
+              if (state is DeviceLocationSettingUIPending) {
+                if (state.renderLoadingUI == true) {
+                  setState(() {
+                    renderLocationPermissionOverLay = true;
+                  });
+                }
+              }
+
+              if (state is DeviceSettingLoaded) {
+                setState(() {
+                  renderLocationPermissionOverLay = false;
+                });
+              }
+            },
+          ),
+          BlocListener<ScheduleBloc, ScheduleState>(
+            listener: (context, state) {
+              if (state is ScheduleLoadingState ||
+                  state is ScheduleLoadedState) {
+                final previewSummaryBloc =
+                    BlocProvider.of<PreviewSummaryBloc>(context);
+                if (!(previewSummaryBloc.state is PreviewSummaryLoading)) {
+                  previewSummaryBloc.add(GetPreviewSummaryEvent(
+                      timeline: Utility.todayTimeline()));
+                }
+              }
+            },
+          ),
+          BlocListener<PreviewSummaryBloc, PreviewSummaryState>(
+            listener: (context, state) {
+              if (state is PreviewSummaryLoaded) {
+                setState(() {
+                  previewSummary = state.previewSummary;
+                });
+              }
+            },
+          )
+        ],
+        child:
+            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+          return renderAuthorizedUserPageView();
+        }));
   }
 }

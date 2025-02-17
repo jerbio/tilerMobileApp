@@ -9,6 +9,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
@@ -109,13 +110,16 @@ class SignInComponentState extends State<SignInComponent>
         isSpecialChar;
   }
 
-  final authApi = AuthorizationApi();
+  late final AuthorizationApi authApi;
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
 
   @override
   void initState() {
     super.initState();
+    authApi = AuthorizationApi(
+      getContextCallBack: () => context,
+    );
     signinInAnimationController = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
@@ -245,8 +249,20 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        context.read<ScheduleBloc>().add(LogInScheduleEvent(
+              getContextCallBack: () => context,
+            ));
         bool nextPage = await Utility.checkOnboardingStatus();
+
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
+        this.context.read<ScheduleSummaryBloc>().add(
+              GetScheduleDaySummaryEvent(
+                  timeline: Utility.initialScheduleTimeline),
+            );
+        print("is sign in valid" + isValidSignIn.toString());
         Navigator.pop(context);
         Navigator.push(
           context,
@@ -260,7 +276,6 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
-        print(isValidSignIn);
         setState(() {
           isPendingSigning = false;
         });
@@ -292,7 +307,9 @@ class SignInComponentState extends State<SignInComponent>
         });
         SystemChannels.textInput.invokeMethod('TextInput.hide');
         showMessage(AppLocalizations.of(context)!.registeringUser);
-        AuthorizationApi authorization = new AuthorizationApi();
+        AuthorizationApi authorization = new AuthorizationApi(
+          getContextCallBack: () => context,
+        );
         UserPasswordAuthenticationData authenticationData =
             await authorization.registerUser(
                 emailEditingController.text,
@@ -491,7 +508,9 @@ class SignInComponentState extends State<SignInComponent>
     setState(() {
       isPendingSigning = true;
     });
-    AuthorizationApi authorizationApi = AuthorizationApi();
+    AuthorizationApi authorizationApi = AuthorizationApi(
+      getContextCallBack: () => context,
+    );
     AuthResult? authenticationData =
         await authorizationApi.signInToGoogle().then((value) {
       AnalysticsSignal.send('GOOGLE_SIGNUP_SUCCESSFUL');
@@ -517,7 +536,9 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        context.read<ScheduleBloc>().add(LogInScheduleEvent());
+        context.read<ScheduleBloc>().add(LogInScheduleEvent(
+              getContextCallBack: () => context,
+            ));
         bool nextPage = await Utility.checkOnboardingStatus();
         Navigator.pop(context);
         Navigator.push(

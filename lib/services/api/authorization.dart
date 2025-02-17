@@ -17,6 +17,8 @@ import '../../data/forgot_password_response.dart';
 import 'thirdPartyAuthResult.dart';
 
 class AuthorizationApi extends AppApi {
+  AuthorizationApi({required Function? getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<UserPasswordAuthenticationData> registerUser(
       String email,
       String password,

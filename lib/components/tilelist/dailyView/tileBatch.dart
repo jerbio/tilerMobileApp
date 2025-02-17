@@ -21,7 +21,7 @@ class TileBatch extends StatefulWidget {
   static final TextStyle dayHeaderTextStyle = TextStyle(
       fontSize: 40,
       fontFamily: TileStyles.rubikFontName,
-      color: TileStyles.primaryColorDarkHSL.toColor(),
+      color: TileStyles.primaryColor,
       fontWeight: FontWeight.w700);
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
@@ -235,6 +235,7 @@ class TileBatchState extends State<TileBatch> {
         height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
         width: MediaQuery.sizeOf(context).width,
         child: ListView(
+          shrinkWrap: true,
           children: [
             animatedList!,
             MediaQuery.of(context).orientation == Orientation.landscape

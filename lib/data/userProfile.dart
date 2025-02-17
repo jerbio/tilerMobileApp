@@ -43,4 +43,17 @@ class UserProfile {
       phoneNumber = json['phoneNumber'];
     }
   }
+
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': this.id,
+      'username': this.username,
+      'timeZone': this.timezone,
+      'timeZoneDifference': this.timezoneDiff,
+      'email': this.email,
+      'endOfDay': this.endOfDay,
+      'fullName': this.fullName,
+      'phoneNumber': this.phoneNumber
+    };
+  }
 }

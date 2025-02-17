@@ -177,6 +177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "8.9.3"
+  cancelable:
+    dependency: "direct main"
+    description:
+      name: cancelable
+      sha256: "4feb6cc6f3349243a7686ebf96c0583f51e5a4ad0fff0cc8bea0e52ae6f4158a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.2.1"
   carousel_slider:
     dependency: "direct main"
     description:
@@ -1433,14 +1441,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0+1"
-  switch_up:
-    dependency: "direct main"
-    description:
-      name: switch_up
-      sha256: "28b7b5dbfec6104f185352de8d0d4690a1dc0082ca06792940d6f9c9c4a3315e"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2+1"
   table_calendar:
     dependency: "direct main"
     description:
@@ -1489,6 +1489,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  toggle_switch:
+    dependency: "direct main"
+    description:
+      name: toggle_switch
+      sha256: dca04512d7c23ed320d6c5ede1211a404f177d54d353bf785b07d15546a86ce5
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.3.0"
   tuple:
     dependency: "direct main"
     description:

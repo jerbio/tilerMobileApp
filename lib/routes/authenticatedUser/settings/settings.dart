@@ -8,6 +8,7 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
@@ -37,9 +38,9 @@ class Setting extends StatefulWidget {
 
 class _SettingState extends State<Setting> {
   Authentication authentication = Authentication();
-  AuthorizationApi _authorizationApi = AuthorizationApi();
+  late AuthorizationApi _authorizationApi;
   SecureStorageManager secureStorageManager = SecureStorageManager();
-  SettingsApi settingsApi = SettingsApi();
+  late SettingsApi settingsApi;
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
   StartOfDay? endOfDay;
@@ -161,6 +162,9 @@ class _SettingState extends State<Setting> {
   @override
   void initState() {
     super.initState();
+    this.settingsApi = SettingsApi(getContextCallBack: () => context);
+    this._authorizationApi =
+        AuthorizationApi(getContextCallBack: () => context);
     settingsApi.getUserRestrictionProfile().then((value) {
       setState(() {
         isAllRestrictionProfileLoaded = true;
@@ -236,7 +240,7 @@ class _SettingState extends State<Setting> {
     await authentication.deauthenticateCredentials();
     await secureStorageManager.deleteAllStorageData();
     Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
-    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent());
+    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
     this
         .context
         .read<SubCalendarTileBloc>()
@@ -261,6 +265,8 @@ class _SettingState extends State<Setting> {
         .context
         .read<ScheduleSummaryBloc>()
         .add(LogOutScheduleDaySummaryEvent());
+
+    this.context.read<PreviewSummaryBloc>().add(LogOutPreviewSummaryEvent());
   }
 
   Widget createLogOutButton() {

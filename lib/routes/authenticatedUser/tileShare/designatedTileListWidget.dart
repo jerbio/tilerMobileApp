@@ -13,7 +13,7 @@ class DesignatedTileList extends StatefulWidget {
 }
 
 class _DesignatedTileListState extends State<DesignatedTileList> {
-  TileShareClusterApi tileClusterApi = TileShareClusterApi();
+  late TileShareClusterApi tileClusterApi;
   List<DesignatedTile> designatedTiles = [];
   ScrollController? _scrollController;
   int index = 0;
@@ -23,6 +23,10 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
   @override
   void initState() {
     super.initState();
+    tileClusterApi = TileShareClusterApi(
+      getContextCallBack: () => context,
+    );
+
     if (this.widget.designatedTiles == null) {
       _scrollController = new ScrollController();
       getTiles();

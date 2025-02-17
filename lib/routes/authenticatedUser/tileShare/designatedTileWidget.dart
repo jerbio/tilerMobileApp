@@ -24,19 +24,28 @@ class DesignatedTileWidget extends StatefulWidget {
 
 class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   bool _isLoading = false;
+  late final TileShareClusterApi tileClusterApi;
+  late final ScheduleApi scheduleApi;
+  late final WhatIfApi whatIfApi;
   bool _isForeCastLoading = false;
   bool _isForeCastError = false;
   bool showNotes = false;
   bool showForecasts = false;
-  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
-  final ScheduleApi scheduleApi = ScheduleApi();
-  final WhatIfApi whatIfApi = WhatIfApi();
   String _responseMessage = '';
   late DesignatedTile designatedTile;
   ForecastResponse? forecastResponse = null;
   @override
   void initState() {
     super.initState();
+    tileClusterApi = TileShareClusterApi(getContextCallBack: () {
+      return this.context;
+    });
+    scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    whatIfApi = WhatIfApi(getContextCallBack: () {
+      return this.context;
+    });
     this.designatedTile = this.widget.designatedTile;
   }
 
@@ -408,7 +417,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             ? CircularProgressIndicator()
             : ElevatedButton(
                 child: FaIcon(
-                  FontAwesomeIcons.binoculars,
+                  TileStyles.forecastIcon,
                   color: TileStyles.primaryColor,
                   size: iconSize,
                 ),

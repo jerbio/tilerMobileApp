@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TileStyles {
   static final double tileWidth = 350;
@@ -16,14 +17,16 @@ class TileStyles {
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
+  static const Color primaryContrastTextColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
   static const Color black = Colors.black;
 
   static const Color appBarColor = primaryColor;
 
-  static Color accentColor = Color.fromRGBO(179, 194, 242, 1);
+  static const Color accentColor = Color.fromRGBO(179, 194, 242, 1);
   static const Color errorBackgroundColor = Colors.black54;
   static const Color errorTxtColor = Colors.red;
+  static const Color loadColor = accentColor;
   static HSLColor primaryColorHSL = HSLColor.fromColor(primaryColor);
   static HSLColor primaryColorDarkHSL = HSLColor.fromColor(primaryColor)
       .withLightness(HSLColor.fromColor(primaryColor).lightness - 0.3);
@@ -368,11 +371,26 @@ class TileStyles {
     Color.fromRGBO(56, 174, 204, 1),
     Color.fromRGBO(102, 195, 84, 1)
   ];
+
+  static const List<Color> chartHues = [
+    Color.fromRGBO(239, 131, 84, 1),
+    Color.fromRGBO(79, 93, 117, 1),
+    Color.fromRGBO(239, 176, 167, 1),
+    Color.fromRGBO(148, 168, 154, 1),
+    Color.fromRGBO(23, 190, 187, 1),
+    Color.fromRGBO(205, 83, 52, 1),
+    Color.fromRGBO(237, 184, 139, 1),
+    Color.fromRGBO(55, 114, 255, 1),
+    Color.fromRGBO(85, 40, 111, 1),
+    Color.fromRGBO(56, 174, 204, 1),
+    Color.fromRGBO(102, 195, 84, 1)
+  ];
   static const Color gridLineColor = primaryColor;
   static const double thickness = 1.0;
   static const double timeOfDayCellWidth = 35;
 
   static IconData restrictionProfileIcon = Icons.switch_left;
   static IconData repetitionIcon = Icons.repeat_outlined;
+  static IconData forecastIcon = FontAwesomeIcons.binoculars;
   static const double defaultCardElevation = 5.0;
 }

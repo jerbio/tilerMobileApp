@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:tiler_app/data/location.dart';
 import 'dart:math' as Math;
 import 'package:tiler_app/services/localizationService.dart';
 
@@ -259,6 +260,17 @@ class Utility {
     return retValue;
   }
 
+  static Timeline restOfTodayTimeline() {
+    DateTime currentTime = Utility.currentTime();
+    DateTime begin = new DateTime(currentTime.year, currentTime.month,
+        currentTime.day, currentTime.hour, currentTime.minute);
+    DateTime end = begin.add(Utility.oneDay);
+
+    Timeline retValue =
+        Timeline(begin.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+    return retValue;
+  }
+
   static Duration durationDifference(DateTime a, DateTime b) {
     int durationInMs = utcEpochMillisecondsFromDateTime(a) -
         utcEpochMillisecondsFromDateTime(b);
@@ -311,6 +323,10 @@ class Utility {
       return _phoneRegex.hasMatch(phoneNumber);
     }
     return false;
+  }
+
+  static bool isKeyboardVisible(BuildContext context) {
+    return MediaQuery.of(context).viewInsets.bottom != 0;
   }
 
   static Tuple2<List<Timeline>, List<SubCalendarEvent>> generateAdhocSubEvents(
@@ -823,6 +839,16 @@ class Utility {
 extension DurationHuman on Duration {
   String get toHuman {
     return Utility.toHuman(this, includeSeconds: false);
+  }
+}
+
+extension TilerLocation on Position {
+  Location? get toLocation {
+    if (this != Utility._defaultPosition) {
+      return Location.fromLatitudeAndLongitude(
+          latitude: latitude, longitude: longitude);
+    }
+    return null;
   }
 }
 
