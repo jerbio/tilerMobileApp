@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:appinio_swiper/appinio_swiper.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
-import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -26,6 +24,7 @@ class EmptyDayTile extends StatefulWidget {
 class EmptyDayTileState extends State<EmptyDayTile> {
   late List<AutoTile> autoTiles;
   late int emptyDayIndex;
+  final AppinioSwiperController controller = AppinioSwiperController();
   @override
   void initState() {
     Map<int, List<AutoTile>> autoTilesByDuration =
@@ -124,6 +123,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
   @override
   Widget build(BuildContext context) {
+    var cardData =
+        autoTiles.where((autoTile) => autoTile.image != null).toList();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -184,116 +185,130 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       )),
                 ),
               ),
-              // AppinioSwiper(
-              //   cards: autoTiles
-              //       .where((autoTile) => autoTile.image != null)
-              //       .map((autoTile) {
-              //     return Container(
-              //       child: Column(
-              //         children: [
-              //           Expanded(
-              //               child: ClipRRect(
-              //                   borderRadius: const BorderRadius.only(
-              //                     topLeft: Radius.circular(8),
-              //                     topRight: Radius.circular(8),
-              //                   ),
-              //                   child: Image.asset(
-              //                     autoTile.image!,
-              //                     fit: BoxFit.cover,
-              //                   ))),
-              //           FractionallySizedBox(
-              //             alignment: FractionalOffset.center,
-              //             widthFactor: 1,
-              //             child: Container(
-              //               height: 250,
-              //               decoration: BoxDecoration(
-              //                 borderRadius: BorderRadius.only(
-              //                     bottomLeft: Radius.circular(10),
-              //                     bottomRight: Radius.circular(10)),
-              //                 color: Colors.white,
-              //                 boxShadow: [
-              //                   BoxShadow(
-              //                     color: Colors.black87.withOpacity(0.2),
-              //                     spreadRadius: 1,
-              //                     blurRadius: 1,
-              //                     blurStyle: BlurStyle.normal,
-              //                     offset: Offset(0, 1),
-              //                   ),
-              //                 ],
-              //               ),
-              //               child: Column(
-              //                 crossAxisAlignment: CrossAxisAlignment.start,
-              //                 children: [
-              //                   Flexible(
-              //                       child: Container(
-              //                           padding:
-              //                               EdgeInsets.fromLTRB(20, 10, 20, 0),
-              //                           child: Text(
-              //                             autoTile.description,
-              //                             style: TileStyles
-              //                                 .fullScreenTextFieldStyle,
-              //                           ))),
-              //                   Flexible(
-              //                       child: Container(
-              //                           padding:
-              //                               EdgeInsets.fromLTRB(20, 10, 20, 10),
-              //                           child: Text(
-              //                             autoTile.isLastCard
-              //                                 ? '   '
-              //                                 : (autoTile.duration?.toHuman ??
-              //                                     ''),
-              //                             style: TextStyle(
-              //                                 color: Colors.grey,
-              //                                 fontSize: 16,
-              //                                 fontFamily:
-              //                                     TileStyles.rubikFontName,
-              //                                 fontWeight: FontWeight.w500),
-              //                           ))),
-              //                   Flexible(
-              //                       child: Container(
-              //                           padding:
-              //                               EdgeInsets.fromLTRB(20, 0, 20, 0),
-              //                           child: Text(
-              //                             autoTile.isLastCard
-              //                                 ? '   '
-              //                                 : '(' +
-              //                                     AppLocalizations.of(context)!
-              //                                         .swipeRightToTileIt +
-              //                                     ')',
-              //                             style: TextStyle(
-              //                                 color: Colors.grey,
-              //                                 fontSize: 16,
-              //                                 fontFamily:
-              //                                     TileStyles.rubikFontName,
-              //                                 fontWeight: FontWeight.w500),
-              //                           )))
-              //                 ],
-              //               ),
-              //             ),
-              //           )
-              //         ],
-              //       ),
-              //     );
-              //   }).toList(),
-              //   onSwipe: (index, direction) {
-              //     AutoTile autoTile = autoTiles[index];
-              //     if (autoTile.isLastCard) {
-              //       return;
-              //     }
-              //     if (AppinioSwiperDirection.right == direction) {
-              //       AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
-              //         'description': autoTile.description,
-              //         'duration': autoTile.duration?.inMilliseconds ?? -1
-              //       });
-              //       Navigator.push(
-              //           context,
-              //           MaterialPageRoute(
-              //               builder: (context) => AddTile(
-              //                   autoTile: autoTile,
-              //                   autoDeadline: this.widget.deadline)));
-              //     }
-              //   },
-              // )
+              AppinioSwiper(
+                controller: controller,
+                cardCount: cardData.length,
+                onSwipeEnd: (previousIndex, index, activity) {
+                  AutoTile autoTile = autoTiles[index];
+                  if (autoTile.isLastCard) {
+                    return;
+                  }
+                  switch (activity) {
+                    case Swipe():
+                      if (activity.direction == AxisDirection.right) {
+                        AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
+                          'description': autoTile.description,
+                          'duration': autoTile.duration?.inMilliseconds ?? -1
+                        });
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddTile(
+                                    autoTile: autoTile,
+                                    autoDeadline: this.widget.deadline)));
+                      }
+
+                      break;
+                    case Unswipe():
+                      break;
+                    case CancelSwipe():
+                      break;
+                    case DrivenActivity():
+                      break;
+                  }
+                },
+                swipeOptions: SwipeOptions.only(left: true, right: true),
+                cardBuilder: (BuildContext context, int index) {
+                  AutoTile autoTile = autoTiles[index];
+
+                  return Container(
+                    child: Column(
+                      children: [
+                        Expanded(
+                            child: ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  topRight: Radius.circular(8),
+                                ),
+                                child: Image.asset(
+                                  autoTile.image!,
+                                  fit: BoxFit.cover,
+                                ))),
+                        FractionallySizedBox(
+                          alignment: FractionalOffset.center,
+                          widthFactor: 1,
+                          child: Container(
+                            height: 250,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                  bottomLeft: Radius.circular(10),
+                                  bottomRight: Radius.circular(10)),
+                              color: Colors.white,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black87.withOpacity(0.2),
+                                  spreadRadius: 1,
+                                  blurRadius: 1,
+                                  blurStyle: BlurStyle.normal,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Flexible(
+                                    child: Container(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 10, 20, 0),
+                                        child: Text(
+                                          autoTile.description,
+                                          style: TileStyles
+                                              .fullScreenTextFieldStyle,
+                                        ))),
+                                Flexible(
+                                    child: Container(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 10, 20, 10),
+                                        child: Text(
+                                          autoTile.isLastCard
+                                              ? '   '
+                                              : (autoTile.duration?.toHuman ??
+                                                  ''),
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 16,
+                                              fontFamily:
+                                                  TileStyles.rubikFontName,
+                                              fontWeight: FontWeight.w500),
+                                        ))),
+                                Flexible(
+                                    child: Container(
+                                        padding:
+                                            EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                        child: Text(
+                                          autoTile.isLastCard
+                                              ? '   '
+                                              : '(' +
+                                                  AppLocalizations.of(context)!
+                                                      .swipeRightToTileIt +
+                                                  ')',
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 16,
+                                              fontFamily:
+                                                  TileStyles.rubikFontName,
+                                              fontWeight: FontWeight.w500),
+                                        )))
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  );
+                },
+              )
             ],
           ),
         ),
@@ -304,7 +319,6 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
   @override
   void dispose() {
-    // this.enableTileListCarousel();
     super.dispose();
   }
 }
