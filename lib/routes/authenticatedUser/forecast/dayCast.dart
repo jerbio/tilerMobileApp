@@ -335,10 +335,12 @@ class _WidgetGoogleMapState extends State<DayCast> {
     final finishPoint = PointLatLng(finish.latitude, finish.longitude);
     String APIKEY = dotenv.env[Constants.googleMapsApiKey] ?? "";
 
+    PolylineRequest polylineRequest = PolylineRequest(
+        mode: TravelMode.driving, origin: startPoint, destination: finishPoint);
+
     final result = await polylinePoints.getRouteBetweenCoordinates(
-      APIKEY,
-      startPoint,
-      finishPoint,
+      request: polylineRequest,
+      googleApiKey: APIKEY,
     );
 
     if (result.points.isNotEmpty) {
