@@ -45,11 +45,18 @@ class EventNameSearchWidget extends SearchWidget {
 enum LookupStatus { NotStarted, Pending, Finished, Failed }
 
 class EventNameSearchState extends SearchWidgetState {
-  TileNameApi tileNameApi = new TileNameApi();
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late TileNameApi tileNameApi;
+  late CalendarEventApi calendarEventApi;
   TextEditingController textController = TextEditingController();
   List<Widget> nameSearchResult = [];
   LookupStatus _lookupStatus = LookupStatus.NotStarted;
+
+  @override
+  void initState() {
+    super.initState();
+    calendarEventApi = new CalendarEventApi(getContextCallBack: () => context);
+    tileNameApi = new TileNameApi(getContextCallBack: () => context);
+  }
 
   Tuple4<List<SubCalendarEvent>, List<Timeline>, Timeline, ScheduleStatus>
       getPriorStateVariables() {
@@ -95,9 +102,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_SETASNOW_REQUEST');
         return this.calendarEventApi.setAsNow(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on setAsNow callback");
@@ -145,9 +150,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
         return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on delete callback");
@@ -194,9 +197,7 @@ class EventNameSearchState extends SearchWidgetState {
       Function generateCallBack = () {
         AnalysticsSignal.send('NAME_SEARCH_COMPLETE_REQUEST');
         return this.calendarEventApi.complete(tileId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                emitOnlyLoadedStated: true,
-              ));
+          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
           refreshScheduleSummary();
         }).onError((error, stackTrace) {
           print("Error in eventname search on complete callback");

@@ -10,13 +10,16 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 
+/// This renders the list of tiles on a given day
 abstract class TileList extends StatefulWidget {
+  static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
   @override
@@ -67,6 +70,8 @@ abstract class TileListState<T extends TileList> extends State<T>
   }
 
   void autoRefreshTileList(Duration duration) {
+    print("Schedule auto refresh called " +
+        Utility.currentTime(minuteLimitAccuracy: false).toString());
     Future onTileExpiredCallBack =
         Future.delayed(duration, callScheduleRefresh);
     // ignore: cancel_subscriptions
@@ -317,7 +322,9 @@ abstract class TileListState<T extends TileList> extends State<T>
             var future = Future.delayed(
                 const Duration(milliseconds: Constants.autoHideInMs));
             var hideNewSheeTileFuture = future.asStream().listen((input) {
-              Navigator.pop(context);
+              if (context != null && context.mounted) {
+                Navigator.pop(context);
+              }
             });
 
             return ElevatedButton(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/dateInput.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
-import 'package:tiler_app/components/newTileSheet.dart';
+import 'package:tiler_app/components/newTileShareSheetWidget.dart';
 import 'package:tiler_app/components/textInputWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
@@ -31,7 +31,7 @@ class _CreateTileShareClusterWidgetState
   final TileShareClusterData tileClusterData = TileShareClusterData();
   List<Contact> contacts = <Contact>[];
   final List<NewTile> _tileTemplates = <NewTile>[];
-  final TileShareClusterApi tileClusterApi = TileShareClusterApi();
+  late final TileShareClusterApi tileClusterApi;
   DateTime? _endTime;
   Duration? _duration;
   Function? onProceedResponse;
@@ -42,6 +42,8 @@ class _CreateTileShareClusterWidgetState
   @override
   void initState() {
     super.initState();
+    tileClusterApi =
+        TileShareClusterApi(getContextCallBack: () => this.context);
     if (this.widget.isMultiTilette != null) {
       isMultiTilette = this.widget.isMultiTilette!;
     }
@@ -128,7 +130,7 @@ class _CreateTileShareClusterWidgetState
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                NewTileSheetWidget(
+                NewTileShareSheetWidget(
                   newTile: currentTile,
                   onAddTile: (newTile) {
                     if (currentTile == null) {

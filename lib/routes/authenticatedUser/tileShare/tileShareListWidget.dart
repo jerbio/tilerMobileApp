@@ -13,17 +13,19 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class TileShareList extends StatefulWidget {
+class TileShareListWidget extends StatefulWidget {
   final List<TileShareClusterData>? clusters;
   final bool? isOutBox;
-  TileShareList({this.clusters, this.isOutBox, Key? key}) : super(key: key);
+  TileShareListWidget({this.clusters, this.isOutBox, Key? key})
+      : super(key: key);
   @override
-  State<StatefulWidget> createState() => _TileShareListState();
+  State<StatefulWidget> createState() => _TileShareListWidgetState();
 }
 
-class _TileShareListState extends State<TileShareList>
+class _TileShareListWidgetState extends State<TileShareListWidget>
     with SingleTickerProviderStateMixin {
-  TileShareClusterApi tileClusterApi = TileShareClusterApi();
+  late TileShareClusterApi tileClusterApi;
+
   ScrollController? _scrollController;
   int index = 0;
   final int requestPageSize = 10;
@@ -38,6 +40,8 @@ class _TileShareListState extends State<TileShareList>
   @override
   void initState() {
     super.initState();
+    tileClusterApi =
+        TileShareClusterApi(getContextCallBack: () => this.context);
     if (this.widget.isOutBox != null) {
       isOubox = this.widget.isOutBox!;
     } else {

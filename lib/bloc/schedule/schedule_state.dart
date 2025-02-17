@@ -50,8 +50,7 @@ abstract class ScheduleState extends Equatable {
         subEvents: subEvents,
         timelines: timelines,
         scheduleStatus: scheduleStatus,
-        currentView: currentView
-    );
+        currentView: currentView);
   }
 }
 
@@ -62,7 +61,9 @@ class ScheduleInitialState extends ScheduleState {
 }
 
 class ScheduleLoggedOutState extends ScheduleState {
-  ScheduleLoggedOutState({AuthorizedRouteTileListPage currentView = AuthorizedRouteTileListPage.Daily})
+  ScheduleLoggedOutState(
+      {AuthorizedRouteTileListPage currentView =
+          AuthorizedRouteTileListPage.Daily})
       : super(currentView: currentView);
 }
 
@@ -79,8 +80,7 @@ class PriorScheduleState {
       required this.subEvents,
       required this.timelines,
       required this.scheduleStatus,
-      required this.currentView
-      });
+      required this.currentView});
 }
 
 class ScheduleLoadingState extends ScheduleState {
@@ -105,11 +105,11 @@ class ScheduleLoadingState extends ScheduleState {
       required this.previousLookupTimeline,
       required this.currentView,
       this.eventId,
-      this.message
-      }) : super(currentView: currentView);
+      this.message})
+      : super(currentView: currentView);
 
   @override
-  List<Object> get props => [subEvents,currentView];
+  List<Object> get props => [subEvents, currentView];
 }
 
 class ScheduleLoadedState extends ScheduleState {
@@ -128,10 +128,18 @@ class ScheduleLoadedState extends ScheduleState {
       required this.scheduleStatus,
       required this.previousLookupTimeline,
       required this.currentView,
-      this.eventId}): super(currentView: currentView);
+      this.eventId})
+      : super(currentView: currentView);
 
   @override
-  List<Object> get props => [currentView];
+  List<Object> get props => [
+        currentView,
+        ...this.timelines,
+        lookupTimeline.toString(),
+        scheduleStatus.analysisId ?? "",
+        scheduleStatus.evaluationId ?? "",
+        eventId ?? ""
+      ];
 }
 
 class DelayedScheduleLoadedState extends ScheduleLoadedState {
@@ -150,8 +158,7 @@ class DelayedScheduleLoadedState extends ScheduleLoadedState {
             lookupTimeline: lookupTimeline,
             scheduleStatus: scheduleStatus,
             previousLookupTimeline: previousLookupTimeline,
-            currentView: currentView
-      );
+            currentView: currentView);
 }
 
 class ScheduleLoadingTaskState extends ScheduleState {
@@ -229,6 +236,11 @@ class ScheduleEvaluationState extends ScheduleState {
       this.previousLookupTimeline});
 
   @override
-  List<Object> get props => [subEvents,currentView];
+  List<Object> get props => [
+        message ?? "",
+        subEvents,
+        currentView,
+        timelines,
+        lookupTimeline.toString()
+      ];
 }
-

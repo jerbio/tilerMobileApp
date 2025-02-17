@@ -10,6 +10,8 @@ import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class DesignatedTileApi extends AppApi {
+  DesignatedTileApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future addContact(String designatedTileId, ContactModel contactModel) async {
     TilerError error = new TilerError();
     error.message = "Did not send request";

@@ -13,6 +13,8 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
 class SubCalendarEventApi extends AppApi {
+  SubCalendarEventApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<SubCalendarEvent> getSubEvent(String id,
       {String calendarSource = "", String thirdPartyUserId = ""}) async {
     // return getAdHocSubEventId(id);
@@ -274,8 +276,9 @@ class SubCalendarEventApi extends AppApi {
       error.message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          var deleteCalendarEventJson = jsonResult['Content'];
-          if (!deleteCalendarEventJson is String) {
+          Map<String, dynamic>? deleteCalendarEventJson =
+              jsonResult['Content'] as Map<String, dynamic>?;
+          if (deleteCalendarEventJson != null) {
             return CalendarEvent.fromJson(deleteCalendarEventJson);
           }
         } else {

@@ -131,7 +131,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
         buttonClickButton(this.emptyDayIndex - 1),
         Container(
           height: (MediaQuery.of(context).size.height) * 0.80,
-          width: (MediaQuery.of(context).size.width) * 0.80,
+          width: (MediaQuery.of(context).size.width) * 0.78,
           padding: EdgeInsets.all(15),
           child: Stack(
             children: [
@@ -204,7 +204,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => AddTile(
-                                    autoTile: autoTile,
+                                    preTile: autoTile,
                                     autoDeadline: this.widget.deadline)));
                       }
 
@@ -238,7 +238,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                           alignment: FractionalOffset.center,
                           widthFactor: 1,
                           child: Container(
-                            height: 250,
+                            height: 125,
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(10),
@@ -262,7 +262,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                         padding:
                                             EdgeInsets.fromLTRB(20, 10, 20, 0),
                                         child: Text(
-                                          autoTile.description,
+                                          autoTile.description ?? "",
                                           style: TileStyles
                                               .fullScreenTextFieldStyle,
                                         ))),

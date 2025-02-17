@@ -8,6 +8,8 @@ import 'dart:convert';
 import '../../constants.dart' as Constants;
 
 class TileNameApi extends AppApi {
+  TileNameApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<List<TilerEvent>>? chainPending;
 
   var nextRequestParams = [];
