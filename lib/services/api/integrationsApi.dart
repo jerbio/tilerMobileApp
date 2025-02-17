@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
 class IntegrationApi extends AppApi {
+  IntegrationApi({required Function? getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<List<CalendarIntegration>?> integrations(
       {String? integrationId}) async {
     if ((await this.authentication.isUserAuthenticated()).item1) {

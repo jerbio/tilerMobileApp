@@ -18,13 +18,17 @@ part 'schedule_summary_state.dart';
 
 class ScheduleSummaryBloc
     extends Bloc<ScheduleSummaryEvent, ScheduleSummaryState> {
-  ScheduleApi scheduleApi = ScheduleApi();
-  SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  ScheduleSummaryBloc() : super(ScheduleSummaryInitial()) {
-    on<GetScheduleDaySummaryEvent>(_onGetDayData,transformer:restartable() );
+  late ScheduleApi scheduleApi;
+  late SubCalendarEventApi subCalendarEventApi;
+  ScheduleSummaryBloc({required Function getContextCallBack})
+      : super(ScheduleSummaryInitial()) {
+    on<GetScheduleDaySummaryEvent>(_onGetDayData, transformer: restartable());
     on<LogOutScheduleDaySummaryEvent>(_onLogOutScheduleDaySummaryEvent);
     on<GetElapsedTasksEvent>(_onGetElapsedTasks);
     on<CompleteTaskEvent>(_onCompleteTask);
+    subCalendarEventApi =
+        SubCalendarEventApi(getContextCallBack: getContextCallBack);
+    scheduleApi = new ScheduleApi(getContextCallBack: getContextCallBack);
   }
 
   List<TilerEvent> _getElapsedTasks(List<TimelineSummary> daySummaries) {
@@ -49,7 +53,6 @@ class ScheduleSummaryBloc
         elapsedTasks.addAll(
             summary.nonViable!.where((task) => task.endTime.isBefore(now)));
       }
-    
     }
     return elapsedTasks;
   }
@@ -88,6 +91,7 @@ class ScheduleSummaryBloc
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: dayData));
 
     await scheduleApi.getDaySummary(timeline).then((value) async {
+      print("_onGetDayData completion " + value.toString());
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
       emit(ScheduleDaySummaryLoaded(
@@ -125,8 +129,6 @@ class ScheduleSummaryBloc
     return true;
   }
 
-  
-
   Future<bool> completeTasks(String id, String type, String userId) async {
     try {
       await subCalendarEventApi.completeTiles(id, type, userId);
@@ -136,11 +138,9 @@ class ScheduleSummaryBloc
     }
   }
 
-  
-
   FutureOr<void> _onLogOutScheduleDaySummaryEvent(
       LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {
-    scheduleApi = new ScheduleApi();
+    scheduleApi = new ScheduleApi(getContextCallBack: () => null);
     emit(LoggedOutScheduleSummaryState());
   }
 }

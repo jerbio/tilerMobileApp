@@ -39,7 +39,7 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => AddTile(autoTile: autoTile)));
+                    builder: (context) => AddTile(preTile: autoTile)));
           },
           child: Container(
               // padding: EdgeInsets.all(20),

@@ -44,11 +44,12 @@ class _SummaryPage extends State<SummaryPage> {
   List<bool> unscheduledTilesCheckStates = [];
   List<bool> lateTilesCheckStates = [];
   List<SubCalendarEvent> selectedUnscheduledItems = [];
-  ScheduleApi scheduleApi = ScheduleApi();
+  late ScheduleApi scheduleApi;
 
   @override
   void initState() {
     super.initState();
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
     initialize();
   }
 
@@ -109,7 +110,9 @@ class _SummaryPage extends State<SummaryPage> {
       analysis = value;
       if (analysis == null) {
         isLoadingAnalysis = false;
-        setState(() {});
+        if (this.mounted) {
+          setState(() {});
+        }
         return;
       }
 

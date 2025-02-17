@@ -40,7 +40,7 @@ class LocalNotificationService {
   static Map<NotificationIdTypes, _NotificationDetailFormat>? channelDetails;
   static final _localNotificationService = FlutterLocalNotificationsPlugin();
   NotificationData _notificationData = NotificationData.noCredentials();
-  UserApi userApi = UserApi();
+  UserApi userApi = UserApi(getContextCallBack: () => null);
   SecureStorageManager _storageManager = SecureStorageManager();
 
   Future<void> initialize(BuildContext context) async {
@@ -152,7 +152,8 @@ class LocalNotificationService {
       scheduleStatus = scheduleState.scheduleStatus;
     }
 
-    var subCalendarEventApi = SubCalendarEventApi();
+    var subCalendarEventApi = SubCalendarEventApi(
+        getContextCallBack: () => context.read<ScheduleBloc>());
 
     var requestFuture = subCalendarEventApi.complete((subTile));
 

@@ -16,7 +16,8 @@ class DayStatusApi {
   Future<DayStatus> getAdHocDayStatus(int dayInMs) async {
     DayStatus retValue = new DayStatus();
     retValue.dayDate = DateTime.fromMillisecondsSinceEpoch((dayInMs));
-    SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
+    SubCalendarEventApi subCalendarEventApi =
+        new SubCalendarEventApi(getContextCallBack: () => null);
     retValue.completedSubEvents = [
       await subCalendarEventApi.getAdHocSubEventId((Utility.getUuid)),
       await subCalendarEventApi.getAdHocSubEventId((Utility.getUuid)),

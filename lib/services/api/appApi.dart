@@ -1,15 +1,21 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
+import 'package:async/async.dart'; // Import necessary packages.
 
 import '../../constants.dart' as Constants;
 
@@ -20,7 +26,8 @@ abstract class AppApi {
   List<Tuple3<StreamSubscription, Future, String>>? pendingFuture;
   late Authentication authentication;
   late AccessManager accessManager;
-  AppApi() {
+  Function? getContextCallBack;
+  AppApi({required this.getContextCallBack}) {
     authentication = new Authentication();
     accessManager = AccessManager();
   }
@@ -95,11 +102,50 @@ abstract class AppApi {
     Map<String, dynamic> requestParams = Map.from(jsonMap);
     Position position = Utility.getDefaultPosition();
     bool isLocationVerified = false;
+    LocationProfile locationAccessResult = LocationProfile.empty();
     if (includeLocationParams) {
-      var locationAccessResult = await accessManager.locationAccess();
-      if (locationAccessResult != null) {
-        isLocationVerified = locationAccessResult.item2;
-        position = locationAccessResult.item1;
+      if (this.getContextCallBack != null) {
+        BuildContext? buildContext = this.getContextCallBack!();
+        if (buildContext != null && buildContext.mounted) {
+          var awaitableUiChanges = CancelableOperation.fromFuture(
+              Future.delayed(const Duration(seconds: 50)));
+
+          BlocProvider.of<DeviceSettingBloc>(buildContext).add(
+              GetLocationProfileDeviceSettingEvent(
+                  id: 'injectRequestParams-' +
+                      Utility.msCurrentTime.toString() +
+                      '-' +
+                      Utility.getUuid,
+                  showLocationPermissionWidget: true,
+                  context: buildContext,
+                  callBacks: <Function>[
+                (_) {
+                  awaitableUiChanges.cancel();
+                }
+              ]));
+
+          await awaitableUiChanges.valueOrCancellation();
+          if (buildContext.mounted) {
+            var deviceSettingState =
+                BlocProvider.of<DeviceSettingBloc>(buildContext).state;
+            if (deviceSettingState is DeviceSettingLoaded) {
+              if (deviceSettingState.sessionProfile?.locationProfile != null) {
+                locationAccessResult =
+                    deviceSettingState.sessionProfile!.locationProfile!;
+              }
+            }
+          } else {
+            locationAccessResult = await accessManager.locationAccess();
+          }
+        }
+      }
+
+      if (locationAccessResult.permission != null) {
+        if (locationAccessResult.permission!.isGranted == true &&
+            locationAccessResult.position != null) {
+          isLocationVerified = true;
+          position = locationAccessResult.position!;
+        }
       }
     }
     if (!requestParams.containsKey('TimeZoneOffset')) {
@@ -153,14 +199,6 @@ abstract class AppApi {
             print("Concluded Sending POST REQUEST " + requestPath);
             if (analyze) {
               analyzeSchedule(injectLocation: injectLocation);
-              // String tilerDomain = Constants.tilerDomain;
-              // String analyzeUrl = tilerDomain;
-              // Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-              // Map<String, dynamic> analyzeParameters =
-              //     await injectRequestParams({},
-              //         includeLocationParams: injectLocation);
-              // http.post(analyzeUri,
-              //     headers: header, body: jsonEncode(analyzeParameters));
             }
             return value;
           }).catchError((onError) {

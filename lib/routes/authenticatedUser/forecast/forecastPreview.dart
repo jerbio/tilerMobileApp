@@ -5,6 +5,7 @@ import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
+import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
@@ -19,12 +20,16 @@ import '../../../components/forecastTemplate/customForecastField.dart';
 import '../../../styles.dart';
 
 class ForecastPreview extends StatelessWidget {
-  const ForecastPreview({super.key});
+  static final String routeName = '/ForecastPreview';
+  final PreTile? preTile;
+  const ForecastPreview({super.key, this.preTile});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ForecastBloc(),
+      create: (_) => ForecastBloc(
+        getContextCallBack: () => context,
+      ),
       child: ForecastView(),
     );
   }

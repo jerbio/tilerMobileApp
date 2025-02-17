@@ -66,6 +66,7 @@ class WithinNowBatchState extends TileBatchState {
   double _emptyDayOpacity = 0;
   double heightMargin = 262;
   bool _pendingRendering = false;
+  bool _isEmptydayTile = false;
   @override
   void initState() {
     super.initState();
@@ -207,6 +208,7 @@ class WithinNowBatchState extends TileBatchState {
   }
 
   renderEmptyDayTile() {
+    _isEmptydayTile = true;
     if (_emptyDayOpacity == 0) {
       Timer(Duration(milliseconds: 200), () {
         if (mounted) {
@@ -314,31 +316,31 @@ class WithinNowBatchState extends TileBatchState {
 
         if (currentState is ScheduleEvaluationState) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.lookupTimeline,
-                previousTimeline: currentState.lookupTimeline,
-              ));
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+              forceRefresh: true));
           refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
         }
 
         if (currentState is ScheduleLoadedState) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.lookupTimeline,
-                previousTimeline: currentState.lookupTimeline,
-              ));
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.lookupTimeline,
+              previousTimeline: currentState.lookupTimeline,
+              forceRefresh: true));
           refreshScheduleSummary(lookupTimeline: currentState.lookupTimeline);
         }
 
         if (currentState is ScheduleLoadingState) {
           this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                isAlreadyLoaded: true,
-                previousSubEvents: currentState.subEvents,
-                scheduleTimeline: currentState.previousLookupTimeline,
-                previousTimeline: currentState.previousLookupTimeline,
-              ));
+              isAlreadyLoaded: true,
+              previousSubEvents: currentState.subEvents,
+              scheduleTimeline: currentState.previousLookupTimeline,
+              previousTimeline: currentState.previousLookupTimeline,
+              forceRefresh: true));
           refreshScheduleSummary(
               lookupTimeline: currentState.previousLookupTimeline);
         }
@@ -348,6 +350,8 @@ class WithinNowBatchState extends TileBatchState {
         height: MediaQuery.of(context).size.height - 245,
         width: MediaQuery.of(context).size.width,
         child: ListView(
+          shrinkWrap: true,
+          physics: _isEmptydayTile ? NeverScrollableScrollPhysics() : null,
           children: [
             ...precedingTileWidgets,
             // this is needed to ensure there is spacing between animated list and the bottom of the screen

@@ -151,22 +151,25 @@ class ReloadLocalScheduleEvent extends ScheduleEvent {
 class ChangeViewEvent extends ScheduleEvent {
   final AuthorizedRouteTileListPage newView;
 
-  ChangeViewEvent(this.newView, );
+  ChangeViewEvent(
+    this.newView,
+  );
 
   @override
   List<Object> get props => [newView];
-
 }
 
 class LogOutScheduleEvent extends ScheduleEvent {
-  LogOutScheduleEvent();
+  Function getContextCallBack;
+  LogOutScheduleEvent(this.getContextCallBack);
 
   @override
   List<Object> get props => [];
 }
 
 class LogInScheduleEvent extends ScheduleEvent {
-  LogInScheduleEvent();
+  Function getContextCallBack;
+  LogInScheduleEvent({required this.getContextCallBack});
   @override
   List<Object> get props => [];
 }
