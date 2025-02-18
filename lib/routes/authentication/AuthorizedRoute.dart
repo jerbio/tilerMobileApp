@@ -296,7 +296,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 right: 0,
                 child: GestureDetector(
                   onTap: () {
-                    uiDateManagerBloc.onDateButtonTapped(DateTime.now());
+                    uiDateManagerBloc.onDateButtonTapped(
+                        Utility.currentTime(minuteLimitAccuracy: false));
                   },
                   child: Container(
                     height: 50,
@@ -351,7 +352,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
     }
-    dayStatusWidget.onDayStatusChange(DateTime.now());
+    dayStatusWidget
+        .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
 
     // Bottom Navbar Widget
     Widget? bottomNavigator;

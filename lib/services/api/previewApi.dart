@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -36,13 +37,17 @@ class PreviewApi extends AppApi {
         }
 
         var response = await http.get(uri, headers: header);
-        var jsonResult = jsonDecode(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult) &&
-              jsonResult['Content'].containsKey('analyticSummary')) {
-            return PreviewSummary.fromJson(
-                jsonResult['Content']['analyticSummary']);
+        if (response.statusCode == HttpStatus.ok) {
+          var jsonResult = jsonDecode(response.body);
+          if (isJsonResponseOk(jsonResult)) {
+            if (isContentInResponse(jsonResult) &&
+                jsonResult['Content'].containsKey('analyticSummary')) {
+              return PreviewSummary.fromJson(
+                  jsonResult['Content']['analyticSummary']);
+            }
           }
+        } else {
+          print("Response code is " + response.statusCode.toString());
         }
       }
     }

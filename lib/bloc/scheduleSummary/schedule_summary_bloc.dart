@@ -32,7 +32,7 @@ class ScheduleSummaryBloc
   }
 
   List<TilerEvent> _getElapsedTasks(List<TimelineSummary> daySummaries) {
-    DateTime now = DateTime.now();
+    DateTime now = Utility.currentTime(minuteLimitAccuracy: false);
     List<TilerEvent> elapsedTasks = [];
 
     for (var summary in daySummaries) {
@@ -91,7 +91,6 @@ class ScheduleSummaryBloc
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: dayData));
 
     await scheduleApi.getDaySummary(timeline).then((value) async {
-      print("_onGetDayData completion " + value.toString());
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
       emit(ScheduleDaySummaryLoaded(
@@ -104,7 +103,7 @@ class ScheduleSummaryBloc
 
   Future<void> _onGetElapsedTasks(
       GetElapsedTasksEvent event, Emitter<ScheduleSummaryState> emit) async {
-    DateTime now = DateTime.now();
+    DateTime now = Utility.currentTime();
     DateTime startOfWeek = now.subtract(Duration(days: 7));
     Timeline timeline = Timeline.fromDateTime(startOfWeek, now);
 

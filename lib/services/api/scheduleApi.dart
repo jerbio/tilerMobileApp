@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/combination.dart';
@@ -134,27 +136,37 @@ class ScheduleApi extends AppApi {
       if (header == null) {
         throw TilerError(message: 'Issues with authentication');
       }
+      DateTime startOfRequest = Utility.currentTime();
       var response = await http.get(uri, headers: header);
-      var jsonResult = jsonDecode(response.body);
-      if (isJsonResponseOk(jsonResult)) {
-        if (isContentInResponse(jsonResult)) {
-          Map jsDayIndexToTimelineSummary = jsonResult['Content'];
-          Map<int, TimelineSummary> retValue = {};
+      if (response.statusCode == HttpStatus.ok) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map jsDayIndexToTimelineSummary = jsonResult['Content'];
+            Map<int, TimelineSummary> retValue = {};
 
-          for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
-            int jsDayIndex = int.parse(jsDayIndexString);
-            DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);
-            Map<String, dynamic> timelineSummaryJson =
-                jsDayIndexToTimelineSummary[jsDayIndexString];
-            TimelineSummary timelineSummary =
-                TimelineSummary.subCalendarEventFromJson(timelineSummaryJson);
-            timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
-            retValue[dateOfFirst.universalDayIndex] = timelineSummary;
+            for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
+              int jsDayIndex = int.parse(jsDayIndexString);
+              DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);
+              Map<String, dynamic> timelineSummaryJson =
+                  jsDayIndexToTimelineSummary[jsDayIndexString];
+              TimelineSummary timelineSummary =
+                  TimelineSummary.subCalendarEventFromJson(timelineSummaryJson);
+              timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
+              retValue[dateOfFirst.universalDayIndex] = timelineSummary;
+            }
+
+            return retValue;
           }
-
-          return retValue;
         }
       }
+      DateTime endOfRequest = Utility.currentTime();
+      Duration awaitedDuration = Duration(
+          milliseconds: endOfRequest.millisecondsSinceEpoch -
+              startOfRequest.millisecondsSinceEpoch);
+
+      print("Response code is " + response.statusCode.toString());
+      print("awaitedDuration " + awaitedDuration.toString());
       throw TilerError();
     }
     throw TilerError();
@@ -534,7 +546,7 @@ class ScheduleApi extends AppApi {
           if (response.statusCode == 200 || response.statusCode == 201) {
             final json = jsonDecode(response.body);
 
-            final todayDate = DateTime.now();
+            final todayDate = Utility.currentTime();
             final newtodayDate =
                 DateTime(todayDate.year, todayDate.month, todayDate.day);
 

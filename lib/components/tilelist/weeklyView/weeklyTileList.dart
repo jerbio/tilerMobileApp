@@ -121,7 +121,7 @@ class _WeeklyTileListState extends TileListState {
     List<Widget> rowItems = [];
     List<DateTime> selectedWeek =
         context.read<WeeklyUiDateManagerBloc>().state.selectedWeek;
-    int todayDayIndex = Utility.getDayIndex(DateTime.now());
+    int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
     rowItems = selectedWeek.map<Widget>((selectedDate) {
       int selectedDateIndex = Utility.getDayIndex(selectedDate);
       List<TilerEvent> tilesForDay = tileData!.item2
