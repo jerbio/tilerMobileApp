@@ -35,12 +35,16 @@ mixin TimeRange {
   }
 
   bool get isCurrentTimeWithin {
-    int currentTime = Utility.currentTime().millisecondsSinceEpoch;
+    int currentTime =
+        Utility.currentTime(minuteLimitAccuracy: false).millisecondsSinceEpoch;
     return this.start! <= currentTime && this.end! > currentTime;
   }
 
   bool get hasElapsed {
-    return this.end! < DateTime.now().millisecondsSinceEpoch.toDouble();
+    return this.end! <
+        Utility.currentTime(minuteLimitAccuracy: false)
+            .millisecondsSinceEpoch
+            .toDouble();
   }
 
   DateTime get startTime {

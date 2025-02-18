@@ -3,6 +3,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/util.dart';
 import 'dart:convert';
 
 import '../../constants.dart' as Constants;
@@ -58,7 +59,8 @@ class TileNameApi extends AppApi {
 
       final queryParameters = {
         'Data': name,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'MobileApp': true.toString()
       };
 
