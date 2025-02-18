@@ -72,7 +72,7 @@ class _MonthlyTileListState extends TileListState {
     DateTime selectedMonth =
         context.read<MonthlyUiDateManagerBloc>().state.selectedDate.dayDate;
     List<DateTime> selectedDaysInMonth = Utility.getDaysInMonth(selectedMonth);
-    int todayDayIndex = Utility.getDayIndex(DateTime.now());
+    int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
     List<Widget> monthRows = [];
     for (int weekStart = 0;
         weekStart < selectedDaysInMonth.length;

@@ -1,5 +1,8 @@
+import 'package:tiler_app/util.dart';
+
 class AuthenticationData {
-  final int instantiationTime = (new DateTime.now()).millisecondsSinceEpoch;
+  final int instantiationTime =
+      (Utility.currentTime(minuteLimitAccuracy: false)).millisecondsSinceEpoch;
   late final String? provider;
   late final String? accessToken;
   late final String? tokenType;
@@ -18,7 +21,8 @@ class AuthenticationData {
   }
 
   bool isExpired() {
-    var now = new DateTime.now().millisecondsSinceEpoch;
+    var now =
+        Utility.currentTime(minuteLimitAccuracy: false).millisecondsSinceEpoch;
     int expiryTime = this.expirationTime;
 
     bool retValue = now >= expiryTime;
