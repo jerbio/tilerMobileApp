@@ -17,10 +17,10 @@ class MonthlyTileBatch extends TileBatch {
     int? dayIndex,
     Key? key,
   }) : super(
-    tiles: tiles,
-    dayIndex: dayIndex,
-    key: key,
-  );
+          tiles: tiles,
+          dayIndex: dayIndex,
+          key: key,
+        );
 
   @override
   TileBatchState createState() => MonthlyTileBatchState();
@@ -37,25 +37,28 @@ class MonthlyTileBatchState extends TileBatchState {
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
   }
 
-
-  Widget _buildRemovedItem(TilerEvent item, BuildContext context,
-      Animation<double> animation) {
-    return SizeTransition(
-      sizeFactor: animation,
-      child: Align(alignment: Alignment.topCenter,
-          child: MonthlyTileWidget(subEvent: item)),
-    );
-  }
-
-  Widget _buildItem(BuildContext context, int index,
-      Animation<double> animation) {
+  Widget _buildRemovedItem(
+      TilerEvent item, BuildContext context, Animation<double> animation) {
     return SizeTransition(
       sizeFactor: animation,
       child: Align(
           alignment: Alignment.topCenter,
-          child: MonthlyTileWidget(subEvent: _list![index],)),
+          child: MonthlyTileWidget(subEvent: item)),
     );
   }
+
+  Widget _buildItem(
+      BuildContext context, int index, Animation<double> animation) {
+    return SizeTransition(
+      sizeFactor: animation,
+      child: Align(
+          alignment: Alignment.topCenter,
+          child: MonthlyTileWidget(
+            subEvent: _list![index],
+          )),
+    );
+  }
+
   double calculateListHeight(List<dynamic> initialItems) {
     double totalHeight = 0.0;
     for (var item in initialItems) {
@@ -72,12 +75,13 @@ class MonthlyTileBatchState extends TileBatchState {
     }
     return totalHeight;
   }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double calculatedWidth = (screenWidth-10)/7-4;
+    double calculatedWidth = (screenWidth - 10) / 7 - 4;
     renderedTiles.clear();
-    var initialItems=[];
+    var initialItems = [];
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
         if (tile.id != null &&
@@ -93,8 +97,9 @@ class MonthlyTileBatchState extends TileBatchState {
     if (animatedList == null || pendingRenderedTiles == null) {
       bool onlyNewEntriesPopulated = isAllNewEntries(orderedTiles!);
       initialItems = orderedTiles!.values.where((element) {
-        return onlyNewEntriesPopulated ? element.item3 != null : element
-            .item2 != null;
+        return onlyNewEntriesPopulated
+            ? element.item3 != null
+            : element.item2 != null;
       }).toList();
 
       initialItems.sort((tupleA, tupleB) {
@@ -115,7 +120,7 @@ class MonthlyTileBatchState extends TileBatchState {
             return SizeTransition(
               sizeFactor: animation,
               child: Padding(
-                padding: const EdgeInsets.only(left:2.0),
+                padding: const EdgeInsets.only(left: 2.0),
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Text('•••', style: TextStyle(fontSize: 12)),
@@ -130,7 +135,6 @@ class MonthlyTileBatchState extends TileBatchState {
         initialItemCount: initialItems.length > 7 ? 8 : initialItems.length,
       );
 
-
       _list = ListModel<TilerEvent>(
         listKey: _listKey,
         initialItems: Utility.orderTiles(
@@ -138,10 +142,10 @@ class MonthlyTileBatchState extends TileBatchState {
         removedItemBuilder: _buildRemovedItem,
       );
     }
-    int todayDayIndex = Utility.getDayIndex(DateTime.now());
-    dayContent =  GestureDetector(
+    int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
+    dayContent = GestureDetector(
       onTap: () {
-        if (_list!.toList().length>0) {
+        if (_list!.toList().length > 0) {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -153,39 +157,29 @@ class MonthlyTileBatchState extends TileBatchState {
             builder: (BuildContext context) {
               return Container(
                 margin: EdgeInsets.symmetric(vertical: 20),
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.6,
-                width: MediaQuery
-                    .of(context)
-                    .size
-                    .width,
+                height: MediaQuery.of(context).size.height * 0.6,
+                width: MediaQuery.of(context).size.width,
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: MediaQuery
-                        .of(context)
-                        .viewInsets
-                        .bottom),
-                    child: Column(
-                      children:
-                      [
-                        FractionallySizedBox(
-                          widthFactor: TileStyles.tileWidthRatio,
-                          child: Text(
-                            DateFormat('d MMM yyyy')
-                                .format(Utility.getTimeFromIndex(widget.dayIndex!)),
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
+                    padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom),
+                    child: Column(children: [
+                      FractionallySizedBox(
+                        widthFactor: TileStyles.tileWidthRatio,
+                        child: Text(
+                          DateFormat('d MMM yyyy').format(
+                              Utility.getTimeFromIndex(widget.dayIndex!)),
+                          textAlign: TextAlign.left,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        ..._list!.toList().map((event) {
+                      ),
+                      ..._list!.toList().map((event) {
                         return MonthlyDailyTile(event);
-                      }).toList(),]
-                    ),
+                      }).toList(),
+                    ]),
                   ),
                 ),
               );
@@ -197,12 +191,14 @@ class MonthlyTileBatchState extends TileBatchState {
         constraints: BoxConstraints(
           maxHeight: double.infinity,
         ),
-        width:calculatedWidth,
-        height:195,
-        padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
+        width: calculatedWidth,
+        height: 195,
+        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
         margin: EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: todayDayIndex==widget.dayIndex?TileStyles.primaryColor:Color.fromRGBO(240, 240, 240, 1),
+          color: todayDayIndex == widget.dayIndex
+              ? TileStyles.primaryColor
+              : Color.fromRGBO(240, 240, 240, 1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: Colors.white,
@@ -221,11 +217,11 @@ class MonthlyTileBatchState extends TileBatchState {
                   color: Color.fromRGBO(220, 220, 220, 1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!).toString()),
+                child: Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!)
+                    .toString()),
               ),
             ),
-            if(animatedList!=null)
-              Flexible(child: animatedList!),
+            if (animatedList != null) Flexible(child: animatedList!),
           ],
         ),
       ),
@@ -263,9 +259,9 @@ class MonthlyTileBatchState extends TileBatchState {
       bool pendingRendering) {
     if (timeSectionTiles != null && !pendingRendering) {
       List<Tuple3<TilerEvent, int?, int?>> changeInTilerEventOrdering =
-      timeSectionTiles.values
-          .where((element) => element.item2 != element.item3)
-          .toList();
+          timeSectionTiles.values
+              .where((element) => element.item2 != element.item3)
+              .toList();
 
       bool allNewEntries = isAllNewEntries(timeSectionTiles);
       if (allNewEntries) {

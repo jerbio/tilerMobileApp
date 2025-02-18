@@ -1021,7 +1021,7 @@ class AddTileState extends State<AddTile> {
       tile.RepeatType = _repetitionData!.frequency.name;
     }
 
-    DateTime startTime = DateTime.now();
+    DateTime startTime = Utility.currentTime();
     startTime = DateTime(startTime.year, startTime.month, startTime.day, 0, 0);
 
     if (this.isAppointment) {

@@ -52,8 +52,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     DateTime nextDay = Utility.currentTime().add(Duration(days: 1));
     DateTime endTime =
         DateTime(nextDay.year, nextDay.month, nextDay.day, 0, 0, 0);
-    previewApi
-        .getSummary(Timeline.fromDateTime(Utility.currentTime(), endTime));
+    // var resultSummary = await previewApi
+    //     .getSummary(Timeline.fromDateTime(Utility.currentTime(), endTime));
     return scheduleApi.getSubEvents(timeLine);
   }
 
@@ -162,11 +162,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(ScheduleCompleteTaskState(completedEvent: completedEvent));
     } catch (error) {
       emit(FailedScheduleLoadedState(
-          evaluationTime: DateTime.now(),
+          evaluationTime: Utility.currentTime(),
           subEvents: [],
           timelines: [],
-          lookupTimeline: Timeline.fromDateTime(
-              DateTime.now(), DateTime.now().add(Duration(days: 1))),
+          lookupTimeline: Timeline.fromDateTime(Utility.currentTime(),
+              Utility.currentTime().add(Duration(days: 1))),
           currentView: state.currentView,
           scheduleStatus: null));
     }
