@@ -163,13 +163,15 @@ class Utility {
   }
 
   static DateTime getFirstDate() {
-    DateTime firstDateInTheYear = DateTime(DateTime.now().year - 5, 1, 1);
+    DateTime firstDateInTheYear =
+        DateTime(Utility.currentTime().year - 5, 1, 1);
     List<DateTime> firstWeek = Utility.getDaysInWeek(firstDateInTheYear);
     return firstWeek.first;
   }
 
   static DateTime getLastDate() {
-    DateTime lastDateInTheYear = DateTime(DateTime.now().year + 5, 12, 31);
+    DateTime lastDateInTheYear =
+        DateTime(Utility.currentTime().year + 5, 12, 31);
     List<DateTime> lastWeek = Utility.getDaysInWeek(lastDateInTheYear);
     return lastWeek.last;
   }
@@ -927,7 +929,7 @@ extension DurationInMS on TimeOfDay {
 
 extension DateTimeHuman on DateTime {
   bool get isToday {
-    DateTime todaysDate = DateTime.now();
+    DateTime todaysDate = Utility.currentTime(minuteLimitAccuracy: false);
     DateTime begin =
         DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
@@ -937,7 +939,7 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isTomorrow {
-    DateTime todaysDate = DateTime.now();
+    DateTime todaysDate = Utility.currentTime(minuteLimitAccuracy: false);
     DateTime begin =
         DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: 1);
@@ -948,7 +950,7 @@ extension DateTimeHuman on DateTime {
   }
 
   bool get isYesterday {
-    DateTime todaysDate = DateTime.now();
+    DateTime todaysDate = Utility.currentTime(minuteLimitAccuracy: false);
     DateTime begin =
         DateTime(todaysDate.year, todaysDate.month, todaysDate.day);
     Duration fullDay = Duration(days: -1);
@@ -967,7 +969,7 @@ extension DateTimeHuman on DateTime {
     } else if (this.isTomorrow) {
       dayString = AppLocalizations.of(context)!.tomorrow;
     } else {
-      DateTime now = DateTime.now();
+      DateTime now = Utility.currentTime(minuteLimitAccuracy: false);
       bool isSameYear = now.year == this.year;
       if (isSameYear) {
         dayString = DateFormat('EEE, MMM d').format(this);
