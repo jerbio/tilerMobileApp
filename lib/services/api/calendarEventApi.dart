@@ -5,6 +5,7 @@ import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/util.dart';
 import 'dart:convert';
 
 import '../../constants.dart' as Constants;
@@ -53,7 +54,8 @@ class CalendarEventApi extends AppApi {
       var deleteCalendarEventParameters = {
         'ID': eventId,
         'EventID': eventId,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'ThirdPartyEventID': thirdPartyId,
         'MobileApp': true.toString()
       };
@@ -130,7 +132,7 @@ class CalendarEventApi extends AppApi {
     var completeParameters = {
       'ID': eventId,
       'EventID': eventId,
-      'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+      'TimeZoneOffset': Utility.currentTime().timeZoneOffset.inHours.toString(),
       'MobileApp': true.toString()
     };
 

@@ -1,5 +1,8 @@
+import 'package:tiler_app/util.dart';
+
 class NotificationData {
-  final int instantiationTime = (new DateTime.now()).millisecondsSinceEpoch;
+  final int instantiationTime =
+      (Utility.currentTime(minuteLimitAccuracy: false)).millisecondsSinceEpoch;
   late final String? channelType;
   late final String? tilerNotificationId;
   late final String? thirdPartyId;
@@ -43,7 +46,8 @@ class NotificationData {
   }
 
   bool isExpired() {
-    var now = new DateTime.now().millisecondsSinceEpoch;
+    var now =
+        Utility.currentTime(minuteLimitAccuracy: false).millisecondsSinceEpoch;
     if (this.expirationTime != null) {
       int expiryTime = this.expirationTime!;
       bool retValue = now >= expiryTime;

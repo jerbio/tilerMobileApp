@@ -14,7 +14,7 @@ class DisableCarouselScrollEvent extends TileListCarouselEvent {
       {this.isImmediate = false, required this.dayIndex});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [dayIndex, isImmediate];
 }
 
 class EnableCarouselScrollEvent extends TileListCarouselEvent {
@@ -23,5 +23,5 @@ class EnableCarouselScrollEvent extends TileListCarouselEvent {
   const EnableCarouselScrollEvent({this.isImmediate = false, this.dayIndex});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [dayIndex ?? 0, isImmediate];
 }

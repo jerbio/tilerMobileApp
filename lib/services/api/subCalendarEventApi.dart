@@ -209,7 +209,7 @@ class SubCalendarEventApi extends AppApi {
       'ThirdPartyType':
           subEvent.thirdpartyType?.name.toString().toLowerCase() ?? "",
       'ThirdPartyUserID': subEvent.thirdPartyUserId,
-      'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+      'TimeZoneOffset': Utility.currentTime().timeZoneOffset.inHours.toString(),
       'ThirdPartyEventID': subEvent.thirdpartyId,
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -232,7 +232,7 @@ class SubCalendarEventApi extends AppApi {
       'EventID': id,
       'ThirdPartyType': type,
       'ThirdPartyUserID': userId,
-      'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+      'TimeZoneOffset': Utility.currentTime().timeZoneOffset.inHours.toString(),
     }).then((response) {
       var jsonResult = jsonDecode(response.body);
       print("jsonResult:$jsonResult");
@@ -262,7 +262,8 @@ class SubCalendarEventApi extends AppApi {
         'ID': eventId,
         'EventID': eventId,
         'ThirdPartyUserID': thirdPartyUserId,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'ThirdPartyEventID': thirdPartyEventID,
         'ThirdPartyType': thirdPartyType,
         'MobileApp': true.toString()
