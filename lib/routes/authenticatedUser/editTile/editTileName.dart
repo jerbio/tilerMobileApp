@@ -11,12 +11,14 @@ class EditTileName extends StatefulWidget {
   bool isReadOnly = false;
   bool isProcrastinate;
   TextStyle? textStyle;
+  double? width;
   EditTileName(
       {required this.tileName,
       this.onInputChange,
       this.isProcrastinate = false,
       this.isReadOnly = false,
-      this.textStyle});
+      this.textStyle,
+      this.width});
 
   String get name {
     return tileName;
@@ -47,7 +49,7 @@ class _EditTileNameState extends State<EditTileName> {
     String procrastinateText =
         AppLocalizations.of(context)!.procrastinateBlockOut;
     return Container(
-      width: 380,
+      width: this.widget.width ?? 380,
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: TextFormField(
         minLines: 1,

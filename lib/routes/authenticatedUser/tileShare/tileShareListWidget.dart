@@ -180,9 +180,11 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
     showModalBottomSheet<void>(
         isScrollControlled: true,
         context: context,
+        backgroundColor: Colors.transparent,
         builder: (BuildContext context) {
           return Container(
-              height: 250,
+              width: MediaQuery.of(context).size.width,
+              color: Colors.transparent,
               child: NameAndDateSheetWidget(
                 appBar: AppBar(
                   centerTitle: true,
