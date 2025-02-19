@@ -643,6 +643,7 @@
       "previewTileDeferAll": "Defer All",
       "previewLocationName": "Location",
       "previewTagName": "Tag",
-      "previewClassificationName": "Classification"
+      "previewClassificationName": "Classification",
+      "previewBlockedOut": "Blocked Out"
 
   }

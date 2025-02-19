@@ -3,11 +3,11 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
-class DayPreview {
+class DayPrediction {
   int? dayIndex;
   List<TilerEvent>? subEvents;
 
-  DayPreview.fromTime(int epochJsTime, List<TilerEvent> tilerEvents) {
+  DayPrediction.fromTime(int epochJsTime, List<TilerEvent> tilerEvents) {
     dayIndex =
         DateTime.fromMillisecondsSinceEpoch(epochJsTime).universalDayIndex;
     subEvents = tilerEvents;
@@ -15,7 +15,7 @@ class DayPreview {
 }
 
 class Conflict {
-  List<DayPreview>? dayPreviews;
+  List<DayPrediction>? dayPreviews;
   Iterable<TilerEvent> get subEvents {
     return dayPreviews!.expand((eachDayPreview) => eachDayPreview.subEvents!);
   }
@@ -30,7 +30,7 @@ class Conflict {
           .map<int>((timeAsJsString) => int.parse(timeAsJsString))
           .toList() as List<int>;
       dayPreviews = epochJSTimes
-          .map<DayPreview>((eachEpochJSTime) => DayPreview.fromTime(
+          .map<DayPrediction>((eachEpochJSTime) => DayPrediction.fromTime(
               eachEpochJSTime,
               json[dayKey][eachEpochJSTime.toString()]
                   .map<TilerEvent>(
@@ -133,7 +133,7 @@ class Sleep {
 }
 
 class Tardy {
-  List<DayPreview>? dayPreviews;
+  List<DayPrediction>? dayPreviews;
   Iterable<TilerEvent> get subEvents {
     return dayPreviews!.expand((eachDayPreview) => eachDayPreview.subEvents!);
   }
@@ -147,7 +147,7 @@ class Tardy {
           .toList() as List<int>;
       epochJSTimes.sort();
       dayPreviews = epochJSTimes
-          .map<DayPreview>((eachEpochJSTime) => DayPreview.fromTime(
+          .map<DayPrediction>((eachEpochJSTime) => DayPrediction.fromTime(
               eachEpochJSTime,
               json[dayKey][eachEpochJSTime.toString()]
                   .map<TilerEvent>(
@@ -173,7 +173,7 @@ class TravelData {
 }
 
 class TravelDetails {
-  int? travelTime;
+  double? travelTime;
   double? totalDistance;
 
   TravelDetails({
@@ -183,7 +183,7 @@ class TravelDetails {
 
   factory TravelDetails.fromJson(Map<String, dynamic> json) {
     return TravelDetails(
-      travelTime: json['travelTime'] as int?,
+      travelTime: json['travelTime'] as double?,
       totalDistance: (json['totalDistance'] as num?)?.toDouble(),
     );
   }
