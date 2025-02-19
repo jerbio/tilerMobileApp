@@ -67,8 +67,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                 deviceLocationProfile: value ?? LocationProfile.empty(),
                 id: loadedId));
 
+        if (!mounted) return;
         setState(() {
-          if (!mounted) return;
           if (value != null) {
             locationAccess = value;
             if (this.widget.onChange != null && enableCallBack) {

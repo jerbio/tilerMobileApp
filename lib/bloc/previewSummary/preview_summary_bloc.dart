@@ -47,6 +47,7 @@ class PreviewSummaryBloc
 
   Future _onLoggedOutPreviewSummary(LogOutPreviewSummaryEvent event,
       Emitter<PreviewSummaryState> emit) async {
+    previewApi = PreviewApi(getContextCallBack: getContextCallBack);
     emit(PreviewSummaryLoggedOut());
   }
 }
