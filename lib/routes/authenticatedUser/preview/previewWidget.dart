@@ -111,13 +111,23 @@ class _PreviewState extends State<PreviewWidget> {
           _previewSummary!.classification!.sections != null &&
           _previewSummary!.classification!.sections!.isNotEmpty) {
         carouselDayRibbonBatch.add(PreviewChart(
-          previewGrouping: _previewSummary!.classification!.sections!,
-          icon: Icon(
-            Icons.message,
-            color: Colors.white,
-          ),
-          timeline: this._timeline,
-        ));
+            previewGrouping: _previewSummary!.classification!.sections!,
+            icon: Icon(
+              Icons.message,
+              color: Colors.white,
+            ),
+            timeline: this._timeline,
+            description: Padding(
+              padding: EdgeInsets.all(5),
+              child: Text(
+                AppLocalizations.of(context)!.previewClassificationName,
+                style: TextStyle(
+                    fontSize: 15,
+                    color: TileStyles.primaryContrastTextColor,
+                    fontFamily: TileStyles.rubikFontName,
+                    fontWeight: FontWeight.w500),
+              ),
+            )));
       }
 
       if (_previewSummary!.tag != null &&
@@ -130,6 +140,17 @@ class _PreviewState extends State<PreviewWidget> {
             color: Colors.white,
           ),
           timeline: this._timeline,
+          description: Padding(
+            padding: EdgeInsets.all(5),
+            child: Text(
+              AppLocalizations.of(context)!.previewTagName,
+              style: TextStyle(
+                  fontSize: 15,
+                  color: TileStyles.primaryContrastTextColor,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
         ));
       }
 
@@ -143,6 +164,17 @@ class _PreviewState extends State<PreviewWidget> {
             color: Colors.white,
           ),
           timeline: this._timeline,
+          description: Padding(
+            padding: EdgeInsets.all(5),
+            child: Text(
+              AppLocalizations.of(context)!.previewLocationName,
+              style: TextStyle(
+                  fontSize: 15,
+                  color: TileStyles.primaryContrastTextColor,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
         ));
       }
 

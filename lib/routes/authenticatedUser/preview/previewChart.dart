@@ -10,7 +10,9 @@ class PreviewChart extends StatefulWidget {
   final List<PreviewSection>? previewGrouping;
   final Icon? icon;
   final Timeline? timeline;
-  PreviewChart({this.previewGrouping, this.icon, this.timeline});
+  final Widget? description;
+  PreviewChart(
+      {this.previewGrouping, this.icon, this.timeline, this.description});
 
   @override
   State<StatefulWidget> createState() => _PreviewChartState();
@@ -69,17 +71,24 @@ class _PreviewChartState extends State<PreviewChart> {
         }
       }
       return Container(
-        margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
-        width: 150,
-        height: 150,
-        child: Stack(
+        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+        width: 200,
+        height: 200,
+        child: Column(
           children: [
-            PieChart(
-              PieChartData(sections: pieChartData),
+            Flexible(
+              child: Stack(
+                children: [
+                  PieChart(
+                    PieChartData(sections: pieChartData),
+                  ),
+                  Center(
+                    child: icon,
+                  )
+                ],
+              ),
             ),
-            Center(
-              child: icon,
-            )
+            this.widget.description ?? SizedBox.shrink()
           ],
         ),
       );
