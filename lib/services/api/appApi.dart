@@ -133,6 +133,8 @@ abstract class AppApi {
                 locationAccessResult =
                     deviceSettingState.sessionProfile!.locationProfile!;
               }
+            } else {
+              print("DeviceSetting not Loaded");
             }
           } else {
             locationAccessResult = await accessManager.locationAccess();
@@ -146,6 +148,11 @@ abstract class AppApi {
           isLocationVerified = true;
           position = locationAccessResult.position!;
         }
+      }
+      if (position == Utility.getDefaultPosition()) {
+        print("location not set");
+      } else {
+        print("location is set");
       }
     }
     if (!requestParams.containsKey('TimeZoneOffset')) {

@@ -316,7 +316,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           currentView: state.currentView,
           message: message));
-      await this.scheduleApi.reviseSchedule().then((value) async {
+      await this.scheduleApi.reviseSchedule().catchError((onError) {
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: subEvents,
+            timelines: timelines,
+            scheduleStatus: scheduleStatus,
+            lookupTimeline: lookupTimeline,
+            previousLookupTimeline: lookupTimeline,
+            currentView: state.currentView));
+      }).whenComplete(() async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
@@ -341,7 +350,16 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         message: event.message));
     if (event.callBack != null) {
       print("Calling _onEvaluateSchedule callback");
-      await event.callBack!.whenComplete(() async {
+      await event.callBack!.catchError((onError) {
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: event.renderedSubEvents,
+            timelines: event.renderedTimelines,
+            scheduleStatus: event.scheduleStatus,
+            lookupTimeline: event.renderedScheduleTimeline,
+            previousLookupTimeline: event.renderedScheduleTimeline,
+            currentView: state.currentView));
+      }).whenComplete(() async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
