@@ -104,42 +104,48 @@ abstract class AppApi {
     bool isLocationVerified = false;
     LocationProfile locationAccessResult = LocationProfile.empty();
     if (includeLocationParams) {
-      if (this.getContextCallBack != null) {
-        BuildContext? buildContext = this.getContextCallBack!();
-        if (buildContext != null && buildContext.mounted) {
-          var awaitableUiChanges = CancelableOperation.fromFuture(
-              Future.delayed(const Duration(seconds: 50)));
+      try {
+        if (this.getContextCallBack != null) {
+          BuildContext? buildContext = this.getContextCallBack!();
+          if (buildContext != null && buildContext.mounted) {
+            var awaitableUiChanges = CancelableOperation.fromFuture(
+                Future.delayed(const Duration(seconds: 50)));
 
-          BlocProvider.of<DeviceSettingBloc>(buildContext).add(
-              GetLocationProfileDeviceSettingEvent(
-                  id: 'injectRequestParams-' +
-                      Utility.msCurrentTime.toString() +
-                      '-' +
-                      Utility.getUuid,
-                  showLocationPermissionWidget: true,
-                  context: buildContext,
-                  callBacks: <Function>[
-                (_) {
-                  awaitableUiChanges.cancel();
+            BlocProvider.of<DeviceSettingBloc>(buildContext).add(
+                GetLocationProfileDeviceSettingEvent(
+                    id: 'injectRequestParams-' +
+                        Utility.msCurrentTime.toString() +
+                        '-' +
+                        Utility.getUuid,
+                    showLocationPermissionWidget: true,
+                    context: buildContext,
+                    callBacks: <Function>[
+                  (_) {
+                    awaitableUiChanges.cancel();
+                  }
+                ]));
+
+            await awaitableUiChanges.valueOrCancellation();
+            if (buildContext.mounted) {
+              var deviceSettingState =
+                  BlocProvider.of<DeviceSettingBloc>(buildContext).state;
+              if (deviceSettingState is DeviceSettingLoaded) {
+                if (deviceSettingState.sessionProfile?.locationProfile !=
+                    null) {
+                  locationAccessResult =
+                      deviceSettingState.sessionProfile!.locationProfile!;
                 }
-              ]));
-
-          await awaitableUiChanges.valueOrCancellation();
-          if (buildContext.mounted) {
-            var deviceSettingState =
-                BlocProvider.of<DeviceSettingBloc>(buildContext).state;
-            if (deviceSettingState is DeviceSettingLoaded) {
-              if (deviceSettingState.sessionProfile?.locationProfile != null) {
-                locationAccessResult =
-                    deviceSettingState.sessionProfile!.locationProfile!;
+              } else {
+                print("DeviceSetting not Loaded");
               }
             } else {
-              print("DeviceSetting not Loaded");
+              locationAccessResult = await accessManager.locationAccess();
             }
-          } else {
-            locationAccessResult = await accessManager.locationAccess();
           }
         }
+      } catch (e) {
+        debugPrint("Error in injectRequestParams: $e");
+        locationAccessResult = await accessManager.locationAccess();
       }
 
       if (locationAccessResult.permission != null) {
