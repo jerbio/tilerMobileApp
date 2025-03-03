@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:tiler_app/bloc/forecast/forecast_state.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
-import 'package:tiler_app/data/preview.dart';
+import 'package:tiler_app/data/prediction.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';

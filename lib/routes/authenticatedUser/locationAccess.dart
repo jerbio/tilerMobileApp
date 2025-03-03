@@ -51,6 +51,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
               statusCheck: statusCheck,
               denyAccess: denyAccess ?? false)
           .then((value) {
+        print('LocationAccessWidgetState.generateCallBack: value: $value');
         String loadedId = Utility.getUuid;
         if (BlocProvider.of<DeviceSettingBloc>(context)
                 is DeviceLocationSettingLoading &&
@@ -61,14 +62,17 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
                   as DeviceLocationSettingLoading)
               .id!;
+        } else {
+          print('Not DeviceLocationSettingLoading');
         }
         BlocProvider.of<DeviceSettingBloc>(context).add(
             LoadedLocationProfileDeviceSettingEvent(
                 deviceLocationProfile: value ?? LocationProfile.empty(),
                 id: loadedId));
 
+        if (!mounted) return;
+
         setState(() {
-          if (!mounted) return;
           if (value != null) {
             locationAccess = value;
             if (this.widget.onChange != null && enableCallBack) {
@@ -80,6 +84,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
             generateCallBack(forceDeviceCheck: true, doNotCallAgain: true)();
           }
         });
+      }).catchError((error) {
+        print('LocationAccessWidgetState.generateCallBack: error: $error');
       });
     };
 
@@ -133,8 +139,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     }
 
     if (Platform.isIOS) {
-      var iosCallBackButtonPress =
-          generateCallBack(denyAccess: false, statusCheck: true);
+      var iosCallBackButtonPress = generateCallBack(denyAccess: false);
       acceptDenyButtons = [
         Container(
           margin: EdgeInsets.fromLTRB(0, 430, 0, 0),

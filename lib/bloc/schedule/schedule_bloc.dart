@@ -36,7 +36,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<LogOutScheduleEvent>(_onLoggedOutScheduleEvent);
     on<ReloadLocalScheduleEvent>(_onLocalScheduleEvent);
     on<ReviseScheduleEvent>(_onReviseSchedule);
-    on<ShuffleScheduleEvent>(_onShuffleeSchedule);
+    on<ShuffleScheduleEvent>(_onShuffleSchedule);
     on<EvaluateSchedule>(_onEvaluateSchedule);
     on<ChangeViewEvent>(_onChangeView, transformer: restartable());
     ;
@@ -139,6 +139,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
             eventId: eventId));
       }
     }).catchError((onError) {
+      debugPrint("emitting failed schedule loaded state getSubEventCallBack");
       emit(FailedScheduleLoadedState(
           evaluationTime: Utility.currentTime(),
           subEvents: subEvents,
@@ -316,7 +317,17 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           scheduleStatus: scheduleStatus,
           currentView: state.currentView,
           message: message));
-      await this.scheduleApi.reviseSchedule().then((value) async {
+      await this.scheduleApi.reviseSchedule().catchError((onError) {
+        debugPrint("emitting failed schedule loaded state onReviseSchedule");
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: subEvents,
+            timelines: timelines,
+            scheduleStatus: scheduleStatus,
+            lookupTimeline: lookupTimeline,
+            previousLookupTimeline: lookupTimeline,
+            currentView: state.currentView));
+      }).whenComplete(() async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
@@ -341,7 +352,17 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         message: event.message));
     if (event.callBack != null) {
       print("Calling _onEvaluateSchedule callback");
-      await event.callBack!.whenComplete(() async {
+      await event.callBack!.catchError((onError) {
+        debugPrint("emitting failed schedule loaded state onEvaluateSchedule");
+        emit(FailedScheduleLoadedState(
+            evaluationTime: Utility.currentTime(),
+            subEvents: event.renderedSubEvents,
+            timelines: event.renderedTimelines,
+            scheduleStatus: event.scheduleStatus,
+            lookupTimeline: event.renderedScheduleTimeline,
+            previousLookupTimeline: event.renderedScheduleTimeline,
+            currentView: state.currentView));
+      }).whenComplete(() async {
         await this._onGetSchedule(
             GetScheduleEvent(
               isAlreadyLoaded: true,
@@ -355,13 +376,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }
   }
 
-  Future<void> _onShuffleeSchedule(
+  Future<void> _onShuffleSchedule(
       ShuffleScheduleEvent event, Emitter<ScheduleState> emit) async {
     final state = this.state;
 
-    print("shufflng your schedule");
-    print("current state is ");
-    print(state);
     var priorSscheduleState = ScheduleState.generatePriorScheduleState(state);
     List<SubCalendarEvent> subEvents = priorSscheduleState.subEvents;
     List<Timeline> timelines = priorSscheduleState.timelines;
@@ -414,7 +432,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   //   });
   // }
   void _onChangeView(ChangeViewEvent event, Emitter<ScheduleState> emit) async {
-    scheduleApi = ScheduleApi(getContextCallBack: getContextCallBack);
+    scheduleApi = ScheduleApi(
+        getContextCallBack:
+            scheduleApi.getContextCallBack ?? getContextCallBack);
     emit(ScheduleInitialState(currentView: event.newView));
   }
 }

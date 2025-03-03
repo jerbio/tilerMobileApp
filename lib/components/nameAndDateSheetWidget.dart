@@ -12,7 +12,7 @@ class NameAndDateSheetWidget extends StatefulWidget {
   final Function? onCancel;
   final String? name;
   final DateTime? endTime;
-  PreferredSizeWidget? appBar;
+  final PreferredSizeWidget? appBar;
   NameAndDateSheetWidget(
       {this.onAddTileShare,
       this.onCancel,
@@ -27,6 +27,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
   late List<Contact> contacts = [];
   String? tileName;
   DateTime? endTime;
+  final double modalHeight = 216;
   @override
   void initState() {
     super.initState();
@@ -105,18 +106,29 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
 
   @override
   Widget build(BuildContext context) {
-    const SizedBox heightSpacer = SizedBox.square(
-      dimension: 5,
+    final Container heightSpacer = Container(
+      color: Colors.white,
+      child: const ColoredBox(
+        color: Colors.white,
+      ),
     );
-    return Scaffold(
-      appBar: this.widget.appBar,
-      body: Column(
+    return Container(
+      alignment: Alignment.bottomCenter,
+      width: MediaQuery.sizeOf(context).width,
+      // height: modalHeight,
+      color: Colors.transparent,
+      margin: EdgeInsets.fromLTRB(
+          0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Padding(
-            padding: EdgeInsets.all(0),
+          this.widget.appBar ?? SizedBox.shrink(),
+          Container(
+            color: Colors.white,
             child: EditTileName(
               tileName: tileName ?? "",
               onInputChange: onNameChange,
+              width: MediaQuery.sizeOf(context).width,
               textStyle: TextStyle(
                   fontSize: 15,
                   fontFamily: TileStyles.rubikFontName,
@@ -124,29 +136,30 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
             ),
           ),
           heightSpacer,
-          Padding(
-            padding: EdgeInsets.all(0),
-            child: renderEndtime(),
-          ),
+          Container(color: Colors.white, child: renderEndtime()),
           heightSpacer,
           tileName != this.widget.name || endTime != this.widget.endTime
-              ? ElevatedButton.icon(
-                  onPressed: () {
-                    if ((tileName.isNot_NullEmptyOrWhiteSpace() &&
-                            tileName != this.widget.name) ||
-                        endTime != this.widget.endTime) {
-                      if (this.widget.onAddTileShare != null) {
-                        NameAndEndTimeUpdate nameAndEndTimeUpdate =
-                            NameAndEndTimeUpdate();
-                        nameAndEndTimeUpdate.Name = tileName;
-                        nameAndEndTimeUpdate.EndTime = endTime;
-                        this.widget.onAddTileShare!(nameAndEndTimeUpdate);
-                      }
-                    }
-                  },
-                  style: TileStyles.enabledButtonStyle,
-                  icon: Icon(Icons.check),
-                  label: Text(AppLocalizations.of(context)!.update))
+              ? Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  color: Colors.white,
+                  child: ElevatedButton.icon(
+                      onPressed: () {
+                        if ((tileName.isNot_NullEmptyOrWhiteSpace() &&
+                                tileName != this.widget.name) ||
+                            endTime != this.widget.endTime) {
+                          if (this.widget.onAddTileShare != null) {
+                            NameAndEndTimeUpdate nameAndEndTimeUpdate =
+                                NameAndEndTimeUpdate();
+                            nameAndEndTimeUpdate.Name = tileName;
+                            nameAndEndTimeUpdate.EndTime = endTime;
+                            this.widget.onAddTileShare!(nameAndEndTimeUpdate);
+                          }
+                        }
+                      },
+                      style: TileStyles.enabledButtonStyle,
+                      icon: Icon(Icons.check),
+                      label: Text(AppLocalizations.of(context)!.update)),
+                )
               : SizedBox.shrink(),
         ],
       ),

@@ -15,7 +15,7 @@ import 'package:tiler_app/components/tileUI/tileProgress.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
-import 'package:tiler_app/data/preview.dart';
+import 'package:tiler_app/data/prediction.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
@@ -65,8 +65,8 @@ class _EditTileState extends State<EditTile> {
   StartEndDurationTimeline? _startEndDurationTimeline;
   bool hideButtons = false;
   List<NextTileSuggestion>? nextTileSuggestions;
-  Preview? beforePreview;
-  Preview? afterPreview;
+  Preview? beforePrediction;
+  Preview? afterPrediction;
   static final String editTileCancelAndProceedName = "";
 
   TextStyle labelStyle = const TextStyle(
@@ -386,25 +386,25 @@ class _EditTileState extends State<EditTile> {
     );
   }
 
-  updatePreviewWidget() {
+  updatePredictionWidget() {
     List<SubCalendarEvent> tardySubEvents = [];
-    if (afterPreview != null &&
-        afterPreview!.tardies != null &&
-        afterPreview!.tardies!.dayPreviews != null &&
-        afterPreview!.tardies!.dayPreviews!.isNotEmpty &&
-        afterPreview!.tardies!.dayPreviews!.first.subEvents != null) {
-      tardySubEvents = afterPreview!.tardies!.dayPreviews!.first.subEvents!
+    if (afterPrediction != null &&
+        afterPrediction!.tardies != null &&
+        afterPrediction!.tardies!.dayPreviews != null &&
+        afterPrediction!.tardies!.dayPreviews!.isNotEmpty &&
+        afterPrediction!.tardies!.dayPreviews!.first.subEvents != null) {
+      tardySubEvents = afterPrediction!.tardies!.dayPreviews!.first.subEvents!
           .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
           .toList();
     }
 
     List<SubCalendarEvent> unScheduledSubEvents = [];
-    if (afterPreview != null &&
-        afterPreview!.nonViable != null &&
-        afterPreview!.nonViable!.isNotEmpty) {
+    if (afterPrediction != null &&
+        afterPrediction!.nonViable != null &&
+        afterPrediction!.nonViable!.isNotEmpty) {
       Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
       int? firstDayIndex;
-      for (TilerEvent eachSubEvent in afterPreview!.nonViable!) {
+      for (TilerEvent eachSubEvent in afterPrediction!.nonViable!) {
         DateTime referenceEndTime =
             (eachSubEvent as SubCalendarEvent).calendarEventEndTime ??
                 (eachSubEvent).endTime;
@@ -419,15 +419,15 @@ class _EditTileState extends State<EditTile> {
       unScheduledSubEvents = dayIndexToSubEvents[firstDayIndex!]!;
     }
     if (tardySubEvents.isEmpty && unScheduledSubEvents.isEmpty) {
-      clearPreviewButton();
+      clearPredictionButton();
       return;
     }
 
     setState(() {
       bottomWidget = ElevatedButton(
         onPressed: () {
-          if (afterPreview == null) {
-            clearPreviewButton();
+          if (afterPrediction == null) {
+            clearPredictionButton();
             return;
           }
 
@@ -486,7 +486,7 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
-  clearPreviewButton() {
+  clearPredictionButton() {
     setState(() {
       bottomWidget = null;
     });
@@ -522,19 +522,19 @@ class _EditTileState extends State<EditTile> {
         showPendingPreview();
         whatIfApi.updateSubEvent(editTilerEvent!).then((value) {
           if (value == null) {
-            clearPreviewButton();
+            clearPredictionButton();
             return;
           }
           if (this.mounted) {
             setState(() {
-              beforePreview = value.item1;
-              afterPreview = value.item2;
+              beforePrediction = value.item1;
+              afterPrediction = value.item2;
             });
-            updatePreviewWidget();
+            updatePredictionWidget();
           }
         }).catchError((onError) {
           if (this.mounted) {
-            clearPreviewButton();
+            clearPredictionButton();
           }
           print(onError);
         });
@@ -542,7 +542,7 @@ class _EditTileState extends State<EditTile> {
     } else {
       dataChange();
       if (this.onProceed == null) {
-        clearPreviewButton();
+        clearPredictionButton();
       }
     }
   }
