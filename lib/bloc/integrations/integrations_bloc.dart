@@ -37,6 +37,8 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
 
   void _resetIntegration(ResetIntegrationsEvent deleteIntegrationsEvent,
       Emitter<IntegrationsState> emit) async {
+    integrationApi = new IntegrationApi(
+        getContextCallBack: integrationApi.getContextCallBack);
     emit(IntegrationsInitial(eventId: deleteIntegrationsEvent.eventId));
   }
 

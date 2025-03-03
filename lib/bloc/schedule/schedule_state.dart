@@ -176,7 +176,7 @@ class ScheduleCompleteTaskState extends ScheduleState {
 }
 
 class FailedScheduleLoadedState extends ScheduleLoadedState {
-  DateTime evaluationTime;
+  final DateTime evaluationTime;
   FailedScheduleLoadedState(
       {subEvents = const <SubCalendarEvent>[],
       required timelines,
@@ -194,6 +194,9 @@ class FailedScheduleLoadedState extends ScheduleLoadedState {
             previousLookupTimeline: previousLookupTimeline,
             currentView: currentView,
             eventId: eventId);
+
+  @override
+  List<Object> get props => [evaluationTime, ...super.props];
 }
 
 class LocalScheduleLoadedState extends ScheduleLoadedState {

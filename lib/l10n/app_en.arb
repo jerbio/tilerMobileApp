@@ -641,6 +641,9 @@
       "previewTileShuffle": "Shuffle",
       "previewTileRevise": "Revise",
       "previewTileDeferAll": "Defer All",
-      "previewLocationName": "Location"
+      "previewLocationName": "Location",
+      "previewTagName": "Tag",
+      "previewClassificationName": "Classification",
+      "previewBlockedOut": "Blocked Out"
 
   }
