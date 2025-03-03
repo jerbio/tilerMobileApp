@@ -46,6 +46,11 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       LoadedLocationProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     sessionProfile.locationProfile = event.deviceLocationProfile;
+    if (state is DeviceLocationSettingLoading) {
+      callPendingCallBacks((state as DeviceLocationSettingLoading).callBacks,
+          sessionProfile.locationProfile);
+    }
+
     emit(DeviceSettingLoaded(sessionProfile: sessionProfile));
   }
 
@@ -74,6 +79,15 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     emit(DeviceSettingLoaded(id: event.id, sessionProfile: sessionProfile));
   }
 
+  void callPendingCallBacks(
+      List<Function>? callBacks, LocationProfile? locationProfile) {
+    if (callBacks != null) {
+      callBacks.forEach((element) {
+        element(locationProfile);
+      });
+    }
+  }
+
   Future<void> _onGetLocationProfile(GetLocationProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     DeviceSettingState currentState = state;
@@ -84,16 +98,15 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
         id: event.id,
         renderLoadingUI: event.showLocationPermissionWidget,
         callBacks: event.callBacks));
-    Location location = Location.fromDefault();
     try {
       if (sessionProfile.locationProfile != null) {
         if (sessionProfile.locationProfile!.isGranted) {
-          var retrieivedLocation = await sessionProfile.getLatestLocation();
-          location = retrieivedLocation ?? Location.fromDefault();
+          await sessionProfile.getLatestLocation();
           emit(DeviceSettingLoaded(
             id: event.id,
             sessionProfile: sessionProfile,
           ));
+          callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
         } else {
           if (sessionProfile.locationProfile!.canRecheckPermission()) {
             emit(DeviceLocationSettingUIPending(
@@ -124,6 +137,8 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
           } else {
             emit(DeviceSettingLoaded(
                 id: event.id, sessionProfile: sessionProfile));
+            callPendingCallBacks(
+                event.callBacks, sessionProfile.locationProfile);
           }
         }
       } else {
@@ -133,12 +148,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     } catch (e) {
       emit(DeviceSettingError(
           id: event.id, sessionProfile: sessionProfile, error: e));
-    }
-
-    if (event.callBacks != null) {
-      event.callBacks!.forEach((eachCallBack) {
-        eachCallBack(location);
-      });
+      callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
     }
   }
 }
