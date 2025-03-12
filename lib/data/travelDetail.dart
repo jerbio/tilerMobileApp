@@ -49,7 +49,7 @@ class TravelLeg {
 }
 
 /// Represents travel details including start, end, locations, and travel legs.
-class TravelDetail {
+class TravelData {
   final int? start;
   final int? end;
   final Location? startLocation;
@@ -59,9 +59,9 @@ class TravelDetail {
   final String? travelMedium;
   final bool? isEnabled;
   final bool? isTardy;
-  final int? duration;
+  final double? duration;
 
-  const TravelDetail({
+  const TravelData({
     this.start,
     this.end,
     this.startLocation,
@@ -74,9 +74,9 @@ class TravelDetail {
     this.duration,
   });
 
-  factory TravelDetail.fromJson(Map<String, dynamic>? json) {
-    if (json == null) return TravelDetail();
-    return TravelDetail(
+  factory TravelData.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return TravelData();
+    return TravelData(
       start: json['start'],
       end: json['end'],
       startLocation: json['startLocation'] != null
@@ -111,22 +111,21 @@ class TravelDetail {
 }
 
 /// Wrapper class to hold `before` and `after` travel details.
-class TravelData {
-  final TravelDetail? before;
-  final TravelDetail? after;
+class TravelDetail {
+  final TravelData? before;
+  final TravelData? after;
 
-  const TravelData({
+  const TravelDetail({
     this.before,
     this.after,
   });
 
-  factory TravelData.fromJson(Map<String, dynamic>? json) {
-    if (json == null) return TravelData();
-    return TravelData(
+  factory TravelDetail.fromJson(Map<String, dynamic>? json) {
+    if (json == null) return TravelDetail();
+    return TravelDetail(
       before:
-          json['before'] != null ? TravelDetail.fromJson(json['before']) : null,
-      after:
-          json['after'] != null ? TravelDetail.fromJson(json['after']) : null,
+          json['before'] != null ? TravelData.fromJson(json['before']) : null,
+      after: json['after'] != null ? TravelData.fromJson(json['after']) : null,
     );
   }
 
