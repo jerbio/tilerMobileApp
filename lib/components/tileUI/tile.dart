@@ -11,13 +11,16 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
@@ -110,7 +113,36 @@ class TileWidgetState extends State<TileWidget>
     return this.widget.subEvent.isTardy ?? false;
   }
 
+  String longLatString(Location location) {
+    return location.latitude.toString() + ',' + location.longitude.toString();
+  }
+
+  Future<void> _launchGoogleMaps(Location originLocation,
+      Location destinationLocation, String travelMode) async {
+    if (originLocation.isNotNullAndNotDefault &&
+        destinationLocation.isNotNullAndNotDefault) {
+      String origin = longLatString(originLocation);
+      String destination = longLatString(destinationLocation);
+      if (originLocation.address.isNot_NullEmptyOrWhiteSpace()) {
+        origin = Uri.encodeComponent(originLocation.address!);
+      }
+      if (destinationLocation.address.isNot_NullEmptyOrWhiteSpace()) {
+        destination = Uri.encodeComponent(destinationLocation.address!);
+      }
+
+      final url = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination&travelmode=$travelMode');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
+  }
+
   Widget renderTravelTime(Timeline travelTimeLine) {
+    double fontSize = 20;
+    double iconSize = 20;
     String lottieAsset =
         isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
     String startString = MaterialLocalizations.of(context).formatTimeOfDay(
@@ -121,49 +153,129 @@ class TileWidgetState extends State<TileWidget>
             DateTime.fromMillisecondsSinceEpoch(travelTimeLine.end!.toInt())));
     Color? textColor =
         isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
-    Widget retValue =
-        Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Container(
-          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-          height: 50,
-          width: 5,
-          child: AnimatedLine(
-            Duration(milliseconds: 0),
-            textColor,
-            reverse: true,
-          )),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-              child: Text(startString,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: TileStyles.rubikFontName,
-                      fontWeight: FontWeight.normal,
-                      color: textColor))),
-          Lottie.asset(lottieAsset, height: 85),
-          Container(
-              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: Text(endString,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: TileStyles.rubikFontName,
-                      fontWeight: FontWeight.normal,
-                      color: textColor)))
-        ],
-      ),
-      Container(
-          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-          height: 50,
-          width: 5,
-          child: AnimatedLine(
-            Duration(milliseconds: 0),
-            textColor,
-            reverse: true,
-          )),
-    ]);
+
+    Widget travelStop = SizedBox.shrink();
+    if (this.widget.subEvent.travelDetail != null) {
+      TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
+      int walkCount = 0;
+      int stopCount = 0;
+
+      travelDetail.before?.travelLegs?.forEach((leg) {
+        if (leg.travelMedium == 'transit') {
+          ++stopCount;
+        } else if (leg.travelMedium == 'walking') {
+          ++walkCount;
+        }
+      });
+      travelStop = Icon(Icons.directions_transit,
+          color: TileStyles.primaryContrastColor, size: iconSize);
+      if (walkCount > 0 || stopCount > 0) {
+        fontSize = 15;
+        iconSize = 15;
+        List<Widget> travelWidgets = [];
+        if (walkCount > 0) {
+          travelWidgets.add(
+            Row(
+              children: [
+                Icon(Icons.directions_walk,
+                    color: TileStyles.primaryContrastColor, size: iconSize),
+                Text(walkCount.toString(),
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.normal,
+                        color: TileStyles.primaryContrastColor))
+              ],
+            ),
+          );
+        }
+        if (stopCount > 0) {
+          travelWidgets.add(
+            Row(
+              children: [
+                Icon(Icons.directions_transit,
+                    color: TileStyles.primaryContrastColor, size: iconSize),
+                Text(stopCount.toString(),
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.normal,
+                        color: TileStyles.primaryContrastColor))
+              ],
+            ),
+          );
+        }
+        travelStop = Container(
+          padding: EdgeInsets.all(5),
+          margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: TileStyles.primaryColor,
+          ),
+          child: Row(
+            children: travelWidgets,
+          ),
+        );
+      }
+    }
+    Widget retValue = InkWell(
+      onTap: () {
+        AnalysticsSignal.send('TRAVEL_TIME_TAP');
+        if (this.widget.subEvent.travelDetail != null) {
+          //this opens a redirect to google maps for directions to the location
+          TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
+          Location originLocation =
+              travelDetail.before?.startLocation ?? Location.fromDefault();
+          Location destinationLocation =
+              travelDetail.before?.endLocation ?? Location.fromDefault();
+          _launchGoogleMaps(originLocation, destinationLocation,
+              travelDetail.before?.travelMedium ?? 'driving');
+        }
+      },
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Container(
+            padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+            height: 50,
+            width: 5,
+            child: AnimatedLine(
+              Duration(milliseconds: 0),
+              textColor,
+              reverse: true,
+            )),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            travelStop,
+            Container(
+                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                child: Text(startString,
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.normal,
+                        color: textColor))),
+            Lottie.asset(lottieAsset, height: 85),
+            Container(
+                margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                child: Text(endString,
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontWeight: FontWeight.normal,
+                        color: textColor)))
+          ],
+        ),
+        Container(
+            padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+            height: 50,
+            width: 5,
+            child: AnimatedLine(
+              Duration(milliseconds: 0),
+              textColor,
+              reverse: true,
+            )),
+      ]),
+    );
 
     return retValue;
   }
