@@ -18,11 +18,15 @@ import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.d
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/scheduleProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
+import 'package:tiler_app/data/userSettings.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/authorization.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
@@ -30,23 +34,26 @@ import 'package:tiler_app/services/storageManager.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class Setting extends StatefulWidget {
+class SettingWidgetRoute extends StatefulWidget {
   static final String routeName = '/Setting';
   @override
-  State<StatefulWidget> createState() => _SettingState();
+  State<StatefulWidget> createState() => _SettingWidgetRouteState();
 }
 
-class _SettingState extends State<Setting> {
+class _SettingWidgetRouteState extends State<SettingWidgetRoute> {
   Authentication authentication = Authentication();
   late AuthorizationApi _authorizationApi;
   SecureStorageManager secureStorageManager = SecureStorageManager();
   late SettingsApi settingsApi;
   RestrictionProfile? workRestrictionProfile;
   RestrictionProfile? personalRestrictionProfile;
+  UserSettings? userSettings;
   StartOfDay? endOfDay;
   String? localTimeZone;
   bool isTimeOfDayLoaded = false;
   bool isAllRestrictionProfileLoaded = false;
+  Set<TravelMedium> travelMediumMap = Set();
+  late ScheduleApi scheduleApi;
 
   static final String settingCancelAndProceedRouteName =
       "settingCancelAndProceedRouteName";
@@ -87,6 +94,12 @@ class _SettingState extends State<Setting> {
       await personalRestrictionProfileUpdateFuture;
     }
 
+    if (this.userSettings?.scheduleProfile != null) {
+      Future personalRestrictionProfileUpdateFuture =
+          settingsApi.updateUserSettings(this.userSettings!);
+      await personalRestrictionProfileUpdateFuture;
+    }
+
     if (this.endOfDay != null) {
       if (localTimeZone != null) {
         this.endOfDay!.timeZone = localTimeZone!;
@@ -95,6 +108,7 @@ class _SettingState extends State<Setting> {
           settingsApi.updateStartOfDay(this.endOfDay!);
       await endOfDayUpdateFuture;
     }
+    scheduleApi.buzzSchedule();
   }
 
   bool isProceedReady() {
@@ -125,7 +139,7 @@ class _SettingState extends State<Setting> {
             (configButtonName ?? "NONE"));
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': restrictionProfile,
-          'stackRouteHistory': [Setting.routeName]
+          'stackRouteHistory': [SettingWidgetRoute.routeName]
         };
 
         Navigator.pushNamed(context, '/TimeRestrictionRoute',
@@ -163,8 +177,10 @@ class _SettingState extends State<Setting> {
   void initState() {
     super.initState();
     this.settingsApi = SettingsApi(getContextCallBack: () => context);
+    this.scheduleApi = ScheduleApi(getContextCallBack: () => context);
     this._authorizationApi =
         AuthorizationApi(getContextCallBack: () => context);
+
     settingsApi.getUserRestrictionProfile().then((value) {
       setState(() {
         isAllRestrictionProfileLoaded = true;
@@ -193,11 +209,22 @@ class _SettingState extends State<Setting> {
         isTimeOfDayLoaded = true;
       });
     });
+    settingsApi.getUserSettings().then((value) {
+      setState(() {
+        userSettings = value;
+      });
+    }).whenComplete(() {
+      setState(() {
+        this.isAllRestrictionProfileLoaded = true;
+      });
+    });
     FlutterTimezone.getLocalTimezone().then((value) {
       setState(() {
         localTimeZone = value;
       });
     });
+    travelMediumMap.addAll(
+        [TravelMedium.bicycling, TravelMedium.driving, TravelMedium.transit]);
   }
 
   Widget createEndOfDay() {
@@ -282,6 +309,80 @@ class _SettingState extends State<Setting> {
           Navigator.pushNamed(context, '/Integrations');
         },
         child: Text(AppLocalizations.of(context)!.integrateOtherCalendars));
+    return retValue;
+  }
+
+  String travelMediumToText(TravelMedium travelMedium) {
+    switch (travelMedium) {
+      case TravelMedium.bicycling:
+        return AppLocalizations.of(context)!.travelMediumBiking;
+      case TravelMedium.driving:
+        return AppLocalizations.of(context)!.travelMediumDriving;
+      case TravelMedium.transit:
+        return AppLocalizations.of(context)!.travelMediumTransit;
+      default:
+        return '';
+    }
+  }
+
+  Widget createTravelMediumButton(ScheduleProfile scheduleProfile) {
+    TravelMedium? travelMedium = scheduleProfile.travelMedium;
+
+    var travelOptions = TravelMedium.values
+        .where((element) => travelMediumMap.contains(element))
+        .map<DropdownMenuItem<String>>((TravelMedium value) {
+      return DropdownMenuItem<String>(
+          value: value.name.toString(), child: Text(travelMediumToText(value)));
+    }).toList();
+
+    String travelValue = TravelMedium.driving.name;
+    IconData travelIcon = Icons.directions_car_outlined;
+    if (travelMedium != null) {
+      switch (travelMedium) {
+        case TravelMedium.bicycling:
+          travelIcon = Icons.directions_bike_outlined;
+          travelValue = TravelMedium.bicycling.name;
+          break;
+        case TravelMedium.driving:
+          travelIcon = Icons.directions_car_outlined;
+          travelValue = TravelMedium.driving.name;
+          break;
+        case TravelMedium.transit:
+          travelIcon = Icons.directions_transit_outlined;
+          travelValue = TravelMedium.transit.name;
+          break;
+        default:
+          travelIcon = Icons.directions_car_outlined;
+          break;
+      }
+    }
+    Widget retValue = Column(
+      children: [
+        Text(
+          AppLocalizations.of(context)!.travelMediumTransport,
+          style: TextStyle(color: TileStyles.accentButtonColor),
+        ),
+        DropdownButton<String>(
+          value: travelValue,
+          icon: Padding(
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            child: Icon(travelIcon),
+          ),
+          elevation: 16,
+          style: TextStyle(color: TileStyles.accentButtonColor),
+          underline: Container(height: 2, color: TileStyles.accentButtonColor),
+          onChanged: (String? value) {
+            // This is called when the user selects an item.
+            setState(() {
+              scheduleProfile.travelMedium = TravelMedium.values.firstWhere(
+                  (element) => element.name == value,
+                  orElse: () => TravelMedium.driving);
+            });
+          },
+          items: travelOptions,
+        ),
+      ],
+    );
     return retValue;
   }
 
@@ -393,6 +494,12 @@ class _SettingState extends State<Setting> {
     }
     Widget logoutButton = createLogOutButton();
     Widget deleteButton = createDeleteAccountButton();
+    Widget transitUiButton = SizedBox.shrink();
+    if (userSettings != null && userSettings!.scheduleProfile != null) {
+      transitUiButton =
+          createTravelMediumButton(userSettings!.scheduleProfile!);
+    }
+
     Widget integrationButton = createIntegrationButton();
     if (isTimeOfDayLoaded) {
       Widget endOfDayWidget =
@@ -405,6 +512,7 @@ class _SettingState extends State<Setting> {
       ));
     }
     childElements.add(integrationButton);
+    childElements.add(transitUiButton);
     childElements.add(logoutButton);
     childElements.add(deleteButton);
     return CancelAndProceedTemplateWidget(

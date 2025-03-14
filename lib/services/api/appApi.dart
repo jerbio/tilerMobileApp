@@ -209,7 +209,11 @@ abstract class AppApi {
           return http
               .post(uri, headers: header, body: jsonEncode(injectedParameters))
               .then((value) async {
-            print("Concluded Sending POST REQUEST " + requestPath);
+            print("Concluded Sending POST REQUEST " +
+                requestPath +
+                "\t Code: " +
+                value.statusCode.toString());
+
             if (analyze) {
               analyzeSchedule(injectLocation: injectLocation);
             }
