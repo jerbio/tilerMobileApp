@@ -24,6 +24,7 @@ class TileStyles {
   static const Color appBarColor = primaryColor;
 
   static const Color accentColor = Color.fromRGBO(179, 194, 242, 1);
+  static const Color accentButtonColor = Color.fromRGBO(103, 80, 164, 1);
   static const Color errorBackgroundColor = Colors.black54;
   static const Color errorTxtColor = Colors.red;
   static const Color loadColor = accentColor;
