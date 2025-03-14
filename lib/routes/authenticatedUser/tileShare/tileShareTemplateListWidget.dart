@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
+import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/simpleTileShareTemplareWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateDetail.dart';
@@ -123,6 +126,99 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
     );
   }
 
+  Future updateTileShareTemplate(TileShareTemplate tileShareTemplate,
+      {String? clusterName, DateTime? deadline}) {
+    if (tileShareTemplate == null) {
+      return Future.value(null);
+    }
+    ClusterTemplateTileModel dateUpdated = ClusterTemplateTileModel();
+    dateUpdated.Id = tileShareTemplate.id;
+    dateUpdated.EndTime = deadline?.millisecondsSinceEpoch;
+    dateUpdated.Name = clusterName;
+    return tileClusterApi.updateTileShareTemplate(dateUpdated).then((value) {
+      return getTileShareTemplates();
+    });
+  }
+
+  void displayDialog(TileShareTemplate tileShareTemplate) {
+    showModalBottomSheet<void>(
+        isScrollControlled: true,
+        context: context,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext context) {
+          return Container(
+              width: MediaQuery.of(context).size.width,
+              color: Colors.transparent,
+              child: NameAndDateSheetWidget(
+                appBar: AppBar(
+                  centerTitle: true,
+                  elevation: 0,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: TileStyles.appBarColor,
+                  title: Text(
+                    AppLocalizations.of(context)!.edit,
+                    style: TextStyle(
+                        color: TileStyles.appBarTextColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 22),
+                  ),
+                ),
+                endTime: tileShareTemplate.end != null
+                    ? DateTime.fromMillisecondsSinceEpoch(
+                        tileShareTemplate.end!)
+                    : null,
+                name: tileShareTemplate.name,
+                onAddTileShare: (NameAndEndTimeUpdate? update) {
+                  Navigator.pop(context);
+                  if (update != null) {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    updateTileShareTemplate(tileShareTemplate,
+                            clusterName: update.Name, deadline: update.EndTime)
+                        .then((value) {
+                      return this
+                          .tileClusterApi
+                          .getTileShareTemplates(clusterId: this.clusterId)
+                          .then((value) {
+                        if (value.isNotEmpty) {
+                          setState(() {
+                            for (int i = 0;
+                                i < tileShareTemplates.length;
+                                i++) {
+                              if (tileShareTemplates[i]
+                                      .id
+                                      .isNot_NullEmptyOrWhiteSpace() &&
+                                  tileShareTemplates[i].id ==
+                                      tileShareTemplate.id) {
+                                setState(() {
+                                  tileShareTemplates[i] = value.first;
+                                });
+                                break;
+                              }
+                            }
+                          });
+                        }
+                      });
+                    }).whenComplete(() {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    });
+                  }
+                },
+              ));
+        });
+  }
+
+  generateEditTileShareCallBack(TileShareTemplate tileShareTemplate) {
+    return (BuildContext context) {
+      if (tileShareTemplate.id.isNot_NullEmptyOrWhiteSpace()) {
+        displayDialog(tileShareTemplate);
+      }
+    };
+  }
+
   Widget renderBody() {
     int toBeRenderedElementCount = tileShareTemplates.length;
     if (isLoading) {
@@ -141,38 +237,59 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
               return SizedBox.shrink();
             }
             String tileShareTemplateId = tileShareTemplates[index].id!;
+            TileShareTemplate tileShareTemplate = tileShareTemplates[index];
             return InkWell(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => TileShareTemplateDetailWidget(
-                              isReadOnly: this.widget.isReadOnly,
-                              tileShareTemplate: tileShareTemplates[index],
-                            ))).then((value) {
-                  getTileShareTemplates(resetList: true);
-                });
-              },
-              child: Dismissible(
-                  key: Key(tileShareTemplateId),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    padding: EdgeInsets.all(10),
-                    alignment: Alignment.centerRight,
-                    color: TileStyles.deletedBackgroundColor,
-                    child: Icon(
-                      Icons.delete,
-                      color: TileStyles.primaryContrastColor,
-                      size: 40,
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TileShareTemplateDetailWidget(
+                                isReadOnly: this.widget.isReadOnly,
+                                tileShareTemplate: tileShareTemplates[index],
+                              ))).then((value) {
+                    getTileShareTemplates(resetList: true);
+                  });
+                },
+                child: Slidable(
+                    // Specify a key if the Slidable is dismissible.
+                    key: ValueKey<String>(tileShareTemplateId),
+
+                    // The end action pane is the one at the right or the bottom side.
+                    endActionPane: ActionPane(
+                      motion: const ScrollMotion(),
+                      dismissible: DismissiblePane(onDismissed: () {
+                        tileClusterApi
+                            .deleteTileShareTemplate(tileShareTemplateId)
+                            .whenComplete(
+                                () => getTileShareTemplates(resetList: false));
+                      }),
+                      children: [
+                        SlidableAction(
+                          onPressed:
+                              generateEditTileShareCallBack(tileShareTemplate),
+                          backgroundColor: TileStyles.accentColor,
+                          foregroundColor: TileStyles.primaryContrastColor,
+                          icon: Icons.edit,
+                          label: AppLocalizations.of(context)!.edit,
+                        ),
+                        SlidableAction(
+                          onPressed: (context) {
+                            tileClusterApi
+                                .deleteTileShareTemplate(tileShareTemplateId)
+                                .whenComplete(() =>
+                                    getTileShareTemplates(resetList: true));
+                            ;
+                          },
+                          backgroundColor: TileStyles.deletedBackgroundColor,
+                          foregroundColor: Colors.white,
+                          icon: Icons.delete,
+                          label: AppLocalizations.of(context)!.tileShareDelete,
+                        ),
+                      ],
                     ),
-                  ),
-                  onDismissed: (direction) {
-                    tileClusterApi.deleteTileShareTemplate(tileShareTemplateId);
-                  },
-                  child: TileShareTemplateSimpleWidget(
-                    tileShareTemplate: tileShareTemplates[index],
-                  )),
-            );
+                    child: TileShareTemplateSimpleWidget(
+                      tileShareTemplate: tileShareTemplates[index],
+                    )));
           }
           return renderPending();
         });
