@@ -30,7 +30,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart'
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/settingsWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
@@ -221,7 +221,7 @@ class _TilerAppState extends State<TilerApp> {
               ),
           '/RepetitionRoute': (ctx) => RepetitionRoute(),
           '/PickColor': (ctx) => PickColor(),
-          '/Setting': (ctx) => Setting(),
+          '/Setting': (ctx) => SettingWidgetRoute(),
           '/Integrations': (ctx) => IntegrationWidgetRoute(),
           '/OnBoarding': (ctx) => OnboardingView(),
           '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
