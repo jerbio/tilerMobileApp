@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
+import 'package:tiler_app/data/userSettings.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:http/http.dart' as http;
 
@@ -111,6 +112,56 @@ class SettingsApi extends AppApi {
       }
       print('Update start of day issue');
       print(response.body);
+      throw TilerError(message: "Issues with reaching TIler servers");
+    });
+  }
+
+  Future<UserSettings> getUserSettings() async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      var queryParameters = {
+        'MobileApp': true.toString(),
+      };
+      Uri uri = Uri.https(tilerDomain, 'api/User/Settings', queryParameters);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(message: 'Issues with authentication');
+      }
+      var response = await http.get(
+        uri,
+        headers: header,
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content']['settings'];
+            UserSettings retValue = UserSettings.fromJson(jsonMap);
+            return retValue;
+          }
+        }
+      }
+    }
+    throw TilerError();
+  }
+
+  Future<UserSettings> updateUserSettings(UserSettings userSetting) async {
+    Map<String, dynamic> userSettingMap = userSetting.toJsonForUpdate();
+    return sendPostRequest('api/User/Settings', userSettingMap, analyze: false)
+        .then((response) {
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content']['settings'];
+            UserSettings retValue = UserSettings.fromJson(jsonMap);
+            print('Update User Settings');
+            return retValue;
+          }
+        }
+      }
       throw TilerError(message: "Issues with reaching TIler servers");
     });
   }
