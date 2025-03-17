@@ -11,6 +11,7 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -143,81 +144,113 @@ class TileWidgetState extends State<TileWidget>
   Widget renderTravelTime(Timeline travelTimeLine) {
     double fontSize = 20;
     double iconSize = 20;
+    double lottieHeight = 85;
     String lottieAsset =
         isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
-    String startString = MaterialLocalizations.of(context).formatTimeOfDay(
-        TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
-            travelTimeLine.start!.toInt())));
-    String endString = MaterialLocalizations.of(context).formatTimeOfDay(
-        TimeOfDay.fromDateTime(
-            DateTime.fromMillisecondsSinceEpoch(travelTimeLine.end!.toInt())));
+
     Color? textColor =
         isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
 
-    Widget travelStop = SizedBox.shrink();
+    Widget transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
     if (this.widget.subEvent.travelDetail != null) {
       TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
       int walkCount = 0;
       int stopCount = 0;
+      transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
+      if (travelDetail.before != null) {
+        if (travelDetail.before!.start != null &&
+            travelDetail.before!.end != null) {
+          travelTimeLine = Timeline.fromDateTimeAndDuration(
+              DateTime.fromMillisecondsSinceEpoch(
+                  travelDetail.before!.start!.toInt()),
+              Duration(
+                  milliseconds: travelDetail.before!.end!.toInt() -
+                      travelDetail.before!.start!.toInt()));
+        }
+        if (travelDetail.before!.travelMedium ==
+            TravelMedium.bicycling.name.toString().toLowerCase()) {
+          String bicycleLottieAsset = isTardy
+              ? 'assets/lottie/red-bicycle.json'
+              : 'assets/lottie/black-bicycle.json';
+          transitUIWidget =
+              Lottie.asset(bicycleLottieAsset, height: lottieHeight);
+        }
+      }
 
       travelDetail.before?.travelLegs?.forEach((leg) {
-        if (leg.travelMedium == 'transit') {
+        if (leg.travelMedium ==
+            TravelMedium.transit.name.toString().toLowerCase()) {
           ++stopCount;
-        } else if (leg.travelMedium == 'walking') {
+        } else if (leg.travelMedium ==
+            TravelMedium.walking.name.toString().toLowerCase()) {
           ++walkCount;
         }
       });
-      travelStop = Icon(Icons.directions_transit,
-          color: TileStyles.primaryContrastColor, size: iconSize);
+      EdgeInsets trainsitUIPadding = EdgeInsets.all(5);
       if (walkCount > 0 || stopCount > 0) {
         fontSize = 15;
         iconSize = 15;
         List<Widget> travelWidgets = [];
         if (walkCount > 0) {
           travelWidgets.add(
-            Row(
-              children: [
-                Icon(Icons.directions_walk,
-                    color: TileStyles.primaryContrastColor, size: iconSize),
-                Text(walkCount.toString(),
-                    style: TextStyle(
-                        fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.normal,
-                        color: TileStyles.primaryContrastColor))
-              ],
+            Container(
+              padding: trainsitUIPadding,
+              child: Row(
+                children: [
+                  Icon(Icons.directions_walk,
+                      color: TileStyles.primaryContrastColor, size: iconSize),
+                  Text(walkCount.toString(),
+                      style: TextStyle(
+                          fontSize: fontSize,
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.normal,
+                          color: TileStyles.primaryContrastColor))
+                ],
+              ),
             ),
           );
         }
         if (stopCount > 0) {
           travelWidgets.add(
-            Row(
-              children: [
-                Icon(Icons.directions_transit,
-                    color: TileStyles.primaryContrastColor, size: iconSize),
-                Text(stopCount.toString(),
-                    style: TextStyle(
-                        fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.normal,
-                        color: TileStyles.primaryContrastColor))
-              ],
+            Container(
+              padding: trainsitUIPadding,
+              child: Row(
+                children: [
+                  Icon(Icons.directions_transit,
+                      color: TileStyles.primaryContrastColor, size: iconSize),
+                  Text(stopCount.toString(),
+                      style: TextStyle(
+                          fontSize: fontSize,
+                          fontFamily: TileStyles.rubikFontName,
+                          fontWeight: FontWeight.normal,
+                          color: TileStyles.primaryContrastColor))
+                ],
+              ),
             ),
           );
         }
-        travelStop = Container(
+        transitUIWidget = Container(
           padding: EdgeInsets.all(5),
-          margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: TileStyles.primaryColor,
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: travelWidgets,
           ),
         );
       }
     }
+
+    String startString = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
+            travelTimeLine.start!.toInt())));
+    String endString = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(
+            DateTime.fromMillisecondsSinceEpoch(travelTimeLine.end!.toInt())));
+
     Widget retValue = InkWell(
       onTap: () {
         AnalysticsSignal.send('TRAVEL_TIME_TAP');
@@ -228,8 +261,11 @@ class TileWidgetState extends State<TileWidget>
               travelDetail.before?.startLocation ?? Location.fromDefault();
           Location destinationLocation =
               travelDetail.before?.endLocation ?? Location.fromDefault();
-          _launchGoogleMaps(originLocation, destinationLocation,
-              travelDetail.before?.travelMedium ?? 'driving');
+          _launchGoogleMaps(
+              originLocation,
+              destinationLocation,
+              travelDetail.before?.travelMedium ??
+                  TravelMedium.driving.name.toLowerCase());
         }
       },
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -245,7 +281,6 @@ class TileWidgetState extends State<TileWidget>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            travelStop,
             Container(
                 margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
                 child: Text(startString,
@@ -254,7 +289,7 @@ class TileWidgetState extends State<TileWidget>
                         fontFamily: TileStyles.rubikFontName,
                         fontWeight: FontWeight.normal,
                         color: textColor))),
-            Lottie.asset(lottieAsset, height: 85),
+            transitUIWidget,
             Container(
                 margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 child: Text(endString,
