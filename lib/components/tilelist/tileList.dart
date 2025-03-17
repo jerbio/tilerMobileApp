@@ -300,7 +300,7 @@ abstract class TileListState<T extends TileList> extends State<T>
 
   void showSubEventModal(SubCalendarTileState state) {
     if (state is NewSubCalendarTilesLoadedState) {
-      if (state.subEvent != null) {
+      if (state.subEvent != null && state.subEvent!.id != null) {
         SubCalendarEvent subEvent = state.subEvent!;
         int redColor = subEvent.colorRed ?? 125;
         int blueColor = subEvent.colorBlue ?? 125;
@@ -322,8 +322,10 @@ abstract class TileListState<T extends TileList> extends State<T>
             var future = Future.delayed(
                 const Duration(milliseconds: Constants.autoHideInMs));
             var hideNewSheeTileFuture = future.asStream().listen((input) {
-              if (context != null && context.mounted) {
-                Navigator.pop(context);
+              if (context.mounted) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
               }
             });
 
@@ -337,7 +339,11 @@ abstract class TileListState<T extends TileList> extends State<T>
                     builder: (context) => TileDetail(
                         tileId: subEvent.calendarEvent?.id ?? subEvent.id!),
                   ),
-                ).whenComplete(() => Navigator.pop(context));
+                ).whenComplete(() {
+                  if (Navigator.canPop(context)) {
+                    Navigator.pop(context);
+                  }
+                });
               },
               style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.all(0),
