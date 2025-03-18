@@ -14,6 +14,7 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/durationInputWidget.dart';
 
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -511,7 +512,34 @@ class _SettingWidgetRouteState extends State<SettingWidgetRoute> {
         backgroundDecoration: BoxDecoration(color: Colors.transparent),
       ));
     }
+    Widget durationButton = SizedBox.shrink();
+    if (this.userSettings != null &&
+        this.userSettings?.scheduleProfile != null) {
+      durationButton = Container(
+        width: 200,
+        child: DurationInputWidget(
+            icon: Icon(Icons.bed, color: TileStyles.inputFieldTextColor),
+            placeholder: AppLocalizations.of(context)!.sleepDuration,
+            duration: Duration(
+                milliseconds: this
+                        .userSettings
+                        ?.scheduleProfile
+                        ?.sleepDuration
+                        ?.toInt() ??
+                    0),
+            onDurationChange: (integrationButton) {
+              if (this.userSettings != null) {
+                setState(() {
+                  this.userSettings!.scheduleProfile?.sleepDuration =
+                      integrationButton?.inMilliseconds?.toInt() ?? 0;
+                });
+              }
+            }),
+      );
+    }
+
     childElements.add(integrationButton);
+    childElements.add(durationButton);
     childElements.add(transitUiButton);
     childElements.add(logoutButton);
     childElements.add(deleteButton);

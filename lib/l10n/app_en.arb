@@ -648,5 +648,6 @@
       "travelMediumBiking": "Bike",
       "travelMediumTransit": "Transit",
       "travelMediumDriving": "Driving",
-      "travelMediumTransport": "Transport"
+      "travelMediumTransport": "Transport",
+      "sleepDuration": "Sleep Duration"
   }
