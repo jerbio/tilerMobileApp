@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -50,6 +51,15 @@ class TileWidgetState extends State<TileWidget>
   StreamSubscription? pendingScheduleRefresh;
   late AnimationController controller;
   late Animation<double> fadeAnimation;
+  Map<String, IconData> transitIconMap = {
+    'driving': Icons.directions_car,
+    'bicycling': Icons.directions_bike,
+    'walking': Icons.directions_walk,
+    'transit': Icons.directions_transit,
+  };
+
+  final ExpansionTileController expansionTravelController =
+      ExpansionTileController();
 
   @override
   void initState() {
@@ -141,6 +151,42 @@ class TileWidgetState extends State<TileWidget>
     }
   }
 
+  Widget travelLegToWidget(TravelLeg travelLeg) {
+    String durationText = travelLeg.durationText ?? "";
+    Widget retValue = Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Icon(transitIconMap[travelLeg.travelMedium] ?? Icons.directions_walk,
+            color: TileStyles.primaryColor, size: 20),
+        Flexible(
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            child: Text(
+              travelLeg.description ?? "",
+              style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: TileStyles.rubikFontName,
+                  fontWeight: FontWeight.normal,
+                  color: TileStyles.defaultTextColor),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            durationText.isNot_NullEmptyOrWhiteSpace() ? "($durationText)" : "",
+            style: TextStyle(
+                fontSize: 15,
+                fontFamily: TileStyles.rubikFontName,
+                fontWeight: FontWeight.normal,
+                color: TileStyles.defaultTextColor),
+          ),
+        )
+      ],
+    );
+    return retValue;
+  }
+
   Widget renderTravelTime(Timeline travelTimeLine) {
     double fontSize = 20;
     double iconSize = 20;
@@ -229,6 +275,7 @@ class TileWidgetState extends State<TileWidget>
             ),
           );
         }
+
         transitUIWidget = Container(
           padding: EdgeInsets.all(5),
           margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
@@ -241,6 +288,18 @@ class TileWidgetState extends State<TileWidget>
             children: travelWidgets,
           ),
         );
+        if (stopCount > 0 && travelDetail.before!.travelLegs != null) {
+          transitUIWidget = Container(
+            width: MediaQuery.sizeOf(context).width * 0.6,
+            child: ExpansionTile(
+              title: transitUIWidget,
+              children: travelDetail.before!.travelLegs!
+                  .map((leg) => travelLegToWidget(leg))
+                  .toList(),
+              controller: expansionTravelController,
+            ),
+          );
+        }
       }
     }
 
