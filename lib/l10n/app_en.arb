@@ -644,6 +644,10 @@
       "previewLocationName": "Location",
       "previewTagName": "Tag",
       "previewClassificationName": "Classification",
-      "previewBlockedOut": "Blocked Out"
-
+      "previewBlockedOut": "Blocked Out",
+      "travelMediumBiking": "Bike",
+      "travelMediumTransit": "Transit",
+      "travelMediumDriving": "Driving",
+      "travelMediumTransport": "Transport",
+      "sleepDuration": "Sleep Duration"
   }
