@@ -5,7 +5,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
+import 'package:tiler_app/bloc/settings/settings_state.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/settings/settings_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -29,24 +31,30 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/timeRestrictionRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/pickColor.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/integrationWidgetRoute.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accountInfo.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/notificationPreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/tilePreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart';
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
+import 'bloc/settings/settings_event.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+//import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/api/onBoardingApi.dart';
@@ -73,7 +81,7 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   if (!Constants.isDebug) {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+     // options: DefaultFirebaseOptions.currentPlatform,
     );
   }
   runApp(TilerApp());
@@ -93,31 +101,18 @@ class _TilerAppState extends State<TilerApp> {
   void initState() {
     onBoardingApi = OnBoardingApi();
     notificationOverlayMessage = NotificationOverlayMessage();
+    _loadSavedTheme();
     super.initState();
   }
-
-  void showMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
+  void _loadSavedTheme() async {
+    final isDarkMode = await ThemeManager.getThemeMode();
+    // Delay to ensure SettingsBloc is available
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        context.read<SettingsBloc>().add(ToggleDarkModeEvent(isDarkMode));
+      }
+    });
   }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
-        fontSize: 16.0);
-  }
-
   Widget renderPending() {
     return Center(
         child: Stack(children: [
@@ -135,18 +130,6 @@ class _TilerAppState extends State<TilerApp> {
 
   @override
   Widget build(BuildContext context) {
-    Map<int, Color> color = {
-      50: Color.fromRGBO(239, 48, 84, .1),
-      100: Color.fromRGBO(239, 48, 84, .2),
-      200: Color.fromRGBO(239, 48, 84, .3),
-      300: Color.fromRGBO(239, 48, 84, .4),
-      400: Color.fromRGBO(239, 48, 84, .5),
-      500: Color.fromRGBO(239, 48, 84, .6),
-      600: Color.fromRGBO(239, 48, 84, .7),
-      700: Color.fromRGBO(239, 48, 84, .8),
-      800: Color.fromRGBO(239, 48, 84, .9),
-      900: Color.fromRGBO(239, 48, 84, 1),
-    };
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -164,10 +147,6 @@ class _TilerAppState extends State<TilerApp> {
                 })),
         BlocProvider(
             create: (context) => LocationBloc(getContextCallBack: () {
-                  return this.context;
-                })),
-        BlocProvider(
-            create: (context) => IntegrationsBloc(getContextCallBack: () {
                   return this.context;
                 })),
         BlocProvider(create: (context) => TileListCarouselBloc()),
@@ -189,16 +168,21 @@ class _TilerAppState extends State<TilerApp> {
         BlocProvider(
             create: (context) => PreviewSummaryBloc(getContextCallBack: () {
                   return this.context;
-                }))
+                })),
+        BlocProvider(
+            create: (context) => SettingsBloc(getContextCallBack: () {
+              return this.context;
+            }))
       ],
-      child: MaterialApp(
+      child:BlocBuilder<SettingsBloc, SettingsState>(
+        buildWhen: (previous, current) => previous.isDarkMode != current.isDarkMode,
+    builder: (context, settingsState) {
+    return MaterialApp(
         title: 'Tiler',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          fontFamily: TileStyles.rubikFontName,
-          primarySwatch: MaterialColor(0xFF880E4F, color),
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
+        theme: ThemeManager.getLightTheme(),
+        darkTheme: ThemeManager.getDarkTheme(),
+        themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
         routes: <String, WidgetBuilder>{
           '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),
           '/LoggedOut': (BuildContext context) => new SignInRoute(),
@@ -221,12 +205,16 @@ class _TilerAppState extends State<TilerApp> {
               ),
           '/RepetitionRoute': (ctx) => RepetitionRoute(),
           '/PickColor': (ctx) => PickColor(),
-          '/Setting': (ctx) => Setting(),
+          '/Setting': (ctx) => Settings(),
           '/Integrations': (ctx) => IntegrationWidgetRoute(),
           '/OnBoarding': (ctx) => OnboardingView(),
           '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
           '/DesignatedTileList': (ctx) => DesignatedTileList(),
           '/TileShare': (ctx) => TileShareRoute(),
+          '/accountInfo':(ctx)=>AccountInfo(),
+          '/notificationsPreferences':(ctx)=>NotificationPreferences(),
+          '/Connections':(ctx)=>Connections(),
+          '/tilePreferences':(ctx)=>TilePreferencesScreen()
         },
         localizationsDelegates: [
           AppLocalizations.delegate,
@@ -312,7 +300,9 @@ class _TilerAppState extends State<TilerApp> {
                 return retValue;
               }
             }),
-      ),
+      );
+  },
+),
     );
   }
 }

@@ -190,6 +190,7 @@ flutter:
     - assets/images/iconScout/login.svg
     - assets/images/iconScout/logout.svg
     - assets/icons/svg/google-outline---filled(24x24)@1x.svg
+    - assets/icons/settings/
     # - images/a_dot_ham.jpeg
   generate: true
 

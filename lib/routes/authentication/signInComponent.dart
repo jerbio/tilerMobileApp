@@ -523,7 +523,7 @@ class SignInComponentState extends State<SignInComponent>
       hideButtonsTemporarily();
       notificationOverlayMessage.showToast(
         context,
-        onError.message,
+        onError.errorMessage,
         NotificationOverlayMessageType.error,
       );
       return null;

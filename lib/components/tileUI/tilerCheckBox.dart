@@ -37,7 +37,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     if (states.any(interactiveStates.contains)) {
       return TileStyles.primaryColor;
     }
-    return TileStyles.disabledColor;
+    return Colors.transparent;
   }
 
   onTap() {
@@ -61,29 +61,15 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
       checkStatus = this.widget.isChecked!;
     }
     Widget checkBox = Container(
-        decoration: BoxDecoration(
-          color: TileStyles.disabledColor,
-          border: Border.all(
-            color: Colors.white,
-            width: 0.5,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        width: 38,
-        height: 38,
+        margin: EdgeInsets.fromLTRB(20, 0, 2, 0),
+        width: 24,
+        height: 24,
         child: Stack(
           children: [
-            Container(
-              padding: EdgeInsets.fromLTRB(1, 0, 0, 1),
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Stack(
-                  children: [Icon(Icons.check, color: Colors.white, size: 25)]),
-            ),
             Transform.scale(
-                scale: 2.0,
+                scale:  1,
                 child: Checkbox(
-                  checkColor: Colors.white,
+                  checkColor: Colors.transparent,
                   fillColor: MaterialStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
@@ -103,16 +89,16 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
         ));
 
     Widget textBox = Container(
-      margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      margin: EdgeInsets.fromLTRB(12, 0, 0, 0),
       child: Text(this.text,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 20,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
               color: checkStatus
-                  ? TileStyles.primaryColorDarkHSL.toColor()
+                  ? Colors.black
                   : TileStyles.disabledTextColor)),
     );
     return new GestureDetector(
