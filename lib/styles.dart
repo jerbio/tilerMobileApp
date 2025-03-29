@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TileStyles {
+  static Map<int, Color> themeMaterialColor = {
+    50: Color.fromRGBO(239, 48, 84, .1),
+    100: Color.fromRGBO(239, 48, 84, .2),
+    200: Color.fromRGBO(239, 48, 84, .3),
+    300: Color.fromRGBO(239, 48, 84, .4),
+    400: Color.fromRGBO(239, 48, 84, .5),
+    500: Color.fromRGBO(239, 48, 84, .6),
+    600: Color.fromRGBO(239, 48, 84, .7),
+    700: Color.fromRGBO(239, 48, 84, .8),
+    800: Color.fromRGBO(239, 48, 84, .9),
+    900: Color.fromRGBO(239, 48, 84, 1),
+  };
   static final double tileWidth = 350;
   static final double tileHeight = 350;
   static final double tileWidthRatio = 0.85;

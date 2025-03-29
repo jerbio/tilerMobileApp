@@ -434,7 +434,6 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: Colors.white,
       elevation: 5,
       margin: EdgeInsets.all(10),
       child: Padding(
