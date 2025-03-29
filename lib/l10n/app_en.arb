@@ -155,6 +155,8 @@
     "edit": "Edit",
     "workProfileHours": "Work Hours",
     "personalHours": "Personal Hours",
+    "setWorkProfileHours": "Set Work Hours",
+    "setPersonalHours": "Set Personal Hours",
     "customHours": "Custom Hours",
     "logout": "Logout",
     "bedTime": "Bed Time",
@@ -644,6 +646,22 @@
       "previewLocationName": "Location",
       "previewTagName": "Tag",
       "previewClassificationName": "Classification",
-      "previewBlockedOut": "Blocked Out"
+      "previewBlockedOut": "Blocked Out",
+      "accountInfo":"Account info",
+      "tilePreferences":"Tile Preferences",
+      "notificationsPreferences":"Notifications Preferences",
+      "security":"Security",
+      "connections":"Connections",
+      "myLocations":"My Locations",
+      "aboutTiler":"About Tiler",
+      "darkMode":"Dark Mode",
+      "setLocation":"Set location",
+      "connectCalendars": "Connect your calendars",
+      "comingSoon": "Coming soon",
+      "googleCalendar":"Google Calendar",
+      "appleCalendar":"Apple Calendar",
+      "googleTasks":"Google Tasks",
+      "microsoft":"Microsoft",
+      "slack":"Slack"
 
   }
