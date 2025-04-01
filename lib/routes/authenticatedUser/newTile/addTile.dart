@@ -1060,9 +1060,10 @@ class AddTileState extends State<AddTile> {
                 (1 - (Utility.randomizer.nextDouble() * 0.45)))
             .toColor();
 
-    tile.BColor = randomColor.b.toString();
-    tile.GColor = randomColor.g.toString();
-    tile.RColor = randomColor.r.toString();
+    double colorConst = 255;
+    tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
