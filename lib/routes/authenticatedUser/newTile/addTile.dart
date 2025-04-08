@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:switch_up/switch_up.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -59,7 +59,8 @@ class AddTileState extends State<AddTile> {
   // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
   // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
   final Color populatedTextColor = Colors.white;
-  final CarouselController tilerCarouselController = CarouselController();
+  final CarouselSliderController tilerCarouselController =
+      CarouselSliderController();
   String tileNameText = '';
   String splitCountText = '';
 
@@ -1059,9 +1060,10 @@ class AddTileState extends State<AddTile> {
                 (1 - (Utility.randomizer.nextDouble() * 0.45)))
             .toColor();
 
-    tile.BColor = randomColor.blue.toString();
-    tile.GColor = randomColor.green.toString();
-    tile.RColor = randomColor.red.toString();
+    double colorConst = 255;
+    tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
@@ -1348,15 +1350,17 @@ class AddTileState extends State<AddTile> {
 
     String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
     Widget switchUp = Container(
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: SwitchUp(
-        key: switchUpKey,
-        items: tabButtons,
-        onChanged: onTabTypeChange,
-        value: switchUpvalue,
-        color: TileStyles.primaryColor,
-        backgroundColor: TileStyles.primaryContrastColor,
-        // TileStyles.oPrimaryColorHSL.toColor(),
+      child: ToggleSwitch(
+        // key: switchUpKey,
+        initialLabelIndex: !isAppointment ? 0 : 1,
+        totalSwitches: 2,
+        animate: true,
+        labels: tabButtons,
+        onToggle: onTabTypeChange,
+        activeFgColor: TileStyles.primaryContrastColor,
+        activeBgColor: [TileStyles.primaryColor],
+        inactiveBgColor: TileStyles.inactiveTextColor,
+        inactiveFgColor: TileStyles.primaryContrastColor,
       ),
     );
 

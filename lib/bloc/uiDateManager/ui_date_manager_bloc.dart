@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -21,7 +22,6 @@ class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
     on<LogOutUiDateManagerEvent>(_onLogOutUiDateManagerChange);
   }
 
-
   _onDayDateChange(DateChangeEvent event, Emitter emit) {
     DateTime previousDate =
         event.previousSelectedDate ?? Utility.currentTime().dayDate;
@@ -41,15 +41,16 @@ class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
     emit(LoggedOutUiDateManagerUpdated());
   }
 
-  
-
-   void onDateButtonTapped(DateTime date) {
+  void onDateButtonTapped(DateTime date) {
     AnalysticsSignal.send('DAY_RIBBON_TAPPED');
     print('DAY_RIBBON_TAPPED');
-    DateTime previousDate = state is UiDateManagerUpdated ? (state as UiDateManagerUpdated).currentDate : Utility.currentTime().dayDate;
+    DateTime previousDate = state is UiDateManagerUpdated
+        ? (state as UiDateManagerUpdated).currentDate
+        : Utility.currentTime().dayDate;
     DateTime currentDate = date;
 
-    if (currentDate.millisecondsSinceEpoch != previousDate.millisecondsSinceEpoch) {
+    if (currentDate.millisecondsSinceEpoch !=
+        previousDate.millisecondsSinceEpoch) {
       add(DateChangeEvent(
           previousSelectedDate: previousDate, selectedDate: date));
     }
