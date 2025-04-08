@@ -455,7 +455,9 @@ class _SettingWidgetRouteState extends State<SettingWidgetRoute> {
                             ),
                             ElevatedButton(
                               onPressed: () {
-                                Navigator.of(context).pop();
+                                if (Navigator.of(context).canPop()) {
+                                  Navigator.of(context).pop();
+                                }
                               },
                               child: Text(AppLocalizations.of(context)!.no),
                             )

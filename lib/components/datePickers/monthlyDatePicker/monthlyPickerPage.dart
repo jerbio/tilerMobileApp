@@ -23,7 +23,8 @@ class MonthPickerPage extends StatelessWidget {
               SizedBox(width: 6.0),
               Transform.rotate(
                 angle: 1.5 * 3.14159,
-                child: Icon(Icons.arrow_back_ios_new_sharp, size: 24.0, color: TileStyles.defaultTextColor),
+                child: Icon(Icons.arrow_back_ios_new_sharp,
+                    size: 24.0, color: TileStyles.defaultTextColor),
               ),
             ],
           ),
@@ -31,7 +32,6 @@ class MonthPickerPage extends StatelessWidget {
       },
     );
   }
-
 
   void _showMonthPicker(BuildContext context) async {
     final result = await Navigator.of(context).push(
@@ -41,7 +41,11 @@ class MonthPickerPage extends StatelessWidget {
           children: [
             Positioned.fill(
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
                 child: Container(
                   color: Colors.transparent,
                 ),

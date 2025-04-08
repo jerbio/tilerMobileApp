@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/location.dart';
@@ -14,11 +11,13 @@ import '../../../constants.dart' as Constants;
 class LocationSearchWidget extends SearchWidget {
   Location? selectedLocation;
   Function? onLocationSelection;
+  final bool? includeDeviceLocation;
   LocationSearchWidget(
       {onChanged,
       textField,
       onInputCompletion,
       listView,
+      this.includeDeviceLocation = true,
       renderBelowTextfield = true,
       resultBoxDecoration,
       this.onLocationSelection,
@@ -47,6 +46,7 @@ class LocationSearchState extends SearchWidgetState {
   @override
   void initState() {
     super.initState();
+    print("new location search widget state created");
     locationNameApi = LocationApi(getContextCallBack: () => this.context);
     onChange = this.widget.onChanged;
   }
@@ -243,8 +243,14 @@ class LocationSearchState extends SearchWidgetState {
       }
 
       if (name.length > Constants.autoCompleteMinCharLength) {
-        List<Location> locations =
-            await locationNameApi.getLocationsByName(name);
+        bool includeLocationParams = false;
+        if (this.widget is LocationSearchWidget) {
+          includeLocationParams =
+              (this.widget as LocationSearchWidget).includeDeviceLocation!;
+        }
+        List<Location> locations = await locationNameApi.getLocationsByName(
+            name,
+            includeLocationParams: includeLocationParams);
         retValue = locations
             .map((location) =>
                 locationNameWidget(location, collapseResultContainer))
@@ -252,6 +258,7 @@ class LocationSearchState extends SearchWidgetState {
         if (retValue.length == 0) {
           retValue = [
             Container(
+              padding: EdgeInsets.all(10),
               child: Text(
                   AppLocalizations.of(this.context)!.noLocationMatchWasFound),
             )
