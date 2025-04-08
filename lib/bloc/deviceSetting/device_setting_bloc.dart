@@ -130,7 +130,9 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
                     child: Opacity(
                         opacity: anim1.value,
                         child: LocationAccessWidget(null, (_) {
-                          Navigator.of(ctx).pop();
+                          if (Navigator.of(ctx).canPop()) {
+                            Navigator.of(ctx).pop();
+                          }
                         })),
                   );
                 });

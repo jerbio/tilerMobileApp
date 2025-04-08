@@ -67,13 +67,13 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
         Widget locationSearchWidget = Flexible(
           child: Material(
             child: LocationSearchWidget(
-                onChanged: (address) {
-                  context
-                      .read<OnboardingBloc>()
-                      .add(AddressTextChanged(address));
-                },
-                textField: addressTextField,
-                onLocationSelection: onAutoSuggestedLocationTap),
+              onChanged: (address) {
+                context.read<OnboardingBloc>().add(AddressTextChanged(address));
+              },
+              textField: addressTextField,
+              onLocationSelection: onAutoSuggestedLocationTap,
+              // includeDeviceLocation: false,
+            ),
           ),
         );
 
