@@ -22,7 +22,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           wakeUpTime: TimeOfDay(hour: 7, minute: 0),
           startingWorkDayTime: TimeOfDay(hour: 9, minute: 0),
         )) {
-   
     on<NextPageEvent>(_onNextPageChanged);
     on<PreviousPageEvent>(_onPreviousPageEvent);
     on<WakeUpTimeUpdated>(_onWakeUpTimeUpdated);

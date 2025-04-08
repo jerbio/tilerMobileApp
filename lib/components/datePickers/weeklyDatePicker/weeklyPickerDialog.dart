@@ -126,7 +126,9 @@ class WeeklyPickerDialog extends StatelessWidget {
                       context.read<WeeklyUiDateManagerBloc>().add(
                           UpdateSelectedWeek(
                               selectedDate: state.tempSelectedWeek.first));
-                      Navigator.of(context).pop();
+                      if (Navigator.of(context).canPop()) {
+                        Navigator.of(context).pop();
+                      }
                     },
                     child: Text(AppLocalizations.of(context)!.save,
                         style: TileStyles.datePickersSaveStyle),
