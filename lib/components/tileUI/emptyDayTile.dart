@@ -189,6 +189,11 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                 controller: controller,
                 cardCount: cardData.length,
                 onSwipeEnd: (previousIndex, index, activity) {
+                  index = index - 1;
+                  if (index == -1 || index >= cardData.length) {
+                    return;
+                  }
+
                   AutoTile autoTile = autoTiles[index];
                   if (autoTile.isLastCard) {
                     return;
