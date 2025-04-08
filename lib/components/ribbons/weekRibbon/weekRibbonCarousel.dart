@@ -12,7 +12,8 @@ class WeeklyRibbonCarousel extends StatefulWidget {
 }
 
 class _WeeklyRibbonCarouselState extends State<WeeklyRibbonCarousel> {
-  final CarouselController _carouselController = CarouselController();
+  final CarouselSliderController _carouselController =
+      CarouselSliderController();
   late List<List<DateTime>> _weeks;
   late int _initialItem;
   bool _isCarouselChange = false;

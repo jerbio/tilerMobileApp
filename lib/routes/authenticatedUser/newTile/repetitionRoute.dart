@@ -10,7 +10,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:weekday_selector/weekday_selector.dart';
+// import 'package:weekday_selector/weekday_selector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RepetitionRoute extends StatefulWidget {
@@ -235,25 +235,25 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         weeklyRepetitionBool[weekDayIndex % 7] = true;
       }
     }
-
-    return Opacity(
-        opacity: _animation.value,
-        child: WeekdaySelector(
-          onChanged: (int index) {
-            RepetitionData updatedRepetitionData = repetitionData!;
-            if (updatedRepetitionData.weeklyRepetition != null) {
-              if (updatedRepetitionData.weeklyRepetition!.contains(index)) {
-                updatedRepetitionData.weeklyRepetition!.remove(index);
-              } else {
-                updatedRepetitionData.weeklyRepetition!.add(index);
-              }
-            }
-            setState(() {
-              repetitionData = updatedRepetitionData;
-            });
-          },
-          values: weeklyRepetitionBool,
-        ));
+    return SizedBox.shrink();
+    // return Opacity(
+    //     opacity: _animation.value,
+    //     child: WeekdaySelector(
+    //       onChanged: (int index) {
+    //         RepetitionData updatedRepetitionData = repetitionData!;
+    //         if (updatedRepetitionData.weeklyRepetition != null) {
+    //           if (updatedRepetitionData.weeklyRepetition!.contains(index)) {
+    //             updatedRepetitionData.weeklyRepetition!.remove(index);
+    //           } else {
+    //             updatedRepetitionData.weeklyRepetition!.add(index);
+    //           }
+    //         }
+    //         setState(() {
+    //           repetitionData = updatedRepetitionData;
+    //         });
+    //       },
+    //       values: weeklyRepetitionBool,
+    //     ));
   }
 
   bool isWeeklyRepetitionSelected() {

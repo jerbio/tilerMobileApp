@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:appinio_swiper/appinio_swiper.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
-import 'package:tiler_app/components/tileUI/newTileUIPreview.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -26,6 +24,7 @@ class EmptyDayTile extends StatefulWidget {
 class EmptyDayTileState extends State<EmptyDayTile> {
   late List<AutoTile> autoTiles;
   late int emptyDayIndex;
+  final AppinioSwiperController controller = AppinioSwiperController();
   @override
   void initState() {
     Map<int, List<AutoTile>> autoTilesByDuration =
@@ -124,6 +123,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
 
   @override
   Widget build(BuildContext context) {
+    var cardData =
+        autoTiles.where((autoTile) => autoTile.image != null).toList();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -185,9 +186,41 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                 ),
               ),
               AppinioSwiper(
-                cards: autoTiles
-                    .where((autoTile) => autoTile.image != null)
-                    .map((autoTile) {
+                controller: controller,
+                cardCount: cardData.length,
+                onSwipeEnd: (previousIndex, index, activity) {
+                  AutoTile autoTile = autoTiles[index];
+                  if (autoTile.isLastCard) {
+                    return;
+                  }
+                  switch (activity) {
+                    case Swipe():
+                      if (activity.direction == AxisDirection.right) {
+                        AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
+                          'description': autoTile.description,
+                          'duration': autoTile.duration?.inMilliseconds ?? -1
+                        });
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AddTile(
+                                    preTile: autoTile,
+                                    autoDeadline: this.widget.deadline)));
+                      }
+
+                      break;
+                    case Unswipe():
+                      break;
+                    case CancelSwipe():
+                      break;
+                    case DrivenActivity():
+                      break;
+                  }
+                },
+                swipeOptions: SwipeOptions.only(left: true, right: true),
+                cardBuilder: (BuildContext context, int index) {
+                  AutoTile autoTile = autoTiles[index];
+
                   return Container(
                     child: Column(
                       children: [
@@ -274,24 +307,6 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       ],
                     ),
                   );
-                }).toList(),
-                onSwipe: (index, direction) {
-                  AutoTile autoTile = autoTiles[index];
-                  if (autoTile.isLastCard) {
-                    return;
-                  }
-                  if (AppinioSwiperDirection.right == direction) {
-                    AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
-                      'description': autoTile.description,
-                      'duration': autoTile.duration?.inMilliseconds ?? -1
-                    });
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => AddTile(
-                                preTile: autoTile,
-                                autoDeadline: this.widget.deadline)));
-                  }
                 },
               )
             ],
