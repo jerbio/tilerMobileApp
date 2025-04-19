@@ -1,18 +1,21 @@
 import 'dart:ffi';
 import 'dart:ui' as dartUI;
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../styles.dart';
 
 class ConfigUpdateButton extends StatefulWidget {
-  Icon? prefixIcon;
-  String text;
-  Function? onPress;
-  Decoration? decoration;
-  Bool? isPopulated;
-  Color? textColor = Color.fromRGBO(31, 31, 31, 1);
+  final Icon? prefixIcon;
+  final String text;
+  final Function? onPress;
+  final Decoration? decoration;
+  final Bool? isPopulated;
+  final Color? textColor;
+  final TextStyle? textStyle;
+  final EdgeInsets? padding;
+  final ButtonStyle? buttonStyle;
+  final EdgeInsets? iconPadding;
+  final BoxConstraints? constraints;
   static Color populatedTextColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static BoxDecoration populatedDecoration = BoxDecoration(
@@ -32,7 +35,13 @@ class ConfigUpdateButton extends StatefulWidget {
       this.decoration,
       this.onPress,
       this.prefixIcon,
-      this.textColor});
+      this.isPopulated,
+      this.textStyle,
+      this.buttonStyle,
+      this.constraints,
+      this.iconPadding = const EdgeInsets.fromLTRB(5, 5, 5, 5),
+      this.padding = const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      this.textColor = const Color.fromRGBO(31, 31, 31, 1)});
 
   @override
   ConfigUpdateButtonState createState() => ConfigUpdateButtonState();
@@ -43,13 +52,17 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
     List<Widget> childWidgets = [];
     if (this.widget.prefixIcon != null) {
       childWidgets.add(Container(
-          margin: EdgeInsets.fromLTRB(5, 12, 5, 0),
+          margin: this.widget.iconPadding,
           child: this.widget.prefixIcon!));
     }
     String textButtonString = this.widget.text;
     Widget textButton = TextButton(
       style: TextButton.styleFrom(
-        textStyle: TextStyle(
+        padding: EdgeInsets.zero,
+        minimumSize: dartUI.Size.zero,
+        
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: this.widget.textStyle?? TextStyle(
             overflow: TextOverflow.ellipsis,
             fontSize: 20,
             fontWeight: FontWeight.w500,
@@ -63,28 +76,27 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       },
       child: Text(
         textButtonString,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
+        overflow:  TextOverflow.ellipsis,
+        style: this.widget.textStyle ??TextStyle(
           fontFamily: TileStyles.rubikFontName,
         ),
       ),
     );
+
     childWidgets.add(textButton);
 
-    // Widget ooo = ElevatedButton(onPressed: onPressed, child: child)
-
     Widget retValue = new ElevatedButton(
-      style: TileStyles.strippedButtonStyle,
+      style: this.widget.buttonStyle ?? TileStyles.strippedButtonStyle,
       onPressed: () {
         if (this.widget.onPress != null) {
           this.widget.onPress!();
         }
       },
       child: Container(
-        constraints: BoxConstraints(
+        constraints: this.widget.constraints ?? BoxConstraints(
             minWidth: (MediaQuery.of(context).size.width * 0.30)),
         decoration: this.widget.decoration,
-        padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
+        padding: this.widget.padding,
         child: Wrap(
           alignment: WrapAlignment.center,
           children: childWidgets,

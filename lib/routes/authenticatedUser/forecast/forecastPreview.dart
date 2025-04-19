@@ -26,12 +26,13 @@ class ForecastPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ForecastBloc(
-        getContextCallBack: () => context,
-      ),
-      child: ForecastView(),
-    );
+    return ForecastView();
+    // return BlocProvider(
+    //   create: (_) => ForecastBloc(
+    //     getContextCallBack: () => context,
+    //   ),
+    //   child: ForecastView(),
+    // );
   }
 }
 
@@ -60,7 +61,7 @@ class ForecastView extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              AppLocalizations.of(context)!.create,
+              AppLocalizations.of(context)!.createTile,
               style: TextStyle(
                 fontFamily: TileStyles.rubikFontName,
                 fontSize: height / (height / 15),

@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_event.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tileUI/newTileSheet.dart';
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -22,7 +24,7 @@ import 'package:tiler_app/util.dart';
 
 class PreviewAddWidget extends StatefulWidget {
   final PreviewSummary? previewSummary;
-  Function? onSubmit;
+  final Function? onSubmit;
   PreviewAddWidget({this.previewSummary, this.onSubmit});
   @override
   State<StatefulWidget> createState() => _PreviewAddWidgetState();
@@ -156,6 +158,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     setState(() {
       newTile = updatedTile;
     });
+    if(newTile!=null && newTile!.getDuration()!=null ) {
+      this.context.read<ForecastBloc>().add(NewTileEvent(newTile!));
+    }
   }
 
   void refreshScheduleSummary(Timeline? lookupTimeline) {
@@ -172,7 +177,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   Widget renderPending() {
-    print("rendered pending UI");
     return Container(
       height: modalHeight,
       width: MediaQuery.sizeOf(context).width,
@@ -296,15 +300,43 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           ],
         ),
         onPressed: () {
+          Location? location = null;
+          if(
+            newTile!=null &&
+            (newTile!.LocationAddress!=null && 
+          newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()  )||
+            (newTile!.LocationTag!=null && 
+          newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace())||
+          (newTile!.LocationId!=null && 
+          newTile!.LocationId.isNot_NullEmptyOrWhiteSpace())
+          ){
+            location = Location.fromDefault();
+            location.isDefault = false;
+            location.isNull = false;
+            location.id = newTile?.LocationId;
+            location.description = newTile?.LocationTag;
+            location.address = newTile?.LocationAddress;
+            location.source = newTile?.LocationSource;
+            if(newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() == true) {
+              bool? isLocationVerified = bool.tryParse(newTile!.LocationIsVerified!, caseSensitive: false);
+              if(isLocationVerified != null) {
+                location.isVerified = isLocationVerified;
+              }
+            }
+          }
+
+              SimpleAdditionTile preTile = SimpleAdditionTile(
+                          description: newTile?.Name,
+                          duration: newTile?.getDuration(),
+                          location: location
+                          );
           AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
           Navigator.pop(context);
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => AddTile(
-                      preTile: SimpleAdditionTile(
-                          description: newTile?.Name,
-                          duration: newTile?.getDuration()))));
+                      preTile: preTile)));
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),

@@ -43,79 +43,79 @@ class TileStyles {
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static const Color deletedBackgroundColor = Colors.red;
   static ButtonStyle disabledButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Color.fromRGBO(154, 158, 159, 1);
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
   );
 
   static ButtonStyle suggestedButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(30);
     }),
   );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    side: WidgetStateProperty.all(BorderSide(color: primaryColor)),
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
   );
 
   static ButtonStyle toggledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    side: WidgetStateProperty.all(BorderSide(color: primaryColor)),
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return primaryColor;
       }
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
       return primaryColorHSL.toColor();
     }),
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return primaryColorLightHSL.toColor();
     }),
-    iconColor: MaterialStateProperty.resolveWith((states) {
+    iconColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
@@ -124,64 +124,64 @@ class TileStyles {
   );
 
   static ButtonStyle strippedButtonStyle = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
   );
 
   static ButtonStyle onlyIcons = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
   );
 
   static ButtonStyle onlyIconsContrast = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryContrastColor;
     }),
   );

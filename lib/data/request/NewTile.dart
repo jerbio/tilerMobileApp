@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tiler_app/data/contact.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/RestrictionWeekConfig.dart';
 import 'package:tiler_app/data/request/addressModel.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
@@ -236,6 +237,51 @@ class NewTile {
       return Duration(minutes: totalMinutes);
     }
     return null;
+  }
+
+  DateTime? getStartDateTime() {
+    try{
+    return DateTime(
+        int.parse(this.StartYear!),
+        int.parse(this.StartMonth!),
+        int.parse(this.StartDay!),
+        int.parse(this.StartHour ?? "0"),
+        int.parse(this.StartMinute ?? "0"));}
+    catch(e){
+      Utility.debugPrint("Error in parsing start date: ${e.toString() } ${this.StartYear} ${this.StartMonth} ${this.StartDay} ${this.StartHour} ${this.StartMinute}");
+      return null;
+    }
+  }
+  DateTime? getEndDateTime() {
+    try{
+      return DateTime(
+        int.parse(this.EndYear!),
+        int.parse(this.EndMonth!),
+        int.parse(this.EndDay!),
+        int.parse(this.EndHour ?? "23"),
+        int.parse(this.EndMinute ?? "59"));}
+catch(e){
+      Utility.debugPrint("Error in parsing end date: ${e.toString()} ${this.EndYear} ${this.EndMonth} ${this.EndDay} ${this.EndHour} ${this.EndMinute}");
+      return null;
+    }
+  }
+  Location? getLocation() {
+    Location location = Location.fromDefault();
+    location.address = this.LocationAddress;
+    location.id = this.LocationId;
+    location.source = this.LocationSource;
+    location.description = this.LocationTag;
+    location.isVerified = this.LocationIsVerified == "true" ? true : false;
+    if ((this.LocationId != null && this.LocationId!.isNotEmpty) ||
+        (this.LocationAddress != null && this.LocationAddress!.isNotEmpty) ||
+        (this.LocationTag != null && this.LocationTag!.isNotEmpty)) {
+      location.isDefault = false;
+      location.isNull = false;
+    } else {
+      location.isDefault = true;
+      location.isNull = true;
+    }
+    return location;
   }
 
   factory NewTile.fromJson(Map<String, dynamic> json) =>

@@ -36,14 +36,15 @@ import '../../../bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
-  Function? onAddTileClose;
-  Function? onAddingATile;
-  PreTile? preTile;
-  DateTime? autoDeadline;
+  final Function? onAddTileClose;
+  final Function? onAddingATile;
+  final PreTile? preTile;
+  final DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.preTile, this.autoDeadline});
+  AddTile({this.preTile, this.autoDeadline, this.onAddTileClose, this.onAddingATile, Key? key})
+      : super(key: key);
   @override
   AddTileState createState() => AddTileState();
 }
@@ -107,6 +108,7 @@ class AddTileState extends State<AddTile> {
     }
     if (this.widget.preTile != null) {
       _location = this.widget.preTile!.location;
+      print("location in preTile: ${_location}");
       tileNameController =
           TextEditingController(text: this.widget.preTile!.description);
       _duration = this.widget.preTile!.duration;
@@ -692,12 +694,6 @@ class AddTileState extends State<AddTile> {
               _location = populatedLocation;
               _isLocationManuallySet = true;
               updateLocation(_location);
-              // if (!_isRestictionProfileManuallySet &&
-              //     _location != null &&
-              //     _listedRestrictionProfile != null &&
-              //     _listedRestrictionProfile!.isNotEmpty) {
-              //   if (_location!.description == Constants.workLocationNickName) {}
-              // }
             }
           });
         });

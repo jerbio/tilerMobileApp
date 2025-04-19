@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
 import 'package:tiler_app/components/TextInputWidget.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
-import 'package:tiler_app/data/contact.dart';
+import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
-import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+import '../../../constants.dart' as Constants;
 
 class NewTileSheetWidget extends StatefulWidget {
   final Function? onAddTile;
@@ -22,52 +28,151 @@ class NewTileSheetWidget extends StatefulWidget {
 class NewTileSheetState extends State<NewTileSheetWidget> {
   late final NewTile newTile;
   late ButtonStyle addButtonStyle;
-  // late List<Contact> contacts = [];
+  StreamSubscription? autoPopulateSubscription;
+  bool? _isDurationManuallySet = false;
+  bool? _isLocationManuallySet = false;
+  late ScheduleApi scheduleApi;
+  Location? _locationResponse;
+  final Color iconColor = TileStyles.primaryColor;
+  // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+  // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
+  final Color populatedTextColor = TileStyles.primaryContrastTextColor;  
+  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
+  // final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
+   final BoxDecoration populatedDecoration= BoxDecoration(
+      borderRadius: BorderRadius.all(
+        const Radius.circular(10.0),
+      ),
+      color: TileStyles.primaryColor);
+  late final LocationApi locationApi;
+  Location? _homeLocation;
+  Location? _workLocation;
   @override
   void initState() {
     super.initState();
+
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
+    locationApi = LocationApi(getContextCallBack: () => context);
+    locationApi
+        .getSpecificLocationByNickName(Location.homeLocationNickName)
+        .then((homeLocation) {
+      locationApi
+          .getSpecificLocationByNickName(Location.workLocationNickName)
+          .then((workLocation) {
+        setState(() {
+          _homeLocation = homeLocation;
+          _workLocation = workLocation;
+        });
+      });
+    });
     addButtonStyle = ButtonStyle(
       side:
-          MaterialStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
-      shadowColor: MaterialStateProperty.resolveWith((states) {
+          WidgetStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
+      shadowColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
-      elevation: MaterialStateProperty.resolveWith((states) {
+      elevation: WidgetStateProperty.resolveWith((states) {
         return 0;
       }),
-      backgroundColor: MaterialStateProperty.resolveWith((states) {
+      backgroundColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
-      foregroundColor: MaterialStateProperty.resolveWith((states) {
+      foregroundColor: WidgetStateProperty.resolveWith((states) {
         return TileStyles.primaryColor;
       }),
-      minimumSize: MaterialStateProperty.resolveWith((states) {
+      minimumSize: WidgetStateProperty.resolveWith((states) {
         return Size(MediaQuery.sizeOf(context).width - 20, 50);
-
-        // Size.(MediaQuery.sizeOf(context).width);
-      }),
+        }),
     );
     this.newTile =
         NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
-    // if (this.newTile.contacts != null && this.newTile.contacts!.isNotEmpty) {
-    //   contacts =
-    //       this.newTile.contacts!.map<Contact>((e) => e.toContact()).toList();
-    // }
   }
 
   Widget _renderOptionalFields() {
-    return SizedBox.shrink();
+    return 
+    Padding(
+      padding: TileStyles.inpuPadding,
+      child: Row(children: [
+        renderLocationButton()
+      ],),
+    );
   }
 
   void onTileNameChange(String? tileName) {
     newTile.Name = "";
-    if (tileName != null && tileName.isNotEmpty) {
+    if (tileName != null &&
+        tileName.isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
       newTile.Name = tileName;
+      if (autoPopulateSubscription != null) {
+        autoPopulateSubscription!.cancel();
+        print("Auto populate subscription cancelled");
+      }
+      
+      print("Auto populate subscription created");
+      autoPopulateSubscription = new Future.delayed(
+              const Duration(milliseconds: Constants.onTextChangeDelayInMs))
+          .asStream()
+          .listen((event) {
+            print("Auto populate subscription triggered");
+        this.scheduleApi.getAutoResult(tileName).then((remoteTileResponse) {
+          Duration? _durationResponse;
+          if (remoteTileResponse.item2.isNotEmpty && (
+            _isLocationManuallySet == null || _isLocationManuallySet == false)) {
+            _locationResponse = remoteTileResponse.item2.last;
+            onLocationUpdate(_locationResponse);
+          }
+          if (remoteTileResponse.item1.isNotEmpty) {
+            _durationResponse = remoteTileResponse.item1.last;
+            if(_isDurationManuallySet == null || _isDurationManuallySet == false) {
+              onDurationChange(_durationResponse,
+                isManuallySet: false);
+            }
+            
+          }
+
+          if (mounted) {
+            setState(() {
+              autoPopulateSubscription = null;
+            });
+          }
+        });
+      });
       setState(() {});
+    } else {
+      if  (
+            _isLocationManuallySet == null || _isLocationManuallySet == false) {
+       setState(() {
+        _locationResponse = null;
+        });}
     }
   }
 
-  void onDurationChange(Duration? duration) {
+  void onLocationUpdate(Location? location) {
+    setState(() {
+      _locationResponse = location;
+      if (location != null) {
+        newTile.LocationAddress = location.address;
+        newTile.LocationTag = location.description;
+        newTile.LocationId = location.id;
+        newTile.LocationSource = location.source;
+        newTile.LocationIsVerified = location.isVerified.toString();
+      } else {
+        newTile.LocationAddress = null;
+        newTile.LocationTag = null;
+        newTile.LocationId = null;
+        newTile.LocationSource = null;
+        newTile.LocationIsVerified = null;
+      }
+    });
+    
+    if (this.widget.onTileUpdate != null) {
+      this.widget.onTileUpdate!(this.newTile);
+    }
+  }
+
+  
+
+  void onDurationChange(Duration? duration, {bool isManuallySet = true}) {
     newTile.DurationDays = "";
     newTile.DurationHours = "";
     newTile.DurationMinute = "";
@@ -83,6 +188,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         newTile.DurationDays = days.toString();
         newTile.DurationHours = hours.toString();
         newTile.DurationMinute = minutes.toString();
+        _isDurationManuallySet = isManuallySet;
       }
     });
     if (this.widget.onTileUpdate != null) {
@@ -115,10 +221,70 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       }
     }
 
-    if (totalMinutes != null) {
-      return Duration(minutes: totalMinutes);
+    return newTile.getDuration();
+  }
+
+  renderLocationButton() {
+    if (_locationResponse == null) {
+      return SizedBox.shrink();
     }
-    return null;
+    bool isLocationConfigSet = _locationResponse!.isNotNullAndNotDefault;
+    
+    Widget locationConfigButton = ConfigUpdateButton(
+    text: _locationResponse!.description??"",
+    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+    iconPadding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+    constraints: BoxConstraints(
+      maxWidth: (MediaQuery.of(context).size.width * 0.30)
+    ),
+    prefixIcon: Icon(
+      Icons.location_pin,
+      size: 15,
+      color: isLocationConfigSet ? populatedTextColor : iconColor,
+    ),
+    textStyle: TextStyle(
+      fontSize: 15,
+      fontFamily: TileStyles.rubikFontName,
+      color: isLocationConfigSet ? populatedTextColor : iconColor,
+    ),
+    decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
+    textColor: isLocationConfigSet ? populatedTextColor : iconColor,
+    onPress: () {
+      Location locationHolder = _locationResponse ?? Location.fromDefault();
+      Map<String, dynamic> locationParams = {
+        'location': locationHolder,
+      };
+      List<Location> defaultLocations = [];
+
+      if (_homeLocation != null && _homeLocation!.isNotNullAndNotDefault) {
+        defaultLocations.add(_homeLocation!);
+      }
+      if (_workLocation != null && _workLocation!.isNotNullAndNotDefault) {
+        defaultLocations.add(_workLocation!);
+      }
+      if (defaultLocations.isNotEmpty) {
+        locationParams['defaults'] = defaultLocations;
+      }
+
+      Navigator.pushNamed(context, '/LocationRoute', arguments: locationParams)
+          .whenComplete(() {
+        Location? populatedLocation = locationParams['location'] as Location?;
+        AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
+        setState(() {
+          if (populatedLocation != null) { 
+            if(populatedLocation.isNotNullAndNotDefault) {
+            _locationResponse = populatedLocation;
+            } else {
+              _locationResponse = null;
+            }
+          }
+
+          _isLocationManuallySet = true;
+        });
+      });
+    },
+  );
+    return locationConfigButton;
   }
 
   @override
@@ -160,11 +326,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
             child: TextInputWidget(
               placeHolder: AppLocalizations.of(context)!.tileName,
               value: newTile.Name,
-              onTextChange: (value) {
-                setState(() {
-                  newTile.Name = value;
-                });
-              },
+              onTextChange: onTileNameChange,
             ),
           ),
           const SizedBox.square(
@@ -178,22 +340,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
             ),
           ),
           _renderOptionalFields(),
-          // Padding(
-          //   padding: TileStyles.inpuPadding,
-          //   child: ContactInputFieldWidget(
-          //       isReadOnly: false,
-          //       contentHeight: this.contacts.isEmpty
-          //           ? 0
-          //           : this.contacts.length < 3
-          //               ? 50
-          //               : 100,
-          //       contacts: this.contacts,
-          //       onContactUpdate: (List<Contact> updatedContacts) {
-          //         setState(() {
-          //           this.contacts = updatedContacts;
-          //         });
-          //       }),
-          // ),
           const SizedBox.square(
             dimension: 5,
           ),
@@ -202,8 +348,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
               ? ElevatedButton.icon(
                   onPressed: () {
                     if (this.widget.onAddTile != null) {
-                      // newTile.contacts =
-                      //     this.contacts.map((e) => e.toContactModel()).toList();
                       this.widget.onAddTile!(newTile);
                     }
                   },

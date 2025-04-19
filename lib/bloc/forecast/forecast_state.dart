@@ -1,26 +1,31 @@
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
+import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 
 abstract class ForecastState extends Equatable {
+  final String? name;
   final Duration? duration;
   final DateTime? endTime;
+  final Location? location;
+  final RestrictionProfile? restrictionProfile;
 
-  const ForecastState({required this.duration, required this.endTime});
+  const ForecastState({required this.duration, required this.endTime, this.location, this.name, this.restrictionProfile});
 
   @override
-  List<Object?> get props => [duration, endTime];
+  List<Object?> get props => [duration, endTime, location];
 }
 
 class ForecastInitial extends ForecastState {
-  ForecastInitial({Duration? duration, DateTime? endTime})
-      : super(duration: duration, endTime: endTime);
+  ForecastInitial({Duration? duration, DateTime? endTime, Location? location})
+      : super(duration: duration, endTime: endTime, location: location);
 }
 
 class ForecastLoading extends ForecastState {
   const ForecastLoading(
-      {required Duration duration, required DateTime? endTime})
-      : super(duration: duration, endTime: endTime);
+      {required Duration duration, required DateTime? endTime, Location? location})
+      : super(duration: duration, endTime: endTime, location: location);
 }
 
 class ForecastLoaded extends ForecastState {
