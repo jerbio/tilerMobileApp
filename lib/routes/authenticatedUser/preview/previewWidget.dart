@@ -2,7 +2,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/newTileShareSheetWidget.dart';
-import 'package:tiler_app/data/previewGroup.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';

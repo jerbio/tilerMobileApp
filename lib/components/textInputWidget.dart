@@ -5,7 +5,8 @@ class TextInputWidget extends StatefulWidget {
   final Function? onTextChange;
   final String? placeHolder;
   final String? value;
-  TextInputWidget({this.onTextChange, this.placeHolder, this.value});
+  TextInputWidget({this.onTextChange, this.placeHolder, this.value, Key? key})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() => _TextInputWidgetState();
 }
