@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 class TileAddress extends StatefulWidget {
   SubCalendarEvent subEvent;
   bool isMonthlyView;
-  TileAddress(this.subEvent,{this.isMonthlyView=false}) {
+  TileAddress(this.subEvent, {this.isMonthlyView = false}) {
     assert(this.subEvent != null);
   }
   @override
@@ -43,8 +43,8 @@ class TileAddressState extends State<TileAddress> {
   @override
   Widget build(BuildContext context) {
     bool isAddressTexturl = false;
-    String? addressString = widget.subEvent.searchdDescription != null
-        ? widget.subEvent.searchdDescription
+    String? addressString = widget.subEvent.addressDescription != null
+        ? widget.subEvent.addressDescription
         : widget.subEvent.address;
     addressString = addressString == null || addressString.trim().isEmpty
         ? widget.subEvent.addressDescription
@@ -86,13 +86,17 @@ class TileAddressState extends State<TileAddress> {
             Container(
               width: 25,
               height: 25,
-              decoration: widget.isMonthlyView? TileStyles.tileIconContainerBoxDecorationMonthly: TileStyles.tileIconContainerBoxDecoration,
+              decoration: widget.isMonthlyView
+                  ? TileStyles.tileIconContainerBoxDecorationMonthly
+                  : TileStyles.tileIconContainerBoxDecoration,
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 !isAddressTexturl
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
-                color: widget.isMonthlyView?Colors.grey[600]:TileStyles.defaultTextColor,
+                color: widget.isMonthlyView
+                    ? Colors.grey[600]
+                    : TileStyles.defaultTextColor,
                 size: TileStyles.tileIconSize,
               ),
             ),
