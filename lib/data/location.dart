@@ -84,8 +84,8 @@ class Location extends TilerObj {
 
   Location.fromDefault() {
     isDefault = true;
-    latitude = 40.014984;
-    longitude = -105.270546;
+    latitude = null;
+    longitude = null;
   }
 
   @override
