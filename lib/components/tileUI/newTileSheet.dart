@@ -36,10 +36,10 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   final Color iconColor = TileStyles.primaryColor;
   // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
   // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color populatedTextColor = TileStyles.primaryContrastTextColor;  
+  final Color populatedTextColor = TileStyles.primaryContrastTextColor;
   final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
   // final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
-   final BoxDecoration populatedDecoration= BoxDecoration(
+  final BoxDecoration populatedDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
       ),
@@ -66,8 +66,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       });
     });
     addButtonStyle = ButtonStyle(
-      side:
-          WidgetStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
+      side: WidgetStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
       shadowColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
@@ -82,19 +81,18 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       }),
       minimumSize: WidgetStateProperty.resolveWith((states) {
         return Size(MediaQuery.sizeOf(context).width - 20, 50);
-        }),
+      }),
     );
     this.newTile =
         NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
   }
 
   Widget _renderOptionalFields() {
-    return 
-    Padding(
+    return Padding(
       padding: TileStyles.inpuPadding,
-      child: Row(children: [
-        renderLocationButton()
-      ],),
+      child: Row(
+        children: [renderLocationButton()],
+      ),
     );
   }
 
@@ -107,27 +105,26 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         autoPopulateSubscription!.cancel();
         print("Auto populate subscription cancelled");
       }
-      
+
       print("Auto populate subscription created");
       autoPopulateSubscription = new Future.delayed(
               const Duration(milliseconds: Constants.onTextChangeDelayInMs))
           .asStream()
           .listen((event) {
-            print("Auto populate subscription triggered");
+        print("Auto populate subscription triggered");
         this.scheduleApi.getAutoResult(tileName).then((remoteTileResponse) {
           Duration? _durationResponse;
-          if (remoteTileResponse.item2.isNotEmpty && (
-            _isLocationManuallySet == null || _isLocationManuallySet == false)) {
-            _locationResponse = remoteTileResponse.item2.last;
-            onLocationUpdate(_locationResponse);
+          if (remoteTileResponse.item2.isNotEmpty &&
+              (_isLocationManuallySet == null ||
+                  _isLocationManuallySet == false)) {
+            onLocationUpdate(remoteTileResponse.item2.last);
           }
           if (remoteTileResponse.item1.isNotEmpty) {
             _durationResponse = remoteTileResponse.item1.last;
-            if(_isDurationManuallySet == null || _isDurationManuallySet == false) {
-              onDurationChange(_durationResponse,
-                isManuallySet: false);
+            if (_isDurationManuallySet == null ||
+                _isDurationManuallySet == false) {
+              onDurationChange(_durationResponse, isManuallySet: false);
             }
-            
           }
 
           if (mounted) {
@@ -139,11 +136,11 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       });
       setState(() {});
     } else {
-      if  (
-            _isLocationManuallySet == null || _isLocationManuallySet == false) {
-       setState(() {
-        _locationResponse = null;
-        });}
+      if (_isLocationManuallySet == null || _isLocationManuallySet == false) {
+        setState(() {
+          _locationResponse = null;
+        });
+      }
     }
   }
 
@@ -164,13 +161,11 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         newTile.LocationIsVerified = null;
       }
     });
-    
+
     if (this.widget.onTileUpdate != null) {
       this.widget.onTileUpdate!(this.newTile);
     }
   }
-
-  
 
   void onDurationChange(Duration? duration, {bool isManuallySet = true}) {
     newTile.DurationDays = "";
@@ -229,61 +224,65 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       return SizedBox.shrink();
     }
     bool isLocationConfigSet = _locationResponse!.isNotNullAndNotDefault;
-    
+
     Widget locationConfigButton = ConfigUpdateButton(
-    text: _locationResponse!.description??"",
-    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-    iconPadding: EdgeInsets.fromLTRB(0, 0, 5, 0),
-    constraints: BoxConstraints(
-      maxWidth: (MediaQuery.of(context).size.width * 0.30)
-    ),
-    prefixIcon: Icon(
-      Icons.location_pin,
-      size: 15,
-      color: isLocationConfigSet ? populatedTextColor : iconColor,
-    ),
-    textStyle: TextStyle(
-      fontSize: 15,
-      fontFamily: TileStyles.rubikFontName,
-      color: isLocationConfigSet ? populatedTextColor : iconColor,
-    ),
-    decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-    textColor: isLocationConfigSet ? populatedTextColor : iconColor,
-    onPress: () {
-      Location locationHolder = _locationResponse ?? Location.fromDefault();
-      Map<String, dynamic> locationParams = {
-        'location': locationHolder,
-      };
-      List<Location> defaultLocations = [];
+      text: _locationResponse!.description ?? "",
+      padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+      iconPadding: EdgeInsets.fromLTRB(0, 0, 5, 0),
+      constraints:
+          BoxConstraints(maxWidth: (MediaQuery.of(context).size.width * 0.30)),
+      prefixIcon: Icon(
+        Icons.location_pin,
+        size: 15,
+        color: isLocationConfigSet ? populatedTextColor : iconColor,
+      ),
+      textStyle: TextStyle(
+        fontSize: 15,
+        fontFamily: TileStyles.rubikFontName,
+        color: isLocationConfigSet ? populatedTextColor : iconColor,
+      ),
+      decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
+      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
+      onPress: () {
+        Location locationHolder = _locationResponse ?? Location.fromDefault();
+        Map<String, dynamic> locationParams = {
+          'location': locationHolder,
+        };
+        List<Location> defaultLocations = [];
 
-      if (_homeLocation != null && _homeLocation!.isNotNullAndNotDefault) {
-        defaultLocations.add(_homeLocation!);
-      }
-      if (_workLocation != null && _workLocation!.isNotNullAndNotDefault) {
-        defaultLocations.add(_workLocation!);
-      }
-      if (defaultLocations.isNotEmpty) {
-        locationParams['defaults'] = defaultLocations;
-      }
+        if (_homeLocation != null && _homeLocation!.isNotNullAndNotDefault) {
+          defaultLocations.add(_homeLocation!);
+        }
+        if (_workLocation != null && _workLocation!.isNotNullAndNotDefault) {
+          defaultLocations.add(_workLocation!);
+        }
+        if (defaultLocations.isNotEmpty) {
+          locationParams['defaults'] = defaultLocations;
+        }
 
-      Navigator.pushNamed(context, '/LocationRoute', arguments: locationParams)
-          .whenComplete(() {
-        Location? populatedLocation = locationParams['location'] as Location?;
-        AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
-        setState(() {
-          if (populatedLocation != null) { 
-            if(populatedLocation.isNotNullAndNotDefault) {
-            _locationResponse = populatedLocation;
-            } else {
-              _locationResponse = null;
+        Navigator.pushNamed(context, '/LocationRoute',
+                arguments: locationParams)
+            .whenComplete(() {
+          Location? populatedLocation = locationParams['location'] as Location?;
+          AnalysticsSignal.send('ADD_TILE_NEWTILE_MANUAL_LOCATION_NAVIGATION');
+          setState(() {
+            if (populatedLocation != null) {
+              Location? updatedLocationRes = populatedLocation;
+              if (!updatedLocationRes.address.isNot_NullEmptyOrWhiteSpace() &&
+                  !updatedLocationRes.description
+                      .isNot_NullEmptyOrWhiteSpace() &&
+                  !updatedLocationRes.id.isNot_NullEmptyOrWhiteSpace() &&
+                  updatedLocationRes.longitude == null &&
+                  updatedLocationRes.latitude == null) {
+                updatedLocationRes = null;
+              }
+              onLocationUpdate(updatedLocationRes);
             }
-          }
-
-          _isLocationManuallySet = true;
+            _isLocationManuallySet = true;
+          });
         });
-      });
-    },
-  );
+      },
+    );
     return locationConfigButton;
   }
 
