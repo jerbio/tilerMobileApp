@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -32,6 +33,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -85,8 +87,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
     final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
     final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    final forecastBloc = BlocProvider.of<ForecastBloc>(context);
+    forecastBloc.whatIfApi = WhatIfApi(getContextCallBack: () {
+      return this.context;
+    });
+    print("DeviceSettingBloc: ${deviceSettingBloc.state}"+"- authorizedRoute");
     deviceSettingBloc
-        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc"));
+        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc", getContextCallBack: () {
+      return this.context;
+    }));
     scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
       return this.context;
     });
@@ -254,6 +263,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   void displayDialog(Size screenSize) {
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    print("DeviceSettingBloc: ${deviceSettingBloc.state} - display dialog");
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -268,7 +279,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           child: PreviewAddWidget(
               previewSummary: previewSummary,
               onSubmit: (_) {
-                Navigator.pop(context);
+                if(Navigator.canPop(context)){
+                Navigator.pop(context);}
               }),
         );
       },
