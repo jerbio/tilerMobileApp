@@ -28,6 +28,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       Emitter<DeviceSettingState> emit) async {
     emit(DeviceUserProfileSettingLoading(
         id: event.id, sessionProfile: sessionProfile));
+        getContextCallBack = event.getContextCallBack;
     await sessionProfile.initialize().then((value) {
       emit(DeviceSettingLoaded(id: event.id, sessionProfile: sessionProfile));
     }).catchError((error) {

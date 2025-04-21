@@ -4,6 +4,7 @@ import 'dart:math';
 class Location extends TilerObj {
   static const String homeLocationNickName = 'home';
   static const String workLocationNickName = 'work';
+  static const double defaultLongitudeAndLatitude = 777777.0;
   String? id;
   String? description;
   String? address;

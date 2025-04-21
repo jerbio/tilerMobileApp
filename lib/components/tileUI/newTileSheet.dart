@@ -1,7 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_event.dart';
+import 'package:tiler_app/bloc/forecast/forecast_state.dart';
 import 'package:tiler_app/components/TextInputWidget.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
@@ -47,6 +54,10 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   late final LocationApi locationApi;
   Location? _homeLocation;
   Location? _workLocation;
+  bool isPendingAutoResult = false;
+  String? latestPendingResultId = null;
+  String? newEventForeCastId = null;
+  Set<String> pendingAutoResult = Set<String>();
   @override
   void initState() {
     super.initState();
@@ -91,28 +102,92 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     return Padding(
       padding: TileStyles.inpuPadding,
       child: Row(
-        children: [renderLocationButton()],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+
+            children: [
+              renderLocationButton(),
+              const SizedBox.square(
+                dimension: 5,
+              ),],
+
+          ),
+          renderForecastButton(),
+        ],
       ),
     );
   }
 
+  void onBlankTileName() {
+    if (newTile.Name.isNot_NullEmptyOrWhiteSpace()) {
+      newTile.Name = null;
+    }
+  
+setState(() {
+  pendingAutoResult.clear();
+  if (_isLocationManuallySet == null || _isLocationManuallySet == false)
+          {
+            _locationResponse = null;
+            newTile.LocationAddress = null;
+            newTile.LocationTag = null;
+            newTile.LocationId = null;
+            newTile.LocationSource = null;
+            newTile.LocationIsVerified = null;
+            }
+          if (_isDurationManuallySet == null || _isDurationManuallySet == false)
+          {newTile.DurationDays = "";
+          newTile.DurationHours = "";
+          newTile.DurationMinute = "";}
+        });
+        
+  }
+
   void onTileNameChange(String? tileName) {
-    newTile.Name = "";
+    if(!tileName.isNot_NullEmptyOrWhiteSpace()) {
+      onBlankTileName();}
+    if(newTile.Name == tileName) {
+      return;
+    }
     if (tileName != null &&
         tileName.isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
       newTile.Name = tileName;
       if (autoPopulateSubscription != null) {
         autoPopulateSubscription!.cancel();
-        print("Auto populate subscription cancelled");
       }
-
-      print("Auto populate subscription created");
+      
       autoPopulateSubscription = new Future.delayed(
               const Duration(milliseconds: Constants.onTextChangeDelayInMs))
           .asStream()
           .listen((event) {
-        print("Auto populate subscription triggered");
+            setState(() {
+        isPendingAutoResult = true;
+      });
+      if(newTile.Name != tileName) {
+        setState(() {
+          isPendingAutoResult = false;
+        });
+        return;
+      }
+      String pendingId = Utility.getUuid;
+      pendingAutoResult.add(pendingId);
+      latestPendingResultId = pendingId;
         this.scheduleApi.getAutoResult(tileName).then((remoteTileResponse) {
+          if(newTile.Name != tileName) {
+            setState(() {
+              isPendingAutoResult = false;
+            });
+            return;
+          }
+          setState(() {
+        isPendingAutoResult = false;
+      });
+      if (!pendingAutoResult.contains(pendingId) ||
+              (latestPendingResultId != pendingId)) {
+            pendingAutoResult.remove(pendingId);      
+            return;
+          }
+          pendingAutoResult.remove(pendingId);
           Duration? _durationResponse;
           if (remoteTileResponse.item2.isNotEmpty &&
               (_isLocationManuallySet == null ||
@@ -130,6 +205,12 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
           if (mounted) {
             setState(() {
               autoPopulateSubscription = null;
+            });
+          }
+        }).whenComplete(() {
+          if (mounted) {
+            setState(() {
+              isPendingAutoResult = false;
             });
           }
         });
@@ -162,10 +243,79 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       }
     });
 
-    if (this.widget.onTileUpdate != null) {
-      this.widget.onTileUpdate!(this.newTile);
-    }
+    onTileUpdate(newTile);    
   }
+
+  onTileUpdate(NewTile newTile) {
+    if (this.widget.onTileUpdate != null) {
+      this.widget.onTileUpdate!(newTile);
+    }
+    setState(() {
+      newEventForeCastId = Utility.currentTime().millisecondsSinceEpoch.toString() +"||" +Utility.getUuid;  
+    });
+    this.context.read<ForecastBloc>().add(NewTileEvent(newTile: newTile, requestId: newEventForeCastId));
+  }
+
+  
+  Widget foreCastButton(Function() onPressed, {bool isLoaded = false}) {
+    return ElevatedButton(
+        child: Column(
+          children: [
+            FaIcon(
+              TileStyles.forecastIcon,
+              color: isLoaded ? TileStyles.primaryContrastColor : TileStyles.primaryColor,
+              size: 20,
+            ),
+            Text(AppLocalizations.of(context)!.previewTileForecast,
+                style: TextStyle(
+                  fontSize: 9,
+                  color: isLoaded ? TileStyles.primaryContrastColor : TileStyles.primaryColor,
+                ))
+          ],
+        ),
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(0),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          backgroundColor: isLoaded ? TileStyles.primaryColor: TileStyles.primaryContrastColor ,
+        ));
+  }
+
+  Widget  renderForecastButton() {
+     var buttonPressed = () {
+          AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
+          Navigator.pushNamed(context, '/ForecastPreview');
+        };
+    ForecastState forecastState = this.context.read<ForecastBloc>().state;
+    if (forecastState is ForecastLoaded && 
+    (forecastState.requestId.isNot_NullEmptyOrWhiteSpace() || forecastState.requestId == newEventForeCastId)) {
+      return foreCastButton(buttonPressed, isLoaded: true);
+    }
+    if (forecastState is ForecastInitial) {
+      return foreCastButton(buttonPressed);
+    }
+    return 
+    InkWell(
+      onTap: buttonPressed,
+      child: Stack(
+            children: [
+              foreCastButton(buttonPressed),
+              Shimmer.fromColors(
+                  baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+                  highlightColor: TileStyles.primaryColor.withLightness(0.7),
+                  child: Container(
+                    width: 65,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(31, 31, 31, 0.8),
+                        borderRadius: BorderRadius.circular(30)),
+                  )),
+            ],
+          ),
+    );    
+  }
+
+
 
   void onDurationChange(Duration? duration, {bool isManuallySet = true}) {
     newTile.DurationDays = "";
@@ -186,9 +336,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         _isDurationManuallySet = isManuallySet;
       }
     });
-    if (this.widget.onTileUpdate != null) {
-      this.widget.onTileUpdate!(this.newTile);
-    }
+    onTileUpdate(this.newTile);
   }
 
   Duration? _getDuration() {
@@ -288,79 +436,109 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: TileStyles.primaryContrastColor,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(15),
-          topRight: Radius.circular(15),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: TileStyles.appBarColor,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+    return 
+  MultiBlocListener(listeners: [
+      BlocListener<ForecastBloc, ForecastState>(
+        listener: (context, state) {
+          if (state is ForecastLoading) {
+            Utility.debugPrint("ForecastLoading state received: ${state.requestId}");
+            return;
+          } else if (state is ForecastLoaded) {
+            Utility.debugPrint("ForecastLoaded state received: ${state.requestId}");
+          }
+        },
+      )
+  ], child:   Stack(
+      children: [
+        isPendingAutoResult ?
+      Shimmer.fromColors(
+                  baseColor: Colors.transparent,
+                  highlightColor: TileStyles.primaryColor.withLightness(0.9),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    child: 
+                    ColoredBox(color: Colors.yellow, child:
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height,
+                      )
+                      ),
+                  )) : SizedBox.shrink(),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: TileStyles.appBarColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    topRight: Radius.circular(15),
+                  ),
+                ),
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  AppLocalizations.of(context)!.addTile,
+                  style: TextStyle(
+                    color: TileStyles.appBarTextColor,
+                    fontFamily: TileStyles.rubikFontName,
+                    fontSize: TileStyles.inputFontSize,
+                  ),
+                ),
+                alignment: Alignment.centerLeft,
               ),
-            ),
-            padding: EdgeInsets.all(16),
-            child: Text(
-              AppLocalizations.of(context)!.addTile,
-              style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontFamily: TileStyles.rubikFontName,
-                fontSize: TileStyles.inputFontSize,
+              const SizedBox.square(
+                dimension: 5,
               ),
-            ),
-            alignment: Alignment.centerLeft,
+              Padding(
+                padding: TileStyles.inpuPadding,
+                child: TextInputWidget(
+                  placeHolder: AppLocalizations.of(context)!.tileName,
+                  value: newTile.Name,
+                  onTextChange: onTileNameChange,
+                ),
+              ),
+              const SizedBox.square(
+                dimension: 5,
+              ),
+              Padding(
+                padding: TileStyles.inpuPadding,
+                child: DurationInputWidget(
+                  duration: _getDuration(),
+                  onDurationChange: onDurationChange,
+                ),
+              ),
+              _renderOptionalFields(),
+              const SizedBox.square(
+                dimension: 5,
+              ),
+              this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3) &&
+                      this.newTile.getDuration() != null
+                  ? ElevatedButton.icon(
+                      onPressed: () {
+                        if (this.widget.onAddTile != null) {
+                          this.widget.onAddTile!(newTile);
+                        }
+                      },
+                      style: addButtonStyle,
+                      icon: Icon(Icons.check),
+                      label: Text(this.widget.newTile == null
+                          ? AppLocalizations.of(context)!.add
+                          : AppLocalizations.of(context)!.update))
+                  : SizedBox.shrink(),
+              SizedBox.square(
+                dimension: 50,
+              )
+            ],
           ),
-          const SizedBox.square(
-            dimension: 5,
-          ),
-          Padding(
-            padding: TileStyles.inpuPadding,
-            child: TextInputWidget(
-              placeHolder: AppLocalizations.of(context)!.tileName,
-              value: newTile.Name,
-              onTextChange: onTileNameChange,
-            ),
-          ),
-          const SizedBox.square(
-            dimension: 5,
-          ),
-          Padding(
-            padding: TileStyles.inpuPadding,
-            child: DurationInputWidget(
-              duration: _getDuration(),
-              onDurationChange: onDurationChange,
-            ),
-          ),
-          _renderOptionalFields(),
-          const SizedBox.square(
-            dimension: 5,
-          ),
-          this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3) &&
-                  this.newTile.getDuration() != null
-              ? ElevatedButton.icon(
-                  onPressed: () {
-                    if (this.widget.onAddTile != null) {
-                      this.widget.onAddTile!(newTile);
-                    }
-                  },
-                  style: addButtonStyle,
-                  icon: Icon(Icons.check),
-                  label: Text(this.widget.newTile == null
-                      ? AppLocalizations.of(context)!.add
-                      : AppLocalizations.of(context)!.update))
-              : SizedBox.shrink(),
-          SizedBox.square(
-            dimension: 50,
-          )
-        ],
-      ),
-    );
+        )],
+    )
+  );
   }
 }

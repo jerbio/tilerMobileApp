@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 
 abstract class ForecastEvent extends Equatable {
-  const ForecastEvent();
+  final String? requestId;
+  const ForecastEvent( {this.requestId});
 
   @override
   List<Object> get props => [];
@@ -19,9 +20,10 @@ class UpdateDuration extends ForecastEvent {
 }
 
 class NewTileEvent extends ForecastEvent {
+  final String? requestId;
   final NewTile newTile;
 
-  const NewTileEvent(this.newTile);
+  const NewTileEvent({required this.newTile, this.requestId});
 
   @override
   List<Object> get props => [newTile.getDuration() ?? Duration.zero, 
@@ -55,4 +57,6 @@ class UpdateDateTime extends ForecastEvent {
   List<Object> get props => [dateTime];
 }
 
-class FetchData extends ForecastEvent {}
+class FetchData extends ForecastEvent {
+  FetchData({String? requestId}):super(requestId: requestId);
+}
