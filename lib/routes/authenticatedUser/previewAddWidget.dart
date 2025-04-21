@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_event.dart';
+import 'package:tiler_app/bloc/forecast/forecast_state.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
@@ -40,6 +43,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   void initState() {
     super.initState();
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    print("DeviceSettingBloc: ${deviceSettingBloc.state} - Preview Add Widget");
   }
 
   Widget renderPreview() {
@@ -158,9 +163,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     setState(() {
       newTile = updatedTile;
     });
-    if(newTile!=null && newTile!.getDuration()!=null ) {
-      this.context.read<ForecastBloc>().add(NewTileEvent(newTile!));
-    }
   }
 
   void refreshScheduleSummary(Timeline? lookupTimeline) {
@@ -189,7 +191,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     );
   }
 
-  Widget renderForecastButton() {
+  Widget foreCastButton(Function() onPressed) {
     return ElevatedButton(
         child: Column(
           children: [
@@ -204,15 +206,46 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
                 ))
           ],
         ),
-        onPressed: () {
-          AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
-          Navigator.pushNamed(context, '/ForecastPreview');
-        },
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ));
   }
+
+  Widget  renderForecastButton() {
+     var buttonPressed = () {
+          AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
+          Navigator.pushNamed(context, '/ForecastPreview');
+        };
+    ForecastState forecastState = this.context.read<ForecastBloc>().state;
+    if (forecastState is ForecastLoaded) {
+      return SizedBox.shrink();
+    }
+    if (forecastState is ForecastInitial) {
+      return foreCastButton(buttonPressed);
+    }
+    return 
+    InkWell(
+      onTap: buttonPressed,
+      child: Stack(
+            children: [
+              foreCastButton(buttonPressed),
+              Shimmer.fromColors(
+                  baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+                  highlightColor: TileStyles.primaryColor.withLightness(0.7),
+                  child: Container(
+                    width: 65,
+                    height: 40,
+                    decoration: BoxDecoration(
+                        color: Color.fromRGBO(31, 31, 31, 0.8),
+                        borderRadius: BorderRadius.circular(30)),
+                  )),
+            ],
+          ),
+    );    
+  }
+
 
   Widget renderProcastinateAllButton() {
     const Color cheveronColor = TileStyles.primaryColor;
@@ -249,6 +282,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             Text(AppLocalizations.of(context)!.previewTileDeferAll,
                 style: TextStyle(
                   fontSize: 9,
+                  color: TileStyles.primaryColor
                 ))
           ],
         ),
@@ -296,6 +330,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             Text(AppLocalizations.of(context)!.previewTileOptions,
                 style: TextStyle(
                   fontSize: 9,
+                  color: TileStyles.primaryColor
                 ))
           ],
         ),
@@ -356,6 +391,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             Text(AppLocalizations.of(context)!.previewTileShuffle,
                 style: TextStyle(
                   fontSize: 9,
+                  color: TileStyles.primaryColor
                 ))
           ],
         ),
@@ -382,6 +418,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             Text(AppLocalizations.of(context)!.previewTileRevise,
                 style: TextStyle(
                   fontSize: 9,
+                  color: TileStyles.primaryColor
                 ))
           ],
         ),
@@ -393,6 +430,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          
         ));
   }
 
@@ -424,7 +462,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  renderForecastButton(),
                   renderRefresh(),
                   renderShuffleButton(),
                   renderProcastinateAllButton(),
@@ -447,7 +484,20 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return MultiBlocListener(listeners: [
+      BlocListener<ForecastBloc, ForecastState>(
+        listener: (context, state) {
+          if (state is ForecastLoading) {
+            print("ForecastLoading state detected");
+          } else if (state is ForecastLoaded) {
+            print("ForecastLoaded state detected");
+          } else if (state is ForecastInitial) {
+            print("ForecastInitial state detected");
+          }
+          setState(() {});
+        },
+      ),
+    ], child:  Stack(
       children: [
         Column(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -459,6 +509,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           ],
         )
       ],
-    );
+    ));
   }
 }
