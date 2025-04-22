@@ -16,7 +16,9 @@ class TileStyles {
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
-  static const Color primaryContrastColor = Colors.white;
+  static const Color primaryContrastColor =
+      const Color.fromRGBO(247, 247, 248, 1);
+  static const Color accentContrastColor = Colors.black;
   static const Color primaryContrastTextColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
   static const Color black = Colors.black;
@@ -215,7 +217,8 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static final BoxDecoration defaultBackground =
+  static final Color defaultBackgroundColor = Colors.white;
+  static final BoxDecoration defaultBackgroundDecoration =
       BoxDecoration(color: Colors.transparent
           // gradient: LinearGradient(
           //     begin: Alignment.topCenter,

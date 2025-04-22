@@ -15,36 +15,45 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
     on<UpdateDateTime>(_onUpdateDateTime);
     on<NewTileEvent>(_onNewTile);
     on<FetchData>(_onFetchData);
+    on<ResetEvent>(_onResetEvent);
+  }
+
+  void _onResetEvent(ResetEvent event, Emitter<ForecastState> emit) {
+    emit(ForecastInitial(duration: null, endTime: null));
   }
 
   void _onNewTile(NewTileEvent event, Emitter<ForecastState> emit) {
     Duration? duration = event.newTile.getDuration();
-    DateTime? endTime = event.newTile.getEndDateTime() ?? Utility.currentTime().add(Duration(days: 7));
+    DateTime? endTime = event.newTile.getEndDateTime() ??
+        Utility.currentTime().add(Duration(days: 7));
     Location? location = event.newTile.getLocation();
-    print("NewTileEvent: duration: $duration, endTime: $endTime, location: $location");
+    print(
+        "NewTileEvent: duration: $duration, endTime: $endTime, location: $location");
 
-    
-    if (duration !=null && duration.inMinutes > 0 &&
+    if (duration != null &&
+        duration.inMinutes > 0 &&
         endTime.isAfter(Utility.currentTime())) {
-          print("Emitting ForecastLoading state with duration: $duration, endTime: $endTime, location: $location");
+      print(
+          "Emitting ForecastLoading state with duration: $duration, endTime: $endTime, location: $location");
       bool isDifferentState = false;
       if (state is ForecastLoading) {
         final currentState = state as ForecastLoading;
-        final newState = ForecastLoading(duration: duration, endTime: endTime, location: location);
+        final newState = ForecastLoading(
+            duration: duration, endTime: endTime, location: location);
         isDifferentState = currentState == newState ? false : true;
       } else {
         isDifferentState = true;
-      }      
+      }
       print("isDifferentState: $isDifferentState");
-      if(isDifferentState){
-      emit(ForecastLoading(duration: duration, endTime: endTime, location: location));
-      _checkAndTriggerEvent(duration, endTime, location, event.requestId);}
+      if (isDifferentState) {
+        emit(ForecastLoading(
+            duration: duration, endTime: endTime, location: location));
+        _checkAndTriggerEvent(duration, endTime, location, event.requestId);
+      }
     } else {
-      emit(
-          ForecastInitial(duration: duration, endTime: endTime));
+      emit(ForecastInitial(duration: duration, endTime: endTime));
     }
   }
-
 
   void _onUpdateDuration(UpdateDuration event, Emitter<ForecastState> emit) {
     final newState = state;
@@ -53,7 +62,8 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
         newState.endTime!.isAfter(Utility.currentTime())) {
       emit(
           ForecastLoading(duration: event.duration, endTime: newState.endTime));
-      _checkAndTriggerEvent(event.duration, newState.endTime, newState.location, event.requestId);
+      _checkAndTriggerEvent(
+          event.duration, newState.endTime, newState.location, event.requestId);
     } else {
       emit(
           ForecastInitial(duration: event.duration, endTime: newState.endTime));
@@ -68,14 +78,16 @@ class ForecastBloc extends Bloc<ForecastEvent, ForecastState> {
         event.dateTime.isAfter(Utility.currentTime())) {
       emit(ForecastLoading(
           duration: currentState.duration!, endTime: event.dateTime));
-      _checkAndTriggerEvent(currentState.duration!, event.dateTime, state.location, event.requestId);
+      _checkAndTriggerEvent(currentState.duration!, event.dateTime,
+          state.location, event.requestId);
     } else {
       emit(ForecastInitial(
           duration: currentState.duration, endTime: event.dateTime));
     }
   }
 
-  void _checkAndTriggerEvent(Duration duration, DateTime? endTime, Location? location, String? requestId) {
+  void _checkAndTriggerEvent(Duration duration, DateTime? endTime,
+      Location? location, String? requestId) {
     if (duration >= Duration(minutes: 1) && endTime != null) {
       Utility.debugPrint("Emitting FetchData event");
       add(FetchData(requestId: requestId));

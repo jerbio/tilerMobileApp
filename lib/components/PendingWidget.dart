@@ -4,7 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:tiler_app/styles.dart';
 
 class PendingWidget extends StatelessWidget {
-  Decoration decoration = TileStyles.defaultBackground;
+  Decoration decoration = TileStyles.defaultBackgroundDecoration;
   String? imageAsset;
   double? height;
   double? width;
