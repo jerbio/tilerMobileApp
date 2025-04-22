@@ -37,6 +37,9 @@ class _PreviewChartState extends State<PreviewChart> {
 
   @override
   Widget build(BuildContext context) {
+    double radius = 10;
+    var borderSide = BorderSide(
+        color: TileStyles.primaryColor, width: 0.5, style: BorderStyle.solid);
     if (this._timeline != null && this.previewGrouping != null) {
       List<PieChartSectionData> pieChartData = [];
       for (int i = 0; i < previewGrouping!.length; i++) {
@@ -65,12 +68,16 @@ class _PreviewChartState extends State<PreviewChart> {
             pieChartData.add(PieChartSectionData(
                 title: AppLocalizations.of(context)!.previewOthers,
                 color: otherColor,
+                radius: radius,
+                borderSide: borderSide,
                 value: otherTiles.inMinutes.toDouble()));
           }
           if (blockedOutTiles.inMinutes > 0) {
             pieChartData.add(PieChartSectionData(
                 title: AppLocalizations.of(context)!.previewBlockedOut,
                 color: blockedOutColor,
+                radius: radius,
+                borderSide: borderSide,
                 value: blockedOutTiles.inMinutes.toDouble()));
           }
         } else {
@@ -94,7 +101,10 @@ class _PreviewChartState extends State<PreviewChart> {
           pieChartData.add(PieChartSectionData(
               color: hueColor,
               title: sectorName,
-              titleStyle: TextStyle(fontSize: 12, color: Colors.white),
+              radius: radius,
+              borderSide: borderSide,
+              titleStyle: TextStyle(
+                  fontSize: 12, color: TileStyles.accentContrastColor),
               value: durationSum.inMinutes.toDouble()));
         }
       }

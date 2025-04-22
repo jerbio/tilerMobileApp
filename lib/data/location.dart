@@ -5,6 +5,8 @@ class Location extends TilerObj {
   static const String homeLocationNickName = 'home';
   static const String workLocationNickName = 'work';
   static const double defaultLongitudeAndLatitude = 777777.0;
+  static const double maxLongLat = 180.0;
+  static const double minLongLat = -180.0;
   String? id;
   String? description;
   String? address;
@@ -98,6 +100,10 @@ class Location extends TilerObj {
     LatitudeAndLongitude? retValue = null;
     if (this.longitude != null &&
         this.latitude != null &&
+        this.longitude! >= minLongLat &&
+        this.longitude! <= maxLongLat &&
+        this.latitude! >= minLongLat &&
+        this.latitude! <= maxLongLat &&
         this.isNotNullAndNotDefault) {
       return LatitudeAndLongitude(this.latitude!, this.longitude!);
     }

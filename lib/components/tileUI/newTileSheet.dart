@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_event.dart';
 import 'package:tiler_app/bloc/forecast/forecast_state.dart';
@@ -105,13 +104,12 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-
             children: [
               renderLocationButton(),
               const SizedBox.square(
                 dimension: 5,
-              ),],
-
+              ),
+            ],
           ),
           renderForecastButton(),
         ],
@@ -123,30 +121,30 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     if (newTile.Name.isNot_NullEmptyOrWhiteSpace()) {
       newTile.Name = null;
     }
-  
-setState(() {
-  pendingAutoResult.clear();
-  if (_isLocationManuallySet == null || _isLocationManuallySet == false)
-          {
-            _locationResponse = null;
-            newTile.LocationAddress = null;
-            newTile.LocationTag = null;
-            newTile.LocationId = null;
-            newTile.LocationSource = null;
-            newTile.LocationIsVerified = null;
-            }
-          if (_isDurationManuallySet == null || _isDurationManuallySet == false)
-          {newTile.DurationDays = "";
-          newTile.DurationHours = "";
-          newTile.DurationMinute = "";}
-        });
-        
+
+    setState(() {
+      pendingAutoResult.clear();
+      if (_isLocationManuallySet == null || _isLocationManuallySet == false) {
+        _locationResponse = null;
+        newTile.LocationAddress = null;
+        newTile.LocationTag = null;
+        newTile.LocationId = null;
+        newTile.LocationSource = null;
+        newTile.LocationIsVerified = null;
+      }
+      if (_isDurationManuallySet == null || _isDurationManuallySet == false) {
+        newTile.DurationDays = "";
+        newTile.DurationHours = "";
+        newTile.DurationMinute = "";
+      }
+    });
   }
 
   void onTileNameChange(String? tileName) {
-    if(!tileName.isNot_NullEmptyOrWhiteSpace()) {
-      onBlankTileName();}
-    if(newTile.Name == tileName) {
+    if (!tileName.isNot_NullEmptyOrWhiteSpace()) {
+      onBlankTileName();
+    }
+    if (newTile.Name == tileName) {
       return;
     }
     if (tileName != null &&
@@ -155,36 +153,36 @@ setState(() {
       if (autoPopulateSubscription != null) {
         autoPopulateSubscription!.cancel();
       }
-      
+
       autoPopulateSubscription = new Future.delayed(
               const Duration(milliseconds: Constants.onTextChangeDelayInMs))
           .asStream()
           .listen((event) {
-            setState(() {
-        isPendingAutoResult = true;
-      });
-      if(newTile.Name != tileName) {
         setState(() {
-          isPendingAutoResult = false;
+          isPendingAutoResult = true;
         });
-        return;
-      }
-      String pendingId = Utility.getUuid;
-      pendingAutoResult.add(pendingId);
-      latestPendingResultId = pendingId;
+        if (newTile.Name != tileName) {
+          setState(() {
+            isPendingAutoResult = false;
+          });
+          return;
+        }
+        String pendingId = Utility.getUuid;
+        pendingAutoResult.add(pendingId);
+        latestPendingResultId = pendingId;
         this.scheduleApi.getAutoResult(tileName).then((remoteTileResponse) {
-          if(newTile.Name != tileName) {
+          if (newTile.Name != tileName) {
             setState(() {
               isPendingAutoResult = false;
             });
             return;
           }
           setState(() {
-        isPendingAutoResult = false;
-      });
-      if (!pendingAutoResult.contains(pendingId) ||
+            isPendingAutoResult = false;
+          });
+          if (!pendingAutoResult.contains(pendingId) ||
               (latestPendingResultId != pendingId)) {
-            pendingAutoResult.remove(pendingId);      
+            pendingAutoResult.remove(pendingId);
             return;
           }
           pendingAutoResult.remove(pendingId);
@@ -243,7 +241,7 @@ setState(() {
       }
     });
 
-    onTileUpdate(newTile);    
+    onTileUpdate(newTile);
   }
 
   onTileUpdate(NewTile newTile) {
@@ -251,71 +249,80 @@ setState(() {
       this.widget.onTileUpdate!(newTile);
     }
     setState(() {
-      newEventForeCastId = Utility.currentTime().millisecondsSinceEpoch.toString() +"||" +Utility.getUuid;  
+      newEventForeCastId = Utility.getSequentialId;
     });
-    this.context.read<ForecastBloc>().add(NewTileEvent(newTile: newTile, requestId: newEventForeCastId));
+    this
+        .context
+        .read<ForecastBloc>()
+        .add(NewTileEvent(newTile: newTile, requestId: newEventForeCastId));
   }
 
-  
-  Widget foreCastButton(Function() onPressed, {bool isLoaded = false}) {
+  Widget foreCastButton(Function() onPressed,
+      {bool isLoaded = false, double width = 65, double height = 30}) {
     return ElevatedButton(
         child: Column(
           children: [
             FaIcon(
               TileStyles.forecastIcon,
-              color: isLoaded ? TileStyles.primaryContrastColor : TileStyles.primaryColor,
-              size: 20,
+              color: isLoaded
+                  ? TileStyles.primaryContrastColor
+                  : TileStyles.primaryColor,
+              size: 16,
             ),
             Text(AppLocalizations.of(context)!.previewTileForecast,
                 style: TextStyle(
-                  fontSize: 9,
-                  color: isLoaded ? TileStyles.primaryContrastColor : TileStyles.primaryColor,
+                  fontSize: 8,
+                  color: isLoaded
+                      ? TileStyles.primaryContrastColor
+                      : TileStyles.primaryColor,
                 ))
           ],
         ),
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
+          minimumSize: Size(width, height),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          backgroundColor: isLoaded ? TileStyles.primaryColor: TileStyles.primaryContrastColor ,
+          backgroundColor: isLoaded
+              ? TileStyles.primaryColor
+              : TileStyles.primaryContrastColor,
         ));
   }
 
-  Widget  renderForecastButton() {
-     var buttonPressed = () {
-          AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
-          Navigator.pushNamed(context, '/ForecastPreview');
-        };
+  Widget renderForecastButton({double width = 65, double height = 30}) {
+    var buttonPressed = () {
+      AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
+      Navigator.pushNamed(context, '/ForecastPreview');
+    };
     ForecastState forecastState = this.context.read<ForecastBloc>().state;
-    if (forecastState is ForecastLoaded && 
-    (forecastState.requestId.isNot_NullEmptyOrWhiteSpace() || forecastState.requestId == newEventForeCastId)) {
-      return foreCastButton(buttonPressed, isLoaded: true);
+    if (forecastState is ForecastLoaded &&
+        (forecastState.requestId.isNot_NullEmptyOrWhiteSpace() ||
+            forecastState.requestId == newEventForeCastId)) {
+      return foreCastButton(buttonPressed,
+          isLoaded: true, height: height, width: width);
     }
     if (forecastState is ForecastInitial) {
-      return foreCastButton(buttonPressed);
+      return foreCastButton(buttonPressed, height: height, width: width);
     }
-    return 
-    InkWell(
+    return InkWell(
       onTap: buttonPressed,
       child: Stack(
-            children: [
-              foreCastButton(buttonPressed),
-              Shimmer.fromColors(
-                  baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
-                  highlightColor: TileStyles.primaryColor.withLightness(0.7),
-                  child: Container(
-                    width: 65,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(31, 31, 31, 0.8),
-                        borderRadius: BorderRadius.circular(30)),
-                  )),
-            ],
-          ),
-    );    
+        children: [
+          foreCastButton(buttonPressed),
+          Shimmer.fromColors(
+              baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+              highlightColor: TileStyles.primaryColor.withLightness(0.7),
+              child: Container(
+                width: width,
+                height: height,
+                decoration: BoxDecoration(
+                    color: Color.fromRGBO(31, 31, 31, 0.8),
+                    borderRadius: BorderRadius.circular(30)),
+              )),
+        ],
+      ),
+    );
   }
-
-
 
   void onDurationChange(Duration? duration, {bool isManuallySet = true}) {
     newTile.DurationDays = "";
@@ -436,109 +443,112 @@ setState(() {
 
   @override
   Widget build(BuildContext context) {
-    return 
-  MultiBlocListener(listeners: [
-      BlocListener<ForecastBloc, ForecastState>(
-        listener: (context, state) {
-          if (state is ForecastLoading) {
-            Utility.debugPrint("ForecastLoading state received: ${state.requestId}");
-            return;
-          } else if (state is ForecastLoaded) {
-            Utility.debugPrint("ForecastLoaded state received: ${state.requestId}");
-          }
-        },
-      )
-  ], child:   Stack(
-      children: [
-        isPendingAutoResult ?
-      Shimmer.fromColors(
-                  baseColor: Colors.transparent,
-                  highlightColor: TileStyles.primaryColor.withLightness(0.9),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    child: 
-                    ColoredBox(color: Colors.yellow, child:
-                      Container(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                      )
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<ForecastBloc, ForecastState>(
+            listener: (context, state) {
+              if (state is ForecastLoading) {
+                Utility.debugPrint(
+                    "ForecastLoading state received: ${state.requestId}");
+                return;
+              } else if (state is ForecastLoaded) {
+                Utility.debugPrint(
+                    "ForecastLoaded state received: ${state.requestId}");
+              }
+            },
+          )
+        ],
+        child: Stack(
+          children: [
+            isPendingAutoResult
+                ? Shimmer.fromColors(
+                    baseColor: Colors.transparent,
+                    highlightColor: TileStyles.primaryColor.withLightness(0.9),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: ColoredBox(
+                          color: Colors.yellow,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            height: MediaQuery.of(context).size.height,
+                          )),
+                    ))
+                : SizedBox.shrink(),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(15),
+                  topRight: Radius.circular(15),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: TileStyles.defaultBackgroundColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        topRight: Radius.circular(15),
                       ),
-                  )) : SizedBox.shrink(),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(15),
-              topRight: Radius.circular(15),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: TileStyles.appBarColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
+                    ),
+                    padding: EdgeInsets.all(16),
+                    child: Text(
+                      AppLocalizations.of(context)!.addTile,
+                      style: TextStyle(
+                        color: TileStyles.accentContrastColor,
+                        fontFamily: TileStyles.rubikFontName,
+                        fontSize: TileStyles.inputFontSize,
+                      ),
+                    ),
+                    alignment: Alignment.centerLeft,
                   ),
-                ),
-                padding: EdgeInsets.all(16),
-                child: Text(
-                  AppLocalizations.of(context)!.addTile,
-                  style: TextStyle(
-                    color: TileStyles.appBarTextColor,
-                    fontFamily: TileStyles.rubikFontName,
-                    fontSize: TileStyles.inputFontSize,
+                  const SizedBox.square(
+                    dimension: 5,
                   ),
-                ),
-                alignment: Alignment.centerLeft,
+                  Padding(
+                    padding: TileStyles.inpuPadding,
+                    child: TextInputWidget(
+                      placeHolder: AppLocalizations.of(context)!.tileName,
+                      value: newTile.Name,
+                      onTextChange: onTileNameChange,
+                    ),
+                  ),
+                  const SizedBox.square(
+                    dimension: 5,
+                  ),
+                  Padding(
+                    padding: TileStyles.inpuPadding,
+                    child: DurationInputWidget(
+                      duration: _getDuration(),
+                      onDurationChange: onDurationChange,
+                    ),
+                  ),
+                  _renderOptionalFields(),
+                  const SizedBox.square(
+                    dimension: 5,
+                  ),
+                  this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3) &&
+                          this.newTile.getDuration() != null
+                      ? ElevatedButton.icon(
+                          onPressed: () {
+                            if (this.widget.onAddTile != null) {
+                              this.widget.onAddTile!(newTile);
+                            }
+                          },
+                          style: addButtonStyle,
+                          icon: Icon(Icons.check),
+                          label: Text(this.widget.newTile == null
+                              ? AppLocalizations.of(context)!.add
+                              : AppLocalizations.of(context)!.update))
+                      : SizedBox.shrink(),
+                  SizedBox.square(
+                    dimension: 50,
+                  )
+                ],
               ),
-              const SizedBox.square(
-                dimension: 5,
-              ),
-              Padding(
-                padding: TileStyles.inpuPadding,
-                child: TextInputWidget(
-                  placeHolder: AppLocalizations.of(context)!.tileName,
-                  value: newTile.Name,
-                  onTextChange: onTileNameChange,
-                ),
-              ),
-              const SizedBox.square(
-                dimension: 5,
-              ),
-              Padding(
-                padding: TileStyles.inpuPadding,
-                child: DurationInputWidget(
-                  duration: _getDuration(),
-                  onDurationChange: onDurationChange,
-                ),
-              ),
-              _renderOptionalFields(),
-              const SizedBox.square(
-                dimension: 5,
-              ),
-              this.newTile.Name.isNot_NullEmptyOrWhiteSpace(minLength: 3) &&
-                      this.newTile.getDuration() != null
-                  ? ElevatedButton.icon(
-                      onPressed: () {
-                        if (this.widget.onAddTile != null) {
-                          this.widget.onAddTile!(newTile);
-                        }
-                      },
-                      style: addButtonStyle,
-                      icon: Icon(Icons.check),
-                      label: Text(this.widget.newTile == null
-                          ? AppLocalizations.of(context)!.add
-                          : AppLocalizations.of(context)!.update))
-                  : SizedBox.shrink(),
-              SizedBox.square(
-                dimension: 50,
-              )
-            ],
-          ),
-        )],
-    )
-  );
+            )
+          ],
+        ));
   }
 }

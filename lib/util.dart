@@ -516,6 +516,14 @@ class Utility {
     return uuid.v4();
   }
 
+  static get getSequentialId {
+    return Utility.currentTime(minuteLimitAccuracy: false)
+            .millisecondsSinceEpoch
+            .toString() +
+        "||" +
+        uuid.v4();
+  }
+
   static String returnMonth(DateTime date) {
     return new DateFormat.MMMM().format(date);
   }

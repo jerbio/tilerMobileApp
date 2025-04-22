@@ -91,11 +91,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     forecastBloc.whatIfApi = WhatIfApi(getContextCallBack: () {
       return this.context;
     });
-    print("DeviceSettingBloc: ${deviceSettingBloc.state}"+"- authorizedRoute");
-    deviceSettingBloc
-        .add(InitializeDeviceSettingEvent(id: "initializeDeviceSettingBloc", getContextCallBack: () {
-      return this.context;
-    }));
+    print(
+        "DeviceSettingBloc: ${deviceSettingBloc.state}" + "- authorizedRoute");
+    deviceSettingBloc.add(InitializeDeviceSettingEvent(
+        id: "initializeDeviceSettingBloc",
+        getContextCallBack: () {
+          return this.context;
+        }));
     scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
       return this.context;
     });
@@ -279,8 +281,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           child: PreviewAddWidget(
               previewSummary: previewSummary,
               onSubmit: (_) {
-                if(Navigator.canPop(context)){
-                Navigator.pop(context);}
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
               }),
         );
       },
@@ -314,7 +317,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   child: Container(
                     height: 50,
                     width: 38,
-                    color: TileStyles.primaryContrastColor,
+                    color: TileStyles.defaultBackgroundColor,
                     padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
                     child: LayoutBuilder(
                       builder: (context, constraints) => Stack(
@@ -385,15 +388,16 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white,
-                Colors.white,
-                Colors.white,
+                TileStyles.defaultBackgroundColor,
+                TileStyles.defaultBackgroundColor,
+                TileStyles.defaultBackgroundColor,
               ],
             ),
           ),
           child: BottomNavigationBar(
             items: [
               BottomNavigationBarItem(
+                  backgroundColor: TileStyles.defaultBackgroundColor,
                   icon: Icon(
                     Icons.share,
                     color: TileStyles.primaryColor,
@@ -411,7 +415,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                       color: TileStyles.primaryColor),
                   label: ''),
             ],
-            unselectedItemColor: Colors.white,
+            unselectedItemColor: TileStyles.defaultBackgroundColor,
             selectedItemColor: Colors.black,
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -425,6 +429,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
     return Scaffold(
       extendBody: true,
+      backgroundColor: TileStyles.defaultBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Container(
@@ -435,7 +440,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       bottomNavigationBar: bottomNavigator,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: TileStyles.primaryContrastColor,
+        backgroundColor: TileStyles.defaultBackgroundColor,
         onPressed: () {
           AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
           displayDialog(MediaQuery.of(context).size);
@@ -496,7 +501,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ],
         child:
             BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return renderAuthorizedUserPageView();
+          return Scaffold(
+              backgroundColor: TileStyles.defaultBackgroundColor,
+              body: renderAuthorizedUserPageView());
         }));
   }
 }

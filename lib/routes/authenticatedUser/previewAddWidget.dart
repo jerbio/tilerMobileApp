@@ -34,7 +34,7 @@ class PreviewAddWidget extends StatefulWidget {
 }
 
 class _PreviewAddWidgetState extends State<PreviewAddWidget> {
-  final double modalHeight = 390;
+  final double modalHeight = 420;
   bool isPendingAdd = false;
   NewTile? newTile;
   late final ScheduleApi scheduleApi;
@@ -43,8 +43,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   void initState() {
     super.initState();
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
-    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
-    print("DeviceSettingBloc: ${deviceSettingBloc.state} - Preview Add Widget");
+    this.context.read<ForecastBloc>().add(ResetEvent());
   }
 
   Widget renderPreview() {
@@ -60,13 +59,16 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color.fromRGBO(1, 1, 1, 0.9),
-            Color.fromRGBO(1, 1, 1, .85),
-            Color.fromRGBO(1, 1, 1, 1),
-            Color.fromRGBO(1, 1, 1, 1),
-            Color.fromRGBO(1, 1, 1, 1),
-            Color.fromRGBO(1, 1, 1, 1),
-            Color.fromRGBO(1, 1, 1, 1),
+            // Color.fromRGBO(1, 1, 1, 0.9),
+            // Color.fromRGBO(1, 1, 1, .85),
+            // Color.fromRGBO(1, 1, 1, 1),
+            // Color.fromRGBO(1, 1, 1, 1),
+            // Color.fromRGBO(1, 1, 1, 1),
+            // Color.fromRGBO(1, 1, 1, 1),
+            // Color.fromRGBO(1, 1, 1, 1),
+            Colors.white,
+            Colors.white,
+            Colors.white,
             Colors.white
           ],
         )),
@@ -213,11 +215,11 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         ));
   }
 
-  Widget  renderForecastButton() {
-     var buttonPressed = () {
-          AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
-          Navigator.pushNamed(context, '/ForecastPreview');
-        };
+  Widget renderForecastButton() {
+    var buttonPressed = () {
+      AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
+      Navigator.pushNamed(context, '/ForecastPreview');
+    };
     ForecastState forecastState = this.context.read<ForecastBloc>().state;
     if (forecastState is ForecastLoaded) {
       return SizedBox.shrink();
@@ -225,27 +227,25 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     if (forecastState is ForecastInitial) {
       return foreCastButton(buttonPressed);
     }
-    return 
-    InkWell(
+    return InkWell(
       onTap: buttonPressed,
       child: Stack(
-            children: [
-              foreCastButton(buttonPressed),
-              Shimmer.fromColors(
-                  baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
-                  highlightColor: TileStyles.primaryColor.withLightness(0.7),
-                  child: Container(
-                    width: 65,
-                    height: 40,
-                    decoration: BoxDecoration(
-                        color: Color.fromRGBO(31, 31, 31, 0.8),
-                        borderRadius: BorderRadius.circular(30)),
-                  )),
-            ],
-          ),
-    );    
+        children: [
+          foreCastButton(buttonPressed),
+          Shimmer.fromColors(
+              baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+              highlightColor: TileStyles.primaryColor.withLightness(0.7),
+              child: Container(
+                width: 65,
+                height: 40,
+                decoration: BoxDecoration(
+                    color: Color.fromRGBO(31, 31, 31, 0.8),
+                    borderRadius: BorderRadius.circular(30)),
+              )),
+        ],
+      ),
+    );
   }
-
 
   Widget renderProcastinateAllButton() {
     const Color cheveronColor = TileStyles.primaryColor;
@@ -280,10 +280,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               ),
             ),
             Text(AppLocalizations.of(context)!.previewTileDeferAll,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: TileStyles.primaryColor
-                ))
+                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
           ],
         ),
         onPressed: () {
@@ -309,7 +306,10 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             }
 
             refreshScheduleSummary(lookupTimeline);
-            Navigator.pop(context);
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            }
+            this.context.read<ForecastBloc>().add(ResetEvent());
           });
         },
         style: ElevatedButton.styleFrom(
@@ -328,23 +328,18 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileOptions,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: TileStyles.primaryColor
-                ))
+                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
           ],
         ),
         onPressed: () {
           Location? location = null;
-          if(
-            newTile!=null &&
-            (newTile!.LocationAddress!=null && 
-          newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()  )||
-            (newTile!.LocationTag!=null && 
-          newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace())||
-          (newTile!.LocationId!=null && 
-          newTile!.LocationId.isNot_NullEmptyOrWhiteSpace())
-          ){
+          if (newTile != null &&
+              ((newTile!.LocationAddress != null &&
+                      newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()) ||
+                  (newTile!.LocationTag != null &&
+                      newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace()) ||
+                  (newTile!.LocationId != null &&
+                      newTile!.LocationId.isNot_NullEmptyOrWhiteSpace()))) {
             location = Location.fromDefault();
             location.isDefault = false;
             location.isNull = false;
@@ -352,26 +347,30 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             location.description = newTile?.LocationTag;
             location.address = newTile?.LocationAddress;
             location.source = newTile?.LocationSource;
-            if(newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() == true) {
-              bool? isLocationVerified = bool.tryParse(newTile!.LocationIsVerified!, caseSensitive: false);
-              if(isLocationVerified != null) {
+            if (newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() ==
+                true) {
+              bool? isLocationVerified = bool.tryParse(
+                  newTile!.LocationIsVerified!,
+                  caseSensitive: false);
+              if (isLocationVerified != null) {
                 location.isVerified = isLocationVerified;
               }
             }
           }
 
-              SimpleAdditionTile preTile = SimpleAdditionTile(
-                          description: newTile?.Name,
-                          duration: newTile?.getDuration(),
-                          location: location
-                          );
+          SimpleAdditionTile preTile = SimpleAdditionTile(
+              description: newTile?.Name,
+              duration: newTile?.getDuration(),
+              location: location);
           AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
-          Navigator.pop(context);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+          this.context.read<ForecastBloc>().add(ResetEvent());
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => AddTile(
-                      preTile: preTile)));
+                  builder: (context) => AddTile(preTile: preTile)));
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
@@ -389,16 +388,16 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileShuffle,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: TileStyles.primaryColor
-                ))
+                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
           ],
         ),
         onPressed: () {
           AnalysticsSignal.send('SHUFFLE_BUTTON');
           this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
-          Navigator.pop(context);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+          this.context.read<ForecastBloc>().add(ResetEvent());
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
@@ -416,21 +415,20 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileRevise,
-                style: TextStyle(
-                  fontSize: 9,
-                  color: TileStyles.primaryColor
-                ))
+                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
           ],
         ),
         onPressed: () {
           AnalysticsSignal.send('REVISE_BUTTON');
           this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
-          Navigator.pop(context);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+          this.context.read<ForecastBloc>().add(ResetEvent());
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          
         ));
   }
 
@@ -484,31 +482,33 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(listeners: [
-      BlocListener<ForecastBloc, ForecastState>(
-        listener: (context, state) {
-          if (state is ForecastLoading) {
-            print("ForecastLoading state detected");
-          } else if (state is ForecastLoaded) {
-            print("ForecastLoaded state detected");
-          } else if (state is ForecastInitial) {
-            print("ForecastInitial state detected");
-          }
-          setState(() {});
-        },
-      ),
-    ], child:  Stack(
-      children: [
-        Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<ForecastBloc, ForecastState>(
+            listener: (context, state) {
+              if (state is ForecastLoading) {
+                print("ForecastLoading state detected");
+              } else if (state is ForecastLoaded) {
+                print("ForecastLoaded state detected");
+              } else if (state is ForecastInitial) {
+                print("ForecastInitial state detected");
+              }
+              setState(() {});
+            },
+          ),
+        ],
+        child: Stack(
           children: [
-            Utility.isKeyboardVisible(context)
-                ? SizedBox.shrink()
-                : renderPreview(),
-            renderModal(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Utility.isKeyboardVisible(context)
+                    ? SizedBox.shrink()
+                    : renderPreview(),
+                renderModal(),
+              ],
+            )
           ],
-        )
-      ],
-    ));
+        ));
   }
 }
