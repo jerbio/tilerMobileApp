@@ -89,21 +89,42 @@ class WithinNowBatchState extends TileBatchState {
     if (renderObject != null) {
       var offset = renderObject.localToGlobal(Offset.zero);
 
-      bool isInterferringWithNow = _preceedingList != null &&
-          this.widget.tiles != null &&
-          this.widget.tiles!.any((element) =>
-              (element as SubCalendarEvent?) != null &&
-              ((element as SubCalendarEvent?))!.isViable != false &&
-              ((element as SubCalendarEvent?))!.isCurrentTimeWithin == true);
+      bool isInterferringWithNow = false;
+      bool precedingTileExist = false;
+      int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
+      if (this.widget.tiles != null) {
+        for (var eachTile in this.widget.tiles!) {
+          SubCalendarEvent? eachSubEvent = eachTile as SubCalendarEvent?;
+          if (eachSubEvent != null) {
+            if (eachSubEvent.end != null &&
+                eachSubEvent.end! < currentTimeInMs) {
+              precedingTileExist = true;
+            }
+            if (eachSubEvent.start != null &&
+                eachSubEvent.start! <= currentTimeInMs &&
+                eachSubEvent.end != null &&
+                eachSubEvent.end! > currentTimeInMs) {
+              isInterferringWithNow = true;
+            }
+            if (precedingTileExist && isInterferringWithNow) {
+              break;
+            }
+          }
+        }
+      }
       double interferringWithNowOffSet = 0;
 
-      if (isInterferringWithNow) {
-        interferringWithNowOffSet = TileStyles.tileHeight;
-      }
-      double offSetUpdate =
-          offset.distance - heightOfTimeBanner - interferringWithNowOffSet;
-      if (offSetUpdate > 0) {
-        fullUiController.jumpTo(offSetUpdate);
+      if (precedingTileExist) {
+        if (isInterferringWithNow) {
+          interferringWithNowOffSet = TileStyles.tileHeight;
+        }
+        print(
+            'interferringWithNowOffSet: $interferringWithNowOffSet, offset: ${offset.distance}');
+        double offSetUpdate =
+            offset.distance - heightOfTimeBanner - interferringWithNowOffSet;
+        if (offSetUpdate > 0) {
+          fullUiController.jumpTo(offSetUpdate);
+        }
       }
     }
   }
