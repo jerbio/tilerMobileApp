@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/previewGroup.dart';
-import 'package:tiler_app/data/previewSummary.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -23,6 +23,7 @@ class PreviewChart extends StatefulWidget {
 class _PreviewChartState extends State<PreviewChart> {
   static final Color otherColor = Utility.randomColor;
   static final Color blockedOutColor = Utility.randomColor;
+  bool showTime = true;
   List<PreviewSection>? get previewGrouping {
     return this.widget.previewGrouping;
   }
@@ -33,6 +34,83 @@ class _PreviewChartState extends State<PreviewChart> {
 
   Timeline? get _timeline {
     return this.widget.timeline;
+  }
+
+  Widget renderMiddleIconography() {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(boxShadow: [
+        const BoxShadow(
+          color: Color.fromRGBO(220, 220, 220, 0.5),
+        ),
+        BoxShadow(
+          color: Colors.white,
+          spreadRadius: -4.0,
+          blurRadius: 12.0,
+        ),
+      ], borderRadius: BorderRadius.circular(110)),
+      child: Container(
+          margin: EdgeInsets.fromLTRB(0, 70, 0, 0),
+          child: this.icon ?? SizedBox.shrink()),
+    );
+  }
+
+  Widget ratioImagery() {
+    TimeRange? timeLine = this._timeline;
+    if (timeLine != null) {
+      timeLine = timeLine.interferingTimeRange(Utility.restOfTodayTimeline());
+    }
+    if (timeLine != null) {
+      Duration timeLineDuration = timeLine.duration;
+      Duration tileSumDuration = Duration.zero;
+      List<TilerEvent> tiles = this.widget.previewGrouping?.first.tiles ?? [];
+      for (int i = 0; i < tiles.length; i++) {
+        var eachTile = tiles[i];
+        if (eachTile.isInterfering(timeLine)) {
+          tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
+        }
+      }
+      bool isHours = false;
+      num numerator = tileSumDuration.inMinutes;
+      num denominator = timeLineDuration.inMinutes;
+      if (denominator == 0) {
+        denominator = 1;
+      }
+      if (denominator > Duration.minutesPerHour) {
+        isHours = true;
+        numerator = tileSumDuration.inHours;
+        denominator = timeLineDuration.inHours;
+      }
+      String ratioText = "${numerator} / ${denominator}";
+      return Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(110)),
+        child: Center(
+          child: Text(
+            isHours
+                ? AppLocalizations.of(context)!.previewRatioTimeHours(ratioText)
+                : AppLocalizations.of(context)!
+                    .previewRatioTimeMinutes(ratioText),
+            // textScaler: TextScaler.linear(0.75),
+            textAlign: TextAlign.center,
+            style:
+                TextStyle(color: TileStyles.inputFieldTextColor, fontSize: 20),
+          ),
+        ),
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget getCenterWidget() {
+    return Stack(
+      children: [renderMiddleIconography(), ratioImagery()],
+    );
   }
 
   @override
@@ -70,6 +148,8 @@ class _PreviewChartState extends State<PreviewChart> {
                 color: otherColor,
                 radius: radius,
                 borderSide: borderSide,
+                titleStyle: TextStyle(
+                    fontSize: 12, color: TileStyles.accentContrastColor),
                 value: otherTiles.inMinutes.toDouble()));
           }
           if (blockedOutTiles.inMinutes > 0) {
@@ -78,6 +158,8 @@ class _PreviewChartState extends State<PreviewChart> {
                 color: blockedOutColor,
                 radius: radius,
                 borderSide: borderSide,
+                titleStyle: TextStyle(
+                    fontSize: 12, color: TileStyles.accentContrastColor),
                 value: blockedOutTiles.inMinutes.toDouble()));
           }
         } else {
@@ -103,6 +185,7 @@ class _PreviewChartState extends State<PreviewChart> {
               title: sectorName,
               radius: radius,
               borderSide: borderSide,
+              badgePositionPercentageOffset: 10,
               titleStyle: TextStyle(
                   fontSize: 12, color: TileStyles.accentContrastColor),
               value: durationSum.inMinutes.toDouble()));
@@ -117,11 +200,14 @@ class _PreviewChartState extends State<PreviewChart> {
             Flexible(
               child: Stack(
                 children: [
+                  Center(
+                    child: AnimatedSwitcher(
+                      duration: Duration(milliseconds: 500),
+                      child: getCenterWidget(),
+                    ),
+                  ),
                   PieChart(
                     PieChartData(sections: pieChartData),
-                  ),
-                  Center(
-                    child: icon,
                   )
                 ],
               ),
