@@ -53,25 +53,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     }
     return Container(
         height: perviewHeight,
+        color: TileStyles.defaultBackgroundColor,
         width: MediaQuery.sizeOf(context).width,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            // Color.fromRGBO(1, 1, 1, 0.9),
-            // Color.fromRGBO(1, 1, 1, .85),
-            // Color.fromRGBO(1, 1, 1, 1),
-            // Color.fromRGBO(1, 1, 1, 1),
-            // Color.fromRGBO(1, 1, 1, 1),
-            // Color.fromRGBO(1, 1, 1, 1),
-            // Color.fromRGBO(1, 1, 1, 1),
-            Colors.white,
-            Colors.white,
-            Colors.white,
-            Colors.white
-          ],
-        )),
         child: PreviewWidget(
           subEvents: this.widget.previewSummary?.tiles ?? [],
           previewSummary: this.widget.previewSummary,
@@ -437,19 +420,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.fromLTRB(
             0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color.fromRGBO(255, 255, 255, 1),
-            Color.fromRGBO(255, 255, 255, 1),
-            Color.fromRGBO(255, 255, 255, 1),
-            Color.fromRGBO(255, 255, 255, 1),
-            Color.fromRGBO(255, 255, 255, 1),
-            Colors.white
-          ],
-        )),
+        color: TileStyles.defaultBackgroundColor,
         width: MediaQuery.sizeOf(context).width,
         height: modalHeight,
         child: Column(

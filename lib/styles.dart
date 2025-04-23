@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TileStyles {
   static final double tileWidth = 350;
-  static final double tileHeight = 350;
+  static final double tileHeight = 300;
   static final double tileWidthRatio = 0.85;
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
@@ -16,8 +16,7 @@ class TileStyles {
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
-  static const Color primaryContrastColor =
-      const Color.fromRGBO(247, 247, 248, 1);
+  static const Color primaryContrastColor = Colors.white;
   static const Color accentContrastColor = Colors.black;
   static const Color primaryContrastTextColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
@@ -39,7 +38,8 @@ class TileStyles {
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
   static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color defaultWidgetBackgroundColor = Colors.white;
+  static Color defaultWidgetBackgroundColor =
+      const Color.fromRGBO(247, 247, 248, 1);
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
@@ -217,7 +217,8 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static final Color defaultBackgroundColor = Colors.white;
+  static final Color defaultBackgroundColor =
+      TileStyles.defaultWidgetBackgroundColor;
   static final BoxDecoration defaultBackgroundDecoration =
       BoxDecoration(color: Colors.transparent
           // gradient: LinearGradient(

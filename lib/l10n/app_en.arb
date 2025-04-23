@@ -649,5 +649,25 @@
       "travelMediumTransit": "Transit",
       "travelMediumDriving": "Driving",
       "travelMediumTransport": "Transport",
-      "sleepDuration": "Sleep Duration"
+      "sleepDuration": "Sleep Duration",
+      "previewRatioTimeMinutes": "{ratio} m",
+      "@previewRatioTimeMinutes": {
+        "description": "Ratio time in minutes",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 m"
+          }
+        }
+      },
+      "previewRatioTimeHours": "{ratio} hrs",
+      "@previewRatioTimeHours": {
+        "description": "Ratio time in hours",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 hrs"
+          }
+        }
+      }
   }
