@@ -7,8 +7,10 @@ class DurationInputWidget extends StatefulWidget {
   final Duration? duration;
   final String? placeholder;
   final Function? onDurationChange;
+  final Widget? icon;
 
-  DurationInputWidget({this.duration, this.placeholder, this.onDurationChange});
+  DurationInputWidget(
+      {this.icon, this.duration, this.placeholder, this.onDurationChange});
   @override
   State<StatefulWidget> createState() => _DurationInputWidgetState();
 }
