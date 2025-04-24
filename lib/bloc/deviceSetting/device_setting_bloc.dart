@@ -228,7 +228,9 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       emit(DeviceSettingLoaded(
         id: event.id,
         isDarkMode: state.isDarkMode,
+        shouldLogout:true,
         sessionProfile: SessionProfile(),
+
       ));
     } catch (e) {
       emit(DeviceSettingError(
