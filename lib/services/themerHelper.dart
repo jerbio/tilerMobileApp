@@ -17,25 +17,41 @@ class ThemeManager {
 
   static ThemeData getLightTheme() {
     return ThemeData(
-      fontFamily: TileStyles.rubikFontName,
       brightness: Brightness.light,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
+      fontFamily: TileStyles.rubikFontName,
       primarySwatch: MaterialColor(0xEF3054, TileStyles.themeMaterialColor),
       scaffoldBackgroundColor: Colors.white,
       cardColor: Colors.white,
       dividerColor: Colors.grey.shade300,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: TileStyles.primaryContrastColor,
+        foregroundColor: TileStyles.primaryColor,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.white,
+      ),
+      bottomNavigationBarTheme: TileStyles.bottomNavTheme,
     );
   }
 
   static ThemeData getDarkTheme() {
     return ThemeData(
-      fontFamily: TileStyles.rubikFontName,
       brightness: Brightness.dark,
+      fontFamily: TileStyles.rubikFontName,
+      visualDensity: VisualDensity.adaptivePlatformDensity,
       primarySwatch: MaterialColor(0xEF3054, TileStyles.themeMaterialColor),
       scaffoldBackgroundColor: Color(0xFF121212),
       cardColor: Color(0xFF1E1E1E),
       dividerColor: Colors.grey.shade800,
-      visualDensity: VisualDensity.adaptivePlatformDensity,
+      appBarTheme: AppBarTheme(
+        backgroundColor: Color(0xFF121212),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: Color(0xFF1E1E1E),
+        foregroundColor: TileStyles.primaryColor,
+      ),
+      bottomNavigationBarTheme: TileStyles.bottomNavTheme,
     );
   }
 }
