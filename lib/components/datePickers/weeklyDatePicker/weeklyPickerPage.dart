@@ -11,10 +11,10 @@ class WeekPickerPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
       builder: (context, state) {
-        return  InkWell(
+        return InkWell(
           onTap: () => _showWeekPickerDialog(context),
           child: Row(
-            mainAxisAlignment:  MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 DateFormat.MMMM().format(state.selectedDate),
@@ -23,7 +23,8 @@ class WeekPickerPage extends StatelessWidget {
               SizedBox(width: 6.0),
               Transform.rotate(
                 angle: 1.5 * 3.14159,
-                child: Icon(Icons.arrow_back_ios_new_sharp, size: 24.0, color: TileStyles.defaultTextColor),
+                child: Icon(Icons.arrow_back_ios_new_sharp,
+                    size: 24.0, color: TileStyles.defaultTextColor),
               ),
             ],
           ),
@@ -32,25 +33,27 @@ class WeekPickerPage extends StatelessWidget {
     );
   }
 
-
   void _showWeekPickerDialog(BuildContext context) async {
     final result = await Navigator.of(context).push(
       PageRouteBuilder(
         opaque: false,
-        pageBuilder: (context, _, __) =>
-            Stack(
-              children: [
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      color: Colors.transparent,
-                    ),
-                  ),
+        pageBuilder: (context, _, __) => Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.of(context).pop();
+                  }
+                },
+                child: Container(
+                  color: Colors.transparent,
                 ),
-                Center(child: WeeklyPickerDialog()),
-              ],
+              ),
             ),
+            Center(child: WeeklyPickerDialog()),
+          ],
+        ),
         transitionsBuilder: (context, animation, _, child) {
           return BackdropFilter(
             filter: ImageFilter.blur(

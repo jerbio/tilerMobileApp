@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
@@ -61,6 +62,9 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
         }
       }
     }
+
+    Widget durationIcon = this.widget.icon ??
+        Icon(Icons.timelapse_outlined, color: inputFieldIconColor);
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: Container(
@@ -73,7 +77,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
+                durationIcon,
                 Container(
                     padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                     child: TextButton(

@@ -1,10 +1,4 @@
-
-enum TravelMedium { bicycling, transit, driving, walking }
-
-
-
-enum PinPreference { start, mid, end }
-
+import 'package:tiler_app/data/executionEnums.dart';
 
 class ScheduleProfile {
   TravelMedium? travelMedium;

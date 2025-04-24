@@ -38,7 +38,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late int numberOfDays;
   bool selected = false;
   Curve curve = Curves.linear;
-  final CarouselController dayRibbonCarouselController = CarouselController();
+  final CarouselSliderController dayRibbonCarouselController =
+      CarouselSliderController();
   Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
   Map<int, Tuple2<int, Timeline>> dayBatchIndexToBatch = {};
   @override

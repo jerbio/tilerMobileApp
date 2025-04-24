@@ -10,8 +10,8 @@ import 'package:http/http.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/services/accessManager.dart';
-import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
@@ -34,7 +34,7 @@ abstract class AppApi {
 
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
-        jsonResult['Error'].containsKey('Code')) &&
+            jsonResult['Error'].containsKey('Code')) &&
         jsonResult['Error']['Code'] == '0';
 
     return retValue;
@@ -120,10 +120,10 @@ abstract class AppApi {
                     showLocationPermissionWidget: true,
                     context: buildContext,
                     callBacks: <Function>[
-                          (_) {
-                        awaitableUiChanges.cancel();
-                      }
-                    ]));
+                  (_) {
+                    awaitableUiChanges.cancel();
+                  }
+                ]));
 
             await awaitableUiChanges.valueOrCancellation();
             if (buildContext.mounted) {
@@ -133,7 +133,7 @@ abstract class AppApi {
                 if (deviceSettingState.sessionProfile?.locationProfile !=
                     null) {
                   locationAccessResult =
-                  deviceSettingState.sessionProfile!.locationProfile!;
+                      deviceSettingState.sessionProfile!.locationProfile!;
                 }
               } else {
                 print("DeviceSetting not Loaded");
@@ -229,6 +229,7 @@ abstract class AppApi {
               ? e.message
               : LocalizationService.instance.translations.errorOccurred);
     }
+    throw TilerError();
   }
 
   TilerError? getTilerResponseError(Map<String, dynamic> responseBody) {
