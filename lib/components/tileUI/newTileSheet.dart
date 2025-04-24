@@ -498,7 +498,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                       style: TextStyle(
                         color: TileStyles.accentContrastColor,
                         fontFamily: TileStyles.rubikFontName,
-                        fontSize: TileStyles.inputFontSize,
+                        fontSize: TileStyles.textFontSize,
                       ),
                     ),
                     alignment: Alignment.centerLeft,
