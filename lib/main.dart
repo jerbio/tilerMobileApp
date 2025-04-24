@@ -16,7 +16,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
-// import 'package:tiler_app/firebase_options.dart';
+import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
@@ -40,6 +40,7 @@ import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
+import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -178,8 +179,16 @@ class _TilerAppState extends State<TilerApp> {
     return MaterialApp(
         title: 'Tiler',
         debugShowCheckedModeBanner: false,
-        theme: ThemeManager.getLightTheme(),
-        darkTheme: ThemeManager.getDarkTheme(),
+        theme: ThemeData(
+          fontFamily: TileStyles.rubikFontName,
+          primarySwatch: MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        darkTheme: ThemeData(
+          fontFamily: TileStyles.rubikFontName,
+          primarySwatch: MaterialColor(0xFF880E4F,  TileStyles.themeMaterialColor),
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
         themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
         routes: <String, WidgetBuilder>{
           '/AuthorizedUser': (BuildContext context) => new AuthorizedRoute(),

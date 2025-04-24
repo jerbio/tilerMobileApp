@@ -76,7 +76,6 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
         add(GetIntegrationsEvent());
         emit(IntegrationAdded(integrationId: result['id']));
       } else {
-        print("integration type is $integrationType ");
         emit(IntegrationsError(errorMessage: "Failed to add integration",integrations: currentIntegrations));
       }
     } catch (e) {
