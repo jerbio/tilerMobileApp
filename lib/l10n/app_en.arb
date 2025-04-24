@@ -685,7 +685,8 @@
       "fullName":"Full Name",
       "phoneNumber":"Phone Number",
       "dateOfBirth":"Date Of Birth",
-      "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully."
+      "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
+      "reachingServerIssues":"Issues with reaching Tiler servers"
 
 
   }
