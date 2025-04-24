@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -74,64 +69,57 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/AccountInfo.svg',
               title: AppLocalizations.of(context)!.accountInfo,
               color: textColor,
-              route: '/accountInfo',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/accountInfo'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/TilePreferences.svg',
               title: AppLocalizations.of(context)!.tilePreferences,
               color: textColor,
-              route: '/tilePreferences',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/tilePreferences'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/NotificationsPreferences.svg',
               title: AppLocalizations.of(context)!.notificationsPreferences,
               color: textColor,
-              route:'/notificationsPreferences',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
             _buildDivider(),
             _buildListTile(
               icon: 'assets/icons/settings/Security.svg',
               title: AppLocalizations.of(context)!.security,
               color: textColor,
-              route: '/security',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/security'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
-              route: '/Connections',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/Connections'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/MyLocations.svg',
               title: AppLocalizations.of(context)!.myLocations,
               color: textColor,
-              route:'/myLocations',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/myLocations'),
             ),
             _buildDivider(),
             _buildListTile(
               icon: 'assets/icons/settings/AboutTiler.svg',
               title: AppLocalizations.of(context)!.aboutTiler,
               color: textColor,
-              route: '/aboutTiler',
-              context: context
+              onTap: ()=> Navigator.pushNamed(context, '/aboutTiler'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
               color: TileStyles.primaryColor,
-              context: context
+              onTap: ()=>context.read<DeviceSettingBloc>().add(LogOutMainSettingDeviceSettingEvent(id:_requestId)),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/DeleteAccount.svg',
               title: AppLocalizations.of(context)!.deleteAccount,
               color: TileStyles.primaryColor,
-              context: context
+              onTap: ()=>context.read<DeviceSettingBloc>().add(DeleteAccountMainSettingDeviceSettingEvent(id:_requestId)),
             ),
             _buildDivider(),
             Center(child: _buildDarkModeSwitch()),
@@ -153,14 +141,11 @@ class Settings extends StatelessWidget {
       {required String icon,
         required String title,
         required Color color,
-        required BuildContext context,
-        String? route}) {
+        Function()? onTap}) {
     return ListTile(
       leading: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(color, BlendMode.srcIn),),
       title: Text(title, style: TextStyle(color: color )),
-      onTap:  (route != null && route.isNotEmpty)
-          ? () => Navigator.pushNamed(context, route)
-          : null,
+      onTap:  onTap
     );
   }
 

@@ -5,7 +5,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
@@ -33,7 +32,7 @@ import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accou
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/notificationPreferences.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
+//import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/tilePreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
@@ -48,10 +47,11 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
+import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-//import 'firebase_options.dart';
+import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/api/onBoardingApi.dart';
@@ -305,7 +305,9 @@ class _TilerAppState extends State<TilerApp> {
                 return retValue;
               }
             }),
-      ),
+      );
+    }
+    )
     );
   }
 }

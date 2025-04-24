@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:meta/meta.dart';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/scheduleProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
