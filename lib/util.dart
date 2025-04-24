@@ -266,7 +266,7 @@ class Utility {
     DateTime currentTime = Utility.currentTime();
     DateTime begin = new DateTime(currentTime.year, currentTime.month,
         currentTime.day, currentTime.hour, currentTime.minute);
-    DateTime end = begin.add(Utility.oneDay);
+    DateTime end = DateTime(begin.year, begin.month, begin.day, 23, 59, 0);
 
     Timeline retValue =
         Timeline(begin.millisecondsSinceEpoch, end.millisecondsSinceEpoch);

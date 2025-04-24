@@ -25,6 +25,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
@@ -445,10 +446,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
           displayDialog(MediaQuery.of(context).size);
         },
-        child: Icon(
-          Icons.add,
-          size: 35,
-          color: TileStyles.primaryColor,
+        child: AutoSwitchingWidget(
+          duration: Duration(milliseconds: 1000),
+          children: [
+            Transform.scale(
+              scale: 0.618,
+              child: Image.asset(
+                'assets/images/wire_tilerLogo_BlueBottom.png',
+              ),
+            ),
+            Transform.scale(
+              scale: 0.618,
+              child: Image.asset(
+                'assets/images/wire_tilerLogo_RedBottom.png',
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
