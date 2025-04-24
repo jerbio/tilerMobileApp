@@ -289,7 +289,15 @@ class CustomTimeRestrictionRouteState
               GestureDetector(
                 onTap: () {
                   if (dayOfWeekRestriction.isSelected) {
-                    if (_hasCopied && _copiedDayIndex != dayOfWeekRestriction.dayIndex) {
+                    if (_hasCopied && _copiedDayIndex == dayOfWeekRestriction.dayIndex) {
+                      setState(() {
+                        _hasCopied = false;
+                        _copiedDayIndex = null;
+                        _copiedStart = null;
+                        _copiedEnd = null;
+                      });
+                    }
+                    else if (_hasCopied && _copiedDayIndex != dayOfWeekRestriction.dayIndex) {
                       setState(() {
                         dayOfWeekRestriction.start = _copiedStart!;
                         dayOfWeekRestriction.end = _copiedEnd!;
@@ -367,13 +375,11 @@ class CustomTimeRestrictionRouteState
         routeName: customTimeRestrictionRouteName,
         onProceed: isProceedReady() ? onProceed : null,
         child: Stack(
-            //alignment: Alignment.center,
             children: [
               Container(
                 padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
                 child: Center(
                     child: Column(
-                       // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: this
                             .weekdays
                             .map((weekdayString) => Padding(
