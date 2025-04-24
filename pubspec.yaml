@@ -134,6 +134,8 @@ flutter:
     - assets/images/pinched_fingers.png
     - assets/images/move_forward.png
     - assets/images/tiler_logo_black.png
+    - assets/images/wire_tilerLogo_BlueBottom.png
+    - assets/images/wire_tilerLogo_RedBottom.png
     - assets/images/tiler_logo_white.png
     - assets/images/tiler_logo_white_text.png
     - assets/images/binocular.png

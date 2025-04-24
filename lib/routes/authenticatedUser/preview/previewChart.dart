@@ -64,13 +64,27 @@ class _PreviewChartState extends State<PreviewChart> {
     if (timeLine != null) {
       Duration timeLineDuration = timeLine.duration;
       Duration tileSumDuration = Duration.zero;
-      List<TilerEvent> tiles = this.widget.previewGrouping?.first.tiles ?? [];
-      for (int i = 0; i < tiles.length; i++) {
+      List<TilerEvent> tiles = [];
+      this.widget.previewGrouping?.forEach((grouping) {
+        if (grouping.tiles != null) {
+          tiles.addAll(grouping.tiles!);
+        }
+      });
+      var conflictResult = Utility.getConflictingEvents(tiles);
+      for (int i = 0; i < conflictResult.item1.length; i++) {
         var eachTile = tiles[i];
         if (eachTile.isInterfering(timeLine)) {
           tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
         }
       }
+
+      for (int i = 0; i < conflictResult.item2.length; i++) {
+        var eachTile = tiles[i];
+        if (eachTile.isInterfering(timeLine)) {
+          tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
+        }
+      }
+
       bool isHours = false;
       num numerator = tileSumDuration.inMinutes;
       num denominator = timeLineDuration.inMinutes;
