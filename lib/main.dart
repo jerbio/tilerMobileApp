@@ -3,10 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/bloc/settings/settings_state.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
@@ -15,7 +12,6 @@ import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/bloc/settings/settings_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -44,12 +40,10 @@ import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
-import 'bloc/settings/settings_event.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -81,7 +75,7 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   if (!Constants.isDebug) {
     await Firebase.initializeApp(
-     // options: DefaultFirebaseOptions.currentPlatform,
+     options: DefaultFirebaseOptions.currentPlatform,
     );
   }
   runApp(TilerApp());
@@ -97,22 +91,22 @@ class _TilerAppState extends State<TilerApp> {
   Authentication? authentication;
   NotificationOverlayMessage? notificationOverlayMessage;
   OnBoardingApi? onBoardingApi;
+  bool isDarkMode =false ;
+
+  void _loadTheme() async {
+    final savedIsDark = await ThemeManager.getThemeMode();
+    setState(() => isDarkMode = savedIsDark); // Update state after load
+  }
+
   @override
-  void initState() {
+  void initState(){
     onBoardingApi = OnBoardingApi();
+    _loadTheme();
     notificationOverlayMessage = NotificationOverlayMessage();
-    _loadSavedTheme();
     super.initState();
   }
-  void _loadSavedTheme() async {
-    final isDarkMode = await ThemeManager.getThemeMode();
-    // Delay to ensure SettingsBloc is available
-    Future.delayed(Duration.zero, () {
-      if (mounted) {
-        context.read<SettingsBloc>().add(ToggleDarkModeEvent(isDarkMode));
-      }
-    });
-  }
+
+
   Widget renderPending() {
     return Center(
         child: Stack(children: [
@@ -158,7 +152,9 @@ class _TilerAppState extends State<TilerApp> {
         BlocProvider(
             create: (context) => DeviceSettingBloc(getContextCallBack: () {
                   return this.context;
-                })),
+                },
+              initialIsDarkMode: isDarkMode,
+            )),
         BlocProvider(
             create: (context) => ScheduleBloc(getContextCallBack: () {
                   return this.context;
@@ -169,14 +165,16 @@ class _TilerAppState extends State<TilerApp> {
             create: (context) => PreviewSummaryBloc(getContextCallBack: () {
                   return this.context;
                 })),
-        BlocProvider(
-            create: (context) => SettingsBloc(getContextCallBack: () {
-              return this.context;
-            }))
+        // BlocProvider(
+        //     create: (context) => SettingsBloc(getContextCallBack: () {
+        //       return this.context;
+        //     }))
       ],
-      child:BlocBuilder<SettingsBloc, SettingsState>(
+      child:BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
+
         buildWhen: (previous, current) => previous.isDarkMode != current.isDarkMode,
     builder: (context, settingsState) {
+
     return MaterialApp(
         title: 'Tiler',
         debugShowCheckedModeBanner: false,

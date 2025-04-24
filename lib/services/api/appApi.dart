@@ -10,8 +10,8 @@ import 'package:http/http.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../localAuthentication.dart';
@@ -34,7 +34,7 @@ abstract class AppApi {
 
   bool isJsonResponseOk(Map jsonResult) {
     bool retValue = (jsonResult.containsKey('Error') &&
-            jsonResult['Error'].containsKey('Code')) &&
+        jsonResult['Error'].containsKey('Code')) &&
         jsonResult['Error']['Code'] == '0';
 
     return retValue;
@@ -120,10 +120,10 @@ abstract class AppApi {
                     showLocationPermissionWidget: true,
                     context: buildContext,
                     callBacks: <Function>[
-                  (_) {
-                    awaitableUiChanges.cancel();
-                  }
-                ]));
+                          (_) {
+                        awaitableUiChanges.cancel();
+                      }
+                    ]));
 
             await awaitableUiChanges.valueOrCancellation();
             if (buildContext.mounted) {
@@ -133,7 +133,7 @@ abstract class AppApi {
                 if (deviceSettingState.sessionProfile?.locationProfile !=
                     null) {
                   locationAccessResult =
-                      deviceSettingState.sessionProfile!.locationProfile!;
+                  deviceSettingState.sessionProfile!.locationProfile!;
                 }
               } else {
                 print("DeviceSetting not Loaded");
@@ -184,46 +184,51 @@ abstract class AppApi {
 
   Future<Response> sendPostRequest(String requestPath, Map queryParameters,
       {bool injectLocation = true, bool analyze = true}) async {
-    print("Sending POST REQUEST " + requestPath);
-    if ((await this.authentication.isUserAuthenticated()).item1) {
-      await checkAndReplaceCredentialCache();
-      String tilerDomain = Constants.tilerDomain;
-      String url = tilerDomain;
-      if (this.authentication.cachedCredentials != null) {
-        Map<String, dynamic> requestParams = Map.from(queryParameters);
-        if (!queryParameters.containsKey('UserName')) {
-          String? username = '';
-          requestParams['UserName'] = username;
-        }
-        if (!queryParameters.containsKey('MobileApp')) {
-          requestParams['MobileApp'] = true.toString();
-        }
+    try {
+      Utility.debugPrint("Sending POST REQUEST " + requestPath);
+      if ((await this.authentication.isUserAuthenticated()).item1) {
+        await checkAndReplaceCredentialCache();
+        if (this.authentication.cachedCredentials != null) {
+          Map<String, dynamic> requestParams = Map.from(queryParameters);
+          if (!queryParameters.containsKey('UserName')) {
+            String? username = '';
+            requestParams['UserName'] = username;
+          }
+          if (!queryParameters.containsKey('MobileApp')) {
+            requestParams['MobileApp'] = true.toString();
+          }
 
-        Map<String, dynamic> injectedParameters = await injectRequestParams(
-            requestParams,
-            includeLocationParams: injectLocation);
-        var header = this.getHeaders();
-        if (header != null) {
-          Uri uri = Uri.https(url, requestPath);
-          print("Called POST REQUEST " + requestPath);
-          return http
-              .post(uri, headers: header, body: jsonEncode(injectedParameters))
-              .then((value) async {
-            print("Concluded Sending POST REQUEST " + requestPath);
-            if (analyze) {
-              analyzeSchedule(injectLocation: injectLocation);
-            }
-            return value;
-          }).catchError((onError) {
-            print("Issues with POST REQUEST " + requestPath);
-            return onError;
-          });
+          Map<String, dynamic> injectedParameters = await injectRequestParams(
+              requestParams,
+              includeLocationParams: injectLocation);
+          var header = this.getHeaders();
+          if (header != null) {
+            Uri uri = Uri.https(Constants.tilerDomain, requestPath);
+            Utility.debugPrint("Called POST REQUEST " + requestPath);
+            return http
+                .post(
+                uri, headers: header, body: jsonEncode(injectedParameters))
+                .then((value) async {
+              Utility.debugPrint("Concluded Sending POST REQUEST " + requestPath);
+              if (analyze) {
+                analyzeSchedule(injectLocation: injectLocation);
+              }
+              return value;
+            }).catchError((onError) {
+              Utility.debugPrint("Issues with POST REQUEST " + requestPath);
+              return onError;
+            });
+          }
         }
-        throw TilerError();
+        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
       }
-      throw TilerError();
+      throw TilerError(message: LocalizationService.instance.translations.userIsNotAuthenticated);
+    }catch (e) {
+      throw TilerError(
+          message: e is TilerError
+              ? e.message
+              : LocalizationService.instance.translations.errorOccurred);
     }
-    throw TilerError();
   }
 
   TilerError? getTilerResponseError(Map<String, dynamic> responseBody) {
@@ -243,7 +248,7 @@ abstract class AppApi {
       String analyzeUrl = tilerDomain;
       Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
       Map<String, dynamic> analyzeParameters =
-          await injectRequestParams({}, includeLocationParams: injectLocation);
+      await injectRequestParams({}, includeLocationParams: injectLocation);
       await http.post(analyzeUri,
           headers: header, body: jsonEncode(analyzeParameters));
     }
