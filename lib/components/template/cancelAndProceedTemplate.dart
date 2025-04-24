@@ -19,13 +19,13 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
 
   CancelAndProceedTemplateWidget(
       {required this.routeName,
-      this.onCancel,
-      this.onProceed,
-      this.child,
-      this.isProceedAllowed,
-      this.appBar,
-      this.bottomWidget,
-      this.hideButtons = false});
+        this.onCancel,
+        this.onProceed,
+        this.child,
+        this.isProceedAllowed,
+        this.appBar,
+        this.bottomWidget,
+        this.hideButtons = false});
 
   @override
   CancelAndProceedTemplateWidgetState createState() =>
@@ -53,7 +53,7 @@ class CancelAndProceedTemplateWidgetState
         routeParams[cancelAndProceedMapKey] = <String, dynamic>{};
       }
       Map<String, dynamic> cancelAndProceedData =
-          routeParams[cancelAndProceedMapKey];
+      routeParams[cancelAndProceedMapKey];
       if (routeParams[cancelAndProceedMapKey] == null) {
         cancelAndProceedData = {};
         cancelAndProceedData[historyKey] = [];
@@ -115,18 +115,18 @@ class CancelAndProceedTemplateWidgetState
           ),
           child: Center(
               child: Container(
-            margin: EdgeInsets.fromLTRB(10, 0, 50, 50),
-            child: Transform.rotate(
-              angle: math.pi / 4,
-              child: IconButton(
-                icon: Icon(
-                  Icons.add,
-                  color: Colors.white,
+                margin: EdgeInsets.fromLTRB(10, 0, 50, 50),
+                child: Transform.rotate(
+                  angle: math.pi / 4,
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
+                    onPressed: null,
+                  ),
                 ),
-                onPressed: null,
-              ),
-            ),
-          )),
+              )),
           onPressed: () async {
             _setRouteAsCancelled();
             if (this.widget.onCancel != null) {
@@ -141,7 +141,7 @@ class CancelAndProceedTemplateWidgetState
     );
     List<Widget> bottomButtons = [];
     if ((this.widget.isProceedAllowed != null &&
-            this.widget.isProceedAllowed!()) ||
+        this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
       proceedButton = Container(
         width: TileStyles.proceedAndCancelButtonWidth,
@@ -175,10 +175,14 @@ class CancelAndProceedTemplateWidgetState
                   showLoading = true;
                 });
                 return proceedResult.then((value) {
-                  setState(() {
-                    showLoading = false;
-                  });
-                  Navigator.pop(context);
+                  if (mounted) {
+                    setState(() {
+                      showLoading = false;
+                    });
+                  }
+                  if (value != false) {
+                    Navigator.pop(context);
+                  }
                 }).whenComplete(() {
                   setState(() {
                     showLoading = false;
@@ -231,14 +235,14 @@ class CancelAndProceedTemplateWidgetState
           child: new Center(
               child: new ClipRect(
                   child: new BackdropFilter(
-            filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
-            child: new Container(
-              width: (MediaQuery.of(context).size.width),
-              height: (MediaQuery.of(context).size.height),
-              decoration: new BoxDecoration(
-                  color: Colors.grey.shade200.withOpacity(0.5)),
-            ),
-          ))));
+                    filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+                    child: new Container(
+                      width: (MediaQuery.of(context).size.width),
+                      height: (MediaQuery.of(context).size.height),
+                      decoration: new BoxDecoration(
+                          color: Colors.grey.shade200.withOpacity(0.5)),
+                    ),
+                  ))));
       stackWidgets.add(blurWidget);
       stackWidgets.add(this.widget.pendingWidget ??
           PendingWidget(

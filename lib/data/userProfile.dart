@@ -7,6 +7,9 @@ class UserProfile {
   String? endOfDay;
   String? fullName;
   String? phoneNumber;
+  String? dateOfBirth;
+
+  UserProfile();
 
   UserProfile.fromJson(Map<String, dynamic> json) {
     id = '';
@@ -42,6 +45,9 @@ class UserProfile {
     if (json.containsKey('phoneNumber') && json['phoneNumber'] != null) {
       phoneNumber = json['phoneNumber'];
     }
+    if(json.containsKey('dateOfBirth') && json['dateOfBirth'] != null) {
+      dateOfBirth = json['dateOfBirth'];
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -53,7 +59,9 @@ class UserProfile {
       'email': this.email,
       'endOfDay': this.endOfDay,
       'fullName': this.fullName,
-      'phoneNumber': this.phoneNumber
+      'phoneNumber': this.phoneNumber,
+      'dateOfBirth': dateOfBirth,
+
     };
   }
 }
