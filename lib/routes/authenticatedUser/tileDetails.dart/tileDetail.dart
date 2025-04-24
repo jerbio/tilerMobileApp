@@ -548,6 +548,13 @@ class _TileDetailState extends State<TileDetail> {
                     setState(() {
                       editTilerEvent!.restrictionProfile =
                           updatedRestrictionProfile;
+                      editTilerEvent!.restrictionProfileId =
+                          updatedRestrictionProfile.id;
+                    });
+                  } else {
+                    setState(() {
+                      editTilerEvent!.restrictionProfile = null;
+                      editTilerEvent!.restrictionProfileId = null;
                     });
                   }
                   dataChange();

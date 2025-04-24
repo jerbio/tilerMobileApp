@@ -19,6 +19,7 @@ class EditTilerEvent {
   bool? isAddressVerified;
   Repetition? repetition;
   UIConfig? uiConfig;
+  String? restrictionProfileId;
   RestrictionProfile? restrictionProfile;
 
   bool get isValid {

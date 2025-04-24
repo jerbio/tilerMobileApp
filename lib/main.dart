@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/location/location_bloc.dart';
@@ -16,7 +18,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
-import 'package:tiler_app/firebase_options.dart';
+// import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
@@ -76,7 +78,7 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   if (!Constants.isDebug) {
     await Firebase.initializeApp(
-     options: DefaultFirebaseOptions.currentPlatform,
+      options: DefaultFirebaseOptions.currentPlatform,
     );
   }
   runApp(TilerApp());
@@ -165,11 +167,7 @@ class _TilerAppState extends State<TilerApp> {
         BlocProvider(
             create: (context) => PreviewSummaryBloc(getContextCallBack: () {
                   return this.context;
-                })),
-        // BlocProvider(
-        //     create: (context) => SettingsBloc(getContextCallBack: () {
-        //       return this.context;
-        //     }))
+                }))
       ],
       child:BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
 
@@ -307,9 +305,7 @@ class _TilerAppState extends State<TilerApp> {
                 return retValue;
               }
             }),
-      );
-  },
-),
+      ),
     );
   }
 }
