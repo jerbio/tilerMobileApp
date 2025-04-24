@@ -1,6 +1,7 @@
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/util.dart';
 
 class SubCalendarEvent extends TilerEvent {
@@ -17,6 +18,7 @@ class SubCalendarEvent extends TilerEvent {
   bool? isViable = true;
   bool? _isAllDay;
   TilerEvent? calendarEvent;
+  TravelDetail? travelDetail;
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
         (this.addressDescription != null &&
@@ -159,6 +161,9 @@ class SubCalendarEvent extends TilerEvent {
     }
     if (json.containsKey('isViable') && json['isViable'] != null) {
       isViable = cast<bool>(json['isViable'])!;
+    }
+    if (json['travelDetail'] != null) {
+      travelDetail = TravelDetail.fromJson(json['travelDetail']);
     }
   }
 }

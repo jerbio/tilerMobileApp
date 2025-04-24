@@ -100,6 +100,7 @@ class CalendarEventApi extends AppApi {
       'CalAddressDescription': calEvent.addressDescription?.toString(),
       'IsCalAddressVerified': calEvent.isAddressVerified?.toString(),
       'IsLocationCleared': clearLocation,
+      'RestrictionProfileId': calEvent.restrictionProfileId,
       'RestrictiveWeek':
           calEvent.restrictionProfile?.toRestrictionWeekConfig()?.toJson(),
       'RepetitionConfig': calEvent.repetition?.toRequestJson(),

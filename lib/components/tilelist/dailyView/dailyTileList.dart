@@ -43,7 +43,8 @@ class _DailyTileListState extends TileListState {
   late bool disableDayCarouselSlide = false;
   int? disableDayIndex;
   int _forceRefreshCounter = 0;
-  final CarouselController tileListDayCarouselController = CarouselController();
+  final CarouselSliderController tileListDayCarouselController =
+      CarouselSliderController();
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
   int? carouselSliderIndex = null;
 

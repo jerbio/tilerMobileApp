@@ -464,7 +464,6 @@
     "multiShare": "Multi Share",
     "errorOccurred": "An error occurred!!\nPlease try again.",
     "authenticationIssues":"Issues with authentication.",
-    "reachingServerIssues":"Issues with reaching Tiler servers",
     "userIsNotAuthenticated":"User is not authenticated.",
     "responseContentError":"Response does not contain expected Content.",
     "responseHandlingError":"Failed to handle the response.",

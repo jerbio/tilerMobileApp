@@ -34,39 +34,46 @@ class MonthlyPickerDialog extends StatelessWidget {
   Widget _buildHeader(BuildContext context, MonthlyUiDateManagerState state) {
     return Container(
       padding: EdgeInsets.all(16),
-      decoration:BoxDecoration(
-      color: TileStyles.primaryColor,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      decoration: BoxDecoration(
+        color: TileStyles.primaryColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
           Text(
             DateFormat('MMM yyyy').format(state.tempDate),
-            style: TextStyle(color: TileStyles.primaryContrastColor, fontSize: 20),
+            style:
+                TextStyle(color: TileStyles.primaryContrastColor, fontSize: 20),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '${state.year}',
-                style: TextStyle(color: TileStyles.primaryContrastColor, fontSize: 24),
+                style: TextStyle(
+                    color: TileStyles.primaryContrastColor, fontSize: 24),
               ),
               Row(
                 children: [
                   IconButton(
                     icon: Transform.rotate(
                       angle: -math.pi / 2,
-                      child: Icon(Icons.arrow_back_ios_new_sharp, color: TileStyles.primaryContrastColor),
+                      child: Icon(Icons.arrow_back_ios_new_sharp,
+                          color: TileStyles.primaryContrastColor),
                     ),
-
-                    onPressed: () => context.read<MonthlyUiDateManagerBloc>().add(ChangeYear(year: state.year - 1)),
+                    onPressed: () => context
+                        .read<MonthlyUiDateManagerBloc>()
+                        .add(ChangeYear(year: state.year - 1)),
                   ),
                   IconButton(
-                    icon:Transform.rotate(
+                    icon: Transform.rotate(
                       angle: math.pi / 2,
-                      child: Icon(Icons.arrow_back_ios_new_sharp, color:TileStyles.primaryContrastColor),
+                      child: Icon(Icons.arrow_back_ios_new_sharp,
+                          color: TileStyles.primaryContrastColor),
                     ),
-                    onPressed: () => context.read<MonthlyUiDateManagerBloc>().add(ChangeYear(year: state.year + 1)),
+                    onPressed: () => context
+                        .read<MonthlyUiDateManagerBloc>()
+                        .add(ChangeYear(year: state.year + 1)),
                   ),
                 ],
               ),
@@ -77,7 +84,8 @@ class MonthlyPickerDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthGrid(BuildContext context, MonthlyUiDateManagerState state) {
+  Widget _buildMonthGrid(
+      BuildContext context, MonthlyUiDateManagerState state) {
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -88,16 +96,22 @@ class MonthlyPickerDialog extends StatelessWidget {
       itemCount: 12,
       itemBuilder: (context, index) {
         final month = index + 1;
-        final isSelected = month == state.tempDate.month && state.tempDate.year ==state.year ;
+        final isSelected =
+            month == state.tempDate.month && state.tempDate.year == state.year;
         return GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTap: () =>  context.read<MonthlyUiDateManagerBloc>().add(ChangeMonth(month: month)),
+          onTap: () => context
+              .read<MonthlyUiDateManagerBloc>()
+              .add(ChangeMonth(month: month)),
           child: Container(
             margin: const EdgeInsets.all(5.0),
-            decoration:  isSelected ? BoxDecoration(
-              border:Border.all(color: TileStyles.primaryColor, width: 2),
-              borderRadius: BorderRadius.circular(12),
-            ) : null,
+            decoration: isSelected
+                ? BoxDecoration(
+                    border:
+                        Border.all(color: TileStyles.primaryColor, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                  )
+                : null,
             alignment: Alignment.center,
             child: Text(
               DateFormat('MMM').format(DateTime(state.year, month)),
@@ -120,16 +134,17 @@ class MonthlyPickerDialog extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: ElevatedButton(
           onPressed: () {
-            context.read<MonthlyUiDateManagerBloc>().add(
-                UpdateSelectedMonthOnPicking()
-            );
-            Navigator.of(context).pop();
+            context
+                .read<MonthlyUiDateManagerBloc>()
+                .add(UpdateSelectedMonthOnPicking());
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
           },
-          child: Text(AppLocalizations.of(context)!.save, style: TileStyles.datePickersSaveStyle),
+          child: Text(AppLocalizations.of(context)!.save,
+              style: TileStyles.datePickersSaveStyle),
         ),
       ),
     );
-
   }
-
 }

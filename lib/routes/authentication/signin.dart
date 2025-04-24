@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
-import 'package:rive/rive.dart';
+// import 'package:rive/rive.dart';
 import 'package:flutter/src/painting/gradient.dart' as paintGradient;
 import 'package:tiler_app/routes/authentication/signInComponent.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';

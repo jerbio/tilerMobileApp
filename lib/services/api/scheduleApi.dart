@@ -471,17 +471,20 @@ class ScheduleApi extends AppApi {
     TilerError error = new TilerError();
     error.message = "Failed to shuffle schedule";
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
-      var jsonResult = jsonDecode(response.body);
       error.message = "Issues with reaching Tiler servers";
-      if (isJsonResponseOk(jsonResult)) {
-        return;
-      }
-      if (isTilerRequestError(jsonResult)) {
-        var errorJson = jsonResult['Error'];
-        error = TilerError.fromJson(errorJson);
-        throw FormatException(error.message!);
-      } else {
-        error.message = "Issues with reaching Tiler servers";
+      if (response.statusCode == HttpStatus.accepted) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          return;
+        }
+
+        if (isTilerRequestError(jsonResult)) {
+          var errorJson = jsonResult['Error'];
+          error = TilerError.fromJson(errorJson);
+          throw FormatException(error.message!);
+        } else {
+          error.message = "Issues with reaching Tiler servers";
+        }
       }
     });
   }
