@@ -1,7 +1,7 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
@@ -23,6 +23,38 @@ class AccountInfo extends StatelessWidget {
   final ValueNotifier<bool> _hasChangesNotifier = ValueNotifier<bool>(false);
   UserProfile? _originalProfile;
   AccountInfo({Key? key}) : super(key: key);
+
+  void _showDeleteConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.deleteAccount),
+          content: Text(AppLocalizations.of(context)!.deleteAccountConfirmation),
+          actions: [
+            TextButton(
+              child: Text(AppLocalizations.of(context)!.cancel),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+            ),
+            TextButton(
+              child: Text(
+                AppLocalizations.of(context)!.delete,
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                context.read<DeviceSettingBloc>().add(
+                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Widget renderPending() {
     List<Widget> centerElements = [
@@ -164,6 +196,14 @@ class AccountInfo extends StatelessWidget {
           AppLocalizations.of(context)!.dateOfBirth,
           controller: _dateOfBirthController,
           onTap: () => _pickDate(context,userProfile),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 10.0,top: 10),
+          child: ListTile(
+            leading: SvgPicture.asset('assets/icons/settings/DeleteAccount.svg', colorFilter: ColorFilter.mode(TileStyles.primaryColor, BlendMode.srcIn),),
+            title: Text(AppLocalizations.of(context)!.deleteAccount, style: TextStyle(color: TileStyles.primaryColor )),
+            onTap: ()=> _showDeleteConfirmationDialog(context),
+          ),
         )
       ],
     );
@@ -213,7 +253,6 @@ class AccountInfo extends StatelessWidget {
 
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
-
         if (state is DeviceSettingLoaded && state.id == _requestId) {
           final userProfile = state.sessionProfile?.userProfile;
           if (userProfile != null) {

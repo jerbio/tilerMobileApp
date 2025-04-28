@@ -230,7 +230,6 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
         isDarkMode: state.isDarkMode,
         shouldLogout:true,
         sessionProfile: SessionProfile(),
-
       ));
     } catch (e) {
       emit(DeviceSettingError(
@@ -244,6 +243,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
 
   Future<void> _onDeleteAccountMainSetting(DeleteAccountMainSettingDeviceSettingEvent event, Emitter<DeviceSettingState> emit) async {
     try {
+      AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
       bool result = await authorizationApi.deleteTilerAccount();
       if (result) {
         add(LogOutMainSettingDeviceSettingEvent(id: event.id));
