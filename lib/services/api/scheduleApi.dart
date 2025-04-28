@@ -60,7 +60,7 @@ class ScheduleApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
 
         var response = await http.get(uri, headers: header);
@@ -106,7 +106,7 @@ class ScheduleApi extends AppApi {
           }
         }
         throw TilerError(
-            message: 'Tiler disagrees with you, please try again later');
+            Message: 'Tiler disagrees with you, please try again later');
       }
     }
     var retValue =
@@ -134,7 +134,7 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/daySummarys', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       DateTime startOfRequest = Utility.currentTime();
       var response = await http.get(uri, headers: header);
@@ -193,7 +193,7 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/status', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -225,7 +225,7 @@ class ScheduleApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.get(uri, headers: header);
         var jsonResult = jsonDecode(response.body);
@@ -324,7 +324,7 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
       NewTile tile) async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -355,13 +355,13 @@ class ScheduleApi extends AppApi {
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.post(uri,
             headers: header, body: jsonEncode(injectedParameters));
 
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             var subEventJson = jsonResult['Content'];
@@ -372,9 +372,9 @@ class ScheduleApi extends AppApi {
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching TIler servers";
+          error.Message = "Issues with reaching TIler servers";
         }
       }
     }
@@ -383,7 +383,7 @@ class ScheduleApi extends AppApi {
 
   Future procrastinateAll(Duration duration) async {
     TilerError error = new TilerError();
-    error.message = "Did not send procrastinate all request";
+    error.Message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -403,21 +403,21 @@ class ScheduleApi extends AppApi {
         Uri uri = Uri.https(url, 'api/Schedule/ProcrastinateAll');
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.post(uri,
             headers: header, body: jsonEncode(injectedParameters));
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           return;
         }
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching TIler servers";
+          error.Message = "Issues with reaching TIler servers";
         }
       }
     }
@@ -427,11 +427,11 @@ class ScheduleApi extends AppApi {
   Future reviseSchedule() async {
     // return buzzSchedule();
     TilerError error = new TilerError();
-    error.message = "Failed to revise schedule";
+    error.Message = "Failed to revise schedule";
 
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return;
       }
@@ -440,7 +440,7 @@ class ScheduleApi extends AppApi {
         error = TilerError.fromJson(errorJson);
         throw error;
       } else {
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         throw error;
       }
     });
@@ -448,11 +448,11 @@ class ScheduleApi extends AppApi {
 
   Future buzzSchedule() async {
     TilerError error = new TilerError();
-    error.message = "Failed to Buzz schedule";
+    error.Message = "Failed to Buzz schedule";
 
     return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return;
       }
@@ -461,7 +461,7 @@ class ScheduleApi extends AppApi {
         error = TilerError.fromJson(errorJson);
         throw error;
       } else {
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         throw error;
       }
     });
@@ -469,9 +469,9 @@ class ScheduleApi extends AppApi {
 
   Future shuffleSchedule() async {
     TilerError error = new TilerError();
-    error.message = "Failed to shuffle schedule";
+    error.Message = "Failed to shuffle schedule";
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (response.statusCode == HttpStatus.accepted) {
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
@@ -481,9 +481,9 @@ class ScheduleApi extends AppApi {
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching Tiler servers";
+          error.Message = "Issues with reaching Tiler servers";
         }
       }
     });
@@ -508,7 +508,7 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/timelineSummary', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -541,7 +541,7 @@ class ScheduleApi extends AppApi {
 
           var header = this.getHeaders();
           if (header == null) {
-            throw TilerError(message: 'Issues with authentication');
+            throw TilerError(Message: 'Issues with authentication');
           }
 
           final response = await http.get(uri, headers: header);

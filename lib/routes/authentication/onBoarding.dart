@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
 import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
@@ -47,16 +47,6 @@ Widget renderPending() {
   );
 }
 
-void showErrorMessage(String message) {
-  Fluttertoast.showToast(
-      msg: message,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.SNACKBAR,
-      timeInSecForIosWeb: 1,
-      backgroundColor: TileStyles.errorBackgroundColor,
-      textColor: TileStyles.errorTxtColor,
-      fontSize: 16.0);
-}
 
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
@@ -69,6 +59,8 @@ class _OnboardingViewState extends State<OnboardingView> {
   @override
   Widget build(BuildContext context) {
     // final localizationService = LocalizationService(AppLocalizations.of(context)!);
+    NotificationOverlayMessage notificationOverlayMessage =
+    NotificationOverlayMessage();
     return BlocConsumer<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state.step == OnboardingStep.skipped ||
@@ -77,8 +69,10 @@ class _OnboardingViewState extends State<OnboardingView> {
               MaterialPageRoute(builder: (context) => AuthorizedRoute()));
         }
         if (state.step == OnboardingStep.error && state.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!)),
+          notificationOverlayMessage.showToast(
+            context,
+            state.error!,
+            NotificationOverlayMessageType.error,
           );
         }
       },

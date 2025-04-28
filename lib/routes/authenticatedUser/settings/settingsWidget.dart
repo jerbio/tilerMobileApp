@@ -1,572 +1,212 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
-import 'package:tiler_app/bloc/integrations/integrations_bloc.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/components/durationInputWidget.dart';
-
-import 'package:tiler_app/components/pendingWidget.dart';
-import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
-import 'package:tiler_app/data/executionEnums.dart';
-import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:tiler_app/data/scheduleProfile.dart';
-import 'package:tiler_app/data/startOfDay.dart';
-import 'package:tiler_app/data/userSettings.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
-import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/api/authorization.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/localAuthentication.dart';
-import 'package:tiler_app/services/storageManager.dart';
+import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
-class SettingWidgetRoute extends StatefulWidget {
+class Settings extends StatelessWidget {
   static final String routeName = '/Setting';
-  @override
-  State<StatefulWidget> createState() => _SettingWidgetRouteState();
-}
-
-class _SettingWidgetRouteState extends State<SettingWidgetRoute> {
-  Authentication authentication = Authentication();
-  late AuthorizationApi _authorizationApi;
-  SecureStorageManager secureStorageManager = SecureStorageManager();
-  late SettingsApi settingsApi;
-  RestrictionProfile? workRestrictionProfile;
-  RestrictionProfile? personalRestrictionProfile;
-  UserSettings? userSettings;
-  StartOfDay? endOfDay;
-  String? localTimeZone;
-  bool isTimeOfDayLoaded = false;
-  bool isAllRestrictionProfileLoaded = false;
-  Set<TravelMedium> travelMediumMap = Set();
-  late ScheduleApi scheduleApi;
-
-  static final String settingCancelAndProceedRouteName =
-      "settingCancelAndProceedRouteName";
-
-  void showMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
-        fontSize: 16.0);
-  }
-
-  Future proceedUpdate() async {
-    if (workRestrictionProfile != null) {
-      Future workRestrictionProfileUpdateFuture =
-          settingsApi.updateRestrictionProfile(workRestrictionProfile!,
-              restrictionProfileType: 'work');
-      await workRestrictionProfileUpdateFuture;
-    }
-    if (personalRestrictionProfile != null) {
-      Future personalRestrictionProfileUpdateFuture =
-          settingsApi.updateRestrictionProfile(personalRestrictionProfile!,
-              restrictionProfileType: 'personal');
-      await personalRestrictionProfileUpdateFuture;
-    }
-
-    if (this.userSettings?.scheduleProfile != null) {
-      Future personalRestrictionProfileUpdateFuture =
-          settingsApi.updateUserSettings(this.userSettings!);
-      await personalRestrictionProfileUpdateFuture;
-    }
-
-    if (this.endOfDay != null) {
-      if (localTimeZone != null) {
-        this.endOfDay!.timeZone = localTimeZone!;
-      }
-      Future endOfDayUpdateFuture =
-          settingsApi.updateStartOfDay(this.endOfDay!);
-      await endOfDayUpdateFuture;
-    }
-    scheduleApi.buzzSchedule();
-  }
-
-  bool isProceedReady() {
-    return isTimeOfDayLoaded && isAllRestrictionProfileLoaded;
-  }
-
-  Widget renderRestrictionProfile(
-      {String? configButtonName,
-      RestrictionProfile? restrictionProfile,
-      Function? callBack}) {
-    bool isTimeRestrictionConfigSet =
-        restrictionProfile != null && restrictionProfile.isEnabled;
-    final Color populatedTextColor = Colors.white;
-    final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
-    final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
-    final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
-    Widget timeRestrictionsConfigButton = ConfigUpdateButton(
-      text: configButtonName ?? AppLocalizations.of(context)!.restriction,
-      prefixIcon: Icon(
-        Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
-      ),
-      decoration:
-          isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
-      onPress: () {
-        AnalysticsSignal.send('SETTINGS_OPEN_RESTRICTION_PROFILE_' +
-            (configButtonName ?? "NONE"));
-        Map<String, dynamic> restrictionParams = {
-          'routeRestrictionProfile': restrictionProfile,
-          'stackRouteHistory': [SettingWidgetRoute.routeName]
-        };
-
-        Navigator.pushNamed(context, '/TimeRestrictionRoute',
-                arguments: restrictionParams)
-            .whenComplete(() {
-          RestrictionProfile? populatedRestrictionProfile;
-          if (restrictionParams.containsKey('routeRestrictionProfile')) {
-            populatedRestrictionProfile =
-                restrictionParams['routeRestrictionProfile']
-                    as RestrictionProfile?;
-            if (populatedRestrictionProfile != null &&
-                restrictionProfile != null) {
-              populatedRestrictionProfile.id = restrictionProfile.id;
-            }
-
-            if (restrictionProfile != null &&
-                (populatedRestrictionProfile == null ||
-                    (restrictionParams.containsKey('isAnyTime') &&
-                        restrictionParams['isAnyTime'] != null))) {
-              restrictionProfile.isEnabled = !restrictionParams['isAnyTime'];
-              populatedRestrictionProfile = restrictionProfile;
-            }
-
-            if (callBack != null) {
-              callBack(populatedRestrictionProfile);
-            }
-          }
-        });
-      },
-    );
-    return timeRestrictionsConfigButton;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    this.settingsApi = SettingsApi(getContextCallBack: () => context);
-    this.scheduleApi = ScheduleApi(getContextCallBack: () => context);
-    this._authorizationApi =
-        AuthorizationApi(getContextCallBack: () => context);
-
-    settingsApi.getUserRestrictionProfile().then((value) {
-      setState(() {
-        isAllRestrictionProfileLoaded = true;
-        if (value.containsKey('work')) {
-          workRestrictionProfile = value['work'];
-        }
-
-        if (value.containsKey('personal')) {
-          personalRestrictionProfile = value['personal'];
-        }
-      });
-    }).whenComplete(() {
-      setState(() {
-        this.isAllRestrictionProfileLoaded = true;
-      });
-    });
-    settingsApi.getUserStartOfDay().then((value) {
-      setState(() {
-        isTimeOfDayLoaded = true;
-        if (value != null) {
-          this.endOfDay = value;
-        }
-      });
-    }).whenComplete(() {
-      setState(() {
-        isTimeOfDayLoaded = true;
-      });
-    });
-    settingsApi.getUserSettings().then((value) {
-      setState(() {
-        userSettings = value;
-      });
-    }).whenComplete(() {
-      setState(() {
-        this.isAllRestrictionProfileLoaded = true;
-      });
-    });
-    FlutterTimezone.getLocalTimezone().then((value) {
-      setState(() {
-        localTimeZone = value;
-      });
-    });
-    travelMediumMap.addAll(
-        [TravelMedium.bicycling, TravelMedium.driving, TravelMedium.transit]);
-  }
-
-  Widget createEndOfDay() {
-    TimeOfDay napTimeOfDay =
-        this.endOfDay?.timeOfDay ?? Utility.defaultEndOfDay;
-    Widget retValue = Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(AppLocalizations.of(context)!.bedTime),
-        Container(
-          width: 120,
-          height: 50,
-          alignment: Alignment.center,
-          child: EditTileTime(
-            time: napTimeOfDay,
-            onInputChange: (updatedTimeOfDay) {
-              if (this.endOfDay != null) {
-                setState(() {
-                  this.endOfDay!.timeOfDay = updatedTimeOfDay;
-                });
-              }
-              AnalysticsSignal.send('SETTINGS_BEDTIME_UPDATE');
-            },
-          ),
-        )
-      ],
-    );
-    return retValue;
-  }
-
-  logOutUser() async {
-    AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
-    OneSignal.logout().then((value) {
-      print("successful logged out of onesignal");
-    }).catchError((onError) {
-      print("Failed to logout of onesignal");
-      print(onError);
-    });
-    await authentication.deauthenticateCredentials();
-    await secureStorageManager.deleteAllStorageData();
-    Navigator.pushNamedAndRemoveUntil(context, '/LoggedOut', (route) => false);
-    this.context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
-    this
-        .context
-        .read<SubCalendarTileBloc>()
-        .add(LogOutSubCalendarTileBlocEvent());
-    this.context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-    this
-        .context
-        .read<WeeklyUiDateManagerBloc>()
-        .add(LogOutWeeklyUiDateManagerEvent());
-    this
-        .context
-        .read<MonthlyUiDateManagerBloc>()
-        .add(LogOutMonthlyUiDateManagerEvent());
-    this.context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
-    this
-        .context
-        .read<TileListCarouselBloc>()
-        .add(EnableCarouselScrollEvent(isImmediate: true));
-
-    this.context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
-    this
-        .context
-        .read<ScheduleSummaryBloc>()
-        .add(LogOutScheduleDaySummaryEvent());
-
-    this.context.read<PreviewSummaryBloc>().add(LogOutPreviewSummaryEvent());
-  }
-
-  Widget createLogOutButton() {
-    Widget retValue = ElevatedButton(
-        onPressed: logOutUser,
-        child: Text(AppLocalizations.of(context)!.logout));
-    return retValue;
-  }
-
-  Widget createIntegrationButton() {
-    Widget retValue = ElevatedButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/Integrations');
-        },
-        child: Text(AppLocalizations.of(context)!.integrateOtherCalendars));
-    return retValue;
-  }
-
-  String travelMediumToText(TravelMedium travelMedium) {
-    switch (travelMedium) {
-      case TravelMedium.bicycling:
-        return AppLocalizations.of(context)!.travelMediumBiking;
-      case TravelMedium.driving:
-        return AppLocalizations.of(context)!.travelMediumDriving;
-      case TravelMedium.transit:
-        return AppLocalizations.of(context)!.travelMediumTransit;
-      default:
-        return '';
-    }
-  }
-
-  Widget createTravelMediumButton(ScheduleProfile scheduleProfile) {
-    TravelMedium? travelMedium = scheduleProfile.travelMedium;
-
-    var travelOptions = TravelMedium.values
-        .where((element) => travelMediumMap.contains(element))
-        .map<DropdownMenuItem<String>>((TravelMedium value) {
-      return DropdownMenuItem<String>(
-          value: value.name.toString(), child: Text(travelMediumToText(value)));
-    }).toList();
-
-    String travelValue = TravelMedium.driving.name;
-    IconData travelIcon = Icons.directions_car_outlined;
-    if (travelMedium != null) {
-      switch (travelMedium) {
-        case TravelMedium.bicycling:
-          travelIcon = Icons.directions_bike_outlined;
-          travelValue = TravelMedium.bicycling.name;
-          break;
-        case TravelMedium.driving:
-          travelIcon = Icons.directions_car_outlined;
-          travelValue = TravelMedium.driving.name;
-          break;
-        case TravelMedium.transit:
-          travelIcon = Icons.directions_transit_outlined;
-          travelValue = TravelMedium.transit.name;
-          break;
-        default:
-          travelIcon = Icons.directions_car_outlined;
-          break;
-      }
-    }
-    Widget retValue = Column(
-      children: [
-        Text(
-          AppLocalizations.of(context)!.travelMediumTransport,
-          style: TextStyle(color: TileStyles.accentButtonColor),
-        ),
-        DropdownButton<String>(
-          value: travelValue,
-          icon: Padding(
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: Icon(travelIcon),
-          ),
-          elevation: 16,
-          style: TextStyle(color: TileStyles.accentButtonColor),
-          underline: Container(height: 2, color: TileStyles.accentButtonColor),
-          onChanged: (String? value) {
-            // This is called when the user selects an item.
-            setState(() {
-              scheduleProfile.travelMedium = TravelMedium.values.firstWhere(
-                  (element) => element.name == value,
-                  orElse: () => TravelMedium.driving);
-            });
-          },
-          items: travelOptions,
-        ),
-      ],
-    );
-    return retValue;
-  }
-
-  sendDeleteRequest() async {
-    AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
-    _authorizationApi.deleteTilerAccount().then((result) {
-      if (result) {
-        logOutUser();
-      }
-    });
-  }
-
-  Widget createDeleteAccountButton() {
-    Widget retValue = ElevatedButton(
-        onPressed: () {
-          AnalysticsSignal.send('SETTINGS_DELETE_USER_INITIATED');
-          showGeneralDialog(
-              barrierDismissible: true,
-              barrierLabel: '',
-              barrierColor: Colors.white70,
-              transitionDuration: Duration(milliseconds: 300),
-              pageBuilder: (ctx, anim1, anim2) => AlertDialog(
-                  contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
-                  insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
-                  titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-                  backgroundColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(color: Colors.white),
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                  ),
-                  content: Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white, width: 2),
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.topRight,
-                        colors: [
-                          TileStyles.primaryColorHSL
-                              .toColor()
-                              .withOpacity(0.75),
-                          TileStyles.primaryColorHSL
-                              .withLightness(
-                                  TileStyles.primaryColorHSL.lightness + .2)
-                              .toColor()
-                              .withOpacity(0.75),
-                        ],
-                      ),
-                    ),
-                    child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.3,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              AppLocalizations.of(context)!
-                                  .deleteYourTilerAccountQ,
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 15),
-                            ),
-                            ElevatedButton(
-                              onPressed: sendDeleteRequest,
-                              child: Text(
-                                AppLocalizations.of(context)!.yes,
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                if (Navigator.of(context).canPop()) {
-                                  Navigator.of(context).pop();
-                                }
-                              },
-                              child: Text(AppLocalizations.of(context)!.no),
-                            )
-                          ],
-                        )),
-                  )),
-              context: this.context);
-        },
-        child: Text(AppLocalizations.of(context)!.deleteAccount));
-    return retValue;
-  }
+  final String _requestId = Utility.getUuid;
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> childElements = [];
-
-    if (this.isAllRestrictionProfileLoaded) {
-      Widget personalConfigButton = renderRestrictionProfile(
-          restrictionProfile: personalRestrictionProfile,
-          configButtonName: AppLocalizations.of(context)!.personalHours,
-          callBack: (updatedRestrictionProfile) {
-            setState(() {
-              this.personalRestrictionProfile = updatedRestrictionProfile;
-            });
+    final brightness = Theme.of(context).brightness;
+    final textColor =
+        brightness == Brightness.dark ? Colors.white : Colors.black;
+    return BlocListener<DeviceSettingBloc, DeviceSettingState>(
+      listener: (context, state) {
+        NotificationOverlayMessage notificationOverlayMessage =
+            NotificationOverlayMessage();
+        if (state is DeviceSettingLoaded && state.shouldLogout) {
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/LoggedOut', (route) => false).then((_) {
+            context
+                .read<ScheduleBloc>()
+                .add(LogOutScheduleEvent(() => context));
+            context
+                .read<SubCalendarTileBloc>()
+                .add(LogOutSubCalendarTileBlocEvent());
+            context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+            context
+                .read<WeeklyUiDateManagerBloc>()
+                .add(LogOutWeeklyUiDateManagerEvent());
+            context
+                .read<MonthlyUiDateManagerBloc>()
+                .add(LogOutMonthlyUiDateManagerEvent());
+            context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+            context
+                .read<TileListCarouselBloc>()
+                .add(EnableCarouselScrollEvent(isImmediate: true));
+            context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
+            context
+                .read<ScheduleSummaryBloc>()
+                .add(LogOutScheduleDaySummaryEvent());
           });
-
-      Widget workConfigButton = renderRestrictionProfile(
-          restrictionProfile: workRestrictionProfile,
-          configButtonName: AppLocalizations.of(context)!.workProfileHours,
-          callBack: (updatedRestrictionProfile) {
-            setState(() {
-              this.workRestrictionProfile = updatedRestrictionProfile;
-            });
-          });
-      childElements.add(personalConfigButton);
-      childElements.add(workConfigButton);
-    }
-    Widget logoutButton = createLogOutButton();
-    Widget deleteButton = createDeleteAccountButton();
-    Widget transitUiButton = SizedBox.shrink();
-    if (userSettings != null && userSettings!.scheduleProfile != null) {
-      transitUiButton =
-          createTravelMediumButton(userSettings!.scheduleProfile!);
-    }
-
-    Widget integrationButton = createIntegrationButton();
-    if (isTimeOfDayLoaded) {
-      Widget endOfDayWidget =
-          Container(alignment: Alignment.center, child: createEndOfDay());
-      childElements.add(endOfDayWidget);
-    }
-    if (!this.isAllRestrictionProfileLoaded || !isTimeOfDayLoaded) {
-      childElements.add(PendingWidget(
-        backgroundDecoration: BoxDecoration(color: Colors.transparent),
-      ));
-    }
-    Widget durationButton = SizedBox.shrink();
-    if (this.userSettings != null &&
-        this.userSettings?.scheduleProfile != null) {
-      durationButton = Container(
-        width: 200,
-        child: DurationInputWidget(
-            icon: Icon(Icons.bed, color: TileStyles.inputFieldTextColor),
-            placeholder: AppLocalizations.of(context)!.sleepDuration,
-            duration: Duration(
-                milliseconds: this
-                        .userSettings
-                        ?.scheduleProfile
-                        ?.sleepDuration
-                        ?.toInt() ??
-                    0),
-            onDurationChange: (integrationButton) {
-              if (this.userSettings != null) {
-                setState(() {
-                  this.userSettings!.scheduleProfile?.sleepDuration =
-                      integrationButton?.inMilliseconds?.toInt() ?? 0;
-                });
-              }
-            }),
-      );
-    }
-
-    childElements.add(integrationButton);
-    childElements.add(durationButton);
-    childElements.add(transitUiButton);
-    childElements.add(logoutButton);
-    childElements.add(deleteButton);
-    return CancelAndProceedTemplateWidget(
-      routeName: settingCancelAndProceedRouteName,
-      appBar: AppBar(
-        backgroundColor: TileStyles.appBarColor,
-        title: Text(
-          AppLocalizations.of(context)!.settings,
-          style: TextStyle(
-              color: TileStyles.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
+        }
+        if (state is DeviceSettingError) {
+          final errorMessage = state.error is TilerError
+              ? (state.error as TilerError).Message
+              : state.error.toString();
+          notificationOverlayMessage.showToast(
+            context,
+            errorMessage!,
+            NotificationOverlayMessageType.error,
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.settings),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-        centerTitle: true,
-        elevation: 0,
-        automaticallyImplyLeading: false,
+        body: Column(
+          children: [
+            _buildListTile(
+              icon: 'assets/icons/settings/AccountInfo.svg',
+              title: AppLocalizations.of(context)!.accountInfo,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/accountInfo'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/TilePreferences.svg',
+              title: AppLocalizations.of(context)!.tilePreferences,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/tilePreferences'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/NotificationsPreferences.svg',
+              title: AppLocalizations.of(context)!.notificationsPreferences,
+              color: textColor,
+              onTap: () =>
+                  Navigator.pushNamed(context, '/notificationsPreferences'),
+            ),
+            _buildDivider(),
+            _buildListTile(
+              icon: 'assets/icons/settings/Security.svg',
+              title: AppLocalizations.of(context)!.security,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/security'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/Connections.svg',
+              title: AppLocalizations.of(context)!.connections,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/Connections'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/MyLocations.svg',
+              title: AppLocalizations.of(context)!.myLocations,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/myLocations'),
+            ),
+            _buildDivider(),
+            _buildListTile(
+              icon: 'assets/icons/settings/AboutTiler.svg',
+              title: AppLocalizations.of(context)!.aboutTiler,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/aboutTiler'),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/Logout.svg',
+              title: AppLocalizations.of(context)!.logout,
+              color: TileStyles.primaryColor,
+              onTap: () => context
+                  .read<DeviceSettingBloc>()
+                  .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/DeleteAccount.svg',
+              title: AppLocalizations.of(context)!.deleteAccount,
+              color: TileStyles.primaryColor,
+              onTap: () => context.read<DeviceSettingBloc>().add(
+                  DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
+            ),
+            _buildDivider(),
+            Center(child: _buildDarkModeSwitch()),
+          ],
+        ),
       ),
-      onProceed: this.isProceedReady() ? proceedUpdate : null,
-      child: Container(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: childElements,
-      )),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 1,
+      color: Colors.grey.shade300,
+      margin: EdgeInsets.only(left: 50, right: 40),
+    );
+  }
+
+  Widget _buildListTile(
+      {required String icon,
+      required String title,
+      required Color color,
+      Function()? onTap}) {
+    return ListTile(
+        leading: SvgPicture.asset(
+          icon,
+          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+        ),
+        title: Text(title, style: TextStyle(color: color)),
+        onTap: onTap);
+  }
+
+  Widget _buildDarkModeSwitch() {
+    return BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
+      builder: (context, state) {
+        return Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(AppLocalizations.of(context)!.darkMode,
+                    style: TextStyle(fontSize: 16)),
+                Switch(
+                  value: state.isDarkMode,
+                  onChanged: (value) {
+                    ThemeManager.setThemeMode(value).then((_) {
+                      context.read<DeviceSettingBloc>().add(
+                          UpdateDarkModeMainSettingDeviceSettingEvent(
+                              isDarkMode: value, id: _requestId));
+                    });
+                  },
+                  activeColor: Colors.black,
+                  inactiveTrackColor: Colors.grey.shade300,
+                  activeTrackColor: Colors.black,
+                  thumbColor: MaterialStateProperty.all(Colors.white),
+                  thumbIcon: MaterialStateProperty.resolveWith((states) {
+                    return Icon(
+                      state.isDarkMode
+                          ? Icons.nightlight_round
+                          : Icons.wb_sunny,
+                      color: Colors.grey.shade600,
+                      size: 18,
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

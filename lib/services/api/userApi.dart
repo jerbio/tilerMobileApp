@@ -5,8 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/services/api/notificationData.dart';
+import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 class UserApi extends AppApi {
   UserApi({required Function getContextCallBack})
@@ -29,7 +31,9 @@ class UserApi extends AppApi {
       Uri uri = Uri.https(url, 'api/User/Notification', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
 
       var response = await http.get(uri, headers: header);
@@ -57,7 +61,7 @@ class UserApi extends AppApi {
             jsonResult.containsKey('error_description') &&
             jsonResult.containsKey('error_description') != null &&
             jsonResult.containsKey('error_description').isNotEmpty) {
-          throw TilerError(message: jsonResult['error_description']);
+          throw TilerError(Message: jsonResult['error_description']);
         }
         return retValue;
       }
@@ -74,7 +78,9 @@ class UserApi extends AppApi {
       Uri uri = Uri.https(url, 'api/User', queryParameters);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
 
       var response = await http.get(uri, headers: header);
@@ -83,7 +89,7 @@ class UserApi extends AppApi {
         try {
           if (isJsonResponseOk(jsonResult)) {
             if (isContentInResponse(jsonResult)) {
-              Map<String, dynamic> userResponse = jsonResult['Content'];
+              Map<String, dynamic> userResponse = jsonResult['Content']['user'];
               return await UserProfile.fromJson(userResponse);
             }
           }
@@ -96,11 +102,44 @@ class UserApi extends AppApi {
             jsonResult.containsKey('error_description') &&
             jsonResult.containsKey('error_description') != null &&
             jsonResult.containsKey('error_description').isNotEmpty) {
-          throw TilerError(message: jsonResult['error_description']);
+          throw TilerError(Message: jsonResult['error_description']);
         }
         return null;
       }
       return null;
     }
+  }
+
+  Future<UserProfile?> updateUserProfile(UserProfile userProfile) async {
+    Map<String, dynamic> userProfileMap = userProfile.toJsonRequest();
+    Utility.debugPrint("SENT TO API: ${userProfileMap}");
+    return sendPostRequest('api/User', userProfileMap,
+            analyze: false, usePutRequest: true)
+        .then((response) {
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content'];
+            UserProfile retValue = UserProfile.fromJson(jsonMap);
+            return retValue;
+          }
+        }
+      }
+      try {
+        var jsonResult = jsonDecode(response.body);
+        var tilerErrorResponse = getTilerResponseError(jsonResult);
+        if (tilerErrorResponse != null) {
+          throw tilerErrorResponse;
+        }
+      } catch (e) {
+        if (e is TilerError) {
+          throw e;
+        }
+      }
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
+    });
   }
 }

@@ -67,7 +67,7 @@ class TileNameApi extends AppApi {
       Uri uri = Uri.https(url, 'api/CalendarEvent/Name', queryParameters);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       if (chainPending != null) {
         var param = {

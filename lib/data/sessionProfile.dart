@@ -37,4 +37,9 @@ class SessionProfile {
   Future<UserProfile?> getUserProfile() async {
     return await userApi.getUserProfile();
   }
+
+  Future<UserProfile?> updateUserProfile(UserProfile userProfile) async {
+    return await userApi.updateUserProfile(userProfile);
+  }
+
 }
