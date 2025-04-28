@@ -509,6 +509,10 @@ class EventNameSearchState extends SearchWidgetState {
               topRight: Radius.circular(20),
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20)),
+          border: Border.all(
+            color: Color.fromRGBO(53, 53, 53, 0.1),
+            width: 2,
+          ),
         ),
         child: Stack(
           children: childWidgets,
@@ -629,6 +633,7 @@ class EventNameSearchState extends SearchWidgetState {
 
             return Scaffold(
               resizeToAvoidBottomInset: false,
+              backgroundColor: TileStyles.defaultBackgroundColor,
               body: Container(
                   margin: TileStyles.topMargin,
                   alignment: Alignment.topCenter,
@@ -650,7 +655,7 @@ class EventNameSearchState extends SearchWidgetState {
                       ),
                     )
                   ]),
-                  decoration: TileStyles.defaultBackground),
+                  decoration: TileStyles.defaultBackgroundDecoration),
             );
           }),
         );

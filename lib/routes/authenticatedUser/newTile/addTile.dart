@@ -36,14 +36,20 @@ import '../../../bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
-  Function? onAddTileClose;
-  Function? onAddingATile;
-  PreTile? preTile;
-  DateTime? autoDeadline;
+  final Function? onAddTileClose;
+  final Function? onAddingATile;
+  final PreTile? preTile;
+  final DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.preTile, this.autoDeadline});
+  AddTile(
+      {this.preTile,
+      this.autoDeadline,
+      this.onAddTileClose,
+      this.onAddingATile,
+      Key? key})
+      : super(key: key);
   @override
   AddTileState createState() => AddTileState();
 }
@@ -97,6 +103,11 @@ class AddTileState extends State<AddTile> {
   static final String addTileCancelAndProceedRouteName =
       "addTileCancelAndProceedRouteName";
 
+  final EdgeInsets configUpdateIconPadding =
+      const EdgeInsets.fromLTRB(5, 3, 5, 5);
+  final EdgeInsets configUpdatePadding =
+      const EdgeInsets.fromLTRB(5, 10, 10, 10);
+
   @override
   void initState() {
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
@@ -107,6 +118,7 @@ class AddTileState extends State<AddTile> {
     }
     if (this.widget.preTile != null) {
       _location = this.widget.preTile!.location;
+      print("location in preTile: ${_location}");
       tileNameController =
           TextEditingController(text: this.widget.preTile!.description);
       _duration = this.widget.preTile!.duration;
@@ -658,6 +670,8 @@ class AddTileState extends State<AddTile> {
 
     Widget locationConfigButton = ConfigUpdateButton(
       text: locationName,
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
         color: isLocationConfigSet ? populatedTextColor : iconColor,
@@ -692,12 +706,6 @@ class AddTileState extends State<AddTile> {
               _location = populatedLocation;
               _isLocationManuallySet = true;
               updateLocation(_location);
-              // if (!_isRestictionProfileManuallySet &&
-              //     _location != null &&
-              //     _listedRestrictionProfile != null &&
-              //     _listedRestrictionProfile!.isNotEmpty) {
-              //   if (_location!.description == Constants.workLocationNickName) {}
-              // }
             }
           });
         });
@@ -706,6 +714,8 @@ class AddTileState extends State<AddTile> {
 
     Widget repetitionConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.repetition,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           TileStyles.repetitionIcon,
           color: isRepetitionSet ? populatedTextColor : iconColor,
@@ -763,6 +773,8 @@ class AddTileState extends State<AddTile> {
 
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
           color: iconColor,
@@ -786,6 +798,8 @@ class AddTileState extends State<AddTile> {
         });
 
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
@@ -858,6 +872,8 @@ class AddTileState extends State<AddTile> {
     }
 
     Widget colorPickerConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
@@ -884,6 +900,8 @@ class AddTileState extends State<AddTile> {
     );
 
     Widget softDeadlineWidget = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
       textColor: _isAutoRevisable ? populatedTextColor : iconColor,
       prefixIcon: Icon(

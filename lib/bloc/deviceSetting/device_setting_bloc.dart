@@ -21,41 +21,59 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
   Function getContextCallBack;
   SessionProfile sessionProfile = SessionProfile();
   final Authentication authentication = Authentication();
-  late AuthorizationApi authorizationApi ;
+  late AuthorizationApi authorizationApi;
   final SecureStorageManager secureStorageManager = SecureStorageManager();
-  DeviceSettingBloc({required this.getContextCallBack,required bool initialIsDarkMode, })
-      : super(DeviceSettingInitial( isDarkMode:initialIsDarkMode)) {
+  DeviceSettingBloc({
+    required this.getContextCallBack,
+    required bool initialIsDarkMode,
+  }) : super(DeviceSettingInitial(isDarkMode: initialIsDarkMode)) {
     on<InitializeDeviceSettingEvent>(_onInitializeSessionProfile);
     on<LoadedDeviceSettingEvent>(_onLoadedSessionProfile);
     on<LoadedLocationProfileDeviceSettingEvent>(_onLoadedLocationProfile);
     on<LoadedUserProfileDeviceSettingEvent>(_onLoadedUserProfile);
     on<GetLocationProfileDeviceSettingEvent>(_onGetLocationProfile);
     on<GetUserProfileDeviceSettingEvent>(_onGetUserProfile);
-    on<UpdateUserProfileDateOfBirthSettingEvent>(_onUpdateUserProfileDateOfBirth);
+    on<UpdateUserProfileDateOfBirthSettingEvent>(
+        _onUpdateUserProfileDateOfBirth);
     on<UpdateUserProfileDeviceSettingEvent>(_onUpdateUserProfile);
-    on<UpdateDarkModeMainSettingDeviceSettingEvent>(_onUpdateDarkModeMainSetting);
-     on<LogOutMainSettingDeviceSettingEvent>(_onLogOutMainSetting);
+    on<UpdateDarkModeMainSettingDeviceSettingEvent>(
+        _onUpdateDarkModeMainSetting);
+    on<LogOutMainSettingDeviceSettingEvent>(_onLogOutMainSetting);
     on<DeleteAccountMainSettingDeviceSettingEvent>(_onDeleteAccountMainSetting);
-    authorizationApi= AuthorizationApi(getContextCallBack: getContextCallBack);
-    ThemeManager.getThemeMode().then((isDark) => add(UpdateDarkModeMainSettingDeviceSettingEvent(isDarkMode:isDark, id: Utility.getUuid)));
+    authorizationApi = AuthorizationApi(getContextCallBack: getContextCallBack);
+    ThemeManager.getThemeMode().then((isDark) => add(
+        UpdateDarkModeMainSettingDeviceSettingEvent(
+            isDarkMode: isDark, id: Utility.getUuid)));
   }
 
   Future<void> _onInitializeSessionProfile(InitializeDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     emit(DeviceUserProfileSettingLoading(
-        id: event.id, sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+        id: event.id,
+        sessionProfile: sessionProfile,
+        isDarkMode: state.isDarkMode));
+
+    getContextCallBack = event.getContextCallBack;
     await sessionProfile.initialize().then((value) {
-      emit(DeviceSettingLoaded(id: event.id, sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+      emit(DeviceSettingLoaded(
+          id: event.id,
+          sessionProfile: sessionProfile,
+          isDarkMode: state.isDarkMode));
     }).catchError((error) {
       emit(DeviceSettingError(
-          id: event.id, sessionProfile: sessionProfile, error: error,isDarkMode:state.isDarkMode));
+          id: event.id,
+          sessionProfile: sessionProfile,
+          error: error,
+          isDarkMode: state.isDarkMode));
     });
   }
 
   Future<void> _onLoadedSessionProfile(
       LoadedDeviceSettingEvent event, Emitter<DeviceSettingState> emit) async {
     emit(DeviceSettingLoaded(
-        id: event.id, sessionProfile: event.sessionProfile,isDarkMode:state.isDarkMode));
+        id: event.id,
+        sessionProfile: event.sessionProfile,
+        isDarkMode: state.isDarkMode));
   }
 
   Future<void> _onLoadedLocationProfile(
@@ -67,28 +85,41 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
           sessionProfile.locationProfile);
     }
 
-    emit(DeviceSettingLoaded(sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+    emit(DeviceSettingLoaded(
+        sessionProfile: sessionProfile, isDarkMode: state.isDarkMode));
   }
 
   Future<void> _onLoadedUserProfile(LoadedUserProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     sessionProfile.userProfile = event.userProfile;
-    emit(DeviceSettingLoaded(sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+
+    emit(DeviceSettingLoaded(
+        sessionProfile: sessionProfile, isDarkMode: state.isDarkMode));
   }
 
   Future<void> _onGetUserProfile(GetUserProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
-    emit(DeviceUserProfileSettingLoading(
-        id: event.id, sessionProfile: sessionProfile,isDarkMode:state.isDarkMode),);
+    emit(
+      DeviceUserProfileSettingLoading(
+          id: event.id,
+          sessionProfile: sessionProfile,
+          isDarkMode: state.isDarkMode),
+    );
     try {
       final userProfile = await sessionProfile.getUserProfile();
       if (userProfile != null) {
         sessionProfile.userProfile = userProfile;
       }
-      emit(DeviceSettingLoaded(id: event.id, sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+      emit(DeviceSettingLoaded(
+          id: event.id,
+          sessionProfile: sessionProfile,
+          isDarkMode: state.isDarkMode));
     } catch (e) {
       emit(DeviceSettingError(
-          id: event.id, sessionProfile: sessionProfile, error: e,isDarkMode:state.isDarkMode));
+          id: event.id,
+          sessionProfile: sessionProfile,
+          error: e,
+          isDarkMode: state.isDarkMode));
     }
   }
 
@@ -97,25 +128,35 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       Emitter<DeviceSettingState> emit) async {
     try {
       if (sessionProfile.userProfile != null) {
-
-        String formattedDate = DateFormat('dd/MM/yyyy').format(event.dateOfBirth);
+        String formattedDate =
+            DateFormat('yyyy-MM-dd').format(event.dateOfBirth);
         sessionProfile.userProfile!.dateOfBirth = formattedDate;
       }
     } catch (e) {
-      emit(DeviceSettingError(id: event.id, sessionProfile: sessionProfile, error: e,isDarkMode:state.isDarkMode));
+      emit(DeviceSettingError(
+          id: event.id,
+          sessionProfile: sessionProfile,
+          error: e,
+          isDarkMode: state.isDarkMode));
     }
   }
 
-  Future<void> _onUpdateUserProfile(
-      UpdateUserProfileDeviceSettingEvent event,
+  Future<void> _onUpdateUserProfile(UpdateUserProfileDeviceSettingEvent event,
       Emitter<DeviceSettingState> emit) async {
     try {
       if (sessionProfile.userProfile != null) {
         await sessionProfile.updateUserProfile(sessionProfile!.userProfile!);
-        emit(DeviceSettingSaved(id: event.id, sessionProfile: sessionProfile,isDarkMode:state.isDarkMode));
+        emit(DeviceSettingSaved(
+            id: event.id,
+            sessionProfile: sessionProfile,
+            isDarkMode: state.isDarkMode));
       }
     } catch (e) {
-      emit(DeviceSettingError(id: event.id, sessionProfile: sessionProfile, error: e,isDarkMode:state.isDarkMode));
+      emit(DeviceSettingError(
+          id: event.id,
+          sessionProfile: sessionProfile,
+          error: e,
+          isDarkMode: state.isDarkMode));
     }
   }
 
@@ -134,12 +175,13 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     if (currentState is DeviceLocationSettingUIPending) {
       return;
     }
-    emit(DeviceLocationSettingLoading(
-        id: event.id,
-        renderLoadingUI: event.showLocationPermissionWidget,
-        callBacks: event.callBacks,
-        isDarkMode:state.isDarkMode
-    ),);
+    emit(
+      DeviceLocationSettingLoading(
+          id: event.id,
+          renderLoadingUI: event.showLocationPermissionWidget,
+          callBacks: event.callBacks,
+          isDarkMode: state.isDarkMode),
+    );
     try {
       if (sessionProfile.locationProfile != null) {
         if (sessionProfile.locationProfile!.isGranted) {
@@ -147,16 +189,14 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
           emit(DeviceSettingLoaded(
               id: event.id,
               sessionProfile: sessionProfile,
-              isDarkMode:state.isDarkMode
-          ));
+              isDarkMode: state.isDarkMode));
           callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
         } else {
           if (sessionProfile.locationProfile!.canRecheckPermission()) {
             emit(DeviceLocationSettingUIPending(
                 id: event.id,
                 callBacks: event.callBacks,
-                isDarkMode:state.isDarkMode
-            ));
+                isDarkMode: state.isDarkMode));
 
             showGeneralDialog(
                 context: event.context,
@@ -184,8 +224,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
             emit(DeviceSettingLoaded(
                 id: event.id,
                 sessionProfile: sessionProfile,
-                isDarkMode:state.isDarkMode
-            ));
+                isDarkMode: state.isDarkMode));
             callPendingCallBacks(
                 event.callBacks, sessionProfile.locationProfile);
           }
@@ -198,13 +237,15 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       emit(DeviceSettingError(
           id: event.id,
           sessionProfile: sessionProfile,
-          error: e,isDarkMode:state.isDarkMode
-      ));
+          error: e,
+          isDarkMode: state.isDarkMode));
       callPendingCallBacks(event.callBacks, sessionProfile.locationProfile);
     }
   }
 
-  void _onUpdateDarkModeMainSetting(UpdateDarkModeMainSettingDeviceSettingEvent event, Emitter<DeviceSettingState> emit) async {
+  void _onUpdateDarkModeMainSetting(
+      UpdateDarkModeMainSettingDeviceSettingEvent event,
+      Emitter<DeviceSettingState> emit) async {
     emit(DeviceSettingLoaded(
       id: event.id,
       isDarkMode: event.isDarkMode,
@@ -212,8 +253,8 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     ));
   }
 
-
-  Future<void> _onLogOutMainSetting(LogOutMainSettingDeviceSettingEvent event, Emitter<DeviceSettingState> emit) async {
+  Future<void> _onLogOutMainSetting(LogOutMainSettingDeviceSettingEvent event,
+      Emitter<DeviceSettingState> emit) async {
     try {
       AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
       await OneSignal.logout().then((_) {
@@ -228,22 +269,22 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       emit(DeviceSettingLoaded(
         id: event.id,
         isDarkMode: state.isDarkMode,
-        shouldLogout:true,
+        shouldLogout: true,
         sessionProfile: SessionProfile(),
       ));
     } catch (e) {
       emit(DeviceSettingError(
-          isDarkMode:state.isDarkMode,
+          isDarkMode: state.isDarkMode,
           id: event.id,
           error: e,
-          sessionProfile: sessionProfile
-      ));
+          sessionProfile: sessionProfile));
     }
   }
 
-  Future<void> _onDeleteAccountMainSetting(DeleteAccountMainSettingDeviceSettingEvent event, Emitter<DeviceSettingState> emit) async {
+  Future<void> _onDeleteAccountMainSetting(
+      DeleteAccountMainSettingDeviceSettingEvent event,
+      Emitter<DeviceSettingState> emit) async {
     try {
-      AnalysticsSignal.send('SETTINGS_DELETE_REQUEST_SENT');
       bool result = await authorizationApi.deleteTilerAccount();
       if (result) {
         add(LogOutMainSettingDeviceSettingEvent(id: event.id));
@@ -251,11 +292,12 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     } catch (e) {
       emit(DeviceSettingError(
         id: event.id,
-        isDarkMode:state.isDarkMode,
+        isDarkMode: state.isDarkMode,
         sessionProfile: sessionProfile,
         error: e,
       ));
     }
   }
+
 
 }

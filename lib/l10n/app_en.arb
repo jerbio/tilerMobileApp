@@ -159,7 +159,6 @@
     "setPersonalHours": "Set Personal Hours",
     "customHours": "Custom Hours",
     "logout": "Logout",
-    "bedTime": "Bed Time",
     "noteEllipsis": "Note...",
     "tapToCreateNewTile": "Tap to create a new tile",
     "suggestions": "Suggestions",
@@ -674,6 +673,27 @@
       "travelMediumBiking": "Biking",
       "travelMediumTransit": "Transit",
       "travelMediumDriving": "Driving",
+      "travelMediumTransport": "Transport",
+      "previewRatioTimeMinutes": "{ratio} m",
+      "@previewRatioTimeMinutes": {
+        "description": "Ratio time in minutes",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 m"
+          }
+        }
+      },
+      "previewRatioTimeHours": "{ratio} hrs",
+      "@previewRatioTimeHours": {
+        "description": "Ratio time in hours",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 hrs"
+          }
+        }
+      },
       "bedTime": "Bed Time",
       "sleepTime": "Sleep Time",
       "tilePreferencesUpdatedSuccessfully": "Tile Preferences have been updated successfully.",
@@ -688,6 +708,4 @@
       "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
       "reachingServerIssues":"Issues with reaching Tiler servers",
       "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone."
-
-
-  }
+}

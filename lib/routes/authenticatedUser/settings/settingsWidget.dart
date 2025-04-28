@@ -43,7 +43,7 @@ class Settings extends StatelessWidget {
         }
         if (state is DeviceSettingError ) {
           final errorMessage = state.error is TilerError
-              ? (state.error as TilerError).message
+              ? (state.error as TilerError).Message
               : state.error.toString();
           notificationOverlayMessage.showToast(
             context,
@@ -66,51 +66,61 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/AccountInfo.svg',
               title: AppLocalizations.of(context)!.accountInfo,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/accountInfo'),
+              onTap: () => Navigator.pushNamed(context, '/accountInfo'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/TilePreferences.svg',
               title: AppLocalizations.of(context)!.tilePreferences,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/tilePreferences'),
+              onTap: () => Navigator.pushNamed(context, '/tilePreferences'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/NotificationsPreferences.svg',
               title: AppLocalizations.of(context)!.notificationsPreferences,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/notificationsPreferences'),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
             _buildDivider(),
             _buildListTile(
               icon: 'assets/icons/settings/Security.svg',
               title: AppLocalizations.of(context)!.security,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/security'),
+              onTap: () => Navigator.pushNamed(context, '/security'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/Connections'),
+              onTap: () => Navigator.pushNamed(context, '/Connections'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/MyLocations.svg',
               title: AppLocalizations.of(context)!.myLocations,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/myLocations'),
+              onTap: () => Navigator.pushNamed(context, '/myLocations'),
             ),
             _buildDivider(),
             _buildListTile(
               icon: 'assets/icons/settings/AboutTiler.svg',
               title: AppLocalizations.of(context)!.aboutTiler,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/aboutTiler'),
+              onTap: () => Navigator.pushNamed(context, '/aboutTiler'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
               color: TileStyles.primaryColor,
-              onTap: ()=>context.read<DeviceSettingBloc>().add(LogOutMainSettingDeviceSettingEvent(id:_requestId)),
+              onTap: () => context
+                  .read<DeviceSettingBloc>()
+                  .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
+            ),
+            _buildListTile(
+              icon: 'assets/icons/settings/DeleteAccount.svg',
+              title: AppLocalizations.of(context)!.deleteAccount,
+              color: TileStyles.primaryColor,
+              onTap: () => context.read<DeviceSettingBloc>().add(
+                  DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
             ),
             _buildDivider(),
             Center(child: _buildDarkModeSwitch()),
@@ -130,20 +140,21 @@ class Settings extends StatelessWidget {
 
   Widget _buildListTile(
       {required String icon,
-        required String title,
-        required Color color,
-        Function()? onTap}) {
+      required String title,
+      required Color color,
+      Function()? onTap}) {
     return ListTile(
-      leading: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(color, BlendMode.srcIn),),
-      title: Text(title, style: TextStyle(color: color )),
-      onTap:  onTap
-    );
+        leading: SvgPicture.asset(
+          icon,
+          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+        ),
+        title: Text(title, style: TextStyle(color: color)),
+        onTap: onTap);
   }
 
   Widget _buildDarkModeSwitch() {
     return BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
       builder: (context, state) {
-
         return Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -156,7 +167,9 @@ class Settings extends StatelessWidget {
                   value: state.isDarkMode,
                   onChanged: (value) {
                     ThemeManager.setThemeMode(value).then((_) {
-                      context.read<DeviceSettingBloc>().add(UpdateDarkModeMainSettingDeviceSettingEvent(isDarkMode: value,id:_requestId));
+                      context.read<DeviceSettingBloc>().add(
+                          UpdateDarkModeMainSettingDeviceSettingEvent(
+                              isDarkMode: value, id: _requestId));
                     });
                   },
                   activeColor: Colors.black,
