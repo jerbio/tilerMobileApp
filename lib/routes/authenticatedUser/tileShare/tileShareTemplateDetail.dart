@@ -166,7 +166,7 @@ class _TileShareTemplateDetailState
         } else {
           setState(() {
             tilerError = TilerError(
-                message:
+                Message:
                     AppLocalizations.of(context)!.failedToLoadTileShareCluster);
           });
         }
@@ -174,7 +174,7 @@ class _TileShareTemplateDetailState
         Utility.debugPrint("Failed to get tile cluster");
         setState(() {
           tilerError = TilerError(
-              message:
+              Message:
                   AppLocalizations.of(context)!.failedToLoadTileShareCluster);
           if (onError is TilerError) {
             tilerError = onError;
@@ -203,7 +203,7 @@ class _TileShareTemplateDetailState
             tilerError = onError;
           }
           tilerError = TilerError(
-              message: AppLocalizations.of(context)!.errorLoadingTilelist);
+              Message: AppLocalizations.of(context)!.errorLoadingTilelist);
           isTileListLoading = false;
         });
       });
@@ -223,7 +223,7 @@ class _TileShareTemplateDetailState
   }
 
   Widget renderError() {
-    return Text(this.tilerError?.message ?? "Error loading tilelist");
+    return Text(this.tilerError?.Message ?? "Error loading tilelist");
   }
 
   Widget renderNotFound() {
@@ -233,7 +233,7 @@ class _TileShareTemplateDetailState
   Widget renderTileShareCluster() {
     if (this.tileShareTemplate == null) {
       this.tilerError = TilerError(
-          message: AppLocalizations.of(context)!.missingTileShareCluster);
+          Message: AppLocalizations.of(context)!.missingTileShareCluster);
       return renderError();
     }
 

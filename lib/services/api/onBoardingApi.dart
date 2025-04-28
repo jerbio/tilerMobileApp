@@ -19,7 +19,7 @@ class OnBoardingApi extends AppApi {
         var headers = this.getHeaders();
         if (headers == null) {
           throw TilerError(
-              message: LocalizationService
+              Message: LocalizationService
                   .instance.translations.authenticationIssues);
         }
         print('Request headers: $headers');
@@ -28,15 +28,15 @@ class OnBoardingApi extends AppApi {
         return handleResponse(response);
       } else {
         throw TilerError(
-            message: LocalizationService
+            Message: LocalizationService
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
       print(
-          'Exception occurred in fetchOnboardingData: ${e is TilerError ? e.message : "Unknown error"}');
+          'Exception occurred in fetchOnboardingData: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
-          message: e is TilerError
-              ? e.message
+          Message: e is TilerError
+              ? e.Message
               : LocalizationService.instance.translations.errorOccurred);
     }
   }
@@ -52,7 +52,7 @@ class OnBoardingApi extends AppApi {
         var headers = this.getHeaders();
         if (headers == null) {
           throw TilerError(
-              message: LocalizationService
+              Message: LocalizationService
                   .instance.translations.authenticationIssues);
         }
         http.Response response = await http.post(uri,
@@ -61,15 +61,15 @@ class OnBoardingApi extends AppApi {
         return handleResponse(response);
       } else {
         throw TilerError(
-            message: LocalizationService
+            Message: LocalizationService
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
       print(
-          'Exception occurred in sendOnboardingData: ${e is TilerError ? e.message : "Unknown error"}');
+          'Exception occurred in sendOnboardingData: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
-          message: e is TilerError
-              ? e.message
+          Message: e is TilerError
+              ? e.Message
               : LocalizationService.instance.translations.errorOccurred);
     }
   }
@@ -83,14 +83,14 @@ class OnBoardingApi extends AppApi {
         return onboardingContent;
       } else {
         throw TilerError(
-            message:
+            Message:
                 LocalizationService.instance.translations.responseContentError);
       }
     } else if (response.statusCode == 404) {
       return null;
     } else {
       throw TilerError(
-          message:
+          Message:
               LocalizationService.instance.translations.responseHandlingError);
     }
   }

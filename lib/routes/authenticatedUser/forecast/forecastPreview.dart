@@ -6,10 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../../bloc/forecast/forecast_bloc.dart';
@@ -26,12 +23,7 @@ class ForecastPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ForecastBloc(
-        getContextCallBack: () => context,
-      ),
-      child: ForecastView(),
-    );
+    return ForecastView();
   }
 }
 
@@ -60,7 +52,7 @@ class ForecastView extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              AppLocalizations.of(context)!.create,
+              AppLocalizations.of(context)!.createTile,
               style: TextStyle(
                 fontFamily: TileStyles.rubikFontName,
                 fontSize: height / (height / 15),
