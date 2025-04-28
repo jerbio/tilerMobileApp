@@ -202,7 +202,7 @@ abstract class TileListState<T extends TileList> extends State<T>
       ));
     }
     return Container(
-      decoration: TileStyles.defaultBackground,
+      decoration: TileStyles.defaultBackgroundDecoration,
       child: Center(child: Stack(children: centerElements)),
     );
   }

@@ -263,7 +263,9 @@ class SignInComponentState extends State<SignInComponent>
                   timeline: Utility.initialScheduleTimeline),
             );
         print("is sign in valid" + isValidSignIn.toString());
-        Navigator.pop(context);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -340,7 +342,9 @@ class SignInComponentState extends State<SignInComponent>
           Navigator.pop(context);
         }
         bool nextPage = await Utility.checkOnboardingStatus();
-        Navigator.pop(context);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -353,6 +357,11 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
+
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
 
         print(isValidSignIn);
       } catch (e) {
@@ -540,7 +549,9 @@ class SignInComponentState extends State<SignInComponent>
               getContextCallBack: () => context,
             ));
         bool nextPage = await Utility.checkOnboardingStatus();
-        Navigator.pop(context);
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -553,6 +564,10 @@ class SignInComponentState extends State<SignInComponent>
             ),
           ),
         );
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
       }
     }
     setState(() {

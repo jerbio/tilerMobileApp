@@ -15,37 +15,45 @@ class IntegrationApi extends AppApi {
 
   Future<List<CalendarIntegration>?> getIntegrations(
       {String? integrationId}) async {
-    try{
+    try {
       final isAuthenticated = await authentication.isUserAuthenticated();
       if (!isAuthenticated.item1) {
-        throw TilerError(message: LocalizationService.instance.translations.userIsNotAuthenticated);
+        throw TilerError(
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
-        await checkAndReplaceCredentialCache();
-        final queryParameters = {'integrationId': integrationId};
-        Map<String, dynamic> updatedParams = await injectRequestParams(
-            queryParameters,
-            includeLocationParams: false);
-        Uri uri = Uri.https(Constants.tilerDomain, 'api/integrations', updatedParams);
-        var header = this.getHeaders();
-        if (header == null) {
-          throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+      await checkAndReplaceCredentialCache();
+      final queryParameters = {'integrationId': integrationId};
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri =
+          Uri.https(Constants.tilerDomain, 'api/integrations', updatedParams);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
+      }
+      Utility.debugPrint('Requesting integrations with headers: $header');
+      var response = await http.get(uri, headers: header);
+      Utility.debugPrint('Integrations API response: ${response.body}');
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          List integrations = jsonResult['Content'];
+          return integrations
+              .map((e) => CalendarIntegration.fromJson(e))
+              .toList();
         }
-        Utility.debugPrint('Requesting integrations with headers: $header');
-        var response = await http.get(uri, headers: header);
-        Utility.debugPrint('Integrations API response: ${response.body}');
-        var jsonResult = jsonDecode(response.body);
-        if (isJsonResponseOk(jsonResult)) {
-          if (isContentInResponse(jsonResult)) {
-            List integrations = jsonResult['Content'];
-            return integrations
-                .map((e) => CalendarIntegration.fromJson(e))
-                .toList();
-          }
-        }
-    }catch (e) {
-      Utility.debugPrint('Error fetching integrations: ${e is TilerError ? e.message : e}');
+      }
+    } catch (e) {
+      Utility.debugPrint(
+          'Error fetching integrations: ${e is TilerError ? e.Message : e}');
       throw TilerError(
-          message: e is TilerError ? e.message : LocalizationService.instance.translations.errorOccurred);
+          Message: e is TilerError
+              ? e.Message
+              : LocalizationService.instance.translations.errorOccurred);
     }
   }
 
@@ -54,28 +62,28 @@ class IntegrationApi extends AppApi {
     final isAuthenticated = await authentication.isUserAuthenticated();
     if (!isAuthenticated.item1) {
       throw TilerError(
-          message: LocalizationService
-              .instance.translations.userIsNotAuthenticated);
+          Message:
+              LocalizationService.instance.translations.userIsNotAuthenticated);
     }
     await checkAndReplaceCredentialCache();
 
-      Map<String, dynamic> thirdPartyLocationPostData = {
-        'Id': location.id,
-        'ThirdPartyId': location.thirdPartyId,
-        'Longitude': location.longitude,
-        'Latitude': location.latitude,
-        'Address': location.address,
-        'Description': location.description,
-        'IsVerified': location.isVerified,
-        'ThirdPartyCalendarId': calendarId
-      };
-      return sendPostRequest(
-          'api/integrations/location', thirdPartyLocationPostData,
-          injectLocation: false, analyze: false)
-          .then((response) {
-        var jsonResult = jsonDecode(response.body);
-        return jsonResult;
-      });
+    Map<String, dynamic> thirdPartyLocationPostData = {
+      'Id': location.id,
+      'ThirdPartyId': location.thirdPartyId,
+      'Longitude': location.longitude,
+      'Latitude': location.latitude,
+      'Address': location.address,
+      'Description': location.description,
+      'IsVerified': location.isVerified,
+      'ThirdPartyCalendarId': calendarId
+    };
+    return sendPostRequest(
+            'api/integrations/location', thirdPartyLocationPostData,
+            injectLocation: false, analyze: false)
+        .then((response) {
+      var jsonResult = jsonDecode(response.body);
+      return jsonResult;
+    });
   }
 
   Future<bool?> deleteIntegration(
@@ -83,12 +91,14 @@ class IntegrationApi extends AppApi {
     TilerError error = new TilerError();
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
-      error.message = "Did not send request";
+      error.Message = "Did not send request";
       String url = Constants.tilerDomain;
       Uri uri = Uri.https(url, 'api/Integrations');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var deleteIntegrationParameters = {
         'IntegrationId': calendarIntegration.id,
@@ -102,7 +112,7 @@ class IntegrationApi extends AppApi {
           headers: header,
           body: json.encode(injectedDeleteIntegrationParameters));
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           return true;
