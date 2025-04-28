@@ -120,8 +120,6 @@ class IntegrationWidgetRoute extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            //imp3: does the reset needed? if yes move consumer up
-            //context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
             Navigator.pop(context);
           },
         ),
