@@ -240,31 +240,35 @@ class NewTile {
   }
 
   DateTime? getStartDateTime() {
-    try{
-    return DateTime(
-        int.parse(this.StartYear!),
-        int.parse(this.StartMonth!),
-        int.parse(this.StartDay!),
-        int.parse(this.StartHour ?? "0"),
-        int.parse(this.StartMinute ?? "0"));}
-    catch(e){
-      Utility.debugPrint("Error in parsing start date: ${e.toString() } ${this.StartYear} ${this.StartMonth} ${this.StartDay} ${this.StartHour} ${this.StartMinute}");
-      return null;
-    }
-  }
-  DateTime? getEndDateTime() {
-    try{
+    try {
       return DateTime(
-        int.parse(this.EndYear!),
-        int.parse(this.EndMonth!),
-        int.parse(this.EndDay!),
-        int.parse(this.EndHour ?? "23"),
-        int.parse(this.EndMinute ?? "59"));}
-catch(e){
-      Utility.debugPrint("Error in parsing end date: ${e.toString()} ${this.EndYear} ${this.EndMonth} ${this.EndDay} ${this.EndHour} ${this.EndMinute}");
+          int.parse(this.StartYear!),
+          int.parse(this.StartMonth!),
+          int.parse(this.StartDay!),
+          int.parse(this.StartHour ?? "0"),
+          int.parse(this.StartMinute ?? "0"));
+    } catch (e) {
+      Utility.debugPrint(
+          "Error in parsing start date: ${e.toString()} ${this.StartYear} ${this.StartMonth} ${this.StartDay} ${this.StartHour} ${this.StartMinute}");
       return null;
     }
   }
+
+  DateTime? getEndDateTime() {
+    try {
+      return DateTime(
+          int.parse(this.EndYear!),
+          int.parse(this.EndMonth!),
+          int.parse(this.EndDay!),
+          int.parse(this.EndHour ?? "23"),
+          int.parse(this.EndMinute ?? "59"));
+    } catch (e) {
+      Utility.debugPrint(
+          "Error in parsing end date: ${e.toString()} ${this.EndYear} ${this.EndMonth} ${this.EndDay} ${this.EndHour} ${this.EndMinute}");
+      return null;
+    }
+  }
+
   Location? getLocation() {
     Location location = Location.fromDefault();
     location.address = this.LocationAddress;

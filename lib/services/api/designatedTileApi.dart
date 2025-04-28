@@ -14,7 +14,7 @@ class DesignatedTileApi extends AppApi {
       : super(getContextCallBack: getContextCallBack);
   Future addContact(String designatedTileId, ContactModel contactModel) async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -40,13 +40,13 @@ class DesignatedTileApi extends AppApi {
         Utility.debugPrint(
             "headers Tilecluster api" + contactUpdate.toString());
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.put(uri,
             headers: header, body: jsonEncode(injectedParameters));
 
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             return;
@@ -55,9 +55,9 @@ class DesignatedTileApi extends AppApi {
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching Tiler servers";
+          error.Message = "Issues with reaching Tiler servers";
         }
       }
     }
@@ -67,7 +67,7 @@ class DesignatedTileApi extends AppApi {
   Future deleteContact(
       String designatedTileId, ContactModel contactModel) async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -94,13 +94,13 @@ class DesignatedTileApi extends AppApi {
         Utility.debugPrint(
             "headers Tilecluster api" + contactUpdate.toString());
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.delete(uri,
             headers: header, body: jsonEncode(injectedParameters));
 
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             return;
@@ -109,9 +109,9 @@ class DesignatedTileApi extends AppApi {
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching Tiler servers";
+          error.Message = "Issues with reaching Tiler servers";
         }
       }
     }
@@ -147,7 +147,7 @@ class DesignatedTileApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
 
         Response response = await http.get(uri, headers: header);
@@ -176,9 +176,9 @@ class DesignatedTileApi extends AppApi {
             }
           }
         }
-        throw TilerError(message: 'Issues reaching Tiler Servers');
+        throw TilerError(Message: 'Issues reaching Tiler Servers');
       }
     }
-    throw TilerError(message: 'Issues reaching Tiler Servers');
+    throw TilerError(Message: 'Issues reaching Tiler Servers');
   }
 }

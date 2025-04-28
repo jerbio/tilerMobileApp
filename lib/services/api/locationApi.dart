@@ -67,7 +67,7 @@ class LocationApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Location/Name', injectedLocationParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       if (chainPending != null) {
         var param = {
@@ -130,7 +130,7 @@ class LocationApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Location', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);

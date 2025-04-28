@@ -37,14 +37,37 @@ class LoadedDeviceSettingEvent extends DeviceSettingEvent {
   List<Object> get props => [];
 }
 
-sealed class GetUserProfileDeviceSettingEvent extends DeviceSettingEvent {
-  final bool remoteCall;
+class GetUserProfileDeviceSettingEvent extends DeviceSettingEvent {
   const GetUserProfileDeviceSettingEvent(
-      {required String id, this.remoteCall = false})
+      {required String id})
       : super(id: id, loadingType: LoadingType.userProfile);
 
   @override
   List<Object> get props => [];
+}
+
+class UpdateUserProfileDateOfBirthSettingEvent extends DeviceSettingEvent {
+  final DateTime dateOfBirth;
+  final String id;
+
+  const UpdateUserProfileDateOfBirthSettingEvent({
+    required this.id,
+    required this.dateOfBirth,
+  }) : super(id: id, loadingType: LoadingType.userProfile);
+
+  @override
+  List<Object> get props => [id, dateOfBirth];
+}
+
+class UpdateUserProfileDeviceSettingEvent extends DeviceSettingEvent {
+  final String id;
+
+  const UpdateUserProfileDeviceSettingEvent({
+    required this.id,
+  }) : super(id: id, loadingType: LoadingType.userProfile);
+
+  @override
+  List<Object> get props => [id];
 }
 
 class GetLocationProfileDeviceSettingEvent extends DeviceSettingEvent {
@@ -84,4 +107,22 @@ class LoadedUserProfileDeviceSettingEvent extends DeviceSettingEvent {
 
   @override
   List<Object> get props => [];
+}
+
+class UpdateDarkModeMainSettingDeviceSettingEvent extends DeviceSettingEvent {
+  final bool isDarkMode;
+  UpdateDarkModeMainSettingDeviceSettingEvent({required this.isDarkMode, required String id})
+      : super(id: id, loadingType: LoadingType.none);
+
+  @override
+  List<Object> get props => [id, loadingType, isDarkMode];
+}
+
+
+class LogOutMainSettingDeviceSettingEvent extends DeviceSettingEvent {
+  LogOutMainSettingDeviceSettingEvent({required String id}) : super(id: id, loadingType: LoadingType.none);
+}
+
+class DeleteAccountMainSettingDeviceSettingEvent extends DeviceSettingEvent {
+  DeleteAccountMainSettingDeviceSettingEvent({required String id}) : super(id: id, loadingType: LoadingType.none);
 }
