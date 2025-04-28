@@ -4,7 +4,6 @@ import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -31,18 +30,16 @@ class Settings extends StatelessWidget {
         NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
         if  (state is DeviceSettingLoaded && state.shouldLogout) {
-            Navigator.pushNamedAndRemoveUntil(
-                context,  '/LoggedOut', (route) => false).then((_) {
-                context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
-                context.read<SubCalendarTileBloc>().add(LogOutSubCalendarTileBlocEvent());
-                context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-                context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
-                context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
-                context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
-                context.read<TileListCarouselBloc>().add(EnableCarouselScrollEvent(isImmediate: true));
-                context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
-                context.read<ScheduleSummaryBloc>().add(LogOutScheduleDaySummaryEvent());
-            });
+          print("reset started");
+          context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
+          context.read<SubCalendarTileBloc>().add(LogOutSubCalendarTileBlocEvent());
+          context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+          context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
+          context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
+          context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+          context.read<TileListCarouselBloc>().add(EnableCarouselScrollEvent(isImmediate: true));
+          context.read<ScheduleSummaryBloc>().add(LogOutScheduleDaySummaryEvent());
+          Navigator.pushNamedAndRemoveUntil(context,  '/LoggedOut', (route) => false);
         }
         if (state is DeviceSettingError ) {
           final errorMessage = state.error is TilerError
@@ -114,12 +111,6 @@ class Settings extends StatelessWidget {
               title: AppLocalizations.of(context)!.logout,
               color: TileStyles.primaryColor,
               onTap: ()=>context.read<DeviceSettingBloc>().add(LogOutMainSettingDeviceSettingEvent(id:_requestId)),
-            ),
-            _buildListTile(
-              icon: 'assets/icons/settings/DeleteAccount.svg',
-              title: AppLocalizations.of(context)!.deleteAccount,
-              color: TileStyles.primaryColor,
-              onTap: ()=>context.read<DeviceSettingBloc>().add(DeleteAccountMainSettingDeviceSettingEvent(id:_requestId)),
             ),
             _buildDivider(),
             Center(child: _buildDarkModeSwitch()),
