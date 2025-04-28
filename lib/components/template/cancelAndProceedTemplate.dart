@@ -93,6 +93,7 @@ class CancelAndProceedTemplateWidgetState
   }
 
   Widget build(BuildContext context) {
+    double iconSize = 25;
     bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
     Widget cancelButton = Align(
@@ -115,13 +116,14 @@ class CancelAndProceedTemplateWidgetState
           ),
           child: Center(
               child: Container(
-            margin: EdgeInsets.fromLTRB(10, 0, 50, 50),
+            margin: EdgeInsets.fromLTRB(0, 0, 60, 50),
             child: Transform.rotate(
               angle: math.pi / 4,
               child: IconButton(
                 icon: Icon(
                   Icons.add,
                   color: Colors.white,
+                  size: iconSize,
                 ),
                 onPressed: null,
               ),
@@ -140,6 +142,7 @@ class CancelAndProceedTemplateWidgetState
       ),
     );
     List<Widget> bottomButtons = [];
+
     if ((this.widget.isProceedAllowed != null &&
             this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
@@ -162,6 +165,7 @@ class CancelAndProceedTemplateWidgetState
               icon: Icon(
                 Icons.check,
                 color: Colors.white,
+                size: iconSize,
               ),
               onPressed: null,
             ),
@@ -261,6 +265,7 @@ class CancelAndProceedTemplateWidgetState
     );
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      backgroundColor: TileStyles.defaultBackgroundColor,
       appBar: this.widget.appBar,
       body: SafeArea(
         child: contentAndButton,

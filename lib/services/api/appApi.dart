@@ -205,7 +205,7 @@ abstract class AppApi {
         var header = this.getHeaders();
         if (header != null) {
           Uri uri = Uri.https(url, requestPath);
-          print("Called POST REQUEST " + requestPath + url);
+          print("Called POST REQUEST " + requestPath +" domain:"+ url);
           return http
               .post(uri, headers: header, body: jsonEncode(injectedParameters))
               .then((value) async {

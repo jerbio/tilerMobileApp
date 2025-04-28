@@ -17,14 +17,18 @@ class DurationInputWidget extends StatefulWidget {
 }
 
 class _DurationInputWidgetState extends State<DurationInputWidget> {
-  Duration? _duration;
+  Duration? _setDuration;
   final Color textBackgroundColor = TileStyles.textBackgroundColor;
   final Color textBorderColor = TileStyles.textBorderColor;
   final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
   @override
   void initState() {
     super.initState();
-    this._duration = this.widget.duration;
+    this._setDuration = this.widget.duration;
+  }
+
+  Duration? get _duration {
+    return this._setDuration ?? this.widget.duration;
   }
 
   @override
@@ -37,7 +41,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
         Duration? populatedDuration = durationParams['duration'] as Duration?;
         setState(() {
           if (populatedDuration != null) {
-            _duration = populatedDuration;
+            _setDuration = populatedDuration;
           }
         });
         if (this.widget.onDurationChange != null) {
