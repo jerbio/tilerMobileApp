@@ -3,6 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'
+    show CameraPosition, GoogleMap, LatLng, MapType;
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -187,6 +189,55 @@ class TileWidgetState extends State<TileWidget>
     return retValue;
   }
 
+  Widget renderGoogleMaps(List<LatitudeAndLongitude> latLongList) {
+    if (latLongList.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    var travelAvgLocation = LatitudeAndLongitude.averageLatLong(latLongList);
+    if (travelAvgLocation == null) {
+      return SizedBox.shrink();
+    }
+    double mapHeight = 190;
+    return Stack(
+      children: [
+        Container(
+          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          height: mapHeight,
+          width: MediaQuery.sizeOf(context).width,
+          child: GoogleMap(
+            mapToolbarEnabled: false,
+            zoomControlsEnabled: false,
+            zoomGesturesEnabled: false,
+            myLocationEnabled: false,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(
+                  travelAvgLocation.latitude, travelAvgLocation.longitude),
+              zoom: 14.0,
+            ),
+            mapType: MapType.normal,
+          ),
+        ),
+        Container(
+            height: mapHeight,
+            width: MediaQuery.sizeOf(context).width,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                TileStyles.defaultBackgroundColor
+                    .withAlpha(0)
+                    .withLightness(0.5),
+                TileStyles.defaultBackgroundColor,
+                TileStyles.defaultBackgroundColor,
+                TileStyles.defaultBackgroundColor,
+              ],
+            )))
+      ],
+    );
+  }
+
   Widget renderTravelTime(Timeline travelTimeLine) {
     double fontSize = 20;
     double iconSize = 20;
@@ -197,13 +248,29 @@ class TileWidgetState extends State<TileWidget>
     Color? textColor =
         isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
 
+    List<LatitudeAndLongitude> latLongList = [];
     Widget transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
     if (this.widget.subEvent.travelDetail != null) {
       TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
       int walkCount = 0;
       int stopCount = 0;
       transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
+
       if (travelDetail.before != null) {
+        if (travelDetail.before!.startLocation != null) {
+          var longLat =
+              travelDetail.before!.startLocation!.toLatitudeAndLongitude;
+          if (longLat != null) {
+            latLongList.add(longLat);
+          }
+        }
+        if (travelDetail.before!.endLocation != null) {
+          var longLat =
+              travelDetail.before!.endLocation!.toLatitudeAndLongitude;
+          if (longLat != null) {
+            latLongList.add(longLat);
+          }
+        }
         if (travelDetail.before!.start != null &&
             travelDetail.before!.end != null) {
           travelTimeLine = Timeline.fromDateTimeAndDuration(
@@ -327,48 +394,53 @@ class TileWidgetState extends State<TileWidget>
                   TravelMedium.driving.name.toLowerCase());
         }
       },
-      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-        Container(
-            padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-            height: 50,
-            width: 5,
-            child: AnimatedLine(
-              Duration(milliseconds: 0),
-              textColor,
-              reverse: true,
-            )),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      child: Stack(
+        children: [
+          renderGoogleMaps(latLongList),
+          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                child: Text(startString,
-                    style: TextStyle(
-                        fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.normal,
-                        color: textColor))),
-            transitUIWidget,
+                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                height: 50,
+                width: 5,
+                child: AnimatedLine(
+                  Duration(milliseconds: 0),
+                  textColor,
+                  reverse: true,
+                )),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Text(startString,
+                        style: TextStyle(
+                            fontSize: fontSize,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.normal,
+                            color: textColor))),
+                transitUIWidget,
+                Container(
+                    margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    child: Text(endString,
+                        style: TextStyle(
+                            fontSize: fontSize,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.normal,
+                            color: textColor)))
+              ],
+            ),
             Container(
-                margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                child: Text(endString,
-                    style: TextStyle(
-                        fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontWeight: FontWeight.normal,
-                        color: textColor)))
-          ],
-        ),
-        Container(
-            padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-            height: 50,
-            width: 5,
-            child: AnimatedLine(
-              Duration(milliseconds: 0),
-              textColor,
-              reverse: true,
-            )),
-      ]),
+                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                height: 50,
+                width: 5,
+                child: AnimatedLine(
+                  Duration(milliseconds: 0),
+                  textColor,
+                  reverse: true,
+                ))
+          ])
+        ],
+      ),
     );
 
     return retValue;

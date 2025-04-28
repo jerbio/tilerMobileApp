@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TileStyles {
   static final double tileWidth = 350;
-  static final double tileHeight = 350;
+  static final double tileHeight = 300;
   static final double tileWidthRatio = 0.85;
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
@@ -17,6 +17,7 @@ class TileStyles {
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);
   static const Color primaryContrastColor = Colors.white;
+  static const Color accentContrastColor = Colors.black;
   static const Color primaryContrastTextColor = Colors.white;
   static const Color inactiveTextColor = Color(0xFF4A4A4A);
   static const Color black = Colors.black;
@@ -37,85 +38,86 @@ class TileStyles {
   static HSLColor accentColorHSL = HSLColor.fromColor(accentColor);
   static Color borderColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
   static Color activeColor = HSLColor.fromAHSL(1, 198, 1, 0.33).toColor();
-  static Color defaultWidgetBackgroundColor = Colors.white;
+  static Color defaultWidgetBackgroundColor =
+      const Color.fromRGBO(247, 247, 248, 1);
   static Color disabledColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static const Color deletedBackgroundColor = Colors.red;
   static ButtonStyle disabledButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Color.fromRGBO(154, 158, 159, 1);
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
   );
   static ButtonStyle selectedButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
   );
 
   static ButtonStyle suggestedButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(30);
     }),
   );
   static ButtonStyle enabledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    side: WidgetStateProperty.all(BorderSide(color: primaryColor)),
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
   );
 
   static ButtonStyle toggledButtonStyle = ButtonStyle(
-    side: MaterialStateProperty.all(BorderSide(color: primaryColor)),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    side: WidgetStateProperty.all(BorderSide(color: primaryColor)),
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return primaryColor;
       }
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
       return primaryColorHSL.toColor();
     }),
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return primaryColorLightHSL.toColor();
     }),
-    iconColor: MaterialStateProperty.resolveWith((states) {
+    iconColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return appBarTextColor;
       }
@@ -124,64 +126,64 @@ class TileStyles {
   );
 
   static ButtonStyle strippedButtonStyle = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
   );
 
   static ButtonStyle onlyIcons = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryColor;
     }),
   );
 
   static ButtonStyle onlyIconsContrast = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return primaryContrastColor;
     }),
   );
@@ -215,7 +217,9 @@ class TileStyles {
   static Color textBorderColor = Colors.white;
   static Color iconColor = Color.fromRGBO(154, 158, 159, 1);
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
-  static final BoxDecoration defaultBackground =
+  static final Color defaultBackgroundColor =
+      TileStyles.defaultWidgetBackgroundColor;
+  static final BoxDecoration defaultBackgroundDecoration =
       BoxDecoration(color: Colors.transparent
           // gradient: LinearGradient(
           //     begin: Alignment.topCenter,

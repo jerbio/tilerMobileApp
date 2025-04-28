@@ -834,6 +834,10 @@ class _DailyTileListState extends TileListState {
             );
           }
 
+          Utility.debugPrint("Unknown state in daily tile list " +
+              state.toString() +
+              " " +
+              this.runtimeType.toString());
           return Text(AppLocalizations.of(context)!.retrievingDataIssue);
         },
       ),
