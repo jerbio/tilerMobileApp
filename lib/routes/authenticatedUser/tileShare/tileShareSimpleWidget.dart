@@ -59,7 +59,6 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
     return Card(
       surfaceTintColor: Colors.transparent,
-      color: TileStyles.defaultWidgetBackgroundColor,
       elevation: TileStyles.defaultCardElevation,
       margin: EdgeInsets.all(5),
       child: Padding(

@@ -116,19 +116,17 @@ class CancelAndProceedTemplateWidgetState
           ),
           child: Center(
               child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 60, 50),
-            child: Transform.rotate(
-              angle: math.pi / 4,
-              child: IconButton(
-                icon: Icon(
-                  Icons.add,
-                  color: Colors.white,
-                  size: iconSize,
-                ),
-                onPressed: null,
-              ),
-            ),
-          )),
+                  margin: EdgeInsets.fromLTRB(0, 0, 60, 50),
+                  child: Transform.rotate(
+                      angle: math.pi / 4,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: iconSize,
+                        ),
+                        onPressed: null,
+                      )))),
           onPressed: () async {
             _setRouteAsCancelled();
             if (this.widget.onCancel != null) {
@@ -179,10 +177,14 @@ class CancelAndProceedTemplateWidgetState
                   showLoading = true;
                 });
                 return proceedResult.then((value) {
-                  setState(() {
-                    showLoading = false;
-                  });
-                  Navigator.pop(context);
+                  if (mounted) {
+                    setState(() {
+                      showLoading = false;
+                    });
+                  }
+                  if (value != false) {
+                    Navigator.pop(context);
+                  }
                 }).whenComplete(() {
                   setState(() {
                     showLoading = false;

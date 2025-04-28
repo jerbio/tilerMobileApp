@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class TileStyles {
+  static Map<int, Color> themeMaterialColor = {
+    50: Color.fromRGBO(239, 48, 84, .1),
+    100: Color.fromRGBO(239, 48, 84, .2),
+    200: Color.fromRGBO(239, 48, 84, .3),
+    300: Color.fromRGBO(239, 48, 84, .4),
+    400: Color.fromRGBO(239, 48, 84, .5),
+    500: Color.fromRGBO(239, 48, 84, .6),
+    600: Color.fromRGBO(239, 48, 84, .7),
+    700: Color.fromRGBO(239, 48, 84, .8),
+    800: Color.fromRGBO(239, 48, 84, .9),
+    900: Color.fromRGBO(239, 48, 84, 1),
+  };
   static final double tileWidth = 350;
   static final double tileHeight = 300;
   static final double tileWidthRatio = 0.85;
@@ -44,6 +56,15 @@ class TileStyles {
   static Color disabledBackgroundColor = Color.fromRGBO(225, 225, 225, 1);
   static Color disabledTextColor = HSLColor.fromAHSL(1, 0, 0, 0.7).toColor();
   static const Color deletedBackgroundColor = Colors.red;
+  static const BottomNavigationBarThemeData bottomNavTheme =
+      BottomNavigationBarThemeData(
+    type: BottomNavigationBarType.fixed,
+    elevation: 0,
+    showSelectedLabels: false,
+    showUnselectedLabels: false,
+    selectedIconTheme: IconThemeData(color: primaryColor),
+    unselectedIconTheme: IconThemeData(color: primaryColor),
+  );
   static ButtonStyle disabledButtonStyle = ButtonStyle(
     backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Color.fromRGBO(154, 158, 159, 1);
@@ -220,16 +241,9 @@ class TileStyles {
   static final Color defaultBackgroundColor =
       TileStyles.defaultWidgetBackgroundColor;
   static final BoxDecoration defaultBackgroundDecoration =
-      BoxDecoration(color: Colors.transparent
-          // gradient: LinearGradient(
-          //     begin: Alignment.topCenter,
-          //     end: Alignment.bottomCenter,
-          //     colors: [
-          //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-          //   Colors.white.withOpacity(0.5),
-          //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
-          // ])
-          );
+      BoxDecoration(color: Colors.transparent);
+  static final BoxDecoration defaultBackground =
+      BoxDecoration(color: Colors.transparent);
   static final titleBarStyle = TextStyle(
     color: TileStyles.appBarTextColor,
   );

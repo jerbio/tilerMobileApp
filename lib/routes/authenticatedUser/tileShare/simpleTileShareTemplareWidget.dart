@@ -67,7 +67,6 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
         color: const Color.fromRGBO(40, 40, 40, 1));
     return Card(
       surfaceTintColor: Colors.transparent,
-      color: TileStyles.defaultWidgetBackgroundColor,
       elevation: TileStyles.defaultCardElevation,
       margin: EdgeInsets.all(10),
       child: Padding(
