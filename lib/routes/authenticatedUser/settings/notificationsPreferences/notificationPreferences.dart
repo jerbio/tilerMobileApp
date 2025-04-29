@@ -17,7 +17,8 @@ class NotificationPreferences extends StatefulWidget {
   const NotificationPreferences({super.key});
 
   @override
-  State<NotificationPreferences> createState() => _NotificationPreferencesState();
+  State<NotificationPreferences> createState() =>
+      _NotificationPreferencesState();
 }
 
 class _NotificationPreferencesState extends State<NotificationPreferences> {
@@ -26,35 +27,37 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
   bool marketingUpdates = false;
   bool emailNotifications = true;
 
-  Widget _renderPendingOverlay(){
+  Widget _renderPendingOverlay() {
     return Stack(
       children: [
-          Container(
-            color: Colors.black.withOpacity(0.5),
-            child: Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    height: 200.0,
-                    width: 200.0,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 4,
-                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
-                    ),
+        Container(
+          color: Colors.black.withOpacity(0.5),
+          child: Center(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: 200.0,
+                  width: 200.0,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 4,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        Theme.of(context).primaryColor),
                   ),
-                  Image.asset(
-                    'assets/images/tiler_logo_black.png',
-                    fit: BoxFit.cover,
-                    scale: 7,
-                  ),
-                ],
-              ),
+                ),
+                Image.asset(
+                  'assets/images/tiler_logo_black.png',
+                  fit: BoxFit.cover,
+                  scale: 7,
+                ),
+              ],
             ),
           ),
+        ),
       ],
     );
   }
+
   Widget _buildSectionHeader(String icon, String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -81,35 +84,38 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
     );
   }
 
-  Future<bool>  _saveNotificationPreferences(BuildContext context)async {
-
+  Future<bool> _saveNotificationPreferences(BuildContext context) async {
     final completer = Completer<bool>();
-    final subscription = context.read<NotificationPreferencesBloc>().stream.listen((state) {
-      if (state is NotificationPreferencesSaved ) {
+    final subscription =
+        context.read<NotificationPreferencesBloc>().stream.listen((state) {
+      if (state is NotificationPreferencesSaved) {
         if (!completer.isCompleted) {
           completer.complete(true);
         }
       }
-      if ( state is NotificationPreferencesError) {
+      if (state is NotificationPreferencesError) {
         if (!completer.isCompleted) {
           completer.complete(false);
         }
       }
     });
-    context.read<NotificationPreferencesBloc>().add(SaveNotificationPreferences());
+    context
+        .read<NotificationPreferencesBloc>()
+        .add(SaveNotificationPreferences());
     final result = await completer.future;
     subscription.cancel();
     return result;
   }
 
-
-
-  Widget _buildContent(BuildContext context,NotificationPreferencesLoaded state){
-
+  Widget _buildContent(
+      BuildContext context, NotificationPreferencesLoaded state) {
     return CancelAndProceedTemplateWidget(
-
-      onProceed:(state is NotificationPreferencesLoaded && (state as NotificationPreferencesLoaded).hasChanges) ?() => _saveNotificationPreferences(context): null,
-      routeName: NotificationPreferences.notificationPreferencesCancelAndProceedRouteName,
+      onProceed: (state is NotificationPreferencesLoaded &&
+              (state as NotificationPreferencesLoaded).hasChanges)
+          ? () => _saveNotificationPreferences(context)
+          : null,
+      routeName: NotificationPreferences
+          .notificationPreferencesCancelAndProceedRouteName,
       appBar: AppBar(
         centerTitle: true,
         title: Text(AppLocalizations.of(context)!.notificationsPreferences),
@@ -118,48 +124,50 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      child:  Padding(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSectionHeader("assets/icons/settings/notification_bell.svg", "Push Notifications"),
+            _buildSectionHeader("assets/icons/settings/notification_bell.svg",
+                "Push Notifications"),
             _buildToggle(
               AppLocalizations.of(context)!.tileReminders,
               state.tileReminders,
-                  (value) {
+              (value) {
                 context.read<NotificationPreferencesBloc>().add(
-                  UpdateTileReminders(value),
-                );
+                      UpdateTileReminders(value),
+                    );
               },
             ),
             _buildToggle(
               AppLocalizations.of(context)!.appUpdates,
               state.appUpdates,
-                  (value) {
+              (value) {
                 context.read<NotificationPreferencesBloc>().add(
-                  UpdateAppUpdates(value),
-                );
+                      UpdateAppUpdates(value),
+                    );
               },
             ),
-            _buildToggle(
-              AppLocalizations.of(context)!.marketingUpdates,
-              state.marketingUpdates,
-                  (value) {
-                context.read<NotificationPreferencesBloc>().add(
-                  UpdateMarketingUpdates(value),
-                );
-              },
-            ),
+            // _buildToggle(
+            //   AppLocalizations.of(context)!.marketingUpdates,
+            //   state.marketingUpdates,
+            //       (value) {
+            //     context.read<NotificationPreferencesBloc>().add(
+            //       UpdateMarketingUpdates(value),
+            //     );
+            //   },
+            // ),
             const SizedBox(height: 20),
-            _buildSectionHeader("assets/icons/settings/notification_email.svg", "Emails"),
+            _buildSectionHeader(
+                "assets/icons/settings/notification_email.svg", "Emails"),
             _buildToggle(
               AppLocalizations.of(context)!.emailNotifications,
               state.emailNotifications,
-                  (value) {
+              (value) {
                 context.read<NotificationPreferencesBloc>().add(
-                  UpdateEmailNotifications(value),
-                );
+                      UpdateEmailNotifications(value),
+                    );
               },
             ),
           ],
@@ -168,26 +176,26 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     NotificationOverlayMessage notificationOverlayMessage =
-    NotificationOverlayMessage();
+        NotificationOverlayMessage();
     return BlocProvider(
       create: (context) => NotificationPreferencesBloc(
-        settingsApi: SettingsApi( getContextCallBack: () => context),
+        settingsApi: SettingsApi(getContextCallBack: () => context),
       )..add(FetchNotificationPreferences()),
-      child:BlocListener<NotificationPreferencesBloc, NotificationPreferencesState>(
+      child: BlocListener<NotificationPreferencesBloc,
+          NotificationPreferencesState>(
         listener: (context, state) {
           if (state is NotificationPreferencesSaved) {
             notificationOverlayMessage.showToast(
               context,
-              AppLocalizations.of(context)!.notificationsPreferencesUpdatedSuccessfully,
+              AppLocalizations.of(context)!
+                  .notificationsPreferencesUpdatedSuccessfully,
               NotificationOverlayMessageType.success,
             );
           }
-          if(state is NotificationPreferencesError){
+          if (state is NotificationPreferencesError) {
             notificationOverlayMessage.showToast(
               context,
               state.message,
@@ -195,7 +203,8 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             );
           }
         },
-        child: BlocBuilder<NotificationPreferencesBloc, NotificationPreferencesState>(
+        child: BlocBuilder<NotificationPreferencesBloc,
+            NotificationPreferencesState>(
           builder: (context, state) {
             NotificationPreferencesLoaded loadedState;
             if (state is NotificationPreferencesLoaded) {
@@ -225,12 +234,13 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             }
             return Stack(
               children: [
-                _buildContent(context,loadedState),
-                if (state is NotificationPreferencesLoading || state is NotificationPreferencesInitial)
+                _buildContent(context, loadedState),
+                if (state is NotificationPreferencesLoading ||
+                    state is NotificationPreferencesInitial)
                   _renderPendingOverlay(),
               ],
             );
-            },
+          },
         ),
       ),
     );

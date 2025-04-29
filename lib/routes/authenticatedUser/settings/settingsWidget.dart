@@ -24,24 +24,36 @@ class Settings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final textColor =  brightness == Brightness.dark ? Colors.white : Colors.black;
+    final textColor =
+        brightness == Brightness.dark ? Colors.white : Colors.black;
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
-        NotificationOverlayMessage();
-        if  (state is DeviceSettingLoaded && state.shouldLogout) {
+            NotificationOverlayMessage();
+        if (state is DeviceSettingLoaded && state.shouldLogout) {
           print("reset started");
           context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
-          context.read<SubCalendarTileBloc>().add(LogOutSubCalendarTileBlocEvent());
+          context
+              .read<SubCalendarTileBloc>()
+              .add(LogOutSubCalendarTileBlocEvent());
           context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-          context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
-          context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
+          context
+              .read<WeeklyUiDateManagerBloc>()
+              .add(LogOutWeeklyUiDateManagerEvent());
+          context
+              .read<MonthlyUiDateManagerBloc>()
+              .add(LogOutMonthlyUiDateManagerEvent());
           context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
-          context.read<TileListCarouselBloc>().add(EnableCarouselScrollEvent(isImmediate: true));
-          context.read<ScheduleSummaryBloc>().add(LogOutScheduleDaySummaryEvent());
-          Navigator.pushNamedAndRemoveUntil(context,  '/LoggedOut', (route) => false);
+          context
+              .read<TileListCarouselBloc>()
+              .add(EnableCarouselScrollEvent(isImmediate: true));
+          context
+              .read<ScheduleSummaryBloc>()
+              .add(LogOutScheduleDaySummaryEvent());
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/LoggedOut', (route) => false);
         }
-        if (state is DeviceSettingError ) {
+        if (state is DeviceSettingError) {
           final errorMessage = state.error is TilerError
               ? (state.error as TilerError).Message
               : state.error.toString();
@@ -82,31 +94,31 @@ class Settings extends StatelessWidget {
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
             _buildDivider(),
-            _buildListTile(
-              icon: 'assets/icons/settings/Security.svg',
-              title: AppLocalizations.of(context)!.security,
-              color: textColor,
-              onTap: () => Navigator.pushNamed(context, '/security'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/Security.svg',
+            //   title: AppLocalizations.of(context)!.security,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/security'),
+            // ),
             _buildListTile(
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
               onTap: () => Navigator.pushNamed(context, '/Connections'),
             ),
-            _buildListTile(
-              icon: 'assets/icons/settings/MyLocations.svg',
-              title: AppLocalizations.of(context)!.myLocations,
-              color: textColor,
-              onTap: () => Navigator.pushNamed(context, '/myLocations'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/MyLocations.svg',
+            //   title: AppLocalizations.of(context)!.myLocations,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/myLocations'),
+            // ),
             _buildDivider(),
-            _buildListTile(
-              icon: 'assets/icons/settings/AboutTiler.svg',
-              title: AppLocalizations.of(context)!.aboutTiler,
-              color: textColor,
-              onTap: () => Navigator.pushNamed(context, '/aboutTiler'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/AboutTiler.svg',
+            //   title: AppLocalizations.of(context)!.aboutTiler,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/aboutTiler'),
+            // ),
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
@@ -115,15 +127,15 @@ class Settings extends StatelessWidget {
                   .read<DeviceSettingBloc>()
                   .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
             ),
-            _buildListTile(
-              icon: 'assets/icons/settings/DeleteAccount.svg',
-              title: AppLocalizations.of(context)!.deleteAccount,
-              color: TileStyles.primaryColor,
-              onTap: () => context.read<DeviceSettingBloc>().add(
-                  DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
-            ),
-            _buildDivider(),
-            Center(child: _buildDarkModeSwitch()),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/DeleteAccount.svg',
+            //   title: AppLocalizations.of(context)!.deleteAccount,
+            //   color: TileStyles.primaryColor,
+            //   onTap: () => context.read<DeviceSettingBloc>().add(
+            //       DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
+            // ),
+            // _buildDivider(),
+            // Center(child: _buildDarkModeSwitch()),
           ],
         ),
       ),
@@ -194,4 +206,3 @@ class Settings extends StatelessWidget {
     );
   }
 }
-
