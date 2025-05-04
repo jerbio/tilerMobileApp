@@ -297,6 +297,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
+          backgroundColor: TileStyles.primaryContrastColor,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ));
   }
@@ -357,6 +358,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
+          backgroundColor: TileStyles.primaryContrastColor,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ));
   }
@@ -384,6 +386,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
+          backgroundColor: TileStyles.primaryContrastColor,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ));
   }
@@ -411,6 +414,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         },
         style: ElevatedButton.styleFrom(
           padding: const EdgeInsets.all(0),
+          backgroundColor: TileStyles.primaryContrastColor,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ));
   }
