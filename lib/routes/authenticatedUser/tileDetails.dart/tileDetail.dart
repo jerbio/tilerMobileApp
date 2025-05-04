@@ -358,9 +358,7 @@ class _TileDetailState extends State<TileDetail> {
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             decoration: BoxDecoration(
                 color: textBackgroundColor,
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
+                borderRadius: TileStyles.inputFieldBorderRadius,
                 border: Border.all(
                   color: textBorderColor,
                   width: 1.5,
@@ -397,9 +395,7 @@ class _TileDetailState extends State<TileDetail> {
         padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         decoration: BoxDecoration(
             color: textBackgroundColor,
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
-            ),
+            borderRadius: TileStyles.inputFieldBorderRadius,
             border: Border.all(
               color: textBorderColor,
               width: 1.5,
@@ -452,9 +448,7 @@ class _TileDetailState extends State<TileDetail> {
       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
       decoration: BoxDecoration(
           color: textBackgroundColor,
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(8.0),
-          ),
+          borderRadius: TileStyles.inputFieldBorderRadius,
           border: Border.all(
             color: textBorderColor,
             width: 1.5,
@@ -485,12 +479,10 @@ class _TileDetailState extends State<TileDetail> {
         Icon(Icons.format_color_fill_outlined, color: inputFieldIconColor);
     return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+      padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
       decoration: BoxDecoration(
           color: textBackgroundColor,
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(8.0),
-          ),
+          borderRadius: TileStyles.inputFieldBorderRadius,
           border: Border.all(
             color: textBorderColor,
             width: 1.5,
@@ -524,9 +516,7 @@ class _TileDetailState extends State<TileDetail> {
       padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
       decoration: BoxDecoration(
           color: textBackgroundColor,
-          borderRadius: const BorderRadius.all(
-            const Radius.circular(8.0),
-          ),
+          borderRadius: TileStyles.inputFieldBorderRadius,
           border: Border.all(
             color: textBorderColor,
             width: 1.5,

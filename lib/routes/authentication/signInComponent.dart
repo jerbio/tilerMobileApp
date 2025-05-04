@@ -113,6 +113,7 @@ class SignInComponentState extends State<SignInComponent>
   late final AuthorizationApi authApi;
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
+  final inputFieldFillColor = Color.fromRGBO(255, 255, 255, .75);
 
   @override
   void initState() {
@@ -682,12 +683,14 @@ class SignInComponentState extends State<SignInComponent>
       ],
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.username,
-        labelText: AppLocalizations.of(context)!.username,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.person),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        fillColor: Color.fromRGBO(255, 255, 255, .75),
+        fillColor: inputFieldFillColor,
+        border: OutlineInputBorder(
+            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderSide: BorderSide.none),
       ),
     );
 
@@ -702,13 +705,15 @@ class SignInComponentState extends State<SignInComponent>
       controller: emailEditingController,
       autofillHints: [AutofillHints.email],
       decoration: InputDecoration(
-        labelText: AppLocalizations.of(context)!.email,
         hintText: AppLocalizations.of(context)!.email,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.email),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        fillColor: Color.fromRGBO(255, 255, 255, .75),
+        fillColor: inputFieldFillColor,
+        border: OutlineInputBorder(
+            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderSide: BorderSide.none),
       ),
     );
 
@@ -765,7 +770,6 @@ class SignInComponentState extends State<SignInComponent>
       keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.password,
-        labelText: AppLocalizations.of(context)!.password,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.lock),
@@ -780,7 +784,10 @@ class SignInComponentState extends State<SignInComponent>
           },
         ),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        fillColor: Color.fromRGBO(255, 255, 255, .75),
+        border: OutlineInputBorder(
+            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderSide: BorderSide.none),
+        fillColor: inputFieldFillColor,
       ),
     );
 
@@ -929,12 +936,14 @@ class SignInComponentState extends State<SignInComponent>
         cursorColor: Colors.purple,
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.confirmPassword,
-          labelText: AppLocalizations.of(context)!.confirmPassword,
           filled: true,
           isDense: true,
           prefixIcon: Icon(Icons.lock),
           contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-          fillColor: Color.fromRGBO(255, 255, 255, .75),
+          border: OutlineInputBorder(
+              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderSide: BorderSide.none),
+          fillColor: inputFieldFillColor,
         ),
       );
 
