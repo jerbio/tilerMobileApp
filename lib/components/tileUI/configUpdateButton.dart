@@ -39,8 +39,8 @@ class ConfigUpdateButton extends StatefulWidget {
       this.textStyle,
       this.buttonStyle,
       this.constraints,
-      this.iconPadding = const EdgeInsets.fromLTRB(5, 5, 5, 5),
-      this.padding = const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      this.iconPadding = const EdgeInsets.fromLTRB(5, 2, 5, 5),
+      this.padding = const EdgeInsets.fromLTRB(5, 10, 10, 7),
       this.textColor = const Color.fromRGBO(31, 31, 31, 1)});
 
   @override
@@ -52,21 +52,20 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
     List<Widget> childWidgets = [];
     if (this.widget.prefixIcon != null) {
       childWidgets.add(Container(
-          margin: this.widget.iconPadding,
-          child: this.widget.prefixIcon!));
+          margin: this.widget.iconPadding, child: this.widget.prefixIcon!));
     }
     String textButtonString = this.widget.text;
     Widget textButton = TextButton(
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
         minimumSize: dartUI.Size.zero,
-        
-      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: this.widget.textStyle?? TextStyle(
-            overflow: TextOverflow.ellipsis,
-            fontSize: 20,
-            fontWeight: FontWeight.w500,
-            color: this.widget.textColor),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: this.widget.textStyle ??
+            TextStyle(
+                overflow: TextOverflow.ellipsis,
+                fontSize: 20,
+                fontWeight: FontWeight.w500,
+                color: this.widget.textColor),
         foregroundColor: this.widget.textColor,
       ),
       onPressed: () async {
@@ -76,10 +75,11 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
       },
       child: Text(
         textButtonString,
-        overflow:  TextOverflow.ellipsis,
-        style: this.widget.textStyle ??TextStyle(
-          fontFamily: TileStyles.rubikFontName,
-        ),
+        overflow: TextOverflow.ellipsis,
+        style: this.widget.textStyle ??
+            TextStyle(
+              fontFamily: TileStyles.rubikFontName,
+            ),
       ),
     );
 
@@ -93,8 +93,9 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
         }
       },
       child: Container(
-        constraints: this.widget.constraints ?? BoxConstraints(
-            minWidth: (MediaQuery.of(context).size.width * 0.30)),
+        constraints: this.widget.constraints ??
+            BoxConstraints(
+                minWidth: (MediaQuery.of(context).size.width * 0.30)),
         decoration: this.widget.decoration,
         padding: this.widget.padding,
         child: Wrap(

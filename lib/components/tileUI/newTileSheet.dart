@@ -461,18 +461,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         child: Stack(
           children: [
             isPendingAutoResult
-                ? Shimmer.fromColors(
-                    baseColor: Colors.transparent,
-                    highlightColor: TileStyles.primaryColor.withLightness(0.9),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: ColoredBox(
-                          color: Colors.yellow,
-                          child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height,
-                          )),
-                    ))
+                ? TileStyles.getShimmerPending(context)
                 : SizedBox.shrink(),
             Container(
               decoration: BoxDecoration(
@@ -487,10 +476,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                   Container(
                     decoration: BoxDecoration(
                       color: TileStyles.defaultBackgroundColor,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        topRight: Radius.circular(15),
-                      ),
                     ),
                     padding: EdgeInsets.all(16),
                     child: Text(

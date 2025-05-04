@@ -91,7 +91,8 @@ class _PreviewChartState extends State<PreviewChart> {
       if (denominator == 0) {
         denominator = 1;
       }
-      if (denominator > Duration.minutesPerHour) {
+      if (numerator > Duration.minutesPerHour &&
+          denominator > Duration.minutesPerHour) {
         isHours = true;
         numerator = tileSumDuration.inHours;
         denominator = timeLineDuration.inHours;
