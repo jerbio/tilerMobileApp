@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:shimmer/shimmer.dart';
+import 'package:tiler_app/util.dart';
 
 class TileStyles {
   static final double tileWidth = 350;
@@ -325,14 +327,12 @@ class TileStyles {
     offset: Offset(0, 0),
   );
 
-  static BorderRadius inputFieldBorderRadius = BorderRadius.only(
-      topLeft: Radius.circular(10),
-      topRight: Radius.circular(10),
-      bottomLeft: Radius.circular(10),
-      bottomRight: Radius.circular(10));
+  static Radius inputFieldRadius = const Radius.circular(50.0);
+  static BorderRadius inputFieldBorderRadius =
+      BorderRadius.all(inputFieldRadius);
   static const double inputHeight = 60;
   static const double inputFontSize = 20;
-  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(10, 0, 10, 0);
+  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(30, 15, 10, 15);
   static TextStyle inputTextStyle = TextStyle(
     fontSize: TileStyles.inputFontSize,
     fontFamily: TileStyles.rubikFontName,
@@ -356,11 +356,11 @@ class TileStyles {
         width: 1,
       ),
       borderRadius: const BorderRadius.all(
-        const Radius.circular(10.0),
+        const Radius.circular(60.0),
       ));
   static const BoxDecoration configUpdate_Selected = BoxDecoration(
       borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
+        const Radius.circular(60.0),
       ),
       color: TileStyles.primaryColor);
   static const List<Color> randomDefaultHues = [
@@ -398,4 +398,19 @@ class TileStyles {
   static IconData repetitionIcon = Icons.repeat_outlined;
   static IconData forecastIcon = FontAwesomeIcons.binoculars;
   static const double defaultCardElevation = 5.0;
+
+  static Widget getShimmerPending(BuildContext context) {
+    return Shimmer.fromColors(
+        baseColor: Colors.transparent,
+        highlightColor: TileStyles.primaryColor.withLightness(0.9),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          child: ColoredBox(
+              color: Colors.yellow,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+              )),
+        ));
+  }
 }

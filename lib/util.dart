@@ -1034,6 +1034,11 @@ extension ColorExtension on Color {
     HSLColor hslColor = HSLColor.fromColor(this);
     return hslColor.withLightness(lightness).toColor();
   }
+
+  Color withOpacity(double opacity) {
+    return Color.fromARGB((opacity * 255).toInt(), (this.r * 255).toInt(),
+        (this.g * 255).toInt(), (this.b * 255).toInt());
+  }
 }
 
 extension StringExtension on String? {
