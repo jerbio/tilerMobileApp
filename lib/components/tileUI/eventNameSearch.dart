@@ -592,24 +592,18 @@ class EventNameSearchState extends SearchWidgetState {
                       fontSize: TileStyles.textFontSize,
                       fontFamily: TileStyles.rubikFontName,
                       fontWeight: FontWeight.w500),
-                  contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                  contentPadding: TileStyles.inputFieldPadding,
                   fillColor: TileStyles.primaryContrastColor,
                   border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                     borderSide:
                         BorderSide(color: TileStyles.textBorderColor, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                     borderSide: BorderSide(
                       color: TileStyles.textBorderColor,
                       width: 1.5,

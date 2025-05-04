@@ -72,7 +72,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: Container(
-            padding: TileStyles.inputFieldPadding,
+            padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
             height: TileStyles.inputHeight,
             decoration: BoxDecoration(
                 color: textBackgroundColor,
