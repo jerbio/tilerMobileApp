@@ -104,9 +104,11 @@ class AddTileState extends State<AddTile> {
       "addTileCancelAndProceedRouteName";
 
   final EdgeInsets configUpdateIconPadding =
-      const EdgeInsets.fromLTRB(5, 3, 5, 5);
+      const EdgeInsets.fromLTRB(5, 2, 5, 5);
   final EdgeInsets configUpdatePadding =
-      const EdgeInsets.fromLTRB(5, 10, 10, 10);
+      const EdgeInsets.fromLTRB(5, 10, 10, 7);
+  bool isPendingAutoResult = false;
+  final inputBorderRadius = TileStyles.inputFieldRadius;
 
   @override
   void initState() {
@@ -137,10 +139,16 @@ class AddTileState extends State<AddTile> {
               .preTile!
               .description
               .isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
+            setState(() {
+              isPendingAutoResult = true;
+            });
             this
                 .scheduleApi
                 .getAutoResult(this.widget.preTile!.description!)
                 .then((remoteTileResponse) {
+              setState(() {
+                isPendingAutoResult = false;
+              });
               Location? _locationResponse;
               if (remoteTileResponse.item2.isNotEmpty) {
                 _locationResponse = remoteTileResponse.item2.last;
@@ -152,6 +160,12 @@ class AddTileState extends State<AddTile> {
                   }
                 });
                 isSubmissionReady();
+              }
+            }).whenComplete(() {
+              if (mounted) {
+                setState(() {
+                  isPendingAutoResult = false;
+                });
               }
             });
           }
@@ -382,6 +396,9 @@ class AddTileState extends State<AddTile> {
           const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       // ignore: cancel_subscriptions
       StreamSubscription streamSubScription = future.asStream().listen((event) {
+        setState(() {
+          isPendingAutoResult = true;
+        });
         this
             .scheduleApi
             .getAutoResult(tileNameController.text)
@@ -428,6 +445,12 @@ class AddTileState extends State<AddTile> {
             });
             isSubmissionReady();
           }
+        }).whenComplete(() {
+          if (mounted) {
+            setState(() {
+              isPendingAutoResult = false;
+            });
+          }
         });
       });
       if (mounted) {
@@ -466,23 +489,17 @@ class AddTileState extends State<AddTile> {
                     ),
                 filled: true,
                 isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
+                contentPadding: TileStyles.inputFieldPadding,
                 fillColor: TileStyles.primaryContrastColor,
                 border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                   borderSide: BorderSide(color: textBorderColor, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                   borderSide: BorderSide(
                     color: textBorderColor,
                     width: 1.5,
@@ -525,15 +542,13 @@ class AddTileState extends State<AddTile> {
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(5.0),
+                      borderRadius: BorderRadius.all(
+                        inputBorderRadius,
                       ),
                       borderSide: BorderSide(color: Colors.white, width: 0.5),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(5.0),
-                      ),
+                      borderRadius: BorderRadius.all(inputBorderRadius),
                       borderSide:
                           BorderSide(color: textBorderColor, width: 0.5),
                     ),
@@ -589,8 +604,8 @@ class AddTileState extends State<AddTile> {
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
               color: TileStyles.primaryContrastColor,
-              borderRadius: const BorderRadius.all(
-                const Radius.circular(8.0),
+              borderRadius: BorderRadius.all(
+                inputBorderRadius,
               ),
               border: Border.all(
                 color: textBorderColor,
@@ -1222,8 +1237,8 @@ class AddTileState extends State<AddTile> {
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
             color: TileStyles.primaryContrastColor,
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
+            borderRadius: BorderRadius.all(
+              inputBorderRadius,
             ),
             border: Border.all(
               color: textBorderColor,
@@ -1366,7 +1381,6 @@ class AddTileState extends State<AddTile> {
       AppLocalizations.of(context)!.appointment
     ];
 
-    String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
     Widget switchUp = Container(
       child: ToggleSwitch(
         // key: switchUpKey,
@@ -1428,9 +1442,16 @@ class AddTileState extends State<AddTile> {
       child: Container(
         margin: TileStyles.topMargin,
         alignment: Alignment.topCenter,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: childrenWidgets,
+        child: Stack(
+          children: [
+            isPendingAutoResult
+                ? TileStyles.getShimmerPending(context)
+                : SizedBox.shrink(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: childrenWidgets,
+            ),
+          ],
         ),
       ),
       onProceed: this.onProceed,
