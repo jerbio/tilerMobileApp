@@ -668,7 +668,6 @@
       "transportationMethodQuestion":"How do you move around?",
       "defineYourTimeRestrictions": "Define Your Time Restrictions",
       "setWorkHours": "Set Work Hours",
-      "setPersonalHours": "Set Personal Hours",
       "setYourBlockOutHours": "Set Your Block Out Hours",
       "travelMediumBiking": "Biking",
       "travelMediumTransit": "Transit",
@@ -707,5 +706,8 @@
       "dateOfBirth":"Date Of Birth",
       "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
       "reachingServerIssues":"Issues with reaching Tiler servers",
-      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone."
+      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",
+      "disconnect":"Disconnect",
+      "integrationsSetLocation":"Set location",
+      "googleCalender":"Google Calender"
 }

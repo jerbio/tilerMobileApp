@@ -1387,6 +1387,7 @@ class AddTileState extends State<AddTile> {
         initialLabelIndex: !isAppointment ? 0 : 1,
         totalSwitches: 2,
         animate: true,
+
         labels: tabButtons,
         onToggle: onTabTypeChange,
         activeFgColor: TileStyles.primaryContrastColor,
