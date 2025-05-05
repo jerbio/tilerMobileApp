@@ -251,9 +251,9 @@ class TileStyles {
     color: TileStyles.appBarTextColor,
   );
   static const datePickersMainStyle =
-  TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
   static const datePickersSaveStyle =
-  TextStyle(fontFamily: rubikFontName, color: primaryColor);
+      TextStyle(fontFamily: rubikFontName, color: primaryColor);
   static final BoxDecoration ribbonsButtonDefaultDecoration = BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
@@ -289,8 +289,8 @@ class TileStyles {
       color: Color.fromRGBO(31, 31, 31, 0.1),
       borderRadius: BorderRadius.circular(8));
   static final BoxDecoration tileIconContainerBoxDecorationMonthly =
-  BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.1), shape: BoxShape.circle);
+      BoxDecoration(
+          color: Color.fromRGBO(31, 31, 31, 0.1), shape: BoxShape.circle);
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(
@@ -331,9 +331,9 @@ class TileStyles {
   static const String evaluatingScheduleAsset =
       'assets/lottie/tiler-evaluating-card-swap.json';
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
-  SizedBox(height: 200);
+      SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
-  SizedBox(height: 150);
+      SizedBox(height: 150);
 
   static BoxShadow inputFieldBoxShadow = BoxShadow(
     color: Color.fromRGBO(168, 168, 168, 0.54),
@@ -427,5 +427,21 @@ class TileStyles {
                 height: MediaQuery.of(context).size.height,
               )),
         ));
+  }
+
+  static AppBar CancelAndProceedAppBar(String title) {
+    return AppBar(
+      title: Text(title),
+      centerTitle: true,
+      backgroundColor: TileStyles.appBarColor,
+      iconTheme: IconThemeData(color: TileStyles.appBarTextColor),
+      actionsIconTheme: IconThemeData(color: TileStyles.appBarTextColor),
+      titleTextStyle: TextStyle(
+        color: TileStyles.appBarTextColor,
+        fontSize: 20,
+        fontFamily: TileStyles.rubikFontName,
+      ),
+      leading: SizedBox.shrink(),
+    );
   }
 }

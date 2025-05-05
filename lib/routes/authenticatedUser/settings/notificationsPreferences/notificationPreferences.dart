@@ -9,6 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/userSettings.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/bloc/notifications_bloc.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
+import 'package:tiler_app/styles.dart';
 
 class NotificationPreferences extends StatefulWidget {
   static final String routeName = '/notificationsPreferences';
@@ -116,14 +117,8 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
           : null,
       routeName: NotificationPreferences
           .notificationPreferencesCancelAndProceedRouteName,
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(AppLocalizations.of(context)!.notificationsPreferences),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
+      appBar: TileStyles.CancelAndProceedAppBar(
+          AppLocalizations.of(context)!.notificationsPreferences),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
