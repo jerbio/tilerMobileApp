@@ -31,7 +31,8 @@ class AccountInfo extends StatelessWidget {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           title: Text(AppLocalizations.of(context)!.deleteAccount),
-          content: Text(AppLocalizations.of(context)!.deleteAccountConfirmation),
+          content:
+              Text(AppLocalizations.of(context)!.deleteAccountConfirmation),
           actions: [
             TextButton(
               child: Text(AppLocalizations.of(context)!.cancel),
@@ -47,8 +48,7 @@ class AccountInfo extends StatelessWidget {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 context.read<DeviceSettingBloc>().add(
-                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)
-                );
+                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId));
               },
             ),
           ],
@@ -180,6 +180,7 @@ class AccountInfo extends StatelessWidget {
     }
     return Column(
       children: [
+        const SizedBox(height: 16),
         _buildTextField(
           AppLocalizations.of(context)!.fullName,
           controller: _fullNameController,
@@ -202,14 +203,19 @@ class AccountInfo extends StatelessWidget {
         _buildTextField(
           AppLocalizations.of(context)!.dateOfBirth,
           controller: _dateOfBirthController,
-          onTap: () => _pickDate(context,userProfile),
+          onTap: () => _pickDate(context, userProfile),
         ),
         Padding(
-          padding: const EdgeInsets.only(left: 10.0,top: 10),
+          padding: const EdgeInsets.only(left: 10.0, top: 10),
           child: ListTile(
-            leading: SvgPicture.asset('assets/icons/settings/DeleteAccount.svg', colorFilter: ColorFilter.mode(TileStyles.primaryColor, BlendMode.srcIn),),
-            title: Text(AppLocalizations.of(context)!.deleteAccount, style: TextStyle(color: TileStyles.primaryColor )),
-            onTap: ()=> _showDeleteConfirmationDialog(context),
+            leading: SvgPicture.asset(
+              'assets/icons/settings/DeleteAccount.svg',
+              colorFilter:
+                  ColorFilter.mode(TileStyles.primaryColor, BlendMode.srcIn),
+            ),
+            title: Text(AppLocalizations.of(context)!.deleteAccount,
+                style: TextStyle(color: TileStyles.primaryColor)),
+            onTap: () => _showDeleteConfirmationDialog(context),
           ),
         )
       ],
@@ -304,14 +310,8 @@ class AccountInfo extends StatelessWidget {
                         ? () => _saveUserProfile(
                             context, state.sessionProfile!.userProfile!)
                         : null,
-                    appBar: AppBar(
-                      leading: IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      title: Text(
-                        AppLocalizations.of(context)!.accountInfo,
-                      ),
+                    appBar: TileStyles.CancelAndProceedAppBar(
+                      AppLocalizations.of(context)!.accountInfo,
                     ),
                     routeName: AccountInfo.routeName,
                     child: _buildContent(context, state));
