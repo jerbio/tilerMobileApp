@@ -824,7 +824,7 @@ class SignInComponentState extends State<SignInComponent>
       width: MediaQuery.of(context).size.width,
       child: !isPasswordsMatch
           ? Text(
-              "Passwords must match",
+              AppLocalizations.of(context)!.passwordsDontMatch,
               textAlign: TextAlign.start,
               style: TextStyle(
                 fontFamily: TileStyles.rubikFontName,

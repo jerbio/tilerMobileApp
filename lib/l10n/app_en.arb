@@ -709,5 +709,6 @@
       "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",
       "disconnect":"Disconnect",
       "integrationsSetLocation":"Set location",
-      "googleCalender":"Google Calender"
+      "googleCalender":"Google Calender",
+      "passwordsMustMatch":"Passwords must match"
 }
