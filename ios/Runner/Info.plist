@@ -27,7 +27,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.673600937696-q7rea1tnm0cj8nlubt5dq83ahh0jhojb</string>
+				<string>com.googleusercontent.apps.518133740160-c7i0gj4m2oett0iqjcq5s3rgm1l3gg2a</string>
 			</array>
 		</dict>
 		<dict>
@@ -46,9 +46,9 @@
 	<key>FlutterDeepLinkingEnabled</key>
 	<true/>
 	<key>GIDClientID</key>
-	<string>673600937696-q7rea1tnm0cj8nlubt5dq83ahh0jhojb.apps.googleusercontent.com</string>
+	<string>518133740160-c7i0gj4m2oett0iqjcq5s3rgm1l3gg2a.apps.googleusercontent.com</string>
 	<key>GIDServerClientID</key>
-	<string>673600937696-q7rea1tnm0cj8nlubt5dq83ahh0jhojb.apps.googleusercontent.com</string>
+	<string>518133740160-c7i0gj4m2oett0iqjcq5s3rgm1l3gg2a.apps.googleusercontent.com</string>
 	<key>GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_PERSONALIZATION_SIGNALS</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
