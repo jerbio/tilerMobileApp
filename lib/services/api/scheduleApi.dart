@@ -362,6 +362,7 @@ class ScheduleApi extends AppApi {
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
+        print(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             var subEventJson = jsonResult['Content'];
