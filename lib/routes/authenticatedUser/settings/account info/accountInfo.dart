@@ -48,7 +48,8 @@ class AccountInfo extends StatelessWidget {
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 context.read<DeviceSettingBloc>().add(
-                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId));
+                    DeleteAccountMainSettingDeviceSettingEvent(
+                        id: _requestId, context: dialogContext));
               },
             ),
           ],
@@ -145,6 +146,16 @@ class AccountInfo extends StatelessWidget {
   Future<bool> _saveUserProfile(
       BuildContext context, UserProfile userProfile) async {
     userProfile.fullName = _fullNameController.text;
+    if (userProfile.fullName.isNot_NullEmptyOrWhiteSpace()) {
+      String fullName = userProfile.fullName!;
+      fullName = fullName.trim();
+      if (fullName.isNot_NullEmptyOrWhiteSpace()) {
+        var names = fullName.split(' ');
+        userProfile.firstName = names.first;
+        userProfile.lastName = names.skip(1).join(' ');
+      }
+    }
+
     userProfile.username = _usernameController.text;
     userProfile.phoneNumber = _phoneNumberController.text;
     final completer = Completer<bool>();

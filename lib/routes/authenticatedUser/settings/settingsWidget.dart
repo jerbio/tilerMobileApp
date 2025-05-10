@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
@@ -14,6 +15,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
@@ -31,7 +33,7 @@ class Settings extends StatelessWidget {
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
             NotificationOverlayMessage();
-        if (state is DeviceSettingLoaded && state.shouldLogout) {
+        if (state is DeviceSettingInitial && state.shouldLogout) {
           print("reset started");
           context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
           context
@@ -120,9 +122,23 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
               color: TileStyles.primaryColor,
-              onTap: () => context
-                  .read<DeviceSettingBloc>()
-                  .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
+              onTap: () {
+                // context
+                //     .read<DeviceSettingBloc>()
+                //     .add(LogOutMainSettingDeviceSettingEvent(id: _requestId));
+
+                AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
+                OneSignal.logout().then((value) {
+                  print("successful logged out of onesignal");
+                }).catchError((onError) {
+                  print("Failed to logout of onesignal");
+                  print(onError);
+                });
+
+                context.read<DeviceSettingBloc>().add(
+                    LogOutMainSettingDeviceSettingEvent(
+                        id: _requestId, context: context));
+              },
             ),
             // _buildListTile(
             //   icon: 'assets/icons/settings/DeleteAccount.svg',
@@ -184,8 +200,8 @@ class Settings extends StatelessWidget {
                   activeColor: Colors.black,
                   inactiveTrackColor: Colors.grey.shade300,
                   activeTrackColor: Colors.black,
-                  thumbColor: MaterialStateProperty.all(Colors.white),
-                  thumbIcon: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  thumbIcon: WidgetStateProperty.resolveWith((states) {
                     return Icon(
                       state.isDarkMode
                           ? Icons.nightlight_round

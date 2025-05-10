@@ -55,6 +55,8 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
 
     getContextCallBack = event.getContextCallBack;
     await sessionProfile.initialize().then((value) {
+      print("Session Profile initialized successfully");
+      print(value);
       emit(DeviceSettingLoaded(
           id: event.id,
           sessionProfile: sessionProfile,
@@ -266,11 +268,10 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       await authentication.deauthenticateCredentials();
       await secureStorageManager.deleteAllStorageData();
 
-      emit(DeviceSettingLoaded(
-        id: event.id,
+      this.sessionProfile = SessionProfile();
+      emit(DeviceSettingInitial(
         isDarkMode: state.isDarkMode,
         shouldLogout: true,
-        sessionProfile: SessionProfile(),
       ));
     } catch (e) {
       emit(DeviceSettingError(
@@ -287,7 +288,8 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     try {
       bool result = await authorizationApi.deleteTilerAccount();
       if (result) {
-        add(LogOutMainSettingDeviceSettingEvent(id: event.id));
+        add(LogOutMainSettingDeviceSettingEvent(
+            id: event.id, context: event.context));
       }
     } catch (e) {
       emit(DeviceSettingError(
@@ -298,6 +300,4 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       ));
     }
   }
-
-
 }
