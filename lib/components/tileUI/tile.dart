@@ -25,6 +25,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
@@ -50,6 +51,7 @@ class TileWidget extends StatefulWidget {
 class TileWidgetState extends State<TileWidget>
     with SingleTickerProviderStateMixin {
   bool isMoreDetailEnabled = false;
+  double textFontSize = 15;
   StreamSubscription? pendingScheduleRefresh;
   late AnimationController controller;
   late Animation<double> fadeAnimation;
@@ -523,6 +525,13 @@ class TileWidgetState extends State<TileWidget>
       allElements.insert(1, addressWidget);
     }
 
+    Widget timeFrameWidget = TimeFrameWidget(
+      timeRange: widget.subEvent,
+      fontSize: textFontSize,
+      textColor:
+          isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor,
+    );
+
     Widget tileTimeFrame = Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Row(
@@ -547,11 +556,23 @@ class TileWidgetState extends State<TileWidget>
           // Text
           Padding(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: TimeFrameWidget(
-              timeRange: widget.subEvent,
-              textColor: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+            child: Row(
+              children: [
+                timeFrameWidget,
+                SizedBox(
+                  width: 5,
+                ),
+                isTardy
+                    ? Text(
+                        AppLocalizations.of(context)!.parenthesisLate,
+                        style: TextStyle(
+                            fontSize: textFontSize,
+                            fontFamily: TileStyles.rubikFontName,
+                            fontWeight: FontWeight.normal,
+                            color: TileStyles.lateTextColor),
+                      )
+                    : SizedBox.shrink()
+              ],
             ),
           ),
         ],

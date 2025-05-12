@@ -7,17 +7,21 @@ class TimeFrameWidget extends StatelessWidget {
   Color? textColor;
   double? fontSize;
   bool isWeeklyView;
-  TimeFrameWidget({required this.timeRange, this.textColor,this.fontSize,this.isWeeklyView=false});
+  TimeFrameWidget(
+      {required this.timeRange,
+      this.textColor,
+      this.fontSize,
+      this.isWeeklyView = false});
 
   String? getTimelineString(BuildContext context, TimeRange timeRange) {
-    String timeFrameString= MaterialLocalizations.of(context).formatTimeOfDay(
-            TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
-                timeRange.start!.toInt())));
-    if(!isWeeklyView)
-      timeFrameString+=' - ' +
-        MaterialLocalizations.of(context).formatTimeOfDay(
-            TimeOfDay.fromDateTime(
-                DateTime.fromMillisecondsSinceEpoch(timeRange.end!.toInt())));
+    String timeFrameString = MaterialLocalizations.of(context).formatTimeOfDay(
+        TimeOfDay.fromDateTime(
+            DateTime.fromMillisecondsSinceEpoch(timeRange.start!.toInt())));
+    if (!isWeeklyView)
+      timeFrameString += ' - ' +
+          MaterialLocalizations.of(context).formatTimeOfDay(
+              TimeOfDay.fromDateTime(
+                  DateTime.fromMillisecondsSinceEpoch(timeRange.end!.toInt())));
     return timeFrameString;
   }
 
@@ -27,8 +31,8 @@ class TimeFrameWidget extends StatelessWidget {
     return Container(
       child: Text(timeFrameString!,
           style: TextStyle(
-              fontSize: this.fontSize??15,
-              fontFamily: 'Rubik',
+              fontSize: this.fontSize ?? 15,
+              fontFamily: TileStyles.rubikFontName,
               fontWeight: FontWeight.normal,
               color: this.textColor ?? TileStyles.defaultTextColor)),
     );

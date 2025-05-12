@@ -213,7 +213,10 @@ class AuthorizationApi extends AppApi {
               injectLocation: false, analyze: false)
           .then((response) {
         var jsonResult = jsonDecode(response.body);
-        return jsonResult;
+        if (isJsonResponseOk(jsonResult)) {
+          return jsonResult;
+        }
+        return null;
       });
     }
   }

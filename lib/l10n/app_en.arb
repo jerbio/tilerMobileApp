@@ -710,5 +710,7 @@
       "disconnect":"Disconnect",
       "integrationsSetLocation":"Set location",
       "googleCalender":"Google Calender",
-      "passwordsMustMatch":"Passwords must match"
+      "passwordsMustMatch":"Passwords must match",
+      "parenthesisLate":"(Late)",
+      "failedToAddIntegration":"Failed to add integration"
 }
