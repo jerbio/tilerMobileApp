@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import '../../styles.dart';
 
 class DurationWidget extends StatelessWidget {
@@ -21,7 +22,7 @@ class DurationWidget extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.access_time_rounded,
-                    color: TileStyles.textFieldTextColor,
+                    color: TileColors.textFieldTextColor,
                   ),
                   SizedBox(
                     width: 10,
@@ -29,7 +30,7 @@ class DurationWidget extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context)!.duration,
                     style: TextStyle(
-                        fontSize: 17, color: TileStyles.textFieldTextColor),
+                        fontSize: 17, color: TileColors.textFieldTextColor),
                   ),
                 ],
               ),

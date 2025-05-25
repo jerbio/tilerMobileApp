@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class DatePickerField extends StatelessWidget {
@@ -15,7 +16,7 @@ class DatePickerField extends StatelessWidget {
       padding: EdgeInsets.only(right: 15, top: 10, left: 15),
       child: TextFormField(
           controller: dateController,
-          style: TextStyle(color: TileStyles.textFieldTextColor, fontSize: 17),
+          style: TextStyle(color: TileColors.textFieldTextColor, fontSize: 17),
           textAlign: TextAlign.start,
           decoration: InputDecoration(
               enabledBorder: OutlineInputBorder(
@@ -26,10 +27,10 @@ class DatePickerField extends StatelessWidget {
               filled: true,
               prefixIcon: Icon(
                 Icons.calendar_month,
-                color: TileStyles.textFieldTextColor,
+                color: TileColors.textFieldTextColor,
               ),
               hintStyle: TextStyle(
-                  color: TileStyles.textFieldTextColor, fontSize: 17)),
+                  color: TileColors.textFieldTextColor, fontSize: 17)),
           onTap: () async {
             List months = [
               'Jan',

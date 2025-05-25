@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -52,8 +54,8 @@ class AddTileState extends State<AddTile> {
   Key switchUpKey = Key(Utility.getUuid);
   late AutoTile? autoTile;
   bool isAppointment = false;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.textBorderColor;
   final Color inputFieldIconColor = Color(0xFFEF3054); // Changed to #EF3054
   final Color iconColor = Color(0xFFEF3054);
   // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
@@ -443,19 +445,19 @@ class AddTileState extends State<AddTile> {
             child: TextField(
               controller: tileNameController,
               style: TextStyle(
-                color: TileStyles.black,
+                color: TileColors.black,
                 fontSize: 20,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,
-                hintStyle: TextStyle(color: TileStyles.inactiveTextColor
+                hintStyle: TextStyle(color: TileColors.inactiveTextColor
                     // TileStyles.primaryColorDarkHSL.toColor()
                     ),
                 filled: true,
                 isDense: true,
                 contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
-                fillColor: TileStyles.primaryContrastColor,
+                fillColor: TileColors.primaryContrastColor,
                 border: OutlineInputBorder(
                   borderRadius: const BorderRadius.all(
                     const Radius.circular(50.0),
@@ -502,7 +504,7 @@ class AddTileState extends State<AddTile> {
                   ],
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
-                    hintStyle: TextStyle(color: TileStyles.primaryColor),
+                    hintStyle: TextStyle(color: TileColors.primaryColor),
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
@@ -576,7 +578,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-              color: TileStyles.primaryContrastColor,
+              color: TileColors.primaryContrastColor,
               borderRadius: const BorderRadius.all(
                 const Radius.circular(8.0),
               ),
@@ -602,11 +604,11 @@ class AddTileState extends State<AddTile> {
                     style: textButtonString ==
                             AppLocalizations.of(context)!.durationStar
                         ? TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
-                            color: TileStyles.inactiveTextColor)
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: TileColors.inactiveTextColor)
                         : TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
-                            color: TileStyles.black),
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: TileColors.black),
                   ),
                 ),
               )
@@ -1061,9 +1063,9 @@ class AddTileState extends State<AddTile> {
             .toColor();
 
     double colorConst = 255;
-    tile.BColor = (randomColor.b * colorConst).toInt().toString();
-    tile.GColor = (randomColor.g * colorConst).toInt().toString();
-    tile.RColor = (randomColor.r * colorConst).toInt().toString();
+    // tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    // tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    // tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
@@ -1203,7 +1205,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-            color: TileStyles.primaryContrastColor,
+            color: TileColors.primaryContrastColor,
             borderRadius: const BorderRadius.all(
               const Radius.circular(8.0),
             ),
@@ -1230,10 +1232,10 @@ class AddTileState extends State<AddTile> {
                     textButtonString,
                     style: this._endTime == null
                         ? TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
-                            color: TileStyles.inactiveTextColor)
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: TileColors.inactiveTextColor)
                         : TextStyle(
-                            fontFamily: TileStyles.rubikFontName,
+                            fontFamily: TileTextStyles.rubikFontName,
                             color: Colors.black),
                   ),
                 ),
@@ -1357,10 +1359,10 @@ class AddTileState extends State<AddTile> {
         animate: true,
         labels: tabButtons,
         onToggle: onTabTypeChange,
-        activeFgColor: TileStyles.primaryContrastColor,
-        activeBgColor: [TileStyles.primaryColor],
-        inactiveBgColor: TileStyles.inactiveTextColor,
-        inactiveFgColor: TileStyles.primaryContrastColor,
+        activeFgColor: TileColors.primaryContrastColor,
+        activeBgColor: [TileColors.primaryColor],
+        inactiveBgColor: TileColors.inactiveTextColor,
+        inactiveFgColor: TileColors.primaryContrastColor,
       ),
     );
 
@@ -1395,11 +1397,11 @@ class AddTileState extends State<AddTile> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       routeName: addTileCancelAndProceedRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.appBarColor,
+        backgroundColor: TileColors.appBarColor,
         title: Text(
           AppLocalizations.of(context)!.addTile,
           style: TextStyle(
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),
@@ -1422,7 +1424,7 @@ class AddTileState extends State<AddTile> {
               margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Text(
                 AppLocalizations.of(context)!.starAreRequired,
-                style: TextStyle(color: TileStyles.disabledTextColor),
+                style: TextStyle(color: TileColors.disabledTextColor),
               ),
             )
           : null,

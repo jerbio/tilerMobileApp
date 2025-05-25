@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import '../../constants.dart' as Constants;
 
 class SearchWidget extends StatefulWidget {
@@ -50,7 +51,7 @@ class SearchWidgetState extends State<SearchWidget> {
           });
         }
         BoxDecoration resultContainerDecoration = BoxDecoration(
-          color: TileStyles.primaryColorLightHSL.toColor(),
+          color: TileColors.primaryColorLightHSL.toColor(),
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(10),
               topRight: Radius.circular(10),
@@ -84,7 +85,7 @@ class SearchWidgetState extends State<SearchWidget> {
                     alignment: Alignment.topLeft,
                     children: [
                       Shimmer.fromColors(
-                          baseColor: TileStyles.primaryColorLightHSL
+                          baseColor: TileColors.primaryColorLightHSL
                               .toColor()
                               .withAlpha(100),
                           highlightColor: Colors.white.withAlpha(100),

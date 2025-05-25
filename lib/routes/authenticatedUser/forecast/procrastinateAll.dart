@@ -8,6 +8,7 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class ProcrastinateAll extends StatefulWidget {
@@ -65,11 +66,11 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     return CancelAndProceedTemplateWidget(
       routeName: procrastinateAllCancelAndProceedRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileColors.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.defer,
           style: TextStyle(
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),

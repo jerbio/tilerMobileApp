@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareListWidget.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareRoute extends StatefulWidget {
@@ -25,10 +26,10 @@ class _TileShareState extends State<TileShareRoute> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
             ),
           ),
-          backgroundColor: TileStyles.appBarColor,
+          backgroundColor: TileColors.appBarColor,
           actions: [
             ElevatedButton.icon(
                 style: TileStyles.enabledButtonStyle,
@@ -46,7 +47,7 @@ class _TileShareState extends State<TileShareRoute> {
                 },
                 icon: Icon(
                   Icons.add,
-                  color: TileStyles.primaryContrastColor,
+                  color: TileColors.primaryContrastColor,
                 ),
                 label: SizedBox.shrink())
           ],
@@ -55,7 +56,7 @@ class _TileShareState extends State<TileShareRoute> {
             children: [
               Icon(
                 Icons.share,
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
               ),
               SizedBox.square(
                 dimension: 5,
@@ -73,7 +74,7 @@ class _TileShareState extends State<TileShareRoute> {
                   children: [
                     Icon(
                       Icons.outbox_outlined,
-                      color: TileStyles.primaryContrastColor,
+                      color: TileColors.primaryContrastColor,
                     ),
                     Text(
                       AppLocalizations.of(context)!.outBound,
@@ -86,7 +87,7 @@ class _TileShareState extends State<TileShareRoute> {
                   icon: Column(
                 children: [
                   Icon(Icons.inbox_outlined,
-                      color: TileStyles.primaryContrastColor),
+                      color: TileColors.primaryContrastColor),
                   Text(
                     AppLocalizations.of(context)!.inBound,
                     style: TileStyles.titleBarStyle,
@@ -94,8 +95,8 @@ class _TileShareState extends State<TileShareRoute> {
                 ],
               )),
             ],
-            dividerColor: TileStyles.appBarTextColor,
-            indicatorColor: TileStyles.appBarTextColor,
+            dividerColor: TileColors.appBarTextColor,
+            indicatorColor: TileColors.appBarTextColor,
           ),
         ),
         body: TabBarView(

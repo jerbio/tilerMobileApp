@@ -42,21 +42,25 @@ import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
+import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/api/onBoardingApi.dart';
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
+
+import 'theme/tile_colors.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -78,7 +82,7 @@ Future main() async {
   await dotenv.load(fileName: ".env");
   if (!Constants.isDebug) {
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      //options: DefaultFirebaseOptions.currentPlatform,
     );
   }
   runApp(TilerApp());
@@ -177,14 +181,17 @@ class _TilerAppState extends State<TilerApp> {
     return MaterialApp(
         title: 'Tiler',
         debugShowCheckedModeBanner: false,
+      // theme: ThemeManager.getLightTheme(),
+      // darkTheme: ThemeManager.getDarkTheme(),
         theme: ThemeData(
-          fontFamily: TileStyles.rubikFontName,
-          primarySwatch: MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
+          fontFamily: TileTextStyles.rubikFontName,
+          //0xFFEF3054
+          primarySwatch: MaterialColor(0xFF880E4F, TileColors.themeMaterialColor),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         darkTheme: ThemeData(
-          fontFamily: TileStyles.rubikFontName,
-          primarySwatch: MaterialColor(0xFF880E4F,  TileStyles.themeMaterialColor),
+          fontFamily: TileTextStyles.rubikFontName,
+          primarySwatch: MaterialColor(0xFF880E4F,  TileColors.themeMaterialColor),
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,

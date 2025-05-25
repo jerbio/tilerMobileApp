@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileSh
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
@@ -164,12 +165,12 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.email_outlined),
-        color: TileStyles.primaryContrastColor,
+        color: TileColors.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: null,
       side: BorderSide.none,
-      backgroundColor: TileStyles.primaryColor,
+      backgroundColor: TileColors.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
   }

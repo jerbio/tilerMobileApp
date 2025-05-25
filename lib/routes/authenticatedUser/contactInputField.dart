@@ -3,6 +3,8 @@ import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class ContactInputFieldWidget extends StatefulWidget {
@@ -126,8 +128,8 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           decoration: InputDecoration(
               hintStyle: TextStyle(
                   fontSize: TileStyles.inputFontSize,
-                  fontFamily: TileStyles.rubikFontName,
-                  color: TileStyles.inputFieldTextColor,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  color: TileColors.inputFieldTextColor,
                   fontWeight: FontWeight.w100),
               hintText: AppLocalizations.of(context)!.addContact,
               border: InputBorder.none),
@@ -149,18 +151,18 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.person_2_outlined),
-        color: TileStyles.primaryContrastColor,
+        color: TileColors.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: this.widget.isReadOnly
           ? null
           : Icon(
               Icons.close,
-              color: TileStyles.primaryContrastColor,
+              color: TileColors.primaryContrastColor,
             ),
       side: BorderSide.none,
       onDeleted: this.widget.isReadOnly ? null : () => _removeContact(contact),
-      backgroundColor: TileStyles.primaryColor,
+      backgroundColor: TileColors.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
   }

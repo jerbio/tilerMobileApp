@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DurationInputWidget extends StatefulWidget {
@@ -18,9 +20,9 @@ class DurationInputWidget extends StatefulWidget {
 
 class _DurationInputWidgetState extends State<DurationInputWidget> {
   Duration? _duration;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.textBorderColor;
+  final Color inputFieldIconColor = TileColors.inputFieldTextColor;
   @override
   void initState() {
     super.initState();
@@ -90,12 +92,12 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
                       child: Text(
                         textButtonString,
                         style: TextStyle(
-                          color: TileStyles.inputFieldTextColor,
+                          color: TileColors.inputFieldTextColor,
                           fontWeight: (_duration ?? Duration.zero).inSeconds >
                                   Duration.secondsPerMinute
                               ? TileStyles.inputFieldFontWeight
                               : TileStyles.inputFieldHintFontWeight,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                         ),
                       ),
                     ))

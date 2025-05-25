@@ -8,6 +8,8 @@ import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 // import 'package:weekday_selector/weekday_selector.dart';
@@ -112,7 +114,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         style: TextStyle(
           fontSize: 20,
           color: isSelected ? Colors.blue : Colors.grey,
-          fontFamily: TileStyles.rubikFontName,
+          fontFamily: TileTextStyles.rubikFontName,
         ),
       ),
     );
@@ -162,20 +164,20 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 decoration: BoxDecoration(
-                    color: TileStyles.textBackgroundColor,
+                    color: TileColors.textBackgroundColor,
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(8.0),
                     ),
                     border: Border.all(
                       color: this.isDeadlineValid()
-                          ? TileStyles.textBorderColor
+                          ? TileColors.textBorderColor
                           : Colors.redAccent,
                       width: 1.5,
                     )),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.calendar_month, color: TileStyles.iconColor),
+                    Icon(Icons.calendar_month, color: TileColors.iconColor),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
@@ -190,7 +192,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                           child: Text(
                             textButtonString,
                             style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                                 color: this.isDeadlineValid()
                                     ? null
                                     : Colors.grey),
@@ -388,7 +390,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       onProceed: this.onProceed,
       onCancel: this.onCancel,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileColors.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.repetition,
           style: TileStyles.titleBarStyle,

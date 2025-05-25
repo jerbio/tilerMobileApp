@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 import 'bloc/integrations_bloc.dart';
 
@@ -92,7 +93,7 @@ class Connections extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: TileStyles.primaryColor),
+        side: BorderSide(color: TileColors.primaryColor),
       ),
     );
 

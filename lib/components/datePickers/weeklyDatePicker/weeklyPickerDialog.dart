@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -54,7 +55,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                   isTodayHighlighted: false,
                   defaultDecoration: BoxDecoration(shape: BoxShape.rectangle),
                   selectedDecoration:
-                      BoxDecoration(color: TileStyles.primaryColor),
+                      BoxDecoration(color: TileColors.primaryColor),
                   outsideDecoration: BoxDecoration(shape: BoxShape.rectangle),
                 ),
                 calendarBuilders: CalendarBuilders(
@@ -74,16 +75,16 @@ class WeeklyPickerDialog extends StatelessWidget {
                         border: Border(
                           left: isFirstDay
                               ? BorderSide(
-                                  color: TileStyles.primaryColor, width: 2)
+                                  color: TileColors.primaryColor, width: 2)
                               : BorderSide.none,
                           right: isLastDay
                               ? BorderSide(
-                                  color: TileStyles.primaryColor, width: 2)
+                                  color: TileColors.primaryColor, width: 2)
                               : BorderSide.none,
                           top: BorderSide(
-                              color: TileStyles.primaryColor, width: 2),
+                              color: TileColors.primaryColor, width: 2),
                           bottom: BorderSide(
-                              color: TileStyles.primaryColor, width: 2),
+                              color: TileColors.primaryColor, width: 2),
                         ),
                         borderRadius: isFirstDay
                             ? BorderRadius.horizontal(left: Radius.circular(25))
@@ -95,7 +96,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         '${date.day}',
-                        style: TextStyle(color: TileStyles.defaultTextColor),
+                        style: TextStyle(color: TileColors.defaultTextColor),
                       ),
                     );
                   },
@@ -110,7 +111,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                       child: Text(
                         '${date.day}',
                         style:
-                            TextStyle(color: TileStyles.primaryContrastColor),
+                            TextStyle(color: TileColors.primaryContrastColor),
                       ),
                     );
                   },
@@ -163,7 +164,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                 style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,
-                    color: TileStyles.primaryColor)),
+                    color: TileColors.primaryColor)),
           ),
           IconButton(
               icon: Icon(Icons.arrow_forward),
@@ -207,7 +208,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                     margin: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                       border: isSelected
-                          ? Border.all(color: TileStyles.primaryColor, width: 2)
+                          ? Border.all(color: TileColors.primaryColor, width: 2)
                           : Border.all(color: Colors.transparent, width: 2),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -217,7 +218,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
-                        color: TileStyles.defaultTextColor,
+                        color: TileColors.defaultTextColor,
                       ),
                     ),
                   ),

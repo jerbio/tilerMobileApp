@@ -18,6 +18,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class PreviewAddWidget extends StatefulWidget {
@@ -191,7 +192,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           children: [
             FaIcon(
               TileStyles.forecastIcon,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileForecast,
@@ -211,7 +212,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   Widget renderProcastinateAllButton() {
-    const Color cheveronColor = TileStyles.primaryColor;
+    const Color cheveronColor = TileColors.primaryColor;
     return ElevatedButton(
         child: Column(
           children: [
@@ -286,7 +287,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           children: [
             Icon(
               Icons.more_time,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileOptions,
@@ -318,7 +319,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           children: [
             FaIcon(
               FontAwesomeIcons.shuffle,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileShuffle,
@@ -344,7 +345,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           children: [
             Icon(
               Icons.refresh,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               size: 20,
             ),
             Text(AppLocalizations.of(context)!.previewTileRevise,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? onCancel;
@@ -105,7 +106,7 @@ class CancelAndProceedTemplateWidgetState
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(10),
                 bottomRight: Radius.circular(10)),
-            color: TileStyles.primaryColor),
+            color: TileColors.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             elevation: 0.0,
@@ -148,7 +149,7 @@ class CancelAndProceedTemplateWidgetState
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
-            color: TileStyles.primaryColor),
+            color: TileColors.primaryColor),
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
               elevation: 0.0,

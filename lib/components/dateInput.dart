@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -14,9 +16,9 @@ class DateInputWidget extends StatefulWidget {
 }
 
 class _DateInputWidgetState extends State<DateInputWidget> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.textBorderColor;
+  final Color inputFieldIconColor = TileColors.inputFieldTextColor;
   String textButtonString = "";
   DateTime? _time;
   @override
@@ -93,11 +95,11 @@ class _DateInputWidgetState extends State<DateInputWidget> {
                     child: Text(
                       textButtonString,
                       style: TextStyle(
-                        color: TileStyles.inputFieldTextColor,
+                        color: TileColors.inputFieldTextColor,
                         fontWeight: (this._time != null)
                             ? TileStyles.inputFieldFontWeight
                             : TileStyles.inputFieldHintFontWeight,
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                       ),
                     ),
                   ))

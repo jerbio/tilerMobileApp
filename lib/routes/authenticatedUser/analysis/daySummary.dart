@@ -7,6 +7,8 @@ import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../../bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -41,7 +43,7 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
+        baseColor: TileColors.primaryColorLightHSL.toColor().withAlpha(50),
         highlightColor: Colors.white.withAlpha(100),
         child: Container(
           decoration: BoxDecoration(
@@ -79,7 +81,7 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.check_circle,
-              color: TileStyles.greenCheck,
+              color: TileColors.greenCheck,
               size: 30.0,
             ),
             Text(
@@ -170,8 +172,8 @@ class _DaySummaryState extends State<DaySummary> {
                 Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
                 style: TextStyle(
                     fontSize: 30,
-                    fontFamily: TileStyles.rubikFontName,
-                    color: TileStyles.primaryColor,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    color: TileColors.primaryColor,
                     fontWeight: FontWeight.w700)),
           );
 

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class WeekDayButton extends StatefulWidget {
@@ -39,7 +41,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           DateFormat(DateFormat.DAY).format(this.dateTime),
           style:TextStyle(
               fontSize: 20,
-              fontFamily: TileStyles.rubikFontName,
+              fontFamily: TileTextStyles.rubikFontName,
               color:  dateTime.isToday?Colors.white:Colors.black
           ),
         ),
@@ -50,7 +52,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
                 DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
                 style: TextStyle(
                     fontSize: 12,
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     color: Colors.grey)
               ),
       )

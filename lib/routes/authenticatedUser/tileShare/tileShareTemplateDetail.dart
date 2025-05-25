@@ -15,6 +15,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareTemplateDetailWidget extends StatefulWidget {
@@ -497,14 +498,14 @@ class _TileShareTemplateDetailState
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
+          backgroundColor: TileColors.appBarColor,
           automaticallyImplyLeading: false,
           centerTitle: true,
           leading: TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
             ),
           ),
           title: this.tileShareTemplate.name != null
@@ -519,7 +520,7 @@ class _TileShareTemplateDetailState
                     if (this.tileShareTemplate.name == null)
                       Icon(
                         Icons.share,
-                        color: TileStyles.appBarTextColor,
+                        color: TileColors.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),

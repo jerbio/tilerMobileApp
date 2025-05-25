@@ -27,6 +27,8 @@ import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../../../constants.dart' as Constants;
@@ -60,16 +62,16 @@ class _TileDetailState extends State<TileDetail> {
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
   String requestId = Utility.getUuid;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColor;
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.textBorderColor;
+  final Color inputFieldIconColor = TileColors.primaryColor;
   bool reloadOtherEntitiesAfterLoadingCalevent = false;
   late final SettingsApi settingsApi;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   RestrictionProfile? _workRestrictionProfile;
   RestrictionProfile? _personalRestrictionProfile;
   final TextStyle defaultFontStyle = TextStyle(
-      fontFamily: TileStyles.rubikFontName,
+      fontFamily: TileTextStyles.rubikFontName,
       fontWeight: FontWeight.normal,
       fontSize: 24);
   static final String tileDetailCancelAndProceedRouteName =
@@ -381,7 +383,7 @@ class _TileDetailState extends State<TileDetail> {
                       child: Text(
                         textButtonString,
                         style: TextStyle(
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                         ),
                       ),
                     ))
@@ -671,11 +673,11 @@ class _TileDetailState extends State<TileDetail> {
           routeName: tileDetailCancelAndProceedRouteName,
           onProceed: this.onProceed,
           appBar: AppBar(
-            backgroundColor: TileStyles.primaryColor,
+            backgroundColor: TileColors.primaryColor,
             title: Text(
               AppLocalizations.of(context)!.edit,
               style: TextStyle(
-                  color: TileStyles.appBarTextColor,
+                  color: TileColors.appBarTextColor,
                   fontWeight: FontWeight.w800,
                   fontSize: 22),
             ),
@@ -761,7 +763,7 @@ class _TileDetailState extends State<TileDetail> {
                                   style: TextStyle(
                                       color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
+                                      fontFamily: TileTextStyles.rubikFontName,
                                       fontWeight: FontWeight.w500)),
                             ),
                             Container(
@@ -770,7 +772,7 @@ class _TileDetailState extends State<TileDetail> {
                               child: Switch(
                                 value:
                                     this.editTilerEvent!.isAutoReviseDeadline!,
-                                activeColor: TileStyles.primaryColor,
+                                activeColor: TileColors.primaryColor,
                                 onChanged: (bool value) {
                                   setState(() {
                                     this.editTilerEvent!.isAutoReviseDeadline =
@@ -798,7 +800,7 @@ class _TileDetailState extends State<TileDetail> {
                                   style: TextStyle(
                                       color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
+                                      fontFamily: TileTextStyles.rubikFontName,
                                       fontWeight: FontWeight.w500)),
                             ),
                             Container(
@@ -827,7 +829,7 @@ class _TileDetailState extends State<TileDetail> {
                                   style: TextStyle(
                                       color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
+                                      fontFamily: TileTextStyles.rubikFontName,
                                       fontWeight: FontWeight.w500)),
                             ),
                             _editStartDateAndTime!
@@ -847,7 +849,7 @@ class _TileDetailState extends State<TileDetail> {
                                   style: TextStyle(
                                       color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
+                                      fontFamily: TileTextStyles.rubikFontName,
                                       fontWeight: FontWeight.w500)),
                             ),
                             _editEndDateAndTime!

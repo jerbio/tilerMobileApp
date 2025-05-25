@@ -4,6 +4,7 @@ import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/nextTileSuggestionWidget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class NextTileSuggestionCarouselWidget extends StatefulWidget {
   List<NextTileSuggestion> nextTileSuggestions;
@@ -58,7 +59,7 @@ class _NextTileSuggestionCarouselState
                 style: TextStyle(
                     color: Color.fromRGBO(31, 31, 31, 1),
                     fontSize: 10,
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w500),
               ),
             )

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class SingleChoice extends StatefulWidget {
   final Function? onChanged;
@@ -27,21 +28,21 @@ class _SingleChoiceState extends State<SingleChoice> {
           foregroundColor: MaterialStateProperty.resolveWith<Color>(
             (Set<MaterialState> states) {
               if (states.contains(MaterialState.selected)) {
-                return TileStyles.appBarTextColor;
+                return TileColors.appBarTextColor;
               }
-              return TileStyles.primaryColor;
+              return TileColors.primaryColor;
             },
           ),
           backgroundColor: MaterialStateProperty.resolveWith<Color>(
             (Set<MaterialState> states) {
               if (states.contains(MaterialState.selected)) {
-                return TileStyles.primaryColor;
+                return TileColors.primaryColor;
               }
               return Colors.transparent;
             },
           ),
           side: MaterialStateBorderSide.resolveWith(
-              (states) => BorderSide(color: TileStyles.primaryColor))),
+              (states) => BorderSide(color: TileColors.primaryColor))),
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(
             value: TilePriority.low,

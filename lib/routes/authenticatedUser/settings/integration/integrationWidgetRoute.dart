@@ -10,6 +10,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class IntegrationWidgetRoute extends StatelessWidget {
   static final String routeName = '/Integrations';
@@ -34,8 +35,8 @@ class IntegrationWidgetRoute extends StatelessWidget {
   Widget renderAddNewIntegration(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: TileStyles.primaryColor,
-        foregroundColor:TileStyles.primaryContrastTextColor,
+        backgroundColor: TileColors.primaryColor,
+        foregroundColor:TileColors.primaryContrastTextColor,
       ),
       onPressed:()=> context.read<IntegrationsBloc>().add(AddIntegrationEvent()),
       // if(value !=null){
@@ -262,7 +263,7 @@ class _IntegrationItem extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 30),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: TileStyles.primaryColor),
+                side: BorderSide(color: TileColors.primaryColor),
               ),
             ),
             onPressed: ()=> context.read<IntegrationsBloc>().add(DeleteIntegrationEvent(integration: integration)),

@@ -32,6 +32,8 @@ import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTile extends StatefulWidget {
@@ -72,7 +74,7 @@ class _EditTileState extends State<EditTile> {
   TextStyle labelStyle = const TextStyle(
       color: Color.fromRGBO(31, 31, 31, 1),
       fontSize: 25,
-      fontFamily: TileStyles.rubikFontName,
+      fontFamily: TileTextStyles.rubikFontName,
       fontWeight: FontWeight.w500);
 
   @override
@@ -116,7 +118,7 @@ class _EditTileState extends State<EditTile> {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
           )),
     );
 
@@ -161,7 +163,7 @@ class _EditTileState extends State<EditTile> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 50,
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                               )),
                         ),
                       ],
@@ -191,7 +193,7 @@ class _EditTileState extends State<EditTile> {
               AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           )
@@ -265,7 +267,7 @@ class _EditTileState extends State<EditTile> {
                   child: Text(
                     subCalendarEventTile.name!,
                     style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -312,7 +314,7 @@ class _EditTileState extends State<EditTile> {
               style: TextStyle(
                 fontSize: 12,
                 color: Color.fromRGBO(31, 31, 31, 0.8),
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           ),
@@ -331,7 +333,7 @@ class _EditTileState extends State<EditTile> {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
           )),
     );
 
@@ -357,7 +359,7 @@ class _EditTileState extends State<EditTile> {
               AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           )
@@ -472,7 +474,7 @@ class _EditTileState extends State<EditTile> {
                   )),
             ),
             Shimmer.fromColors(
-                baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
+                baseColor: TileColors.accentColorHSL.toColor().withAlpha(75),
                 highlightColor: Colors.white.withAlpha(100),
                 child: Container(
                   width: 400,
@@ -791,11 +793,11 @@ class _EditTileState extends State<EditTile> {
               }
 
               final Color textBorderColor =
-                  TileStyles.primaryColorLightHSL.toColor();
+                  TileColors.primaryColorLightHSL.toColor();
 
               Widget? tileProgressWidget;
 
-              final Color textBackgroundColor = TileStyles.textBackgroundColor;
+              final Color textBackgroundColor = TileColors.textBackgroundColor;
               String tileName =
                   this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
               _editTileName = EditTileName(
@@ -898,7 +900,7 @@ class _EditTileState extends State<EditTile> {
                                     style: const TextStyle(
                                         color: Color.fromRGBO(150, 150, 150, 1),
                                         fontSize: 20,
-                                        fontFamily: TileStyles.rubikFontName,
+                                        fontFamily: TileTextStyles.rubikFontName,
                                         fontWeight: FontWeight.w300)),
                               )),
                           Positioned(
@@ -1158,7 +1160,7 @@ class _EditTileState extends State<EditTile> {
 
               List<Widget> stackElements = <Widget>[
                 Container(
-                  color: TileStyles.primaryColorLightHSL
+                  color: TileColors.primaryColorLightHSL
                       .toColor()
                       .withLightness(0.95),
                   padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
@@ -1189,11 +1191,11 @@ class _EditTileState extends State<EditTile> {
         onProceed: this.onProceed,
         bottomWidget: this.bottomWidget,
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
+          backgroundColor: TileColors.primaryColor,
           title: Text(
             AppLocalizations.of(context)!.edit,
             style: TextStyle(
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

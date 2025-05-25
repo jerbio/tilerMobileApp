@@ -11,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidg
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareListWidget extends StatefulWidget {
@@ -190,11 +191,11 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
                   centerTitle: true,
                   elevation: 0,
                   automaticallyImplyLeading: false,
-                  backgroundColor: TileStyles.appBarColor,
+                  backgroundColor: TileColors.appBarColor,
                   title: Text(
                     AppLocalizations.of(context)!.edit,
                     style: TextStyle(
-                        color: TileStyles.appBarTextColor,
+                        color: TileColors.appBarTextColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 22),
                   ),
@@ -281,14 +282,14 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
           children: [
             SlidableAction(
               onPressed: editTileShare,
-              backgroundColor: TileStyles.accentColor,
-              foregroundColor: TileStyles.primaryContrastColor,
+              backgroundColor: TileColors.accentColor,
+              foregroundColor: TileColors.primaryContrastColor,
               icon: Icons.edit,
               label: AppLocalizations.of(context)!.edit,
             ),
             SlidableAction(
               onPressed: deleteTileShare,
-              backgroundColor: TileStyles.deletedBackgroundColor,
+              backgroundColor: TileColors.deletedBackgroundColor,
               foregroundColor: Colors.white,
               icon: Icons.delete,
               label: AppLocalizations.of(context)!.tileShareDelete,
@@ -307,10 +308,10 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
         background: Container(
           padding: EdgeInsets.all(10),
           alignment: Alignment.centerRight,
-          color: TileStyles.deletedBackgroundColor,
+          color: TileColors.deletedBackgroundColor,
           child: Icon(
             Icons.delete,
-            color: TileStyles.primaryContrastColor,
+            color: TileColors.primaryContrastColor,
             size: 40,
           ),
         ),

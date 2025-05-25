@@ -8,6 +8,8 @@ import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../styles.dart';
@@ -108,7 +110,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 25,
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w400,
                   ))),
         ),
@@ -124,7 +126,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 25,
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w400,
                   ))),
         ),
@@ -152,7 +154,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 25,
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w400,
                     ))),
           ),
@@ -170,7 +172,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     Widget retValue = Scaffold(
       body: Center(
         child: Container(
-          color: TileStyles.primaryColorLightHSL.toColor(),
+          color: TileColors.primaryColorLightHSL.toColor(),
           alignment: Alignment.center,
           width: MediaQuery.of(context).size.width * TileStyles.tileWidthRatio,
           height:
@@ -188,7 +190,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                     AppLocalizations.of(context)!.allowAccessDescription,
                     style: TextStyle(
                         fontSize: 20,
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.w400,
                         color: Colors.white)),
               ),

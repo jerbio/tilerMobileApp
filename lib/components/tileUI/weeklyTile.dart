@@ -4,6 +4,8 @@ import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class WeeklyTileWidget extends StatefulWidget {
@@ -34,7 +36,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
           maxLines: 1,
           style: TextStyle(
             fontSize: 22,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
             fontWeight: FontWeight.bold,
           ));
     }
@@ -79,7 +81,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                 tileName,
                 maxLines: 3,
                 style: TextStyle(
-                    fontSize: 8, fontFamily: TileStyles.rubikFontName),
+                    fontSize: 8, fontFamily: TileTextStyles.rubikFontName),
               ),
             ),
             if (addressString != null && addressString.isNotEmpty)
@@ -91,7 +93,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                   style: TextStyle(
                     fontSize: 10,
                     color: Color.fromRGBO(31, 31, 31, 0.5),
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                   ),
                 ),
               ),

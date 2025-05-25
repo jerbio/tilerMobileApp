@@ -4,8 +4,11 @@ import 'package:tiler_app/components/TextInputWidget.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
+import 'package:tiler_app/data/tileColor.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class NewTileSheetWidget extends StatefulWidget {
@@ -28,7 +31,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     super.initState();
     addButtonStyle = ButtonStyle(
       side:
-          MaterialStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
+          MaterialStateProperty.all(BorderSide(color: TileColors.primaryColor)),
       shadowColor: MaterialStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
@@ -39,7 +42,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         return Colors.transparent;
       }),
       foregroundColor: MaterialStateProperty.resolveWith((states) {
-        return TileStyles.primaryColor;
+        return TileColors.primaryColor;
       }),
       minimumSize: MaterialStateProperty.resolveWith((states) {
         return Size(MediaQuery.sizeOf(context).width - 20, 50);
@@ -125,7 +128,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: TileStyles.primaryContrastColor,
+        color: TileColors.primaryContrastColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
@@ -135,7 +138,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: TileStyles.appBarColor,
+              color: TileColors.appBarColor,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
@@ -145,8 +148,8 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
             child: Text(
               AppLocalizations.of(context)!.addTile,
               style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontFamily: TileStyles.rubikFontName,
+                color: TileColors.appBarTextColor,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontSize: TileStyles.inputFontSize,
               ),
             ),

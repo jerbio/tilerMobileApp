@@ -15,6 +15,8 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.d
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
@@ -388,19 +390,19 @@ class EventNameSearchState extends SearchWidgetState {
             children: [
               Text(AppLocalizations.of(context)!.deadline,
                   style: TextStyle(
-                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+                      fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
               Text(': ',
                   style: TextStyle(
-                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+                      fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
               Text(monthString,
                   style: TextStyle(
-                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+                      fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
               Text(' ',
                   style: TextStyle(
-                      fontSize: 25, fontFamily: TileStyles.rubikFontName)),
+                      fontSize: 25, fontFamily: TileTextStyles.rubikFontName)),
               Text(end.day.toString(),
                   style: TextStyle(
-                      fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+                      fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
             ],
           ),
         );
@@ -418,7 +420,7 @@ class EventNameSearchState extends SearchWidgetState {
                   style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      fontFamily: TileStyles.rubikFontName)))
+                      fontFamily: TileTextStyles.rubikFontName)))
         ]),
       );
       detailWidgets.add(textContainer);
@@ -488,7 +490,7 @@ class EventNameSearchState extends SearchWidgetState {
           margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
           child: Icon(
             Icons.edit_outlined,
-            color: TileStyles.defaultTextColor,
+            color: TileColors.defaultTextColor,
             size: 20.0,
           ),
         ),
@@ -586,10 +588,10 @@ class EventNameSearchState extends SearchWidgetState {
                   hintStyle: TextStyle(
                       color: Color.fromRGBO(180, 180, 180, 1),
                       fontSize: TileStyles.textFontSize,
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w500),
                   contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
-                  fillColor: TileStyles.primaryContrastColor,
+                  fillColor: TileColors.primaryContrastColor,
                   border: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(15.0),
@@ -600,14 +602,14 @@ class EventNameSearchState extends SearchWidgetState {
                       const Radius.circular(15.0),
                     ),
                     borderSide:
-                        BorderSide(color: TileStyles.textBorderColor, width: 2),
+                        BorderSide(color: TileColors.textBorderColor, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(15.0),
                     ),
                     borderSide: BorderSide(
-                      color: TileStyles.textBorderColor,
+                      color: TileColors.textBorderColor,
                       width: 1.5,
                     ),
                   ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class NavigationTemplateWidget extends StatefulWidget {
   Function? onCancel;
@@ -56,10 +57,10 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                TileStyles.primaryColor,
-                HSLColor.fromColor(TileStyles.primaryColor)
+                TileColors.primaryColor,
+                HSLColor.fromColor(TileColors.primaryColor)
                     .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
+                        HSLColor.fromColor(TileColors.primaryColor).lightness +
                             0.3)
                     .toColor()
               ],
@@ -108,12 +109,12 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                HSLColor.fromColor(TileStyles.primaryColor)
+                HSLColor.fromColor(TileColors.primaryColor)
                     .withLightness(
-                        HSLColor.fromColor(TileStyles.primaryColor).lightness +
+                        HSLColor.fromColor(TileColors.primaryColor).lightness +
                             0.3)
                     .toColor(),
-                TileStyles.primaryColor,
+                TileColors.primaryColor,
               ],
             )),
         child: ElevatedButton(

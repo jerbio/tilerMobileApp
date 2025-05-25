@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthlyTileWidget extends StatefulWidget {
 
@@ -41,7 +42,7 @@ class MonthlyTileWidgetState extends State<MonthlyTileWidget> {
         maxLines: 1,
         style: TextStyle(
           fontSize: 10,
-          fontFamily: TileStyles.rubikFontName,
+          fontFamily: TileTextStyles.rubikFontName,
         ),
         overflow: TextOverflow.ellipsis,
       ),

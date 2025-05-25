@@ -1,5 +1,6 @@
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -142,10 +143,10 @@ class DurationDialState extends State<DurationDial> {
               labels: durationTextCollection,
               initialLabelIndex: presetIndex,
               onToggle: onTabTypeChange,
-              activeFgColor: TileStyles.primaryContrastColor,
-              activeBgColor: [TileStyles.primaryColor],
-              inactiveBgColor: TileStyles.inactiveTextColor,
-              inactiveFgColor: TileStyles.primaryContrastColor,
+              activeFgColor: TileColors.primaryContrastColor,
+              activeBgColor: [TileColors.primaryColor],
+              inactiveBgColor: TileColors.inactiveTextColor,
+              inactiveFgColor: TileColors.primaryContrastColor,
               animate: true,
               customWidths: [100, 100, 100],
               animationDuration: 300,
@@ -157,11 +158,11 @@ class DurationDialState extends State<DurationDial> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
         routeName: "durationDial",
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
+          backgroundColor: TileColors.primaryColor,
           title: Text(
             AppLocalizations.of(context)!.duration,
             style: TextStyle(
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

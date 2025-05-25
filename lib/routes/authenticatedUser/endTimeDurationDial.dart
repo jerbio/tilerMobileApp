@@ -4,6 +4,7 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -78,11 +79,11 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
     return CancelAndProceedTemplateWidget(
         routeName: endTimeDurationRouteName,
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
+          backgroundColor: TileColors.primaryColor,
           title: Text(
             AppLocalizations.of(context)!.duration,
             style: TextStyle(
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

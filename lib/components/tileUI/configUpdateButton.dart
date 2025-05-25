@@ -3,6 +3,7 @@ import 'dart:ui' as dartUI;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../styles.dart';
 
@@ -65,7 +66,7 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
         textButtonString,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          fontFamily: TileStyles.rubikFontName,
+          fontFamily: TileTextStyles.rubikFontName,
         ),
       ),
     );

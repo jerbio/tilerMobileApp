@@ -14,6 +14,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TilePreferencesScreen extends StatelessWidget {
@@ -118,9 +119,9 @@ class TilePreferencesScreen extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ? TileStyles.primaryColor: Colors.grey[200],
+              color: isSelected ? TileColors.primaryColor: Colors.grey[200],
               border: Border.all(
-                color: isSelected ? TileStyles.primaryColor : Color(0xFF9A9E9F),
+                color: isSelected ? TileColors.primaryColor : Color(0xFF9A9E9F),
               ),
             ),
             child: SvgPicture.asset(
@@ -138,7 +139,7 @@ class TilePreferencesScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isSelected ? TileStyles.primaryColor : Color(0xFF9A9E9F),
+            color: isSelected ? TileColors.primaryColor : Color(0xFF9A9E9F),
           ),
         ),
       ],

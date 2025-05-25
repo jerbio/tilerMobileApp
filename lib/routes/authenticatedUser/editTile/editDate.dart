@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 import '../../../util.dart';
 
@@ -84,7 +85,7 @@ class _EditTileDateState extends State<EditTileDate> {
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
-                    color: TileStyles.iconColor,
+                    color: TileColors.iconColor,
                     size: 25,
                   )),
               Text(

@@ -13,6 +13,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListW
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class InboxMultiTiletteTileShareDetailWidget extends StatefulWidget {
@@ -122,12 +123,12 @@ class _InboxMultiTiletteTileShareDetailWidget
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.email_outlined),
-        color: TileStyles.primaryContrastColor,
+        color: TileColors.primaryContrastColor,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: null,
       side: BorderSide.none,
-      backgroundColor: TileStyles.primaryColor,
+      backgroundColor: TileColors.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
   }
@@ -329,14 +330,14 @@ class _InboxMultiTiletteTileShareDetailWidget
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
+          backgroundColor: TileColors.appBarColor,
           automaticallyImplyLeading: false,
           centerTitle: true,
           leading: TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
             ),
           ),
           title: this.tileShareCluster?.name != null
@@ -351,7 +352,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                     if (this.tileShareCluster?.name == null)
                       Icon(
                         Icons.share,
-                        color: TileStyles.appBarTextColor,
+                        color: TileColors.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),

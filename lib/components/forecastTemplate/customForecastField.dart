@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../styles.dart';
 
@@ -46,7 +48,7 @@ class CustomForecastField extends StatelessWidget {
             Text(
               textButtonString,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 15),
                 fontWeight: FontWeight.w400,
                 color: Color(0xFF1F1F1F),

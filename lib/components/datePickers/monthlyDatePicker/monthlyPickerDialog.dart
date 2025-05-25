@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class MonthlyPickerDialog extends StatelessWidget {
   @override
@@ -35,7 +36,7 @@ class MonthlyPickerDialog extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TileStyles.primaryColor,
+        color: TileColors.primaryColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -43,7 +44,7 @@ class MonthlyPickerDialog extends StatelessWidget {
           Text(
             DateFormat('MMM yyyy').format(state.tempDate),
             style:
-                TextStyle(color: TileStyles.primaryContrastColor, fontSize: 20),
+                TextStyle(color: TileColors.primaryContrastColor, fontSize: 20),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,7 +52,7 @@ class MonthlyPickerDialog extends StatelessWidget {
               Text(
                 '${state.year}',
                 style: TextStyle(
-                    color: TileStyles.primaryContrastColor, fontSize: 24),
+                    color: TileColors.primaryContrastColor, fontSize: 24),
               ),
               Row(
                 children: [
@@ -59,7 +60,7 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: -math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: TileStyles.primaryContrastColor),
+                          color: TileColors.primaryContrastColor),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()
@@ -69,7 +70,7 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: TileStyles.primaryContrastColor),
+                          color: TileColors.primaryContrastColor),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()
@@ -108,7 +109,7 @@ class MonthlyPickerDialog extends StatelessWidget {
             decoration: isSelected
                 ? BoxDecoration(
                     border:
-                        Border.all(color: TileStyles.primaryColor, width: 2),
+                        Border.all(color: TileColors.primaryColor, width: 2),
                     borderRadius: BorderRadius.circular(12),
                   )
                 : null,
@@ -118,7 +119,7 @@ class MonthlyPickerDialog extends StatelessWidget {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.normal,
-                color: TileStyles.defaultTextColor,
+                color: TileColors.defaultTextColor,
               ),
             ),
           ),

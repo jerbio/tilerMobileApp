@@ -6,6 +6,8 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -157,9 +159,9 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       if (this.decoration == null) {
         uiDecoration = BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: TileStyles.primaryContrastColor,
+          color: TileColors.primaryContrastColor,
           border: Border.all(
-            color: TileStyles.primaryColor,
+            color: TileColors.primaryColor,
             width: 1,
           ),
         );
@@ -173,7 +175,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: new TextStyle(
             fontSize: 13.0,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
             color: new Color(0xFF212121),
             fontWeight: FontWeight.w600,
           ),

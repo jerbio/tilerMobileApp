@@ -24,6 +24,7 @@ class AccountInfo extends StatelessWidget {
   UserProfile? _originalProfile;
   AccountInfo({Key? key}) : super(key: key);
 
+
   Widget renderPending() {
     List<Widget> centerElements = [
       Center(
@@ -203,6 +204,22 @@ class AccountInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextTheme textTheme = Theme.of(context).textTheme!;
+    print('displayLarge: ${textTheme.displayLarge}');
+    print('displayMedium: ${textTheme.displayMedium}');
+    print('displaySmall: ${textTheme.displaySmall}');
+    print('headlineLarge: ${textTheme.headlineLarge}');
+    print('headlineMedium: ${textTheme.headlineMedium}');
+    print('headlineSmall: ${textTheme.headlineSmall}');
+    print('titleLarge: ${textTheme.titleLarge}');
+    print('titleMedium: ${textTheme.titleMedium}');
+    print('titleSmall: ${textTheme.titleSmall}');
+    print('bodyLarge: ${textTheme.bodyLarge}');
+    print('bodyMedium: ${textTheme.bodyMedium}');
+    print('bodySmall: ${textTheme.bodySmall}');
+    print('labelLarge: ${textTheme.labelLarge}');
+    print('labelMedium: ${textTheme.labelMedium}');
+    print('labelSmall: ${textTheme.labelSmall}');
     NotificationOverlayMessage notificationOverlayMessage =
     NotificationOverlayMessage();
     context.read<DeviceSettingBloc>().add(

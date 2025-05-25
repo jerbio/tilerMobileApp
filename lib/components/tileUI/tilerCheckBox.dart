@@ -1,6 +1,7 @@
 import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class TilerCheckBox extends StatefulWidget {
   bool? isChecked;
@@ -35,7 +36,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     };
 
     if (states.any(interactiveStates.contains)) {
-      return TileStyles.primaryColor;
+      return TileColors.primaryColor;
     }
     return Colors.transparent;
   }
@@ -75,7 +76,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
                   splashRadius: 15,
                   shape: CircleBorder(
                       side:
-                          BorderSide(width: 2, color: TileStyles.primaryColor)),
+                          BorderSide(width: 2, color: TileColors.primaryColor)),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;
@@ -99,7 +100,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
               fontWeight: FontWeight.w600,
               color: checkStatus
                   ? Colors.black
-                  : TileStyles.disabledTextColor)),
+                  : TileColors.disabledTextColor)),
     );
     return new GestureDetector(
         onTap: onTap,

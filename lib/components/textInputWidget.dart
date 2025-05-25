@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TextInputWidget extends StatefulWidget {
   final Function? onTextChange;
@@ -11,8 +13,8 @@ class TextInputWidget extends StatefulWidget {
 }
 
 class _TextInputWidgetState extends State<TextInputWidget> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.textBorderColor;
   String? value = null;
   late final TextEditingController textFieldController;
   @override
@@ -43,13 +45,13 @@ class _TextInputWidgetState extends State<TextInputWidget> {
           controller: textFieldController,
           style: TextStyle(
               fontSize: TileStyles.inputFontSize,
-              fontFamily: TileStyles.rubikFontName,
-              color: TileStyles.inputFieldTextColor,
+              fontFamily: TileTextStyles.rubikFontName,
+              color: TileColors.inputFieldTextColor,
               fontWeight: FontWeight.w400),
           decoration: InputDecoration(
             hintText: this.widget.placeHolder,
             hintStyle: TextStyle(
-                color: TileStyles.inputFieldTextColor,
+                color: TileColors.inputFieldTextColor,
                 fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,

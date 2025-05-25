@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTileName extends StatefulWidget {
@@ -29,8 +31,8 @@ class EditTileName extends StatefulWidget {
 }
 
 class _EditTileNameState extends State<EditTileName> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
+  final Color textBackgroundColor = TileColors.textBackgroundColor;
+  final Color textBorderColor = TileColors.primaryColorLightHSL.toColor();
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -62,7 +64,7 @@ class _EditTileNameState extends State<EditTileName> {
         style: this.widget.textStyle ??
             TextStyle(
                 fontSize: 22.5,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w500,
                 color: Color.fromRGBO(31, 31, 31, 1)),
         decoration: InputDecoration(

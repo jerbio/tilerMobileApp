@@ -15,6 +15,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
@@ -789,7 +790,7 @@ class SignInComponentState extends State<SignInComponent>
               instructionMessage,
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 fontSize: calculateSizeByHeight(12),
                 color: Colors.red,
@@ -805,7 +806,7 @@ class SignInComponentState extends State<SignInComponent>
               "Passwords must match",
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 fontSize: calculateSizeByHeight(12),
                 color: Colors.red,

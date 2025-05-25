@@ -6,6 +6,8 @@ import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -32,7 +34,7 @@ class _TileSummaryState extends State<TileSummary> {
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor = (subEvent.isViable ?? true)
         ? Color.fromRGBO(redColor, greenColor, blueColor, 0.2)
-        : TileStyles.nonViableBackgroundColor;
+        : TileColors.nonViableBackgroundColor;
     int currentMsTime = Utility.msCurrentTime;
     late String temporalTextStatus = '';
     Duration duration = Duration();
@@ -90,7 +92,7 @@ class _TileSummaryState extends State<TileSummary> {
                 },
                 icon: Icon(
                   Icons.edit_outlined,
-                  color: TileStyles.defaultTextColor,
+                  color: TileColors.defaultTextColor,
                   size: 20.0,
                 )),
           ),
@@ -100,7 +102,7 @@ class _TileSummaryState extends State<TileSummary> {
               TileName(subEvent,
                   textStyle: TextStyle(
                       fontSize: 15,
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w400,
                       color: const Color.fromRGBO(31, 31, 31, 1))),
               TileAddress(subEvent),
@@ -119,7 +121,7 @@ class _TileSummaryState extends State<TileSummary> {
                         Icons.access_time_sharp,
                         color: (subEvent.isTardy ?? false)
                             ? Colors.pink
-                            : TileStyles.defaultTextColor,
+                            : TileColors.defaultTextColor,
                         size: 20.0,
                       ),
                     ),
@@ -129,7 +131,7 @@ class _TileSummaryState extends State<TileSummary> {
                         timeRange: widget.subEvent,
                         textColor: (subEvent.isTardy ?? false)
                             ? Colors.pink
-                            : TileStyles.defaultTextColor,
+                            : TileColors.defaultTextColor,
                       ),
                     ),
                   ],
@@ -160,7 +162,7 @@ class _TileSummaryState extends State<TileSummary> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName),
+                                      fontFamily: TileTextStyles.rubikFontName),
                                 ))
                           ],
                         )
@@ -187,7 +189,7 @@ class _TileSummaryState extends State<TileSummary> {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                           fontSize: 15,
-                                          fontFamily: TileStyles.rubikFontName),
+                                          fontFamily: TileTextStyles.rubikFontName),
                                     ))
                               ],
                             )
@@ -212,7 +214,7 @@ class _TileSummaryState extends State<TileSummary> {
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                           fontSize: 15,
-                                          fontFamily: TileStyles.rubikFontName),
+                                          fontFamily: TileTextStyles.rubikFontName),
                                     ))
                               ],
                             ))

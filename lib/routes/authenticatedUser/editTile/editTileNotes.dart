@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class EditTileNote extends StatefulWidget {
   String tileNote;
@@ -26,7 +28,7 @@ class EditTileNote extends StatefulWidget {
 
 class _EditTileNoteState extends State<EditTileNote> {
   final Color textBackgroundColor = Colors.white;
-  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
+  final Color textBorderColor = TileColors.primaryColorLightHSL.toColor();
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -62,7 +64,7 @@ class _EditTileNoteState extends State<EditTileNote> {
             controller: this.widget.isProcrastinate ? null : _controller,
             style: TextStyle(
                 fontSize: 20,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w500,
                 color: Color.fromRGBO(31, 31, 31, 1)),
             decoration: InputDecoration(

@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.da
 import 'package:tiler_app/routes/authenticatedUser/forecast/helperClass.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import '../../../constants.dart' as Constants;
 
@@ -238,10 +239,10 @@ class _WidgetGoogleMapState extends State<DayCast> {
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
             ),
           ),
-          backgroundColor: TileStyles.appBarColor,
+          backgroundColor: TileColors.appBarColor,
           title: Text(
             AppLocalizations.of(context)!.dayCast,
             style: TileStyles.titleBarStyle,
