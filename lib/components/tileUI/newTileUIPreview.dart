@@ -6,6 +6,7 @@ import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class CreatedTileSheet extends StatefulWidget {
@@ -50,7 +51,7 @@ class _CreatedTileSheetState extends State<CreatedTileSheet> {
                     this.widget.subEvent.startTime.humanDate(context),
                     style: TextStyle(
                         fontSize: 15,
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.normal,
                         color: Color.fromRGBO(31, 31, 31, 1)),
                   )

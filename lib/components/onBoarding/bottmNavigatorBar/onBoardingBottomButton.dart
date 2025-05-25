@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 enum WidgetOrder { iconText, textIcon }
 
@@ -18,7 +19,7 @@ class onBoardingBottomButton extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: TileStyles.primaryColor,
+          color: TileColors.primaryColor,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),

@@ -34,6 +34,8 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -302,7 +304,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   child: Container(
                     height: 50,
                     width: 38,
-                    color: TileStyles.primaryContrastColor,
+                    color: TileColors.primaryContrastColor,
                     padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
                     child: LayoutBuilder(
                       builder: (context, constraints) => Stack(
@@ -317,7 +319,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                               child: Icon(
                                 FontAwesomeIcons.calendar,
                                 size: constraints.maxWidth,
-                                color: TileStyles.primaryColor,
+                                color: TileColors.primaryColor,
                               ),
                             ),
                           ),
@@ -332,7 +334,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                                   child: Text(
                                     (Utility.currentTime().day).toString(),
                                     style: TextStyle(
-                                      fontFamily: TileStyles.rubikFontName,
+                                      fontFamily: TileTextStyles.rubikFontName,
                                     ),
                                   ),
                                 ),
@@ -384,19 +386,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               BottomNavigationBarItem(
                   icon: Icon(
                     Icons.share,
-                    color: TileStyles.primaryColor,
+                    color: TileColors.primaryColor,
                   ),
                   label: ''),
               BottomNavigationBarItem(
-                icon: Icon(Icons.search, color: TileStyles.primaryColor),
+                icon: Icon(Icons.search, color: TileColors.primaryColor),
                 label: '',
               ),
               BottomNavigationBarItem(
-                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
+                  icon: Icon(Icons.settings, color: TileColors.primaryColor),
                   label: ''),
               BottomNavigationBarItem(
                   icon: Icon(Icons.calendar_month,
-                      color: TileStyles.primaryColor),
+                      color: TileColors.primaryColor),
                   label: ''),
             ],
             unselectedItemColor: Colors.white,
@@ -423,7 +425,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       bottomNavigationBar: bottomNavigator,
       floatingActionButton: FloatingActionButton(
-        backgroundColor: TileStyles.primaryContrastColor,
+        //backgroundColor: TileStyles.primaryContrastColor,
         onPressed: () {
           AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
           displayDialog(MediaQuery.of(context).size);
@@ -431,10 +433,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         child: Icon(
           Icons.add,
           size: 35,
-          color: TileStyles.primaryColor,
+          //color: TileStyles.primaryColor,
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      //floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 

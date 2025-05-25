@@ -10,6 +10,8 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../../bloc/forecast/forecast_bloc.dart';
@@ -55,14 +57,14 @@ class ForecastView extends StatelessWidget {
           width: width,
           height: height / (height / 52),
           decoration: BoxDecoration(
-            color: TileStyles.primaryColor,
+            color: TileColors.primaryColor,
             borderRadius: BorderRadius.circular(height / (height / 6)),
           ),
           child: Center(
             child: Text(
               AppLocalizations.of(context)!.create,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 15),
                 fontWeight: FontWeight.w500,
                 color: Colors.white,
@@ -72,11 +74,11 @@ class ForecastView extends StatelessWidget {
         ),
       ),
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileColors.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.forecast,
           style: TextStyle(
-              color: TileStyles.appBarTextColor,
+              color: TileColors.appBarTextColor,
               fontWeight: FontWeight.w800,
               fontSize: 22),
         ),
@@ -143,10 +145,10 @@ class ForecastView extends StatelessWidget {
             Text(
               AppLocalizations.of(context)!.analysis,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 17),
                 fontWeight: FontWeight.w500,
-                color: TileStyles.defaultTextColor,
+                color: TileColors.defaultTextColor,
               ),
             )
           ],
@@ -171,10 +173,10 @@ class ForecastView extends StatelessWidget {
                       ? AppLocalizations.of(context)!.thisFitsInYourSchedule
                       : AppLocalizations.of(context)!.nonViableTimeSlot,
                   style: TextStyle(
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w400,
                     fontSize: height / (height / 15),
-                    color: TileStyles.defaultTextColor,
+                    color: TileColors.defaultTextColor,
                   ),
                 )
               ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -92,7 +94,7 @@ class TileAddressState extends State<TileAddress> {
                 !isAddressTexturl
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
-                color: widget.isMonthlyView?Colors.grey[600]:TileStyles.defaultTextColor,
+                color: widget.isMonthlyView?Colors.grey[600]:TileColors.defaultTextColor,
                 size: TileStyles.tileIconSize,
               ),
             ),
@@ -105,7 +107,7 @@ class TileAddressState extends State<TileAddress> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 15,
-                            fontFamily: TileStyles.rubikFontName,
+                            fontFamily: TileTextStyles.rubikFontName,
                             fontWeight: FontWeight.normal,
                             color: Color.fromRGBO(31, 31, 31, 1)),
                       ),

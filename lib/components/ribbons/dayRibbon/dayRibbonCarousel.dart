@@ -10,6 +10,7 @@ import 'package:tiler_app/components/ribbons/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -85,7 +86,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
               color: Colors.white,
               border: Border(
                 top: BorderSide(
-                  color: TileStyles.primaryColorLightHSL.toColor(),
+                  color: TileColors.primaryColorLightHSL.toColor(),
                   width: 2,
                 ),
               ),
@@ -180,7 +181,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   double slideLeft = -30;
   Duration uiRoll = Duration(seconds: 3);
   double slideTop = 0;
-  Color loaderColor = TileStyles.accentColor;
+  Color loaderColor = TileColors.accentColor;
 
   Tuple2<Future, StreamSubscription?>? setTimeOutUpdate;
   ValueKey animatedSliderKey = ValueKey(Utility.getUuid);
@@ -295,14 +296,14 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         BlocListener<ScheduleBloc, ScheduleState>(
           listener: (context, state) {
             if (state is ScheduleLoadingState) {
-              loaderColor = TileStyles.loadColor;
+              loaderColor = TileColors.loadColor;
               startSlider();
             }
 
             if (state is ScheduleLoadedState) {
               if (state is FailedScheduleLoadedState) {
                 setState(() {
-                  loaderColor = TileStyles.errorTxtColor;
+                  loaderColor = TileColors.errorTxtColor;
                 });
                 startSlider();
               } else {

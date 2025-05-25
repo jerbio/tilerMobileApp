@@ -16,6 +16,7 @@ import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.d
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class Settings extends StatelessWidget {
@@ -112,13 +113,13 @@ class Settings extends StatelessWidget {
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               onTap: ()=>context.read<DeviceSettingBloc>().add(LogOutMainSettingDeviceSettingEvent(id:_requestId)),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/DeleteAccount.svg',
               title: AppLocalizations.of(context)!.deleteAccount,
-              color: TileStyles.primaryColor,
+              color: TileColors.primaryColor,
               onTap: ()=>context.read<DeviceSettingBloc>().add(DeleteAccountMainSettingDeviceSettingEvent(id:_requestId)),
             ),
             _buildDivider(),

@@ -4,6 +4,7 @@ import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -221,7 +222,7 @@ class _PreloadedRestrictionsRouteState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: _isAnyTime
-                          ? TileStyles.primaryColorDarkHSL.toColor()
+                          ? TileColors.primaryColorDarkHSL.toColor()
                           : Colors.white,
                       fontWeight: FontWeight.w500,
                       fontSize: 18)),

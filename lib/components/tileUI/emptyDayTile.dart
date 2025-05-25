@@ -9,6 +9,8 @@ import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -99,21 +101,21 @@ class EmptyDayTileState extends State<EmptyDayTile> {
             children: [
               Icon(
                 Icons.calendar_month,
-                color: TileStyles.primaryColor,
+                color: TileColors.primaryColor,
               ),
               dayIndex > this.emptyDayIndex
                   ? Icon(
                       Icons.arrow_right_outlined,
-                      color: TileStyles.primaryColor,
+                      color: TileColors.primaryColor,
                     )
                   : Icon(Icons.arrow_left_outlined,
-                      color: TileStyles.primaryColor),
+                      color: TileColors.primaryColor),
               Text(
                 DateFormat('d MMM').format(Utility.getTimeFromIndex(dayIndex)),
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontFamily: TileStyles.rubikFontName,
-                    color: TileStyles.primaryColor),
+                    fontFamily: TileTextStyles.rubikFontName,
+                    color: TileColors.primaryColor),
               )
             ],
           ),
@@ -144,10 +146,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       begin: Alignment.topLeft,
                       end: Alignment.topRight,
                       colors: [
-                        TileStyles.primaryColorHSL.toColor().withOpacity(0.75),
-                        TileStyles.primaryColorHSL
+                        TileColors.primaryColorHSL.toColor().withOpacity(0.75),
+                        TileColors.primaryColorHSL
                             .withLightness(
-                                TileStyles.primaryColorHSL.lightness + .2)
+                            TileColors.primaryColorHSL.lightness + .2)
                             .toColor()
                             .withOpacity(0.75),
                       ],
@@ -169,7 +171,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                           children: [
                             Icon(
                               Icons.add,
-                              color: TileStyles.primaryContrastColor,
+                              color: TileColors.primaryContrastColor,
                               size: 60,
                             ),
                             Container(
@@ -284,7 +286,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               color: Colors.grey,
                                               fontSize: 16,
                                               fontFamily:
-                                                  TileStyles.rubikFontName,
+                                              TileTextStyles.rubikFontName,
                                               fontWeight: FontWeight.w500),
                                         ))),
                                 Flexible(
@@ -302,7 +304,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               color: Colors.grey,
                                               fontSize: 16,
                                               fontFamily:
-                                                  TileStyles.rubikFontName,
+                                                  TileTextStyles.rubikFontName,
                                               fontWeight: FontWeight.w500),
                                         )))
                               ],

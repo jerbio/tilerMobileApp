@@ -1,6 +1,7 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class OnBoardingProgressIndicator extends StatelessWidget {
   final int totalPages;
@@ -24,16 +25,16 @@ class OnBoardingProgressIndicator extends StatelessWidget {
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: stepIndex <= currentPage
-                    ? TileStyles.primaryColor
+                    ? TileColors.primaryColor
                     : Colors.transparent,
                 border: Border.all(
-                  color: TileStyles.primaryColor,
+                  color: TileColors.primaryColor,
                   width: 2,
                 ),
                 boxShadow: stepIndex <= currentPage
                     ? [
                         BoxShadow(
-                          color: TileStyles.primaryColor.withOpacity(0.1),
+                          color: TileColors.primaryColor.withOpacity(0.1),
                           spreadRadius: 5,
                           blurRadius: 5,
                           offset: Offset(0, 1),
@@ -46,7 +47,7 @@ class OnBoardingProgressIndicator extends StatelessWidget {
                 style: TextStyle(
                   color: stepIndex <= currentPage
                       ? Colors.white
-                      : TileStyles.primaryColor,
+                      : TileColors.primaryColor,
                   fontWeight: FontWeight.w500,
                   fontSize: 18,
                 ),
@@ -62,7 +63,7 @@ class OnBoardingProgressIndicator extends StatelessWidget {
               lineLength: 65,
               dashGapLength: 8.0,
               dashRadius: 4,
-              dashColor: TileStyles.primaryColor,
+              dashColor: TileColors.primaryColor,
             ),
           );
         }

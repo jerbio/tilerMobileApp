@@ -3,6 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -53,7 +55,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
     const double fontSize = 12;
     const TextStyle textStyle = TextStyle(
         fontSize: fontSize,
-        fontFamily: TileStyles.rubikFontName,
+        fontFamily: TileTextStyles.rubikFontName,
         overflow: TextOverflow.ellipsis,
         color: const Color.fromRGBO(40, 40, 40, 1));
 
@@ -70,7 +72,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                 children: [
                   Text('${widget.tileShareCluster?.name ?? ""}',
                       style: TextStyle(
-                          fontSize: 12, fontFamily: TileStyles.rubikFontName)),
+                          fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
                   SizedBox(height: 8),
                   if (widget.tileShareCluster?.endTimeInMs != null)
                     Row(
@@ -114,7 +116,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                 Positioned(
                   child: Icon(
                     TileStyles.multiShareIcon,
-                    color: TileStyles.primaryColor,
+                    color: TileColors.primaryColor,
                   ),
                   right: 0,
                 )
@@ -126,7 +128,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                     padding: EdgeInsets.all(0),
                     icon: Icon(
                       Icons.delete,
-                      color: TileStyles.primaryColor,
+                      color: TileColors.primaryColor,
                     ),
                     onPressed: () {
                       if (this.widget.onDelete != null) {

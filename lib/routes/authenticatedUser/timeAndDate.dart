@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:intl/intl.dart';
 
@@ -59,7 +60,7 @@ class _TimeAndDateState extends State<TimeAndDate> {
                 style: TextStyle(
                     color: Color.fromRGBO(31, 31, 31, 1),
                     fontSize: 35,
-                    fontFamily: TileStyles.rubikFontName,
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w500))),
       ),
     );

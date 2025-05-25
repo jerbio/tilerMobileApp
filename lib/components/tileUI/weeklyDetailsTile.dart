@@ -7,6 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 
 class WeeklyDetailsTile extends StatefulWidget {
@@ -42,7 +43,7 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
     Widget editButton = IconButton(
         icon: Icon(
           Icons.edit_outlined,
-          color: TileStyles.defaultTextColor,
+          color: TileColors.defaultTextColor,
           size: 24.0,
         ),
         onPressed: () {
@@ -107,8 +108,8 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             child: Icon(
               (widget.subEvent.isRigid ?? false) ? Icons.lock_outline : Icons
                   .access_time_sharp,
-              color: (widget.subEvent.isTardy ?? false) ? TileStyles
-                  .lateTextColor : TileStyles.defaultTextColor,
+              color: (widget.subEvent.isTardy ?? false) ? TileColors
+                  .lateTextColor : TileColors.defaultTextColor,
               size: TileStyles.tileIconSize,
             ),
           ),
@@ -116,8 +117,8 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
-              textColor: (widget.subEvent.isTardy ?? false) ? TileStyles
-                  .lateTextColor : TileStyles.defaultTextColor,
+              textColor: (widget.subEvent.isTardy ?? false) ? TileColors
+                  .lateTextColor : TileColors.defaultTextColor,
             ),
           ),
         ],

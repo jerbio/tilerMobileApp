@@ -4,6 +4,8 @@ import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
@@ -109,7 +111,7 @@ class LocationSearchState extends SearchWidgetState {
                           maxLines: 1,
                           style: TextStyle(
                               fontSize: 15,
-                              fontFamily: TileStyles.rubikFontName,
+                              fontFamily: TileTextStyles.rubikFontName,
                               color: Color.fromRGBO(31, 31, 31, 1)),
                           overflow: TextOverflow.ellipsis,
                         ))
@@ -159,14 +161,14 @@ class LocationSearchState extends SearchWidgetState {
                             location.source! == 'none'
                         ? Icons.save_outlined
                         : Icons.cloud_outlined,
-                    color: TileStyles.activeColor,
+                    color: TileColors.activeColor,
                   ),
                   IconButton(
                       onPressed: onLocationTap(collapseResultContainer,
                           location: location, onlyAddress: true),
                       icon: Icon(
                         Icons.business,
-                        color: TileStyles.activeColor,
+                        color: TileColors.activeColor,
                       ))
                 ],
               ),
@@ -278,9 +280,9 @@ class LocationSearchState extends SearchWidgetState {
   @override
   Widget build(BuildContext context) {
     Color hslLightColor =
-        TileStyles.primaryColorLightHSL.toColor(); //.withLightness(0.9);
+    TileColors.primaryColorLightHSL.toColor(); //.withLightness(0.9);
     var hslDarkColor =
-        TileStyles.primaryColorDarkHSL.toColor().withLightness(0.9);
+    TileColors.primaryColorDarkHSL.toColor().withLightness(0.9);
     String hintText = AppLocalizations.of(context)!.address;
     this.widget.onChanged = this._onInputFieldChange;
     if (this.widget.textField == null) {

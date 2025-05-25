@@ -3,6 +3,8 @@ import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DesignatedUserCircle extends StatefulWidget {
@@ -47,13 +49,13 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
                 ? Colors.green
                 : pct > 33.33
                     ? Colors.orange
-                    : TileStyles.primaryColor,
+                    : TileColors.primaryColor,
           ),
           child: Text(
             "${pct.round()}%",
             style: TextStyle(
                 fontSize: 7,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 color: Colors.white),
           ),
         ),
@@ -128,7 +130,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
                   : "",
               style: TextStyle(
                   fontSize: 16,
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   color: Colors.white))),
       _subScriptWidget()
     ]);

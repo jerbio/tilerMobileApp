@@ -5,6 +5,8 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class NameAndDateSheetWidget extends StatefulWidget {
@@ -54,7 +56,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         onInputChange: onTimeUpdate,
         textStyle: const TextStyle(
             // fontSize: 20,
-            fontFamily: TileStyles.rubikFontName),
+            fontFamily: TileTextStyles.rubikFontName),
       );
     } else {
       return Row(
@@ -62,14 +64,14 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           Icon(
             Icons.calendar_month,
-            color: TileStyles.iconColor,
+            color: TileColors.iconColor,
           ),
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
             child: TextButton(
               style: TextButton.styleFrom(
                 textStyle: const TextStyle(
-                    fontSize: 20, fontFamily: TileStyles.rubikFontName),
+                    fontSize: 20, fontFamily: TileTextStyles.rubikFontName),
               ),
               onPressed: () async {
                 DateTime _endDate = this.endTime ?? Utility.currentTime();
@@ -91,10 +93,10 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                 AppLocalizations.of(context)!.deadline,
                 style: endTime == null
                     ? TextStyle(
-                        fontFamily: TileStyles.rubikFontName,
-                        color: TileStyles.inactiveTextColor)
+                        fontFamily: TileTextStyles.rubikFontName,
+                        color: TileColors.inactiveTextColor)
                     : TextStyle(
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         color: Colors.black),
               ),
             ),
@@ -131,7 +133,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
               width: MediaQuery.sizeOf(context).width,
               textStyle: TextStyle(
                   fontSize: 15,
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   color: Color.fromRGBO(31, 31, 31, 1)),
             ),
           ),

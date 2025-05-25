@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class EditTileTime extends StatefulWidget {
   TimeOfDay time;
@@ -64,7 +65,7 @@ class _EditTileTimeState extends State<EditTileTime> {
                 margin: EdgeInsets.fromLTRB(0, 0, widget.isPref?10:5, 0),
                 child: Icon(
                   Icons.access_time_sharp,
-                  color: TileStyles.iconColor,
+                  color: TileColors.iconColor,
                   size: widget.isPref?18:25,
                 )),
             Container(

@@ -74,7 +74,7 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
 
   Widget _buildToggle(String text, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
-      activeTrackColor: Colors.green[300],
+      //activeTrackColor: Colors.green[300],
       title: Text(text, style: const TextStyle(fontSize: 14)),
       value: value,
       onChanged: onChanged,

@@ -8,6 +8,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/simpleTileShareTemp
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateDetail.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareTemplateListWidget extends StatefulWidget {
@@ -154,11 +155,11 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                   centerTitle: true,
                   elevation: 0,
                   automaticallyImplyLeading: false,
-                  backgroundColor: TileStyles.appBarColor,
+                  backgroundColor: TileColors.appBarColor,
                   title: Text(
                     AppLocalizations.of(context)!.edit,
                     style: TextStyle(
-                        color: TileStyles.appBarTextColor,
+                        color: TileColors.appBarTextColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 22),
                   ),
@@ -267,8 +268,8 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                         SlidableAction(
                           onPressed:
                               generateEditTileShareCallBack(tileShareTemplate),
-                          backgroundColor: TileStyles.accentColor,
-                          foregroundColor: TileStyles.primaryContrastColor,
+                          backgroundColor: TileColors.accentColor,
+                          foregroundColor: TileColors.primaryContrastColor,
                           icon: Icons.edit,
                           label: AppLocalizations.of(context)!.edit,
                         ),
@@ -280,7 +281,7 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                                     getTileShareTemplates(resetList: true));
                             ;
                           },
-                          backgroundColor: TileStyles.deletedBackgroundColor,
+                          backgroundColor: TileColors.deletedBackgroundColor,
                           foregroundColor: Colors.white,
                           icon: Icons.delete,
                           label: AppLocalizations.of(context)!.tileShareDelete,

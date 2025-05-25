@@ -8,6 +8,7 @@ import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -197,7 +198,7 @@ class MonthlyTileBatchState extends TileBatchState {
         margin: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: todayDayIndex == widget.dayIndex
-              ? TileStyles.primaryColor
+              ? TileColors.primaryColor
               : Color.fromRGBO(240, 240, 240, 1),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(

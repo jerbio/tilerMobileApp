@@ -6,6 +6,7 @@ import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationUIWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -121,7 +122,7 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                   alignment: Alignment.topLeft,
                   color: !this.widget.isReadOnly
                       ? Colors.transparent
-                      : TileStyles.disabledBackgroundColor,
+                      : TileColors.disabledBackgroundColor,
                   child: TimeAndDate(
                     time: this._start,
                     onInputChange: onTimeChange,
@@ -147,7 +148,7 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                     alignment: Alignment.center,
                     color: !this.widget.isReadOnly
                         ? Colors.transparent
-                        : TileStyles.disabledBackgroundColor,
+                        : TileColors.disabledBackgroundColor,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

@@ -8,6 +8,7 @@ import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -152,15 +153,15 @@ class CustomTimeRestrictionRouteState
     final bool isSelected = day.isSelected;
     final bool showPaste = _hasCopied && !isCopiedDay;
 
-    Color iconColor = TileStyles.disabledTextColor;
+    Color iconColor = TileColors.disabledTextColor;
 
     if (isSelected) {
       if (showPaste) {
-        iconColor = TileStyles.primaryColor;
+        iconColor = TileColors.primaryColor;
       } else if (isCopiedDay) {
         iconColor = Colors.cyanAccent;
       } else {
-        iconColor = TileStyles.primaryColor;
+        iconColor = TileColors.primaryColor;
       }
     }
 
@@ -186,17 +187,17 @@ class CustomTimeRestrictionRouteState
     );
     BoxDecoration timeBoxDecoration = BoxDecoration(
         borderRadius: borderRadius,
-        border: Border(bottom: BorderSide(color: TileStyles.disabledColor)));
+        border: Border(bottom: BorderSide(color: TileColors.disabledColor)));
     if (dayOfWeekRestriction.isSelected) {
       timeBoxDecoration = BoxDecoration(
           borderRadius: borderRadius,
-          color: TileStyles.primaryColorLightHSL.toColor());
+          color: TileColors.primaryColorLightHSL.toColor());
 
       if (!dayOfWeekRestriction
           .toRestrictionDay()
           .restrictionTimeLine!
           .isValid) {
-        timeBoxDecoration = BoxDecoration(color: TileStyles.accentColor);
+        timeBoxDecoration = BoxDecoration(color: TileColors.accentColor);
       }
     }
     final localizations = MaterialLocalizations.of(context);
@@ -240,7 +241,7 @@ class CustomTimeRestrictionRouteState
           child:Container(
             padding: EdgeInsets.only(bottom: 2),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: TileStyles.disabledTextColor, width: 2)),
+              border: Border(bottom: BorderSide(color: TileColors.disabledTextColor, width: 2)),
             ),
             child: Text(
               localizations.formatTimeOfDay(dayOfWeekRestriction.start),
@@ -276,7 +277,7 @@ class CustomTimeRestrictionRouteState
         child:Container(
           padding: EdgeInsets.only(bottom: 2),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: TileStyles.disabledTextColor, width: 2)),
+            border: Border(bottom: BorderSide(color: TileColors.disabledTextColor, width: 2)),
           ),
           child: Text(
             localizations.formatTimeOfDay(dayOfWeekRestriction.end),

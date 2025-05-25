@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -115,7 +116,7 @@ class PickColorState extends State<PickColor> {
       decoration: BoxDecoration(
           borderRadius:
               BorderRadius.all(Radius.circular(roundedSelectorRadius)),
-          border: Border.all(color: TileStyles.primaryColor, width: 2),
+          border: Border.all(color: TileColors.primaryColor, width: 2),
           color: Colors.transparent),
     );
     Widget tranparentSelectedBorder = Container(
@@ -204,7 +205,7 @@ class PickColorState extends State<PickColor> {
           ElevatedButton(
               style: ButtonStyle(
                 side: MaterialStateProperty.all(
-                    BorderSide(color: TileStyles.primaryColor)),
+                    BorderSide(color: TileColors.primaryColor)),
                 shadowColor: MaterialStateProperty.resolveWith((states) {
                   return Colors.transparent;
                 }),
@@ -215,7 +216,7 @@ class PickColorState extends State<PickColor> {
                   return Colors.transparent;
                 }),
                 foregroundColor: MaterialStateProperty.resolveWith((states) {
-                  return TileStyles.primaryColor;
+                  return TileColors.primaryColor;
                 }),
                 minimumSize: MaterialStateProperty.resolveWith((states) {
                   return Size(MediaQuery.sizeOf(context).width - 20, 50);
@@ -255,7 +256,7 @@ class PickColorState extends State<PickColor> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       routeName: _colorPickernRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
+        backgroundColor: TileColors.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.pickAColor,
           style: TileStyles.titleBarStyle,
