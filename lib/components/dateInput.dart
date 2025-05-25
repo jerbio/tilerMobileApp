@@ -69,7 +69,7 @@ class _DateInputWidgetState extends State<DateInputWidget> {
     return InkWell(
       onTap: onDateTap,
       child: Container(
-          padding: TileStyles.inputFieldPadding,
+          padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
           height: TileStyles.inputHeight,
           decoration: BoxDecoration(
               color: textBackgroundColor,
@@ -106,6 +106,5 @@ class _DateInputWidgetState extends State<DateInputWidget> {
             ],
           )),
     );
-    ;
   }
 }

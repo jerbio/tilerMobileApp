@@ -13,7 +13,8 @@ sealed class DeviceSettingEvent extends Equatable {
 }
 
 class InitializeDeviceSettingEvent extends DeviceSettingEvent {
-  const InitializeDeviceSettingEvent({required String id})
+  final Function getContextCallBack;
+  const InitializeDeviceSettingEvent({required String id, required this.getContextCallBack})
       : super(
           id: id,
           loadingType: LoadingType.initialization,

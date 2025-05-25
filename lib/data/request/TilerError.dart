@@ -4,9 +4,9 @@ part 'TilerError.g.dart';
 @JsonSerializable()
 class TilerError {
   static const String unexpectedCharacter = 'Unexpected character';
-  String? message;
+  String? Message;
   String? Code;
-  TilerError({this.message, this.Code});
+  TilerError({this.Message, this.Code});
 
   factory TilerError.fromJson(Map<String, dynamic> json) =>
       _$TilerErrorFromJson(json);

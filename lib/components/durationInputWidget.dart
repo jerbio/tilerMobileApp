@@ -19,14 +19,18 @@ class DurationInputWidget extends StatefulWidget {
 }
 
 class _DurationInputWidgetState extends State<DurationInputWidget> {
-  Duration? _duration;
+  Duration? _setDuration;
   final Color textBackgroundColor = TileColors.textBackgroundColor;
   final Color textBorderColor = TileColors.textBorderColor;
   final Color inputFieldIconColor = TileColors.inputFieldTextColor;
   @override
   void initState() {
     super.initState();
-    this._duration = this.widget.duration;
+    this._setDuration = this.widget.duration;
+  }
+
+  Duration? get _duration {
+    return this._setDuration ?? this.widget.duration;
   }
 
   @override
@@ -39,7 +43,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
         Duration? populatedDuration = durationParams['duration'] as Duration?;
         setState(() {
           if (populatedDuration != null) {
-            _duration = populatedDuration;
+            _setDuration = populatedDuration;
           }
         });
         if (this.widget.onDurationChange != null) {
@@ -70,7 +74,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: Container(
-            padding: TileStyles.inputFieldPadding,
+            padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
             height: TileStyles.inputHeight,
             decoration: BoxDecoration(
                 color: textBackgroundColor,
@@ -97,7 +101,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
                                   Duration.secondsPerMinute
                               ? TileStyles.inputFieldFontWeight
                               : TileStyles.inputFieldHintFontWeight,
-                          fontFamily: TileTextStyles.rubikFontName,
+                          fontFamily: TileColors.rubikFontName,
                         ),
                       ),
                     ))

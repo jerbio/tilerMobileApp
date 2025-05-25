@@ -511,6 +511,10 @@ class EventNameSearchState extends SearchWidgetState {
               topRight: Radius.circular(20),
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20)),
+          border: Border.all(
+            color: Color.fromRGBO(53, 53, 53, 0.1),
+            width: 2,
+          ),
         ),
         child: Stack(
           children: childWidgets,
@@ -590,24 +594,18 @@ class EventNameSearchState extends SearchWidgetState {
                       fontSize: TileStyles.textFontSize,
                       fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w500),
-                  contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+                  contentPadding: TileStyles.inputFieldPadding,
                   fillColor: TileColors.primaryContrastColor,
                   border: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                     borderSide:
                         BorderSide(color: TileColors.textBorderColor, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(15.0),
-                    ),
+                    borderRadius: TileStyles.inputFieldBorderRadius,
                     borderSide: BorderSide(
                       color: TileColors.textBorderColor,
                       width: 1.5,
@@ -631,6 +629,7 @@ class EventNameSearchState extends SearchWidgetState {
 
             return Scaffold(
               resizeToAvoidBottomInset: false,
+              backgroundColor: TileStyles.defaultBackgroundColor,
               body: Container(
                   margin: TileStyles.topMargin,
                   alignment: Alignment.topCenter,
@@ -652,7 +651,7 @@ class EventNameSearchState extends SearchWidgetState {
                       ),
                     )
                   ]),
-                  decoration: TileStyles.defaultBackground),
+                  decoration: TileColors.defaultBackgroundDecoration),
             );
           }),
         );

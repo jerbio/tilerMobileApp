@@ -7,7 +7,7 @@ class TileStyles {
   TileStyles._();
 
   static final double tileWidth = 350;
-  static final double tileHeight = 350;
+  static final double tileHeight = 300;
   static final double tileWidthRatio = 0.85;
   static final double tileIconSize = 12;
   static final double borderRadius = 12;
@@ -26,10 +26,10 @@ class TileStyles {
     unselectedIconTheme: IconThemeData(color: TileColors.primaryColor),
   );
   static ButtonStyle disabledButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Color.fromRGBO(154, 158, 159, 1);
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
   );
@@ -37,25 +37,25 @@ class TileStyles {
     backgroundColor: MaterialStateProperty.resolveWith((states) {
       return TileColors.primaryColor;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.white;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
   );
 
   static ButtonStyle suggestedButtonStyle = ButtonStyle(
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
       return TileColors.primaryColor;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(30);
     }),
   );
@@ -64,10 +64,10 @@ class TileStyles {
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
@@ -80,16 +80,16 @@ class TileStyles {
     shadowColor: MaterialStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return TileColors.primaryColor;
       }
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return TileColors.appBarTextColor;
       }
@@ -98,7 +98,7 @@ class TileStyles {
     overlayColor: MaterialStateProperty.resolveWith((states) {
       return TileColors.primaryColorLightHSL.toColor();
     }),
-    iconColor: MaterialStateProperty.resolveWith((states) {
+    iconColor: WidgetStateProperty.resolveWith((states) {
       if (states.any((element) => element == MaterialState.selected)) {
         return TileColors.appBarTextColor;
       }
@@ -107,40 +107,40 @@ class TileStyles {
   );
 
   static ButtonStyle strippedButtonStyle = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    foregroundColor: MaterialStateProperty.resolveWith((states) {
+    foregroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
   );
 
   static ButtonStyle onlyIcons = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
@@ -149,19 +149,19 @@ class TileStyles {
   );
 
   static ButtonStyle onlyIconsContrast = ButtonStyle(
-    overlayColor: MaterialStateProperty.resolveWith((states) {
+    overlayColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    elevation: MaterialStateProperty.resolveWith((states) {
+    elevation: WidgetStateProperty.resolveWith((states) {
       return 0;
     }),
-    padding: MaterialStateProperty.resolveWith((states) {
+    padding: WidgetStateProperty.resolveWith((states) {
       return EdgeInsets.all(0);
     }),
-    shadowColor: MaterialStateProperty.resolveWith((states) {
+    shadowColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
-    backgroundColor: MaterialStateProperty.resolveWith((states) {
+    backgroundColor: WidgetStateProperty.resolveWith((states) {
       return Colors.transparent;
     }),
     foregroundColor: MaterialStateProperty.resolveWith((states) {
@@ -190,22 +190,17 @@ class TileStyles {
       color: const Color.fromRGBO(40, 40, 40, 1));
 
   static EdgeInsets topMargin = EdgeInsets.fromLTRB(0, 20, 0, 0);
+  static final Color defaultBackgroundColor =
+      TileStyles.defaultWidgetBackgroundColor;
+  static final BoxDecoration defaultBackgroundDecoration =
+      BoxDecoration(color: Colors.transparent);
   static final BoxDecoration defaultBackground =
-  BoxDecoration(color: Colors.transparent
-    // gradient: LinearGradient(
-    //     begin: Alignment.topCenter,
-    //     end: Alignment.bottomCenter,
-    //     colors: [
-    //   Color.fromRGBO(179, 194, 242, 1).withOpacity(0.5),
-    //   Colors.white.withOpacity(0.5),
-    //   Color.fromRGBO(239, 48, 84, 1).withOpacity(0.5),
-    // ])
-  );
+      BoxDecoration(color: Colors.transparent);
   static final titleBarStyle = TextStyle(
     color: TileColors.appBarTextColor,
   );
   static const datePickersMainStyle =
-  TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
+      TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
   static const datePickersSaveStyle =
   TextStyle(fontFamily: TileTextStyles.rubikFontName, color: TileColors.primaryColor);
   static final BoxDecoration ribbonsButtonDefaultDecoration = BoxDecoration(
@@ -243,8 +238,8 @@ class TileStyles {
       color: Color.fromRGBO(31, 31, 31, 0.1),
       borderRadius: BorderRadius.circular(8));
   static final BoxDecoration tileIconContainerBoxDecorationMonthly =
-  BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.1), shape: BoxShape.circle);
+      BoxDecoration(
+          color: Color.fromRGBO(31, 31, 31, 0.1), shape: BoxShape.circle);
   static InputDecoration generateTextInputDecoration(String? inputHint,
       {Icon? prefixIcon}) {
     return InputDecoration(
@@ -285,9 +280,9 @@ class TileStyles {
   static const String evaluatingScheduleAsset =
       'assets/lottie/tiler-evaluating-card-swap.json';
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
-  SizedBox(height: 200);
+      SizedBox(height: 200);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
-  SizedBox(height: 150);
+      SizedBox(height: 150);
 
   static BoxShadow inputFieldBoxShadow = BoxShadow(
     color: Color.fromRGBO(168, 168, 168, 0.54),
@@ -296,14 +291,12 @@ class TileStyles {
     offset: Offset(0, 0),
   );
 
-  static BorderRadius inputFieldBorderRadius = BorderRadius.only(
-      topLeft: Radius.circular(10),
-      topRight: Radius.circular(10),
-      bottomLeft: Radius.circular(10),
-      bottomRight: Radius.circular(10));
+  static Radius inputFieldRadius = const Radius.circular(50.0);
+  static BorderRadius inputFieldBorderRadius =
+      BorderRadius.all(inputFieldRadius);
   static const double inputHeight = 60;
   static const double inputFontSize = 20;
-  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(10, 0, 10, 0);
+  static EdgeInsets inputFieldPadding = EdgeInsets.fromLTRB(30, 15, 10, 15);
   static TextStyle inputTextStyle = TextStyle(
     fontSize: TileStyles.inputFontSize,
     fontFamily: TileTextStyles.rubikFontName,
@@ -327,11 +320,11 @@ class TileStyles {
         width: 1,
       ),
       borderRadius: const BorderRadius.all(
-        const Radius.circular(10.0),
+        const Radius.circular(60.0),
       ));
   static const BoxDecoration configUpdate_Selected = BoxDecoration(
       borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
+        const Radius.circular(60.0),
       ),
       color: TileColors.primaryColor);
 
@@ -340,4 +333,35 @@ class TileStyles {
   static IconData repetitionIcon = Icons.repeat_outlined;
   static IconData forecastIcon = FontAwesomeIcons.binoculars;
   static const double defaultCardElevation = 5.0;
+
+  static Widget getShimmerPending(BuildContext context) {
+    return Shimmer.fromColors(
+        baseColor: Colors.transparent,
+        highlightColor: TileStyles.primaryColor.withLightness(0.9),
+        child: Container(
+          width: MediaQuery.of(context).size.width,
+          child: ColoredBox(
+              color: Colors.yellow,
+              child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+              )),
+        ));
+  }
+
+  static AppBar CancelAndProceedAppBar(String title) {
+    return AppBar(
+      title: Text(title),
+      centerTitle: true,
+      backgroundColor: TileStyles.appBarColor,
+      iconTheme: IconThemeData(color: TileStyles.appBarTextColor),
+      actionsIconTheme: IconThemeData(color: TileStyles.appBarTextColor),
+      titleTextStyle: TextStyle(
+        color: TileStyles.appBarTextColor,
+        fontSize: 20,
+        fontFamily: TileStyles.rubikFontName,
+      ),
+      leading: SizedBox.shrink(),
+    );
+  }
 }

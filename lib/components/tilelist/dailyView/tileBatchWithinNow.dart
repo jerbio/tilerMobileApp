@@ -57,14 +57,18 @@ class WithinNowBatchState extends TileBatchState {
   final String upcomingAdHocTileId = 'upcoming-tile-section-header-id';
   final GlobalKey<AnimatedListState> _preceedingListKey =
       GlobalKey<AnimatedListState>(debugLabel: 'preceedinglistKey');
+  final GlobalKey<AnimatedListState> _upcomingListKey =
+      GlobalKey<AnimatedListState>(debugLabel: 'upcomingListKey');
   late ListModel<TilerEvent>? _preceedingList;
   ScrollController preceedingAnimatedListScrollController =
       new ScrollController();
+  ScrollController fullUiController = new ScrollController();
   AnimatedList? preceedingAnimatedList;
   Map<String, Tuple3<TilerEvent, int?, int?>>? preceedingOrderedTiles;
 
   double _emptyDayOpacity = 0;
   double heightMargin = 262;
+  double heightOfTimeBanner = 245;
   bool _pendingRendering = false;
   bool _isEmptydayTile = false;
   @override
@@ -72,6 +76,57 @@ class WithinNowBatchState extends TileBatchState {
     super.initState();
     _preceedingList = ListModel(
         listKey: _preceedingListKey, removedItemBuilder: _buildRemovedItem);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        snapToUpComingTiles();
+      }
+    });
+  }
+
+  void snapToUpComingTiles() {
+    RenderBox? renderObject =
+        _upcomingListKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderObject != null) {
+      var offset = renderObject.localToGlobal(Offset.zero);
+
+      bool isInterferringWithNow = false;
+      bool precedingTileExist = false;
+      int currentTimeInMs = Utility.currentTime().millisecondsSinceEpoch;
+      if (this.widget.tiles != null) {
+        for (var eachTile in this.widget.tiles!) {
+          SubCalendarEvent? eachSubEvent = eachTile as SubCalendarEvent?;
+          if (eachSubEvent != null) {
+            if (eachSubEvent.end != null &&
+                eachSubEvent.end! < currentTimeInMs) {
+              precedingTileExist = true;
+            }
+            if (eachSubEvent.start != null &&
+                eachSubEvent.start! <= currentTimeInMs &&
+                eachSubEvent.end != null &&
+                eachSubEvent.end! > currentTimeInMs) {
+              isInterferringWithNow = true;
+            }
+            if (precedingTileExist && isInterferringWithNow) {
+              break;
+            }
+          }
+        }
+      }
+      double interferringWithNowOffSet = 0;
+
+      if (precedingTileExist) {
+        if (isInterferringWithNow) {
+          interferringWithNowOffSet = TileStyles.tileHeight;
+        }
+        print(
+            'interferringWithNowOffSet: $interferringWithNowOffSet, offset: ${offset.distance}');
+        double offSetUpdate =
+            offset.distance - heightOfTimeBanner - interferringWithNowOffSet;
+        if (offSetUpdate > 0) {
+          fullUiController.jumpTo(offSetUpdate);
+        }
+      }
+    }
   }
 
   Widget _buildRemovedItem(
@@ -79,6 +134,7 @@ class WithinNowBatchState extends TileBatchState {
     var tile = item;
     if (isTileAdHocUpcoming(tile)) {
       return FadeTransition(
+        key: _upcomingListKey,
         opacity: animation,
         child: Align(
             alignment: Alignment.topCenter,
@@ -102,6 +158,7 @@ class WithinNowBatchState extends TileBatchState {
     var tile = _preceedingList![index];
     if (isTileAdHocUpcoming(tile)) {
       return FadeTransition(
+        key: _upcomingListKey,
         opacity: animation,
         child: Align(
             alignment: Alignment.topCenter,
@@ -347,10 +404,11 @@ class WithinNowBatchState extends TileBatchState {
       },
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 65, 0, 0),
-        height: MediaQuery.of(context).size.height - 245,
+        height: MediaQuery.of(context).size.height - heightOfTimeBanner,
         width: MediaQuery.of(context).size.width,
         child: ListView(
           shrinkWrap: true,
+          controller: fullUiController,
           physics: _isEmptydayTile ? NeverScrollableScrollPhysics() : null,
           children: [
             ...precedingTileWidgets,

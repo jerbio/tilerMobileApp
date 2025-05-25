@@ -59,6 +59,7 @@ class AnalysticsSignal {
   }
 
   static Future send(String tag, {Map? additionalInfo}) async {
+    return "no-tag-set";
     if (tag.isEmpty) {
       return "no-tag-set";
     }

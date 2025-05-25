@@ -90,7 +90,7 @@ class TilerEvent extends TilerObj with TimeRange {
       address = json['address'];
     }
     if (json.containsKey('addressDescription')) {
-      addressDescription = json['addressDescription'];
+      addressDescription = json['description'];
     }
     if (json.containsKey('thirdPartyType') && json['thirdPartyType'] != null) {
       try {

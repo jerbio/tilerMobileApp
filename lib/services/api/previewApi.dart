@@ -33,7 +33,7 @@ class PreviewApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
 
         var response = await http.get(uri, headers: header);
@@ -51,6 +51,6 @@ class PreviewApi extends AppApi {
         }
       }
     }
-    throw TilerError(message: 'Failed to get preview summary');
+    throw TilerError(Message: 'Failed to get preview summary');
   }
 }

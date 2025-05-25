@@ -40,7 +40,7 @@ class WhatIfApi extends AppApi {
 
       return ForecastResponse();
     } catch (e) {
-      throw TilerError(message: "Failed to get preview");
+      throw TilerError(Message: "Failed to get preview");
     }
   }
 
@@ -48,7 +48,7 @@ class WhatIfApi extends AppApi {
   Future<Tuple2<Preview, Preview>?> updateSubEvent(
       EditTilerEvent subEvent) async {
     TilerError error = new TilerError();
-    error.message = "Did not update tile";
+    error.Message = "Did not update tile";
     var queryParameters = {
       'EventID': subEvent.id,
       'EventName': subEvent.name,
@@ -111,7 +111,7 @@ class WhatIfApi extends AppApi {
       Uri uri = Uri.https(url, '/api/SubCalendarEvent', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);

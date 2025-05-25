@@ -141,7 +141,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     }
 
     if (Platform.isIOS) {
-      var iosCallBackButtonPress = generateCallBack(denyAccess: false);
+      var iosCallBackButtonPress =
+          generateCallBack(denyAccess: false, forceDeviceCheck: true);
       acceptDenyButtons = [
         Container(
           margin: EdgeInsets.fromLTRB(0, 430, 0, 0),

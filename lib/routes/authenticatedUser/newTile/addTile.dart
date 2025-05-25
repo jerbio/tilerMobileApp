@@ -38,14 +38,20 @@ import '../../../bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
-  Function? onAddTileClose;
-  Function? onAddingATile;
-  PreTile? preTile;
-  DateTime? autoDeadline;
+  final Function? onAddTileClose;
+  final Function? onAddingATile;
+  final PreTile? preTile;
+  final DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.preTile, this.autoDeadline});
+  AddTile(
+      {this.preTile,
+      this.autoDeadline,
+      this.onAddTileClose,
+      this.onAddingATile,
+      Key? key})
+      : super(key: key);
   @override
   AddTileState createState() => AddTileState();
 }
@@ -99,6 +105,13 @@ class AddTileState extends State<AddTile> {
   static final String addTileCancelAndProceedRouteName =
       "addTileCancelAndProceedRouteName";
 
+  final EdgeInsets configUpdateIconPadding =
+      const EdgeInsets.fromLTRB(5, 2, 5, 5);
+  final EdgeInsets configUpdatePadding =
+      const EdgeInsets.fromLTRB(5, 10, 10, 7);
+  bool isPendingAutoResult = false;
+  final inputBorderRadius = TileStyles.inputFieldRadius;
+
   @override
   void initState() {
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
@@ -109,6 +122,7 @@ class AddTileState extends State<AddTile> {
     }
     if (this.widget.preTile != null) {
       _location = this.widget.preTile!.location;
+      print("location in preTile: ${_location}");
       tileNameController =
           TextEditingController(text: this.widget.preTile!.description);
       _duration = this.widget.preTile!.duration;
@@ -127,10 +141,16 @@ class AddTileState extends State<AddTile> {
               .preTile!
               .description
               .isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
+            setState(() {
+              isPendingAutoResult = true;
+            });
             this
                 .scheduleApi
                 .getAutoResult(this.widget.preTile!.description!)
                 .then((remoteTileResponse) {
+              setState(() {
+                isPendingAutoResult = false;
+              });
               Location? _locationResponse;
               if (remoteTileResponse.item2.isNotEmpty) {
                 _locationResponse = remoteTileResponse.item2.last;
@@ -142,6 +162,12 @@ class AddTileState extends State<AddTile> {
                   }
                 });
                 isSubmissionReady();
+              }
+            }).whenComplete(() {
+              if (mounted) {
+                setState(() {
+                  isPendingAutoResult = false;
+                });
               }
             });
           }
@@ -372,6 +398,9 @@ class AddTileState extends State<AddTile> {
           const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       // ignore: cancel_subscriptions
       StreamSubscription streamSubScription = future.asStream().listen((event) {
+        setState(() {
+          isPendingAutoResult = true;
+        });
         this
             .scheduleApi
             .getAutoResult(tileNameController.text)
@@ -418,6 +447,12 @@ class AddTileState extends State<AddTile> {
             });
             isSubmissionReady();
           }
+        }).whenComplete(() {
+          if (mounted) {
+            setState(() {
+              isPendingAutoResult = false;
+            });
+          }
         });
       });
       if (mounted) {
@@ -456,23 +491,17 @@ class AddTileState extends State<AddTile> {
                     ),
                 filled: true,
                 isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
+                contentPadding: TileStyles.inputFieldPadding,
                 fillColor: TileColors.primaryContrastColor,
                 border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                   borderSide: BorderSide(color: textBorderColor, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
+                  borderRadius: TileStyles.inputFieldBorderRadius,
                   borderSide: BorderSide(
                     color: textBorderColor,
                     width: 1.5,
@@ -515,15 +544,13 @@ class AddTileState extends State<AddTile> {
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(5.0),
+                      borderRadius: BorderRadius.all(
+                        inputBorderRadius,
                       ),
                       borderSide: BorderSide(color: Colors.white, width: 0.5),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(5.0),
-                      ),
+                      borderRadius: BorderRadius.all(inputBorderRadius),
                       borderSide:
                           BorderSide(color: textBorderColor, width: 0.5),
                     ),
@@ -578,9 +605,9 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-              color: TileColors.primaryContrastColor,
-              borderRadius: const BorderRadius.all(
-                const Radius.circular(8.0),
+              color: TileStyles.primaryContrastColor,
+              borderRadius: BorderRadius.all(
+                inputBorderRadius,
               ),
               border: Border.all(
                 color: textBorderColor,
@@ -660,6 +687,8 @@ class AddTileState extends State<AddTile> {
 
     Widget locationConfigButton = ConfigUpdateButton(
       text: locationName,
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
         color: isLocationConfigSet ? populatedTextColor : iconColor,
@@ -694,12 +723,6 @@ class AddTileState extends State<AddTile> {
               _location = populatedLocation;
               _isLocationManuallySet = true;
               updateLocation(_location);
-              // if (!_isRestictionProfileManuallySet &&
-              //     _location != null &&
-              //     _listedRestrictionProfile != null &&
-              //     _listedRestrictionProfile!.isNotEmpty) {
-              //   if (_location!.description == Constants.workLocationNickName) {}
-              // }
             }
           });
         });
@@ -708,6 +731,8 @@ class AddTileState extends State<AddTile> {
 
     Widget repetitionConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.repetition,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           TileStyles.repetitionIcon,
           color: isRepetitionSet ? populatedTextColor : iconColor,
@@ -765,6 +790,8 @@ class AddTileState extends State<AddTile> {
 
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
           color: iconColor,
@@ -788,6 +815,8 @@ class AddTileState extends State<AddTile> {
         });
 
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
@@ -860,6 +889,8 @@ class AddTileState extends State<AddTile> {
     }
 
     Widget colorPickerConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
@@ -886,6 +917,8 @@ class AddTileState extends State<AddTile> {
     );
 
     Widget softDeadlineWidget = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
       textColor: _isAutoRevisable ? populatedTextColor : iconColor,
       prefixIcon: Icon(
@@ -1063,9 +1096,9 @@ class AddTileState extends State<AddTile> {
             .toColor();
 
     double colorConst = 255;
-    // tile.BColor = (randomColor.b * colorConst).toInt().toString();
-    // tile.GColor = (randomColor.g * colorConst).toInt().toString();
-    // tile.RColor = (randomColor.r * colorConst).toInt().toString();
+    tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
@@ -1206,8 +1239,8 @@ class AddTileState extends State<AddTile> {
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
             color: TileColors.primaryContrastColor,
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
+            borderRadius: BorderRadius.all(
+              inputBorderRadius,
             ),
             border: Border.all(
               color: textBorderColor,
@@ -1350,13 +1383,13 @@ class AddTileState extends State<AddTile> {
       AppLocalizations.of(context)!.appointment
     ];
 
-    String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
     Widget switchUp = Container(
       child: ToggleSwitch(
         // key: switchUpKey,
         initialLabelIndex: !isAppointment ? 0 : 1,
         totalSwitches: 2,
         animate: true,
+
         labels: tabButtons,
         onToggle: onTabTypeChange,
         activeFgColor: TileColors.primaryContrastColor,
@@ -1412,9 +1445,16 @@ class AddTileState extends State<AddTile> {
       child: Container(
         margin: TileStyles.topMargin,
         alignment: Alignment.topCenter,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: childrenWidgets,
+        child: Stack(
+          children: [
+            isPendingAutoResult
+                ? TileStyles.getShimmerPending(context)
+                : SizedBox.shrink(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: childrenWidgets,
+            ),
+          ],
         ),
       ),
       onProceed: this.onProceed,

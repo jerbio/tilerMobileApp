@@ -31,7 +31,9 @@ class UserApi extends AppApi {
       Uri uri = Uri.https(url, 'api/User/Notification', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
 
       var response = await http.get(uri, headers: header);
@@ -59,7 +61,7 @@ class UserApi extends AppApi {
             jsonResult.containsKey('error_description') &&
             jsonResult.containsKey('error_description') != null &&
             jsonResult.containsKey('error_description').isNotEmpty) {
-          throw TilerError(message: jsonResult['error_description']);
+          throw TilerError(Message: jsonResult['error_description']);
         }
         return retValue;
       }
@@ -76,7 +78,9 @@ class UserApi extends AppApi {
       Uri uri = Uri.https(url, 'api/User', queryParameters);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
 
       var response = await http.get(uri, headers: header);
@@ -98,7 +102,7 @@ class UserApi extends AppApi {
             jsonResult.containsKey('error_description') &&
             jsonResult.containsKey('error_description') != null &&
             jsonResult.containsKey('error_description').isNotEmpty) {
-          throw TilerError(message: jsonResult['error_description']);
+          throw TilerError(Message: jsonResult['error_description']);
         }
         return null;
       }
@@ -107,9 +111,9 @@ class UserApi extends AppApi {
   }
 
   Future<UserProfile?> updateUserProfile(UserProfile userProfile) async {
-    Map<String, dynamic> userProfileMap = userProfile.toJson();
+    Map<String, dynamic> userProfileMap = userProfile.toJsonRequest();
     Utility.debugPrint("SENT TO API: ${userProfileMap}");
-    return sendPostRequest('api/User', userProfileMap, analyze: false)
+    return sendPostRequest('api/User', userProfileMap, analyze: false, usePutRequest: true)
         .then((response) {
       if (response.statusCode == 200) {
         var jsonResult = jsonDecode(response.body);
@@ -121,8 +125,20 @@ class UserApi extends AppApi {
           }
         }
       }
-      throw TilerError(message: LocalizationService.instance.translations.reachingServerIssues);
+      try {
+        var jsonResult = jsonDecode(response.body);
+        var tilerErrorResponse = getTilerResponseError(jsonResult);
+        if (tilerErrorResponse != null) {
+          throw tilerErrorResponse;
+        }
+      } catch (e) {
+        if (e is TilerError) {
+          throw e;
+        }
+      }
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
-
 }

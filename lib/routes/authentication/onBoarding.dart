@@ -28,7 +28,7 @@ Widget renderPending() {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
           child: Container(
-            decoration: TileStyles.defaultBackground,
+            decoration: TileStyles.defaultBackgroundDecoration,
           ),
         ),
         Center(
@@ -49,7 +49,6 @@ Widget renderPending() {
 
 
 class _OnboardingViewState extends State<OnboardingView> {
-
   final List<Widget> pages = [
     WakeUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
