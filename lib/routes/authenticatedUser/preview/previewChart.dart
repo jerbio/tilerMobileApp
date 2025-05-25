@@ -6,6 +6,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class PreviewChart extends StatefulWidget {
@@ -41,7 +42,7 @@ class _PreviewChartState extends State<PreviewChart> {
       List<PieChartSectionData> pieChartData = [];
       for (int i = 0; i < previewGrouping!.length; i++) {
         var eachPreviewGrouping = previewGrouping![i];
-        Color hueColor = TileStyles.chartHues[i % TileStyles.chartHues.length];
+        Color hueColor = TileColors.chartHues[i % TileColors.chartHues.length];
         if (eachPreviewGrouping.isNullGrouping == true) {
           Duration otherTiles = Duration.zero;
           Duration blockedOutTiles = Duration.zero;

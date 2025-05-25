@@ -17,6 +17,8 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -203,7 +205,7 @@ class _SummaryPage extends State<SummaryPage> {
               style: TextStyle(
                   fontSize: 12,
                   color: Color.fromRGBO(31, 31, 31, 0.8),
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w600),
             ),
           ),
@@ -265,7 +267,7 @@ class _SummaryPage extends State<SummaryPage> {
                         ? AppLocalizations.of(context)!.procrastinateBlockOut
                         : subCalendarEventTile.name ?? "",
                     style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -345,7 +347,7 @@ class _SummaryPage extends State<SummaryPage> {
                         ? AppLocalizations.of(context)!.procrastinateBlockOut
                         : subCalendarEventTile.name ?? "",
                     style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -410,7 +412,7 @@ class _SummaryPage extends State<SummaryPage> {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
           )),
     );
     if (tiles.isEmpty) {
@@ -453,7 +455,7 @@ class _SummaryPage extends State<SummaryPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 50,
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                               )),
                         ),
                       ],
@@ -484,7 +486,7 @@ class _SummaryPage extends State<SummaryPage> {
               AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           )
@@ -584,7 +586,7 @@ class _SummaryPage extends State<SummaryPage> {
                           ? AppLocalizations.of(context)!.procrastinateBlockOut
                           : e.name ?? "",
                       style: TextStyle(
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -663,7 +665,7 @@ class _SummaryPage extends State<SummaryPage> {
                                   .procrastinateBlockOut
                               : e.name ?? "",
                           style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
+                              fontFamily: TileTextStyles.rubikFontName,
                               overflow: TextOverflow.ellipsis,
                               fontWeight: FontWeight.w600),
                         ),
@@ -713,7 +715,7 @@ class _SummaryPage extends State<SummaryPage> {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
           )),
     );
 
@@ -743,7 +745,7 @@ class _SummaryPage extends State<SummaryPage> {
               AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           )
@@ -796,8 +798,8 @@ class _SummaryPage extends State<SummaryPage> {
                                     .length
                                     .toString()),
                             style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                              color: TileStyles.primaryColor,
+                              fontFamily: TileTextStyles.rubikFontName,
+                              color: TileColors.primaryColor,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -810,7 +812,7 @@ class _SummaryPage extends State<SummaryPage> {
                               ),
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: TileStyles.primaryColor,
+                                  color: TileColors.primaryColor,
                                   width: height / height,
                                 ),
                                 borderRadius: BorderRadius.circular(
@@ -820,8 +822,8 @@ class _SummaryPage extends State<SummaryPage> {
                               child: Text(
                                 AppLocalizations.of(context)!.completeTiles,
                                 style: TextStyle(
-                                  fontFamily: TileStyles.rubikFontName,
-                                  color: TileStyles.primaryColor,
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  color: TileColors.primaryColor,
                                 ),
                               ),
                             ),
@@ -846,7 +848,7 @@ class _SummaryPage extends State<SummaryPage> {
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
           )),
     );
 
@@ -891,7 +893,7 @@ class _SummaryPage extends State<SummaryPage> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 50,
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                               )),
                         ),
                       ],
@@ -921,7 +923,7 @@ class _SummaryPage extends State<SummaryPage> {
               AppLocalizations.of(context)!.countTile(tiles.length.toString()),
               style: TextStyle(
                 fontSize: 25,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           )
@@ -1263,16 +1265,16 @@ class _SummaryPage extends State<SummaryPage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
+          backgroundColor: TileColors.primaryColor,
           title: Text(
             this.widget.timeline.startTime.humanDate(context),
             style: TextStyle(
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),
           iconTheme: IconThemeData(
-            color: TileStyles.appBarTextColor,
+            color: TileColors.appBarTextColor,
           ),
           leading: CloseButton(),
           centerTitle: true,
@@ -1282,7 +1284,7 @@ class _SummaryPage extends State<SummaryPage> {
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          color: TileStyles.primaryColorLightHSL.toColor(),
+          color: TileColors.primaryColorLightHSL.toColor(),
           child: SingleChildScrollView(
             child: (isLoadingTimelineSummary)
                 ? Container(
@@ -1508,7 +1510,7 @@ class _TileToBeCompletedState extends State<TileToBeCompleted> {
                         ? AppLocalizations.of(context)!.procrastinateBlockOut
                         : widget.subCalendarEventTile.name ?? "",
                     style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
+                      fontFamily: TileTextStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -1553,7 +1555,7 @@ class _TileToBeCompletedState extends State<TileToBeCompleted> {
               style: TextStyle(
                   fontSize: 12,
                   color: Color.fromRGBO(31, 31, 31, 0.8),
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w600),
             ),
           ),

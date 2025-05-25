@@ -6,6 +6,7 @@ import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -38,7 +39,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
         peekDay.endTime?.tilerDayOfWeekName(context).substring(0, 3) ?? "",
         style: TextStyle(
             fontSize: 17,
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
             fontWeight: FontWeight.w500),
       ),
     );
@@ -70,7 +71,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
                     abbreviations: true),
             style: TextStyle(
                 fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 color: Colors.red),
           ),
@@ -103,7 +104,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
                       abbreviations: true),
               style: TextStyle(
                   fontSize: 15,
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w300,
                   color: Colors.green),
             ),
@@ -129,7 +130,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
             tardyCount.toString(),
             style: TextStyle(
                 fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 color: Colors.blue),
           ),
@@ -228,7 +229,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       child: Text(timeOfDay.format(context),
           style: TextStyle(
               fontSize: 14,
-              fontFamily: TileStyles.rubikFontName,
+              fontFamily: TileTextStyles.rubikFontName,
               fontWeight: FontWeight.w300)),
     );
   }

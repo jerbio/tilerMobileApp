@@ -12,6 +12,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class CreateTileShareClusterWidget extends StatefulWidget {
@@ -108,11 +109,11 @@ class _CreateTileShareClusterWidgetState
       ),
       deleteIcon: Icon(
         Icons.close,
-        color: TileStyles.primaryContrastColor,
+        color: TileColors.primaryContrastColor,
       ),
       side: BorderSide.none,
       onDeleted: () => _removeTile(newTile),
-      backgroundColor: TileStyles.primaryColor,
+      backgroundColor: TileColors.primaryColor,
       labelStyle: TextStyle(color: Colors.white),
     );
   }
@@ -280,13 +281,13 @@ class _CreateTileShareClusterWidgetState
           // centerTitle: true,
           automaticallyImplyLeading: false,
           actions: [selectionButtonWidgets],
-          backgroundColor: TileStyles.appBarColor,
+          backgroundColor: TileColors.appBarColor,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.share,
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
               ),
               Text(
                 this.isMultiTilette

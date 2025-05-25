@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -20,6 +21,8 @@ import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -157,7 +160,7 @@ class TileWidgetState extends State<TileWidget>
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Icon(transitIconMap[travelLeg.travelMedium] ?? Icons.directions_walk,
-            color: TileStyles.primaryColor, size: 20),
+            color: TileColors.primaryColor, size: 20),
         Flexible(
           child: Container(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -165,9 +168,9 @@ class TileWidgetState extends State<TileWidget>
               travelLeg.description ?? "",
               style: TextStyle(
                   fontSize: 15,
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.normal,
-                  color: TileStyles.defaultTextColor),
+                  color: TileColors.defaultTextColor),
             ),
           ),
         ),
@@ -177,9 +180,9 @@ class TileWidgetState extends State<TileWidget>
             durationText.isNot_NullEmptyOrWhiteSpace() ? "($durationText)" : "",
             style: TextStyle(
                 fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.normal,
-                color: TileStyles.defaultTextColor),
+                color: TileColors.defaultTextColor),
           ),
         )
       ],
@@ -195,7 +198,7 @@ class TileWidgetState extends State<TileWidget>
         isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
 
     Color? textColor =
-        isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
+        isTardy ? TileColors.lateTextColor : TileColors.defaultTextColor;
 
     Widget transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
     if (this.widget.subEvent.travelDetail != null) {
@@ -244,13 +247,13 @@ class TileWidgetState extends State<TileWidget>
               child: Row(
                 children: [
                   Icon(Icons.directions_walk,
-                      color: TileStyles.primaryContrastColor, size: iconSize),
+                      color: TileColors.primaryContrastColor, size: iconSize),
                   Text(walkCount.toString(),
                       style: TextStyle(
                           fontSize: fontSize,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontWeight: FontWeight.normal,
-                          color: TileStyles.primaryContrastColor))
+                          color: TileColors.primaryContrastColor))
                 ],
               ),
             ),
@@ -263,13 +266,13 @@ class TileWidgetState extends State<TileWidget>
               child: Row(
                 children: [
                   Icon(Icons.directions_transit,
-                      color: TileStyles.primaryContrastColor, size: iconSize),
+                      color: TileColors.primaryContrastColor, size: iconSize),
                   Text(stopCount.toString(),
                       style: TextStyle(
                           fontSize: fontSize,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontWeight: FontWeight.normal,
-                          color: TileStyles.primaryContrastColor))
+                          color: TileColors.primaryContrastColor))
                 ],
               ),
             ),
@@ -281,7 +284,7 @@ class TileWidgetState extends State<TileWidget>
           margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: TileStyles.primaryColor,
+            color: TileColors.primaryColor,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -345,7 +348,7 @@ class TileWidgetState extends State<TileWidget>
                 child: Text(startString,
                     style: TextStyle(
                         fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.normal,
                         color: textColor))),
             transitUIWidget,
@@ -354,7 +357,7 @@ class TileWidgetState extends State<TileWidget>
                 child: Text(endString,
                     style: TextStyle(
                         fontSize: fontSize,
-                        fontFamily: TileStyles.rubikFontName,
+                        fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.normal,
                         color: textColor)))
           ],
@@ -386,7 +389,7 @@ class TileWidgetState extends State<TileWidget>
     Widget editButton = IconButton(
         icon: Icon(
           Icons.edit_outlined,
-          color: TileStyles.defaultTextColor,
+          color: TileColors.defaultTextColor,
           size: 20.0,
         ),
         onPressed: () {
@@ -466,8 +469,8 @@ class TileWidgetState extends State<TileWidget>
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
               color: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+                  ? TileColors.lateTextColor
+                  : TileColors.defaultTextColor,
               size: TileStyles.tileIconSize,
             ),
           ),
@@ -478,8 +481,8 @@ class TileWidgetState extends State<TileWidget>
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
               textColor: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+                  ? TileColors.lateTextColor
+                  : TileColors.defaultTextColor,
             ),
           ),
         ],

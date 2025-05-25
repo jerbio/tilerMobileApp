@@ -260,6 +260,8 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../util.dart';
 import '../authentication/AuthorizedRoute.dart';
 import '../authentication/onBoarding.dart';
@@ -356,7 +358,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           : AppLocalizations.of(context)!.hi,
       style: TextStyle(
         color: Colors.white,
-        fontFamily: TileStyles.rubikFontName,
+        fontFamily: TileTextStyles.rubikFontName,
         fontSize: _calculateAdaptiveSize(height, 36),
       ),
     );
@@ -367,7 +369,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       widget.firstName,
       style: TextStyle(
         color: Colors.white,
-        fontFamily: TileStyles.rubikFontName,
+        fontFamily: TileTextStyles.rubikFontName,
         fontSize: _calculateAdaptiveSize(height, 40),
         fontWeight: FontWeight.w700,
       ),
@@ -405,7 +407,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     Orientation orientation = MediaQuery.of(context).orientation;
 
     return Scaffold(
-      backgroundColor: TileStyles.primaryColor,
+      backgroundColor: TileColors.primaryColor,
       body: SafeArea(
         child: orientation == Orientation.portrait
             ? _buildPortraitLayout(context, height, width)

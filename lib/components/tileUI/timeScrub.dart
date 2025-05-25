@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -152,7 +153,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                             fontSize: 10,
-                            fontFamily: TileStyles.rubikFontName,
+                            fontFamily: TileTextStyles.rubikFontName,
                             color: this.widget.loadTimeScrub
                                 ? Colors.white
                                 : Colors.black),
@@ -168,7 +169,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 10,
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                                 color: this.widget.loadTimeScrub
                                     ? Colors.white
                                     : Colors.black),
@@ -191,7 +192,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   AppLocalizations.of(context)!.elapsedDurationAgo(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
+                      fontSize: 15, fontFamily: TileTextStyles.rubikFontName),
                 )
               ],
             ),
@@ -209,7 +210,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   AppLocalizations.of(context)!.startsInDuration(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
+                      fontSize: 15, fontFamily: TileTextStyles.rubikFontName),
                 )
               ],
             ),

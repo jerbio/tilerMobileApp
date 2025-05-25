@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class TileDate extends StatefulWidget {
   DateTime date;
@@ -27,7 +28,7 @@ class _TileDateState extends State<TileDate> {
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 Icons.calendar_month,
-                color: TileStyles.defaultTextColor,
+                color: TileColors.defaultTextColor,
                 size: TileStyles.tileIconSize,
               )),
           Text(

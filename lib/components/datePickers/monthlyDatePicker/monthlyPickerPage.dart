@@ -6,6 +6,8 @@ import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPicker
 import 'package:tiler_app/styles.dart';
 import 'dart:ui';
 
+import 'package:tiler_app/theme/tile_colors.dart';
+
 class MonthPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class MonthPickerPage extends StatelessWidget {
               Transform.rotate(
                 angle: 1.5 * 3.14159,
                 child: Icon(Icons.arrow_back_ios_new_sharp,
-                    size: 24.0, color: TileStyles.defaultTextColor),
+                    size: 24.0, color: TileColors.defaultTextColor),
               ),
             ],
           ),

@@ -3,6 +3,7 @@ import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../../styles.dart';
@@ -27,7 +28,7 @@ class LocationRoute extends StatefulWidget {
 
 class LocationRouteState extends State<LocationRoute> {
   final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
-  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
+  final Color textBorderColor = TileColors.primaryColorLightHSL.toColor();
   Location? selectedLocation;
   TextEditingController? locationNickNameController;
   TextEditingController? locationAddressController;

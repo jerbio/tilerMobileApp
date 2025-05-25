@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
@@ -29,7 +30,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
     const unitTimeStyle = TextStyle(
         color: Color.fromRGBO(180, 180, 180, 1),
         fontSize: 35,
-        fontFamily: TileStyles.rubikFontName,
+        fontFamily: TileTextStyles.rubikFontName,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 

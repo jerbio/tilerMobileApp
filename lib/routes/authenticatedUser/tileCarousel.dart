@@ -7,6 +7,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -176,7 +177,7 @@ class _TileCarouselState extends State<TileCarousel> {
                                         .humanDate(context),
                                     style: TextStyle(
                                         fontSize: 25,
-                                        fontFamily: TileStyles.rubikFontName,
+                                        fontFamily: TileTextStyles.rubikFontName,
                                         fontWeight: FontWeight.w400,
                                         color: const Color.fromRGBO(
                                             31, 31, 31, 1))),

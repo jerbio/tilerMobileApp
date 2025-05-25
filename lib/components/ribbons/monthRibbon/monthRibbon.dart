@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthlyRibbon extends StatelessWidget {
   @override
@@ -21,7 +22,7 @@ class MonthlyRibbon extends StatelessWidget {
     return Text(
       day,
       style: TextStyle(
-        fontFamily: TileStyles.rubikFontName,
+        fontFamily: TileTextStyles.rubikFontName,
         fontSize: 16,
         color: Colors.grey,
       ),

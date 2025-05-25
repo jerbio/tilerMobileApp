@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -55,7 +56,7 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
             Positioned(
                 right: 0,
                 child: Container(
-                  color: TileStyles.gridLineColor,
+                  color: TileColors.gridLineColor,
                   height: TileStyles.thickness,
                   width: 20,
                 ))

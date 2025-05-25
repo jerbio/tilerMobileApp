@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/dayStatus.dart';
 import 'package:tiler_app/services/api/DayStatusApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DayStatusWidget extends StatefulWidget {
@@ -49,7 +50,7 @@ class DayStatusWidgetState extends State<DayStatusWidget> {
         child: Text(dayString,
             style: TextStyle(
                 fontSize: 30,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.bold,
                 color: Color.fromRGBO(31, 31, 31, 1))),
       );
@@ -70,7 +71,7 @@ class DayStatusWidgetState extends State<DayStatusWidget> {
                   Text(completedCount.toString(),
                       style: TextStyle(
                           fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey))
                 ],
@@ -91,7 +92,7 @@ class DayStatusWidgetState extends State<DayStatusWidget> {
                   Text(warningCount.toString(),
                       style: TextStyle(
                           fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey))
                 ],
@@ -113,7 +114,7 @@ class DayStatusWidgetState extends State<DayStatusWidget> {
                   Text(Utility.toHuman(sleepDuration, abbreviations: true),
                       style: TextStyle(
                           fontSize: 20,
-                          fontFamily: TileStyles.rubikFontName,
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontWeight: FontWeight.bold,
                           color: Colors.grey))
                 ],

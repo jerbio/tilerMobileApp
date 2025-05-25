@@ -13,6 +13,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileProcrastinateRoute extends StatefulWidget {
@@ -181,11 +182,11 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
         routeName: tileProcrastinateCancelAndProceedRouteName,
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
+          backgroundColor: TileColors.primaryColor,
           title: Text(
             AppLocalizations.of(context)!.duration,
             style: TextStyle(
-                color: TileStyles.appBarTextColor,
+                color: TileColors.appBarTextColor,
                 fontWeight: FontWeight.w800,
                 fontSize: 22),
           ),

@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authentication/register.dart';
 
 class PreAuthenticationRoute extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Preauthorization Route'),
+        title: Text('Preauthorization Route',),
       ),
       body: Center(
         child: ElevatedButton(

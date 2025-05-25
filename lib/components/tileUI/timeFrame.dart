@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class TimeFrameWidget extends StatelessWidget {
   TimeRange timeRange;
@@ -30,7 +31,7 @@ class TimeFrameWidget extends StatelessWidget {
               fontSize: this.fontSize??15,
               fontFamily: 'Rubik',
               fontWeight: FontWeight.normal,
-              color: this.textColor ?? TileStyles.defaultTextColor)),
+              color: this.textColor ?? TileColors.defaultTextColor)),
     );
   }
 }

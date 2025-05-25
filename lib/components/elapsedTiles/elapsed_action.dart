@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../styles.dart';
 
@@ -34,7 +36,7 @@ class ElapsedActionButton extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontFamily: TileStyles.rubikFontName,
+            fontFamily: TileTextStyles.rubikFontName,
             fontSize: height / (height / 10),
           ),
         )

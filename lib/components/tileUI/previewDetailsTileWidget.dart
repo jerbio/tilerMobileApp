@@ -7,6 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class PreviewDetailsTileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
@@ -76,8 +77,8 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
               color: (widget.subEvent.isTardy ?? false)
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+                  ? TileColors.lateTextColor
+                  : TileColors.defaultTextColor,
               size: TileStyles.tileIconSize,
             ),
           ),
@@ -86,8 +87,8 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
               textColor: (widget.subEvent.isTardy ?? false)
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+                  ? TileColors.lateTextColor
+                  : TileColors.defaultTextColor,
             ),
           ),
         ],
