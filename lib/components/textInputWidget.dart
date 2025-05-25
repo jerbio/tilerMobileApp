@@ -7,7 +7,8 @@ class TextInputWidget extends StatefulWidget {
   final Function? onTextChange;
   final String? placeHolder;
   final String? value;
-  TextInputWidget({this.onTextChange, this.placeHolder, this.value});
+  TextInputWidget({this.onTextChange, this.placeHolder, this.value, Key? key})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() => _TextInputWidgetState();
 }
@@ -55,23 +56,17 @@ class _TextInputWidgetState extends State<TextInputWidget> {
                 fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,
-            contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
+            contentPadding: TileStyles.inputFieldPadding,
             fillColor: textBackgroundColor,
             border: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(
-                const Radius.circular(50.0),
-              ),
+              borderRadius: TileStyles.inputFieldBorderRadius,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(
-                const Radius.circular(8.0),
-              ),
+              borderRadius: TileStyles.inputFieldBorderRadius,
               borderSide: BorderSide(color: textBorderColor, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: const BorderRadius.all(
-                const Radius.circular(8.0),
-              ),
+              borderRadius: TileStyles.inputFieldBorderRadius,
               borderSide: BorderSide(
                 color: textBorderColor,
                 width: 1.5,

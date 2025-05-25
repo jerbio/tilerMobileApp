@@ -22,7 +22,9 @@ class SettingsApi extends AppApi {
       Uri uri = Uri.https(tilerDomain, 'Manage/GetRestrictionProfile');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -39,7 +41,9 @@ class SettingsApi extends AppApi {
         }
       }
     }
-    throw TilerError(message:LocalizationService.instance.translations.reachingServerIssues,);
+    throw TilerError(
+      Message: LocalizationService.instance.translations.reachingServerIssues,
+    );
   }
 
   Future<RestrictionProfile> updateRestrictionProfile(
@@ -65,7 +69,9 @@ class SettingsApi extends AppApi {
         }
       }
       print('restriction profile update issue');
-      throw TilerError(message: LocalizationService.instance.translations.reachingServerIssues);
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
 
@@ -76,7 +82,9 @@ class SettingsApi extends AppApi {
       Uri uri = Uri.https(tilerDomain, 'Manage/GetStartOfDay');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -113,7 +121,9 @@ class SettingsApi extends AppApi {
       }
       print('Update start of day issue');
       print(response.body);
-      throw TilerError(message: LocalizationService.instance.translations.reachingServerIssues);
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
 
@@ -127,7 +137,9 @@ class SettingsApi extends AppApi {
       Uri uri = Uri.https(tilerDomain, 'api/User/Settings', queryParameters);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: LocalizationService.instance.translations.authenticationIssues);
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var response = await http.get(
         uri,
@@ -163,7 +175,9 @@ class SettingsApi extends AppApi {
           }
         }
       }
-      throw TilerError(message: LocalizationService.instance.translations.reachingServerIssues);
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
 }

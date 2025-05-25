@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -26,28 +26,38 @@ class Settings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final textColor =  brightness == Brightness.dark ? Colors.white : Colors.black;
+    final textColor =
+        brightness == Brightness.dark ? Colors.white : Colors.black;
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
-        NotificationOverlayMessage();
-        if  (state is DeviceSettingLoaded && state.shouldLogout) {
-            Navigator.pushNamedAndRemoveUntil(
-                context,  '/LoggedOut', (route) => false).then((_) {
-                context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
-                context.read<SubCalendarTileBloc>().add(LogOutSubCalendarTileBlocEvent());
-                context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-                context.read<WeeklyUiDateManagerBloc>().add(LogOutWeeklyUiDateManagerEvent());
-                context.read<MonthlyUiDateManagerBloc>().add(LogOutMonthlyUiDateManagerEvent());
-                context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
-                context.read<TileListCarouselBloc>().add(EnableCarouselScrollEvent(isImmediate: true));
-                context.read<IntegrationsBloc>().add(ResetIntegrationsEvent());
-                context.read<ScheduleSummaryBloc>().add(LogOutScheduleDaySummaryEvent());
-            });
+            NotificationOverlayMessage();
+        if (state is DeviceSettingLoaded && state.shouldLogout) {
+          print("reset started");
+          context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
+          context
+              .read<SubCalendarTileBloc>()
+              .add(LogOutSubCalendarTileBlocEvent());
+          context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+          context
+              .read<WeeklyUiDateManagerBloc>()
+              .add(LogOutWeeklyUiDateManagerEvent());
+          context
+              .read<MonthlyUiDateManagerBloc>()
+              .add(LogOutMonthlyUiDateManagerEvent());
+          context.read<CalendarTileBloc>().add(LogOutCalendarTileEvent());
+          context
+              .read<TileListCarouselBloc>()
+              .add(EnableCarouselScrollEvent(isImmediate: true));
+          context
+              .read<ScheduleSummaryBloc>()
+              .add(LogOutScheduleDaySummaryEvent());
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/LoggedOut', (route) => false);
         }
-        if (state is DeviceSettingError ) {
+        if (state is DeviceSettingError) {
           final errorMessage = state.error is TilerError
-              ? (state.error as TilerError).message
+              ? (state.error as TilerError).Message
               : state.error.toString();
           notificationOverlayMessage.showToast(
             context,
@@ -56,74 +66,74 @@ class Settings extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.settings),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () => Navigator.pop(context),
-          ),
-        ),
-        body: Column(
+      child: CancelAndProceedTemplateWidget(
+        routeName: Settings.routeName,
+        appBar: TileStyles.CancelAndProceedAppBar(
+            AppLocalizations.of(context)!.settings),
+        child: Column(
           children: [
             _buildListTile(
               icon: 'assets/icons/settings/AccountInfo.svg',
               title: AppLocalizations.of(context)!.accountInfo,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/accountInfo'),
+              onTap: () => Navigator.pushNamed(context, '/accountInfo'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/TilePreferences.svg',
               title: AppLocalizations.of(context)!.tilePreferences,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/tilePreferences'),
+              onTap: () => Navigator.pushNamed(context, '/tilePreferences'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/NotificationsPreferences.svg',
               title: AppLocalizations.of(context)!.notificationsPreferences,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/notificationsPreferences'),
+              onTap: () =>
+                  Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
             _buildDivider(),
-            _buildListTile(
-              icon: 'assets/icons/settings/Security.svg',
-              title: AppLocalizations.of(context)!.security,
-              color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/security'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/Security.svg',
+            //   title: AppLocalizations.of(context)!.security,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/security'),
+            // ),
             _buildListTile(
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/Connections'),
+              onTap: () => Navigator.pushNamed(context, '/Connections'),
             ),
-            _buildListTile(
-              icon: 'assets/icons/settings/MyLocations.svg',
-              title: AppLocalizations.of(context)!.myLocations,
-              color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/myLocations'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/MyLocations.svg',
+            //   title: AppLocalizations.of(context)!.myLocations,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/myLocations'),
+            // ),
             _buildDivider(),
-            _buildListTile(
-              icon: 'assets/icons/settings/AboutTiler.svg',
-              title: AppLocalizations.of(context)!.aboutTiler,
-              color: textColor,
-              onTap: ()=> Navigator.pushNamed(context, '/aboutTiler'),
-            ),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/AboutTiler.svg',
+            //   title: AppLocalizations.of(context)!.aboutTiler,
+            //   color: textColor,
+            //   onTap: () => Navigator.pushNamed(context, '/aboutTiler'),
+            // ),
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
               color: TileColors.primaryColor,
-              onTap: ()=>context.read<DeviceSettingBloc>().add(LogOutMainSettingDeviceSettingEvent(id:_requestId)),
+              onTap: () => context
+                  .read<DeviceSettingBloc>()
+                  .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
             ),
-            _buildListTile(
-              icon: 'assets/icons/settings/DeleteAccount.svg',
-              title: AppLocalizations.of(context)!.deleteAccount,
-              color: TileColors.primaryColor,
-              onTap: ()=>context.read<DeviceSettingBloc>().add(DeleteAccountMainSettingDeviceSettingEvent(id:_requestId)),
-            ),
-            _buildDivider(),
-            Center(child: _buildDarkModeSwitch()),
+            // _buildListTile(
+            //   icon: 'assets/icons/settings/DeleteAccount.svg',
+            //   title: AppLocalizations.of(context)!.deleteAccount,
+            //   color: TileColors.primaryColor,
+            //   onTap: () => context.read<DeviceSettingBloc>().add(
+            //       DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
+            // ),
+            // _buildDivider(),
+            // Center(child: _buildDarkModeSwitch()),
           ],
         ),
       ),
@@ -140,20 +150,21 @@ class Settings extends StatelessWidget {
 
   Widget _buildListTile(
       {required String icon,
-        required String title,
-        required Color color,
-        Function()? onTap}) {
+      required String title,
+      required Color color,
+      Function()? onTap}) {
     return ListTile(
-      leading: SvgPicture.asset(icon, colorFilter: ColorFilter.mode(color, BlendMode.srcIn),),
-      title: Text(title, style: TextStyle(color: color )),
-      onTap:  onTap
-    );
+        leading: SvgPicture.asset(
+          icon,
+          colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+        ),
+        title: Text(title, style: TextStyle(color: color)),
+        onTap: onTap);
   }
 
   Widget _buildDarkModeSwitch() {
     return BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
       builder: (context, state) {
-
         return Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -166,7 +177,9 @@ class Settings extends StatelessWidget {
                   value: state.isDarkMode,
                   onChanged: (value) {
                     ThemeManager.setThemeMode(value).then((_) {
-                      context.read<DeviceSettingBloc>().add(UpdateDarkModeMainSettingDeviceSettingEvent(isDarkMode: value,id:_requestId));
+                      context.read<DeviceSettingBloc>().add(
+                          UpdateDarkModeMainSettingDeviceSettingEvent(
+                              isDarkMode: value, id: _requestId));
                     });
                   },
                   activeColor: Colors.black,
@@ -191,4 +204,3 @@ class Settings extends StatelessWidget {
     );
   }
 }
-

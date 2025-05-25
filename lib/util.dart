@@ -266,7 +266,7 @@ class Utility {
     DateTime currentTime = Utility.currentTime();
     DateTime begin = new DateTime(currentTime.year, currentTime.month,
         currentTime.day, currentTime.hour, currentTime.minute);
-    DateTime end = begin.add(Utility.oneDay);
+    DateTime end = DateTime(begin.year, begin.month, begin.day, 23, 59, 0);
 
     Timeline retValue =
         Timeline(begin.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
@@ -514,6 +514,14 @@ class Utility {
 
   static get getUuid {
     return uuid.v4();
+  }
+
+  static get getSequentialId {
+    return Utility.currentTime(minuteLimitAccuracy: false)
+            .millisecondsSinceEpoch
+            .toString() +
+        "||" +
+        uuid.v4();
   }
 
   static String returnMonth(DateTime date) {
@@ -1025,6 +1033,11 @@ extension ColorExtension on Color {
   Color withLightness(double lightness) {
     HSLColor hslColor = HSLColor.fromColor(this);
     return hslColor.withLightness(lightness).toColor();
+  }
+
+  Color withOpacity(double opacity) {
+    return Color.fromARGB((opacity * 255).toInt(), (this.r * 255).toInt(),
+        (this.g * 255).toInt(), (this.b * 255).toInt());
   }
 }
 

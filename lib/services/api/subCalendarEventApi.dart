@@ -33,7 +33,7 @@ class SubCalendarEventApi extends AppApi {
       Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -68,7 +68,7 @@ class SubCalendarEventApi extends AppApi {
         Uri uri = Uri.https(url, 'api/SubCalendarEvent', updatedParams);
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.get(uri, headers: header);
         var jsonResult = jsonDecode(response.body);
@@ -110,7 +110,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> pauseTile(String id) async {
     TilerError error = new TilerError();
-    error.message = "Failed to pause tile";
+    error.Message = "Failed to pause tile";
     return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id},
             analyze: false)
         .then((response) {
@@ -129,7 +129,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.message = "Failed to resume tile";
+    error.Message = "Failed to resume tile";
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -149,7 +149,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.message = "Did not move up task";
+    error.Message = "Did not move up task";
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -169,7 +169,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
     TilerError error = new TilerError();
-    error.message = "Did not update tile";
+    error.Message = "Did not update tile";
     var queryParameters = {
       'EventID': subEvent.id,
       'EventName': subEvent.name,
@@ -201,7 +201,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.message = "Did not send complete request";
+    error.Message = "Did not send complete request";
     print(subEvent);
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
@@ -227,7 +227,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future completeTiles(String id, String type, String userId) async {
     TilerError error = new TilerError();
-    error.message = "Did not send complete request";
+    error.Message = "Did not send complete request";
     return sendPostRequest('api/Schedule/Events/Complete', {
       'EventID': id,
       'ThirdPartyType': type,
@@ -250,13 +250,13 @@ class SubCalendarEventApi extends AppApi {
     print('deleting ' + eventId);
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
-      error.message = "Did not send request";
+      error.Message = "Did not send request";
       String url = Constants.tilerDomain;
 
       Uri uri = Uri.https(url, 'api/Schedule/Event');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var deleteSubEventParameters = {
         'ID': eventId,
@@ -274,7 +274,7 @@ class SubCalendarEventApi extends AppApi {
       var response = await http.delete(uri,
           headers: header, body: json.encode(injectedDeleteSubEventParameters));
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           Map<String, dynamic>? deleteCalendarEventJson =
@@ -287,7 +287,7 @@ class SubCalendarEventApi extends AppApi {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
           } else {
-            error.message = "Issues with reaching TIler servers";
+            error.Message = "Issues with reaching TIler servers";
           }
         }
       }
@@ -297,7 +297,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future procrastinate(Duration duration, String tileId) async {
     TilerError error = new TilerError();
-    error.message = "Did not procrastinate tile";
+    error.Message = "Did not procrastinate tile";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -318,16 +318,16 @@ class SubCalendarEventApi extends AppApi {
                 'api/Schedule/Event/Procrastinate', injectedParameters)
             .then((response) {
           var jsonResult = jsonDecode(response.body);
-          error.message = "Issues with reaching Tiler servers";
+          error.Message = "Issues with reaching Tiler servers";
           if (isJsonResponseOk(jsonResult)) {
             return;
           }
           if (isTilerRequestError(jsonResult)) {
             var errorJson = jsonResult['Error'];
             error = TilerError.fromJson(errorJson);
-            throw FormatException(error.message!);
+            throw FormatException(error.Message!);
           } else {
-            error.message = "Issues with reaching Tiler servers";
+            error.Message = "Issues with reaching Tiler servers";
           }
         });
       }

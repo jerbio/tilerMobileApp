@@ -95,7 +95,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
         Utility.debugPrint("Failed to get tile cluster");
         setState(() {
           tilerError = TilerError(
-              message:
+              Message:
                   AppLocalizations.of(context)!.failedToLoadTileShareCluster);
           if (onError is TilerError) {
             tilerError = onError;
@@ -121,7 +121,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
             tilerError = onError;
           }
           tilerError = TilerError(
-              message: AppLocalizations.of(context)!.errorLoadingTilelist);
+              Message: AppLocalizations.of(context)!.errorLoadingTilelist);
           isTileListLoading = false;
         });
       });
@@ -152,7 +152,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   }
 
   Widget renderError() {
-    return Text(this.tilerError?.message ?? "Error loading tilelist");
+    return Text(this.tilerError?.Message ?? "Error loading tilelist");
   }
 
   Widget renderNotFound() {
@@ -178,7 +178,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   Widget renderTileShareCluster() {
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
-          message: AppLocalizations.of(context)!.missingTileShareCluster);
+          Message: AppLocalizations.of(context)!.missingTileShareCluster);
       return renderError();
     }
 

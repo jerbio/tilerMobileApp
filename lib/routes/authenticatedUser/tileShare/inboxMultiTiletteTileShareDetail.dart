@@ -68,7 +68,7 @@ class _InboxMultiTiletteTileShareDetailWidget
       }).catchError((onError) {
         setState(() {
           tilerError = TilerError(
-              message:
+              Message:
                   AppLocalizations.of(context)!.failedToLoadTileShareCluster);
           if (onError is TilerError) {
             tilerError = onError;
@@ -92,7 +92,7 @@ class _InboxMultiTiletteTileShareDetailWidget
             tilerError = onError;
           }
           tilerError = TilerError(
-              message: AppLocalizations.of(context)!.errorLoadingTilelist);
+              Message: AppLocalizations.of(context)!.errorLoadingTilelist);
           isTileListLoading = false;
         });
       });
@@ -110,7 +110,7 @@ class _InboxMultiTiletteTileShareDetailWidget
   }
 
   Widget renderError() {
-    return Text(this.tilerError?.message ?? "Error loading tilelist");
+    return Text(this.tilerError?.Message ?? "Error loading tilelist");
   }
 
   Widget renderNotFound() {
@@ -137,7 +137,7 @@ class _InboxMultiTiletteTileShareDetailWidget
     const double fontSize = 16;
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
-          message: AppLocalizations.of(context)!.missingTileShareCluster);
+          Message: AppLocalizations.of(context)!.missingTileShareCluster);
       return renderError();
     }
 
