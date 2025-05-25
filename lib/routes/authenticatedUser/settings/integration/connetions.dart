@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -15,32 +16,22 @@ class Connections extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title:  Text(
-          AppLocalizations.of(context)!.connections,
-          style: TextStyle(
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: ListView(
+    return CancelAndProceedTemplateWidget(
+      routeName: routeName,
+      appBar: TileStyles.CancelAndProceedAppBar(
+          AppLocalizations.of(context)!.connections),
+      child: ListView(
         children: [
           const SizedBox(height: 16),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/google.svg',
             title: AppLocalizations.of(context)!.googleCalendar,
-            onTap: () => _navigateToIntegration(context, IntegrationType.googleCalendar),
+            onTap: () =>
+                _navigateToIntegration(context, IntegrationType.googleCalendar),
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/microsoft.svg',
-            title:AppLocalizations.of(context)!.microsoft ,
+            title: AppLocalizations.of(context)!.microsoft,
             isComingSoon: true,
           ),
           _buildIntegrationRow(
@@ -55,7 +46,7 @@ class Connections extends StatelessWidget {
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/slack.svg',
-            title:AppLocalizations.of(context)!.slack,
+            title: AppLocalizations.of(context)!.slack,
             isComingSoon: true,
           ),
         ],
@@ -87,7 +78,7 @@ class Connections extends StatelessWidget {
     );
   }
 
-  Widget _buildAddButton( VoidCallback? onTap,bool isImplemented ) {
+  Widget _buildAddButton(VoidCallback? onTap, bool isImplemented) {
     ButtonStyle _addStyle = TextButton.styleFrom(
       foregroundColor: Colors.black,
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -108,9 +99,9 @@ class Connections extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: 150),
       child: TextButton(
-        style: isImplemented ? _addStyle:_comingSoonStyle,
-        onPressed: isImplemented?onTap:null,
-        child: Text(isImplemented?"Add":"Coming Soon"),
+        style: isImplemented ? _addStyle : _comingSoonStyle,
+        onPressed: isImplemented ? onTap : null,
+        child: Text(isImplemented ? "Add" : "Coming Soon"),
       ),
     );
   }

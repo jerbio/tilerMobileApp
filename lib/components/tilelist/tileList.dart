@@ -34,7 +34,7 @@ abstract class TileListState<T extends TileList> extends State<T>
   SubCalendarEvent? concludingSubEvent;
   final Duration autoRefreshDuration = const Duration(minutes: 5);
   StreamSubscription? autoRefreshList;
-  late final LocalNotificationService localNotificationService;
+  // late final LocalNotificationService localNotificationService;
   bool isInitialLoad = true;
   AnimationController? swipingAnimationController;
   Animation<double>? swipingAnimation;
@@ -43,7 +43,7 @@ abstract class TileListState<T extends TileList> extends State<T>
   @override
   void initState() {
     super.initState();
-    localNotificationService = LocalNotificationService();
+    // localNotificationService = LocalNotificationService();
     autoRefreshTileList(autoRefreshDuration);
   }
 
@@ -202,7 +202,7 @@ abstract class TileListState<T extends TileList> extends State<T>
       ));
     }
     return Container(
-      decoration: TileStyles.defaultBackground,
+      decoration: TileStyles.defaultBackgroundDecoration,
       child: Center(child: Stack(children: centerElements)),
     );
   }
@@ -238,10 +238,10 @@ abstract class TileListState<T extends TileList> extends State<T>
             ? AppLocalizations.of(context)!.procrastinateBlockOut
             : concludingTile.name!));
 
-    this.localNotificationService.concludingTileNotification(
-        tile: concludingTile,
-        context: this.context,
-        title: notificationMessage);
+    // this.localNotificationService.concludingTileNotification(
+    //     tile: concludingTile,
+    //     context: this.context,
+    //     title: notificationMessage);
     this.concludingSubEvent = concludingTile;
   }
 
@@ -271,7 +271,7 @@ abstract class TileListState<T extends TileList> extends State<T>
       earliestByEndSubTile = orderedByEndTiles.first;
     }
 
-    this.localNotificationService.cancelAllNotifications();
+    // this.localNotificationService.cancelAllNotifications();
 
     if (earliestByStartSubTile != null && earliestByEndSubTile != null) {
       if (earliestByStartSubTile.start! < earliestByEndSubTile.end!) {

@@ -67,6 +67,7 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
         Widget locationSearchWidget = Flexible(
           child: Material(
             child: LocationSearchWidget(
+              includeDeviceLocation: false,
               onChanged: (address) {
                 context.read<OnboardingBloc>().add(AddressTextChanged(address));
               },

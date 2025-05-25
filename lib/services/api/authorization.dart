@@ -109,11 +109,11 @@ class AuthorizationApi extends AppApi {
         return retValue;
       }
       String tilerErrorMessage = errorMessage(jsonResult);
-      TilerError tilerError = TilerError(message: tilerErrorMessage);
+      TilerError tilerError = TilerError(Message: tilerErrorMessage);
       throw tilerError;
     }
 
-    TilerError tilerError = TilerError(message: 'Failed to authenticate user');
+    TilerError tilerError = TilerError(Message: 'Failed to authenticate user');
     throw tilerError;
   }
 
@@ -263,21 +263,21 @@ class AuthorizationApi extends AppApi {
 
   Future<bool> deleteTilerAccount() async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     return sendPostRequest('Account/DeleteAccount', {},
             injectLocation: false, analyze: false)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return true;
       }
       if (isTilerRequestError(jsonResult)) {
         var errorJson = jsonResult['Error'];
         error = TilerError.fromJson(errorJson);
-        throw FormatException(error.message!);
+        throw FormatException(error.Message!);
       } else {
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
       }
       throw error;
     });
@@ -285,7 +285,7 @@ class AuthorizationApi extends AppApi {
 
   Future<Map<String, dynamic>?> statusSupport() async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     String tilerDomain = Constants.tilerDomain;
     String url = tilerDomain;
     // https://localhost-44388-x-if7.conveyor.cloud/home/Supported

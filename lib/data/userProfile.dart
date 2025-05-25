@@ -6,8 +6,11 @@ class UserProfile {
   String? email;
   String? endOfDay;
   String? fullName;
+  String? lastName;
+  String? firstName;
   String? phoneNumber;
   String? dateOfBirth;
+  String? countryCode;
 
   UserProfile();
 
@@ -15,6 +18,14 @@ class UserProfile {
     id = '';
     if (json.containsKey('id')) {
       id = json['id'];
+    }
+
+    if (json.containsKey('firstName')) {
+      firstName = json['firstName'];
+    }
+
+    if (json.containsKey('lastName')) {
+      lastName = json['lastName'];
     }
 
     if (json.containsKey('username')) {
@@ -45,8 +56,11 @@ class UserProfile {
     if (json.containsKey('phoneNumber') && json['phoneNumber'] != null) {
       phoneNumber = json['phoneNumber'];
     }
-    if(json.containsKey('dateOfBirth') && json['dateOfBirth'] != null) {
+    if (json.containsKey('dateOfBirth') && json['dateOfBirth'] != null) {
       dateOfBirth = json['dateOfBirth'];
+    }
+    if (json.containsKey('countryCode') && json['countryCode'] != null) {
+      countryCode = json['countryCode'];
     }
   }
 
@@ -60,8 +74,30 @@ class UserProfile {
       'endOfDay': this.endOfDay,
       'fullName': this.fullName,
       'phoneNumber': this.phoneNumber,
-      'dateOfBirth': dateOfBirth,
+      'dateOfBirth': this.dateOfBirth,
+    };
+  }
 
+  Map<String, dynamic> toJsonRequest() {
+    int? dateOfBirthEpoch;
+    try {
+      if (this.dateOfBirth != null) {
+        dateOfBirthEpoch =
+            DateTime.parse(this.dateOfBirth!.replaceAll(r'/', '-'))
+                .millisecondsSinceEpoch;
+      }
+    } catch (e) {
+      dateOfBirthEpoch = null;
+    }
+
+    return <String, dynamic>{
+      'UpdatedUserName': this.username,
+      'CountryCode': this.timezone,
+      'EndOfDay': this.endOfDay,
+      'LastName': this.lastName,
+      'FirstName': this.firstName,
+      'PhoneNumber': this.phoneNumber,
+      'DateOfBirthUtcEpoch': dateOfBirthEpoch,
     };
   }
 }
