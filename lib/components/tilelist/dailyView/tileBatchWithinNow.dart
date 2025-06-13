@@ -19,12 +19,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/constants.dart';
 
-class WithinNowBatch extends TileBatch {
+class WithinNowBatchIni extends TileBatch {
   TileWidget? _currentWidget;
   WithinNowBatchState? _state;
   TimelineSummary? dayData;
 
-  WithinNowBatch({List<TilerEvent>? tiles, TimelineSummary? dayData, Key? key})
+  WithinNowBatchIni(
+      {List<TilerEvent>? tiles, TimelineSummary? dayData, Key? key})
       : super(
             key: key,
             tiles: tiles,

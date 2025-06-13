@@ -9,6 +9,8 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow_timelines.dart'
+    as TileBatchWithinNow_timelines;
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -301,7 +303,8 @@ class _DailyTileListState extends TileListState {
     }
   }
 
-  WithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
+  TileBatchWithinNow_timelines.WithinNowBatch processTodayTiles(
+      List<TilerEvent> todayTiles) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
@@ -314,7 +317,7 @@ class _DailyTileListState extends TileListState {
         elapsedTiles.add(eachSubEvent);
       }
     }
-    return WithinNowBatch(
+    return TileBatchWithinNow_timelines.WithinNowBatch(
       key: ValueKey("_within_upcoming_0"),
       tiles: [...elapsedTiles, ...notElapsedTiles],
     );
@@ -360,7 +363,8 @@ class _DailyTileListState extends TileListState {
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
-      WithinNowBatch todayBatch = processTodayTiles(todayTiles);
+      TileBatchWithinNow_timelines.WithinNowBatch todayBatch =
+          processTodayTiles(todayTiles);
       childTileBatches.add(todayBatch);
       dayIndexToWidget[currentTime.universalDayIndex] = Container(
         child: todayBatch,
