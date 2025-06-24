@@ -39,6 +39,8 @@ abstract class TileListState<T extends TileList> extends State<T>
   AnimationController? swipingAnimationController;
   Animation<double>? swipingAnimation;
   int swipeDirection = 0;
+  bool isSubEventModalShown = false;
+  StreamSubscription? hideNewSheeTileFuture;
 
   @override
   void initState() {
@@ -313,26 +315,53 @@ abstract class TileListState<T extends TileList> extends State<T>
         Color bgroundColor = hslColor
             .withLightness(hslColor.lightness)
             .toColor()
-            .withOpacity(0.7);
-
+            .withAlpha((0.7 * 255).toInt());
+        if (isSubEventModalShown) {
+          print("SubEvent modal already shown, not showing again");
+          return;
+        }
         showModalBottomSheet(
           context: context,
           constraints: const BoxConstraints(maxWidth: 400),
-          builder: (BuildContext context) {
-            var future = Future.delayed(
-                const Duration(milliseconds: Constants.autoHideInMs));
-            var hideNewSheeTileFuture = future.asStream().listen((input) {
-              if (context.mounted) {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
+          builder: (BuildContext modalContext) {
+            print("modal bottom sheet called for new tile");
+            if (isSubEventModalShown) {
+              isSubEventModalShown = false;
+              var future = Future.delayed(
+                  const Duration(milliseconds: Constants.autoHideInMs));
+              if (hideNewSheeTileFuture != null) {
+                hideNewSheeTileFuture?.cancel();
               }
-            });
+              hideNewSheeTileFuture = future.asStream().listen((input) {
+                setState(() {
+                  print(
+                      "modal bottom sheet auto hide called and setState called");
+                  // isSubEventModalShown = false;
+                });
+                print("modal bottom sheet auto hide called");
+                if (modalContext.mounted) {
+                  print(
+                      "modal bottom sheet auto hide called and context is mounted");
+                  if (Navigator.canPop(modalContext)) {
+                    print(
+                        "modal bottom sheet auto hide called and Navigator can pop");
+                    Navigator.pop(modalContext);
+                  }
+                }
+              });
+            }
 
             return ElevatedButton(
               onPressed: () {
-                hideNewSheeTileFuture.cancel();
-                Navigator.pop(context);
+                if (hideNewSheeTileFuture != null) {
+                  hideNewSheeTileFuture?.cancel();
+                }
+
+                if (Navigator.canPop(modalContext)) {
+                  print(
+                      "modal bottom sheet auto hide called and Navigator can pop");
+                  Navigator.pop(modalContext);
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -340,9 +369,9 @@ abstract class TileListState<T extends TileList> extends State<T>
                         tileId: subEvent.calendarEvent?.id ?? subEvent.id!),
                   ),
                 ).whenComplete(() {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
+                  // if (Navigator.canPop(context)) {
+                  //   Navigator.pop(context);
+                  // }
                 });
               },
               style: ElevatedButton.styleFrom(
@@ -368,6 +397,9 @@ abstract class TileListState<T extends TileList> extends State<T>
             );
           },
         );
+        setState(() {
+          isSubEventModalShown = true;
+        });
       }
     }
   }
