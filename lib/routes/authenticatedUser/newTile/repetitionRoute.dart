@@ -128,6 +128,15 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         : this.repetitionData!.repetitionEnd!;
     DateTime firstDate = _endDate.add(Duration(days: -100000));
     DateTime lastDate = _endDate.add(Duration(days: 100000));
+    print("repetitionData: ${this.repetitionData}");
+    if (this.repetitionData != null &&
+        this.repetitionData!.frequency == RepetitionFrequency.none) {
+      firstDate =
+          Utility.todayTimeline().startTime.subtract(Duration(days: 365 * 10));
+      lastDate =
+          Utility.todayTimeline().startTime.add(Duration(days: 365 * 10));
+      _endDate = Utility.todayTimeline().endTime.add(Utility.oneDay);
+    }
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,
