@@ -26,7 +26,8 @@ class TileStyles {
   static final double proceedAndCancelButtonWidth = 60;
   static final double proceedAndCancelTotalButtonWidth =
       proceedAndCancelButtonWidth * 2;
-  static Color greenCheck = Color.fromRGBO(9, 203, 156, 1);
+  static final Color greenApproval = const Color.fromRGBO(9, 203, 156, 1);
+  static final Color greenCheck = greenApproval;
   static Color warningAmber = Color.fromRGBO(245, 166, 35, 1);
 
   static const Color primaryColor = Color.fromRGBO(239, 48, 84, 1);

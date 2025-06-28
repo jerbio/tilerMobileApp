@@ -41,3 +41,20 @@ class UpdateIntegrationLocationEvent extends IntegrationsEvent {
   @override
   List<Object> get props => [integrationId, location];
 }
+
+class UpdateCalendarItemEvent extends IntegrationsEvent {
+  final String integrationId;
+  final String calendarItemId;
+  final String calendarName;
+  final bool isSelected;
+
+  const UpdateCalendarItemEvent({
+    required this.integrationId,
+    required this.calendarItemId,
+    required this.calendarName,
+    required this.isSelected,
+  });
+
+  @override
+  List<Object> get props => [integrationId, calendarItemId, calendarName, isSelected];
+}

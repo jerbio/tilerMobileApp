@@ -23,12 +23,12 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
   })  : _integrationApi =
             IntegrationApi(getContextCallBack: getContextCallBack),
         _authorizationApi =
-            AuthorizationApi(getContextCallBack: getContextCallBack),
-        super(IntegrationsInitial()) {
+            AuthorizationApi(getContextCallBack: getContextCallBack),        super(IntegrationsInitial()) {
     on<GetIntegrationsEvent>(_getIntegrations);
     on<DeleteIntegrationEvent>(_deleteIntegration);
     on<AddIntegrationEvent>(_addIntegration);
     on<UpdateIntegrationLocationEvent>(_updateIntegrationLocation);
+    on<UpdateCalendarItemEvent>(_updateCalendarItem);
     on<ResetIntegrationsEvent>((event, emit) => emit(IntegrationsInitial()));
   }
 
@@ -155,6 +155,67 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
               errorMessage: "Failed to update location: ${e.toString()}",
               integrations: currentIntegrations));
         }
+      }
+    }
+  }
+
+  void _updateCalendarItem(
+      UpdateCalendarItemEvent event, Emitter<IntegrationsState> emit) async {
+    if (state is IntegrationsLoaded) {
+      final currentIntegrations = List<CalendarIntegration>.from(
+          (state as IntegrationsLoaded).integrations);
+      
+      // Find the integration
+      final integrationIndex = currentIntegrations
+          .indexWhere((integration) => integration.id == event.integrationId);
+      
+      if (integrationIndex != -1) {
+        final integration = currentIntegrations[integrationIndex];
+        
+        // Find the calendar item
+        if (integration.calendarItems != null) {
+          final calendarItemIndex = integration.calendarItems!
+              .indexWhere((item) => item.id == event.calendarItemId);
+          
+          if (calendarItemIndex != -1) {
+            try {
+              // Update the calendar item on the server
+              final success = await _integrationApi.updateCalendarItem(
+                calendarId: event.calendarItemId,
+                calendarName: event.calendarName,
+                isSelected: event.isSelected,
+                integrationId: event.integrationId,
+                calendarItemId: event.calendarItemId,
+              );
+
+              if (success == true) {
+                // Update the local state
+                integration.calendarItems![calendarItemIndex].isSelected = event.isSelected;
+                emit(IntegrationsLoaded(integrations: currentIntegrations));
+              } else {
+                emit(IntegrationsError(
+                  errorMessage: "Failed to update calendar item",
+                  integrations: currentIntegrations,
+                ));
+              }
+            } catch (e) {
+              emit(IntegrationsError(
+                errorMessage: "Failed to update calendar item: ${e.toString()}",
+                integrations: currentIntegrations,
+              ));
+            }
+          } else {
+            emit(IntegrationsError(
+              errorMessage: "Calendar item not found",
+              integrations: currentIntegrations,
+            ));
+          }
+        }
+      } else {
+        emit(IntegrationsError(
+          errorMessage: "Integration not found",
+          integrations: currentIntegrations,
+        ));
       }
     }
   }
