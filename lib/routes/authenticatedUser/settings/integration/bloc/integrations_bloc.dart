@@ -23,7 +23,8 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
   })  : _integrationApi =
             IntegrationApi(getContextCallBack: getContextCallBack),
         _authorizationApi =
-            AuthorizationApi(getContextCallBack: getContextCallBack),        super(IntegrationsInitial()) {
+            AuthorizationApi(getContextCallBack: getContextCallBack),
+            super(IntegrationsInitial()) {
     on<GetIntegrationsEvent>(_getIntegrations);
     on<DeleteIntegrationEvent>(_deleteIntegration);
     on<AddIntegrationEvent>(_addIntegration);

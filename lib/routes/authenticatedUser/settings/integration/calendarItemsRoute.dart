@@ -86,10 +86,9 @@ class CalendarItemsRoute extends StatelessWidget {
               SizedBox(width: 12),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  crossAxisAlignment: CrossAxisAlignment.start,                  children: [
                     Text(
-                      '$selectedCount of ${integration.calendarItems!.length} calendars active',
+                      AppLocalizations.of(context)!.calendarsActive(selectedCount, integration.calendarItems!.length),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -97,7 +96,7 @@ class CalendarItemsRoute extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'Toggle calendars to sync with Tiler',
+                      AppLocalizations.of(context)!.toggleCalendarsToSync,
                       style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 12,
@@ -218,7 +217,8 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
 
   @override
   Widget build(BuildContext context) {
-    String calendarName = widget.calendarItem.name ?? 'Unknown Calendar';
+    String calendarName = widget.calendarItem.name ??
+    AppLocalizations.of(context)!.unknownCalendar;
     
     return Container(
       decoration: BoxDecoration(

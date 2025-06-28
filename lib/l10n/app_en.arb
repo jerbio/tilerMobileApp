@@ -706,11 +706,55 @@
       "dateOfBirth":"Date Of Birth",
       "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
       "reachingServerIssues":"Issues with reaching Tiler servers",
-      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",
-      "disconnect":"Disconnect",
+      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",      "disconnect":"Disconnect",
       "integrationsSetLocation":"Set location",
       "googleCalender":"Google Calender",
       "passwordsMustMatch":"Passwords must match",
       "parenthesisLate":"(Late)",
-      "failedToAddIntegration":"Failed to add integration"
+      "failedToAddIntegration":"Failed to add integration",
+      "unknownProvider":"Unknown Provider",
+      "manageCalendars":"Manage calendars",
+      "calendarItems":"Calendar Items",
+      "noCalendarItemsFound":"No calendar items found",
+      "calendarItemsWillAppearHere":"Your calendar items will appear here",
+      "calendarsActive":"{selectedCount} of {totalCount} calendars active",
+      "@calendarsActive": {
+        "description": "Shows count of active calendars",
+        "placeholders": {
+          "selectedCount": {
+            "type": "int",
+            "example": "3"
+          },
+          "totalCount": {
+            "type": "int", 
+            "example": "5"
+          }
+        }
+      },
+      "toggleCalendarsToSync":"Toggle calendars to sync with Tiler",
+      "unknownCalendar":"Unknown Calendar",
+      "activeStatusBadge":"{selectedCount} of {totalCount} active",
+      "@activeStatusBadge": {
+        "description": "Status badge showing active count",
+        "placeholders": {
+          "selectedCount": {
+            "type": "int",
+            "example": "3"
+          },
+          "totalCount": {
+            "type": "int",
+            "example": "5"
+          }
+        }
+      },      "integrationCount":"{count} Integrations",
+      "@integrationCount": {
+        "description": "Shows count of integrations",
+        "placeholders": {
+          "count": {
+            "type": "int",
+            "example": "2"
+          }
+        }
+      },
+      "errorLoadingCalendarItems":"Error loading calendar items"
 }

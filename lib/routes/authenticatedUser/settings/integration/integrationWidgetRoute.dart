@@ -121,9 +121,8 @@ class IntegrationWidgetRoute extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${orderedIntegrations.length} Integration${orderedIntegrations.length != 1 ? 's' : ''}',
+                  children: [Text(
+                      AppLocalizations.of(context)!.integrationCount(orderedIntegrations.length),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -131,7 +130,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '$selectedCalendars of $totalCalendars calendars active',
+                      AppLocalizations.of(context)!.calendarsActive(selectedCalendars, totalCalendars),
                       style: TextStyle(
                         color: Colors.grey[700],
                         fontSize: 12,
@@ -294,7 +293,7 @@ class _IntegrationItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String titleText = integration.email ?? integration.userId ?? integration.id ?? "";
-    String providerText = integration.calendarType ?? "Unknown Provider";
+    String providerText = integration.calendarType ?? AppLocalizations.of(context)!.unknownProvider;
     int calendarCount = integration.calendarItems?.length ?? 0;
     int selectedCount = integration.calendarItems?.where((item) => item.isSelected == true).length ?? 0;
     
@@ -384,7 +383,7 @@ class _IntegrationItem extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  '$selectedCount of $calendarCount active',
+                    AppLocalizations.of(context)!.calendarsActive(selectedCount, calendarCount),
                   style: TextStyle(
                     color: selectedCount > 0 ? TileStyles.greenApproval : Colors.grey[600],
                     fontSize: 10,
@@ -401,7 +400,7 @@ class _IntegrationItem extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.chevron_right, color: Colors.grey[400]),
               onPressed: () => _navigateToCalendarItems(context, integration),
-              tooltip: 'Manage calendars',
+              tooltip: AppLocalizations.of(context)!.manageCalendars,
             ),
             SizedBox(width: 8),
             TextButton(
