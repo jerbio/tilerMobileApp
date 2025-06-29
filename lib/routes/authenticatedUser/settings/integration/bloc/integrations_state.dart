@@ -23,7 +23,39 @@ class IntegrationsLoaded extends IntegrationsState {
       : super(requestId: requestId);
 
   @override
-  List<Object> get props => [integrations];
+  List<Object> get props {
+    if (integrations.isEmpty) {
+      return List.empty();
+    }
+    List<String> calItemIds = [];
+    List<String> isSelecteCalendarItems = [];
+    for (var integration in integrations) {
+      if (integration.calendarItems != null) {
+        calItemIds.addAll(
+          integration.calendarItems!.map((item) => item.id ?? '').toList(),
+        );
+        isSelecteCalendarItems.addAll(
+          integration.calendarItems!.map((item) => ((item.id ?? '') + ((item.isSelected ?? false).toString()))),
+        );
+      }
+    }
+
+    var ddd = [
+    ...integrations,
+    ...isSelecteCalendarItems, 
+    ...calItemIds
+    ];
+
+    return ddd;
+
+    // print("result returned: ${ddd}");
+    // return [
+    // ...integrations, 
+    // ...integrations.where((o) => o.id!=null) .map((o) => o.id!).toList(),
+    // calItemIds,
+    // ...isSelecteCalendarItems
+    // ];
+  }
 }
 
 class IntegrationAdded extends IntegrationsState {

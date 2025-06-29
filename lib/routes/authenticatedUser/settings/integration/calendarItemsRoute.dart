@@ -6,7 +6,7 @@ import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-class CalendarItemsRoute extends StatelessWidget {
+class CalendarItemsRoute extends StatefulWidget {
   static final String routeName = '/CalendarItems';
   final CalendarIntegration integration;
 
@@ -14,6 +14,41 @@ class CalendarItemsRoute extends StatelessWidget {
     Key? key,
     required this.integration,
   }) : super(key: key);
+
+  @override
+  _CalendarItemsRouteState createState() => _CalendarItemsRouteState();
+}
+
+class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
+  late List<CalendarItem> localCalendarItems;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create a deep copy of the calendar items to work with locally
+    localCalendarItems = widget.integration.calendarItems?.map((item) => 
+      CalendarItem(
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        isSelected: item.isSelected,
+        isEnabled: item.isEnabled,
+        authenticationId: item.authenticationId,
+        userIdentifier: item.userIdentifier,
+      )
+    ).toList() ?? [];
+  }
+
+  void updateCalendarItemLocally(String calendarItemId, bool isSelected) {
+    setState(() {
+      final itemIndex = localCalendarItems.indexWhere(
+        (item) => item.id == calendarItemId,
+      );
+      if (itemIndex != -1) {
+        localCalendarItems[itemIndex].isSelected = isSelected;
+      }
+    });
+  }
 
   Widget renderEmpty(BuildContext context) {
     return Center(
@@ -45,14 +80,13 @@ class CalendarItemsRoute extends StatelessWidget {
       ),
     );
   }
-
   Widget renderCalendarItems(BuildContext context) {
-    if (integration.calendarItems == null || integration.calendarItems!.isEmpty) {
+    if (localCalendarItems.isEmpty) {
       return renderEmpty(context);
     }
 
     // Calculate statistics
-    int selectedCount = integration.calendarItems!
+    int selectedCount = localCalendarItems
         .where((item) => item.isSelected == true)
         .length;
 
@@ -88,7 +122,7 @@ class CalendarItemsRoute extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,                  children: [
                     Text(
-                      AppLocalizations.of(context)!.calendarsActive(selectedCount, integration.calendarItems!.length),
+                      AppLocalizations.of(context)!.calendarsActive(selectedCount, localCalendarItems.length),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -109,15 +143,15 @@ class CalendarItemsRoute extends StatelessWidget {
           ),
         ),
         // Calendar Items List
-        Expanded(
-          child: ListView.separated(
-            itemCount: integration.calendarItems!.length,
+        Expanded(          child: ListView.separated(
+            itemCount: localCalendarItems.length,
             separatorBuilder: (context, index) => SizedBox(height: 8),
             itemBuilder: (context, index) {
-              final calendarItem = integration.calendarItems![index];
+              final calendarItem = localCalendarItems[index];
               return _CalendarItemTile(
                 calendarItem: calendarItem,
-                integration: integration,
+                integration: widget.integration,
+                onToggle: updateCalendarItemLocally,
               );
             },
           ),
@@ -139,7 +173,7 @@ class CalendarItemsRoute extends StatelessWidget {
         }
       },
       child: CancelAndProceedTemplateWidget(
-          routeName: routeName,
+          routeName: CalendarItemsRoute.routeName,
           appBar: TileStyles.CancelAndProceedAppBar('titleText'),
           child: Container(
             padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -166,10 +200,12 @@ class CalendarItemsRoute extends StatelessWidget {
 class _CalendarItemTile extends StatefulWidget {
   final CalendarItem calendarItem;
   final CalendarIntegration integration;
+  final Function(String, bool) onToggle;
 
   const _CalendarItemTile({
     required this.calendarItem,
     required this.integration,
+    required this.onToggle,
   });
 
   @override
@@ -185,7 +221,6 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
     super.initState();
     isSelected = widget.calendarItem.isSelected ?? false;
   }
-
   void _toggleSelection() async {
     if (isLoading) return;
 
@@ -195,7 +230,11 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
       widget.calendarItem.isSelected = isSelected;
     });
     
+    // Update local state immediately
+    widget.onToggle(widget.calendarItem.id!, isSelected);
+    
     // Update calendar item selection via bloc
+    if(!context.read<IntegrationsBloc>().isClosed){
     context.read<IntegrationsBloc>().add(
       UpdateCalendarItemEvent(
         integrationId: widget.integration.id!,
@@ -203,7 +242,7 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
         calendarName: widget.calendarItem.name ?? '',
         isSelected: isSelected,
       ),
-    );
+    );}
 
     // Simulate loading state for better UX
     await Future.delayed(Duration(milliseconds: 300));

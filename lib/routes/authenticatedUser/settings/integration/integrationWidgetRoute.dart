@@ -99,50 +99,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
     
     return Column(
       children: [
-        // Summary Card
-        Container(
-          margin: EdgeInsets.only(bottom: 16),
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: TileStyles.primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: TileStyles.primaryColor.withOpacity(0.3),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.integration_instructions,
-                color: TileStyles.primaryColor,
-                size: 24,
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(
-                      AppLocalizations.of(context)!.integrationCount(orderedIntegrations.length),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: TileStyles.primaryColor,
-                      ),
-                    ),
-                    Text(
-                      AppLocalizations.of(context)!.calendarsActive(selectedCalendars, totalCalendars),
-                      style: TextStyle(
-                        color: Colors.grey[700],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Integration List
+        SizedBox(height: 12),
         Expanded(
           child: ListView.separated(
             itemCount: orderedIntegrations.length,
@@ -188,6 +145,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
         listener: (context, state) {
           NotificationOverlayMessage notificationOverlayMessage =
               NotificationOverlayMessage();
+              print("IntegrationWidgetRoute: state: $state");
           if (state is IntegrationAdded) {
             //_handleNewIntegration(context, state.integrationId);
           } else if (state is IntegrationDeleted) {
@@ -370,25 +328,6 @@ class _IntegrationItem extends StatelessWidget {
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: selectedCount > 0 ? TileStyles.greenApproval.withOpacity(0.1) : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: selectedCount > 0 ? TileStyles.greenApproval.withOpacity(0.3) : Colors.grey[300]!,
-                  ),
-                ),
-                child: Text(
-                    AppLocalizations.of(context)!.calendarsActive(selectedCount, calendarCount),
-                  style: TextStyle(
-                    color: selectedCount > 0 ? TileStyles.greenApproval : Colors.grey[600],
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                  ),
                 ),
               ),
             ],

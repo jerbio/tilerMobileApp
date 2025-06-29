@@ -177,11 +177,10 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
         if (integration.calendarItems != null) {
           final calendarItemIndex = integration.calendarItems!
               .indexWhere((item) => item.id == event.calendarItemId);
-          
-          if (calendarItemIndex != -1) {
+            if (calendarItemIndex != -1) {
             try {
               // Update the calendar item on the server
-              final success = await _integrationApi.updateCalendarItem(
+              final updatedCalendarItem = await _integrationApi.updateCalendarItem(
                 calendarId: event.calendarItemId,
                 calendarName: event.calendarName,
                 isSelected: event.isSelected,
@@ -189,9 +188,10 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
                 calendarItemId: event.calendarItemId,
               );
 
-              if (success == true) {
-                // Update the local state
-                integration.calendarItems![calendarItemIndex].isSelected = event.isSelected;
+              if (updatedCalendarItem != null) {
+                // Update the local state with the server response
+                integration.calendarItems![calendarItemIndex] = updatedCalendarItem;
+                print("Updated calendar item from server: ${updatedCalendarItem.name} - Selected: ${updatedCalendarItem.isSelected}");
                 emit(IntegrationsLoaded(integrations: currentIntegrations));
               } else {
                 emit(IntegrationsError(

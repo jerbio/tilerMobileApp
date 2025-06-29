@@ -38,7 +38,8 @@ class IntegrationApi extends AppApi {
       Utility.debugPrint('Requesting integrations with headers: $header');
       var response = await http.get(uri, headers: header);
       Utility.debugPrint('Integrations API response: ${response.body}');
-      var jsonResult = jsonDecode(response.body);      if (isJsonResponseOk(jsonResult)) {
+      var jsonResult = jsonDecode(response.body);
+      if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           List integrations = jsonResult['Content'];
           return integrations
@@ -121,8 +122,7 @@ class IntegrationApi extends AppApi {
     }
     return false;
   }
-
-  Future<bool?> updateCalendarItem({
+  Future<CalendarItem?> updateCalendarItem({
     required String calendarId,
     required String calendarName,
     required bool isSelected,
@@ -153,15 +153,21 @@ class IntegrationApi extends AppApi {
           updateCalendarItemData,
           includeLocationParams: false);
 
+      Utility.debugPrint('Updating calendar item with data: $injectedParams');
       var response = await sendPostRequest(
           'api/Integrations/google/calendarItem', injectedParams,
           injectLocation: false, analyze: false);
       
+      Utility.debugPrint('Update calendar item API response: ${response.body}');
       var jsonResult = jsonDecode(response.body);
+      
       if (isJsonResponseOk(jsonResult)) {
-        return true;
+        if (isContentInResponse(jsonResult)) {
+          // Parse the updated calendar item from the response
+          return CalendarItem.fromJson(jsonResult['Content']);
+        }
       }
-      return false;
+      return null;
     } catch (e) {
       Utility.debugPrint(
           'Error updating calendar item: ${e is TilerError ? e.Message : e}');
