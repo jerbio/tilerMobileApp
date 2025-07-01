@@ -216,6 +216,7 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
   void initState() {
     super.initState();
     isSelected = widget.calendarItem.isSelected ?? false;
+    updateRequestId = null;
   }
 
   void _toggleSelection() async {
