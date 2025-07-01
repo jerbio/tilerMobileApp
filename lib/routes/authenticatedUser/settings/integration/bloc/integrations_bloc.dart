@@ -24,7 +24,7 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
             IntegrationApi(getContextCallBack: getContextCallBack),
         _authorizationApi =
             AuthorizationApi(getContextCallBack: getContextCallBack),
-            super(IntegrationsInitial()) {
+        super(IntegrationsInitial()) {
     on<GetIntegrationsEvent>(_getIntegrations);
     on<DeleteIntegrationEvent>(_deleteIntegration);
     on<AddIntegrationEvent>(_addIntegration);
@@ -165,22 +165,23 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
     if (state is IntegrationsLoaded) {
       final currentIntegrations = List<CalendarIntegration>.from(
           (state as IntegrationsLoaded).integrations);
-      
+
       // Find the integration
       final integrationIndex = currentIntegrations
           .indexWhere((integration) => integration.id == event.integrationId);
-      
+
       if (integrationIndex != -1) {
         final integration = currentIntegrations[integrationIndex];
-        
+
         // Find the calendar item
         if (integration.calendarItems != null) {
           final calendarItemIndex = integration.calendarItems!
               .indexWhere((item) => item.id == event.calendarItemId);
-            if (calendarItemIndex != -1) {
+          if (calendarItemIndex != -1) {
             try {
               // Update the calendar item on the server
-              final updatedCalendarItem = await _integrationApi.updateCalendarItem(
+              final updatedCalendarItem =
+                  await _integrationApi.updateCalendarItem(
                 calendarId: event.calendarItemId,
                 calendarName: event.calendarName,
                 isSelected: event.isSelected,
@@ -190,25 +191,38 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
 
               if (updatedCalendarItem != null) {
                 // Update the local state with the server response
-                integration.calendarItems![calendarItemIndex] = updatedCalendarItem;
-                print("Updated calendar item from server: ${updatedCalendarItem.name} - Selected: ${updatedCalendarItem.isSelected}");
-                emit(IntegrationsLoaded(integrations: currentIntegrations));
+                integration.calendarItems![calendarItemIndex] =
+                    updatedCalendarItem;
+                print(
+                    "Updated calendar item from server: ${updatedCalendarItem.name} - Selected: ${updatedCalendarItem.isSelected}");
+                emit(IntegrationsLoaded(
+                    integrations: [], requestId: event.requestId));
+                // the double emit is intentional to ensure the UI updates correctly.
+                // We first emit an empty list to clear the previous state,
+                // then emit the updated integrations list.
+                // This is a workaround because we are using the same integration reference object pre and post update,
+                // so referencing the same object does not trigger a UI update in the integration state diff/equatable checker.
+                emit(IntegrationsLoaded(
+                    integrations: currentIntegrations,
+                    requestId: event.requestId));
               } else {
                 emit(IntegrationsError(
-                  errorMessage: "Failed to update calendar item",
-                  integrations: currentIntegrations,
-                ));
+                    errorMessage: "Failed to update calendar item",
+                    integrations: currentIntegrations,
+                    requestId: event.requestId));
               }
             } catch (e) {
               emit(IntegrationsError(
-                errorMessage: "Failed to update calendar item: ${e.toString()}",
-                integrations: currentIntegrations,
-              ));
+                  errorMessage:
+                      "Failed to update calendar item: ${e.toString()}",
+                  integrations: currentIntegrations,
+                  requestId: event.requestId));
             }
           } else {
             emit(IntegrationsError(
               errorMessage: "Calendar item not found",
               integrations: currentIntegrations,
+              requestId: event.requestId,
             ));
           }
         }
@@ -216,6 +230,7 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
         emit(IntegrationsError(
           errorMessage: "Integration not found",
           integrations: currentIntegrations,
+          requestId: event.requestId,
         ));
       }
     }

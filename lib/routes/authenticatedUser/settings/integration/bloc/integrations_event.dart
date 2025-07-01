@@ -1,19 +1,21 @@
 part of 'integrations_bloc.dart';
 
 abstract class IntegrationsEvent extends Equatable {
-  const IntegrationsEvent();
+  final String? requestId;
+  const IntegrationsEvent({this.requestId});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [requestId];
 }
 
 class GetIntegrationsEvent extends IntegrationsEvent {
   final String? integrationId;
 
-  const GetIntegrationsEvent({this.integrationId});
+  const GetIntegrationsEvent({this.integrationId, String? requestId})
+      : super(requestId: requestId);
 
   @override
-  List<Object?> get props => [integrationId];
+  List<Object?> get props => [integrationId, requestId];
 }
 
 class ResetIntegrationsEvent extends IntegrationsEvent {}
@@ -33,13 +35,12 @@ class UpdateIntegrationLocationEvent extends IntegrationsEvent {
   final String integrationId;
   final Location location;
 
-  const UpdateIntegrationLocationEvent({
-    required this.integrationId,
-    required this.location
-  });
+  const UpdateIntegrationLocationEvent(
+      {required this.integrationId, required this.location, String? requestId})
+      : super(requestId: requestId);
 
   @override
-  List<Object> get props => [integrationId, location];
+  List<Object> get props => [integrationId, location, requestId ?? ''];
 }
 
 class UpdateCalendarItemEvent extends IntegrationsEvent {
@@ -48,13 +49,20 @@ class UpdateCalendarItemEvent extends IntegrationsEvent {
   final String calendarName;
   final bool isSelected;
 
-  const UpdateCalendarItemEvent({
-    required this.integrationId,
-    required this.calendarItemId,
-    required this.calendarName,
-    required this.isSelected,
-  });
+  const UpdateCalendarItemEvent(
+      {required this.integrationId,
+      required this.calendarItemId,
+      required this.calendarName,
+      required this.isSelected,
+      String? requestId})
+      : super(requestId: requestId);
 
   @override
-  List<Object> get props => [integrationId, calendarItemId, calendarName, isSelected];
+  List<Object> get props => [
+        integrationId,
+        calendarItemId,
+        calendarName,
+        isSelected,
+        requestId ?? ''
+      ];
 }

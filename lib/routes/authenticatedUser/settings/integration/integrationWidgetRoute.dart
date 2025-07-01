@@ -41,31 +41,6 @@ class IntegrationWidgetRoute extends StatelessWidget {
       ),
       onPressed: () =>
           context.read<IntegrationsBloc>().add(AddIntegrationEvent()),
-      // if(value !=null){
-      //   Location defaultLocation = Location.fromDefault();
-      //   Map<String, dynamic> locationParams = {
-      //     'location': defaultLocation,
-      //   };
-      //   Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //           builder: (context) => LocationRoute(
-      //             disableNickName: true,
-      //             hideHomeButton: true,
-      //             hideWorkButton: true,
-      //             locationArgs: locationParams,
-      //           )
-      //       )
-      //   ).whenComplete(() {
-      //     Location? populatedLocation = locationParams['location'] as Location? ?? Location.fromDefault();
-      //     AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
-      //     if (populatedLocation != null && value.containsKey('id')) {
-      //       String integrationId = value['id'];
-      //       integrationApi.addIntegrationLocation(populatedLocation, integrationId);
-      //     }
-      //   });
-      // }
-      // },
       child: Text(
         AppLocalizations.of(context)!.addGoogleCalendar,
         style: TextStyle(fontSize: 16),
@@ -78,25 +53,14 @@ class IntegrationWidgetRoute extends StatelessWidget {
       child: Text(AppLocalizations.of(context)!.noThirdPartyIntegtions),
     );
   }
+
   Widget renderIntegrations(
       List<CalendarIntegration> integrations, BuildContext context) {
     if (integrations.isEmpty) {
       return renderEmpty(context);
     }
     List<CalendarIntegration> orderedIntegrations = integrations;
-    
-    // Calculate summary statistics
-    int totalCalendars = 0;
-    int selectedCalendars = 0;
-    for (var integration in orderedIntegrations) {
-      if (integration.calendarItems != null) {
-        totalCalendars += integration.calendarItems!.length;
-        selectedCalendars += integration.calendarItems!
-            .where((item) => item.isSelected == true)
-            .length;
-      }
-    }
-    
+
     return Column(
       children: [
         SizedBox(height: 12),
@@ -145,7 +109,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
         listener: (context, state) {
           NotificationOverlayMessage notificationOverlayMessage =
               NotificationOverlayMessage();
-              print("IntegrationWidgetRoute: state: $state");
+          print("IntegrationWidgetRoute: state: $state");
           if (state is IntegrationAdded) {
             //_handleNewIntegration(context, state.integrationId);
           } else if (state is IntegrationDeleted) {
@@ -196,7 +160,9 @@ class _IntegrationItem extends StatelessWidget {
     String _capitalize(String text) {
       if (text.isEmpty) return text;
       return text[0].toUpperCase() + text.substring(1);
-    }    String? _extractCity(String? text) {
+    }
+
+    String? _extractCity(String? text) {
       if (text != null && text.isNotEmpty) {
         List<String> parts = text.split(',').map((e) => e.trim()).toList();
         if (parts.length == 1) {
@@ -225,7 +191,8 @@ class _IntegrationItem extends StatelessWidget {
           hideWorkButton: true,
           locationArgs: locationParams,
         ),
-      ),    ).whenComplete(() {
+      ),
+    ).whenComplete(() {
       Location? populatedLocation =
           locationParams['location'] as Location? ?? Location.fromDefault();
       AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
@@ -235,7 +202,10 @@ class _IntegrationItem extends StatelessWidget {
             integrationId: integration.id!, location: populatedLocation));
       }
     });
-  }  void _navigateToCalendarItems(BuildContext context, CalendarIntegration integration) {
+  }
+
+  void _navigateToCalendarItems(
+      BuildContext context, CalendarIntegration integration) {
     IntegrationsBloc integrationsBloc = context.read<IntegrationsBloc>();
     Navigator.push(
       context,
@@ -245,16 +215,33 @@ class _IntegrationItem extends StatelessWidget {
           child: CalendarItemsRoute(integration: integration),
         ),
       ),
-    );
-    }
+    ).whenComplete(() {
+      // Refresh the integrations list after returning from CalendarItemsRoute
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => IntegrationsBloc(
+              getContextCallBack: () => context,
+              integrationType: integrationsBloc.integrationType,
+            ),
+            child: IntegrationWidgetRoute(),
+          ),
+        ),
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    String titleText = integration.email ?? integration.userId ?? integration.id ?? "";
-    String providerText = integration.calendarType ?? AppLocalizations.of(context)!.unknownProvider;
-    int calendarCount = integration.calendarItems?.length ?? 0;
-    int selectedCount = integration.calendarItems?.where((item) => item.isSelected == true).length ?? 0;
-    
+    String titleText =
+        integration.email ?? integration.userId ?? integration.id ?? "";
+    String providerText = integration.calendarType ??
+        AppLocalizations.of(context)!.unknownProvider;
+
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(

@@ -35,26 +35,13 @@ class IntegrationsLoaded extends IntegrationsState {
           integration.calendarItems!.map((item) => item.id ?? '').toList(),
         );
         isSelecteCalendarItems.addAll(
-          integration.calendarItems!.map((item) => ((item.id ?? '') + ((item.isSelected ?? false).toString()))),
+          integration.calendarItems!.map((item) =>
+              ((item.id ?? '') + ((item.isSelected ?? false).toString()))),
         );
       }
     }
 
-    var ddd = [
-    ...integrations,
-    ...isSelecteCalendarItems, 
-    ...calItemIds
-    ];
-
-    return ddd;
-
-    // print("result returned: ${ddd}");
-    // return [
-    // ...integrations, 
-    // ...integrations.where((o) => o.id!=null) .map((o) => o.id!).toList(),
-    // calItemIds,
-    // ...isSelecteCalendarItems
-    // ];
+    return [...integrations, ...isSelecteCalendarItems, ...calItemIds];
   }
 }
 
@@ -73,15 +60,19 @@ class IntegrationDeleted extends IntegrationsState {
   IntegrationDeleted({required this.integrationInfo, String? requestId})
       : super(requestId: requestId);
 }
-class IntegrationLocationUpdated extends IntegrationsState {
-}
+
+class IntegrationLocationUpdated extends IntegrationsState {}
 
 class IntegrationsError extends IntegrationsState {
   final List<CalendarIntegration> integrations;
   final String errorMessage;
 
-  const IntegrationsError({required this.errorMessage, this.integrations=const []});
+  const IntegrationsError(
+      {required this.errorMessage,
+      this.integrations = const [],
+      String? requestId})
+      : super(requestId: requestId);
 
   @override
-  List<Object> get props => [errorMessage,integrations];
+  List<Object> get props => [errorMessage, integrations];
 }

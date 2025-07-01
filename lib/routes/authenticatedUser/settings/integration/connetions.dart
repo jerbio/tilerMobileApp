@@ -25,27 +25,32 @@ class Connections extends StatelessWidget {
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/google.svg',
             title: AppLocalizations.of(context)!.googleCalendar,
+            context: context,
             onTap: () =>
                 _navigateToIntegration(context, IntegrationType.googleCalendar),
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/microsoft.svg',
             title: AppLocalizations.of(context)!.microsoft,
+            context: context,
             isComingSoon: true,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/apple.svg',
             title: AppLocalizations.of(context)!.appleCalendar,
+            context: context,
             isComingSoon: true,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/googleTasks.svg',
             title: AppLocalizations.of(context)!.googleTasks,
+            context: context,
             isComingSoon: true,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/slack.svg',
             title: AppLocalizations.of(context)!.slack,
+            context: context,
             isComingSoon: true,
           ),
         ],
@@ -56,6 +61,7 @@ class Connections extends StatelessWidget {
   Widget _buildIntegrationRow({
     required String iconPath,
     required String title,
+    required BuildContext context,
     bool isComingSoon = false,
     VoidCallback? onTap,
   }) {
@@ -72,12 +78,13 @@ class Connections extends StatelessWidget {
           fontWeight: FontWeight.w400,
         ),
       ),
-      trailing: _buildAddButton(onTap, !isComingSoon),
+      trailing: _buildAddButton(onTap, !isComingSoon, context),
       contentPadding: EdgeInsets.symmetric(horizontal: 30),
     );
   }
 
-  Widget _buildAddButton(VoidCallback? onTap, bool isImplemented) {
+  Widget _buildAddButton(
+      VoidCallback? onTap, bool isImplemented, BuildContext context) {
     ButtonStyle _addStyle = TextButton.styleFrom(
       foregroundColor: Colors.black,
       padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -100,7 +107,9 @@ class Connections extends StatelessWidget {
       child: TextButton(
         style: isImplemented ? _addStyle : _comingSoonStyle,
         onPressed: isImplemented ? onTap : null,
-        child: Text(isImplemented ? "Add" : "Coming Soon"),
+        child: Text(isImplemented
+            ? AppLocalizations.of(context)!.integrationAdd
+            : AppLocalizations.of(context)!.comingSoon),
       ),
     );
   }

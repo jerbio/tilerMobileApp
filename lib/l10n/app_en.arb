@@ -756,5 +756,7 @@
           }
         }
       },
-      "errorLoadingCalendarItems":"Error loading calendar items"
+      "errorLoadingCalendarItems":"Error loading calendar items",
+      "integratedCalendars":"Calendars",
+      "integrationAdd": "Add"
 }
