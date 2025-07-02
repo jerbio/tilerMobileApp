@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
 import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
@@ -47,7 +48,6 @@ Widget renderPending() {
   );
 }
 
-
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
     WakeUpTimeWidget(),
@@ -55,16 +55,26 @@ class _OnboardingViewState extends State<OnboardingView> {
     PrimaryLocationWidget(),
     WorkDayStartWidget(),
   ];
+  late ScheduleApi scheduleApi;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleApi = ScheduleApi(
+      getContextCallBack: () => context,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     // final localizationService = LocalizationService(AppLocalizations.of(context)!);
     NotificationOverlayMessage notificationOverlayMessage =
-    NotificationOverlayMessage();
+        NotificationOverlayMessage();
     return BlocConsumer<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state.step == OnboardingStep.skipped ||
             state.step == OnboardingStep.submitted) {
+          scheduleApi.buzzSchedule();
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => AuthorizedRoute()));
         }
