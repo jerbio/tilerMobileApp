@@ -179,10 +179,8 @@ class _TilerAppState extends State<TilerApp> {
                 title: 'Tiler',
                 debugShowCheckedModeBanner: false,
                 theme: TileThemeData.getLightTheme(),
-                //theme: theme,
                 darkTheme: TileThemeData.getDarkTheme(),
-                //themeMode: ThemeMode.dark,
-                themeMode: true ? ThemeMode.dark : ThemeMode.light,
+                themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
                 routes: <String, WidgetBuilder>{
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
@@ -312,97 +310,3 @@ class _TilerAppState extends State<TilerApp> {
 
   }
 }
-/*
-Widget renderCheckList(List<SubCalendarEvent> tiles,
-      {required List<bool> checkBoxStates}) {
-    return Column(
-        children: tiles.asMap().entries.map<Widget>((entry) {
-      int index = entry.key;
-      SubCalendarEvent e = entry.value;
-      return Container(
-        decoration: BoxDecoration(
-            border: Border.all(
-                width: 0.5,
-                color: e.priority == TilePriority.high
-                    ? tileThemeExtension.priority
-                    : Colors.transparent),
-            borderRadius: BorderRadius.circular(5)),
-        padding: EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  height: 20,
-                  width: 20,
-                  child: Checkbox.adaptive(
-                    focusColor:tileThemeExtension.checkColor,
-                    value: //false,
-                        checkBoxStates[index],
-                    onChanged: (value) {
-                      setState(() {
-                        checkBoxStates[index] = value!;
-                        selectedUnscheduledItems =
-                            getSelectedUnscheduledItems();
-                      });
-                    },
-                    activeColor: Colors.transparent,
-                    checkColor: tileThemeExtension.checkColor,
-                  ),
-                ),
-
-                //Sizedbox for spacing
-                SizedBox(
-                  width: 10,
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      bool value = checkBoxStates[index];
-                      checkBoxStates[index] = !value;
-                      selectedUnscheduledItems = getSelectedUnscheduledItems();
-                    });
-                  },
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    height: 35,
-                    width: MediaQuery.of(context).size.width *
-                            TileStyles.widthRatio -
-                        205,
-                    child: Text(
-                      e.isProcrastinate == true
-                          ? AppLocalizations.of(context)!.procrastinateBlockOut
-                          : e.name ?? "",
-                      style: textTheme.labelLarge
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => EditTile(
-                                    tileId: (e.isFromTiler
-                                            ? e.id
-                                            : e.thirdpartyId) ??
-                                        "",
-                                    tileSource: e.thirdpartyType,
-                                    thirdPartyUserId: e.thirdPartyUserId,
-                                  )));
-                    },
-                    child: renderChecklistDates(e))
-              ],
-            ),
-          ],
-        ),
-      );
-    }).toList());
-  }
- */
