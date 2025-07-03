@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_appbar_theme.dart';
+import 'package:tiler_app/theme/tile_bottomnavbar_theme.dart';
+import 'package:tiler_app/theme/tile_input_theme.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_time_picker_theme.dart';
 import 'tile_colors.dart';
 class TileThemeData {
       const TileThemeData._();
@@ -39,46 +43,11 @@ class TileThemeData {
               extensions: <ThemeExtension<dynamic>>[
                 TileThemeExtension.light,
               ],
-              appBarTheme: AppBarTheme(
-                backgroundColor: TileColors.primary,
-                iconTheme: IconThemeData(color: TileColors.lightContent),
-                actionsIconTheme: IconThemeData(color: TileColors.lightContent),
-                foregroundColor: TileColors.lightContent,
-                titleTextStyle: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: TileColors.lightContent,
-                    fontSize: 22
-                ),
-                elevation: 0,
-                centerTitle: true,
-              ),
-              bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                selectedItemColor: TileColors.primary,
-                unselectedItemColor: TileColors.primary,
-                elevation: 0,
-                showSelectedLabels: false,
-                showUnselectedLabels: false,
-              ),
-              timePickerTheme: TimePickerThemeData(
-                dayPeriodColor: TileColors.primaryContainerLight.toColor(),
-                dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
-                  if (states.contains(WidgetState.selected)) {
-                    return TileColors.onPrimaryContainerLight;
-                  }
-                  return TileColors.darkContent;
-                }),
-
-            ),
-              inputDecorationTheme: const InputDecorationTheme().copyWith(
-                focusedBorder: const InputDecorationTheme().focusedBorder?.copyWith(
-                  borderSide: BorderSide(color: TileColors.tertiary),
-                ),
-                floatingLabelStyle: TextStyle(color: TileColors.tertiary),
-              ),
-              textSelectionTheme: TextSelectionThemeData(
-                cursorColor: TileColors.tertiary,
-              ),
-
+              appBarTheme: TileAppBarTheme.theme,
+              bottomNavigationBarTheme: TileBottomNavTheme.theme,
+              inputDecorationTheme: TileInputTheme.inputDecorationTheme,
+              textSelectionTheme: TileInputTheme.textSelectionTheme,
+              timePickerTheme: TileTimePickerTheme.lightTheme
 
             );
       }
@@ -119,44 +88,12 @@ class TileThemeData {
                 extensions: <ThemeExtension<dynamic>>[
                   TileThemeExtension.dark,
                 ],
-                appBarTheme: AppBarTheme(
-                  backgroundColor: TileColors.primary,
-                  iconTheme: IconThemeData(color: TileColors.lightContent),
-                  actionsIconTheme: IconThemeData(color: TileColors.lightContent),
-                  foregroundColor: TileColors.lightContent,
-                  titleTextStyle: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      color: TileColors.lightContent,
-                      fontSize: 22
-                  ),
-                  elevation: 0,
-                  centerTitle: true,
-                ),
-                timePickerTheme: TimePickerThemeData(
-                  dayPeriodColor: TileColors.primaryContainerDark.toColor(),
-                  dayPeriodTextColor: WidgetStateColor.resolveWith((states) {
-                    if (states.contains(WidgetState.selected)) {
-                      return TileColors.onPrimaryContainerDark;
-                    }
-                    return TileColors.darkContent;
-                  }),
-                ),
-                bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                  selectedItemColor:  TileColors.primary,
-                  unselectedItemColor:  TileColors.primary,
-                  elevation: 0,
-                  showSelectedLabels: false,
-                  showUnselectedLabels: false,
-                ),
-              inputDecorationTheme: const InputDecorationTheme().copyWith(
-                focusedBorder: const InputDecorationTheme().focusedBorder?.copyWith(
-                  borderSide: BorderSide(color: TileColors.tertiary),
-                ),
-                floatingLabelStyle: TextStyle(color: TileColors.tertiary),
-              ),
-              textSelectionTheme: TextSelectionThemeData(
-                cursorColor: TileColors.tertiary,
-              ),
+                appBarTheme: TileAppBarTheme.theme,
+                bottomNavigationBarTheme: TileBottomNavTheme.theme,
+                inputDecorationTheme: TileInputTheme.inputDecorationTheme,
+                textSelectionTheme: TileInputTheme.textSelectionTheme,
+                timePickerTheme: TileTimePickerTheme.darkTheme
+
             );
 
       }

@@ -12,6 +12,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color shadowInverseVariant;
   final Color onSurfaceVariantLow;
   final Color onSurfaceVariantHigh;
+  final Color onSurfaceVariantHighest;
   final Color onSurfaceTertiary;
   final Color onSurfaceQuaternary;
   final Color primaryContainerLow;
@@ -37,6 +38,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.primaryContainerLow,
         required this.onSurfaceVariantLow,
         required this.onSurfaceVariantHigh,
+        required this.onSurfaceVariantHighest,
         required this.surfaceContainerGreater,
         required this.surfaceContainerPlus,
         required this.surfaceContainerMaximum,
@@ -62,6 +64,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       primaryContainerLow: TileColors.primaryContainerLowLight,
       onSurfaceVariantLow: TileColors.onSurfaceVariantLowLight,
       onSurfaceVariantHigh: TileColors.onSurfaceVariantHighLight,
+      onSurfaceVariantHighest: TileColors.onSurfaceVariantHighestLight,
       onSurfaceTertiary: TileColors.onSurfaceTertiaryLight,
       onSurfaceQuaternary:  TileColors.onSurfaceQuaternaryLight,
       surfaceContainerGreater:TileColors.surfaceContainerGreaterLight,
@@ -87,6 +90,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       primaryContainerLow: TileColors.primaryContainerLowDark,
       onSurfaceVariantLow: TileColors.onSurfaceVariantLowDark,
       onSurfaceVariantHigh: TileColors.onSurfaceVariantHighDark,
+      onSurfaceVariantHighest: TileColors.onSurfaceVariantHighestDark,
     onSurfaceTertiary: TileColors.onSurfaceTertiaryDark,
       onSurfaceQuaternary: TileColors.onSurfaceQuaternaryDark,
       surfaceContainerGreater:TileColors.surfaceContainerGreaterDark,
@@ -114,6 +118,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? primaryContainerLow,
     Color? onSurfaceVariantLow,
     Color? onSurfaceVariantHigh,
+    Color? onSurfaceVariantHighest,
     Color?  onSurfaceTertiary,
     Color? onSurfaceQuaternary,
     Color? surfaceContainerGreater,
@@ -138,6 +143,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         primaryContainerLow: primaryContainerLow  ?? this.primaryContainerLow,
         onSurfaceVariantLow: onSurfaceVariantLow ?? this.onSurfaceVariantLow,
         onSurfaceVariantHigh: onSurfaceVariantHigh ?? this.onSurfaceVariantHigh,
+        onSurfaceVariantHighest: onSurfaceVariantHighest ?? this.onSurfaceVariantHighest,
         onSurfaceTertiary: onSurfaceTertiary ?? this.onSurfaceTertiary,
         onSurfaceQuaternary: onSurfaceQuaternary ?? this.onSurfaceQuaternary,
         surfaceContainerGreater: surfaceContainerGreater ?? this.surfaceContainerGreater,
@@ -168,6 +174,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         shadowInverseVariant: Color.lerp(shadowInverseVariant, other.shadowInverseVariant, t)!,
         onSurfaceVariantLow:  Color.lerp(onSurfaceVariantLow, other.onSurfaceVariantLow, t)!,
         onSurfaceVariantHigh:  Color.lerp(onSurfaceVariantHigh, other.onSurfaceVariantHigh, t)!,
+        onSurfaceVariantHighest:  Color.lerp(onSurfaceVariantHighest, other.onSurfaceVariantHighest, t)!,
         primaryContainerLow: Color.lerp(primaryContainerLow, other.primaryContainerLow, t)!,
         onSurfaceTertiary:Color.lerp(onSurfaceTertiary, other.onSurfaceTertiary, t)!,
         onSurfaceQuaternary:Color.lerp(onSurfaceQuaternary, other.onSurfaceQuaternary, t)!,

@@ -5,7 +5,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationUIWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';

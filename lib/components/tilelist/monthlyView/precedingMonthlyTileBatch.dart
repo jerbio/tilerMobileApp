@@ -8,7 +8,7 @@ import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 

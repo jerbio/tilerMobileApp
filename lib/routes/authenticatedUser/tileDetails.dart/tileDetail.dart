@@ -25,10 +25,10 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSe
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/restrictionProfileSelectorWidget.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -337,7 +337,7 @@ late TileThemeExtension tileThemeExtension;
         padding: padding ?? EdgeInsets.fromLTRB(10, 0, 0, 0),
         decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLow,
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             border: Border.all(
               color: colorScheme.onInverseSurface,
               width: 1.5,
@@ -884,7 +884,7 @@ late TileThemeExtension tileThemeExtension;
 
               return Container(
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
-                margin: TileStyles.topMargin,
+                margin: TileSpacing.topMargin,
                 alignment: Alignment.topCenter,
                 child: ListView(
                   children: inputChildWidgets,

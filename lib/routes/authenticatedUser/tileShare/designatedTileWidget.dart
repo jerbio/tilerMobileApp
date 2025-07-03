@@ -11,7 +11,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -275,7 +275,6 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                                               .toString()
                                               .toLowerCase()
                                       ? TileColors.acceptedTileShare
-                                  //ey: re check
                                       : colorScheme.error),
                             ),
                           )

@@ -11,7 +11,7 @@ import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -172,8 +172,8 @@ class _MonthlyTileListState extends TileListState {
                 SliverToBoxAdapter(
                   child: MediaQuery.of(context).orientation ==
                           Orientation.landscape
-                      ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                      : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles,
+                      ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                      : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
                 ),
               ],
             ),

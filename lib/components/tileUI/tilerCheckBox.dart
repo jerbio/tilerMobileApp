@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class TilerCheckBox extends StatefulWidget {
@@ -26,12 +26,12 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     text = this.widget.text;
   }
 
-  Color getColor(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{
-      MaterialState.pressed,
-      MaterialState.hovered,
-      MaterialState.focused,
-      MaterialState.selected
+  Color getColor(Set<WidgetState> states) {
+    const Set<WidgetState> interactiveStates = <WidgetState>{
+      WidgetState.pressed,
+      WidgetState.hovered,
+      WidgetState.focused,
+      WidgetState.selected
     };
 
     if (states.any(interactiveStates.contains)) {
@@ -73,7 +73,7 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
                 scale:  1,
                 child: Checkbox(
                   checkColor: Colors.transparent,
-                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                  fillColor: WidgetStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
                   shape: CircleBorder(

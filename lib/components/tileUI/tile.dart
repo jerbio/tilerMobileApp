@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart'
     show CameraPosition, GoogleMap, LatLng, MapType;
@@ -23,7 +21,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';

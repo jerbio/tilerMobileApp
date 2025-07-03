@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -131,7 +130,7 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
           .width), // You can adjust the width or make it responsive
       height: TileDimensions.inputHeight,
       child: TextField(
-          style: TileStyles.inputTextStyle(colorScheme.onSurface),
+          style: TileTextStyles.inputTextStyle(colorScheme.onSurface),
           controller: _controller,
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(

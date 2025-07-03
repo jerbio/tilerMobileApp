@@ -12,8 +12,7 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -239,8 +238,8 @@ class TileBatchState extends State<TileBatch> {
           children: [
             animatedList!,
             MediaQuery.of(context).orientation == Orientation.landscape
-                ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles
+                ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles
           ],
         ),
       );
