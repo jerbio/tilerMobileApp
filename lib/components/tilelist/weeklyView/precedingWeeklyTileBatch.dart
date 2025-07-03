@@ -7,7 +7,7 @@ import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 
 
 class PrecedingWeeklyTileBatch extends TileBatch {
@@ -22,12 +22,20 @@ class _PrecedingWeeklyTileBatchState extends TileBatchState {
   Widget? retValue;
   TimelineSummary? dayData = TimelineSummary();
   List<Widget> childrenColumnWidgets = [];
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   @override
   void initState() {
     super.initState();
     if (this.widget.dayIndex != null) {
       dayData!.dayIndex = this.widget.dayIndex;
     }
+  }
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
   @override
   Widget build(BuildContext context) {
@@ -95,9 +103,9 @@ class _PrecedingWeeklyTileBatchState extends TileBatchState {
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(TileStyles.borderRadius)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(TileDimensions.borderRadius)),
         ),
         builder: (BuildContext context) {
           return Container(

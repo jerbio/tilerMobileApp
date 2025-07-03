@@ -2,22 +2,20 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-
-import '../../styles.dart';
 
 class LocationAccessWidget extends StatefulWidget {
   LocationAccessWidget(this.accessManager, this.onChange);
   final AccessManager? accessManager;
   final Function? onChange;
+
   @override
   LocationAccessWidgetState createState() => LocationAccessWidgetState();
 }
@@ -26,6 +24,9 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
   late AccessManager accessManager;
   LocationProfile locationAccess = LocationProfile.empty();
   bool isLocationRequestTriggered = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +36,13 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
       //If this is added to the build function it'll cause an infinite call to setState.
       generateCallBack(denyAccess: false, enableCallBack: false)();
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+   theme=Theme.of(context);
+   colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   VoidCallback generateCallBack(
@@ -120,7 +128,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         child: SizedBox(
           width: buttonWidth,
           child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.onSurfaceVariant),
               onPressed: generateCallBack(denyAccess: true),
               child: Text(AppLocalizations.of(context)!.deny,
                   textAlign: TextAlign.center,
@@ -136,7 +144,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
       acceptDenyButtons = [
         Container(
             margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
-            child: CircularProgressIndicator())
+            child: CircularProgressIndicator(color: colorScheme.tertiary,))
       ];
     }
 
@@ -149,7 +157,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           child: SizedBox(
             width: buttonWidth,
             child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                style: ElevatedButton.styleFrom(backgroundColor: colorScheme.onSurfaceVariant),
                 onPressed: iosCallBackButtonPress,
                 child: Text(AppLocalizations.of(context)!.dismiss,
                     textAlign: TextAlign.center,
@@ -173,11 +181,11 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
     Widget retValue = Scaffold(
       body: Center(
         child: Container(
-          color: TileColors.primaryColorLightHSL.toColor(),
+          color: colorScheme.primaryContainer,
           alignment: Alignment.center,
-          width: MediaQuery.of(context).size.width * TileStyles.tileWidthRatio,
+          width: MediaQuery.of(context).size.width * TileDimensions.tileWidthRatio,
           height:
-              MediaQuery.of(context).size.height * TileStyles.tileWidthRatio,
+              MediaQuery.of(context).size.height * TileDimensions.tileWidthRatio,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -186,14 +194,14 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 400),
                 padding: EdgeInsets.all(30),
                 width: MediaQuery.of(context).size.width *
-                    TileStyles.tileWidthRatio,
+                    TileDimensions.tileWidthRatio,
                 child: Text(
                     AppLocalizations.of(context)!.allowAccessDescription,
                     style: TextStyle(
                         fontSize: 20,
                         fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.w400,
-                        color: Colors.white)),
+                        color:colorScheme.onPrimaryContainer)),
               ),
               Container(
                 child: Lottie.asset(lottieAsset, height: 150),

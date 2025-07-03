@@ -7,13 +7,12 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class InboxMultiTiletteTileShareDetailWidget extends StatefulWidget {
@@ -33,6 +32,7 @@ class _InboxMultiTiletteTileShareDetailWidget
   late bool? isLoading;
   TilerError? tilerError;
   late bool? isTileListLoading;
+
   List<DesignatedTile>? designatedTileList = null;
   final rowSpacer = SizedBox.square(
     dimension: 4,
@@ -40,6 +40,8 @@ class _InboxMultiTiletteTileShareDetailWidget
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 4);
   ScrollController _contactControllerfinal = ScrollController();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -51,6 +53,12 @@ class _InboxMultiTiletteTileShareDetailWidget
       isLoading = true;
       getTileShareCluster();
     }
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Future getTileShareCluster() async {
@@ -123,13 +131,13 @@ class _InboxMultiTiletteTileShareDetailWidget
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.email_outlined),
-        color: TileColors.primaryContrastColor,
+        color: colorScheme.onPrimary,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: null,
       side: BorderSide.none,
-      backgroundColor: TileColors.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
+      backgroundColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onPrimary),
     );
   }
 
@@ -155,6 +163,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.calendar_today,
+                    color: colorScheme.onSurface,
                     size: fontSize,
                   ),
                   rowSpacer,
@@ -162,7 +171,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                     MaterialLocalizations.of(context).formatFullDate(
                         DateTime.fromMillisecondsSinceEpoch(
                             cluster.endTimeInMs!)),
-                    style: TileStyles.defaultTextStyle,
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               )
@@ -175,11 +184,13 @@ class _InboxMultiTiletteTileShareDetailWidget
                   Icon(
                     Icons.person_2_outlined,
                     size: fontSize,
+                    color: colorScheme.onSurface,
                   ),
                   rowSpacer,
                   Text(
                       (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileStyles.defaultTextStyle)
+                    style: TileTextStyles.defaultText,
+                  )
                 ],
               ),
             verticalSpacer,
@@ -209,7 +220,7 @@ class _InboxMultiTiletteTileShareDetailWidget
   }
 
   Widget renderLoading() {
-    return CircularProgressIndicator();
+    return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
   void renderModal(
@@ -265,7 +276,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10))),
-                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
                   )
                 else
                   SizedBox.shrink()
@@ -277,13 +288,14 @@ class _InboxMultiTiletteTileShareDetailWidget
     );
   }
 
+  //ey: not used
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style: TileStyles.enabledButtonStyle,
+        style:  TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },
-        icon: Icon(Icons.add),
+        icon: Icon(Icons.add,color: colorScheme.onSurface,),
         label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
@@ -307,7 +319,7 @@ class _InboxMultiTiletteTileShareDetailWidget
             renderTileShareCluster(),
             Divider(),
             if (this.isTileListLoading == true)
-              CircularProgressIndicator()
+              CircularProgressIndicator(color: colorScheme.tertiary)
             else
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -330,21 +342,20 @@ class _InboxMultiTiletteTileShareDetailWidget
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileColors.appBarColor,
           automaticallyImplyLeading: false,
-          centerTitle: true,
           leading: TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor:colorScheme.onPrimary
+            ),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileColors.appBarTextColor,
             ),
           ),
           title: this.tileShareCluster?.name != null
               ? Text(
                   this.tileShareCluster?.name ??
                       AppLocalizations.of(context)!.tileShare,
-                  style: TileStyles.titleBarStyle,
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -352,7 +363,6 @@ class _InboxMultiTiletteTileShareDetailWidget
                     if (this.tileShareCluster?.name == null)
                       Icon(
                         Icons.share,
-                        color: TileColors.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),
@@ -362,7 +372,6 @@ class _InboxMultiTiletteTileShareDetailWidget
                     Text(
                       this.tileShareCluster?.name ??
                           AppLocalizations.of(context)!.tileShare,
-                      style: TileStyles.titleBarStyle,
                     )
                   ],
                 ),

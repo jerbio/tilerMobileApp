@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -25,6 +24,8 @@ class WeeklyTileWidget extends StatefulWidget {
 class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth - 16) / 7 - 6;
     Widget? emojiField;
@@ -35,10 +36,11 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
       emojiField = Text(emojiString,
           maxLines: 1,
           style: TextStyle(
-            fontSize: 22,
             fontFamily: TileTextStyles.rubikFontName,
+            fontSize: 22,
             fontWeight: FontWeight.bold,
-          ));
+          )
+    );
     }
 
     String? addressString = widget.subEvent.searchdDescription != null
@@ -59,14 +61,14 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
         margin: EdgeInsets.all(3),
         width: calculatedWidth,
         decoration: BoxDecoration(
-          color: Color.fromRGBO(240, 240, 240, 1),
+          color: colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: widget.isPreceding
                 ? widget.subEvent.isComplete
-                    ? Colors.green
-                    : Colors.grey
-                : Colors.white,
+                    ? TileColors.completedGreen
+                    : colorScheme.onSurfaceVariant
+                : colorScheme.onInverseSurface,
             width: 2,
           ),
         ),
@@ -81,7 +83,8 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                 tileName,
                 maxLines: 3,
                 style: TextStyle(
-                    fontSize: 8, fontFamily: TileTextStyles.rubikFontName),
+                  fontSize: 8
+                )
               ),
             ),
             if (addressString != null && addressString.isNotEmpty)
@@ -90,10 +93,9 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                 child: Text(
                   addressString,
                   maxLines: 1,
-                  style: TextStyle(
+                  style:TextStyle(
                     fontSize: 10,
-                    color: Color.fromRGBO(31, 31, 31, 0.5),
-                    fontFamily: TileTextStyles.rubikFontName,
+                    color: colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -101,7 +103,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
               timeRange: widget.subEvent,
               isWeeklyView: true,
               fontSize: 8,
-              textColor: Color.fromRGBO(31, 31, 31, 0.5),
+              textColor: colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ],
         ),

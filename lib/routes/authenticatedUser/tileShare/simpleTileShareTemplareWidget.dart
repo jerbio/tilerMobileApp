@@ -9,6 +9,7 @@ import 'package:tiler_app/styles.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TileShareTemplateSimpleWidget extends StatefulWidget {
@@ -25,6 +26,8 @@ class TileShareTemplateSimpleWidget extends StatefulWidget {
 
 class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
   late bool isReadOnly = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   final rowSpacer = SizedBox.square(
     dimension: 8,
   );
@@ -33,6 +36,12 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
   void initState() {
     super.initState();
     isReadOnly = this.widget.isReadOnly ?? true;
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Widget generateUserCircles(List<DesignatedUser> designatedUsers) {
@@ -51,7 +60,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
           Text(
             AppLocalizations.of(context)!.numberOfMoreUsers(
                 (designatedUsers.length - maxContactItems).toString()),
-            style: TileStyles.defaultTextStyle,
+              style: TileTextStyles.defaultText,
           )
         else
           SizedBox.shrink()
@@ -64,12 +73,12 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
     const double fontSize = 12;
     const double iconSize = 12;
     const TextStyle textStyle = TextStyle(
+      fontFamily: TileTextStyles.rubikFontName,
         fontSize: fontSize,
-        fontFamily: TileTextStyles.rubikFontName,
-        color: const Color.fromRGBO(40, 40, 40, 1));
+    );
     return Card(
       surfaceTintColor: Colors.transparent,
-      elevation: TileStyles.defaultCardElevation,
+      elevation: TileDimensions.defaultCardElevation,
       margin: EdgeInsets.all(10),
       child: Padding(
           padding: EdgeInsets.all(10),
@@ -86,6 +95,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                       children: [
                         Icon(
                           Icons.calendar_today,
+                          color: colorScheme.onSurface,
                           size: iconSize,
                         ),
                         rowSpacer,
@@ -113,7 +123,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                     padding: EdgeInsets.all(0),
                     icon: Icon(
                       Icons.delete,
-                      color: TileColors.primaryColor,
+                      color: colorScheme.primary,
                     ),
                     onPressed: () {
                       if (this.widget.onDelete != null) {

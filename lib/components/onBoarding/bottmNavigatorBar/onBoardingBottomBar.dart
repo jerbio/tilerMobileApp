@@ -16,6 +16,9 @@ class OnboardingBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final coloScheme=theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0, right: 20, left: 20),
       child: Column(
@@ -50,8 +53,11 @@ class OnboardingBottomNavigationBar extends StatelessWidget {
               },
              child: Text(
                 AppLocalizations.of(context)!.skip,
-                style: TextStyle(color: Colors.grey, fontSize: 22),
-                       ),
+                style: TextStyle(
+                    color: coloScheme.onSurfaceVariant,
+                    fontSize: 22
+                ),
+             ),
            ),
         ],
       ),

@@ -1,4 +1,4 @@
-{
+ {
     "whiteSpace": " ",
     "add": "Add",
     "setupCustomRestrictions": "Set up Custom restrictions",
@@ -163,6 +163,7 @@
     "tapToCreateNewTile": "Tap to create a new tile",
     "suggestions": "Suggestions",
     "progress": "Progress",
+    "youNeedToLeaveIn": "You need to leave in",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_box_shadows.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
-import 'package:tiler_app/util.dart';
 
 class DurationInputWidget extends StatefulWidget {
   final Duration? duration;
@@ -20,9 +20,6 @@ class DurationInputWidget extends StatefulWidget {
 
 class _DurationInputWidgetState extends State<DurationInputWidget> {
   Duration? _setDuration;
-  final Color textBackgroundColor = TileColors.textBackgroundColor;
-  final Color textBorderColor = TileColors.textBorderColor;
-  final Color inputFieldIconColor = TileColors.inputFieldTextColor;
   @override
   void initState() {
     super.initState();
@@ -35,6 +32,9 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {'duration': _duration};
       Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
@@ -70,16 +70,16 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     }
 
     Widget durationIcon = this.widget.icon ??
-        Icon(Icons.timelapse_outlined, color: inputFieldIconColor);
+        Icon(Icons.timelapse_outlined, color: colorScheme.onSurface);
     Widget retValue = new GestureDetector(
         onTap: setDuration,
         child: Container(
             padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-            height: TileStyles.inputHeight,
+            height: TileDimensions.inputHeight,
             decoration: BoxDecoration(
-                color: textBackgroundColor,
+                color: colorScheme.surfaceContainerLow,
                 borderRadius: TileStyles.inputFieldBorderRadius,
-                boxShadow: [TileStyles.inputFieldBoxShadow]),
+                boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowHigh)]),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -89,24 +89,26 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
                     child: TextButton(
                       style: TextButton.styleFrom(
                         textStyle: const TextStyle(
-                          fontSize: TileStyles.inputFontSize,
+                          fontSize: TileDimensions.inputFontSize,
                         ),
                       ),
                       onPressed: setDuration,
                       child: Text(
                         textButtonString,
                         style: TextStyle(
-                          color: TileColors.inputFieldTextColor,
+                          fontFamily: TileTextStyles.rubikFontName,
+                          color: colorScheme.onSurface,
                           fontWeight: (_duration ?? Duration.zero).inSeconds >
                                   Duration.secondsPerMinute
                               ? TileStyles.inputFieldFontWeight
                               : TileStyles.inputFieldHintFontWeight,
-                          fontFamily: TileColors.rubikFontName,
                         ),
                       ),
                     ))
               ],
-            )));
+            ),
+        ),
+    );
     return retValue;
   }
 }

@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -60,13 +62,9 @@ class AddTileState extends State<AddTile> {
   Key switchUpKey = Key(Utility.getUuid);
   late AutoTile? autoTile;
   bool isAppointment = false;
-  final Color textBackgroundColor = TileColors.textBackgroundColor;
-  final Color textBorderColor = TileColors.textBorderColor;
-  final Color inputFieldIconColor = Color(0xFFEF3054); // Changed to #EF3054
-  final Color iconColor = Color(0xFFEF3054);
-  // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
-  // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color populatedTextColor = Colors.white;
+  late Color unPopulatedOnSurfaceColor;
+  late Color populatedOnSurfaceColor ;
+  late Color inputFieldIconColor;
   final CarouselSliderController tilerCarouselController =
       CarouselSliderController();
   String tileNameText = '';
@@ -74,8 +72,7 @@ class AddTileState extends State<AddTile> {
 
   Location? _homeLocation;
   Location? _workLocation;
-  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
-  final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
+
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCountController = TextEditingController();
@@ -111,7 +108,10 @@ class AddTileState extends State<AddTile> {
       const EdgeInsets.fromLTRB(5, 10, 10, 7);
   bool isPendingAutoResult = false;
   final inputBorderRadius = TileStyles.inputFieldRadius;
-
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late BoxDecoration boxDecoration;
+  late BoxDecoration populatedDecoration;
   @override
   void initState() {
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
@@ -234,6 +234,19 @@ class AddTileState extends State<AddTile> {
     });
 
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    boxDecoration= TileDecorations.configUpdate_notSelected(colorScheme.primary);
+    populatedDecoration= TileDecorations.configUpdate_Selected(colorScheme.primary);
+    populatedOnSurfaceColor=colorScheme.onPrimary;
+    unPopulatedOnSurfaceColor=colorScheme.primary;
+    inputFieldIconColor=colorScheme.primary;
+
   }
 
   void _onProceedTap() {
@@ -473,55 +486,61 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
               controller: tileNameController,
-              style: TextStyle(
-                color: TileColors.black,
-                fontSize: 20,
+              style:TextStyle(
                 fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 20,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,
-                hintStyle: TextStyle(color: TileColors.inactiveTextColor
-                    // TileStyles.primaryColorDarkHSL.toColor()
+                hintStyle: TextStyle(color: colorScheme.inversePrimary
                     ),
                 filled: true,
                 isDense: true,
                 contentPadding: TileStyles.inputFieldPadding,
-                fillColor: TileColors.primaryContrastColor,
+                fillColor: colorScheme.surfaceContainerLow,
+                // ey: check textfeild styles in the app
                 border: OutlineInputBorder(
                   borderRadius: TileStyles.inputFieldBorderRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: TileStyles.inputFieldBorderRadius,
-                  borderSide: BorderSide(color: textBorderColor, width: 2),
+                  borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: TileStyles.inputFieldBorderRadius,
                   borderSide: BorderSide(
-                    color: textBorderColor,
+                    color: colorScheme.onInverseSurface,
                     width: 1.5,
                   ),
                 ),
               ),
-            )));
+            ),
+        ),
+    );
     return tileNameContainer;
   }
 
   Widget getSplitCountWidget() {
     Widget splitCountContainer = FractionallySizedBox(
-      widthFactor: TileStyles.widthRatio,
+      widthFactor: TileDimensions.widthRatio,
       child: Container(
         height: 60,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(AppLocalizations.of(context)!.howManyTimes,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+            Text(
+                AppLocalizations.of(context)!.howManyTimes,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700
+                ),
+            ),
             SizedBox(
                 width: 60,
                 child: TextField(
@@ -533,11 +552,11 @@ class AddTileState extends State<AddTile> {
                   ],
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
-                    hintStyle: TextStyle(color: TileColors.primaryColor),
+                    hintStyle: TextStyle(color: colorScheme.primary),
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
-                    fillColor: textBackgroundColor,
+                    fillColor: colorScheme.surfaceContainerLow,
                     border: OutlineInputBorder(
                       borderRadius: const BorderRadius.all(
                         const Radius.circular(50.0),
@@ -547,12 +566,12 @@ class AddTileState extends State<AddTile> {
                       borderRadius: BorderRadius.all(
                         inputBorderRadius,
                       ),
-                      borderSide: BorderSide(color: Colors.white, width: 0.5),
+                      borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(inputBorderRadius),
                       borderSide:
-                          BorderSide(color: textBorderColor, width: 0.5),
+                          BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
                     ),
                   ),
                 ))
@@ -600,17 +619,17 @@ class AddTileState extends State<AddTile> {
     Widget retValue = new GestureDetector(
       onTap: setDuration,
       child: FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-              color: TileStyles.primaryContrastColor,
+              color: colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.all(
                 inputBorderRadius,
               ),
               border: Border.all(
-                color: textBorderColor,
+                color: colorScheme.onInverseSurface,
                 width: 1.5,
               )),
           child: Row(
@@ -632,10 +651,10 @@ class AddTileState extends State<AddTile> {
                             AppLocalizations.of(context)!.durationStar
                         ? TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
-                            color: TileColors.inactiveTextColor)
+                            color: colorScheme.inversePrimary)
                         : TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
-                            color: TileColors.black),
+                            color: colorScheme.onSurface),
                   ),
                 ),
               )
@@ -691,10 +710,10 @@ class AddTileState extends State<AddTile> {
       padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
-        color: isLocationConfigSet ? populatedTextColor : iconColor,
+        color: isLocationConfigSet ? populatedOnSurfaceColor :unPopulatedOnSurfaceColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
+      textColor: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Location locationHolder = _location ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
@@ -734,15 +753,15 @@ class AddTileState extends State<AddTile> {
         iconPadding: configUpdateIconPadding,
         padding: configUpdatePadding,
         prefixIcon: Icon(
-          TileStyles.repetitionIcon,
-          color: isRepetitionSet ? populatedTextColor : iconColor,
+          Icons.repeat_outlined,
+          color: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
         ),
         decoration: isRepetitionSet
             ? (isRepetitionValid()
                 ? populatedDecoration
-                : TileStyles.invalidBoxDecoration)
+                : TileDecorations.invalidBoxDecoration)
             : boxDecoration,
-        textColor: isRepetitionSet ? populatedTextColor : iconColor,
+        textColor: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
         onPress: () {
           Timeline tileTimeline = Utility.todayTimeline();
           RepetitionData? repetitionData = _repetitionData?.clone();
@@ -788,20 +807,21 @@ class AddTileState extends State<AddTile> {
           });
         });
 
+    //ey: this widget isn't used
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
         iconPadding: configUpdateIconPadding,
         padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
-          color: iconColor,
+          color: unPopulatedOnSurfaceColor,
         ),
         decoration: BoxDecoration(
-            color: Color.fromRGBO(31, 31, 31, 0.05),
+            color: colorScheme.onSurface.withValues(alpha: 0.05),
             borderRadius: BorderRadius.all(
               const Radius.circular(10.0),
             )),
-        textColor: iconColor,
+        textColor: unPopulatedOnSurfaceColor,
         onPress: () {
           final scaffold = ScaffoldMessenger.of(context);
           scaffold.showSnackBar(
@@ -822,11 +842,11 @@ class AddTileState extends State<AddTile> {
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
       prefixIcon: Icon(
         Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
+        color: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       ),
       decoration:
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
+      textColor: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': _restrictionProfile,
@@ -869,7 +889,7 @@ class AddTileState extends State<AddTile> {
 
     BoxDecoration colorConfigUpdateDecoration = boxDecoration;
     Color selectedColor =
-        (isColorConfigSet ? (_color ?? populatedTextColor) : iconColor);
+        (isColorConfigSet ? (_color ?? populatedOnSurfaceColor) :unPopulatedOnSurfaceColor);
     Color inverseColor = Color.fromRGBO(255 - selectedColor.red,
         255 - selectedColor.green, 255 - selectedColor.blue, 1);
     if (isColorConfigSet) {
@@ -894,10 +914,10 @@ class AddTileState extends State<AddTile> {
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
-        color: isColorConfigSet ? (inverseColor) : iconColor,
+        color: isColorConfigSet ? (inverseColor) : unPopulatedOnSurfaceColor,
       ),
       decoration: colorConfigUpdateDecoration,
-      textColor: isColorConfigSet ? populatedTextColor : iconColor,
+      textColor: isColorConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Color? colorHolder = _color;
         Map<String, dynamic> colorParams = {'color': colorHolder};
@@ -920,10 +940,10 @@ class AddTileState extends State<AddTile> {
       iconPadding: configUpdateIconPadding,
       padding: configUpdatePadding,
       decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
-      textColor: _isAutoRevisable ? populatedTextColor : iconColor,
+      textColor: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       prefixIcon: Icon(
         Icons.check,
-        color: _isAutoRevisable ? populatedTextColor : iconColor,
+        color: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       ),
       text: AppLocalizations.of(context)!.softDeadline,
       onPress: () {
@@ -959,7 +979,7 @@ class AddTileState extends State<AddTile> {
 
     Widget retValue = Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+      width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.spaceAround,
@@ -1087,18 +1107,7 @@ class AddTileState extends State<AddTile> {
     tile.AutoReviseDeadline = isAutoRevisable.toString();
     tile.Priority = priority.name.toString().toLowerCase();
 
-    var randomColor = _color ??
-        HSLColor.fromAHSL(
-                1,
-                (Utility.randomizer.nextDouble() * 360),
-                Utility.randomizer.nextDouble(),
-                (1 - (Utility.randomizer.nextDouble() * 0.45)))
-            .toColor();
-
     double colorConst = 255;
-    tile.BColor = (randomColor.b * colorConst).toInt().toString();
-    tile.GColor = (randomColor.g * colorConst).toInt().toString();
-    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
@@ -1135,7 +1144,7 @@ class AddTileState extends State<AddTile> {
               await Geolocator.openAppSettings();
               await Geolocator.openLocationSettings();
             },
-            textColor: Colors.redAccent,
+            textColor: colorScheme.error,
           ),
         ),
       );
@@ -1193,7 +1202,7 @@ class AddTileState extends State<AddTile> {
             action: SnackBarAction(
               label: AppLocalizations.of(context)!.close,
               onPressed: scaffold.hideCurrentSnackBar,
-              textColor: Colors.redAccent,
+              textColor: colorScheme.error,
             ),
           ),
         );
@@ -1233,17 +1242,17 @@ class AddTileState extends State<AddTile> {
     Widget deadlineContainer = new GestureDetector(
       onTap: this.onEndDateTap,
       child: FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-            color: TileColors.primaryContrastColor,
+            color: colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.all(
               inputBorderRadius,
             ),
             border: Border.all(
-              color: textBorderColor,
+              color: colorScheme.onInverseSurface,
               width: 1.5,
             ),
           ),
@@ -1256,7 +1265,7 @@ class AddTileState extends State<AddTile> {
                 child: TextButton(
                   style: TextButton.styleFrom(
                     textStyle: const TextStyle(
-                      fontSize: 20,
+                        fontSize: 20,
                     ),
                   ),
                   onPressed: onEndDateTap,
@@ -1266,10 +1275,10 @@ class AddTileState extends State<AddTile> {
                     style: this._endTime == null
                         ? TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
-                            color: TileColors.inactiveTextColor)
+                            color: colorScheme.inversePrimary)
                         : TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
-                            color: Colors.black),
+                            color: colorScheme.onSurface),
                   ),
                 ),
               ),
@@ -1371,7 +1380,7 @@ class AddTileState extends State<AddTile> {
 
     appointmentWidgets.add(tileNameWidget);
     appointmentWidgets.add(FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(child: startAndEndTime)));
 
     Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
@@ -1392,10 +1401,10 @@ class AddTileState extends State<AddTile> {
 
         labels: tabButtons,
         onToggle: onTabTypeChange,
-        activeFgColor: TileColors.primaryContrastColor,
-        activeBgColor: [TileColors.primaryColor],
-        inactiveBgColor: TileColors.inactiveTextColor,
-        inactiveFgColor: TileColors.primaryContrastColor,
+        activeFgColor: colorScheme.onPrimary,
+        activeBgColor: [colorScheme.primary],
+        inactiveBgColor: colorScheme.inversePrimary,
+        inactiveFgColor: colorScheme.onPrimary,
       ),
     );
 
@@ -1430,16 +1439,7 @@ class AddTileState extends State<AddTile> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       routeName: addTileCancelAndProceedRouteName,
       appBar: AppBar(
-        backgroundColor: TileColors.appBarColor,
-        title: Text(
-          AppLocalizations.of(context)!.addTile,
-          style: TextStyle(
-              color: TileColors.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.addTile),
         automaticallyImplyLeading: false,
       ),
       child: Container(
@@ -1448,7 +1448,7 @@ class AddTileState extends State<AddTile> {
         child: Stack(
           children: [
             isPendingAutoResult
-                ? TileStyles.getShimmerPending(context)
+                ? TileThemeNew.getShimmerPending(context,colorScheme.primary)
                 : SizedBox.shrink(),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -1464,7 +1464,7 @@ class AddTileState extends State<AddTile> {
               margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Text(
                 AppLocalizations.of(context)!.starAreRequired,
-                style: TextStyle(color: TileColors.disabledTextColor),
+                style: TextStyle(color: colorScheme.onInverseSurface.withLightness(0.7)),
               ),
             )
           : null,

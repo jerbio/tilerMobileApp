@@ -31,9 +31,12 @@ import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class EditTile extends StatefulWidget {
@@ -70,12 +73,16 @@ class _EditTileState extends State<EditTile> {
   Preview? beforePrediction;
   Preview? afterPrediction;
   static final String editTileCancelAndProceedName = "";
-
-  TextStyle labelStyle = const TextStyle(
-      color: Color.fromRGBO(31, 31, 31, 1),
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  TextStyle labelStyle=TextStyle(
       fontSize: 25,
       fontFamily: TileTextStyles.rubikFontName,
-      fontWeight: FontWeight.w500);
+      fontWeight: FontWeight.w500
+  );
+  late  TileThemeExtension tileThemeExtension;
+
+
 
   @override
   void initState() {
@@ -97,7 +104,15 @@ class _EditTileState extends State<EditTile> {
       });
     });
   }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
 
+
+  }
   bool isScheduleTimelineReady(EditTilerEvent? editTilerEvent) {
     return editTilerEvent != null &&
         editTilerEvent.startTime != null &&
@@ -106,76 +121,24 @@ class _EditTileState extends State<EditTile> {
         editTilerEvent.calEndTime != null;
   }
 
-  Widget renderTardyTiles(List<SubCalendarEvent> tiles) {
-    Widget tardyHeader = Container(
+
+  Widget _tileHeader(String title){
+    return  Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
       alignment: Alignment.centerLeft,
       child: Text(
-          tiles.isEmpty
-              ? AppLocalizations.of(context)!.late
-              : AppLocalizations.of(context)!
-                  .lateDate(tiles.first.startTime.humanDate(context)),
+          title,
           style: TextStyle(
             fontWeight: FontWeight.w500,
             fontSize: 20,
             fontFamily: TileTextStyles.rubikFontName,
-          )),
-    );
-
-    if (tiles.isEmpty) {
-      return Align(
-        alignment: Alignment.center,
-        child: Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-          width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-          child: Column(
-            children: [
-              tardyHeader,
-              Container(
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10)),
-                child: Container(
-                    alignment: Alignment.center,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Lottie.asset(
-                            'assets/lottie/abstract-waves-circles.json',
-                            height: 100),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color.fromRGBO(255, 255, 255, 0.25),
-                                    Color.fromRGBO(255, 255, 255, 0.9),
-                                  ])),
-                          width: MediaQuery.of(context).size.width *
-                              TileStyles.widthRatio,
-                          height: 100,
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(AppLocalizations.of(context)!.onTime,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 50,
-                                fontFamily: TileTextStyles.rubikFontName,
-                              )),
-                        ),
-                      ],
-                    )),
-              )
-            ],
           ),
-        ),
-      );
-    }
+      ),
+    );
+  }
 
-    Widget tardyBodyHeader = Container(
+  Widget _tileBodyHeader({required IconData icon,required Color iconColor,required String tileCount}){
+    return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Row(
         children: [
@@ -183,14 +146,14 @@ class _EditTileState extends State<EditTile> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.05),
+                color:colorScheme.onSurface.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(20)),
-            child: Icon(Icons.warning, color: Colors.amberAccent),
+            child: Icon(icon, color: iconColor),
           ),
           Container(
             margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
             child: Text(
-              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
+              AppLocalizations.of(context)!.countTile(tileCount),
               style: TextStyle(
                 fontSize: 25,
                 fontFamily: TileTextStyles.rubikFontName,
@@ -200,21 +163,94 @@ class _EditTileState extends State<EditTile> {
         ],
       ),
     );
+  }
+
+  Widget renderTardyTiles(List<SubCalendarEvent> tiles) {
+    Widget tardyHeader =_tileHeader(
+        tiles.isEmpty
+            ? AppLocalizations.of(context)!.late
+            : AppLocalizations.of(context)!
+            .lateDate(tiles.first.startTime.humanDate(context)
+        )
+    );
+
+    if (tiles.isEmpty) {
+      return Align(
+        alignment: Alignment.center,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
+          child: Column(
+            children: [
+              tardyHeader,
+              Container(
+                decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerLow,
+                    borderRadius: BorderRadius.circular(10)),
+                child: Container(
+                    alignment: Alignment.center,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Lottie.asset(
+                            'assets/lottie/abstract-waves-circles.json',
+                            height: 100
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    colorScheme.surfaceContainerLow.withValues(alpha: 0.25),
+                                    colorScheme.surfaceContainerLow.withValues(alpha: 0.9),
+                                  ]
+                              )
+                          ),
+                          width: MediaQuery.of(context).size.width *
+                              TileDimensions.widthRatio,
+                          height: 100,
+                        ),
+                        Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                              AppLocalizations.of(context)!.onTime,
+                              style:  TextStyle(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 50,
+                                fontFamily: TileTextStyles.rubikFontName,
+                              )
+                          ),
+                        ),
+                      ],
+                    ),
+                ),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
 
     return Align(
       alignment: Alignment.center,
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-        width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+        width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
         child: Column(
           children: [
             tardyHeader,
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                  color: colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(10)),
               child: Column(children: [
-                tardyBodyHeader,
+                _tileBodyHeader(
+                    icon:Icons.warning,
+                    iconColor: TileColors.warning,
+                    tileCount: tiles.length.toString()),
                 Column(
                   children: [renderListOfTiles(tiles)],
                 )
@@ -236,50 +272,40 @@ class _EditTileState extends State<EditTile> {
   }
 
   Widget renderTile(SubCalendarEvent subCalendarEventTile) {
-    Widget retValue = OutlinedButton(
-      style: OutlinedButton.styleFrom(
-          side: BorderSide(
-            color: Colors.transparent,
-          ),
-          padding: EdgeInsets.all(0)),
-      onPressed: () {
-        return;
-      },
-      child: Container(
-        padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                Container(
-                    height: 20,
-                    width: 20,
-                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                    decoration: BoxDecoration(
-                        color: subCalendarEventTile.color ?? Colors.transparent,
-                        borderRadius: BorderRadius.circular(5))),
-                Container(
+    Widget retValue = Container(
+      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Container(
                   height: 20,
-                  width: MediaQuery.of(context).size.width *
-                          TileStyles.widthRatio -
-                      190,
-                  child: Text(
-                    subCalendarEventTile.name!,
-                    style: TextStyle(
+                  width: 20,
+                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  decoration: BoxDecoration(
+                      color: subCalendarEventTile.color ?? Colors.transparent,
+                      borderRadius: BorderRadius.circular(5))),
+              Container(
+                height: 20,
+                width: MediaQuery.of(context).size.width *
+                    TileDimensions.widthRatio -
+                    190,
+                child: Text(
+                  subCalendarEventTile.name!,
+                  style:  TextStyle(
                       fontFamily: TileTextStyles.rubikFontName,
                       overflow: TextOverflow.ellipsis,
-                    ),
                   ),
                 ),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [renderDate(subCalendarEventTile)],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [renderDate(subCalendarEventTile)],
+          ),
+        ],
       ),
     );
 
@@ -292,7 +318,7 @@ class _EditTileState extends State<EditTile> {
       width: 110,
       height: 30,
       decoration: BoxDecoration(
-          color: Color.fromRGBO(31, 31, 31, 0.05),
+          color: colorScheme.onSurface.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(10)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -303,7 +329,7 @@ class _EditTileState extends State<EditTile> {
             child: Icon(
               Icons.calendar_month,
               size: 15,
-              color: Color.fromRGBO(31, 31, 31, 0.8),
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
           Container(
@@ -313,8 +339,8 @@ class _EditTileState extends State<EditTile> {
                   .humanDate(context),
               style: TextStyle(
                 fontSize: 12,
-                color: Color.fromRGBO(31, 31, 31, 0.8),
-                fontFamily: TileTextStyles.rubikFontName,
+                fontFamily:TileTextStyles.rubikFontName,
+                color: colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
           ),
@@ -326,61 +352,24 @@ class _EditTileState extends State<EditTile> {
   }
 
   Widget renderUnscheduledTiles(List<SubCalendarEvent> tiles) {
-    Widget unscheduledHeader = Container(
-      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-      alignment: Alignment.centerLeft,
-      child: Text(AppLocalizations.of(context)!.unScheduled,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 20,
-            fontFamily: TileTextStyles.rubikFontName,
-          )),
-    );
-
     if (tiles.isEmpty) {
       return SizedBox.shrink();
     }
-
-    Widget unscheduledBodyHeader = Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, 0.05),
-                borderRadius: BorderRadius.circular(20)),
-            child: Icon(Icons.error, color: Colors.redAccent),
-          ),
-          Container(
-            margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
-            child: Text(
-              AppLocalizations.of(context)!.countTile(tiles.length.toString()),
-              style: TextStyle(
-                fontSize: 25,
-                fontFamily: TileTextStyles.rubikFontName,
-              ),
-            ),
-          )
-        ],
-      ),
-    );
 
     return Align(
       alignment: Alignment.center,
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-        width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+        width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
         child: Column(
           children: [
-            unscheduledHeader,
+            _tileHeader(AppLocalizations.of(context)!.unScheduled),
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                  color: colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(10)),
               child: Column(
-                  children: [unscheduledBodyHeader, renderListOfTiles(tiles)]),
+                  children: [_tileBodyHeader(icon:Icons.error, iconColor: colorScheme.error,tileCount: tiles.length.toString()), renderListOfTiles(tiles)]),
             )
           ],
         ),
@@ -432,7 +421,6 @@ class _EditTileState extends State<EditTile> {
             clearPredictionButton();
             return;
           }
-
           showModalBottomSheet<void>(
             context: context,
             builder: (BuildContext context) {
@@ -449,7 +437,7 @@ class _EditTileState extends State<EditTile> {
                   : SizedBox.shrink();
               return Container(
                 height: 300,
-                color: Color.fromRGBO(150, 150, 150, 0.3),
+                color: tileThemeExtension.surfaceContainerMaximum.withValues(alpha: 0.3),
                 child: Center(
                   child: ListView(
                     scrollDirection: Axis.horizontal,
@@ -468,25 +456,30 @@ class _EditTileState extends State<EditTile> {
           children: [
             Container(
               alignment: Alignment.center,
-              child: Text(AppLocalizations.of(context)!.prediction,
+              child: Text(
+                  AppLocalizations.of(context)!.prediction,
                   style: TextStyle(
-                    fontSize: 20,
-                  )),
+                    fontSize: 20
+                  )
+              ),
             ),
             Shimmer.fromColors(
-                baseColor: TileColors.accentColorHSL.toColor().withAlpha(75),
-                highlightColor: Colors.white.withAlpha(100),
+                baseColor: colorScheme.tertiaryContainer.withAlpha(75),
+                highlightColor: colorScheme.surfaceContainerLow.withAlpha(100),
                 child: Container(
                   width: 400,
                   decoration: BoxDecoration(
-                      color: Color.fromRGBO(31, 31, 31, 0.8),
-                      borderRadius: BorderRadius.circular(30)),
-                )),
+                      color: colorScheme.onSurface.withValues(alpha:  0.8),
+                      borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+            ),
           ],
         ),
       );
     });
   }
+
 
   clearPredictionButton() {
     setState(() {
@@ -497,10 +490,11 @@ class _EditTileState extends State<EditTile> {
   showPendingPreview() {
     setState(() {
       bottomWidget = PendingWidget(
-        imageAsset: TileStyles.evaluatingScheduleAsset,
+        imageAsset: TileThemeNew.evaluatingScheduleAsset,
       );
     });
   }
+
 
   void onScheduleTimelineChange() {
     if (editTilerEvent != null && isScheduleTimelineReady(editTilerEvent)) {
@@ -552,6 +546,7 @@ class _EditTileState extends State<EditTile> {
   void onInputCountChange() {
     onScheduleTimelineChange();
   }
+
 
   Future<SubCalendarEvent> subEventUpdate() {
     AnalysticsSignal.send('EDIT_TILE_REQUEST_INITIALIZED');
@@ -689,7 +684,8 @@ class _EditTileState extends State<EditTile> {
             ),
           ),
           NextTileSuggestionCarouselWidget(
-              nextTileSuggestions: this.nextTileSuggestions!),
+              nextTileSuggestions: this.nextTileSuggestions!
+          ),
         ],
       );
     }
@@ -717,30 +713,65 @@ class _EditTileState extends State<EditTile> {
     if (this.subEvent != null &&
         this.subEvent?.calendarEvent?.id != null &&
         this.subEvent?.thirdpartyType == TileSource.tiler) {
-      appBarActionButtons.add(ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => TileDetail(
-                        tileId: this.subEvent?.calendarEvent?.id ??
-                            this.widget.tileId,
-                        loadSubEvents: false,
-                      ))).whenComplete(() {
-            this.context.read<SubCalendarTileBloc>().add(
-                GetSubCalendarTileBlocEvent(
-                    subEventId: this.widget.tileId,
-                    calendarSource: (this.widget.tileSource?.name ?? ""),
-                    thirdPartyUserId: this.widget.thirdPartyUserId));
-            subEvent = null;
-          });
-        },
-        style: TileStyles.onlyIconsContrast,
+      appBarActionButtons.add(
+          ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => TileDetail(
+                            tileId: this.subEvent?.calendarEvent?.id ??
+                                this.widget.tileId,
+                            loadSubEvents: false,
+                          ))).whenComplete(() {
+                this.context.read<SubCalendarTileBloc>().add(
+                    GetSubCalendarTileBlocEvent(
+                        subEventId: this.widget.tileId,
+                        calendarSource: (this.widget.tileSource?.name ?? ""),
+                        thirdPartyUserId: this.widget.thirdPartyUserId));
+                subEvent = null;
+              });
+            },
+        style: TileButtonStyles.onlyIconsContrast(foregroundColor: colorScheme.onPrimary),
         child: Icon(Icons.app_registration),
       ));
     }
-
     return appBarActionButtons;
+  }
+  Widget _buildClusterContainer({
+    required Widget child,
+    EdgeInsets? margin,
+    EdgeInsets? padding,
+    String? svgAssets,
+
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+      ),
+      margin: margin,
+      padding: padding,
+      child: svgAssets != null
+          ? Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            bottom: -20,
+            right: -20,
+            child: SvgPicture.asset(
+              svgAssets,
+              height: 150,
+              colorFilter: ColorFilter.mode(
+                colorScheme.onSurface.withValues(alpha: 0.05),
+                BlendMode.srcIn,
+              ),
+            ),
+          ),
+          child,
+        ],
+      ) : child,
+    );
   }
 
   @override
@@ -791,13 +822,10 @@ class _EditTileState extends State<EditTile> {
                   this.subEvent == null) {
                 return PendingWidget();
               }
-
-              final Color textBorderColor =
-                  TileColors.primaryColorLightHSL.toColor();
+              final Color textBorderColor = colorScheme.primaryContainer;
 
               Widget? tileProgressWidget;
 
-              final Color textBackgroundColor = TileColors.textBackgroundColor;
               String tileName =
                   this.editTilerEvent?.name ?? this.subEvent!.name ?? '';
               _editTileName = EditTileName(
@@ -809,10 +837,6 @@ class _EditTileState extends State<EditTile> {
                 },
               );
 
-              BoxDecoration containerClusterStyle = BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(TileStyles.borderRadius),
-              );
               var inputChildWidgets = <Widget>[];
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
@@ -867,12 +891,12 @@ class _EditTileState extends State<EditTile> {
 
               List<Widget> nameAndSplitCluster = <Widget>[
                 FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: _editTileName!)
               ];
               List<Widget> durationAndDeadlineCluster = <Widget>[
                 FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: _startEndDurationTimeline))
@@ -880,7 +904,7 @@ class _EditTileState extends State<EditTile> {
 
               if (!isRigidTile && !isProcrastinateTile) {
                 Widget splitWidget = FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                       height: 80,
                       margin: EdgeInsets.fromLTRB(30, 30, 0, 20),
@@ -889,20 +913,25 @@ class _EditTileState extends State<EditTile> {
                           Container(
                             margin: EdgeInsets.fromLTRB(0, 8, 0, 0),
                             height: 50,
-                            child: Text(AppLocalizations.of(context)!.split,
-                                style: labelStyle),
+                            child: Text(
+                                AppLocalizations.of(context)!.split,
+                                style: labelStyle
+                            ),
                           ),
                           Positioned(
                               top: 45,
                               child: Container(
                                 child: Text(
                                     AppLocalizations.of(context)!.timeBlocks,
-                                    style: const TextStyle(
-                                        color: Color.fromRGBO(150, 150, 150, 1),
+                                    style:TextStyle(
+                                        color: tileThemeExtension.onSurfaceHint,
+                                        fontWeight: FontWeight.w300,
                                         fontSize: 20,
                                         fontFamily: TileTextStyles.rubikFontName,
-                                        fontWeight: FontWeight.w300)),
-                              )),
+                                    ),
+                                ),
+                              ),
+                          ),
                           Positioned(
                             top: 0,
                             right: 5,
@@ -920,17 +949,17 @@ class _EditTileState extends State<EditTile> {
                                         BorderSide(color: Colors.transparent),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
-                                      borderSide:
-                                          BorderSide(color: textBorderColor)),
+                                      borderSide: BorderSide(color: textBorderColor)),
                                   enabledBorder: UnderlineInputBorder(
                                       borderSide: BorderSide(
                                           color: textBorderColor
-                                              .withLightness(0.8))),
-                                  contentPadding:
-                                      EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                              .withLightness(0.8),
+                                      ),
+                                  ),
+                                  contentPadding: EdgeInsets.fromLTRB(20, 5, 20, 0),
                                 ),
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 30),
+                                style:TextStyle(fontSize: 30),
                                 keyboardType: TextInputType.numberWithOptions(
                                     signed: true, decimal: true),
                                 controller: splitCountController,
@@ -941,29 +970,18 @@ class _EditTileState extends State<EditTile> {
                       ),
                     ));
 
-                inputChildWidgets.add(Container(
-                    decoration: containerClusterStyle,
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                            bottom: -20,
-                            right: -20,
-                            child: SvgPicture.asset(
-                              'assets/images/iconScout/block.svg',
-                              height: 150,
-                              colorFilter: ColorFilter.mode(
-                                  Color.fromRGBO(0, 0, 0, 0.05),
-                                  BlendMode.srcIn),
-                            )),
-                        splitWidget
-                      ],
-                    )));
+                inputChildWidgets.add(
+                    _buildClusterContainer(
+                      svgAssets: 'assets/images/iconScout/block.svg',
+                      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                      child: splitWidget
+                    )
+                );
                 if (_editCalEndDateAndTime != null &&
                     subEvent != null &&
                     subEvent!.isRecurring == true) {
                   Widget deadlineWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Column(
@@ -981,23 +999,11 @@ class _EditTileState extends State<EditTile> {
                       ));
                   durationAndDeadlineCluster.add(deadlineWidget);
                 }
-                tileProgressWidget = Container(
-                    decoration: containerClusterStyle,
-                    margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                            bottom: -20,
-                            right: -20,
-                            child: SvgPicture.asset(
-                              'assets/images/iconScout/chart.svg',
-                              height: 150,
-                              colorFilter: ColorFilter.mode(
-                                  Color.fromRGBO(0, 0, 0, 0.05),
-                                  BlendMode.srcIn),
-                            )),
-                        Column(children: [
+                tileProgressWidget = _buildClusterContainer(
+                        svgAssets: 'assets/images/iconScout/chart.svg',
+                        margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: Column(children: [
                           Container(
                             margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
                             alignment: Alignment.topLeft,
@@ -1009,12 +1015,11 @@ class _EditTileState extends State<EditTile> {
                           TileProgress(
                               calendarEvent: this.subEvent!.calendarEvent!
                                   as CalendarEvent),
-                        ])
-                      ],
-                    ));
+                        ]
+                        )
+                    );
               }
-              Widget nameAndSplitClusterWrapper = Container(
-                decoration: containerClusterStyle,
+              Widget nameAndSplitClusterWrapper = _buildClusterContainer(
                 margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
                 padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
                 child: Column(children: nameAndSplitCluster),
@@ -1022,49 +1027,32 @@ class _EditTileState extends State<EditTile> {
 
               inputChildWidgets.insert(0, nameAndSplitClusterWrapper);
 
-              Widget durationClusterWrapper = Container(
-                  decoration: containerClusterStyle,
+              Widget durationClusterWrapper = _buildClusterContainer(
                   padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
-                  child: Stack(children: [
-                    Positioned(
-                        bottom: -20,
-                        right: -20,
-                        child: SvgPicture.asset(
-                          'assets/images/iconScout/deadline.svg',
-                          height: 150,
-                          colorFilter: ColorFilter.mode(
-                              Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),
-                        )),
-                    Container(
-                      alignment: Alignment.center,
-                      child: Column(
-                        children: durationAndDeadlineCluster,
-                      ),
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
-                    )
-                  ]));
+                  svgAssets: 'assets/images/iconScout/deadline.svg',
+                  child:Container(
+                    alignment: Alignment.center,
+                    child: Column(
+                    children: durationAndDeadlineCluster,
+                    ),
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
+                  )
+              );
 
               inputChildWidgets.add(durationClusterWrapper);
 
               if (_editTileNote != null && subEvent!.isFromTiler) {
-                inputChildWidgets.add(Container(
-                    decoration: containerClusterStyle,
+                inputChildWidgets.add(
+                    _buildClusterContainer(
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                    child: Stack(alignment: Alignment.center, children: [
-                      Positioned(
-                          bottom: -20,
-                          right: -20,
-                          child: SvgPicture.asset(
-                            'assets/images/iconScout/notes.svg',
-                            height: 150,
-                            colorFilter: ColorFilter.mode(
-                                Color.fromRGBO(0, 0, 0, 0.05), BlendMode.srcIn),
-                          )),
-                      Container(
-                        child: _editTileNote!,
-                        margin: EdgeInsets.fromLTRB(0, 30, 0, 10),
-                      )
-                    ])));
+                    padding:EdgeInsets.fromLTRB(20, 20, 20, 20) ,
+                    svgAssets:  'assets/images/iconScout/notes.svg',
+                    child:Container(
+                      child: _editTileNote!,
+                      margin: EdgeInsets.fromLTRB(0, 30, 0, 10),
+                    )
+                )
+                );
               }
 
               List<PlaybackOptions> playbackOptions = [
@@ -1093,12 +1081,11 @@ class _EditTileState extends State<EditTile> {
                 playbackOptions = [PlaybackOptions.Delete];
               }
 
-              Widget playBackButtonWrapper = Container(
+              Widget playBackButtonWrapper = _buildClusterContainer(
                 padding: EdgeInsets.fromLTRB(0, 25, 0, 25),
                 margin: !this.subEvent!.isFromTiler
                     ? EdgeInsets.fromLTRB(0, 25, 0, 0)
                     : EdgeInsets.fromLTRB(0, 7.5, 0, 0),
-                decoration: containerClusterStyle,
                 child: PlayBack(
                   this.subEvent!,
                   forcedOption: playbackOptions,
@@ -1144,10 +1131,9 @@ class _EditTileState extends State<EditTile> {
 
               if (this.nextTileSuggestions != null &&
                   this.nextTileSuggestions!.length > 0) {
-                Widget nextTileSuggestionWrapper = Container(
+                Widget nextTileSuggestionWrapper = _buildClusterContainer(
                     padding: EdgeInsets.fromLTRB(0, 20, 0, 20),
                     margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                    decoration: containerClusterStyle,
                     child: renderNextTileSuggestionContainer());
                 inputChildWidgets.add(nextTileSuggestionWrapper);
               }
@@ -1160,9 +1146,7 @@ class _EditTileState extends State<EditTile> {
 
               List<Widget> stackElements = <Widget>[
                 Container(
-                  color: TileColors.primaryColorLightHSL
-                      .toColor()
-                      .withLightness(0.95),
+                  color: tileThemeExtension.primaryContainerLow,
                   padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
                   alignment: Alignment.topCenter,
                   child: ListView(
@@ -1173,7 +1157,7 @@ class _EditTileState extends State<EditTile> {
 
               if (isPendingSubEventProcessing) {
                 stackElements.add(PendingWidget(
-                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
                 ));
               }
               return Stack(
@@ -1191,19 +1175,13 @@ class _EditTileState extends State<EditTile> {
         onProceed: this.onProceed,
         bottomWidget: this.bottomWidget,
         appBar: AppBar(
-          backgroundColor: TileColors.primaryColor,
           title: Text(
             AppLocalizations.of(context)!.edit,
-            style: TextStyle(
-                color: TileColors.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
           ),
           actions: this.getAppBarActionButtons(),
-          centerTitle: true,
-          elevation: 0,
           automaticallyImplyLeading: false,
-        ));
+        )
+    );
   }
 
   @override

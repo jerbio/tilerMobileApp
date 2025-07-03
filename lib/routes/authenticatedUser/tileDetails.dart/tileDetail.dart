@@ -27,7 +27,8 @@ import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -62,9 +63,8 @@ class _TileDetailState extends State<TileDetail> {
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
   String requestId = Utility.getUuid;
-  final Color textBackgroundColor = TileColors.textBackgroundColor;
-  final Color textBorderColor = TileColors.textBorderColor;
-  final Color inputFieldIconColor = TileColors.primaryColor;
+
+
   bool reloadOtherEntitiesAfterLoadingCalevent = false;
   late final SettingsApi settingsApi;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
@@ -73,9 +73,14 @@ class _TileDetailState extends State<TileDetail> {
   final TextStyle defaultFontStyle = TextStyle(
       fontFamily: TileTextStyles.rubikFontName,
       fontWeight: FontWeight.normal,
-      fontSize: 24);
+      fontSize: 24
+  );
   static final String tileDetailCancelAndProceedRouteName =
       "tileDetailCancelAndProceedRouteName";
+late ThemeData theme;
+late ColorScheme colorScheme;
+late TileThemeExtension tileThemeExtension;
+
 
   @override
   void initState() {
@@ -128,6 +133,14 @@ class _TileDetailState extends State<TileDetail> {
       });
       return response;
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
   }
 
   void onInputCountChange() {
@@ -318,6 +331,30 @@ class _TileDetailState extends State<TileDetail> {
       });
     });
   }
+  Widget _mainContainer({required Widget child,required IconData icon, EdgeInsets? padding,  EdgeInsets? childPadding}){
+    return Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        padding: padding ?? EdgeInsets.fromLTRB(10, 0, 0, 0),
+        decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLow,
+            borderRadius: TileStyles.inputFieldBorderRadius,
+            border: Border.all(
+              color: colorScheme.onInverseSurface,
+              width: 1.5,
+            )
+        ),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(icon , color: colorScheme.primary),
+              Container(
+                padding: childPadding ?? EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: child,
+              )
+            ]
+        )
+    );
+  }
 
   Widget generateDurationPicker() {
     final void Function()? setDuration = () async {
@@ -355,74 +392,40 @@ class _TileDetailState extends State<TileDetail> {
     }
     Widget retValue = new GestureDetector(
         onTap: setDuration,
-        child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            decoration: BoxDecoration(
-                color: textBackgroundColor,
-                borderRadius: TileStyles.inputFieldBorderRadius,
-                border: Border.all(
-                  color: textBorderColor,
-                  width: 1.5,
-                )),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
-                Container(
-                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      onPressed: setDuration,
-                      child: Text(
-                        textButtonString,
-                        style: TextStyle(
-                          fontFamily: TileTextStyles.rubikFontName,
-                        ),
-                      ),
-                    ))
-              ],
-            )));
+        child: _mainContainer(
+          icon: Icons.timelapse_outlined,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              textStyle:  const TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            onPressed: setDuration,
+            child: Text(
+              textButtonString,
+            ),
+          ),
+        )
+    );
     return retValue;
   }
 
   Widget renderLocationTapable() {
     Function locationButton = (String locationString) {
-      return Container(
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        decoration: BoxDecoration(
-            color: textBackgroundColor,
-            borderRadius: TileStyles.inputFieldBorderRadius,
-            border: Border.all(
-              color: textBorderColor,
-              width: 1.5,
-            )),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.location_pin, color: inputFieldIconColor),
-            Container(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                  onPressed: loadLocationRoute,
-                  child: Text(
-                    locationString,
-                    style: defaultFontStyle,
-                  ),
-                ))
-          ],
-        ),
-      );
+      return _mainContainer(
+        icon: Icons.location_pin,
+        child:TextButton(
+          style: TextButton.styleFrom(
+            textStyle: const TextStyle(
+              fontSize: 20,
+            ),
+          ),
+          onPressed: loadLocationRoute,
+          child: Text(
+            locationString,
+            style: defaultFontStyle,
+          ),
+        ));
     };
 
     var locBlocState = this.context.read<LocationBloc>().state;
@@ -442,118 +445,69 @@ class _TileDetailState extends State<TileDetail> {
   }
 
   Widget renderRepetitionTapable() {
-    Widget recurIcon =
-        Icon(TileStyles.repetitionIcon, color: inputFieldIconColor);
-
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-      decoration: BoxDecoration(
-          color: textBackgroundColor,
-          borderRadius: TileStyles.inputFieldBorderRadius,
-          border: Border.all(
-            color: textBorderColor,
-            width: 1.5,
-          )),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          recurIcon,
-          Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: RepetitionSelectorWidget(
-                onRepetitionUpdate: (repetition) {
-                  if (this.editTilerEvent != null) {
-                    this.editTilerEvent!.repetition = repetition;
-                    dataChange();
-                  }
-                },
-                repetition: this.editTilerEvent?.repetition,
-                textStyle: defaultFontStyle,
-              ))
-        ],
-      ),
+    return _mainContainer(
+        icon: Icons.repeat_outlined,
+        childPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: RepetitionSelectorWidget(
+          onRepetitionUpdate: (repetition) {
+            if (this.editTilerEvent != null) {
+              this.editTilerEvent!.repetition = repetition;
+              dataChange();
+            }
+          },
+          repetition: this.editTilerEvent?.repetition,
+          textStyle: defaultFontStyle,
+        )
     );
   }
 
   Widget renderHueTapable() {
-    Widget hueIcon =
-        Icon(Icons.format_color_fill_outlined, color: inputFieldIconColor);
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
-      decoration: BoxDecoration(
-          color: textBackgroundColor,
-          borderRadius: TileStyles.inputFieldBorderRadius,
-          border: Border.all(
-            color: textBorderColor,
-            width: 1.5,
-          )),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          hueIcon,
-          Container(
-              padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: ColorSelectorWidget(
-                  onColorUpdate: (Color? updatedColor) {
-                    if (updatedColor != null) {
-                      editTilerEvent!.uiConfig = UIConfig.fromJson({});
-                      editTilerEvent!.uiConfig!.tileColor =
-                          TileColor.fromColor(updatedColor);
-                    }
-                    dataChange();
-                  },
-                  color: editTilerEvent!.uiConfig!.tileColor!.toColor!))
-        ],
-      ),
+    return _mainContainer(
+        icon: Icons.format_color_fill_outlined,
+        padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
+        childPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: ColorSelectorWidget(
+            onColorUpdate: (Color? updatedColor) {
+              if (updatedColor != null) {
+                editTilerEvent!.uiConfig = UIConfig.fromJson({});
+                editTilerEvent!.uiConfig!.tileColor =
+                    TileColor.fromColor(updatedColor);
+              }
+              dataChange();
+            },
+            color: editTilerEvent!.uiConfig!.tileColor!.toColor!
+        )
     );
+
   }
 
   Widget renderRestrictionProfileTapable() {
-    Widget restrictionProfileIcon =
-        Icon(TileStyles.restrictionProfileIcon, color: inputFieldIconColor);
-    return Container(
-      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-      padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-      decoration: BoxDecoration(
-          color: textBackgroundColor,
-          borderRadius: TileStyles.inputFieldBorderRadius,
-          border: Border.all(
-            color: textBorderColor,
-            width: 1.5,
-          )),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          restrictionProfileIcon,
-          Container(
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              child: RestrictionProfileSelectorWidget(
-                restrictionProfile: this.editTilerEvent?.restrictionProfile,
-                personalProfile: _personalRestrictionProfile,
-                workProfile: _workRestrictionProfile,
-                textStyle: this.defaultFontStyle,
-                onRestrictionProfileUpdate:
-                    (RestrictionProfile? updatedRestrictionProfile) {
-                  if (updatedRestrictionProfile != null) {
-                    setState(() {
-                      editTilerEvent!.restrictionProfile =
-                          updatedRestrictionProfile;
-                      editTilerEvent!.restrictionProfileId =
-                          updatedRestrictionProfile.id;
-                    });
-                  } else {
-                    setState(() {
-                      editTilerEvent!.restrictionProfile = null;
-                      editTilerEvent!.restrictionProfileId = null;
-                    });
-                  }
-                  dataChange();
-                },
-              ))
-        ],
-      ),
+    return _mainContainer(
+      icon: Icons.switch_left,
+      childPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      child: RestrictionProfileSelectorWidget(
+        restrictionProfile: this.editTilerEvent?.restrictionProfile,
+        personalProfile: _personalRestrictionProfile,
+        workProfile: _workRestrictionProfile,
+        textStyle: this.defaultFontStyle,
+        onRestrictionProfileUpdate:
+            (RestrictionProfile? updatedRestrictionProfile) {
+          if (updatedRestrictionProfile != null) {
+            setState(() {
+              editTilerEvent!.restrictionProfile =
+                  updatedRestrictionProfile;
+              editTilerEvent!.restrictionProfileId =
+                  updatedRestrictionProfile.id;
+            });
+          } else {
+            setState(() {
+              editTilerEvent!.restrictionProfile = null;
+              editTilerEvent!.restrictionProfileId = null;
+            });
+          }
+          dataChange();
+        },
+      )
     );
   }
 
@@ -663,16 +617,7 @@ class _TileDetailState extends State<TileDetail> {
           routeName: tileDetailCancelAndProceedRouteName,
           onProceed: this.onProceed,
           appBar: AppBar(
-            backgroundColor: TileColors.primaryColor,
-            title: Text(
-              AppLocalizations.of(context)!.edit,
-              style: TextStyle(
-                  color: TileColors.appBarTextColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22),
-            ),
-            centerTitle: true,
-            elevation: 0,
+            title: Text(AppLocalizations.of(context)!.edit),
             automaticallyImplyLeading: false,
           ),
           child: BlocBuilder<CalendarTileBloc, CalendarTileState>(
@@ -712,7 +657,7 @@ class _TileDetailState extends State<TileDetail> {
 
               var inputChildWidgets = <Widget>[
                 FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: _editTileName!),
               ];
 
@@ -726,14 +671,14 @@ class _TileDetailState extends State<TileDetail> {
               );
 
               Widget durationWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     child: generateDurationPicker(),
                   ));
 
               Widget? locationWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     child: renderLocationTapable(),
@@ -741,7 +686,7 @@ class _TileDetailState extends State<TileDetail> {
               if (!isRigidTile && !isProcrastinateTile) {
                 if (this.editTilerEvent!.isAutoReviseDeadline != null) {
                   softDeadlineWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Row(
@@ -751,10 +696,11 @@ class _TileDetailState extends State<TileDetail> {
                               child: Text(
                                   AppLocalizations.of(context)!.softDeadline,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -762,7 +708,7 @@ class _TileDetailState extends State<TileDetail> {
                               child: Switch(
                                 value:
                                     this.editTilerEvent!.isAutoReviseDeadline!,
-                                activeColor: TileColors.primaryColor,
+                                activeColor: colorScheme.primary,
                                 onChanged: (bool value) {
                                   setState(() {
                                     this.editTilerEvent!.isAutoReviseDeadline =
@@ -779,7 +725,7 @@ class _TileDetailState extends State<TileDetail> {
 
                 if (!this.calEvent!.isRecurring!) {
                   splitWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Row(
@@ -788,10 +734,11 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.split,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -807,7 +754,7 @@ class _TileDetailState extends State<TileDetail> {
                       ));
 
                   tileStartWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Column(
@@ -817,17 +764,18 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.start,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             _editStartDateAndTime!
                           ],
                         ),
                       ));
                   tileEndWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Column(
@@ -837,10 +785,11 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.end,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             _editEndDateAndTime!
                           ],
@@ -864,13 +813,13 @@ class _TileDetailState extends State<TileDetail> {
               }
 
               inputChildWidgets.add(FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: renderRestrictionProfileTapable())));
 
               Widget repetitionWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: renderRepetitionTapable()));
@@ -878,7 +827,7 @@ class _TileDetailState extends State<TileDetail> {
               inputChildWidgets.add(repetitionWidget);
               if (editTilerEvent?.uiConfig?.tileColor?.toColor != null) {
                 inputChildWidgets.add(FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: renderHueTapable())));
@@ -896,10 +845,35 @@ class _TileDetailState extends State<TileDetail> {
               if (tileEndWidget != null) {
                 inputChildWidgets.add(tileEndWidget);
               }
-
+              List<SubCalendarEvent> testSubEvents = [
+                SubCalendarEvent.fromJson({
+                  "id": "test-1",
+                  "name": "Test Task 1",
+                  "start": DateTime.now().millisecondsSinceEpoch,
+                  "end": DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch,
+                  "colorRed": 255,
+                  "colorGreen": 100,
+                  "colorBlue": 100,
+                  "isViable": true,
+                  "isEnabled": true,
+                  "isComplete": false
+                }),
+                SubCalendarEvent.fromJson({
+                  "id": "test-2",
+                  "name": "Test Task 2",
+                  "start": DateTime.now().add(Duration(hours: 2)).millisecondsSinceEpoch,
+                  "end": DateTime.now().add(Duration(hours: 3)).millisecondsSinceEpoch,
+                  "colorRed": 100,
+                  "colorGreen": 255,
+                  "colorBlue": 100,
+                  "isViable": true,
+                  "isEnabled": true,
+                  "isComplete": false
+                }),
+              ];
               if (subEvents != null && subEvents!.length > 0) {
                 inputChildWidgets.add(FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: TileCarousel(

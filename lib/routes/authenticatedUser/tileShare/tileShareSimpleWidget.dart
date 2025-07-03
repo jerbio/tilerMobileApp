@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -51,17 +50,18 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme= theme.colorScheme;
     const double iconSize = 12;
     const double fontSize = 12;
     const TextStyle textStyle = TextStyle(
-        fontSize: fontSize,
         fontFamily: TileTextStyles.rubikFontName,
-        overflow: TextOverflow.ellipsis,
-        color: const Color.fromRGBO(40, 40, 40, 1));
+        fontSize: fontSize,
+        overflow: TextOverflow.ellipsis,);
 
     return Card(
       surfaceTintColor: Colors.transparent,
-      elevation: TileStyles.defaultCardElevation,
+      elevation: TileDimensions.defaultCardElevation,
       margin: EdgeInsets.all(5),
       child: Padding(
           padding: EdgeInsets.all(10),
@@ -72,13 +72,17 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                 children: [
                   Text('${widget.tileShareCluster?.name ?? ""}',
                       style: TextStyle(
-                          fontSize: 12, fontFamily: TileTextStyles.rubikFontName)),
+                          fontFamily: TileTextStyles.rubikFontName,
+                          fontSize: 12,
+                      )
+                  ),
                   SizedBox(height: 8),
                   if (widget.tileShareCluster?.endTimeInMs != null)
                     Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
+                          color: colorScheme.onSurface,
                           size: iconSize,
                         ),
                         rowSpacer,
@@ -100,6 +104,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                     children: [
                       Icon(
                         Icons.person_2_outlined,
+                        color: colorScheme.onSurface,
                         size: iconSize,
                       ),
                       rowSpacer,
@@ -115,8 +120,8 @@ class _TileShareState extends State<TileShareSimpleWidget> {
               if (this.widget.tileShareCluster?.isMultiTilette == true)
                 Positioned(
                   child: Icon(
-                    TileStyles.multiShareIcon,
-                    color: TileColors.primaryColor,
+                    Icons.bento_outlined,
+                    color: colorScheme.primary,
                   ),
                   right: 0,
                 )
@@ -128,7 +133,7 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                     padding: EdgeInsets.all(0),
                     icon: Icon(
                       Icons.delete,
-                      color: TileColors.primaryColor,
+                      color: colorScheme.primary,
                     ),
                     onPressed: () {
                       if (this.widget.onDelete != null) {

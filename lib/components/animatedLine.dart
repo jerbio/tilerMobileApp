@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter/material.dart';
 
 class AnimatedLine extends StatefulWidget {
   Duration duration;
@@ -42,7 +41,7 @@ class _AnimatedLineState extends State<AnimatedLine>
 
 class LinePainter extends CustomPainter {
   late Paint _paint;
-  late Color color = Colors.black;
+  late Color color;
   bool reverse = false;
   double _progress;
 

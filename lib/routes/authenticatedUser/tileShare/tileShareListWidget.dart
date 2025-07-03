@@ -3,15 +3,12 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareListWidget extends StatefulWidget {
@@ -37,6 +34,8 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
   late bool isOubox;
 
   late final controller = SlidableController(this);
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -57,6 +56,13 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
       _scrollController!.addListener(handleScrollToEnd);
     }
     // handleScrollToEnd();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Future getTileShareCluster({int? pageIndex, int? pageSize}) async {
@@ -120,7 +126,7 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
     return Container(
       height: 40,
       alignment: AlignmentDirectional.center,
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator(color: colorScheme.tertiary),
     );
   }
 
@@ -129,7 +135,7 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
       child: Container(
         height: 40,
         alignment: AlignmentDirectional.center,
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(color: colorScheme.tertiary),
       ),
     );
   }
@@ -150,7 +156,7 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
                     getTileShareCluster();
                   });
                 },
-                style: TileStyles.enabledButtonStyle,
+                style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
                 icon: Icon(Icons.add),
                 label: Text(AppLocalizations.of(context)!.tileShare))),
       );
@@ -188,16 +194,9 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
               color: Colors.transparent,
               child: NameAndDateSheetWidget(
                 appBar: AppBar(
-                  centerTitle: true,
-                  elevation: 0,
                   automaticallyImplyLeading: false,
-                  backgroundColor: TileColors.appBarColor,
                   title: Text(
                     AppLocalizations.of(context)!.edit,
-                    style: TextStyle(
-                        color: TileColors.appBarTextColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22),
                   ),
                 ),
                 endTime: cluster.endTimeInMs != null
@@ -282,15 +281,15 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
           children: [
             SlidableAction(
               onPressed: editTileShare,
-              backgroundColor: TileColors.accentColor,
-              foregroundColor: TileColors.primaryContrastColor,
+              backgroundColor: colorScheme.tertiaryContainer,
+              foregroundColor: colorScheme.onTertiary,
               icon: Icons.edit,
               label: AppLocalizations.of(context)!.edit,
             ),
             SlidableAction(
               onPressed: deleteTileShare,
-              backgroundColor: TileColors.deletedBackgroundColor,
-              foregroundColor: Colors.white,
+              backgroundColor: colorScheme.onError,
+              foregroundColor: colorScheme.onInverseSurface,
               icon: Icons.delete,
               label: AppLocalizations.of(context)!.tileShareDelete,
             ),
@@ -302,16 +301,17 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
         ));
   }
 
+  //ey: not used
   Widget renderDismissibleTileShare(TileShareClusterData tileShareClusterData) {
     Widget dismissibleSimpleTileShareWidget = Dismissible(
         direction: DismissDirection.endToStart,
         background: Container(
           padding: EdgeInsets.all(10),
           alignment: Alignment.centerRight,
-          color: TileColors.deletedBackgroundColor,
+          color: colorScheme.onError,
           child: Icon(
             Icons.delete,
-            color: TileColors.primaryContrastColor,
+            color: colorScheme.onInverseSurface,
             size: 40,
           ),
         ),

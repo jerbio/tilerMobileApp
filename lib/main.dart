@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
@@ -42,6 +41,7 @@ import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -60,8 +60,6 @@ import 'services/api/onBoardingApi.dart';
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
 
-import 'theme/tile_colors.dart';
-
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -76,6 +74,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 Future main() async {
+
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
@@ -113,7 +112,7 @@ class _TilerAppState extends State<TilerApp> {
     super.initState();
   }
 
-  Widget renderPending() {
+  Widget splashScreen() {
     return Center(
         child: Stack(children: [
       Center(
@@ -173,6 +172,7 @@ class _TilerAppState extends State<TilerApp> {
                     return this.context;
                   }))
         ],
+
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
             buildWhen: (previous, current) =>
                 previous.isDarkMode != current.isDarkMode,
@@ -180,20 +180,11 @@ class _TilerAppState extends State<TilerApp> {
               return MaterialApp(
                 title: 'Tiler',
                 debugShowCheckedModeBanner: false,
-                theme: ThemeData(
-                  fontFamily: TileStyles.rubikFontName,
-                  primarySwatch:
-                      MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
-                  visualDensity: VisualDensity.adaptivePlatformDensity,
-                ),
-                darkTheme: ThemeData(
-                  fontFamily: TileStyles.rubikFontName,
-                  primarySwatch:
-                      MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
-                  visualDensity: VisualDensity.adaptivePlatformDensity,
-                ),
-                themeMode:
-                    settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                theme: TileThemeData.getLightTheme(),
+                //theme: theme,
+                darkTheme: TileThemeData.getDarkTheme(),
+                //themeMode: ThemeMode.dark,
+                themeMode: true ? ThemeMode.dark : ThemeMode.light,
                 routes: <String, WidgetBuilder>{
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
@@ -246,7 +237,7 @@ class _TilerAppState extends State<TilerApp> {
                         AsyncSnapshot<Tuple2<bool, String>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // While waiting for the future to complete, show the splash screen
-                        return renderPending();
+                        return splashScreen();
                       } else {
                         // // Check if AppLocalizations is available
                         // if (AppLocalizations.of(context) != null) {
@@ -277,7 +268,7 @@ class _TilerAppState extends State<TilerApp> {
                                     .issuesConnectingToTiler,
                                 NotificationOverlayMessageType.error,
                               );
-                              return renderPending();
+                              return splashScreen();
                             }
                             authentication?.deauthenticateCredentials();
                             retValue = SignInRoute();
@@ -294,7 +285,7 @@ class _TilerAppState extends State<TilerApp> {
                                   AsyncSnapshot<bool> onboardingSnapshot) {
                                 if (onboardingSnapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return renderPending();
+                                  return splashScreen();
                                 } else if (onboardingSnapshot.hasError) {
                                   notificationOverlayMessage!.showToast(
                                     context,
@@ -312,13 +303,108 @@ class _TilerAppState extends State<TilerApp> {
                           }
                         } else {
                           // If there's no data and no error, continue showing the splash screen
-                          retValue = renderPending();
+                          retValue = splashScreen();
                         }
                         return retValue;
                       }
                     }),
+
               );
             }));
 
   }
 }
+/*
+Widget renderCheckList(List<SubCalendarEvent> tiles,
+      {required List<bool> checkBoxStates}) {
+    return Column(
+        children: tiles.asMap().entries.map<Widget>((entry) {
+      int index = entry.key;
+      SubCalendarEvent e = entry.value;
+      return Container(
+        decoration: BoxDecoration(
+            border: Border.all(
+                width: 0.5,
+                color: e.priority == TilePriority.high
+                    ? tileThemeExtension.priority
+                    : Colors.transparent),
+            borderRadius: BorderRadius.circular(5)),
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: Checkbox.adaptive(
+                    focusColor:tileThemeExtension.checkColor,
+                    value: //false,
+                        checkBoxStates[index],
+                    onChanged: (value) {
+                      setState(() {
+                        checkBoxStates[index] = value!;
+                        selectedUnscheduledItems =
+                            getSelectedUnscheduledItems();
+                      });
+                    },
+                    activeColor: Colors.transparent,
+                    checkColor: tileThemeExtension.checkColor,
+                  ),
+                ),
+
+                //Sizedbox for spacing
+                SizedBox(
+                  width: 10,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      bool value = checkBoxStates[index];
+                      checkBoxStates[index] = !value;
+                      selectedUnscheduledItems = getSelectedUnscheduledItems();
+                    });
+                  },
+                  child: Container(
+                    alignment: Alignment.centerLeft,
+                    height: 35,
+                    width: MediaQuery.of(context).size.width *
+                            TileStyles.widthRatio -
+                        205,
+                    child: Text(
+                      e.isProcrastinate == true
+                          ? AppLocalizations.of(context)!.procrastinateBlockOut
+                          : e.name ?? "",
+                      style: textTheme.labelLarge
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => EditTile(
+                                    tileId: (e.isFromTiler
+                                            ? e.id
+                                            : e.thirdpartyId) ??
+                                        "",
+                                    tileSource: e.thirdpartyType,
+                                    thirdPartyUserId: e.thirdPartyUserId,
+                                  )));
+                    },
+                    child: renderChecklistDates(e))
+              ],
+            ),
+          ],
+        ),
+      );
+    }).toList());
+  }
+ */

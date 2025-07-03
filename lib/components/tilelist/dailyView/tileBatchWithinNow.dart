@@ -12,6 +12,8 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -70,7 +72,10 @@ class WithinNowBatchState extends TileBatchState {
   double heightMargin = 262;
   double heightOfTimeBanner = 245;
   bool _pendingRendering = false;
-  bool _isEmptydayTile = false;
+  bool _isEmptyTodayTile = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TextStyle dayHeaderTextStyle;
   @override
   void initState() {
     super.initState();
@@ -81,6 +86,19 @@ class WithinNowBatchState extends TileBatchState {
         snapToUpComingTiles();
       }
     });
+
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    dayHeaderTextStyle= TextStyle(
+        fontSize: 40,
+        fontFamily: TileTextStyles.rubikFontName,
+        color: colorScheme.primary,
+        fontWeight: FontWeight.w700
+    );
   }
 
   void snapToUpComingTiles() {
@@ -116,7 +134,7 @@ class WithinNowBatchState extends TileBatchState {
 
       if (precedingTileExist) {
         if (isInterferringWithNow) {
-          interferringWithNowOffSet = TileStyles.tileHeight;
+          interferringWithNowOffSet = TileDimensions.tileHeight;
         }
         print(
             'interferringWithNowOffSet: $interferringWithNowOffSet, offset: ${offset.distance}');
@@ -142,7 +160,7 @@ class WithinNowBatchState extends TileBatchState {
               margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
               alignment: Alignment.centerLeft,
               child: Text(AppLocalizations.of(context)!.upcoming,
-                  style: TileBatch.dayHeaderTextStyle),
+                  style: dayHeaderTextStyle,),
             )),
       );
     }
@@ -166,7 +184,7 @@ class WithinNowBatchState extends TileBatchState {
               margin: EdgeInsets.fromLTRB(30, 20, 0, 20),
               alignment: Alignment.centerLeft,
               child: Text(AppLocalizations.of(context)!.upcoming,
-                  style: TileBatch.dayHeaderTextStyle),
+                  style: dayHeaderTextStyle,),
             )),
       );
     }
@@ -265,7 +283,7 @@ class WithinNowBatchState extends TileBatchState {
   }
 
   renderEmptyDayTile() {
-    _isEmptydayTile = true;
+    _isEmptyTodayTile = true;
     if (_emptyDayOpacity == 0) {
       Timer(Duration(milliseconds: 200), () {
         if (mounted) {
@@ -347,6 +365,7 @@ class WithinNowBatchState extends TileBatchState {
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
 
+
     if (this.widget.sleepTimeline != null) {
       Timeline sleepTimeline = this.widget.sleepTimeline!;
       Widget sleepWidget = SleepTileWidget(sleepTimeline);
@@ -409,7 +428,7 @@ class WithinNowBatchState extends TileBatchState {
         child: ListView(
           shrinkWrap: true,
           controller: fullUiController,
-          physics: _isEmptydayTile ? NeverScrollableScrollPhysics() : null,
+          physics: _isEmptyTodayTile ? NeverScrollableScrollPhysics() : null,
           children: [
             ...precedingTileWidgets,
             // this is needed to ensure there is spacing between animated list and the bottom of the screen

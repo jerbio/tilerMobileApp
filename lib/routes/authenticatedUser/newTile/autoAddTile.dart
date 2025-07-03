@@ -1,16 +1,20 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tuple/tuple.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileInputStyles.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../../components/tileUI/configUpdateButton.dart';
 import '../../../constants.dart' as Constants;
-
+//ey: not used
 class AutoAddTile extends StatefulWidget {
   @override
   AutoAddTileState createState() => AutoAddTileState();
@@ -69,17 +73,24 @@ class AutoAddTileState extends State<AutoAddTile> {
 
   @override
   Widget build(BuildContext context) {
+    final theme= Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     bool showAutoContextContainer = false;
     InputDecoration inputFieldDecoration =
-        TileStyles.generateTextInputDecoration(
-            AppLocalizations.of(context)!.tileName);
+    TileInputStyles.generateTextInputDecoration(
+      inputHint:  AppLocalizations.of(context)!.tileName,
+      fillColor:colorScheme.surfaceContainerLow,
+      borderColor: colorScheme.onInverseSurface,
+      textColor: tileThemeExtension.onSurfaceTertiary
+    );
 
     Widget inputField = Container(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
         child: TextField(
           decoration: inputFieldDecoration,
           controller: tileNameController,
-          style: TileStyles.fullScreenTextFieldStyle,
+          style: TileTextStyles.fullScreenTextFieldStyle,
           onChanged: (val) {
             if (val.length > Constants.autoCompleteTriggerCharacterCount) {
               Function callAutoResult = generateCallToServer();
@@ -110,10 +121,10 @@ class AutoAddTileState extends State<AutoAddTile> {
         text: durationString,
         prefixIcon: Icon(
           Icons.timelapse_outlined,
-          color: ConfigUpdateButton.populatedTextColor,
+          color: colorScheme.onInverseSurface,
         ),
-        decoration: ConfigUpdateButton.populatedDecoration,
-        textColor: ConfigUpdateButton.populatedTextColor,
+        decoration: TileDecorations.populatedDecoration(colorScheme.surfaceContainerLow),
+        textColor: colorScheme.onInverseSurface,
         onPress: () {
           Map<String, dynamic> durationParams = {'duration': _duration};
           Navigator.pushNamed(context, '/DurationDial',
@@ -140,10 +151,10 @@ class AutoAddTileState extends State<AutoAddTile> {
         text: _location!.description!,
         prefixIcon: Icon(
           Icons.location_pin,
-          color: ConfigUpdateButton.populatedTextColor,
+          color: colorScheme.onInverseSurface,
         ),
-        decoration: ConfigUpdateButton.populatedDecoration,
-        textColor: ConfigUpdateButton.populatedTextColor,
+        decoration:  TileDecorations.populatedDecoration(colorScheme.surfaceContainerLow),
+        textColor: colorScheme.onInverseSurface,
         onPress: () {
           Location locationHolder = _location!;
           Map<String, dynamic> locationParams = {'location': locationHolder};
@@ -181,9 +192,9 @@ class AutoAddTileState extends State<AutoAddTile> {
         alignment: Alignment.bottomCenter,
         child: FractionallySizedBox(
             alignment: FractionalOffset.center,
-            widthFactor: TileStyles.inputWidthFactor,
+            widthFactor: TileDimensions.inputWidthFactor,
             child: Container(
-              color: Colors.green,
+              color: TileColors.predictiveContainerBg,
               child: Stack(children: <Widget>[
                 AnimatedPositioned(
                   duration: Duration(milliseconds: 500),

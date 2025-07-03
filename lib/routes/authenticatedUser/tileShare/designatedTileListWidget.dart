@@ -20,6 +20,8 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
   final int pageSize = 5;
   bool hasMore = true;
   bool isLoading = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   @override
   void initState() {
     super.initState();
@@ -36,6 +38,12 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
+  }
   void getTiles() {
     tileClusterApi
         .getDesignatedTiles(index: index, pageSize: pageSize)
@@ -87,7 +95,7 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
     return Container(
       height: 40,
       alignment: AlignmentDirectional.topCenter,
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator(color: colorScheme.tertiary),
     );
   }
 

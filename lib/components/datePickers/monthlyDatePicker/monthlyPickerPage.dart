@@ -3,14 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPickerDialog.dart';
-import 'package:tiler_app/styles.dart';
 import 'dart:ui';
 
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return BlocBuilder<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
       builder: (context, state) {
         return InkWell(
@@ -20,13 +21,15 @@ class MonthPickerPage extends StatelessWidget {
             children: [
               Text(
                 DateFormat('MMMM').format(state.selectedDate),
-                style: TileStyles.datePickersMainStyle,
+                style: TileTextStyles.datePickersMainStyle,
               ),
               SizedBox(width: 6.0),
               Transform.rotate(
                 angle: 1.5 * 3.14159,
-                child: Icon(Icons.arrow_back_ios_new_sharp,
-                    size: 24.0, color: TileColors.defaultTextColor),
+                child: Icon(
+                    Icons.arrow_back_ios_new_sharp,
+                    size: 24.0, color: colorScheme.onSurface
+                ),
               ),
             ],
           ),

@@ -5,8 +5,8 @@ import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/constants.dart' as constant;
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -36,6 +36,8 @@ class TileGridWidget extends GridPositionableWidget {
 class TileGridWidgetState extends GridPositionableState {
   late TilerEvent? tilerEvent;
   static final Duration minDuration = Duration(minutes: 20);
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   @override
   void initState() {
     super.initState();
@@ -56,6 +58,13 @@ class TileGridWidgetState extends GridPositionableState {
     this.widgetWidth = 270;
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
+  }
+
   double durationToHeight() {
     Duration duration = minDuration;
     if (this.tilerEvent?.duration != null &&
@@ -72,10 +81,10 @@ class TileGridWidgetState extends GridPositionableState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor:  colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(TileStyles.borderRadius)),
+            top: Radius.circular(TileDimensions.borderRadius)),
       ),
       builder: (BuildContext context) {
         return Container(
@@ -83,7 +92,8 @@ class TileGridWidgetState extends GridPositionableState {
           child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
+                  bottom: MediaQuery.of(context).viewInsets.bottom
+              ),
               child: PreviewDetailsTileWidget(tile),
             ),
           ),
@@ -117,7 +127,7 @@ class TileGridWidgetState extends GridPositionableState {
     }
     if (constant.isDebug) {
       return Container(
-        color: Colors.red,
+        color: colorScheme.onError,
         child: Text("failed to render tiler grid widget"),
       );
     }
@@ -128,10 +138,15 @@ class TileGridWidgetState extends GridPositionableState {
 class _TilerEventInnerGridWidget extends StatelessWidget {
   final TilerEvent tilerEvent;
   final Decoration? decoration;
+
   _TilerEventInnerGridWidget({required this.tilerEvent, this.decoration});
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+
     EdgeInsets gridPadding = EdgeInsets.all(10);
     if (this.tilerEvent.duration.inMilliseconds <=
         TileGridWidgetState.minDuration.inMilliseconds) {
@@ -146,7 +161,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: tileThemeExtension.shadowBase.withValues(alpha:0.1),
               spreadRadius: 0.5,
               blurRadius: 1,
               offset: Offset(0, 1),
@@ -159,9 +174,9 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       if (this.decoration == null) {
         uiDecoration = BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: TileColors.primaryContrastColor,
+          color: colorScheme.surfaceContainerLow,
           border: Border.all(
-            color: TileColors.primaryColor,
+            color: colorScheme.primary,
             width: 1,
           ),
         );
@@ -176,7 +191,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           style: new TextStyle(
             fontSize: 13.0,
             fontFamily: TileTextStyles.rubikFontName,
-            color: new Color(0xFF212121),
+            color:  colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ));
