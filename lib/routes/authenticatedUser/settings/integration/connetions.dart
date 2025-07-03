@@ -108,7 +108,7 @@ class Connections extends StatelessWidget {
         style: isImplemented ? _addStyle : _comingSoonStyle,
         onPressed: isImplemented ? onTap : null,
         child: Text(isImplemented
-            ? AppLocalizations.of(context)!.integrationAdd
+            ? AppLocalizations.of(context)!.integrationConfigure
             : AppLocalizations.of(context)!.comingSoon),
       ),
     );
