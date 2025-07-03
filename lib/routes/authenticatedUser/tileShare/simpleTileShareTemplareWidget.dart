@@ -1,11 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/designatedUserCircle.dart';
-import 'package:tiler_app/styles.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';

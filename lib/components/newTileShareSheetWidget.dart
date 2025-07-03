@@ -5,10 +5,9 @@ import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/util.dart';
 
 class NewTileShareSheetWidget extends StatefulWidget {
@@ -132,7 +131,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             dimension: 5,
           ),
           Padding(
-            padding: TileStyles.inputPadding,
+            padding: TileSpacing.inputPadding,
             child: TextInputWidget(
               placeHolder: AppLocalizations.of(context)!.tileName,
               value: newTile.Name,
@@ -147,7 +146,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             dimension: 5,
           ),
           Padding(
-            padding: TileStyles.inputPadding,
+            padding: TileSpacing.inputPadding,
             child: DurationInputWidget(
               duration: _getDuration(),
               onDurationChange: onDurationChange,
@@ -155,7 +154,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
           ),
           _renderOptionalFields(),
           Padding(
-            padding: TileStyles.inputPadding,
+            padding: TileSpacing.inputPadding,
             child: ContactInputFieldWidget(
                 isReadOnly: false,
                 contentHeight: this.contacts.isEmpty

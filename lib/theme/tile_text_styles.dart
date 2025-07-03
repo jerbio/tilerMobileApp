@@ -5,6 +5,8 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 class TileTextStyles{
   const TileTextStyles._();
   static const String rubikFontName = 'Rubik';
+  static const FontWeight inputFieldFontWeight = FontWeight.w400;
+  static const FontWeight inputFieldHintFontWeight = FontWeight.w100;
 
   static const TextStyle fullScreenTextFieldStyle = TextStyle(
       fontSize: TileDimensions.textFontSize,
@@ -12,20 +14,21 @@ class TileTextStyles{
       fontWeight: FontWeight.w500
   );
 
-  static const TextStyle daySummary = TextStyle(
-    fontSize: TileDimensions.daySummarySize,
-    color: Color.fromRGBO(153, 153, 153, 1),
+  static  TextStyle daySummary({required Color color, double? size}) => TextStyle(
+    fontSize: size??TileDimensions.daySummarySize,
+    color: color,
   );
 
-
-
-  static const TextStyle defaultText = TextStyle(
-    fontSize: TileDimensions.textFontSize,
+  static const TextStyle editTimeOrDateTime = TextStyle(
+    fontSize: 18,
     fontFamily: TileTextStyles.rubikFontName,
   );
 
-  static const TextStyle titleBar = TextStyle(
+  static const TextStyle defaultText = TextStyle(
+    fontSize: 18,
+    fontFamily: rubikFontName,
   );
+
 
   static const TextStyle datePickerMain = TextStyle(
     fontSize: 28,
@@ -34,32 +37,29 @@ class TileTextStyles{
 
   static const TextStyle datePickerSave = TextStyle(
     fontFamily: TileTextStyles.rubikFontName,
-    // color: TileColors.primaryColor,
   );
 
-  static const TextStyle input = TextStyle(
-    fontSize: TileDimensions.inputFontSize,
-    fontFamily: TileTextStyles.rubikFontName,
-    color: Color.fromRGBO(40, 40, 40, 1), // Use const color
-    fontWeight: FontWeight.w400,
-  );
 
-  static const TextStyle inputHint = TextStyle(
-    color: Color.fromRGBO(180, 180, 180, 1),
-    fontSize: TileDimensions.textFontSize,
-    fontFamily: TileTextStyles.rubikFontName,
-    fontWeight: FontWeight.w100,
-  );
   static const  datePickersSaveStyle=
   TextStyle(fontFamily: rubikFontName);
-  static const datePickersMainStyle =
-  TextStyle(fontSize: 28.0, fontWeight: FontWeight.bold);
-  static TextStyle daySummaryStyle = const TextStyle(
-      fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
 
-
-  static const TextStyle defaultTextStyle = TextStyle(
-  fontSize: 18,
-  fontFamily: rubikFontName,
+  static const datePickersMain =
+  TextStyle(
+      fontSize: 28.0,
+      fontWeight: FontWeight.bold
   );
+
+  static TextStyle inputTextStyle(Color color) => TextStyle(
+    fontSize: TileDimensions.inputFontSize,
+    fontFamily: TileTextStyles.rubikFontName,
+    color: color,
+  );
+
+  static const appBar=TextStyle(
+    fontWeight: FontWeight.w800,
+    color: TileColors.lightContent,
+    fontSize: 22,
+  );
+
+
 }

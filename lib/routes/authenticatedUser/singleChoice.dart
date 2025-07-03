@@ -25,23 +25,24 @@ class _SingleChoiceState extends State<SingleChoice> {
     final colorScheme = theme.colorScheme;
     return SegmentedButton<TilePriority>(
       style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
+          foregroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState
+                  .selected)) {
                 return colorScheme.onPrimary;
               }
               return colorScheme.primary;
             },
           ),
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.selected)) {
                 return colorScheme.primary;
               }
               return Colors.transparent;
             },
           ),
-          side: MaterialStateBorderSide.resolveWith(
+          side: WidgetStateBorderSide.resolveWith(
               (states) => BorderSide(color: colorScheme.primary))),
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(

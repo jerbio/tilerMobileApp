@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthlyRibbon extends StatelessWidget {
   @override

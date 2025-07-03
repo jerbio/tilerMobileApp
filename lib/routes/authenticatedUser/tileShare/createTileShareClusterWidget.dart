@@ -10,9 +10,9 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/util.dart';
 
 class CreateTileShareClusterWidget extends StatefulWidget {
@@ -66,7 +66,7 @@ class _CreateTileShareClusterWidgetState
       updateProceed();
     };
     return Padding(
-      padding: TileStyles.inputPadding,
+      padding: TileSpacing.inputPadding,
       child: TextInputWidget(
         onTextChange: onClusterNameChange,
         value: tileClusterData.name,
@@ -213,7 +213,7 @@ class _CreateTileShareClusterWidgetState
 
   Widget duration() {
     return Padding(
-      padding: TileStyles.inputPadding,
+      padding: TileSpacing.inputPadding,
       child: DurationInputWidget(
         onDurationChange: onDurationChange,
         duration: _duration,
@@ -223,7 +223,7 @@ class _CreateTileShareClusterWidgetState
 
   Widget deadline() {
     Widget deadlineContainer = Padding(
-      padding: TileStyles.inputPadding,
+      padding: TileSpacing.inputPadding,
       child: DateInputWidget(
         placeHolder: AppLocalizations.of(context)!.deadline_anytime,
         time: this._endTime,
@@ -259,7 +259,7 @@ class _CreateTileShareClusterWidgetState
           },
           icon: Icon(
               Icons.bento_outlined,
-              color: colorScheme.onInverseSurface
+              color: colorScheme.onPrimary
           ),
           label: SizedBox.shrink());
     }

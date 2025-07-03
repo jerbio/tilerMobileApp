@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -78,7 +77,7 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
             height: TileDimensions.inputHeight,
             decoration: BoxDecoration(
                 color: colorScheme.surfaceContainerLow,
-                borderRadius: TileStyles.inputFieldBorderRadius,
+                borderRadius: TileDimensions.inputFieldBorderRadius,
                 boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowHigh)]),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -100,8 +99,8 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
                           color: colorScheme.onSurface,
                           fontWeight: (_duration ?? Duration.zero).inSeconds >
                                   Duration.secondsPerMinute
-                              ? TileStyles.inputFieldFontWeight
-                              : TileStyles.inputFieldHintFontWeight,
+                              ? TileTextStyles.inputFieldFontWeight
+                              : TileTextStyles.inputFieldHintFontWeight,
                         ),
                       ),
                     ))

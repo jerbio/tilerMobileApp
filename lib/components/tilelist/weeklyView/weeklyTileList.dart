@@ -14,7 +14,8 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
@@ -33,6 +34,7 @@ class _WeeklyTileListState extends TileListState {
   List<Widget> rowItems = [];
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -48,6 +50,7 @@ class _WeeklyTileListState extends TileListState {
   void didChangeDependencies() {
     theme=Theme.of(context);
     colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -114,7 +117,7 @@ class _WeeklyTileListState extends TileListState {
                     Icon(Icons.error, color: colorScheme.error, size: 20.0),
                     Text(
                       (dayData.nonViable?.length ?? 0).toString(),
-                      style: TileTextStyles.daySummaryStyle.copyWith(fontSize: 20),
+                      style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh, size:20),
                     )
                   ],
                 ),
@@ -221,8 +224,8 @@ class _WeeklyTileListState extends TileListState {
                   children: rowItems,
                 ),
                 MediaQuery.of(context).orientation == Orientation.landscape
-                    ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                    : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles,
+                    ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                    : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
               ],
             ),
           ),

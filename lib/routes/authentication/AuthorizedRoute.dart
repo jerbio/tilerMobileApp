@@ -21,7 +21,6 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
-import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -437,8 +436,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     //ey: not really used
     dayStatusWidget
         .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
-    print('outline Color(0x${colorScheme.shadow.value.toRadixString(16).toUpperCase()}) '
-        'outlineVariant Color(0x${colorScheme.outlineVariant.value.toRadixString(16).toUpperCase()})');
+
 
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {

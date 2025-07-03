@@ -32,7 +32,7 @@ import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -450,7 +450,7 @@ class _EditTileState extends State<EditTile> {
           );
         },
         style: ButtonStyle(
-            padding: MaterialStateProperty.resolveWith(
+            padding: WidgetStateProperty.resolveWith(
                 (states) => EdgeInsets.all(0))),
         child: Stack(
           children: [

@@ -185,8 +185,8 @@ class Settings extends StatelessWidget {
                   activeColor: Colors.black,
                   inactiveTrackColor: Colors.grey.shade300,
                   activeTrackColor: Colors.black,
-                  thumbColor: MaterialStateProperty.all(Colors.white),
-                  thumbIcon: MaterialStateProperty.resolveWith((states) {
+                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  thumbIcon: WidgetStateProperty.resolveWith((states) {
                     return Icon(
                       state.isDarkMode
                           ? Icons.nightlight_round

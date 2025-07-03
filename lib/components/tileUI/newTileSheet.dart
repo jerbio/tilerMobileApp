@@ -16,10 +16,10 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
@@ -120,7 +120,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
 
   Widget _renderOptionalFields() {
     return Padding(
-      padding: TileStyles.inputPadding,
+      padding: TileSpacing.inputPadding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -513,7 +513,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                     dimension: 5,
                   ),
                   Padding(
-                    padding: TileStyles.inputPadding,
+                    padding: TileSpacing.inputPadding,
                     child: TextInputWidget(
                       placeHolder: AppLocalizations.of(context)!.tileName,
                       value: newTile.Name,
@@ -524,7 +524,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                     dimension: 5,
                   ),
                   Padding(
-                    padding: TileStyles.inputPadding,
+                    padding: TileSpacing.inputPadding,
                     child: DurationInputWidget(
                       duration: _getDuration(),
                       onDurationChange: onDurationChange,

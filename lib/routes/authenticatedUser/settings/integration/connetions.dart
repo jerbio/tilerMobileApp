@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 import 'bloc/integrations_bloc.dart';
 
@@ -109,7 +109,7 @@ class Connections extends StatelessWidget {
 
     ButtonStyle _comingSoonStyle = TextButton.styleFrom(
       backgroundColor:   tileThemeExtension.onSurfaceVariantLow,
-      foregroundColor:tileThemeExtension.onSurfaceVariantHigh,
+      foregroundColor:tileThemeExtension.onSurfaceVariantHighest,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
