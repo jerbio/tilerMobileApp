@@ -318,16 +318,16 @@ SPEC CHECKSUMS:
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   maps_launcher: 2e5b6a2d664ec6c27f82ffa81b74228d770ab203
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  onesignal_flutter: 6596144e1f08756a2c402047366c867a62b0f6f1
+  onesignal_flutter: c4442bab25faaf3a3ab77cdcd33f4507f10b05b8
   OneSignalXCFramework: 1a3b28dfbff23aabce585796d23c1bef37772774
-  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   rive_common: 4743dbfd2911c99066547a3c6454681e0fa907df
   shared_preferences_foundation: fcdcbc04712aee1108ac7fda236f363274528f78
   Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
-  url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
-  webview_flutter_wkwebview: 45a041c7831641076618876de3ba75c712860c6b
+  url_launcher_ios: 5334b05cef931de560670eeae103fd3e431ac3fe
+  webview_flutter_wkwebview: 2a23822e9039b7b1bc52e5add778e5d89ad488d1
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: 4c14b2d125a67beef06f1b1d3db19e5fe927dbca
 
 COCOAPODS: 1.16.2

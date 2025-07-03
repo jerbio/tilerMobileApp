@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 
-import '../../../util.dart';
+
 
 class EditTileDate extends StatefulWidget {
   DateTime time;
@@ -70,6 +70,8 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     TextStyle textStyle =
         this.widget.textStyle ?? TileStyles.editTimeOrDateTimeStyle;
     String locale = Localizations.localeOf(context).languageCode;
@@ -85,7 +87,7 @@ class _EditTileDateState extends State<EditTileDate> {
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
-                    color: TileColors.iconColor,
+                    color: tileThemeExtension.onSurfaceQuaternary,
                     size: 25,
                   )),
               Text(

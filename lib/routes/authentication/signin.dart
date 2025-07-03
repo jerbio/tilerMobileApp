@@ -21,6 +21,8 @@ class SignInRouteState extends State<SignInRoute> {
   // current value of the TextField.
   final userNameEditingController = TextEditingController();
   final passwordEditingController = TextEditingController();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   void adHocSignin() async {
     UserPasswordAuthenticationData authenticationData =
@@ -58,6 +60,13 @@ class SignInRouteState extends State<SignInRoute> {
     super.dispose();
   }
 
+  @override
+  void didChangeDependencies() {
+   theme=Theme.of(context);
+   colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
+  }
+
   bool _keyboardIsVisible() {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
@@ -87,15 +96,15 @@ class SignInRouteState extends State<SignInRoute> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Colors.white,
-                    Colors.white,
-                    Colors.white,
-                    Color.fromRGBO(179, 194, 242, 1),
-                    Color.fromRGBO(179, 194, 242, 1),
-                    Color.fromRGBO(179, 194, 242, 1),
-                    Color.fromRGBO(239, 48, 84, 1),
-                    Color.fromRGBO(239, 48, 84, 1),
-                    Color.fromRGBO(239, 48, 84, 1)
+                    colorScheme.surfaceContainerLow,
+                    colorScheme.surfaceContainerLow,
+                    colorScheme.surfaceContainerLow,
+                    colorScheme.tertiaryContainer,
+                    colorScheme.tertiaryContainer,
+                    colorScheme.tertiaryContainer,
+                    colorScheme.primary,
+                    colorScheme.primary,
+                    colorScheme.primary,
                   ],
                 ),
               ),

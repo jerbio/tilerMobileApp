@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/util.dart';
 
 class DayButton extends StatefulWidget {
@@ -32,11 +31,12 @@ class _DayButtonState extends State<DayButton> {
 
   @override
   Widget build(BuildContext context) {
-    var decoration =
-        this.widget.isSelected ? TileStyles.ribbonsButtonSelectedDecoration : TileStyles.ribbonsButtonDefaultDecoration;
+    final theme= Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    var decoration = this.widget.isSelected ? TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary) : TileDecorations.ribbonsButtonDefaultDecoration(colorScheme.surfaceContainer);
     double buttonHeight = 40 * (this.widget.isSelected ? 1.3 : 1);
     double buttonWidth = 40 * (this.widget.isSelected ? 1.3 : 1);
-
     List<Widget> childWidgets = [
       Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -48,25 +48,29 @@ class _DayButtonState extends State<DayButton> {
           DateFormat(DateFormat.DAY).format(this.dateTime),
           style: TextStyle(
               fontSize: 20,
-              fontFamily: TileTextStyles.rubikFontName,
               fontWeight: this.widget.isSelected ? FontWeight.w500 : null,
-              color: this.widget.isSelected ? Colors.white : Colors.grey),
-        ),
+              color: this.widget.isSelected
+                  ? colorScheme.onPrimary
+                  : colorScheme.onSurfaceVariant
+          ),
+        )
       ),
       Container(
           padding:
               this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
           child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
               style: TextStyle(
-                  fontFamily: TileTextStyles.rubikFontName,
-                  color: this.widget.isSelected ? Colors.black : Colors.grey)))
+                  color: this.widget.isSelected ? colorScheme.onSurface: colorScheme.onSurfaceVariant,
+              ),
+          )
+      ,)
     ];
     if (this.widget.showMonth) {
       childWidgets.add(Container(
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style: TextStyle(
-              color: this.widget.isSelected ? Colors.black : Colors.grey),
+              color: this.widget.isSelected ? colorScheme.onSurface :  colorScheme.onSurfaceVariant),
         ),
       ));
     }

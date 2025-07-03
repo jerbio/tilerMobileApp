@@ -17,6 +17,8 @@ class AnalysisCheckState extends StatelessWidget {
   final double height;
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     if (isPass) {
       return Container(
         width: height / (height / 24),
@@ -68,7 +70,7 @@ class AnalysisCheckState extends StatelessWidget {
       height: height / (height / 24),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(height / (height / 8)),
-        color: Color(0xFF1F1F1F).withOpacity(0.05),
+        color:colorScheme.onSurface.withValues(alpha: 0.05),
       ),
       child: Center(
         child: SvgPicture.asset(

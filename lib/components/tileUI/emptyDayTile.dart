@@ -8,11 +8,9 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-
 import '../../constants.dart' as Constants;
 
 class EmptyDayTile extends StatefulWidget {
@@ -27,6 +25,9 @@ class EmptyDayTileState extends State<EmptyDayTile> {
   late List<AutoTile> autoTiles;
   late int emptyDayIndex;
   final AppinioSwiperController controller = AppinioSwiperController();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     Map<int, List<AutoTile>> autoTilesByDuration =
@@ -52,6 +53,13 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     }
     super.initState();
     this.disableTileListCarousel();
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
   }
 
   void disableTileListCarousel() {
@@ -101,21 +109,22 @@ class EmptyDayTileState extends State<EmptyDayTile> {
             children: [
               Icon(
                 Icons.calendar_month,
-                color: TileColors.primaryColor,
+                color: colorScheme.primary,
               ),
               dayIndex > this.emptyDayIndex
                   ? Icon(
                       Icons.arrow_right_outlined,
-                      color: TileColors.primaryColor,
+                      color:colorScheme.primary,
                     )
                   : Icon(Icons.arrow_left_outlined,
-                      color: TileColors.primaryColor),
+                      color: colorScheme.primary),
               Text(
                 DateFormat('d MMM').format(Utility.getTimeFromIndex(dayIndex)),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontFamily: TileTextStyles.rubikFontName,
-                    color: TileColors.primaryColor),
+                    color: colorScheme.primary
+                ),
               )
             ],
           ),
@@ -140,18 +149,18 @@ class EmptyDayTileState extends State<EmptyDayTile> {
               Center(
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 2),
+                    border: Border.all(color: colorScheme.onInverseSurface, width: 2),
                     borderRadius: BorderRadius.circular(20),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.topRight,
                       colors: [
-                        TileColors.primaryColorHSL.toColor().withOpacity(0.75),
-                        TileColors.primaryColorHSL
+                        colorScheme.primary.withValues(alpha: 0.75),
+                        //ey: re check
+                        colorScheme.primary
                             .withLightness(
-                            TileColors.primaryColorHSL.lightness + .2)
-                            .toColor()
-                            .withOpacity(0.75),
+                            HSLColor.fromColor(colorScheme.primary).lightness + .2)
+                            .withValues(alpha: 0.75),
                       ],
                     ),
                   ),
@@ -171,7 +180,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                           children: [
                             Icon(
                               Icons.add,
-                              color: TileColors.primaryContrastColor,
+                              color: colorScheme.onPrimary,
                               size: 60,
                             ),
                             Container(
@@ -179,12 +188,15 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               child: Text(
                                 AppLocalizations.of(context)!.addTile,
                                 style: TextStyle(
-                                    fontSize: 45, color: Colors.white),
+                                    fontSize: 45,
+                                    color: colorScheme.onPrimary
+                                ),
                               ),
                             )
                           ],
                         ),
-                      )),
+                      )
+                  ),
                 ),
               ),
               AppinioSwiper(
@@ -250,10 +262,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(10),
                                   bottomRight: Radius.circular(10)),
-                              color: Colors.white,
+                              color: colorScheme.surfaceContainerLow,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black87.withOpacity(0.2),
+                                  color:  tileThemeExtension.shadowHighest.withValues(alpha: 0.2),
                                   spreadRadius: 1,
                                   blurRadius: 1,
                                   blurStyle: BlurStyle.normal,
@@ -270,9 +282,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                             EdgeInsets.fromLTRB(20, 10, 20, 0),
                                         child: Text(
                                           autoTile.description ?? "",
-                                          style: TileStyles
-                                              .fullScreenTextFieldStyle,
-                                        ))),
+                                          style: TileTextStyles.fullScreenTextFieldStyle
+                                        ),
+                                    ),
+                                ),
                                 Flexible(
                                     child: Container(
                                         padding:
@@ -282,13 +295,16 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               ? '   '
                                               : (autoTile.duration?.toHuman ??
                                                   ''),
-                                          style: TextStyle(
-                                              color: Colors.grey,
+                                          style:TextStyle(
+                                              color: colorScheme.onSurfaceVariant,
                                               fontSize: 16,
                                               fontFamily:
                                               TileTextStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500),
-                                        ))),
+                                              fontWeight: FontWeight.w500
+                                          ),
+                                        )
+                                    )
+                                ),
                                 Flexible(
                                     child: Container(
                                         padding:
@@ -301,12 +317,15 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                                       .swipeRightToTileIt +
                                                   ')',
                                           style: TextStyle(
-                                              color: Colors.grey,
+                                              color: colorScheme.onSurfaceVariant,
                                               fontSize: 16,
                                               fontFamily:
-                                                  TileTextStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500),
-                                        )))
+                                              TileTextStyles.rubikFontName,
+                                              fontWeight: FontWeight.w500
+                                          ),
+                                        )
+                                    )
+                                )
                               ],
                             ),
                           ),

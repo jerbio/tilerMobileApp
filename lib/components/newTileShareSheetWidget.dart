@@ -6,8 +6,9 @@ import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 class NewTileShareSheetWidget extends StatefulWidget {
@@ -22,6 +23,7 @@ class NewTileShareSheetWidget extends StatefulWidget {
 class NewTileSheetState extends State<NewTileShareSheetWidget> {
   late final NewTile newTile;
   late List<Contact> contacts = [];
+
   @override
   void initState() {
     super.initState();
@@ -96,9 +98,11 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: TileColors.primaryContrastColor,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
@@ -108,7 +112,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
         children: [
           Container(
             decoration: BoxDecoration(
-              color: TileColors.appBarColor,
+              color: colorScheme.primary,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(15),
                 topRight: Radius.circular(15),
@@ -118,9 +122,8 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             child: Text(
               AppLocalizations.of(context)!.addTilette,
               style: TextStyle(
-                color: TileColors.appBarTextColor,
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: TileStyles.inputFontSize,
+                color: colorScheme.onPrimary,
+                fontSize: TileDimensions.inputFontSize,
               ),
             ),
             alignment: Alignment.centerLeft,
@@ -129,7 +132,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             dimension: 5,
           ),
           Padding(
-            padding: TileStyles.inpuPadding,
+            padding: TileStyles.inputPadding,
             child: TextInputWidget(
               placeHolder: AppLocalizations.of(context)!.tileName,
               value: newTile.Name,
@@ -144,7 +147,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
             dimension: 5,
           ),
           Padding(
-            padding: TileStyles.inpuPadding,
+            padding: TileStyles.inputPadding,
             child: DurationInputWidget(
               duration: _getDuration(),
               onDurationChange: onDurationChange,
@@ -152,7 +155,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
           ),
           _renderOptionalFields(),
           Padding(
-            padding: TileStyles.inpuPadding,
+            padding: TileStyles.inputPadding,
             child: ContactInputFieldWidget(
                 isReadOnly: false,
                 contentHeight: this.contacts.isEmpty
@@ -176,7 +179,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
                       this.widget.onAddTile!(newTile);
                     }
                   },
-                  style: TileStyles.enabledButtonStyle,
+                  style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
                   icon: Icon(Icons.check),
                   label: Text(this.widget.newTile == null
                       ? AppLocalizations.of(context)!.add

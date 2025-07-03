@@ -2,10 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../constants.dart';
-import '../../util.dart';
 import 'timeScrub.dart';
+
 
 class SleepTileWidget extends StatefulWidget {
   late Timeline timeline;
@@ -48,18 +52,21 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
     var timeline = widget.timeline;
-    var tileBackGroundColor = Color.fromRGBO(51, 51, 51, 1);
 
     var sleepName = Container(
       margin: const EdgeInsets.fromLTRB(25, 0, 00, 0),
       child: Text(
         'Sleep',
-        style: TextStyle(
+        style:TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
             fontSize: 20,
-            fontFamily: 'Rubik',
             fontWeight: FontWeight.bold,
-            color: Colors.white),
+            color: colorScheme.onInverseSurface
+        )
       ),
     );
 
@@ -68,7 +75,7 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
       height: 76,
       margin: const EdgeInsets.fromLTRB(25, 0, 20, 0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(38),
       ),
       child: Image.asset(
@@ -110,19 +117,19 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
       child: Material(
           type: MaterialType.transparency,
           child: FractionallySizedBox(
-              widthFactor: TileStyles.tileWidthRatio,
+              widthFactor: TileDimensions.tileWidthRatio,
               child: Container(
                 height: 350,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surfaceContainerLow,
                   border: Border.all(
-                    color: Colors.white,
+                    color: colorScheme.onInverseSurface,
                     width: 5,
                   ),
-                  borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
+                      color: tileThemeExtension!.shadowBase.withValues(alpha: 0.5),
                       spreadRadius: 10,
                       blurRadius: 20,
                       offset: Offset(0, 1),
@@ -132,13 +139,13 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
                 child: Container(
                     padding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     decoration: BoxDecoration(
-                      color: tileBackGroundColor,
+                      color: TileColors.sleepBackground,
                       border: Border.all(
-                        color: Colors.white,
+                        color: colorScheme.onInverseSurface,
                         width: 0.5,
                       ),
                       borderRadius:
-                          BorderRadius.circular(TileStyles.borderRadius),
+                          BorderRadius.circular(TileDimensions.borderRadius),
                     ),
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),

@@ -14,7 +14,6 @@ class TileDayGrid extends DayGridWidget {
 
 class TileDayGridState extends State<DayGridWidget> {
   @override
-  @override
   Widget build(BuildContext context) {
     List<TimeCellWidget> allDayTimeTiles = [];
     List<TimeCellWidget> tileTimeCell = [];

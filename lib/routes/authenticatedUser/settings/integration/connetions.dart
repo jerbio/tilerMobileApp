@@ -3,9 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 
 import 'bloc/integrations_bloc.dart';
 
@@ -16,10 +15,15 @@ class Connections extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
     return CancelAndProceedTemplateWidget(
       routeName: routeName,
-      appBar: TileStyles.CancelAndProceedAppBar(
-          AppLocalizations.of(context)!.connections),
+      appBar:AppBar(
+        title: Text(AppLocalizations.of(context)!.connections),
+        automaticallyImplyLeading: false,
+      ),
       child: ListView(
         children: [
           const SizedBox(height: 16),
@@ -28,26 +32,36 @@ class Connections extends StatelessWidget {
             title: AppLocalizations.of(context)!.googleCalendar,
             onTap: () =>
                 _navigateToIntegration(context, IntegrationType.googleCalendar),
+              colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/microsoft.svg',
             title: AppLocalizations.of(context)!.microsoft,
             isComingSoon: true,
+              colorScheme: colorScheme,
+              tileThemeExtension: tileThemeExtension!
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/apple.svg',
             title: AppLocalizations.of(context)!.appleCalendar,
             isComingSoon: true,
+              colorScheme: colorScheme,
+              tileThemeExtension: tileThemeExtension!
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/googleTasks.svg',
             title: AppLocalizations.of(context)!.googleTasks,
             isComingSoon: true,
+              colorScheme: colorScheme,
+              tileThemeExtension: tileThemeExtension!
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/slack.svg',
             title: AppLocalizations.of(context)!.slack,
             isComingSoon: true,
+            colorScheme: colorScheme,
+              tileThemeExtension: tileThemeExtension!
           ),
         ],
       ),
@@ -57,40 +71,45 @@ class Connections extends StatelessWidget {
   Widget _buildIntegrationRow({
     required String iconPath,
     required String title,
+    required ColorScheme colorScheme,
+    required TileThemeExtension tileThemeExtension,
     bool isComingSoon = false,
     VoidCallback? onTap,
+
+
   }) {
     return ListTile(
       leading: SvgPicture.asset(
         iconPath,
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
       ),
       title: Text(
         title,
-        style: const TextStyle(
+        style:  const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
         ),
       ),
-      trailing: _buildAddButton(onTap, !isComingSoon),
+      trailing: _buildAddButton(onTap, !isComingSoon,colorScheme,tileThemeExtension),
       contentPadding: EdgeInsets.symmetric(horizontal: 30),
     );
   }
 
-  Widget _buildAddButton(VoidCallback? onTap, bool isImplemented) {
+  Widget _buildAddButton(VoidCallback? onTap, bool isImplemented,ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
     ButtonStyle _addStyle = TextButton.styleFrom(
-      foregroundColor: Colors.black,
+      foregroundColor:colorScheme.onSurface,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: TileColors.primaryColor),
+        side: BorderSide(color: colorScheme.primary),
       ),
     );
 
     ButtonStyle _comingSoonStyle = TextButton.styleFrom(
-      backgroundColor: const Color(0xFFEEEEEE),
-      foregroundColor: const Color(0xFF999999),
+      backgroundColor:   tileThemeExtension.onSurfaceVariantLow,
+      foregroundColor:tileThemeExtension.onSurfaceVariantHigh,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -30,6 +29,9 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
   String? tileName;
   DateTime? endTime;
   final double modalHeight = 216;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
@@ -37,6 +39,13 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
     endTime = this.widget.endTime;
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+  }
   void onNameChange(String? name) {
     setState(() {
       tileName = name;
@@ -55,7 +64,6 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         time: endTime!,
         onInputChange: onTimeUpdate,
         textStyle: const TextStyle(
-            // fontSize: 20,
             fontFamily: TileTextStyles.rubikFontName),
       );
     } else {
@@ -64,7 +72,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           Icon(
             Icons.calendar_month,
-            color: TileColors.iconColor,
+            color: tileThemeExtension.onSurfaceQuaternary,
           ),
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
@@ -94,10 +102,10 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                 style: endTime == null
                     ? TextStyle(
                         fontFamily: TileTextStyles.rubikFontName,
-                        color: TileColors.inactiveTextColor)
+                        color: tileThemeExtension.onSurfaceHint)
                     : TextStyle(
                         fontFamily: TileTextStyles.rubikFontName,
-                        color: Colors.black),
+                        color: colorScheme.onSurface),
               ),
             ),
           ),
@@ -109,9 +117,9 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
   @override
   Widget build(BuildContext context) {
     final Container heightSpacer = Container(
-      color: Colors.white,
-      child: const ColoredBox(
-        color: Colors.white,
+      color: colorScheme.surfaceContainerLow,
+      child:  ColoredBox(
+        color: colorScheme.surfaceContainerLow,
       ),
     );
     return Container(
@@ -126,7 +134,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           this.widget.appBar ?? SizedBox.shrink(),
           Container(
-            color: Colors.white,
+            color:colorScheme.surfaceContainerLow,
             child: EditTileName(
               tileName: tileName ?? "",
               onInputChange: onNameChange,
@@ -134,16 +142,16 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
               textStyle: TextStyle(
                   fontSize: 15,
                   fontFamily: TileTextStyles.rubikFontName,
-                  color: Color.fromRGBO(31, 31, 31, 1)),
+              ),
             ),
           ),
           heightSpacer,
-          Container(color: Colors.white, child: renderEndtime()),
+          Container(color: colorScheme.surfaceContainerLow, child: renderEndtime()),
           heightSpacer,
           tileName != this.widget.name || endTime != this.widget.endTime
               ? Container(
                   width: MediaQuery.sizeOf(context).width,
-                  color: Colors.white,
+                  color:colorScheme.surfaceContainerLow,
                   child: ElevatedButton.icon(
                       onPressed: () {
                         if ((tileName.isNot_NullEmptyOrWhiteSpace() &&
@@ -158,7 +166,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                           }
                         }
                       },
-                      style: TileStyles.enabledButtonStyle,
+                      style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
                       icon: Icon(Icons.check),
                       label: Text(AppLocalizations.of(context)!.update)),
                 )

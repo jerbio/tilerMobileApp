@@ -36,8 +36,8 @@ class _ForecastState extends State<TileForecast> {
                 AppLocalizations.of(context)!
                     .numberOfDayForecast(forecastDays.length.toString()),
                 style: TextStyle(
-                    fontSize: 17,
                     fontFamily: TileTextStyles.rubikFontName,
+                    fontSize: 17,
                     fontWeight: FontWeight.w500)),
           ),
         ],

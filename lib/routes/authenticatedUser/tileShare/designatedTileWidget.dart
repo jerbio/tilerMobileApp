@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
@@ -11,8 +10,9 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.d
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -36,6 +36,9 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   String _responseMessage = '';
   late DesignatedTile designatedTile;
   ForecastResponse? forecastResponse = null;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
@@ -49,6 +52,14 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       return this.context;
     });
     this.designatedTile = this.widget.designatedTile;
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
   }
 
   // Function to handle API calls with status updates
@@ -105,7 +116,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       retValue = ElevatedButton.styleFrom(
           padding: EdgeInsets.fromLTRB(lrPadding, 5, lrPadding, 5),
           backgroundColor: defaultColor,
-          foregroundColor: Colors.white);
+          foregroundColor: colorScheme.onPrimary);
     }
     return retValue;
   }
@@ -113,9 +124,12 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
   Widget renderButtons() {
     const double iconSize = 14;
     const buttonTextStyle =
-        TextStyle(fontSize: 12, fontFamily: TileTextStyles.rubikFontName);
+        TextStyle(
+          fontSize: 12,
+          fontFamily: TileTextStyles.rubikFontName,
+        );
     if (_isLoading)
-      return CircularProgressIndicator();
+      return CircularProgressIndicator(color: colorScheme.tertiary);
     else
       return Container(
         child: Column(
@@ -132,7 +146,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                 style: generateButtonStyle(
                     this.designatedTile.invitationStatus ==
                         InvitationStatus.accepted.name.toString(),
-                    Colors.green)),
+                    TileColors.acceptedTileShare)),
             ElevatedButton.icon(
                 onPressed: _handleDecline,
                 icon: Icon(Icons.close, size: iconSize),
@@ -143,7 +157,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                 style: generateButtonStyle(
                     this.designatedTile.invitationStatus ==
                         InvitationStatus.declined.name.toString(),
-                    TileColors.primaryColor)),
+                    colorScheme.primary)),
           ],
         ),
       );
@@ -160,7 +174,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black12,
+        color: tileThemeExtension.surfaceContainerGreater,
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(5),
             topRight: Radius.circular(5),
@@ -198,7 +212,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     const double iconSize = 14;
     const spaceDivider = SizedBox(height: 5);
     const supplementalTextStyle =
-        TextStyle(fontSize: 11.6, fontFamily: TileTextStyles.rubikFontName);
+        TextStyle(
+            fontSize: 11.6,
+            fontFamily: TileTextStyles.rubikFontName
+        );
     String? designatedUsename = designatedTile.user?.username;
     print(designatedTile.invitationStatus.toString());
     return Expanded(
@@ -211,7 +228,8 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.w500,
-                fontFamily: TileTextStyles.rubikFontName),
+                fontFamily: TileTextStyles.rubikFontName
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -244,7 +262,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                             padding: EdgeInsets.all(2),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(
-                                  TileStyles.borderRadius),
+                                  TileDimensions.borderRadius),
                             ),
                             child: Text(
                               designatedTile.invitationStatus!.capitalize(),
@@ -256,8 +274,9 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                                           InvitationStatus.accepted.name
                                               .toString()
                                               .toLowerCase()
-                                      ? Colors.green
-                                      : Colors.red),
+                                      ? TileColors.acceptedTileShare
+                                  //ey: re check
+                                      : colorScheme.error),
                             ),
                           )
                         : SizedBox.shrink()
@@ -271,9 +290,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             Text(
               _responseMessage,
               style: TextStyle(
-                  color: Colors.blue,
+                  color: TileColors.responseTileShare,
                   fontWeight: FontWeight.bold,
-                  fontFamily: TileTextStyles.rubikFontName),
+                  fontFamily: TileTextStyles.rubikFontName
+              ),
             ),
           spaceDivider,
           Row(
@@ -283,7 +303,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                 child: ElevatedButton(
                     child: FaIcon(
                       FontAwesomeIcons.noteSticky,
-                      color: TileColors.primaryColor,
+                      color: colorScheme.primary,
                       size: iconSize,
                     ),
                     onPressed: () {
@@ -317,26 +337,26 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                       },
                       icon: Icon(
                         Icons.style_outlined,
-                        color: TileColors.primaryColor,
+                        color: colorScheme.primary,
                         size: iconSize,
                       ),
                       label: this.designatedTile.completionPercentage != null
                           ? Text(
                               "${this.designatedTile.completionPercentage!.round()}%",
                               style: TextStyle(
-                                  fontSize: 10,
                                   fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 10,
                                   color: this
                                               .designatedTile
                                               .completionPercentage! >
                                           66.66
-                                      ? Colors.green
+                                      ? TileColors.acceptedTileShare
                                       : this
                                                   .designatedTile
                                                   .completionPercentage! >
                                               33.33
-                                          ? Colors.orange
-                                          : TileColors.primaryColor),
+                                          ? TileColors.progressMedium
+                                          : colorScheme.primary),
                             )
                           : SizedBox.shrink()),
                 ),
@@ -416,11 +436,11 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
       return Padding(
         padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
         child: _isForeCastLoading
-            ? CircularProgressIndicator()
+            ? CircularProgressIndicator(color: colorScheme.tertiary)
             : ElevatedButton(
                 child: FaIcon(
-                  TileStyles.forecastIcon,
-                  color: TileColors.primaryColor,
+                  FontAwesomeIcons.binoculars,
+                  color: colorScheme.primary,
                   size: iconSize,
                 ),
                 onPressed: onForeCastButtonPress,

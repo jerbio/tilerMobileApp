@@ -13,8 +13,9 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileSha
 import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareDetailWidget extends StatefulWidget {
@@ -55,6 +56,8 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
   ScrollController _contactControllerfinal = ScrollController();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -77,6 +80,12 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       isLoading = true;
       getDesignatedTileShareId(this.widget.designatedTileShareId!);
     }
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Future getTileShareCluster({String? tileShareId}) async {
@@ -165,13 +174,13 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.email_outlined),
-        color: TileColors.primaryContrastColor,
+        color: colorScheme.onPrimary,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: null,
       side: BorderSide.none,
-      backgroundColor: TileColors.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
+      backgroundColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onPrimary,),
     );
   }
 
@@ -196,6 +205,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                 children: [
                   Icon(
                     Icons.calendar_today,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
@@ -203,7 +213,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                     MaterialLocalizations.of(context).formatFullDate(
                         DateTime.fromMillisecondsSinceEpoch(
                             cluster.endTimeInMs!)),
-                    style: TileStyles.defaultTextStyle,
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               )
@@ -216,11 +226,13 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                   Icon(
                     Icons.person_2_outlined,
                     size: 16,
+                    color: colorScheme.onSurface,
                   ),
                   rowSpacer,
                   Text(
                       (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileStyles.defaultTextStyle)
+                      style: TileTextStyles.defaultText,
+                  )
                 ],
               ),
             verticalSpacer,
@@ -247,7 +259,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
   }
 
   Widget renderLoading() {
-    return CircularProgressIndicator();
+    return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
   void renderModal() {
@@ -300,7 +312,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10))),
-                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
                   )
                 else
                   SizedBox.shrink()
@@ -322,7 +334,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
 
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style: TileStyles.enabledButtonStyle,
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },

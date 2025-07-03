@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 import '../../constants.dart' as Constants;
 
 class SearchWidget extends StatefulWidget {
@@ -32,6 +31,17 @@ class SearchWidgetState extends State<SearchWidget> {
   String searchedText = '';
   bool showResponseContainer = false;
   final Container blankResult = Container();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+
+  }
   Future<void> onInputChangeDefault() async {
     Function collapseResultContainer = (seletedObject) {
       setState(() {
@@ -51,7 +61,7 @@ class SearchWidgetState extends State<SearchWidget> {
           });
         }
         BoxDecoration resultContainerDecoration = BoxDecoration(
-          color: TileColors.primaryColorLightHSL.toColor(),
+          color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(10),
               topRight: Radius.circular(10),
@@ -59,7 +69,7 @@ class SearchWidgetState extends State<SearchWidget> {
               bottomRight: Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: Colors.white70.withOpacity(0.2),
+              color: tileThemeExtension.shadowInverseVariant.withValues(alpha: 0.2),
               spreadRadius: 5,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -85,13 +95,11 @@ class SearchWidgetState extends State<SearchWidget> {
                     alignment: Alignment.topLeft,
                     children: [
                       Shimmer.fromColors(
-                          baseColor: TileColors.primaryColorLightHSL
-                              .toColor()
-                              .withAlpha(100),
-                          highlightColor: Colors.white.withAlpha(100),
+                          baseColor: colorScheme.primaryContainer.withAlpha(100),
+                          highlightColor: colorScheme.surfaceContainerLow.withAlpha(100),
                           child: Container(
                             decoration: BoxDecoration(
-                                color: Color.fromRGBO(31, 31, 31, 0.8),
+                                color: colorScheme.onSurface.withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(8)),
                           )),
                       Container(

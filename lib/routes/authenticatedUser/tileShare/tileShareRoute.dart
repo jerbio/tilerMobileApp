@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareListWidget.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareRoute extends StatefulWidget {
@@ -16,23 +15,25 @@ class _TileShareState extends State<TileShareRoute> {
   ValueKey outBoxKey = ValueKey(Utility.getUuid);
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          centerTitle: true,
           leading: TextButton(
+            style: TextButton.styleFrom(
+                foregroundColor:colorScheme.onPrimary
+            ),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileColors.appBarTextColor,
             ),
           ),
-          backgroundColor: TileColors.appBarColor,
           actions: [
             ElevatedButton.icon(
-                style: TileStyles.enabledButtonStyle,
+                style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
                 onPressed: () {
                   Navigator.push(
                       context,
@@ -47,23 +48,27 @@ class _TileShareState extends State<TileShareRoute> {
                 },
                 icon: Icon(
                   Icons.add,
-                  color: TileColors.primaryContrastColor,
+                  color: colorScheme.onPrimary,
                 ),
-                label: SizedBox.shrink())
+                label: SizedBox.shrink()
+            )
           ],
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.share,
-                color: TileColors.appBarTextColor,
+                color: colorScheme.onPrimary,
               ),
               SizedBox.square(
                 dimension: 5,
               ),
               Text(
                 AppLocalizations.of(context)!.tileShare,
-                style: TileStyles.titleBarStyle,
+                style: TextStyle(
+                 color: colorScheme.onPrimary,
+
+                ),
               )
             ],
           ),
@@ -74,11 +79,13 @@ class _TileShareState extends State<TileShareRoute> {
                   children: [
                     Icon(
                       Icons.outbox_outlined,
-                      color: TileColors.primaryContrastColor,
+                      color: colorScheme.onPrimary,
                     ),
                     Text(
                       AppLocalizations.of(context)!.outBound,
-                      style: TileStyles.titleBarStyle,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                      ),
                     )
                   ],
                 ),
@@ -87,16 +94,18 @@ class _TileShareState extends State<TileShareRoute> {
                   icon: Column(
                 children: [
                   Icon(Icons.inbox_outlined,
-                      color: TileColors.primaryContrastColor),
+                    color: colorScheme.onPrimary,),
                   Text(
                     AppLocalizations.of(context)!.inBound,
-                    style: TileStyles.titleBarStyle,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                      )
                   )
                 ],
               )),
             ],
-            dividerColor: TileColors.appBarTextColor,
-            indicatorColor: TileColors.appBarTextColor,
+            dividerColor: colorScheme.onPrimary,
+            indicatorColor: colorScheme.onPrimary,
           ),
         ),
         body: TabBarView(

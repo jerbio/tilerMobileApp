@@ -36,9 +36,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -66,6 +64,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
   late AppLinks _appLinks;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
@@ -105,7 +105,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       return this.context;
     });
   }
-
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
   void openAppLink(Uri uri) {
     RedirectHandler.routePage(context, uri);
   }
@@ -232,6 +237,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return eventNameSearch;
   }
 
+  //ey: not used since isAddButtonClicked is always false
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
       onTap: () {
@@ -273,10 +279,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(TileStyles.borderRadius)),
+            top: Radius.circular(TileDimensions.borderRadius)),
       ),
       builder: (BuildContext context) {
         return Container(
@@ -300,8 +305,117 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
   }
 
+   Widget _buildDailyCurrentDayButton(){
+     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    return Positioned(
+      right: 0,
+      child: GestureDetector(
+        onTap: () {
+          uiDateManagerBloc.onDateButtonTapped(
+              Utility.currentTime(minuteLimitAccuracy: false));
+        },
+        child: Container(
+          height: 50,
+          width: 38,
+          padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: constraints.maxWidth * 0.9,
+                    child: Icon(
+                      FontAwesomeIcons.calendar,
+                      size: constraints.maxWidth,
+                      color:colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: constraints.maxHeight * 0.125,
+                  left: (constraints.maxWidth * 0.05),
+                  child: Center(
+                    child: Container(
+                      height: constraints.maxHeight * 0.55,
+                      width: constraints.maxHeight * 0.55,
+                      child: Center(
+                        child: Text(
+                          (Utility.currentTime().day).toString(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBar(){
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(30),
+        topLeft: Radius.circular(30),
+      ),
+      child: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.share,),
+              label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month,
+              ),
+              label: ''),
+        ],
+        onTap: _onBottomNavigationTap,
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton(){
+    return FloatingActionButton(
+      backgroundColor:colorScheme.surface ,
+      onPressed: () {
+        AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+        displayDialog(MediaQuery.of(context).size);
+      },
+      child: AutoSwitchingWidget(
+        duration: Duration(milliseconds: 1000),
+        children: [
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_BlueBottom.png',
+            ),
+          ),
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_RedBottom.png',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget renderAuthorizedUserPageView() {
-    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    //ey: dayStatusWidget not used
+    //ey: never added to widget tree
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       BlocBuilder<ScheduleBloc, ScheduleState>(
@@ -310,129 +424,32 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             _buildTileList(state.currentView),
             _ribbonCarousel(state.currentView),
             if (state.currentView == AuthorizedRouteTileListPage.Daily)
-              Positioned(
-                right: 0,
-                child: GestureDetector(
-                  onTap: () {
-                    uiDateManagerBloc.onDateButtonTapped(
-                        Utility.currentTime(minuteLimitAccuracy: false));
-                  },
-                  child: Container(
-                    height: 50,
-                    width: 38,
-                    color: TileColors.defaultBackgroundColor,
-                    padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: constraints.maxWidth * 0.9,
-                              child: Icon(
-                                FontAwesomeIcons.calendar,
-                                size: constraints.maxWidth,
-                                color: TileStyles.primaryColor,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: constraints.maxHeight * 0.125,
-                            left: (constraints.maxWidth * 0.05),
-                            child: Center(
-                              child: Container(
-                                height: constraints.maxHeight * 0.55,
-                                width: constraints.maxHeight * 0.55,
-                                child: Center(
-                                  child: Text(
-                                    (Utility.currentTime().day).toString(),
-                                    style: TextStyle(
-                                      fontFamily: TileStyles.rubikFontName,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              _buildDailyCurrentDayButton()
           ]);
         },
       ),
     ];
+    //ey: not used since isAddButtonClicked always false
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
     }
+
+    //ey: not really used
     dayStatusWidget
         .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
+    print('outline Color(0x${colorScheme.shadow.value.toRadixString(16).toUpperCase()}) '
+        'outlineVariant Color(0x${colorScheme.outlineVariant.value.toRadixString(16).toUpperCase()})');
 
-    // Bottom Navbar Widget
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = ClipRRect(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(30),
-          topLeft: Radius.circular(30),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                TileColors.defaultBackgroundColor,
-                TileColors.defaultBackgroundColor,
-                TileColors.defaultBackgroundColor,
-              ],
-            ),
-          ),
-          child: BottomNavigationBar(
-            items: [
-              BottomNavigationBarItem(
-                  backgroundColor: TileColors.defaultBackgroundColor,
-                  icon: Icon(
-                    Icons.share,
-                    color: TileColors.primaryColor,
-                  ),
-                  label: ''),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search, color: TileColors.primaryColor),
-                label: '',
-              ),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.settings, color: TileColors.primaryColor),
-                  label: ''),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month,
-                      color: TileColors.primaryColor),
-                  label: ''),
-            ],
-            unselectedItemColor: TileColors.defaultBackgroundColor,
-            selectedItemColor: Colors.black,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            onTap: _onBottomNavigationTap,
-          ),
-        ),
-      );
+      bottomNavigator = _buildBottomNavBar();
     }
-
     return Scaffold(
       extendBody: true,
-      backgroundColor: TileColors.defaultBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Container(
@@ -442,30 +459,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: TileColors.defaultBackgroundColor,
-        onPressed: () {
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
-        },
-        child: AutoSwitchingWidget(
-          duration: Duration(milliseconds: 1000),
-          children: [
-            Transform.scale(
-              scale: 0.618,
-              child: Image.asset(
-                'assets/images/wire_tilerLogo_BlueBottom.png',
-              ),
-            ),
-            Transform.scale(
-              scale: 0.618,
-              child: Image.asset(
-                'assets/images/wire_tilerLogo_RedBottom.png',
-              ),
-            ),
-          ],
-        ),
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -514,11 +508,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             },
           )
         ],
-        child:
-            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return Scaffold(
-              backgroundColor: TileStyles.defaultBackgroundColor,
-              body: renderAuthorizedUserPageView());
+        child: BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+          return renderAuthorizedUserPageView();
         }));
   }
 }

@@ -26,6 +26,8 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return OnboardingSubWidget(
       questionText: AppLocalizations.of(context)!.workdayStartQuestion,
       child: BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -39,7 +41,7 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
               height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30.0),
-                border: Border.all(color: Colors.grey),
+                border: Border.all(color: colorScheme.onSurfaceVariant),
               ),
               child: Align(
                 alignment: Alignment.centerLeft,
