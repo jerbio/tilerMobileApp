@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 import '../../../constants.dart' as Constants;
 
@@ -53,7 +55,6 @@ class HelperClass {
     LatLng current = destinationPosition;
     LatLng destination = currentPosition;
     dynamic points = await _getRoute(current, destination);
-
     mapController!.animateCamera(CameraUpdate.newLatLngZoom(destination, 15));
     showModalBottomSheet(
       context: context,
@@ -61,6 +62,7 @@ class HelperClass {
       builder: (context) => Container(
         height: 500,
         child: GoogleMap(
+          style: Theme.of(context).extension<TileThemeExtension>()?.mapStyle,
           gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>[
             Factory<OneSequenceGestureRecognizer>(
               () => EagerGestureRecognizer(),
@@ -79,7 +81,7 @@ class HelperClass {
               polylineId: PolylineId('route'),
               points: _convertToLatLng(_decodePoly(points)),
               width: 4,
-              color: Colors.blue,
+              color:  TileColors.bluePolyline,
             ),
           },
           markers: {

@@ -4,8 +4,7 @@ import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewChart.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -22,10 +21,20 @@ class PreviewWidget extends StatefulWidget {
 
 class _PreviewState extends State<PreviewWidget> {
   late Timeline _timeline;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
     _timeline = this.widget.timeline ?? Utility.restOfTodayTimeline();
+  }
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
   }
 
   PreviewSummary? get _previewSummary {
@@ -83,9 +92,8 @@ class _PreviewState extends State<PreviewWidget> {
   }
 
   Widget renderMessage() {
-    const TextStyle previewMessageStyle = TextStyle(
+     TextStyle previewMessageStyle = TextStyle(
         fontSize: 15,
-        color: TileColors.accentContrastColor,
         fontFamily: TileTextStyles.rubikFontName,
         fontWeight: FontWeight.w500);
     return Container(
@@ -113,7 +121,7 @@ class _PreviewState extends State<PreviewWidget> {
             previewGrouping: _previewSummary!.classification!.sections!,
             icon: Icon(
               Icons.message,
-              color: TileStyles.accentContrastColor,
+              color: colorScheme.onSurface,
             ),
             timeline: this._timeline,
             description: Padding(
@@ -122,7 +130,6 @@ class _PreviewState extends State<PreviewWidget> {
                 AppLocalizations.of(context)!.previewClassificationName,
                 style: TextStyle(
                     fontSize: 15,
-                    color: TileColors.accentContrastColor,
                     fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w500),
               ),
@@ -136,7 +143,7 @@ class _PreviewState extends State<PreviewWidget> {
           previewGrouping: _previewSummary!.tag!.sections!,
           icon: Icon(
             Icons.discount_sharp,
-            color: TileStyles.accentContrastColor,
+            color:colorScheme.onSurface,
           ),
           timeline: this._timeline,
           description: Padding(
@@ -145,7 +152,6 @@ class _PreviewState extends State<PreviewWidget> {
               AppLocalizations.of(context)!.previewTagName,
               style: TextStyle(
                   fontSize: 15,
-                  color: TileColors.accentContrastColor,
                   fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w500),
             ),
@@ -160,7 +166,7 @@ class _PreviewState extends State<PreviewWidget> {
           previewGrouping: _previewSummary!.location!.sections!,
           icon: Icon(
             Icons.location_on_sharp,
-            color: TileStyles.accentContrastColor,
+            color: colorScheme.onSurface
           ),
           timeline: this._timeline,
           description: Padding(
@@ -169,7 +175,6 @@ class _PreviewState extends State<PreviewWidget> {
               AppLocalizations.of(context)!.previewLocationName,
               style: TextStyle(
                   fontSize: 15,
-                  color: TileColors.accentContrastColor,
                   fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w500),
             ),

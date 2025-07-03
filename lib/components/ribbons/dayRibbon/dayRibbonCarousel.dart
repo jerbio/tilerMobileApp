@@ -1,16 +1,15 @@
 import 'dart:async';
-
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayButton.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -37,6 +36,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late DateTime selectedDate;
   late int batchCount;
   late int numberOfDays;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   bool selected = false;
   Curve curve = Curves.linear;
   final CarouselSliderController dayRibbonCarouselController =
@@ -51,7 +52,12 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     batchCount = 28 * this.widget.numberOfDays;
     numberOfDays = this.widget.numberOfDays;
   }
-
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
   updateSelectedDate(DateTime date) {
     setState(() {
       this.selectedDate = date.dayDate;
@@ -83,10 +89,10 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     return Container(
       decoration: dateTime.isToday
           ? BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surfaceContainerLow,
               border: Border(
                 top: BorderSide(
-                  color: TileColors.primaryColorLightHSL.toColor(),
+                  color: colorScheme.primaryContainer,
                   width: 2,
                 ),
               ),
@@ -96,8 +102,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         dateTime: dateTime,
         showMonth: dateTime.day == 1,
         onTapped: onDateButtonTapped,
-        isSelected:
-            this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
+        isSelected: this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
       ),
     );
   }
@@ -181,7 +186,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   double slideLeft = -30;
   Duration uiRoll = Duration(seconds: 3);
   double slideTop = 0;
-  Color loaderColor = TileColors.accentColor;
+  late Color loaderColor;
 
   Tuple2<Future, StreamSubscription?>? setTimeOutUpdate;
   ValueKey animatedSliderKey = ValueKey(Utility.getUuid);
@@ -261,10 +266,10 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
             ],
           ),
           border: Border.all(
-            color: Colors.white,
+            color: colorScheme.onInverseSurface,
             width: 0.5,
           ),
-          borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+          borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
         ),
       ),
     );
@@ -296,14 +301,14 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         BlocListener<ScheduleBloc, ScheduleState>(
           listener: (context, state) {
             if (state is ScheduleLoadingState) {
-              loaderColor = TileColors.loadColor;
+              loaderColor = colorScheme.tertiaryContainer;
               startSlider();
             }
 
             if (state is ScheduleLoadedState) {
               if (state is FailedScheduleLoadedState) {
                 setState(() {
-                  loaderColor = TileColors.errorTxtColor;
+                  loaderColor = colorScheme.onError;
                 });
                 startSlider();
               } else {
@@ -356,10 +361,10 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           return Container(
             margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surfaceContainerLow,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.08),
+                  color: Theme.of(context).extension<TileThemeExtension>()!.shadowBase.withValues(alpha: 0.08),
                   blurRadius: 7,
                   offset: const Offset(0, 7),
                 ),

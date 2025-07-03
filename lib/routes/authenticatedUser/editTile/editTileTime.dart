@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+
 
 class EditTileTime extends StatefulWidget {
+
   TimeOfDay time;
   _EditTileTimeState? _state;
   Function? onInputChange;
@@ -35,10 +37,11 @@ class _EditTileTimeState extends State<EditTileTime> {
   Widget build(BuildContext context) {
     const textStyle = TileStyles.editTimeOrDateTimeStyle;
     final localizations = MaterialLocalizations.of(context);
+    final theme=Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     final formattedTimeOfDay = localizations.formatTimeOfDay(time);
-    return ElevatedButton(
-      style: TileStyles.strippedButtonStyle,
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
         if (this.widget.isReadOnly) {
           return;
         }
@@ -65,17 +68,15 @@ class _EditTileTimeState extends State<EditTileTime> {
                 margin: EdgeInsets.fromLTRB(0, 0, widget.isPref?10:5, 0),
                 child: Icon(
                   Icons.access_time_sharp,
-                  color: TileColors.iconColor,
+                  color: tileThemeExtension.onSurfaceQuaternary,
                   size: widget.isPref?18:25,
                 )),
-            Container(
-                child: Text(
+            Text(
               formattedTimeOfDay,
               style: widget.isPref?textStyle.copyWith(
-                  color: Color.fromRGBO(154, 158, 159, 1),
+                  color: tileThemeExtension.onSurfaceQuaternary,
                   decoration: TextDecoration.underline,
-                  decorationColor: Color.fromRGBO(154, 158, 159, 1),) :textStyle
-                ),
+                  decorationColor: tileThemeExtension.onSurfaceQuaternary) :textStyle
             ),
           ],
         ),

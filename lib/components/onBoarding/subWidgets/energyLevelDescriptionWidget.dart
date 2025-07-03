@@ -2,22 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'onBoardingSubWidget.dart';
 
 class EnergyLevelDescriptionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final appLocalizations=  AppLocalizations.of(context)!;
     return OnboardingSubWidget(
       questionText:
-          AppLocalizations.of(context)!.energyLevelDescriptionQuestion,
+      appLocalizations.energyLevelDescriptionQuestion,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30.0),
-          border: Border.all(color: Colors.grey),
+          border: Border.all(color: colorScheme.onSurfaceVariant),
         ),
         child: BlocBuilder<OnboardingBloc, OnboardingState>(
           builder: (context, state) {
@@ -25,18 +26,18 @@ class EnergyLevelDescriptionWidget extends StatelessWidget {
               child: DropdownButton<String>(
                 value: state.preferredDaySection,
                 isExpanded: true,
-                iconEnabledColor: TileColors.primaryColor,
+                iconEnabledColor: colorScheme.primary,
                 items: [
                   DropdownMenuItem(
-                    child: Text(AppLocalizations.of(context)!.morningPerson),
+                    child: Text(appLocalizations.morningPerson),
                     value:"Morning",
                   ),
                   DropdownMenuItem(
-                    child: Text(AppLocalizations.of(context)!.middayPerson),
+                    child: Text(appLocalizations.middayPerson),
                     value:  "Midday",
                   ),
                   DropdownMenuItem(
-                    child: Text(AppLocalizations.of(context)!.nightPerson),
+                    child: Text(appLocalizations.nightPerson),
                     value:"Neutral",
                   ),
                 ],

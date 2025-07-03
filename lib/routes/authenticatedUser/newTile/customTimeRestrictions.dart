@@ -9,6 +9,7 @@ import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -60,11 +61,21 @@ class CustomTimeRestrictionRouteState
 
   static final String customTimeRestrictionRouteName =
       "customTimeRestrictionRouteName";
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
+
   @override
   void initState() {
     super.initState();
   }
-
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+  }
   Future<TimeOfDay?> _selectTime(
       BuildContext context, TimeOfDay selectedTime) async {
     final TimeOfDay? timeOfDay = await showTimePicker(
@@ -153,15 +164,15 @@ class CustomTimeRestrictionRouteState
     final bool isSelected = day.isSelected;
     final bool showPaste = _hasCopied && !isCopiedDay;
 
-    Color iconColor = TileColors.disabledTextColor;
+    Color iconColor = colorScheme.onInverseSurface.withLightness(0.7);
 
     if (isSelected) {
       if (showPaste) {
-        iconColor = TileColors.primaryColor;
+        iconColor = colorScheme.primary;
       } else if (isCopiedDay) {
-        iconColor = Colors.cyanAccent;
+        iconColor = TileColors.copied;
       } else {
-        iconColor = TileColors.primaryColor;
+        iconColor = colorScheme.primary;
       }
     }
 
@@ -182,24 +193,6 @@ class CustomTimeRestrictionRouteState
   }
 
   Widget generateEachDayWidget(_DayOfWeekRestriction dayOfWeekRestriction) {
-    var borderRadius = BorderRadius.all(
-      const Radius.circular(10.0),
-    );
-    BoxDecoration timeBoxDecoration = BoxDecoration(
-        borderRadius: borderRadius,
-        border: Border(bottom: BorderSide(color: TileColors.disabledColor)));
-    if (dayOfWeekRestriction.isSelected) {
-      timeBoxDecoration = BoxDecoration(
-          borderRadius: borderRadius,
-          color: TileColors.primaryColorLightHSL.toColor());
-
-      if (!dayOfWeekRestriction
-          .toRestrictionDay()
-          .restrictionTimeLine!
-          .isValid) {
-        timeBoxDecoration = BoxDecoration(color: TileColors.accentColor);
-      }
-    }
     final localizations = MaterialLocalizations.of(context);
     Widget retValue = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,7 +234,7 @@ class CustomTimeRestrictionRouteState
           child:Container(
             padding: EdgeInsets.only(bottom: 2),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: TileColors.disabledTextColor, width: 2)),
+              border: Border(bottom: BorderSide(color: colorScheme.onInverseSurface.withLightness(0.7), width: 2)),
             ),
             child: Text(
               localizations.formatTimeOfDay(dayOfWeekRestriction.start),
@@ -277,7 +270,8 @@ class CustomTimeRestrictionRouteState
         child:Container(
           padding: EdgeInsets.only(bottom: 2),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: TileColors.disabledTextColor, width: 2)),
+            border: Border(
+                bottom: BorderSide(color: colorScheme.onInverseSurface.withLightness(0.7), width: 2)),
           ),
           child: Text(
             localizations.formatTimeOfDay(dayOfWeekRestriction.end),

@@ -21,16 +21,24 @@ class RepetitionSelectorWidget extends StatefulWidget {
 
 class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
   Repetition? _repetition;
+  late ThemeData theme;
+
   @override
   void initState() {
     super.initState();
     this._repetition = this.widget.repetition;
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    super.didChangeDependencies();
+  }
   Widget renderRepetitionDisabled() {
+
     return TextButton(
       style: TextButton.styleFrom(
-        textStyle: const TextStyle(
+        textStyle:const TextStyle(
           fontSize: 20,
         ),
       ),
@@ -65,9 +73,9 @@ class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
     RepetitionData? _repetitionData = repetition.toRepetitionData();
     return TextButton(
       style: TextButton.styleFrom(
-        textStyle: const TextStyle(
-          fontSize: 20,
-        ),
+          textStyle:const TextStyle(
+            fontSize: 20,
+          ),
       ),
       onPressed: () {
         onRepetitionTap(repetition, _repetitionData);

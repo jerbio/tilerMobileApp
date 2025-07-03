@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/util.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TimeOfDayTimeCellWidget extends TimeCellWidget {
@@ -14,7 +12,7 @@ class TimeOfDayTimeCellWidget extends TimeCellWidget {
 }
 
 class _TimeOfDayTimeCellState extends TimeCellWidgetState {
-  double widgetWidth = TileStyles.timeOfDayCellWidth;
+  double widgetWidth = TileDimensions.timeOfDayCellWidth;
   double topPosition = 0;
   @override
   void initState() {
@@ -23,6 +21,8 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     String formattedTimeOfDay = "";
     if (this.widget.start != null) {
       int hour = this.widget.start!.hour;
@@ -56,8 +56,8 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
             Positioned(
                 right: 0,
                 child: Container(
-                  color: TileColors.gridLineColor,
-                  height: TileStyles.thickness,
+                  color: colorScheme.primary,
+                  height: TileDimensions.thickness,
                   width: 20,
                 ))
           ],

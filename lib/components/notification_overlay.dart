@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 enum NotificationOverlayMessageType { success, error, info, warning }

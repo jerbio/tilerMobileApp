@@ -7,7 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.d
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 class DayGridWidget extends StatefulWidget {
@@ -41,7 +41,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
       ));
       tileTimeCell.add(TileTimeCellWidget(
         start: currentTOD,
-        left: TileStyles.timeOfDayCellWidth,
+        left: TileDimensions.timeOfDayCellWidth,
         height: heightPerCell,
       ));
       currentTOD = TimeOfDay(hour: currentTOD.hour + 1, minute: 0);

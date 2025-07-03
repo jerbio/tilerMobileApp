@@ -9,6 +9,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:ui' as ui;
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import '../../../constants.dart' as Constants;
 
 // WidgetLocationOnMap this class is created to show route on google map
@@ -51,8 +53,11 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
     return Scaffold(
         body: GoogleMap(
+          style:tileThemeExtension?.mapStyle ,
       polylines: _polyLines,
       onMapCreated: (controller) {
         _controllerMap = controller;
@@ -103,7 +108,7 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
       polylineId: PolylineId("id"),
       consumeTapEvents: true,
       points: polylineCoordinates,
-      color: Colors.red,
+      color:  TileColors.redPolyline,
       width: 4,
     );
 
@@ -123,7 +128,7 @@ class _GoogleMapSingleRouteState extends State<GoogleMapSingleRoute> {
       polylineId: PolylineId("123"),
       consumeTapEvents: true,
       points: widget.polylineCoordinates,
-      color: Colors.red,
+      color:  TileColors.redPolyline,
       width: 4,
     ));
   }

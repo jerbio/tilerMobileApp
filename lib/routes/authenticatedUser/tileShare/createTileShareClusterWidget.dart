@@ -7,12 +7,12 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:tiler_app/routes/authenticatedUser/contactInputField.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 class CreateTileShareClusterWidget extends StatefulWidget {
@@ -40,6 +40,9 @@ class _CreateTileShareClusterWidgetState
 
   static final String createTileShareCancelAndProceedRouteName =
       "createTileShareCancelAndProceedRouteName";
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
   @override
   void initState() {
     super.initState();
@@ -50,13 +53,20 @@ class _CreateTileShareClusterWidgetState
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+
   Widget clusterName() {
     var onClusterNameChange = (updatedValue) {
       tileClusterData.name = updatedValue;
       updateProceed();
     };
     return Padding(
-      padding: TileStyles.inpuPadding,
+      padding: TileStyles.inputPadding,
       child: TextInputWidget(
         onTextChange: onClusterNameChange,
         value: tileClusterData.name,
@@ -109,12 +119,12 @@ class _CreateTileShareClusterWidgetState
       ),
       deleteIcon: Icon(
         Icons.close,
-        color: TileColors.primaryContrastColor,
+        color: colorScheme.onPrimary,
       ),
       side: BorderSide.none,
       onDeleted: () => _removeTile(newTile),
-      backgroundColor: TileColors.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
+      backgroundColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onPrimary),
     );
   }
 
@@ -157,12 +167,12 @@ class _CreateTileShareClusterWidgetState
 
   Widget designatedTiles() {
     return Container(
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+      width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ElevatedButton.icon(
-              style: TileStyles.enabledButtonStyle,
+              style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
               onPressed: () {
                 renderModal();
               },
@@ -203,7 +213,7 @@ class _CreateTileShareClusterWidgetState
 
   Widget duration() {
     return Padding(
-      padding: TileStyles.inpuPadding,
+      padding: TileStyles.inputPadding,
       child: DurationInputWidget(
         onDurationChange: onDurationChange,
         duration: _duration,
@@ -213,7 +223,7 @@ class _CreateTileShareClusterWidgetState
 
   Widget deadline() {
     Widget deadlineContainer = Padding(
-      padding: TileStyles.inpuPadding,
+      padding: TileStyles.inputPadding,
       child: DateInputWidget(
         placeHolder: AppLocalizations.of(context)!.deadline_anytime,
         time: this._endTime,
@@ -234,7 +244,7 @@ class _CreateTileShareClusterWidgetState
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
-          style: TileStyles.enabledButtonStyle,
+          style:  TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
           onPressed: () {
             Navigator.push(
                 context,
@@ -247,7 +257,10 @@ class _CreateTileShareClusterWidgetState
               Navigator.of(context).pop(false);
             });
           },
-          icon: TileStyles.multiShareWidget,
+          icon: Icon(
+              Icons.bento_outlined,
+              color: colorScheme.onInverseSurface
+          ),
           label: SizedBox.shrink());
     }
   }
@@ -278,25 +291,22 @@ class _CreateTileShareClusterWidgetState
     return CancelAndProceedTemplateWidget(
       routeName: createTileShareCancelAndProceedRouteName,
       appBar: AppBar(
-          // centerTitle: true,
-          automaticallyImplyLeading: false,
-          actions: [selectionButtonWidgets],
-          backgroundColor: TileColors.appBarColor,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.share,
-                color: TileColors.appBarTextColor,
-              ),
-              Text(
-                this.isMultiTilette
-                    ? AppLocalizations.of(context)!.multiShare
-                    : AppLocalizations.of(context)!.tileShare,
-                style: TileStyles.titleBarStyle,
-              )
-            ],
-          )),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.share,
+            ),
+            Text(
+              this.isMultiTilette
+                  ? AppLocalizations.of(context)!.multiShare
+                  : AppLocalizations.of(context)!.tileShare,
+            )
+          ],
+        ),
+        actions: [selectionButtonWidgets],
+        automaticallyImplyLeading: false,
+      ),
       child: tileShareWidgets,
       onProceed: onProceedResponse,
     );

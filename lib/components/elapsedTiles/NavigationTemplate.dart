@@ -4,9 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
-
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
+//ey: not used
 class NavigationTemplateWidget extends StatefulWidget {
   Function? onCancel;
   Function? onProceed;
@@ -41,6 +41,8 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
   }
 
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
     Widget cancelButton = Align(
@@ -48,7 +50,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
       child: Container(
         alignment: Alignment.centerRight,
         // margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-        width: TileStyles.proceedAndCancelButtonWidth,
+        width: TileDimensions.proceedAndCancelButtonWidth,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topRight: Radius.circular(10),
@@ -57,10 +59,10 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                TileColors.primaryColor,
-                HSLColor.fromColor(TileColors.primaryColor)
+                colorScheme.primary,
+                HSLColor.fromColor(colorScheme.primary,)
                     .withLightness(
-                        HSLColor.fromColor(TileColors.primaryColor).lightness +
+                        HSLColor.fromColor(colorScheme.primary,).lightness +
                             0.3)
                     .toColor()
               ],
@@ -70,7 +72,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
             elevation: 0.0,
             foregroundColor: Colors.transparent,
             backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent, // foreground
+            shadowColor: Colors.transparent,
           ),
           child: Center(
               child: Container(
@@ -101,7 +103,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
             this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
       proceedButton = Container(
-        width: TileStyles.proceedAndCancelButtonWidth,
+        width: TileDimensions.proceedAndCancelButtonWidth,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
@@ -109,12 +111,12 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                HSLColor.fromColor(TileColors.primaryColor)
+                HSLColor.fromColor(colorScheme.primary,)
                     .withLightness(
-                        HSLColor.fromColor(TileColors.primaryColor).lightness +
+                        HSLColor.fromColor(colorScheme.primary,).lightness +
                             0.3)
                     .toColor(),
-                TileColors.primaryColor,
+              colorScheme.primary,
               ],
             )),
         child: ElevatedButton(
@@ -169,7 +171,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
         bottomButtons.add(proceedButton);
       } else {
         bottomButtons.add(SizedBox.fromSize(
-          size: Size.fromWidth(TileStyles.proceedAndCancelButtonWidth),
+          size: Size.fromWidth(TileDimensions.proceedAndCancelButtonWidth),
         ));
       }
 
@@ -179,7 +181,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
             Container(
                 padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
                 width: MediaQuery.of(context).size.width -
-                    2 * TileStyles.proceedAndCancelButtonWidth,
+                    2 * TileDimensions.proceedAndCancelButtonWidth,
                 child: this.widget.bottomWidget!));
       }
 
@@ -211,7 +213,7 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
       stackWidgets.add(blurWidget);
       stackWidgets.add(this.widget.pendingWidget ??
           PendingWidget(
-            imageAsset: TileStyles.evaluatingScheduleAsset,
+            imageAsset: TileThemeNew.evaluatingScheduleAsset,
           ));
     }
 

@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TravelTimeBefore extends StatefulWidget {
@@ -18,6 +22,8 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
   @override
   Widget build(BuildContext context) {
     String durationString = Utility.toHuman(this.widget.travelTimeDuration);
+    final theme= Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -28,10 +34,10 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-                color: Colors.orange, borderRadius: BorderRadius.circular(8)),
+                color: TileColors.travel, borderRadius: BorderRadius.circular(8)),
             child: Icon(
               Icons.directions_walk,
-              color: Colors.white,
+              color: tileThemeExtension.onFixedColors,
               size: 20.0,
             ),
           ),
@@ -40,16 +46,20 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
               Text(
                 'You need to leave in ',
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 15, fontFamily: 'Rubik'),
+                style:  TextStyle(
+                    fontSize: 15,
+                    fontFamily: TileTextStyles.rubikFontName
+                ),
               ),
               Text(
                 '$durationString',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                     fontSize: 15,
-                    fontFamily: 'Rubik',
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w600,
-                    color: Colors.orange),
+                    color: TileColors.travel
+                ),
               )
             ],
           )

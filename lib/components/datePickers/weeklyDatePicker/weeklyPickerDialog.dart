@@ -3,14 +3,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WeeklyPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
       builder: (context, state) {
         return Dialog(
@@ -31,7 +32,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                   style: TextStyle(fontSize: 16),
                 ),
               ),
-              _buildMonthYearPicker(context, state),
+              _buildMonthYearPicker(context, state,colorScheme),
               TableCalendar(
                 firstDay: Utility.getFirstDate(),
                 lastDay: Utility.getLastDate(),
@@ -54,15 +55,12 @@ class WeeklyPickerDialog extends StatelessWidget {
                 calendarStyle: CalendarStyle(
                   isTodayHighlighted: false,
                   defaultDecoration: BoxDecoration(shape: BoxShape.rectangle),
-                  selectedDecoration:
-                      BoxDecoration(color: TileColors.primaryColor),
                   outsideDecoration: BoxDecoration(shape: BoxShape.rectangle),
                 ),
                 calendarBuilders: CalendarBuilders(
                   selectedBuilder: (context, date, _) {
                     bool isFirstDay = date.weekday == DateTime.sunday;
                     bool isLastDay = date.weekday == DateTime.saturday;
-
                     return Container(
                       margin: isFirstDay
                           ? const EdgeInsets.only(left: 8.0)
@@ -75,16 +73,16 @@ class WeeklyPickerDialog extends StatelessWidget {
                         border: Border(
                           left: isFirstDay
                               ? BorderSide(
-                                  color: TileColors.primaryColor, width: 2)
+                                  color: colorScheme.primary, width: 2)
                               : BorderSide.none,
                           right: isLastDay
                               ? BorderSide(
-                                  color: TileColors.primaryColor, width: 2)
+                                  color: colorScheme.primary, width: 2)
                               : BorderSide.none,
                           top: BorderSide(
-                              color: TileColors.primaryColor, width: 2),
+                              color: colorScheme.primary, width: 2),
                           bottom: BorderSide(
-                              color: TileColors.primaryColor, width: 2),
+                              color: colorScheme.primary, width: 2),
                         ),
                         borderRadius: isFirstDay
                             ? BorderRadius.horizontal(left: Radius.circular(25))
@@ -96,22 +94,6 @@ class WeeklyPickerDialog extends StatelessWidget {
                       alignment: Alignment.center,
                       child: Text(
                         '${date.day}',
-                        style: TextStyle(color: TileColors.defaultTextColor),
-                      ),
-                    );
-                  },
-                  todayBuilder: (context, date, _) {
-                    return Container(
-                      margin: const EdgeInsets.all(4.0),
-                      decoration: BoxDecoration(
-                        color: Colors.grey,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${date.day}',
-                        style:
-                            TextStyle(color: TileColors.primaryContrastColor),
                       ),
                     );
                   },
@@ -131,8 +113,10 @@ class WeeklyPickerDialog extends StatelessWidget {
                         Navigator.of(context).pop();
                       }
                     },
-                    child: Text(AppLocalizations.of(context)!.save,
-                        style: TileStyles.datePickersSaveStyle),
+                    child: Text(
+                        AppLocalizations.of(context)!.save,
+                        style: TileTextStyles.datePickersSaveStyle
+                    ),
                   ),
                 ),
               ),
@@ -144,7 +128,7 @@ class WeeklyPickerDialog extends StatelessWidget {
   }
 
   Widget _buildMonthYearPicker(
-      BuildContext context, WeeklyUiDateManagerState state) {
+      BuildContext context, WeeklyUiDateManagerState state, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
@@ -158,13 +142,14 @@ class WeeklyPickerDialog extends StatelessWidget {
                               state.tempDate.year, state.tempDate.month - 1)
                           .dayDate))),
           TextButton(
-            onPressed: () => _selectYear(context),
+            onPressed: () => _selectYear(context,colorScheme),
             child: Text(
                 '${DateFormat.MMMM().format(state.tempDate)} ${state.tempDate.year}',
                 style: TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.bold,
-                    color: TileColors.primaryColor)),
+                )
+            ),
           ),
           IconButton(
               icon: Icon(Icons.arrow_forward),
@@ -178,7 +163,7 @@ class WeeklyPickerDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _selectYear(BuildContext context) async {
+  Future<void> _selectYear(BuildContext context,ColorScheme colorScheme) async {
     final bloc = context.read<WeeklyUiDateManagerBloc>();
     final state = bloc.state;
     final int? selectedYear = await showDialog<int>(
@@ -208,7 +193,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                     margin: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                       border: isSelected
-                          ? Border.all(color: TileColors.primaryColor, width: 2)
+                          ? Border.all(color: colorScheme.primary, width: 2)
                           : Border.all(color: Colors.transparent, width: 2),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -217,8 +202,6 @@ class WeeklyPickerDialog extends StatelessWidget {
                       '$displayedYear',
                       style: TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                        color: TileColors.defaultTextColor,
                       ),
                     ),
                   ),

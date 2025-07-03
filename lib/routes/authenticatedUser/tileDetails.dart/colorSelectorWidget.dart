@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class ColorSelectorWidget extends StatefulWidget {
   final Color color;
@@ -42,9 +42,9 @@ class _ColorSelectorWidget extends State<ColorSelectorWidget> {
       child: Container(
           padding: EdgeInsets.all(10),
           width: MediaQuery.sizeOf(context).width *
-              TileStyles.tileWidthRatio *
-              TileStyles.tileWidthRatio *
-              TileStyles.tileWidthRatio,
+              TileDimensions.tileWidthRatio *
+              TileDimensions.tileWidthRatio *
+              TileDimensions.tileWidthRatio,
           color: this._color),
     );
   }

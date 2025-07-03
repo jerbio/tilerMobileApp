@@ -1,5 +1,6 @@
 import UIKit
 import Flutter
+import GoogleMaps
 
 
 // Leaving the commented block below so in case in the future I need to handle google sign in manually I can look at the previous implementation
@@ -42,7 +43,7 @@ import app_links
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    
+    GMSServices.provideAPIKey("AIzaSyDES6ZR8r2DvsttFyo31Q5-gtgTPptKhY4")
     GeneratedPluginRegistrant.register(with: self)
 
     // Retrieve the link from parameters

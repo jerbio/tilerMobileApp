@@ -9,8 +9,8 @@ abstract class GridPositionableWidget extends StatefulWidget {
   final double? top;
   final double? left;
   final Widget? child;
-  GridPositionableWidget(
-      {this.start,
+  GridPositionableWidget({
+      this.start,
       this.child,
       this.height = defaultHeigtPerDuration,
       this.top,

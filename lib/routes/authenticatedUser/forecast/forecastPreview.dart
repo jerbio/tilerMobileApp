@@ -7,9 +7,8 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../../bloc/forecast/forecast_bloc.dart';
@@ -37,6 +36,8 @@ class ForecastView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme =Theme.of(context);
+    final colorScheme=theme.colorScheme;
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
@@ -50,7 +51,7 @@ class ForecastView extends StatelessWidget {
           width: width,
           height: height / (height / 52),
           decoration: BoxDecoration(
-            color: TileColors.primaryColor,
+            color: colorScheme.primary,
             borderRadius: BorderRadius.circular(height / (height / 6)),
           ),
           child: Center(
@@ -60,23 +61,14 @@ class ForecastView extends StatelessWidget {
                 fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 15),
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color:colorScheme.onPrimary,
               ),
             ),
           ),
         ),
       ),
-      appBar: AppBar(
-        backgroundColor: TileColors.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.forecast,
-          style: TextStyle(
-              color: TileColors.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
-        ),
-        centerTitle: true,
-        elevation: 0,
+     appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.forecast),
         automaticallyImplyLeading: false,
       ),
       child: SingleChildScrollView(
@@ -103,7 +95,7 @@ class ForecastView extends StatelessWidget {
                         width: width,
                         child: Center(
                           child: PendingWidget(
-                            imageAsset: TileStyles.evaluatingScheduleAsset,
+                            imageAsset: TileThemeNew.evaluatingScheduleAsset,
                           ),
                         ));
                   } else if (state is ForecastLoaded) {
@@ -141,7 +133,6 @@ class ForecastView extends StatelessWidget {
                 fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 17),
                 fontWeight: FontWeight.w500,
-                color: TileColors.defaultTextColor,
               ),
             )
           ],
@@ -169,7 +160,6 @@ class ForecastView extends StatelessWidget {
                     fontFamily: TileTextStyles.rubikFontName,
                     fontWeight: FontWeight.w400,
                     fontSize: height / (height / 15),
-                    color: TileColors.defaultTextColor,
                   ),
                 )
               ],
@@ -227,7 +217,7 @@ class ForecastView extends StatelessWidget {
       child: CustomForecastField(
         leadingIconPath: 'assets/images/Calendar.svg',
         textButtonString: textButtonString,
-        height: height,
+        height: 300,
         width: width,
       ),
     );

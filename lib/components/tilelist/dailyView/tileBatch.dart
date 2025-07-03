@@ -13,18 +13,13 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TileBatch extends StatefulWidget {
-  static final TextStyle dayHeaderTextStyle = TextStyle(
-      fontSize: 40,
-      fontFamily: TileTextStyles.rubikFontName,
-      color: TileColors.primaryColor,
-      fontWeight: FontWeight.w700);
+
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
   int? dayIndex;
@@ -191,12 +186,15 @@ class TileBatchState extends State<TileBatch> {
       );
     }
 
+
     Widget? sleepWidget;
+
     if (sleepTimeline != null) {
       Timeline sleepTimeline = this.sleepTimeline!;
       sleepWidget = SleepTileWidget(sleepTimeline);
       childrenColumnWidgets.add(sleepWidget);
     }
+
 
     evaluateTileDelta(renderedTiles.values);
     late Widget dayContent;

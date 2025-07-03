@@ -15,6 +15,8 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -29,6 +31,8 @@ class WeeklyTileList extends TileList {
 
 class _WeeklyTileListState extends TileListState {
   List<Widget> rowItems = [];
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -38,6 +42,13 @@ class _WeeklyTileListState extends TileListState {
     timeLine = Timeline.fromDateTime(weeklyState.selectedWeek.first,
         weeklyState.selectedWeek.last.add(Duration(days: 1)));
     incrementalTilerScrollId = "weekly-incremental-get-schedule";
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   reloadSchedule({required List<DateTime> dateManageSelectedWeek}) {
@@ -100,10 +111,10 @@ class _WeeklyTileListState extends TileListState {
               child: Container(
                 child: Row(
                   children: [
-                    Icon(Icons.error, color: Colors.redAccent, size: 20.0),
+                    Icon(Icons.error, color: colorScheme.error, size: 20.0),
                     Text(
                       (dayData.nonViable?.length ?? 0).toString(),
-                      style: TileStyles.daySummaryStyle.copyWith(fontSize: 20),
+                      style: TileTextStyles.daySummaryStyle.copyWith(fontSize: 20),
                     )
                   ],
                 ),
@@ -241,7 +252,7 @@ class _WeeklyTileListState extends TileListState {
         builder: (context, state) {
           final summaryState = context.watch<ScheduleSummaryBloc>().state;
           if (summaryState is ScheduleDaySummaryLoading && isInitialLoad) {
-            return renderPending();
+            return PendingWidget();
           }
           isInitialLoad = false;
 
@@ -250,7 +261,7 @@ class _WeeklyTileListState extends TileListState {
                 scheduleTimeline: timeLine,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
             refreshScheduleSummary(lookupTimeline: timeLine);
-            return renderPending();
+            return PendingWidget();
           }
 
           if (state is ScheduleLoadedState) {
@@ -282,7 +293,7 @@ class _WeeklyTileListState extends TileListState {
             }
             if (showPendingUI) {
               {
-                return renderPending();
+                return PendingWidget();
               }
             }
             return Stack(children: [
@@ -297,7 +308,7 @@ class _WeeklyTileListState extends TileListState {
                 buildWeeklyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
                 PendingWidget(
-                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
                 ),
               ],
             );

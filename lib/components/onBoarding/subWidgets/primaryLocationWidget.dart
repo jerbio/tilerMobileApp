@@ -39,6 +39,8 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state.addressText != null &&
@@ -55,7 +57,7 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
             border: OutlineInputBorder(
               gapPadding: 40,
               borderRadius: BorderRadius.circular(30.0),
-              borderSide: BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: colorScheme.onSurfaceVariant),
             ),
             hintText: AppLocalizations.of(context)!.enterAddress,
             filled: true,

@@ -1,22 +1,25 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
 
 class PendingWidget extends StatelessWidget {
-  Decoration decoration = TileStyles.defaultBackgroundDecoration;
+  Decoration decoration = TileDecorations.defaultBackground;
   String? imageAsset;
   double? height;
   double? width;
+  double? blurSigma;
   bool blurBackGround = false;
   PendingWidget(
-      {backgroundDecoration, this.imageAsset, this.blurBackGround = true}) {
+      {backgroundDecoration, this.imageAsset, this.blurBackGround = true,this.blurSigma}) {
     if (backgroundDecoration != null && backgroundDecoration is Decoration) {
       decoration = backgroundDecoration;
     }
   }
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     Widget imageAsset = Image.asset(
       this.imageAsset ?? 'assets/images/tiler_logo_black.png',
       fit: BoxFit.cover,
@@ -30,16 +33,24 @@ class PendingWidget extends StatelessWidget {
     }
 
     Widget centerRenderWidget = Center(
-        child: Stack(children: [
-      if (this.imageAsset == null)
-        Center(
-            child: SizedBox(
-          child: Center(child: CircularProgressIndicator()),
-          height: 200.0,
-          width: 200.0,
-        )),
-      Center(child: imageAsset),
-    ]));
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if(this.imageAsset==null)
+          Center(
+              child: SizedBox(
+                child: CircularProgressIndicator(
+                  color: colorScheme.tertiary,
+                ),
+                height: 200.0,
+                width: 200.0,
+              )),
+          Center(
+              child: imageAsset
+          ),
+        ],
+      ),
+    );
 
     Widget backgroundBlurWithCenterWidget = Container(
         width: (MediaQuery.of(context).size.width),
@@ -47,23 +58,26 @@ class PendingWidget extends StatelessWidget {
         child: new Center(
             child: new ClipRect(
                 child: new BackdropFilter(
-          filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+          filter: new ImageFilter.blur(sigmaX: blurSigma??2.0, sigmaY: blurSigma??2.0),
           child: new Container(
             width: (MediaQuery.of(context).size.width),
             height: (MediaQuery.of(context).size.height),
             child: centerRenderWidget,
             decoration: new BoxDecoration(
-                color: Colors.grey.shade200.withOpacity(0.5),
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10))),
           ),
-        ))));
+        )
+            )
+        )
+    );
 
     Widget pendingRender = centerRenderWidget;
     if (this.blurBackGround) {
       pendingRender = backgroundBlurWithCenterWidget;
     }
+
 
     return Container(
       decoration: this.decoration,

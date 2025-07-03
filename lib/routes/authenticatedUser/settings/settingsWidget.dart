@@ -15,8 +15,6 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/services/themerHelper.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class Settings extends StatelessWidget {
@@ -25,9 +23,9 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final textColor =
-        brightness == Brightness.dark ? Colors.white : Colors.black;
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final  textColor =colorScheme.onSurface;
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
@@ -68,8 +66,10 @@ class Settings extends StatelessWidget {
       },
       child: CancelAndProceedTemplateWidget(
         routeName: Settings.routeName,
-        appBar: TileStyles.CancelAndProceedAppBar(
-            AppLocalizations.of(context)!.settings),
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.settings,),
+          automaticallyImplyLeading: false,
+        ),
         child: Column(
           children: [
             _buildListTile(
@@ -120,7 +120,7 @@ class Settings extends StatelessWidget {
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
-              color: TileColors.primaryColor,
+              color: colorScheme.primary,
               onTap: () => context
                   .read<DeviceSettingBloc>()
                   .add(LogOutMainSettingDeviceSettingEvent(id: _requestId)),
@@ -133,7 +133,7 @@ class Settings extends StatelessWidget {
             //       DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
             // ),
             // _buildDivider(),
-            // Center(child: _buildDarkModeSwitch()),
+            Center(child: _buildDarkModeSwitch()),
           ],
         ),
       ),

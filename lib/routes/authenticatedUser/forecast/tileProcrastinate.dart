@@ -12,8 +12,6 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileProcrastinateRoute extends StatefulWidget {
@@ -34,12 +32,21 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
   Duration? _selectedPresetValue = null;
   Map<String, Duration> durationStringToDuration = {};
   late SubCalendarEventApi _subCalendarEventApi;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
     super.initState();
     _subCalendarEventApi =
         new SubCalendarEventApi(getContextCallBack: () => context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   static final String tileProcrastinateCancelAndProceedRouteName =
@@ -51,21 +58,12 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
-        fontSize: 16.0);
-  }
+
 
   Future onProceedTap() {
     if (this.widget._params != null) {
@@ -182,16 +180,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
         routeName: tileProcrastinateCancelAndProceedRouteName,
         appBar: AppBar(
-          backgroundColor: TileColors.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.duration,
-            style: TextStyle(
-                color: TileColors.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
         child: Container(

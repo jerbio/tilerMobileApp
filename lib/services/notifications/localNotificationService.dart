@@ -94,30 +94,21 @@ class LocalNotificationService {
     }
   }
 
-  void showMessage(String message) {
+  void showMessage(String message, ColorScheme colorScheme) {
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
-        fontSize: 16.0);
-  }
 
   completeTile(BuildContext context, SubCalendarEvent subTile) async {
-    showMessage(AppLocalizations.of(context)!.completing);
+    final colorScheme=Theme.of(context).colorScheme;
+    showMessage(AppLocalizations.of(context)!.completing,colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
       DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);

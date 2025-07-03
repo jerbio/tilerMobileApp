@@ -15,7 +15,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
@@ -31,8 +31,6 @@ class DailyTileList extends TileList {
 
 class _DailyTileListState extends TileListState {
   Map? contextParams;
-  BoxDecoration previousTileBatchDecoration =
-      BoxDecoration(color: Colors.white);
   Key carouselKey = ValueKey(Utility.getUuid);
   Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
@@ -350,7 +348,7 @@ class _DailyTileListState extends TileListState {
     precedingDayTiles.forEach((tileBatch) {
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
-        decoration: previousTileBatchDecoration,
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerLow),
         child: tileBatch,
       );
       if (tileBatch.dayIndex != null) {
@@ -655,7 +653,6 @@ class _DailyTileListState extends TileListState {
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
-          // print("ScheduleBloc state is " + state.toString());
 
           if (state is ScheduleLoadingState) {
             if (state.message != null) {
@@ -664,8 +661,8 @@ class _DailyTileListState extends TileListState {
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.SNACKBAR,
                   timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.black45,
-                  textColor: Colors.white,
+                  backgroundColor: colorScheme.inverseSurface,
+                  textColor: colorScheme.onInverseSurface,
                   fontSize: 16.0);
             }
           }
@@ -780,7 +777,7 @@ class _DailyTileListState extends TileListState {
                 scheduleTimeline: timeLine,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
             refreshScheduleSummary(lookupTimeline: timeLine);
-            return renderPending();
+            return PendingWidget();
           }
 
           if (state is ScheduleLoadedState) {
@@ -814,7 +811,7 @@ class _DailyTileListState extends TileListState {
                       .isDateTimeWithin(dateMangerBloc.currentDate);
             }
             if (showPendingUI) {
-              return renderPending();
+              return PendingWidget();
             }
             return Stack(children: [
               buildDailyRenderSubCalendarTiles(
@@ -828,7 +825,7 @@ class _DailyTileListState extends TileListState {
                 buildDailyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
                 PendingWidget(
-                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
                 ),
               ],
             );

@@ -6,7 +6,7 @@ import 'package:tiler_app/components/tileUI/weeklyTile.dart';
 import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -29,6 +29,9 @@ class WeeklyTileBatchState extends TileBatchState {
   final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
   late ListModel<TilerEvent>? _list;
   bool _pendingRendering = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
 
   @override
   void initState() {
@@ -36,6 +39,12 @@ class WeeklyTileBatchState extends TileBatchState {
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
+  }
 
   Widget _buildRemovedItem(
       TilerEvent item, BuildContext context, Animation<double> animation) {
@@ -249,9 +258,9 @@ class WeeklyTileBatchState extends TileBatchState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor:colorScheme.surfaceContainerLow,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(TileStyles.borderRadius)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(TileDimensions.borderRadius)),
       ),
       builder: (BuildContext context) {
         return Container(

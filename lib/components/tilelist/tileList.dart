@@ -10,15 +10,13 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
-import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/notifications/localNotificationService.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 
 /// This renders the list of tiles on a given day
 abstract class TileList extends StatefulWidget {
+
   static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
@@ -39,6 +37,9 @@ abstract class TileListState<T extends TileList> extends State<T>
   AnimationController? swipingAnimationController;
   Animation<double>? swipingAnimation;
   int swipeDirection = 0;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
 
   @override
   void initState() {
@@ -48,10 +49,18 @@ abstract class TileListState<T extends TileList> extends State<T>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+
+  @override
   void dispose() {
     swipingAnimationController?.dispose();
     super.dispose();
   }
+
 
   void initializingSwipingAnimation(
       {Duration duration = const Duration(milliseconds: 300)}) {
@@ -181,31 +190,6 @@ abstract class TileListState<T extends TileList> extends State<T>
     }
   }
 
-  Widget renderPending({String? message}) {
-    List<Widget> centerElements = [
-      Center(
-          child: SizedBox(
-        child: CircularProgressIndicator(),
-        height: 200.0,
-        width: 200.0,
-      )),
-      Center(
-          child: Image.asset('assets/images/tiler_logo_black.png',
-              fit: BoxFit.cover, scale: 7)),
-    ];
-    if (message != null && message.isNotEmpty) {
-      centerElements.add(Center(
-        child: Container(
-          margin: EdgeInsets.fromLTRB(0, 120, 0, 0),
-          child: Text(message),
-        ),
-      ));
-    }
-    return Container(
-      decoration: TileStyles.defaultBackgroundDecoration,
-      child: Center(child: Stack(children: centerElements)),
-    );
-  }
 
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);
@@ -310,18 +294,17 @@ abstract class TileListState<T extends TileList> extends State<T>
         var nameColor =
             Color.fromRGBO(redColor, greenColor, blueColor, opacity);
         var hslColor = HSLColor.fromColor(nameColor);
-        Color bgroundColor = hslColor
+        Color backgroundColor = hslColor
             .withLightness(hslColor.lightness)
             .toColor()
-            .withOpacity(0.7);
-
+            .withValues(alpha: 0.7);
         showModalBottomSheet(
           context: context,
           constraints: const BoxConstraints(maxWidth: 400),
           builder: (BuildContext context) {
             var future = Future.delayed(
                 const Duration(milliseconds: Constants.autoHideInMs));
-            var hideNewSheeTileFuture = future.asStream().listen((input) {
+            var hideNewSheetTileFuture = future.asStream().listen((input) {
               if (context.mounted) {
                 if (Navigator.canPop(context)) {
                   Navigator.pop(context);
@@ -329,9 +312,9 @@ abstract class TileListState<T extends TileList> extends State<T>
               }
             });
 
-            return ElevatedButton(
-              onPressed: () {
-                hideNewSheeTileFuture.cancel();
+            return GestureDetector(
+              onTap: () {
+                hideNewSheetTileFuture.cancel();
                 Navigator.pop(context);
                 Navigator.push(
                   context,
@@ -345,16 +328,16 @@ abstract class TileListState<T extends TileList> extends State<T>
                   }
                 });
               },
-              style: ElevatedButton.styleFrom(
-                padding: EdgeInsets.all(0),
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-              ),
+              // style: ElevatedButton.styleFrom(
+              //   padding: EdgeInsets.all(0),
+              //   backgroundColor: Colors.transparent,
+              //   shadowColor: Colors.transparent,
+              // ),
               child: Container(
                 padding: const EdgeInsets.all(20),
                 height: 250,
                 width: 300,
-                decoration: BoxDecoration(color: bgroundColor),
+                decoration: BoxDecoration(color: backgroundColor),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,

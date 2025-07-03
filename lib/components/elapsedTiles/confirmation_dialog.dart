@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import '../../styles.dart';
 
+//ey: not used
 class ConfirmationDialog extends StatelessWidget {
   ConfirmationDialog(
       {super.key,
@@ -19,6 +19,8 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Dialog(
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(height / (height / 30))),
@@ -26,7 +28,7 @@ class ConfirmationDialog extends StatelessWidget {
         height: height / (height / 207),
         width: height / (height / 412),
         decoration: BoxDecoration(
-          color: TileColors.primaryColor,
+          color: colorScheme.primary,
           borderRadius: BorderRadius.circular(height / (height / 30)),
           border: Border.all(
             color: Colors.black,

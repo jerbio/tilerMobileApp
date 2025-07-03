@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import '../../styles.dart';
 
+//ey: not used
 class DurationWidget extends StatelessWidget {
   const DurationWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Padding(
         padding: EdgeInsets.only(top: 15, left: 15, right: 15),
         child: GestureDetector(
@@ -22,7 +24,7 @@ class DurationWidget extends StatelessWidget {
                 children: [
                   Icon(
                     Icons.access_time_rounded,
-                    color: TileColors.textFieldTextColor,
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                   SizedBox(
                     width: 10,
@@ -30,7 +32,7 @@ class DurationWidget extends StatelessWidget {
                   Text(
                     AppLocalizations.of(context)!.duration,
                     style: TextStyle(
-                        fontSize: 17, color: TileColors.textFieldTextColor),
+                        fontSize: 17, color: colorScheme.onSurface.withValues(alpha: 0.4),),
                   ),
                 ],
               ),
