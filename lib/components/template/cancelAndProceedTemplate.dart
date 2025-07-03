@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 

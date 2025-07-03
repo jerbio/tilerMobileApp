@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import 'package:tiler_app/util.dart';

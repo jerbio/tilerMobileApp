@@ -4,7 +4,6 @@ import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
@@ -16,15 +15,15 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../services/api/authorization.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
-import '../../styles.dart';
 import '../../util.dart';
 
 class SignInComponent extends StatefulWidget {
@@ -703,7 +702,7 @@ class SignInComponentState extends State<SignInComponent>
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
       ),
     );
@@ -726,7 +725,7 @@ class SignInComponentState extends State<SignInComponent>
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
       ),
     );
@@ -799,7 +798,7 @@ class SignInComponentState extends State<SignInComponent>
         ),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
         fillColor: inputFieldFillColor,
       ),
@@ -960,7 +959,7 @@ class SignInComponentState extends State<SignInComponent>
           prefixIcon: Icon(Icons.lock),
           contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           border: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide.none),
           fillColor: inputFieldFillColor,
         ),

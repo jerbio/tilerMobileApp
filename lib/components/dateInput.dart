@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
@@ -76,7 +75,7 @@ class _DateInputWidgetState extends State<DateInputWidget> {
           height: TileDimensions.inputHeight,
           decoration: BoxDecoration(
               color: colorScheme.surfaceContainerLow,
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowHigh)],
               border: Border.all(
                 color: colorScheme.onInverseSurface,
@@ -101,8 +100,8 @@ class _DateInputWidgetState extends State<DateInputWidget> {
                         fontFamily: TileTextStyles.rubikFontName,
                         color: colorScheme.onSurface,
                         fontWeight: (this._time != null)
-                            ? TileStyles.inputFieldFontWeight
-                            : TileStyles.inputFieldHintFontWeight,
+                            ? TileTextStyles.inputFieldFontWeight
+                            : TileTextStyles.inputFieldHintFontWeight,
                       ),
                     ),
                   ))

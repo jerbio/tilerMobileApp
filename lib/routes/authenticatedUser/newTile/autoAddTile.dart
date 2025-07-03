@@ -3,16 +3,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileInputStyles.dart';
+import 'package:tiler_app/theme/tileinput_styles.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-import '../../../components/tileUI/configUpdateButton.dart';
+import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import '../../../constants.dart' as Constants;
 //ey: not used
 class AutoAddTile extends StatefulWidget {

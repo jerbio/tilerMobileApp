@@ -6,7 +6,7 @@ import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -70,7 +70,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.nonViable?.length ?? 0).toString(),
-              style: TileTextStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
             )
           ],
         ),
@@ -91,7 +91,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.complete?.length ?? 0).toString(),
-              style: TileTextStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
             )
           ],
         ),
@@ -114,7 +114,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.tardy?.length ?? 0).toString(),
-              style: TileTextStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
             )
           ],
         ),

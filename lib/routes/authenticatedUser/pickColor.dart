@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
@@ -209,21 +208,21 @@ class PickColorState extends State<PickColor> {
               child: renderCollectionOfColors(3, clickablePresetWidgets)),
           ElevatedButton(
               style: ButtonStyle(
-                side: MaterialStateProperty.all(
+                side: WidgetStateProperty.all(
                     BorderSide(color: colorScheme.primary)),
-                shadowColor: MaterialStateProperty.resolveWith((states) {
+                shadowColor: WidgetStateProperty.resolveWith((states) {
                   return Colors.transparent;
                 }),
-                elevation: MaterialStateProperty.resolveWith((states) {
+                elevation: WidgetStateProperty.resolveWith((states) {
                   return 0;
                 }),
-                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
                   return Colors.transparent;
                 }),
-                foregroundColor: MaterialStateProperty.resolveWith((states) {
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
                   return colorScheme.primary;;
                 }),
-                minimumSize: MaterialStateProperty.resolveWith((states) {
+                minimumSize: WidgetStateProperty.resolveWith((states) {
                   return Size(MediaQuery.sizeOf(context).width - 20, 50);
 
                   // Size.(MediaQuery.sizeOf(context).width);

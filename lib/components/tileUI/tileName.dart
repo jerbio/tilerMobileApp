@@ -23,10 +23,6 @@ class TileNameState extends State<TileName> {
       fontSize: 20,
       fontWeight: FontWeight.w500,
     );
-    print('Rubik font name: ${TileTextStyles.rubikFontName}');
-    print("ey font familt ${textStyle.fontFamily}");
-
-    print("ey font familt ${textStyle.color}");
     if (this.widget.textStyle != null) {
       textStyle = this.widget.textStyle!;
     }

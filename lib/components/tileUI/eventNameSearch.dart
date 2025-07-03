@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -16,16 +14,16 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
-import '../../styles.dart';
 import '../../constants.dart' as Constants;
 
 class EventNameSearchWidget extends SearchWidget {
@@ -556,18 +554,18 @@ class EventNameSearchState extends SearchWidgetState {
                       fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w500
                      ),
-                  contentPadding: TileStyles.inputFieldPadding,
+                  contentPadding: TileSpacing.inputFieldPadding,
                   fillColor: colorScheme.surfaceContainerLow,
                   border: OutlineInputBorder(
-                    borderRadius: TileStyles.inputFieldBorderRadius,
+                    borderRadius: TileDimensions.inputFieldBorderRadius,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: TileStyles.inputFieldBorderRadius,
+                    borderRadius: TileDimensions.inputFieldBorderRadius,
                     borderSide:
                         BorderSide(color: colorScheme.onInverseSurface, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: TileStyles.inputFieldBorderRadius,
+                    borderRadius: TileDimensions.inputFieldBorderRadius,
                     borderSide: BorderSide(
                       color: colorScheme.onInverseSurface,
                       width: 1.5,
@@ -593,7 +591,7 @@ class EventNameSearchState extends SearchWidgetState {
             return Scaffold(
               resizeToAvoidBottomInset: false,
               body: Container(
-                  margin: TileStyles.topMargin,
+                  margin: TileSpacing.topMargin,
                   alignment: Alignment.topCenter,
                   child:
                       Stack(alignment: Alignment.topCenter, children: <Widget>[

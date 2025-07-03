@@ -7,11 +7,9 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
 class _DayOfWeekRestriction {
   String weekDayText = '';

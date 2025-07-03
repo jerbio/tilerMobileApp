@@ -11,12 +11,11 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
-import '../../../bloc/forecast/forecast_bloc.dart';
-import '../../../bloc/forecast/forecast_event.dart';
-import '../../../bloc/forecast/forecast_state.dart';
-import '../../../components/PendingWidget.dart';
-import '../../../components/forecastTemplate/customForecastField.dart';
-import '../../../styles.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_event.dart';
+import 'package:tiler_app/bloc/forecast/forecast_state.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
+import 'package:tiler_app/components/forecastTemplate/customForecastField.dart';
 
 class ForecastPreview extends StatelessWidget {
   static final String routeName = '/ForecastPreview';

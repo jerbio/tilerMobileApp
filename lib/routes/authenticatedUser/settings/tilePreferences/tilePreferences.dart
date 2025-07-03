@@ -13,11 +13,9 @@ import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
-import 'package:tiler_app/theme/tile_decorations.dart';
-import 'package:tiler_app/theme/tile_theme.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TilePreferencesScreen extends StatelessWidget {
@@ -298,7 +296,7 @@ class TilePreferencesScreen extends StatelessWidget {
                   )),
               Text(
                   displayText,
-                  style: TileStyles.editTimeOrDateTimeStyle.copyWith(
+                  style: TileTextStyles.editTimeOrDateTime.copyWith(
                     color: tileThemeExtension.onSurfaceQuaternary,
                     decoration: TextDecoration.underline,
                     decorationColor: tileThemeExtension.onSurfaceQuaternary,

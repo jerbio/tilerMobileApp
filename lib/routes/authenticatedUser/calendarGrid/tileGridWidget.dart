@@ -5,7 +5,7 @@ import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/constants.dart' as constant;
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';

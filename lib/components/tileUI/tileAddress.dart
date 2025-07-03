@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -101,7 +101,7 @@ class TileAddressState extends State<TileAddress> {
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
                 color: widget.isMonthlyView
-                    ? tileThemeExtension.onSurfaceVariantHigh
+                    ? tileThemeExtension.onSurfaceVariantHighest
                     : colorScheme.onSurface,
                 size: TileDimensions.tileIconSize,
               ),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-import '../../styles.dart';
-
 //ey: not used
 class ConfirmationDialog extends StatelessWidget {
   ConfirmationDialog(

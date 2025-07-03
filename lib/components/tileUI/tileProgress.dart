@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class Indicator extends StatelessWidget {
   const Indicator({

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TextInputWidget extends StatefulWidget {
@@ -40,7 +40,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
     Widget tileNameContainer = Container(
         height: TileDimensions.inputHeight,
         decoration: BoxDecoration(
-          borderRadius: TileStyles.inputFieldBorderRadius,
+          borderRadius: TileDimensions.inputFieldBorderRadius,
           boxShadow: [
             TileBoxShadows.inputFieldBoxShadow(tileThemeExtension.shadowHigh)
           ],
@@ -59,17 +59,17 @@ class _TextInputWidgetState extends State<TextInputWidget> {
                 fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,
-            contentPadding: TileStyles.inputFieldPadding,
+            contentPadding: TileSpacing.inputFieldPadding,
             fillColor: colorScheme.surfaceContainerLow,
             border: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide(
                 color: colorScheme.onInverseSurface,
                 width: 1.5,

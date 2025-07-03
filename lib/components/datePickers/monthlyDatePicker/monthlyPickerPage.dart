@@ -21,7 +21,7 @@ class MonthPickerPage extends StatelessWidget {
             children: [
               Text(
                 DateFormat('MMMM').format(state.selectedDate),
-                style: TileTextStyles.datePickersMainStyle,
+                style: TileTextStyles.datePickersMain,
               ),
               SizedBox(width: 6.0),
               Transform.rotate(

@@ -3,7 +3,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
 
@@ -63,7 +63,7 @@ class MonthlyDailyTile extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.access_time_sharp,
-                      color: tileThemeExtension.onSurfaceVariantHigh,
+                      color: tileThemeExtension.onSurfaceVariantHighest,
                       size: 16,
                     ),
                   ),

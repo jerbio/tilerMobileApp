@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:tiler_app/theme/tileThemeExtension.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 
 class EditTileTime extends StatefulWidget {
@@ -35,7 +35,7 @@ class _EditTileTimeState extends State<EditTileTime> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TileStyles.editTimeOrDateTimeStyle;
+    const textStyle = TileTextStyles.editTimeOrDateTime;
     final localizations = MaterialLocalizations.of(context);
     final theme=Theme.of(context);
     final tileThemeExtension=theme.extension<TileThemeExtension>()!;

@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
 import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
@@ -12,9 +11,7 @@ import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget
 import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import 'package:tiler_app/routes/authentication/authorizedRoute.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/localizationService.dart';
-import 'package:tiler_app/theme/tile_decorations.dart';
+
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';

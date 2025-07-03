@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:toggle_switch/toggle_switch.dart';
@@ -31,12 +32,11 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
-import '../../../bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
@@ -107,7 +107,7 @@ class AddTileState extends State<AddTile> {
   final EdgeInsets configUpdatePadding =
       const EdgeInsets.fromLTRB(5, 10, 10, 7);
   bool isPendingAutoResult = false;
-  final inputBorderRadius = TileStyles.inputFieldRadius;
+  final inputBorderRadius = TileDimensions.inputFieldRadius;
   late ThemeData theme;
   late ColorScheme colorScheme;
   late BoxDecoration boxDecoration;
@@ -502,18 +502,18 @@ class AddTileState extends State<AddTile> {
                     ),
                 filled: true,
                 isDense: true,
-                contentPadding: TileStyles.inputFieldPadding,
+                contentPadding: TileSpacing.inputFieldPadding,
                 fillColor: colorScheme.surfaceContainerLow,
                 // ey: check textfeild styles in the app
                 border: OutlineInputBorder(
-                  borderRadius: TileStyles.inputFieldBorderRadius,
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: TileStyles.inputFieldBorderRadius,
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
                   borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: TileStyles.inputFieldBorderRadius,
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
                   borderSide: BorderSide(
                     color: colorScheme.onInverseSurface,
                     width: 1.5,
@@ -1443,7 +1443,7 @@ class AddTileState extends State<AddTile> {
         automaticallyImplyLeading: false,
       ),
       child: Container(
-        margin: TileStyles.topMargin,
+        margin: TileSpacing.topMargin,
         alignment: Alignment.topCenter,
         child: Stack(
           children: [

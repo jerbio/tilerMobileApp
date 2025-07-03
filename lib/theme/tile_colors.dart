@@ -56,12 +56,14 @@ class TileColors{
   static const Color surfaceContainerHighestDark = Color(0x33424242);
   static  Color onSurfaceVariantLowLight = Colors.grey[200]!;
   static const Color onSurfaceVariantLight = Colors.grey;
-  static  Color onSurfaceVariantHighLight = Colors.grey[600]!;
+  static  Color onSurfaceVariantHighLight = Color(0xFF999999);
+  static  Color onSurfaceVariantHighestLight = Colors.grey[600]!;
   static const Color tertiary=Color(0xFF6750A4);
   static const Color tertiaryContainer=Color(0xFFB3C2F2);
-  static  Color onSurfaceVariantLowDark = Colors.grey[200]!;
+  static  Color onSurfaceVariantLowDark = Colors.grey[800]!;
   static const Color onSurfaceVariantDark = Color(0xFF9E9E9E);
-  static  Color onSurfaceVariantHighDark = Colors.grey[600]!;
+  static  Color onSurfaceVariantHighDark =  Color(0xFF666666);
+  static  Color onSurfaceVariantHighestDark = Colors.grey[400]!;
   static const Color outlineLight = Color(0xFF79747E);
   static const Color outlineDark = Color(0xFF938F99);
   static const Color outlineVariantLight = Color(0xFFCAC4D0);
