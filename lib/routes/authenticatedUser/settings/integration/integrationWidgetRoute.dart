@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
@@ -166,7 +167,7 @@ class _IntegrationItem extends StatelessWidget {
       return text[0].toUpperCase() + text.substring(1);
     }
 
-    String? _extractCity(String? text, {bool hi = false}) {
+    String? _extractCity(String? text, ) {
       if (text != null && text.isNotEmpty) {
         List<String> parts = text.split(',').map((e) => e.trim()).toList();
         if (parts.length == 1) {
@@ -214,6 +215,57 @@ class _IntegrationItem extends StatelessWidget {
   Widget build(BuildContext context) {
     String titleText =
         integration.email ?? integration.userId ?? integration.id ?? "";
-    return Text("Hi");
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    return ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 0),
+        subtitle: Row(
+          children: [
+            SvgPicture.asset(
+                'assets/icons/settings/MyLocations.svg',
+                width: 16,
+                height: 16,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).colorScheme.onSurfaceVariant,
+                  BlendMode.srcIn,
+                )
+            ),
+            SizedBox(width: 4),
+            GestureDetector(
+              onTap: () => _updateLocation(context, integration),
+              child: SizedBox(
+                width: 150,
+                child: Text(
+                  _getCityFromLocation(integration.location, context),
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+            ),
+          ],
+        ),
+        title: Container(
+          child: Text(
+            titleText,
+            style: TextStyle(overflow: TextOverflow.ellipsis),
+          ),
+        ),
+        trailing: IntrinsicWidth(
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor:colorScheme.onSurface,
+              padding: EdgeInsets.symmetric(horizontal: 30),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: colorScheme.primary),
+              ),
+            ),
+            onPressed: () => context
+                .read<IntegrationsBloc>()
+                .add(DeleteIntegrationEvent(integration: integration)),
+            child: Text(AppLocalizations.of(context)!.disconnect),
+          ),
+        ));
   }
 }
