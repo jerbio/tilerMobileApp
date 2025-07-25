@@ -758,5 +758,33 @@
       },
       "errorLoadingCalendarItems":"Error loading calendar items",
       "integratedCalendars":"Calendars",
-      "integrationConfigure": "Configure"
+      "integrationConfigure": "Configure",
+      "sameDayTimeLineString":"{fromTime} - {toTime}",
+      "@sameDayTimeLineString": {
+        "description": "Shows timeline times for the same day",
+        "placeholders": {
+          "fromTime": {
+            "type": "String",
+            "example": "9:00am"
+          },
+          "toTime": {
+            "type": "String",
+            "example": "5:00pm"
+          }
+        }
+      },
+      "differentDayTimeLineString":"{fromTime} - {toTime}",
+      "@differentDayTimeLineString": {
+        "description": "Shows timeline times for different days",
+        "placeholders": {
+          "fromTime": {
+            "type": "String",
+            "example": "9:00am 10/01/2024"
+          },
+          "toTime": {
+            "type": "String",
+            "example": "5:00pm 10/02/2024"
+          }
+        }
+      }
 }

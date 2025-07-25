@@ -894,6 +894,31 @@ extension StringEnhance on String {
   }
 }
 
+extension TimeLineEnhance on Timeline {
+  String UIString(BuildContext context) {
+    if (this.start != null && this.end != null) {
+      DateTime startTime = this.startTime;
+      DateTime endTime = this.endTime;
+      if (startTime.day == endTime.day &&
+          startTime.month == endTime.month &&
+          startTime.year == endTime.year) {
+        return AppLocalizations.of(context)!.sameDayTimeLineString(
+            TimeOfDay.fromDateTime(startTime).formatTimeOfDay,
+            TimeOfDay.fromDateTime(endTime).formatTimeOfDay);
+      }
+      String locale = Localizations.localeOf(context).languageCode;
+      return AppLocalizations.of(context)!.differentDayTimeLineString(
+          TimeOfDay.fromDateTime(startTime).formatTimeOfDay +
+              " " +
+              DateFormat.yMMMd(locale).format(startTime),
+          TimeOfDay.fromDateTime(endTime).formatTimeOfDay +
+              " " +
+              DateFormat.yMMMd(locale).format(endTime));
+    }
+    return "";
+  }
+}
+
 extension TilerDayOfWeek on DateTime {
   get tilerDayOfWeek {
     return this.weekday % Utility.daysInAweek;

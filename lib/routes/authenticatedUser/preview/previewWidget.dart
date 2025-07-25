@@ -80,6 +80,20 @@ class _PreviewState extends State<PreviewWidget> {
     return AppLocalizations.of(context)!.noTilesPreview;
   }
 
+  Widget renderPreviewTimeframe() {
+    return Container(
+      padding: EdgeInsets.all(10),
+      child: Text(
+        Utility.restOfTodayTimeline().UIString(context),
+        style: TextStyle(
+            fontSize: 17,
+            color: TileStyles.accentContrastColor,
+            fontFamily: TileStyles.rubikFontName,
+            fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
   Widget renderMessage() {
     const TextStyle previewMessageStyle = TextStyle(
         fontSize: 15,
@@ -212,6 +226,7 @@ class _PreviewState extends State<PreviewWidget> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         renderCharts(),
+        renderPreviewTimeframe(),
         Container(
             margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
             alignment: Alignment.center,
