@@ -503,8 +503,7 @@ class AddTileState extends State<AddTile> {
                 filled: true,
                 isDense: true,
                 contentPadding: TileSpacing.inputFieldPadding,
-                fillColor: colorScheme.surfaceContainerLow,
-                // ey: check textfeild styles in the app
+                fillColor: colorScheme.surfaceContainerLowest,
                 border: OutlineInputBorder(
                   borderRadius: TileDimensions.inputFieldBorderRadius,
                 ),
@@ -556,7 +555,7 @@ class AddTileState extends State<AddTile> {
                     filled: true,
                     isDense: true,
                     contentPadding: EdgeInsets.all(10),
-                    fillColor: colorScheme.surfaceContainerLow,
+                    fillColor: colorScheme.surfaceContainerLowest,
                     border: OutlineInputBorder(
                       borderRadius: const BorderRadius.all(
                         const Radius.circular(50.0),
@@ -624,7 +623,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
+              color: colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.all(
                 inputBorderRadius,
               ),
@@ -1247,7 +1246,7 @@ class AddTileState extends State<AddTile> {
           margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
           padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+            color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.all(
               inputBorderRadius,
             ),
@@ -1398,11 +1397,10 @@ class AddTileState extends State<AddTile> {
         initialLabelIndex: !isAppointment ? 0 : 1,
         totalSwitches: 2,
         animate: true,
-
         labels: tabButtons,
         onToggle: onTabTypeChange,
-        activeFgColor: colorScheme.onPrimary,
         activeBgColor: [colorScheme.primary],
+        activeFgColor: colorScheme.onPrimary,
         inactiveBgColor: colorScheme.inversePrimary,
         inactiveFgColor: colorScheme.onPrimary,
       ),

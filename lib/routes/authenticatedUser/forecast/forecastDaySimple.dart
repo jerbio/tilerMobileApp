@@ -7,6 +7,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -28,6 +29,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
   GlobalKey containerSizeKey = GlobalKey();
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -38,6 +40,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
   void didChangeDependencies() {
     theme=Theme.of(context);
     colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -156,7 +159,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       width: inAndOutBarWidth,
       height: timeBarHeight / 3,
       decoration: BoxDecoration(
-          color: colorScheme.onSurfaceVariant,
+          color: tileThemeExtension.onSurfaceVariantSecondary,
           borderRadius: BorderRadius.all(Radius.circular(5))),
     );
   }

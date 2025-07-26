@@ -348,7 +348,7 @@ class _DailyTileListState extends TileListState {
     precedingDayTiles.forEach((tileBatch) {
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(color: colorScheme.surfaceContainerLow),
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
         child: tileBatch,
       );
       if (tileBatch.dayIndex != null) {

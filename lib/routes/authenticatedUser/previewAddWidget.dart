@@ -59,7 +59,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     }
     return Container(
         height: previewHeight,
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         width: MediaQuery.sizeOf(context).width,
         child: PreviewWidget(
           subEvents: this.widget.previewSummary?.tiles ?? [],
@@ -69,9 +69,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   onSubmit(NewTile newTile) {
     Color randomColor = Utility.randomColor;
-    newTile.RColor = randomColor.r.toString();
-    newTile.BColor = randomColor.b.toString();
-    newTile.GColor = randomColor.g.toString();
+    newTile.RColor = (randomColor.r * 255).round().toString();
+    newTile.BColor = (randomColor.b * 255).round().toString();
+    newTile.GColor = (randomColor.g * 255).round().toString();
     newTile.Opacity = '1';
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
@@ -334,7 +334,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.fromLTRB(
             0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         width: MediaQuery.sizeOf(context).width,
         height: modalHeight,
         child: Column(

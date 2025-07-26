@@ -101,7 +101,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
     final colorScheme=theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(15),
           topRight: Radius.circular(15),
@@ -178,7 +178,7 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
                       this.widget.onAddTile!(newTile);
                     }
                   },
-                  style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+                  style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
                   icon: Icon(Icons.check),
                   label: Text(this.widget.newTile == null
                       ? AppLocalizations.of(context)!.add

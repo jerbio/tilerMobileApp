@@ -248,13 +248,16 @@ class TileWidgetState extends State<TileWidget>
     double iconSize = 20;
     double lottieHeight = 85;
     String lottieAsset =
-        isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
+        isTardy ? 'assets/lottie/redCars.json' :theme.brightness==Brightness.dark? 'assets/lottie/whiteCars.json': 'assets/lottie/blackCars.json';
 
     Color? textColor =
         isTardy ? TileColors.late : colorScheme.onSurface;
 
     List<LatitudeAndLongitude> latLongList = [];
-    Widget transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
+    Widget transitUIWidget = Lottie.asset(
+        lottieAsset,
+        height: lottieHeight,
+    );
     if (this.widget.subEvent.travelDetail != null) {
       TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
       int walkCount = 0;
@@ -671,7 +674,7 @@ class TileWidgetState extends State<TileWidget>
             widthFactor: TileDimensions.tileWidthRatio,
             child: Container(
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLowest,
                 border: Border.all(
                   color: this.widget.subEvent.isViable!
                       ? colorScheme.onInverseSurface

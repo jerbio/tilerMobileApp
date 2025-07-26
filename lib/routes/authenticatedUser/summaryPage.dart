@@ -192,7 +192,8 @@ class _SummaryPage extends State<SummaryPage> {
       height: 30,
       decoration: BoxDecoration(
           color:colorScheme.onSurface.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10)),
+          borderRadius: BorderRadius.circular(10)
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -242,7 +243,7 @@ Widget _mainBody({required int tileCount,required IconData headerIcon,required W
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color:colorScheme.surfaceContainerLow,
+          color:colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(10)
       ),
       child: Column(
@@ -262,8 +263,9 @@ Widget _mainBody({required int tileCount,required IconData headerIcon,required W
 Widget _emptyBody({required String lottieName, required String title}){
   return Container(
     decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(10)),
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(10)
+    ),
     child: Container(
         alignment: Alignment.center,
         child: Stack(
@@ -280,8 +282,8 @@ Widget _emptyBody({required String lottieName, required String title}){
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        colorScheme.surfaceContainerLow.withValues(alpha: 0.25),
-                        colorScheme.surfaceContainerLow.withValues(alpha: 0.9),
+                        colorScheme.surfaceContainerLowest.withValues(alpha: 0.25),
+                        colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
                       ])),
               width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
               height: 100,
@@ -375,6 +377,7 @@ Widget _emptyBody({required String lottieName, required String title}){
   Widget renderTile(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = TextButton(
       style: TextButton.styleFrom(
+          foregroundColor: colorScheme.tertiary,
           padding: EdgeInsets.all(0)
       ),
       onPressed:() =>  _toEditTile(subCalendarEventTile),
@@ -384,7 +387,8 @@ Widget _emptyBody({required String lottieName, required String title}){
                 width: 0.5,
                 color: subCalendarEventTile.priority == TilePriority.high
                     ?  TileColors.highPriority
-                    : Colors.transparent),
+                    : Colors.transparent
+            ),
             borderRadius: BorderRadius.circular(5)),
         padding: EdgeInsets.all(10),
         child: Row(
@@ -416,7 +420,7 @@ Widget _emptyBody({required String lottieName, required String title}){
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [renderChecklistDates(subCalendarEventTile)],
+             children: [renderChecklistDates(subCalendarEventTile)],
             ),
           ],
         ),
@@ -563,6 +567,7 @@ Widget _emptyBody({required String lottieName, required String title}){
         SubCalendarEvent e = entry.value;
         return TextButton(
             style: TextButton.styleFrom(
+                foregroundColor: colorScheme.tertiary,
                 padding: EdgeInsets.all(0)
             ),
             onPressed: switchTapFunction,

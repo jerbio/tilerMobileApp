@@ -232,7 +232,13 @@ class CustomTimeRestrictionRouteState
           child:Container(
             padding: EdgeInsets.only(bottom: 2),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: colorScheme.onInverseSurface.withLightness(0.7), width: 2)),
+              border: Border(
+                  bottom:
+                  BorderSide(
+                      color: colorScheme.onInverseSurface.withLightness(0.7),
+                      width: 2,
+                  ),
+              ),
             ),
             child: Text(
               localizations.formatTimeOfDay(dayOfWeekRestriction.start),
@@ -269,7 +275,10 @@ class CustomTimeRestrictionRouteState
           padding: EdgeInsets.only(bottom: 2),
           decoration: BoxDecoration(
             border: Border(
-                bottom: BorderSide(color: colorScheme.onInverseSurface.withLightness(0.7), width: 2)),
+                bottom: BorderSide(
+                    color: colorScheme.onInverseSurface.withLightness(0.7),
+                    width: 2),
+            ),
           ),
           child: Text(
             localizations.formatTimeOfDay(dayOfWeekRestriction.end),

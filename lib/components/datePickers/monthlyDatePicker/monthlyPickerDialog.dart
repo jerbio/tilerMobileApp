@@ -60,7 +60,8 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: -math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: colorScheme.onPrimary),
+                          color: colorScheme.onPrimary,
+                      ),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()
@@ -70,7 +71,8 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: colorScheme.onPrimary),
+                          color: colorScheme.onPrimary,
+                      ),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()

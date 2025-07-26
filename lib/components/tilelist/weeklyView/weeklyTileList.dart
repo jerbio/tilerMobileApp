@@ -117,7 +117,7 @@ class _WeeklyTileListState extends TileListState {
                     Icon(Icons.error, color: colorScheme.error, size: 20.0),
                     Text(
                       (dayData.nonViable?.length ?? 0).toString(),
-                      style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh, size:20),
+                      style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary, size:20),
                     )
                   ],
                 ),
@@ -213,6 +213,7 @@ class _WeeklyTileListState extends TileListState {
         child: Container(
           margin: EdgeInsets.only(top: 200, right: 5, left: 5),
           child: RefreshIndicator(
+            color: colorScheme.tertiary,
             onRefresh: handleRefresh,
             child: ListView(
               scrollDirection: Axis.vertical,

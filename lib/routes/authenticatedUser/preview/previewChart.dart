@@ -51,16 +51,19 @@ class _PreviewChartState extends State<PreviewChart> {
     return Container(
       width: 120,
       height: 120,
-      decoration: BoxDecoration(boxShadow: [
+      decoration: BoxDecoration(
+        boxShadow: [
          BoxShadow(
-          color: tileThemeExtension.shadowLow.withValues(alpha: 0.5),
+          color: tileThemeExtension.shadowPreviewChartIconographyOuter.withValues(alpha: 0.5),
         ),
         BoxShadow(
-          color:  tileThemeExtension.shadowInverse,
+          color:  tileThemeExtension.shadowPreviewChartIconographyInner,
           spreadRadius: -4.0,
           blurRadius: 12.0,
         ),
-      ], borderRadius: BorderRadius.circular(110)),
+       ],
+        borderRadius: BorderRadius.circular(110)
+      ),
       child: Container(
           margin: EdgeInsets.fromLTRB(0, 70, 0, 0),
           child: this.icon ?? SizedBox.shrink()),
@@ -135,7 +138,10 @@ class _PreviewChartState extends State<PreviewChart> {
 
   Widget getCenterWidget() {
     return Stack(
-      children: [renderMiddleIconography(), ratioImagery()],
+      children: [
+        renderMiddleIconography(),
+        ratioImagery()
+      ],
     );
   }
 

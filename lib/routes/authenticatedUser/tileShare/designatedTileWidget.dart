@@ -313,7 +313,8 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.all(0),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    )),
+                    ),
+                ),
               ),
               if (designatedTile.invitationStatus !=
                   InvitationStatus.accepted.name.toString())

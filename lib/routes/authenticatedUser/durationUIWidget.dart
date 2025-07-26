@@ -31,7 +31,7 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
     int minute = this._duration.inMinutes.floor() - (totalHoursFloor * 60);
     TextStyle unitTimeStyle= TextStyle(
         fontFamily: TileTextStyles.rubikFontName,
-        color: tileThemeExtension.onSurfaceTertiary,
+        color: tileThemeExtension.onSurfaceHint,
         fontSize: 35,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);

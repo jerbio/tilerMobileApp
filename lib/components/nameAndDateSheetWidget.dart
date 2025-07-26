@@ -72,14 +72,16 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           Icon(
             Icons.calendar_month,
-            color: tileThemeExtension.onSurfaceQuaternary,
+            color: tileThemeExtension.onSurfaceSecondary,
           ),
           Container(
             padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
             child: TextButton(
               style: TextButton.styleFrom(
                 textStyle: const TextStyle(
-                    fontSize: 20, fontFamily: TileTextStyles.rubikFontName),
+                    fontSize: 20,
+                    fontFamily: TileTextStyles.rubikFontName,
+                ),
               ),
               onPressed: () async {
                 DateTime _endDate = this.endTime ?? Utility.currentTime();
@@ -102,7 +104,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                 style: endTime == null
                     ? TextStyle(
                         fontFamily: TileTextStyles.rubikFontName,
-                        color: tileThemeExtension.onSurfaceHint)
+                        color: tileThemeExtension.onSurfaceDeadlineUnset)
                     : TextStyle(
                         fontFamily: TileTextStyles.rubikFontName,
                         color: colorScheme.onSurface),
@@ -117,9 +119,9 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
   @override
   Widget build(BuildContext context) {
     final Container heightSpacer = Container(
-      color: colorScheme.surfaceContainerLow,
+      color: colorScheme.surfaceContainerLowest,
       child:  ColoredBox(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
       ),
     );
     return Container(
@@ -134,7 +136,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           this.widget.appBar ?? SizedBox.shrink(),
           Container(
-            color:colorScheme.surfaceContainerLow,
+            color:colorScheme.surfaceContainerLowest,
             child: EditTileName(
               tileName: tileName ?? "",
               onInputChange: onNameChange,
@@ -146,12 +148,12 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
             ),
           ),
           heightSpacer,
-          Container(color: colorScheme.surfaceContainerLow, child: renderEndtime()),
+          Container(color: colorScheme.surfaceContainerLowest, child: renderEndtime()),
           heightSpacer,
           tileName != this.widget.name || endTime != this.widget.endTime
               ? Container(
                   width: MediaQuery.sizeOf(context).width,
-                  color:colorScheme.surfaceContainerLow,
+                  color:colorScheme.surfaceContainerLowest,
                   child: ElevatedButton.icon(
                       onPressed: () {
                         if ((tileName.isNot_NullEmptyOrWhiteSpace() &&
@@ -166,7 +168,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                           }
                         }
                       },
-                      style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+                      style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
                       icon: Icon(Icons.check),
                       label: Text(AppLocalizations.of(context)!.update)),
                 )

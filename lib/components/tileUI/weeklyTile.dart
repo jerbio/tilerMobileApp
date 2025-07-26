@@ -5,6 +5,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class WeeklyTileWidget extends StatefulWidget {
@@ -26,6 +27,8 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth - 16) / 7 - 6;
     Widget? emojiField;
@@ -67,7 +70,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
             color: widget.isPreceding
                 ? widget.subEvent.isComplete
                     ? TileColors.completedGreen
-                    : colorScheme.onSurfaceVariant
+                    : tileThemeExtension.onSurfaceVariantSecondary
                 : colorScheme.onInverseSurface,
             width: 2,
           ),

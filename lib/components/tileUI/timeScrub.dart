@@ -77,7 +77,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
         fontFamily: TileTextStyles.rubikFontName,
         fontSize: 10,
         color: this.widget.loadTimeScrub
-            ? colorScheme.onInverseSurface
+            ? TileColors.lightContent
             : colorScheme.onSurface);
     String locale = Localizations.localeOf(context).languageCode;
     bool isToday = widget.timeline.isInterfering(Utility.todayTimeline());
@@ -105,8 +105,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(10.0)),
             color: this.widget.loadTimeScrub
-                ? colorScheme.surfaceContainerLow
-                : tileThemeExtension!.surfaceContainerPlus.withValues(alpha: 0.2),
+                ? colorScheme.surfaceContainerLowest
+                : tileThemeExtension!.surfaceContainerMaximum.withValues(alpha: 0.2),
           ),
         );
         var scrubberElements = <Widget>[backgroundShade];
@@ -137,10 +137,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   color: Color.fromRGBO(colorRed, colorGreen, colorBlue, 1),
                   boxShadow: [
                     BoxShadow(
-                        color: tileThemeExtension!.shadowHigher.withValues(alpha: 0.9),
+                        color: tileThemeExtension!.shadowTimeScrubMovingBall.withValues(alpha: 0.9),
                         blurRadius: 2,
                         spreadRadius: 2),
-                  ]),
+                  ]
+              ),
             ),
           ); // moving ball
           scrubberElements.add(usedUpTimeWidget);

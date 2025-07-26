@@ -76,9 +76,14 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
             padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
             height: TileDimensions.inputHeight,
             decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLow,
+                color: colorScheme.surfaceContainerLowest,
                 borderRadius: TileDimensions.inputFieldBorderRadius,
-                boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowHigh)]),
+                border: Border.all(
+                  color: colorScheme.onInverseSurface,
+                  width: 1.5,
+                ),
+                boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowMainInputContainer)]
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [

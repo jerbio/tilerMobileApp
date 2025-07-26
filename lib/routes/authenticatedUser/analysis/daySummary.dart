@@ -48,12 +48,13 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: Theme.of(context).colorScheme.primary.withAlpha(50),
-        highlightColor: Colors.white.withAlpha(100),
+        baseColor: colorScheme.primary.withAlpha(50),
+        highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
         child: Container(
           decoration: BoxDecoration(
               color:colorScheme.onSurface.withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(8)),
+              borderRadius: BorderRadius.circular(8),
+          ),
           width: 30.0,
           height: 30.0,
         ));
@@ -70,7 +71,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.nonViable?.length ?? 0).toString(),
-              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -91,7 +92,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.complete?.length ?? 0).toString(),
-              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -114,7 +115,7 @@ class _DaySummaryState extends State<DaySummary> {
             ),
             Text(
               (dayData?.tardy?.length ?? 0).toString(),
-              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceVariantHigh),
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),

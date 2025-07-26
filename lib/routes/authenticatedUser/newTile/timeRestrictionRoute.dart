@@ -163,7 +163,7 @@ class _PreloadedRestrictionsRouteState
       }
     }
     var buttonStyle = _isAnyTime
-        ? TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary)
+        ? TileButtonStyles.enabled(borderColor: colorScheme.primary)
         : TileButtonStyles.selected(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary);
 
     return Scaffold(

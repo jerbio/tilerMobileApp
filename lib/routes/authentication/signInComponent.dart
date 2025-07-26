@@ -163,7 +163,7 @@ class SignInComponentState extends State<SignInComponent>
   void didChangeDependencies() {
     theme=Theme.of(context);
     colorScheme=theme.colorScheme;
-    inputFieldFillColor=colorScheme.surfaceContainerLow;
+    inputFieldFillColor=colorScheme.surfaceContainerLowest;
     tileThemeExtension=theme.extension<TileThemeExtension>()!;
     elevatedButtonStyle= ElevatedButton.styleFrom(
       foregroundColor: colorScheme.tertiary,
@@ -500,12 +500,12 @@ class SignInComponentState extends State<SignInComponent>
       ),
       child: Row(children: [
         CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.surfaceContainerLow)),
+            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.surfaceContainerLowest)),
         Container(
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Text(
               message,
-              style: TextStyle(color: colorScheme.surfaceContainerLow, fontSize: 20),
+              style: TextStyle(color: colorScheme.surfaceContainerLowest, fontSize: 20),
             ))
       ]),
     )));
@@ -887,7 +887,7 @@ class SignInComponentState extends State<SignInComponent>
                 onPressed: signInToGoogle,
                 icon: FaIcon(
                   FontAwesomeIcons.google,
-                  color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                  color: TileColors.lightContent,
                 ),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
           )
@@ -1026,7 +1026,7 @@ class SignInComponentState extends State<SignInComponent>
             color: colorScheme.surface.withValues(alpha: 0.2),
             boxShadow: [
               BoxShadow(
-                  color: tileThemeExtension.shadowLowest.withValues(alpha:0.25), spreadRadius: 5),
+                  color: tileThemeExtension.shadowSignInContainer.withValues(alpha:0.25), spreadRadius: 5),
             ],
           ),
           padding: EdgeInsets.symmetric(

@@ -34,7 +34,7 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
           ? tileName.substring(0, _maxLengthOfSuggestion) + "..."
           : tileName;
       return OutlinedButton(
-          style: TileButtonStyles.suggested(foregroundColor: colorScheme.primary),
+          style: TileButtonStyles.suggested(),
           onPressed: () {
             final autoTile = AutoTile(
               description: tileName!,
