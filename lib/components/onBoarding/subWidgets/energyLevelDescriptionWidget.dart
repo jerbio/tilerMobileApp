@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
 
 class EnergyLevelDescriptionWidget extends StatelessWidget {
@@ -9,6 +10,7 @@ class EnergyLevelDescriptionWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     final appLocalizations=  AppLocalizations.of(context)!;
     return OnboardingSubWidget(
       questionText:
@@ -18,7 +20,7 @@ class EnergyLevelDescriptionWidget extends StatelessWidget {
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30.0),
-          border: Border.all(color: colorScheme.onSurfaceVariant),
+          border: Border.all(color: tileThemeExtension.onSurfaceVariantSecondary),
         ),
         child: BlocBuilder<OnboardingBloc, OnboardingState>(
           builder: (context, state) {

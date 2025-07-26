@@ -81,7 +81,7 @@ class MonthlyTileBatchState extends TileBatchState {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
-    final tileThemeExtension=  theme.extension<TileThemeExtension>();
+    final tileThemeExtension=  theme.extension<TileThemeExtension>()!;
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth - 10) / 7 - 4;
     renderedTiles.clear();
@@ -153,7 +153,7 @@ class MonthlyTileBatchState extends TileBatchState {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            backgroundColor: colorScheme.surfaceContainerLow,
+            backgroundColor: colorScheme.surfaceContainerLowest,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
                   top: Radius.circular(TileDimensions.borderRadius)),
@@ -218,7 +218,7 @@ class MonthlyTileBatchState extends TileBatchState {
                 margin: EdgeInsets.only(left: 2, top: 2),
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: tileThemeExtension!.surfaceContainerGreater,
+                  color:tileThemeExtension.surfaceContainerGreater,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child:Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!).toString().padLeft(2, '0')),

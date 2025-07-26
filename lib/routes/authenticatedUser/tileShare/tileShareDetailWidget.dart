@@ -332,9 +332,10 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     return this.widget.isOutBox != false;
   }
 
+  //ey: not used
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },

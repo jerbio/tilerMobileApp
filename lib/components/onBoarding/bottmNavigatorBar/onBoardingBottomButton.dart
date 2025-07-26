@@ -33,7 +33,7 @@ class onBoardingBottomButton extends StatelessWidget {
         height: 60.0,
         child: IconButton(
             iconSize: 32.0,
-            icon: Icon(icon, color:colorScheme.onInverseSurface),
+            icon: Icon(icon, color:colorScheme.onPrimary),
             onPressed: press),
       ),
     );

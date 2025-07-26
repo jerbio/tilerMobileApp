@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -64,7 +63,7 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
             fontFamily: TileTextStyles.rubikFontName,
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: colorScheme.onInverseSurface
+            color:  TileColors.lightContent,
         )
       ),
     );
@@ -74,7 +73,7 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
       height: 76,
       margin: const EdgeInsets.fromLTRB(25, 0, 20, 0),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(38),
       ),
       child: Image.asset(
@@ -120,7 +119,7 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
               child: Container(
                 height: 350,
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow,
+                  color: colorScheme.surfaceContainerLowest,
                   border: Border.all(
                     color: colorScheme.onInverseSurface,
                     width: 5,
@@ -128,7 +127,7 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
                   borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: tileThemeExtension!.shadowBase.withValues(alpha: 0.5),
+                      color: tileThemeExtension!.shadowSecondary.withValues(alpha: 0.5),
                       spreadRadius: 10,
                       blurRadius: 20,
                       offset: Offset(0, 1),

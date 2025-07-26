@@ -135,7 +135,10 @@ class WeeklyPickerDialog extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-              icon: Icon(Icons.arrow_back),
+              icon: Icon(
+                  Icons.arrow_back,
+                  color: colorScheme.onSurface,
+              ),
               onPressed: () => context.read<WeeklyUiDateManagerBloc>().add(
                   UpdateTempDate(
                       tempDate: DateTime(
@@ -152,7 +155,10 @@ class WeeklyPickerDialog extends StatelessWidget {
             ),
           ),
           IconButton(
-              icon: Icon(Icons.arrow_forward),
+              icon: Icon(
+                  Icons.arrow_forward,
+                color: colorScheme.onSurface,
+              ),
               onPressed: () => context.read<WeeklyUiDateManagerBloc>().add(
                   UpdateTempDate(
                       tempDate: DateTime(
@@ -170,6 +176,7 @@ class WeeklyPickerDialog extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: colorScheme.surfaceContainerHigh,
           title: Text(
             AppLocalizations.of(context)!.selectYear,
           ),

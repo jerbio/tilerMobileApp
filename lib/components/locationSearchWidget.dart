@@ -205,11 +205,11 @@ class LocationSearchState extends SearchWidgetState {
                 child: Container(
                   height: 100,
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
+                    color: colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                     boxShadow: [
                       BoxShadow(
-                        color: tileThemeExtension.shadowInverseVariant.withValues(alpha: 0.2),
+                        color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
                         spreadRadius: 5,
                         blurRadius: 5,
                         offset: Offset(0, 1),
@@ -225,7 +225,7 @@ class LocationSearchState extends SearchWidgetState {
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                     boxShadow: [
                       BoxShadow(
-                        color: tileThemeExtension.shadowBase.withValues(alpha: 0.2),
+                        color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.2),
                         spreadRadius: 5,
                         blurRadius: 5,
                         offset: Offset(0, 1),

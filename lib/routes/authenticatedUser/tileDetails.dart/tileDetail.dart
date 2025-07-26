@@ -70,11 +70,7 @@ class _TileDetailState extends State<TileDetail> {
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   RestrictionProfile? _workRestrictionProfile;
   RestrictionProfile? _personalRestrictionProfile;
-  final TextStyle defaultFontStyle = TextStyle(
-      fontFamily: TileTextStyles.rubikFontName,
-      fontWeight: FontWeight.normal,
-      fontSize: 24
-  );
+  late TextStyle defaultFontStyle ;
   static final String tileDetailCancelAndProceedRouteName =
       "tileDetailCancelAndProceedRouteName";
 late ThemeData theme;
@@ -140,6 +136,12 @@ late TileThemeExtension tileThemeExtension;
     theme=Theme.of(context);
     colorScheme=theme.colorScheme;
     tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    defaultFontStyle= TextStyle(
+        fontFamily: TileTextStyles.rubikFontName,
+        fontWeight: FontWeight.normal,
+        fontSize: 24,
+        color: colorScheme.tertiary
+    );
     super.didChangeDependencies();
   }
 
@@ -331,12 +333,13 @@ late TileThemeExtension tileThemeExtension;
       });
     });
   }
+
   Widget _mainContainer({required Widget child,required IconData icon, EdgeInsets? padding,  EdgeInsets? childPadding}){
     return Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
         padding: padding ?? EdgeInsets.fromLTRB(10, 0, 0, 0),
         decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerLow,
+            color: colorScheme.surfaceContainerLowest,
             borderRadius: TileDimensions.inputFieldBorderRadius,
             border: Border.all(
               color: colorScheme.onInverseSurface,
@@ -396,13 +399,15 @@ late TileThemeExtension tileThemeExtension;
           icon: Icons.timelapse_outlined,
           child: TextButton(
             style: TextButton.styleFrom(
-              textStyle:  const TextStyle(
+              foregroundColor: colorScheme.tertiary,
+              textStyle: TextStyle(
                 fontSize: 20,
               ),
             ),
             onPressed: setDuration,
             child: Text(
               textButtonString,
+              style: TextStyle(),
             ),
           ),
         )
@@ -416,6 +421,7 @@ late TileThemeExtension tileThemeExtension;
         icon: Icons.location_pin,
         child:TextButton(
           style: TextButton.styleFrom(
+            foregroundColor: colorScheme.tertiary,
             textStyle: const TextStyle(
               fontSize: 20,
             ),
@@ -425,7 +431,8 @@ late TileThemeExtension tileThemeExtension;
             locationString,
             style: defaultFontStyle,
           ),
-        ));
+        )
+      );
     };
 
     var locBlocState = this.context.read<LocationBloc>().state;
@@ -845,32 +852,7 @@ late TileThemeExtension tileThemeExtension;
               if (tileEndWidget != null) {
                 inputChildWidgets.add(tileEndWidget);
               }
-              List<SubCalendarEvent> testSubEvents = [
-                SubCalendarEvent.fromJson({
-                  "id": "test-1",
-                  "name": "Test Task 1",
-                  "start": DateTime.now().millisecondsSinceEpoch,
-                  "end": DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch,
-                  "colorRed": 255,
-                  "colorGreen": 100,
-                  "colorBlue": 100,
-                  "isViable": true,
-                  "isEnabled": true,
-                  "isComplete": false
-                }),
-                SubCalendarEvent.fromJson({
-                  "id": "test-2",
-                  "name": "Test Task 2",
-                  "start": DateTime.now().add(Duration(hours: 2)).millisecondsSinceEpoch,
-                  "end": DateTime.now().add(Duration(hours: 3)).millisecondsSinceEpoch,
-                  "colorRed": 100,
-                  "colorGreen": 255,
-                  "colorBlue": 100,
-                  "isViable": true,
-                  "isEnabled": true,
-                  "isComplete": false
-                }),
-              ];
+
               if (subEvents != null && subEvents!.length > 0) {
                 inputChildWidgets.add(FractionallySizedBox(
                     widthFactor: TileDimensions.tileWidthRatio,

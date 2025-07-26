@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
@@ -9,6 +10,7 @@ import 'package:tiler_app/services/accessManager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class LocationAccessWidget extends StatefulWidget {
@@ -26,6 +28,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
   bool isLocationRequestTriggered = false;
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -40,37 +43,38 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
 
   @override
   void didChangeDependencies() {
-   theme=Theme.of(context);
-   colorScheme=theme.colorScheme;
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
   VoidCallback generateCallBack(
       {bool forceDeviceCheck = false,
-      bool statusCheck = false,
-      bool? denyAccess,
-      bool doNotCallAgain = false,
-      bool enableCallBack = true}) {
+        bool statusCheck = false,
+        bool? denyAccess,
+        bool doNotCallAgain = false,
+        bool enableCallBack = true}) {
     VoidCallback retValue = () async {
       setState(() {
         isLocationRequestTriggered = true;
       });
       await accessManager
           .locationAccess(
-              forceDeviceCheck: forceDeviceCheck,
-              statusCheck: statusCheck,
-              denyAccess: denyAccess ?? false)
+          forceDeviceCheck: forceDeviceCheck,
+          statusCheck: statusCheck,
+          denyAccess: denyAccess ?? false)
           .then((value) {
         print('LocationAccessWidgetState.generateCallBack: value: $value');
         String loadedId = Utility.getUuid;
         if (BlocProvider.of<DeviceSettingBloc>(context)
-                is DeviceLocationSettingLoading &&
+        is DeviceLocationSettingLoading &&
             (BlocProvider.of<DeviceSettingBloc>(context)
-                        as DeviceLocationSettingLoading)
-                    .id !=
+            as DeviceLocationSettingLoading)
+                .id !=
                 null) {
           loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
-                  as DeviceLocationSettingLoading)
+          as DeviceLocationSettingLoading)
               .id!;
         } else {
           print('Not DeviceLocationSettingLoading');
@@ -113,14 +117,16 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         child: SizedBox(
           width: buttonWidth,
           child: ElevatedButton(
-              onPressed: generateCallBack(forceDeviceCheck: true),
-              child: Text(AppLocalizations.of(context)!.allow,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontWeight: FontWeight.w400,
-                  ))),
+            onPressed: generateCallBack(forceDeviceCheck: true),
+            child: Text(AppLocalizations.of(context)!.allow,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 25,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
         ),
       ),
       Container(
@@ -128,15 +134,18 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         child: SizedBox(
           width: buttonWidth,
           child: ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: colorScheme.onSurfaceVariant),
-              onPressed: generateCallBack(denyAccess: true),
-              child: Text(AppLocalizations.of(context)!.deny,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 25,
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontWeight: FontWeight.w400,
-                  ))),
+            style: ElevatedButton.styleFrom(backgroundColor: tileThemeExtension.surfaceContainerSuperior
+            ),
+            onPressed: generateCallBack(denyAccess: true),
+            child: Text(AppLocalizations.of(context)!.deny,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 25,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontWeight: FontWeight.w400,
+              ),
+            ),
+          ),
         ),
       )
     ];
@@ -150,22 +159,26 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
 
     if (Platform.isIOS) {
       var iosCallBackButtonPress =
-          generateCallBack(denyAccess: false, forceDeviceCheck: true);
+      generateCallBack(denyAccess: false, forceDeviceCheck: true);
       acceptDenyButtons = [
         Container(
           margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
           child: SizedBox(
             width: buttonWidth,
             child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: colorScheme.onSurfaceVariant),
-                onPressed: iosCallBackButtonPress,
-                child: Text(AppLocalizations.of(context)!.dismiss,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 25,
-                      fontFamily: TileTextStyles.rubikFontName,
-                      fontWeight: FontWeight.w400,
-                    ))),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: tileThemeExtension.surfaceContainerSuperior
+              ),
+              onPressed: iosCallBackButtonPress,
+              child: Text(AppLocalizations.of(context)!.dismiss,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 25,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ),
           ),
         )
       ];
@@ -185,7 +198,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           alignment: Alignment.center,
           width: MediaQuery.of(context).size.width * TileDimensions.tileWidthRatio,
           height:
-              MediaQuery.of(context).size.height * TileDimensions.tileWidthRatio,
+          MediaQuery.of(context).size.height * TileDimensions.tileWidthRatio,
           child: Stack(
             alignment: Alignment.center,
             children: [

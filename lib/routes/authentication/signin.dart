@@ -96,9 +96,9 @@ class SignInRouteState extends State<SignInRoute> {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    colorScheme.surfaceContainerLow,
-                    colorScheme.surfaceContainerLow,
-                    colorScheme.surfaceContainerLow,
+                    colorScheme.surfaceContainerLowest,
+                    colorScheme.surfaceContainerLowest,
+                    colorScheme.surfaceContainerLowest,
                     colorScheme.tertiaryContainer,
                     colorScheme.tertiaryContainer,
                     colorScheme.tertiaryContainer,

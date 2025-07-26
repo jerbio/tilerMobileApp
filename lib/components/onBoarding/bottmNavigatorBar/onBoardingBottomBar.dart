@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingBottomButton.dart';
 
 class OnboardingBottomNavigationBar extends StatelessWidget {
@@ -17,7 +18,7 @@ class OnboardingBottomNavigationBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
-    final coloScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20.0, right: 20, left: 20),
@@ -54,7 +55,7 @@ class OnboardingBottomNavigationBar extends StatelessWidget {
              child: Text(
                 AppLocalizations.of(context)!.skip,
                 style: TextStyle(
-                    color: coloScheme.onSurfaceVariant,
+                    color: tileThemeExtension.onSurfaceVariantSecondary,
                     fontSize: 22
                 ),
              ),

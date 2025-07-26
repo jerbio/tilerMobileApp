@@ -87,7 +87,7 @@ class _EditTileDateState extends State<EditTileDate> {
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
-                    color: tileThemeExtension.onSurfaceQuaternary,
+                    color: tileThemeExtension.onSurfaceSecondary,
                     size: 25,
                   )),
               Text(

@@ -172,7 +172,7 @@ class _CreateTileShareClusterWidgetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ElevatedButton.icon(
-              style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+              style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
               onPressed: () {
                 renderModal();
               },
@@ -244,7 +244,7 @@ class _CreateTileShareClusterWidgetState
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
-          style:  TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+          style:  TileButtonStyles.enabled(borderColor: colorScheme.primary),
           onPressed: () {
             Navigator.push(
                 context,

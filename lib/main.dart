@@ -31,7 +31,6 @@ import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accou
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/notificationPreferences.dart';
-//import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/tilePreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
@@ -47,7 +46,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
-import 'routes/authentication/PreAuthenticationRoute.dart';
 import 'routes/authentication/authorizedRoute.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -178,8 +176,8 @@ class _TilerAppState extends State<TilerApp> {
               return MaterialApp(
                 title: 'Tiler',
                 debugShowCheckedModeBanner: false,
-                theme: TileThemeData.getLightTheme(),
-                darkTheme: TileThemeData.getDarkTheme(),
+                theme: TileThemeData.lightTheme,
+                darkTheme: TileThemeData.darkTheme,
                 themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
                 routes: <String, WidgetBuilder>{
                   '/AuthorizedUser': (BuildContext context) =>

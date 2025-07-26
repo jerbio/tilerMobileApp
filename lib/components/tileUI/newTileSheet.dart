@@ -109,9 +109,6 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
-      foregroundColor: WidgetStateProperty.resolveWith((states) {
-        return colorScheme.primary;
-      }),
       minimumSize: WidgetStateProperty.resolveWith((states) {
         return Size(MediaQuery.sizeOf(context).width - 20, 50);
       }),
@@ -306,7 +303,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           backgroundColor: isLoaded
               ? colorScheme.primary
-              : colorScheme.surfaceContainerLow,
+              : colorScheme.surfaceContainerLowest,
         ));
   }
 
@@ -496,7 +493,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerLow,
+                      color: colorScheme.surfaceContainerLowest,
                     ),
                     padding: EdgeInsets.all(16),
                     child: Text(

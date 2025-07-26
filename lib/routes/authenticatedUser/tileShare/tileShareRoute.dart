@@ -33,7 +33,7 @@ class _TileShareState extends State<TileShareRoute> {
           ),
           actions: [
             ElevatedButton.icon(
-                style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+                style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
                 onPressed: () {
                   Navigator.push(
                       context,
@@ -104,7 +104,7 @@ class _TileShareState extends State<TileShareRoute> {
                 ],
               )),
             ],
-            dividerColor: colorScheme.onPrimary,
+            dividerColor: colorScheme.surfaceContainerLowest,
             indicatorColor: colorScheme.onPrimary,
           ),
         ),

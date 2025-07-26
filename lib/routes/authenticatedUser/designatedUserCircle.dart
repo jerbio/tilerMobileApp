@@ -55,7 +55,10 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           height: 14,
           width: 25,
           decoration: BoxDecoration(
-            border: Border.all(color: colorScheme.surfaceContainerLow, width: 1),
+            border: Border.all(
+                color: colorScheme.surfaceContainerLowest,
+                width: 1
+            ),
             borderRadius: BorderRadius.circular(5),
             color: pct > 66.66
                 ? TileColors.highCompletionTileShare
@@ -68,7 +71,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
             style: TextStyle(
                 fontSize: 7,
                 fontFamily: TileTextStyles.rubikFontName,
-                color: tileThemeExtension.onFixedColors),
+                color: TileColors.lightContent),
           ),
         ),
       );
@@ -89,7 +92,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           ),
           child: Icon(
             Icons.check,
-            color: tileThemeExtension.onFixedColors,
+            color: TileColors.lightContent,
             size: 12.8,
             weight: 32,
           ),
@@ -110,7 +113,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
           ),
           child: Icon(
             Icons.dnd_forwardslash_outlined,
-            color: tileThemeExtension.onFixedColors,
+            color: TileColors.lightContent,
             size: 12.8,
             weight: 32,
           ),
@@ -124,7 +127,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
   Widget build(BuildContext context) {
     BoxDecoration inActiveDecoration = BoxDecoration(
         shape: BoxShape.circle,
-        color: this.widget.color ?? colorScheme.surfaceContainerLow,
+        color: this.widget.color ?? colorScheme.surfaceContainerLowest,
         border: Border.all(
           color: Colors.transparent,
           width: 5,
@@ -143,7 +146,7 @@ class _DesignatedUserCircleState extends State<DesignatedUserCircle> {
               style: TextStyle(
                   fontSize: 16,
                   fontFamily: TileTextStyles.rubikFontName,
-                  color: tileThemeExtension.onFixedColors))),
+                  color: TileColors.lightContent))),
       _subScriptWidget()
     ]);
   }
