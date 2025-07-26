@@ -17,6 +17,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/widgets/day_timeline_view.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -774,7 +775,6 @@ class _DailyTileListState extends TileListState {
       ],
       child: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
-          // print("Day tile list refeshing " + state.toString());
           if (state is ScheduleInitialState) {
             context.read<ScheduleBloc>().add(GetScheduleEvent(
                 scheduleTimeline: timeLine,
@@ -787,20 +787,21 @@ class _DailyTileListState extends TileListState {
             if (!(state is DelayedScheduleLoadedState)) {
               handleNotificationsAndNextTile(state.subEvents);
             }
-            List<Timeline> scheduleTimelines = state.timelines;
-            List<SubCalendarEvent> scheduleSubCalendarEvent = state.subEvents;
-            if (loadedTimeline != null) {
-              scheduleTimelines = loadedTimeline!;
+
+            // Get the current selected date from UI date manager
+            DateTime selectedDate = DateTime.now();
+            final uiDateManagerState = context.read<UiDateManagerBloc>().state;
+            if (uiDateManagerState is UiDateManagerUpdated) {
+              selectedDate = uiDateManagerState.currentDate;
             }
 
-            if (loadedSubCalendarEvent != null) {
-              scheduleSubCalendarEvent = loadedSubCalendarEvent!;
-            }
-            return Stack(
-              children: [
-                buildDailyRenderSubCalendarTiles(
-                    Tuple2(scheduleTimelines, scheduleSubCalendarEvent))
-              ],
+            // Convert SubCalendarEvents to TilerEvents and use DayTimelineView
+            List<TilerEvent> tilerEvents = state.subEvents.cast<TilerEvent>();
+
+            return DayTimelineView(
+              tilerEvents: tilerEvents,
+              forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
+              selectedDate: selectedDate,
             );
           }
 
@@ -816,17 +817,43 @@ class _DailyTileListState extends TileListState {
             if (showPendingUI) {
               return renderPending();
             }
-            return Stack(children: [
-              buildDailyRenderSubCalendarTiles(
-                  Tuple2(state.timelines, state.subEvents))
-            ]);
+
+            // Get the current selected date from UI date manager
+            DateTime selectedDate = DateTime.now();
+            final uiDateManagerState = context.read<UiDateManagerBloc>().state;
+            if (uiDateManagerState is UiDateManagerUpdated) {
+              selectedDate = uiDateManagerState.currentDate;
+            }
+
+            // Convert SubCalendarEvents to TilerEvents and use DayTimelineView
+            List<TilerEvent> tilerEvents = state.subEvents.cast<TilerEvent>();
+
+            return DayTimelineView(
+              tilerEvents: tilerEvents,
+              forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
+              selectedDate: selectedDate,
+            );
           }
 
           if (state is ScheduleEvaluationState) {
+            // Get the current selected date from UI date manager
+            DateTime selectedDate = DateTime.now();
+            final uiDateManagerState = context.read<UiDateManagerBloc>().state;
+            if (uiDateManagerState is UiDateManagerUpdated) {
+              selectedDate = uiDateManagerState.currentDate;
+            }
+
+            // Convert SubCalendarEvents to TilerEvents and use DayTimelineView
+            List<TilerEvent> tilerEvents = state.subEvents.cast<TilerEvent>();
+
             return Stack(
               children: [
-                buildDailyRenderSubCalendarTiles(
-                    Tuple2(state.timelines, state.subEvents)),
+                DayTimelineView(
+                  tilerEvents: tilerEvents,
+                  forecastMode:
+                      true, // Always show forecast mode during evaluation
+                  selectedDate: selectedDate,
+                ),
                 PendingWidget(
                   imageAsset: TileStyles.evaluatingScheduleAsset,
                 ),

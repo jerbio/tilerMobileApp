@@ -25,6 +25,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/demo/day_timeline_demo.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
@@ -173,6 +174,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
         return DailyTileList();
+      // return DayTimelineDemo();
       case AuthorizedRouteTileListPage.Weekly:
         return WeeklyTileList();
       case AuthorizedRouteTileListPage.Monthly:

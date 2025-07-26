@@ -45,7 +45,7 @@ class TilerEvent extends TilerObj with TimeRange {
     return _isProcrastinate;
   }
 
-  bool? get isRigid {
+  bool get isRigid {
     return _isRigid;
   }
 
@@ -217,6 +217,10 @@ class TilerEvent extends TilerObj with TimeRange {
     this._colorGreen = color?.green;
     this._colorRed = color?.red;
     this._colorOpacity = color?.opacity;
+  }
+
+  set isRigid(bool isRigidFlag) {
+    this._isRigid = isRigidFlag;
   }
 
   int? get colorRed {
