@@ -43,7 +43,7 @@ class _TileSummaryState extends State<TileSummary> {
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor = (subEvent.isViable ?? true)
         ? Color.fromRGBO(redColor, greenColor, blueColor, 0.2)
-        : tileThemeExtension.surfaceContainerMaximum;
+        :tileThemeExtension.surfaceContainerPlus;
     int currentMsTime = Utility.msCurrentTime;
     late String temporalTextStatus = '';
     Duration duration = Duration();
@@ -77,7 +77,9 @@ class _TileSummaryState extends State<TileSummary> {
       margin: EdgeInsets.all(10),
       padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
-          color: tileBackGroundColor, borderRadius: BorderRadius.circular(8)),
+          color: tileBackGroundColor,
+          borderRadius: BorderRadius.circular(8),
+      ),
       child: Stack(
         children: [
           Positioned(
@@ -127,7 +129,8 @@ class _TileSummaryState extends State<TileSummary> {
                       height: iconSize,
                       decoration: BoxDecoration(
                           color: colorScheme.onSurface.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(8),
+                      ),
                       child: Icon(
                         Icons.access_time_sharp,
                         color: (subEvent.isTardy ?? false)
@@ -159,7 +162,8 @@ class _TileSummaryState extends State<TileSummary> {
                               height: iconSize,
                               decoration: BoxDecoration(
                                   color: colorScheme.onSurface.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8)),
+                                  borderRadius: BorderRadius.circular(8),
+                              ),
                               child: Icon(
                                 Icons.check_circle_outline_outlined,
                                 color:TileColors.completedGreen,
@@ -187,7 +191,8 @@ class _TileSummaryState extends State<TileSummary> {
                                   height: iconSize,
                                   decoration: BoxDecoration(
                                       color:colorScheme.onSurface.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8)),
+                                      borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: Icon(
                                     Icons.cancel_outlined,
                                     color: colorScheme.error,
@@ -214,7 +219,8 @@ class _TileSummaryState extends State<TileSummary> {
                                   height: iconSize,
                                   decoration: BoxDecoration(
                                       color: colorScheme.onSurface.withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(8)),
+                                      borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: Icon(
                                     Icons.timelapse,
                                     size: 20.0,

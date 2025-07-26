@@ -386,6 +386,7 @@ class WithinNowBatchState extends TileBatchState {
       precedingTileWidgets.add(this.preceedingAnimatedList!);
     }
     Widget scrollableItems = RefreshIndicator(
+      color: colorScheme.tertiary,
       onRefresh: () async {
         final currentState = this.context.read<ScheduleBloc>().state;
 

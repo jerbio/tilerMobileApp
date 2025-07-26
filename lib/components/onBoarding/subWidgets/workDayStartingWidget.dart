@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
 
 class WorkDayStartWidget extends StatefulWidget {
@@ -27,7 +28,7 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
   @override
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     return OnboardingSubWidget(
       questionText: AppLocalizations.of(context)!.workdayStartQuestion,
       child: BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -41,7 +42,7 @@ class _WorkDayStartWidgetState extends State<WorkDayStartWidget> {
               height: 50,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30.0),
-                border: Border.all(color: colorScheme.onSurfaceVariant),
+                border: Border.all(color: tileThemeExtension.onSurfaceVariantSecondary),
               ),
               child: Align(
                 alignment: Alignment.centerLeft,

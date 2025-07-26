@@ -147,7 +147,8 @@ class _EditTileState extends State<EditTile> {
             height: 40,
             decoration: BoxDecoration(
                 color:colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(20)),
+                borderRadius: BorderRadius.circular(20),
+            ),
             child: Icon(icon, color: iconColor),
           ),
           Container(
@@ -185,7 +186,7 @@ class _EditTileState extends State<EditTile> {
               tardyHeader,
               Container(
                 decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
+                    color: colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(10)),
                 child: Container(
                     alignment: Alignment.center,
@@ -203,8 +204,8 @@ class _EditTileState extends State<EditTile> {
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                   colors: [
-                                    colorScheme.surfaceContainerLow.withValues(alpha: 0.25),
-                                    colorScheme.surfaceContainerLow.withValues(alpha: 0.9),
+                                    colorScheme.surfaceContainerLowest.withValues(alpha: 0.25),
+                                    colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
                                   ]
                               )
                           ),
@@ -245,7 +246,7 @@ class _EditTileState extends State<EditTile> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(10)),
+                  color: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(10)),
               child: Column(children: [
                 _tileBodyHeader(
                     icon:Icons.warning,
@@ -367,7 +368,7 @@ class _EditTileState extends State<EditTile> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLow, borderRadius: BorderRadius.circular(10)),
+                  color: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(10)),
               child: Column(
                   children: [_tileBodyHeader(icon:Icons.error, iconColor: colorScheme.error,tileCount: tiles.length.toString()), renderListOfTiles(tiles)]),
             )
@@ -437,7 +438,7 @@ class _EditTileState extends State<EditTile> {
                   : SizedBox.shrink();
               return Container(
                 height: 300,
-                color: tileThemeExtension.surfaceContainerMaximum.withValues(alpha: 0.3),
+                color: tileThemeExtension.surfaceContainerPlus.withValues(alpha: 0.3),
                 child: Center(
                   child: ListView(
                     scrollDirection: Axis.horizontal,
@@ -451,7 +452,9 @@ class _EditTileState extends State<EditTile> {
         },
         style: ButtonStyle(
             padding: WidgetStateProperty.resolveWith(
-                (states) => EdgeInsets.all(0))),
+                (states) => EdgeInsets.all(0),
+            ),
+        ),
         child: Stack(
           children: [
             Container(
@@ -465,7 +468,7 @@ class _EditTileState extends State<EditTile> {
             ),
             Shimmer.fromColors(
                 baseColor: colorScheme.tertiaryContainer.withAlpha(75),
-                highlightColor: colorScheme.surfaceContainerLow.withAlpha(100),
+                highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
                 child: Container(
                   width: 400,
                   decoration: BoxDecoration(
@@ -734,7 +737,8 @@ class _EditTileState extends State<EditTile> {
             },
         style: TileButtonStyles.onlyIconsContrast(foregroundColor: colorScheme.onPrimary),
         child: Icon(Icons.app_registration),
-      ));
+      ),
+      );
     }
     return appBarActionButtons;
   }
@@ -747,7 +751,7 @@ class _EditTileState extends State<EditTile> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
       ),
       margin: margin,
@@ -924,7 +928,7 @@ class _EditTileState extends State<EditTile> {
                                 child: Text(
                                     AppLocalizations.of(context)!.timeBlocks,
                                     style:TextStyle(
-                                        color: tileThemeExtension.onSurfaceHint,
+                                        color: tileThemeExtension.onSurfaceTimeBlockLbl,
                                         fontWeight: FontWeight.w300,
                                         fontSize: 20,
                                         fontFamily: TileTextStyles.rubikFontName,
@@ -1045,7 +1049,6 @@ class _EditTileState extends State<EditTile> {
                 inputChildWidgets.add(
                     _buildClusterContainer(
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                    padding:EdgeInsets.fromLTRB(20, 20, 20, 20) ,
                     svgAssets:  'assets/images/iconScout/notes.svg',
                     child:Container(
                       child: _editTileNote!,

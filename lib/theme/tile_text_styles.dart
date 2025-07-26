@@ -61,5 +61,9 @@ class TileTextStyles{
     fontSize: 22,
   );
 
+  static const hourAndMinutesTimePicker=TextStyle(
+    fontSize: 57,
+    fontWeight: FontWeight.w400
+  );
 
 }

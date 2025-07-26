@@ -28,7 +28,7 @@ class TilePreferencesScreen extends StatelessWidget {
       padding: EdgeInsets.all(20),
       margin: EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -109,9 +109,9 @@ class TilePreferencesScreen extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ?  colorScheme.primary : colorScheme.surfaceContainerHighest,
+              color: isSelected ?  colorScheme.primary : colorScheme.surfaceContainer,
               border: Border.all(
-                color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceQuaternary,
+                color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceSecondary,
               ),
             ),
             child: SvgPicture.asset(
@@ -119,7 +119,7 @@ class TilePreferencesScreen extends StatelessWidget {
               width: 20,
               height: 20,
               colorFilter: ColorFilter.mode(
-                isSelected ? colorScheme.onPrimary : tileThemeExtension.onSurfaceQuaternary,
+                isSelected ? colorScheme.onPrimary : tileThemeExtension.onSurfaceSecondary,
                 BlendMode.srcIn,
               ),
             ),
@@ -129,7 +129,7 @@ class TilePreferencesScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceQuaternary,
+            color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceSecondary,
           ),
         ),
       ],
@@ -188,7 +188,10 @@ class TilePreferencesScreen extends StatelessWidget {
       child: Text(
         label,
         style: TextStyle(
-            fontSize: 18,color:colorScheme.onSurface, fontWeight: FontWeight.w300),
+            fontSize: 18,
+            color:colorScheme.onSurface,
+            fontWeight: FontWeight.w300)
+        ,
       ),
     );
   }
@@ -293,14 +296,18 @@ class TilePreferencesScreen extends StatelessWidget {
                     "assets/icons/settings/sleep_time_icon.svg",
                     width: 14,
                     height: 14,
-                  )),
+                    colorFilter: ColorFilter.mode(tileThemeExtension.onSurfaceSecondary, BlendMode.srcIn),
+                  ),
+              ),
               Text(
                   displayText,
                   style: TileTextStyles.editTimeOrDateTime.copyWith(
-                    color: tileThemeExtension.onSurfaceQuaternary,
+                    color: tileThemeExtension.onSurfaceSecondary,
                     decoration: TextDecoration.underline,
-                    decorationColor: tileThemeExtension.onSurfaceQuaternary,
-                  )),
+                    decorationColor: tileThemeExtension.onSurfaceSecondary,
+                    fontWeight: FontWeight.normal
+                  )
+              ),
             ],
           ),
         ),
@@ -423,7 +430,7 @@ class TilePreferencesScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: Text(
               AppLocalizations.of(context)!.defineYourTimeRestrictions,
-              style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(fontSize: 16, color: tileThemeExtension.onSurfaceVariantSecondary),
             ),
           ),
           timeRestrictionWidget(context, loadedState,colorScheme),
@@ -431,7 +438,7 @@ class TilePreferencesScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: Text(
               AppLocalizations.of(context)!.setYourBlockOutHours,
-              style: TextStyle(fontSize: 16, color: colorScheme.onSurfaceVariant),
+              style: TextStyle(fontSize: 16, color: tileThemeExtension.onSurfaceVariantSecondary),
             ),
           ),
           _buildBlockOutHourWidget(context, loadedState,colorScheme,tileThemeExtension)

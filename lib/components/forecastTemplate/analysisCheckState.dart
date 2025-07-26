@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class AnalysisCheckState extends StatelessWidget {
   const AnalysisCheckState({
@@ -25,7 +26,8 @@ class AnalysisCheckState extends StatelessWidget {
         height: height / (height / 24),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(height / (height / 8)),
-            color: Color(0xFF1AE1A6)),
+            color: TileColors.forecastAnalysisCheck,
+        ),
         child: Center(
           child: SvgPicture.asset(
             'assets/images/check.svg',
@@ -40,7 +42,8 @@ class AnalysisCheckState extends StatelessWidget {
         height: height / (height / 24),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(height / (height / 8)),
-            color: Color(0xFFFF891C)),
+            color: TileColors.forecastAnalysisWarning
+        ),
         child: Center(
           child: SvgPicture.asset(
             'assets/images/exclamation.svg',
@@ -55,7 +58,8 @@ class AnalysisCheckState extends StatelessWidget {
         height: height / (height / 24),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(height / (height / 8)),
-            color: Color(0xFFD61C3C)),
+            color:  TileColors.forecastAnalysisConflict
+        ),
         child: Center(
           child: SvgPicture.asset(
             'assets/images/exclamation.svg',

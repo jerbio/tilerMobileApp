@@ -17,8 +17,10 @@ class TileInputTheme {
         }),
       );
 
-  static const TextSelectionThemeData  textSelectionTheme =
+  static  TextSelectionThemeData  textSelectionTheme =
       TextSelectionThemeData(
+        selectionColor: TileColors.tertiary.withValues(alpha: 0.3),
+        selectionHandleColor: TileColors.tertiary,
         cursorColor: TileColors.tertiary,
       );
 }

@@ -66,10 +66,11 @@ class SearchWidgetState extends State<SearchWidget> {
               topLeft: Radius.circular(10),
               topRight: Radius.circular(10),
               bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)),
+              bottomRight: Radius.circular(10)
+          ),
           boxShadow: [
             BoxShadow(
-              color: tileThemeExtension.shadowInverseVariant.withValues(alpha: 0.2),
+              color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
               spreadRadius: 5,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -96,7 +97,7 @@ class SearchWidgetState extends State<SearchWidget> {
                     children: [
                       Shimmer.fromColors(
                           baseColor: colorScheme.primaryContainer.withAlpha(100),
-                          highlightColor: colorScheme.surfaceContainerLow.withAlpha(100),
+                          highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
                           child: Container(
                             decoration: BoxDecoration(
                                 color: colorScheme.onSurface.withValues(alpha: 0.8),

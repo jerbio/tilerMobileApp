@@ -123,7 +123,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         style: TextStyle(
           fontSize: 20,
           fontFamily: TileTextStyles.rubikFontName,
-          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+          color: isSelected ? colorScheme.primary :tileThemeExtension.onSurfaceVariantSecondary,
         ),
       ),
     );
@@ -173,7 +173,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerLow,
+                    color: colorScheme.surfaceContainerLowest,
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(8.0),
                     ),
@@ -186,7 +186,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.calendar_month, color: tileThemeExtension.onSurfaceQuaternary),
+                    Icon(Icons.calendar_month, color: tileThemeExtension.onSurfaceSecondary),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
@@ -196,7 +196,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                             style: TextStyle(
                                 fontFamily: TileTextStyles.rubikFontName,
                                 color: this.isDeadlineValid()
-                                    ? null
+                                    ? colorScheme.tertiary
                                     : colorScheme.onInverseSurface
                             ),
                           ),

@@ -42,7 +42,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
         decoration: BoxDecoration(
           borderRadius: TileDimensions.inputFieldBorderRadius,
           boxShadow: [
-            TileBoxShadows.inputFieldBoxShadow(tileThemeExtension.shadowHigh)
+            TileBoxShadows.inputFieldBoxShadow(tileThemeExtension.shadowMainInputContainer)
           ],
         ),
         child: TextField(
@@ -60,7 +60,7 @@ class _TextInputWidgetState extends State<TextInputWidget> {
             filled: true,
             isDense: true,
             contentPadding: TileSpacing.inputFieldPadding,
-            fillColor: colorScheme.surfaceContainerLow,
+            fillColor: colorScheme.surfaceContainerLowest,
             border: OutlineInputBorder(
               borderRadius: TileDimensions.inputFieldBorderRadius,
             ),

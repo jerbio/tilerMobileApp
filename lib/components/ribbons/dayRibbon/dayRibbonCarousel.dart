@@ -37,6 +37,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   late int numberOfDays;
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   bool selected = false;
   Curve curve = Curves.linear;
   final CarouselSliderController dayRibbonCarouselController =
@@ -56,6 +57,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
+    tileThemeExtension=Theme.of(context).extension<TileThemeExtension>()!;
   }
   updateSelectedDate(DateTime date) {
     setState(() {
@@ -88,7 +90,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     return Container(
       decoration: dateTime.isToday
           ? BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
+              color: colorScheme.surfaceContainerLowest,
               border: Border(
                 top: BorderSide(
                   color: colorScheme.primaryContainer,
@@ -360,10 +362,10 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           return Container(
             margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
+              color: colorScheme.surfaceContainerLowest,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).extension<TileThemeExtension>()!.shadowBase.withValues(alpha: 0.08),
+                  color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.08),
                   blurRadius: 7,
                   offset: const Offset(0, 7),
                 ),

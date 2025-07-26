@@ -53,6 +53,8 @@ class TileBatchState extends State<TileBatch> {
   bool _pendingRendering = false;
   double _emptyDayOpacity = 0;
   final double daySummaryToHeightBuffer = 245;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -70,6 +72,13 @@ class TileBatchState extends State<TileBatch> {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   TimelineSummary? get dayData {
@@ -288,6 +297,7 @@ class TileBatchState extends State<TileBatch> {
 
     childrenColumnWidgets.add(
       RefreshIndicator(
+        color: colorScheme.tertiary,
         onRefresh: () async {
           final currentState = this.context.read<ScheduleBloc>().state;
           if (currentState is ScheduleEvaluationState) {

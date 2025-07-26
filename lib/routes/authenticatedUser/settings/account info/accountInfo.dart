@@ -11,7 +11,6 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
-import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/util.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -37,7 +36,10 @@ class AccountInfo extends StatelessWidget {
               Text(AppLocalizations.of(context)!.deleteAccountConfirmation),
           actions: [
             TextButton(
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: TextStyle(color:colorScheme.onSurface ),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
@@ -115,9 +117,7 @@ class AccountInfo extends StatelessWidget {
     );
 
     if (picked != null && context.mounted) {
-      _dateOfBirthController.text =
-          DateFormat.yMd(Localizations.localeOf(context).languageCode)
-              .format(picked);
+      _dateOfBirthController.text = DateFormat('MM/dd/yyyy').format(picked);
       context.read<DeviceSettingBloc>().add(
             UpdateUserProfileDateOfBirthSettingEvent(
               id: _requestId,
@@ -219,7 +219,6 @@ class AccountInfo extends StatelessWidget {
 
   void _checkForChanges() {
     if (_originalProfile == null) return;
-
     bool hasChanges = _fullNameController.text !=
             (_originalProfile?.fullName ?? '') ||
         _usernameController.text != (_originalProfile?.username ?? '') ||
@@ -331,7 +330,7 @@ class AccountInfo extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(bottom: 16, right: 20, left: 20),
       decoration: BoxDecoration(
-        color: filled ?tileThemeExtension.onSurfaceVariantLow : colorScheme.surfaceContainerLow,
+        color: filled ?tileThemeExtension.surfaceContainerDisabled : colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
@@ -349,8 +348,6 @@ class AccountInfo extends StatelessWidget {
         enabled: enabled,
         decoration: InputDecoration(
           labelText: label,
-          filled: filled,
-          fillColor: filled ? tileThemeExtension.onSurfaceVariantLow  :colorScheme.onInverseSurface,
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

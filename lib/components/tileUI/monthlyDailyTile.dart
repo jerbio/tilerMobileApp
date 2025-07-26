@@ -26,11 +26,11 @@ class MonthlyDailyTile extends StatelessWidget {
         margin: EdgeInsets.symmetric(vertical: 10),
         padding:  EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
+          color: colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: tileThemeExtension!.shadowBase.withValues(alpha: 0.1),
+              color: tileThemeExtension!.shadowSecondary.withValues(alpha: 0.1),
               spreadRadius: 2,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -63,7 +63,7 @@ class MonthlyDailyTile extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.access_time_sharp,
-                      color: tileThemeExtension.onSurfaceVariantHighest,
+                      color: tileThemeExtension.onSurfaceMonthlyIcons,
                       size: 16,
                     ),
                   ),

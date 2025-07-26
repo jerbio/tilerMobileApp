@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class WeekDayButton extends StatefulWidget {
@@ -28,6 +29,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     List<Widget> childWidgets = [
       Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
@@ -43,7 +45,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           DateFormat(DateFormat.DAY).format(this.dateTime),
           style:TextStyle(
               fontSize: 20,
-              color:  dateTime.isToday?colorScheme.onInverseSurface:colorScheme.onSurface
+              color:  dateTime.isToday?colorScheme.onPrimary:tileThemeExtension.onSurfaceVariantSecondary
           ),
         ),
       ),
@@ -52,8 +54,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           child: Text(
                 DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
                 style: TextStyle(
-                    fontSize: 12,
-                    color:colorScheme.onSurfaceVariant
+                    color:  tileThemeExtension.onSurfaceVariantSecondary,
                 )
               ),
       )
@@ -63,7 +64,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style:  TextStyle(
-              color: colorScheme.onSurfaceVariant
+            color:  tileThemeExtension.onSurfaceVariantSecondary,
           ),
         ),
       ));

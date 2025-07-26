@@ -140,7 +140,8 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.w100),
               hintText: AppLocalizations.of(context)!.addContact,
-              border: InputBorder.none),
+              border: InputBorder.none
+          ),
           onSubmitted: (value) {
             _addContact(value);
           },

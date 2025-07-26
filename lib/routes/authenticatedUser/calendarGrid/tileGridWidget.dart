@@ -81,7 +81,7 @@ class TileGridWidgetState extends GridPositionableState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor:  colorScheme.surfaceContainerLow,
+      backgroundColor:  colorScheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(TileDimensions.borderRadius)),
@@ -161,7 +161,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: tileThemeExtension.shadowBase.withValues(alpha:0.1),
+              color: tileThemeExtension.shadowSecondary.withValues(alpha:0.1),
               spreadRadius: 0.5,
               blurRadius: 1,
               offset: Offset(0, 1),
@@ -174,7 +174,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       if (this.decoration == null) {
         uiDecoration = BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: colorScheme.surfaceContainerLow,
+          color: colorScheme.surfaceContainerLowest,
           border: Border.all(
             color: colorScheme.primary,
             width: 1,

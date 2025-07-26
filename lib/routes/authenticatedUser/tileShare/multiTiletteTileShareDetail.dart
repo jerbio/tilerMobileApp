@@ -293,7 +293,7 @@ class _MultiTiletteTileShareDetailWidget
 
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style:  TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+        style:  TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },

@@ -68,15 +68,16 @@ class _EditTileTimeState extends State<EditTileTime> {
                 margin: EdgeInsets.fromLTRB(0, 0, widget.isPref?10:5, 0),
                 child: Icon(
                   Icons.access_time_sharp,
-                  color: tileThemeExtension.onSurfaceQuaternary,
+                  color: tileThemeExtension.onSurfaceSecondary,
                   size: widget.isPref?18:25,
                 )),
             Text(
               formattedTimeOfDay,
               style: widget.isPref?textStyle.copyWith(
-                  color: tileThemeExtension.onSurfaceQuaternary,
+                  color: tileThemeExtension.onSurfaceSecondary,
                   decoration: TextDecoration.underline,
-                  decorationColor: tileThemeExtension.onSurfaceQuaternary) :textStyle
+                  decorationColor: tileThemeExtension.onSurfaceSecondary
+              ) :textStyle
             ),
           ],
         ),

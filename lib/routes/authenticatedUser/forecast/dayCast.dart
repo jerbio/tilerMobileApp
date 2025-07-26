@@ -272,7 +272,6 @@ class _WidgetGoogleMapState extends State<DayCast> {
   }
 
   _handlePolylineTap(PolylineId polylineId, LatLng finish) {
-    print("ey: You Presses on ");
     setState(() {
       Polyline newPolyline =
           polyLines[polylineId]!.copyWith(colorParam: TileColors.bluePolyline);

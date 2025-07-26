@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/util.dart';
 
 enum NotificationOverlayMessageType { success, error, info, warning }
 
@@ -73,6 +76,9 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _opacityAnimation;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -100,6 +106,13 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
         widget.onDismiss();
       }
     });
+  }
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
   }
 
   @override
@@ -153,7 +166,7 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
                       child: Icon(
                         _getNotificationIconData(widget.messageType),
                         size: calculateSizeByHeight(10),
-                        color: Colors.white,
+                        color: TileColors.lightContent,
                       ),
                     ),
                   ),
@@ -253,30 +266,30 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
   Color _getNotificationColor(NotificationOverlayMessageType type) {
     switch (type) {
       case NotificationOverlayMessageType.success:
-        return Color(0xFFE6F9F0);
+        return tileThemeExtension.notificationOverlaySuccess;
       case NotificationOverlayMessageType.warning:
-        return Color(0xFFFFF8E1);
+        return tileThemeExtension.notificationOverlayWarning;
       case NotificationOverlayMessageType.error:
-        return Color(0xFFFCE4EC);
+        return tileThemeExtension.notificationOverlayError;
       case NotificationOverlayMessageType.info:
-        return Color(0xFFE1F5FE);
+        return tileThemeExtension.notificationOverlayInfo;
       default:
-        return Colors.grey;
+        return tileThemeExtension.surfaceContainerSuperior;
     }
   }
 
   Color _getNotificationBorderColor(NotificationOverlayMessageType type) {
     switch (type) {
       case NotificationOverlayMessageType.success:
-        return Color(0xFF00C853);
+        return TileColors.notificationSuccessBorder;
       case NotificationOverlayMessageType.warning:
-        return Color(0xFFFFA000);
+        return TileColors.notificationWarningBorder;
       case NotificationOverlayMessageType.error:
-        return Color(0xFFD32F2F);
+        return TileColors.notificationErrorBorder;
       case NotificationOverlayMessageType.info:
-        return Color(0xFF0288D1);
+        return TileColors.notificationInfoBorder;
       default:
-        return Colors.black;
+        return colorScheme.onSurface;
     }
   }
 

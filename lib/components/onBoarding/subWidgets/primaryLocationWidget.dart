@@ -4,6 +4,7 @@ import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
 
 class PrimaryLocationWidget extends StatefulWidget {
@@ -41,6 +42,7 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state.addressText != null &&
@@ -57,7 +59,13 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
             border: OutlineInputBorder(
               gapPadding: 40,
               borderRadius: BorderRadius.circular(30.0),
-              borderSide: BorderSide(color: colorScheme.onSurfaceVariant),
+              borderSide: BorderSide(color:  tileThemeExtension.onSurfaceVariantSecondary,),
+            ),
+            focusedBorder: OutlineInputBorder(
+              gapPadding: 40,
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide(color: colorScheme.tertiary
+              ),
             ),
             hintText: AppLocalizations.of(context)!.enterAddress,
             filled: true,

@@ -272,7 +272,7 @@ class EventNameSearchState extends SearchWidgetState {
           borderRadius: BorderRadius.circular(5),
           boxShadow: [
             BoxShadow(
-              color: tileThemeExtension.shadowInverseVariant.withValues(alpha: 0.2),
+              color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
               spreadRadius: 5,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -464,7 +464,7 @@ class EventNameSearchState extends SearchWidgetState {
         padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
         margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow,
+          color: colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -555,14 +555,13 @@ class EventNameSearchState extends SearchWidgetState {
                       fontWeight: FontWeight.w500
                      ),
                   contentPadding: TileSpacing.inputFieldPadding,
-                  fillColor: colorScheme.surfaceContainerLow,
+                  fillColor: colorScheme.surfaceContainerLowest,
                   border: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,
-                    borderSide:
-                        BorderSide(color: colorScheme.onInverseSurface, width: 2),
+                    borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,

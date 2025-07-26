@@ -90,8 +90,9 @@ class PickColorState extends State<PickColor> {
       width: colorSelectorRadius,
       height: colorSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.all(Radius.circular(colorSelectorRadius * 4)),
+          borderRadius: BorderRadius.all(
+                Radius.circular(colorSelectorRadius * 4),
+              ),
           color: color),
     );
 
@@ -118,19 +119,21 @@ class PickColorState extends State<PickColor> {
       width: roundedSelectorRadius,
       height: roundedSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.all(Radius.circular(roundedSelectorRadius)),
-          border: Border.all(color: colorScheme.primary, width: 2),
+          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          border: Border.all(
+              color: colorScheme.primary,
+              width: 2,
+          ),
           color: Colors.transparent),
     );
     Widget tranparentSelectedBorder = Container(
       width: roundedSelectorRadius,
       height: roundedSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
           border: Border.all(color: Colors.transparent, width: 2),
-          color: Colors.transparent),
+          color: Colors.transparent
+      ),
     );
     for (int i = 0; i < clickablePresetWidgets.length; i++) {
       int modulo = i % gridColumnCount;

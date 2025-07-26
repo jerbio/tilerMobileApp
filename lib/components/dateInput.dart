@@ -74,9 +74,9 @@ class _DateInputWidgetState extends State<DateInputWidget> {
           padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
           height: TileDimensions.inputHeight,
           decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
+              color: colorScheme.surfaceContainerLowest,
               borderRadius: TileDimensions.inputFieldBorderRadius,
-              boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowHigh)],
+              boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowMainInputContainer)],
               border: Border.all(
                 color: colorScheme.onInverseSurface,
                 width: 1.5,

@@ -258,7 +258,7 @@ class WeeklyTileBatchState extends TileBatchState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor:colorScheme.surfaceContainerLow,
+      backgroundColor:colorScheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(TileDimensions.borderRadius)),
       ),

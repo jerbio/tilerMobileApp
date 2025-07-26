@@ -21,28 +21,22 @@ class TileButtonStyles {
     elevation: WidgetStateProperty.all(0),
   );
 
-  static ButtonStyle suggested({
-    required Color foregroundColor,
-  }) => ButtonStyle(
+  static ButtonStyle suggested() => ButtonStyle(
     backgroundColor: WidgetStateProperty.all( Colors.transparent),
-    foregroundColor: WidgetStateProperty.all(foregroundColor),
     elevation: WidgetStateProperty.all(0),
     padding: WidgetStateProperty.all( EdgeInsets.all(30),
     ),
   );
 
+
   static ButtonStyle enabled({
     required Color borderColor,
-    required Color foregroundColor,
   }) => ButtonStyle(
     side: WidgetStateProperty.all(BorderSide(color: borderColor)),
     shadowColor: WidgetStateProperty.all(Colors.transparent),
     elevation: WidgetStateProperty.all( 0),
     backgroundColor: WidgetStateProperty.all(Colors.transparent),
-    foregroundColor: WidgetStateProperty.all(foregroundColor),
   );
-
-
 
   static ButtonStyle stripped ()=> ButtonStyle(
     overlayColor: WidgetStateProperty.all(Colors.transparent,),

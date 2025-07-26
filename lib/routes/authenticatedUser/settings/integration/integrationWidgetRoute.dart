@@ -11,6 +11,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class IntegrationWidgetRoute extends StatelessWidget {
   static final String routeName = '/Integrations';
@@ -217,6 +218,7 @@ class _IntegrationItem extends StatelessWidget {
         integration.email ?? integration.userId ?? integration.id ?? "";
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     return ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 0),
         subtitle: Row(
@@ -226,7 +228,7 @@ class _IntegrationItem extends StatelessWidget {
                 width: 16,
                 height: 16,
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).colorScheme.onSurfaceVariant,
+                  tileThemeExtension.onSurfaceVariantSecondary,
                   BlendMode.srcIn,
                 )
             ),
@@ -237,7 +239,7 @@ class _IntegrationItem extends StatelessWidget {
                 width: 150,
                 child: Text(
                   _getCityFromLocation(integration.location, context),
-                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                  style: TextStyle(color: tileThemeExtension.onSurfaceVariantSecondary),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),

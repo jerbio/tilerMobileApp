@@ -162,6 +162,7 @@ class _MonthlyTileListState extends TileListState {
         child: Container(
           margin: EdgeInsets.only(top: 150, right: 5, left: 5),
           child: RefreshIndicator(
+            color: colorScheme.tertiary,
             onRefresh: handleRefresh,
             child: CustomScrollView(
               physics: AlwaysScrollableScrollPhysics(),

@@ -156,7 +156,6 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       end: Alignment.topRight,
                       colors: [
                         colorScheme.primary.withValues(alpha: 0.75),
-                        //ey: re check
                         colorScheme.primary
                             .withLightness(
                             HSLColor.fromColor(colorScheme.primary).lightness + .2)
@@ -261,11 +260,12 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.only(
                                   bottomLeft: Radius.circular(10),
-                                  bottomRight: Radius.circular(10)),
-                              color: colorScheme.surfaceContainerLow,
+                                  bottomRight: Radius.circular(10)
+                              ),
+                              color: colorScheme.surfaceContainerLowest,
                               boxShadow: [
                                 BoxShadow(
-                                  color:  tileThemeExtension.shadowHighest.withValues(alpha: 0.2),
+                                  color:  tileThemeExtension.shadowEmptyTile.withValues(alpha: 0.2),
                                   spreadRadius: 1,
                                   blurRadius: 1,
                                   blurStyle: BlurStyle.normal,
@@ -296,7 +296,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               : (autoTile.duration?.toHuman ??
                                                   ''),
                                           style:TextStyle(
-                                              color: colorScheme.onSurfaceVariant,
+                                              color: tileThemeExtension.onSurfaceVariantSecondary,
                                               fontSize: 16,
                                               fontFamily:
                                               TileTextStyles.rubikFontName,
@@ -317,7 +317,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                                       .swipeRightToTileIt +
                                                   ')',
                                           style: TextStyle(
-                                              color: colorScheme.onSurfaceVariant,
+                                              color: tileThemeExtension.onSurfaceVariantSecondary,
                                               fontSize: 16,
                                               fontFamily:
                                               TileTextStyles.rubikFontName,

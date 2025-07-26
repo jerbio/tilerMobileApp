@@ -27,14 +27,15 @@ class TileDecorations {
         const Radius.circular(60.0),
       )
   );
+
   static BoxDecoration configUpdate_Selected(Color color)=> BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(60.0),
       ),
       color: color);
+
   static final BoxDecoration defaultBackground =
   BoxDecoration(color: Colors.transparent);
-
 
   static BoxDecoration invalidBoxDecoration = BoxDecoration(
     borderRadius: BorderRadius.all(
@@ -59,6 +60,7 @@ class TileDecorations {
     color: color.withValues(alpha: 0.1),
     shape: BoxShape.circle,
   );
+
   static BoxDecoration populatedDecoration (Color color)=> BoxDecoration(
       borderRadius: BorderRadius.all(
         const Radius.circular(10.0),
@@ -70,5 +72,6 @@ class TileDecorations {
           color.withLightness( 0.33),
           color.withLightness( 0.46),
         ],
-      ));
+      )
+  );
 }

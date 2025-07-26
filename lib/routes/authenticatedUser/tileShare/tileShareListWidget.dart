@@ -156,7 +156,7 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
                     getTileShareCluster();
                   });
                 },
-                style: TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary),
+                style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
                 icon: Icon(Icons.add),
                 label: Text(AppLocalizations.of(context)!.tileShare))),
       );

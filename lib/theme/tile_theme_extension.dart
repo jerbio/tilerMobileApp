@@ -2,158 +2,187 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 
 class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
-  final Color shadowLowest;
-  final Color shadowLow;
-  final Color shadowBase;
-  final Color shadowHigh;
-  final Color shadowHigher;
-  final Color shadowHighest;
-  final Color shadowInverse;
-  final Color shadowInverseVariant;
-  final Color onSurfaceVariantLow;
-  final Color onSurfaceVariantHigh;
-  final Color onSurfaceVariantHighest;
-  final Color onSurfaceTertiary;
-  final Color onSurfaceQuaternary;
+  final Color shadowSignInContainer;
+  final Color shadowPreviewChartIconographyOuter;
+  final Color shadowPreviewChartIconographyInner;
+  final Color shadowSecondary;
+  final Color shadowMainInputContainer;
+  final Color shadowTimeScrubMovingBall;
+  final Color shadowEmptyTile;
+  final Color shadowSearch;
+  final Color onSurfaceDaySummary;
+  final Color onSurfaceMonthlyIcons;
+  final Color onSurfaceHint;
+  final Color onSurfaceSecondary;
+  final Color onSurfaceVariantSecondary;
   final Color primaryContainerLow;
   final Color surfaceContainerGreater;
+  final Color surfaceContainerSuperior;
   final Color surfaceContainerPlus;
   final Color surfaceContainerMaximum;
   final Color surfaceContainerUltimate;
   final Color surfaceContainerDisabled;
-  final Color onSurfaceHint;
+  final Color onSurfaceDeadlineUnset;
+  final Color onSurfaceTimeBlockLbl;
   final Color darkPrimary;
-  final Color onFixedColors;
+  final Color notificationOverlaySuccess;
+  final Color notificationOverlayWarning;
+  final Color notificationOverlayError;
+  final Color notificationOverlayInfo;
   final String? mapStyle;
   const TileThemeExtension._(
       {
-        required this.shadowLow,
-        required this.shadowBase,
-        required this.shadowHigh,
-        required this.shadowHigher,
-        required this.shadowHighest,
-        required this.shadowLowest,
-        required this.shadowInverse,
-        required this.shadowInverseVariant,
+        required this.shadowPreviewChartIconographyOuter,
+        required this.shadowSecondary,
+        required this.shadowMainInputContainer,
+        required this.shadowTimeScrubMovingBall,
+        required this.shadowEmptyTile,
+        required this.shadowSignInContainer,
+        required this.shadowPreviewChartIconographyInner,
+        required this.shadowSearch,
         required this.primaryContainerLow,
-        required this.onSurfaceVariantLow,
-        required this.onSurfaceVariantHigh,
-        required this.onSurfaceVariantHighest,
+        required this.onSurfaceDaySummary,
+        required this.onSurfaceMonthlyIcons,
         required this.surfaceContainerGreater,
+        required this.surfaceContainerSuperior,
         required this.surfaceContainerPlus,
         required this.surfaceContainerMaximum,
         required this.surfaceContainerUltimate,
-        required this.onSurfaceHint,
+        required this.onSurfaceDeadlineUnset,
         required this.surfaceContainerDisabled,
-        required this.onSurfaceTertiary,
-        required this.onSurfaceQuaternary,
+        required this.onSurfaceHint,
+        required this.onSurfaceSecondary,
+        required this.onSurfaceVariantSecondary,
+        required this.onSurfaceTimeBlockLbl,
         required this.darkPrimary,
-        required this.onFixedColors,
         required this.mapStyle,
-
+        required this.notificationOverlaySuccess,
+        required this.notificationOverlayWarning,
+        required this.notificationOverlayError,
+        required this.notificationOverlayInfo,
       });
-  static final TileThemeExtension light = TileThemeExtension._(
-      shadowLowest:TileColors.shadowLowestLight,
-      shadowLow: TileColors.shadowLowLight,
-      shadowBase: TileColors.shadowBaseLight,
-      shadowHigh: TileColors.shadowHighLight,
-      shadowHigher: TileColors.shadowHigherLight,
-      shadowHighest: TileColors.shadowHighestLight,
-      shadowInverse: TileColors.shadowInverseLight,
-      shadowInverseVariant: TileColors.shadowInverseVariantLight,
+
+  static TileThemeExtension get light =>TileThemeExtension._(
+    shadowSignInContainer:TileColors.shadowSignInContainerLight,
+      shadowPreviewChartIconographyOuter: TileColors.shadowPreviewChartIconographyOuterLight,
+      shadowSecondary: TileColors.shadowSecondaryLight,
+      shadowMainInputContainer: TileColors.shadowMainInputContainerLight,
+      shadowTimeScrubMovingBall: TileColors.shadowTimeScrubMovingBallLight,
+      shadowEmptyTile: TileColors.shadowEmptyTileLight,
+      shadowPreviewChartIconographyInner: TileColors.shadowPreviewChartIconographyInnerLight,
+      shadowSearch: TileColors.shadowSearchLight,
       primaryContainerLow: TileColors.primaryContainerLowLight,
-      onSurfaceVariantLow: TileColors.onSurfaceVariantLowLight,
-      onSurfaceVariantHigh: TileColors.onSurfaceVariantHighLight,
-      onSurfaceVariantHighest: TileColors.onSurfaceVariantHighestLight,
-      onSurfaceTertiary: TileColors.onSurfaceTertiaryLight,
-      onSurfaceQuaternary:  TileColors.onSurfaceQuaternaryLight,
+      onSurfaceDaySummary: TileColors.onSurfaceDaySummaryLight,
+      onSurfaceMonthlyIcons: TileColors.onSurfaceMonthlyIconsLight,
+      onSurfaceHint: TileColors.onSurfaceHintLight,
+      onSurfaceSecondary:  TileColors.onSurfaceSecondaryLight,
+      onSurfaceVariantSecondary:TileColors.onSurfaceVariantSecondaryLight,
       surfaceContainerGreater:TileColors.surfaceContainerGreaterLight,
+      surfaceContainerSuperior:TileColors.surfaceContainerGreaterLight,
       surfaceContainerPlus: TileColors.surfaceContainerPlusLight,
       surfaceContainerMaximum:TileColors.surfaceContainerMaximumLight,
       surfaceContainerUltimate:TileColors.surfaceContainerUltimateLight,
-      onSurfaceHint:TileColors.onSurfaceHintLight,
+      onSurfaceDeadlineUnset:TileColors.onSurfaceDeadlineUnsetLight,
+      onSurfaceTimeBlockLbl:TileColors.onSurfaceTimeBlockLblLight,
       surfaceContainerDisabled: TileColors.surfaceContainerDisabledLight,
       darkPrimary:TileColors.darkPrimary,
-      onFixedColors: TileColors.lightContent,
+      notificationOverlaySuccess: TileColors.notificationOverlaySuccessLight,
+      notificationOverlayWarning: TileColors.notificationOverlayWarningLight,
+      notificationOverlayError: TileColors.notificationOverlayErrorLight,
+      notificationOverlayInfo: TileColors.notificationOverlayInfoLight,
       mapStyle: null,
   );
 
-  static final TileThemeExtension dark = TileThemeExtension._(
-      shadowLowest: TileColors.shadowLowestDark,
-      shadowLow: TileColors.shadowLowDark,
-      shadowBase: TileColors.shadowBaseDark,
-      shadowHigh: TileColors.shadowHighDark,
-      shadowHigher: TileColors.shadowHigherDark,
-      shadowHighest: TileColors.shadowHighestDark,
-      shadowInverse: TileColors.shadowInverseDark,
-      shadowInverseVariant: TileColors.shadowInverseVariantDark,
+  static TileThemeExtension get dark => TileThemeExtension._(
+    shadowSignInContainer: TileColors.shadowSignInContainerDark,
+      shadowPreviewChartIconographyOuter: TileColors.shadowPreviewChartIconographyOuterDark,
+      shadowSecondary: TileColors.shadowSecondaryDark,
+      shadowMainInputContainer: TileColors.shadowMainInputContainerDark,
+      shadowTimeScrubMovingBall: TileColors.shadowTimeScrubMovingBallDark,
+      shadowEmptyTile: TileColors.shadowEmptyTileDark,
+      shadowPreviewChartIconographyInner: TileColors.shadowPreviewChartIconographyInnerDark,
+      shadowSearch: TileColors.shadowSearchDark,
       primaryContainerLow: TileColors.primaryContainerLowDark,
-      onSurfaceVariantLow: TileColors.onSurfaceVariantLowDark,
-      onSurfaceVariantHigh: TileColors.onSurfaceVariantHighDark,
-      onSurfaceVariantHighest: TileColors.onSurfaceVariantHighestDark,
-    onSurfaceTertiary: TileColors.onSurfaceTertiaryDark,
-      onSurfaceQuaternary: TileColors.onSurfaceQuaternaryDark,
+      onSurfaceDaySummary: TileColors.onSurfaceDaySummaryDark,
+      onSurfaceMonthlyIcons: TileColors.onSurfaceMonthlyIconsDark,
+      onSurfaceHint: TileColors.onSurfaceHintDark,
+      onSurfaceSecondary: TileColors.onSurfaceSecondaryDark,
+      onSurfaceVariantSecondary:TileColors.onSurfaceVariantSecondaryDark,
       surfaceContainerGreater:TileColors.surfaceContainerGreaterDark,
+      surfaceContainerSuperior:TileColors.surfaceContainerGreaterLight,
       surfaceContainerPlus: TileColors.surfaceContainerPlusDark,
       surfaceContainerMaximum:TileColors.surfaceContainerMaximumDark,
       surfaceContainerUltimate:TileColors.surfaceContainerUltimateDark,
-      onSurfaceHint: TileColors.onSurfaceHintDark,
+      onSurfaceDeadlineUnset: TileColors.onSurfaceDeadlineUnsetDark,
+      onSurfaceTimeBlockLbl:TileColors.onSurfaceTimeBlockLblDark,
       surfaceContainerDisabled: TileColors.surfaceContainerDisabledDark,
       darkPrimary:TileColors.darkPrimary,
-      onFixedColors: TileColors.lightContent,
       mapStyle:TileColors.darkMapStyle,
-
+      notificationOverlaySuccess: TileColors.notificationOverlaySuccessDark,
+      notificationOverlayWarning: TileColors.notificationOverlayWarningDark,
+      notificationOverlayError: TileColors.notificationOverlayErrorDark,
+      notificationOverlayInfo: TileColors.notificationOverlayInfoDark,
   );
 
   @override
   ThemeExtension<TileThemeExtension> copyWith({
-    Color? shadowLowest,
-    Color? shadowLow,
-    Color? shadowBase,
-    Color? shadowHigh,
-    Color? shadowHigher,
-    Color? shadowHighest,
-    Color? shadowInverse,
-    Color? shadowInverseVariant,
+    Color? shadowSignInContainer,
+    Color? shadowPreviewChartIconographyOuter,
+    Color? shadowSecondary,
+    Color? shadowMainInputContainer,
+    Color? shadowTimeScrubMovingBall,
+    Color? emptyTileShadow,
+    Color? shadowPreviewChartIconographyInner,
+    Color? shadowSearch,
     Color? primaryContainerLow,
-    Color? onSurfaceVariantLow,
-    Color? onSurfaceVariantHigh,
-    Color? onSurfaceVariantHighest,
-    Color?  onSurfaceTertiary,
-    Color? onSurfaceQuaternary,
+    Color? onSurfaceDaySummary,
+    Color? onSurfaceMonthlyIcons,
+    Color?  onSurfaceHint,
+    Color? onSurfaceSecondary,
+    Color? onSurfaceVariantSecondary,
     Color? surfaceContainerGreater,
-    Color? surfaceContainerMaximum,
+    Color? surfaceContainerSuperior,
     Color? surfaceContainerPlus,
+    Color? surfaceContainerMaximum,
     Color? surfaceContainerUltimate,
-    Color? onSurfaceHint,
+    Color? onSurfaceDeadlineUnset,
+    Color? onSurfaceTimeBlockLbl,
     Color? surfaceContainerDisabled,
     Color? darkPrimary,
-    Color?onFixedColors,
+    Color? notificationOverlaySuccess,
+    Color? notificationOverlayWarning,
+    Color? notificationOverlayError,
+    Color? notificationOverlayInfo,
     String? mapStyle
   }) {
     return TileThemeExtension._(
-        shadowLow: shadowLow ?? this.shadowLow,
-        shadowBase: shadowBase ?? this.shadowBase,
-        shadowHigh: shadowHigh ?? this.shadowHigh,
-        shadowHigher: shadowHigher ?? this.shadowHigher,
-        shadowHighest: shadowHighest ??this.shadowHighest,
-        shadowLowest: shadowLowest ?? this.shadowLowest,
-        shadowInverse: shadowInverse ?? this.shadowInverse,
-        shadowInverseVariant: shadowInverseVariant ?? this.shadowInverseVariant,
+        shadowPreviewChartIconographyOuter: shadowPreviewChartIconographyOuter ?? this.shadowPreviewChartIconographyOuter,
+        shadowSecondary: shadowSecondary ?? this.shadowSecondary,
+        shadowMainInputContainer: shadowMainInputContainer ?? this.shadowMainInputContainer,
+        shadowTimeScrubMovingBall: shadowTimeScrubMovingBall ?? this.shadowTimeScrubMovingBall,
+        shadowEmptyTile: emptyTileShadow ??this.shadowEmptyTile,
+        shadowSignInContainer: shadowSignInContainer ?? this.shadowSignInContainer,
+        shadowPreviewChartIconographyInner: shadowPreviewChartIconographyInner ?? this.shadowPreviewChartIconographyInner,
+        shadowSearch: shadowSearch ?? this.shadowSearch,
         primaryContainerLow: primaryContainerLow  ?? this.primaryContainerLow,
-        onSurfaceVariantLow: onSurfaceVariantLow ?? this.onSurfaceVariantLow,
-        onSurfaceVariantHigh: onSurfaceVariantHigh ?? this.onSurfaceVariantHigh,
-        onSurfaceVariantHighest: onSurfaceVariantHighest ?? this.onSurfaceVariantHighest,
-        onSurfaceTertiary: onSurfaceTertiary ?? this.onSurfaceTertiary,
-        onSurfaceQuaternary: onSurfaceQuaternary ?? this.onSurfaceQuaternary,
-        surfaceContainerGreater: surfaceContainerGreater ?? this.surfaceContainerGreater,
-        surfaceContainerMaximum: surfaceContainerMaximum ?? this.surfaceContainerMaximum,
-        surfaceContainerPlus: surfaceContainerPlus ?? this.surfaceContainerPlus,
-        surfaceContainerUltimate: surfaceContainerUltimate ?? this.surfaceContainerUltimate,
+        onSurfaceDaySummary: onSurfaceDaySummary ?? this.onSurfaceDaySummary,
+        onSurfaceMonthlyIcons: onSurfaceMonthlyIcons ?? this.onSurfaceMonthlyIcons,
         onSurfaceHint: onSurfaceHint ?? this.onSurfaceHint,
+        onSurfaceSecondary: onSurfaceSecondary ?? this.onSurfaceSecondary,
+        onSurfaceVariantSecondary: onSurfaceVariantSecondary ?? this.onSurfaceVariantSecondary,
+        surfaceContainerGreater: surfaceContainerGreater ?? this.surfaceContainerGreater,
+        surfaceContainerSuperior: surfaceContainerSuperior ?? this.surfaceContainerSuperior,
+        surfaceContainerPlus: surfaceContainerPlus ?? this.surfaceContainerPlus,
+        surfaceContainerMaximum: surfaceContainerMaximum ?? this.surfaceContainerMaximum,
+        surfaceContainerUltimate: surfaceContainerUltimate ?? this.surfaceContainerUltimate,
+        onSurfaceDeadlineUnset: onSurfaceDeadlineUnset ?? this.onSurfaceDeadlineUnset,
+        onSurfaceTimeBlockLbl:onSurfaceTimeBlockLbl ?? this.onSurfaceTimeBlockLbl,
         surfaceContainerDisabled: surfaceContainerDisabled??this.surfaceContainerDisabled,
         darkPrimary: darkPrimary ?? this.darkPrimary,
-        onFixedColors: onFixedColors ??  this.onFixedColors,
+        notificationOverlaySuccess: notificationOverlaySuccess ?? this.notificationOverlaySuccess,
+        notificationOverlayWarning: notificationOverlayWarning ?? this.notificationOverlayWarning,
+        notificationOverlayError: notificationOverlayError ?? this.notificationOverlayError,
+        notificationOverlayInfo: notificationOverlayInfo ?? this.notificationOverlayInfo,
         mapStyle: mapStyle ?? this.mapStyle
     );
   }
@@ -164,28 +193,33 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         return this;
       }
       return TileThemeExtension._(
-        shadowLow: Color.lerp(shadowLow, other.shadowLow, t)!,
-        shadowBase: Color.lerp(shadowBase, other.shadowBase, t)!,
-        shadowHigh: Color.lerp(shadowHigh, other.shadowHigh, t)!,
-        shadowHigher: Color.lerp(shadowHigher, other.shadowHigher, t)!,
-        shadowHighest: Color.lerp(shadowHighest, other.shadowHighest, t)!,
-        shadowLowest: Color.lerp(shadowLowest, other.shadowLowest, t)!,
-        shadowInverse: Color.lerp(shadowInverse, other.shadowInverse, t)!,
-        shadowInverseVariant: Color.lerp(shadowInverseVariant, other.shadowInverseVariant, t)!,
-        onSurfaceVariantLow:  Color.lerp(onSurfaceVariantLow, other.onSurfaceVariantLow, t)!,
-        onSurfaceVariantHigh:  Color.lerp(onSurfaceVariantHigh, other.onSurfaceVariantHigh, t)!,
-        onSurfaceVariantHighest:  Color.lerp(onSurfaceVariantHighest, other.onSurfaceVariantHighest, t)!,
+        shadowPreviewChartIconographyOuter: Color.lerp(shadowPreviewChartIconographyOuter, other.shadowPreviewChartIconographyOuter, t)!,
+        shadowSecondary: Color.lerp(shadowSecondary, other.shadowSecondary, t)!,
+        shadowMainInputContainer: Color.lerp(shadowMainInputContainer, other.shadowMainInputContainer, t)!,
+        shadowTimeScrubMovingBall: Color.lerp(shadowTimeScrubMovingBall, other.shadowTimeScrubMovingBall, t)!,
+        shadowEmptyTile: Color.lerp(shadowEmptyTile, other.shadowEmptyTile, t)!,
+        shadowSignInContainer: Color.lerp(shadowSignInContainer, other.shadowSignInContainer, t)!,
+        shadowPreviewChartIconographyInner: Color.lerp(shadowPreviewChartIconographyInner, other.shadowPreviewChartIconographyInner, t)!,
+        shadowSearch: Color.lerp(shadowSearch, other.shadowSearch, t)!,
+        onSurfaceDaySummary:  Color.lerp(onSurfaceDaySummary, other.onSurfaceDaySummary, t)!,
+        onSurfaceMonthlyIcons:  Color.lerp(onSurfaceMonthlyIcons, other.onSurfaceMonthlyIcons, t)!,
         primaryContainerLow: Color.lerp(primaryContainerLow, other.primaryContainerLow, t)!,
-        onSurfaceTertiary:Color.lerp(onSurfaceTertiary, other.onSurfaceTertiary, t)!,
-        onSurfaceQuaternary:Color.lerp(onSurfaceQuaternary, other.onSurfaceQuaternary, t)!,
+        onSurfaceHint:Color.lerp(onSurfaceHint, other.onSurfaceHint, t)!,
+        onSurfaceSecondary:Color.lerp(onSurfaceSecondary, other.onSurfaceSecondary, t)!,
+        onSurfaceVariantSecondary:Color.lerp(onSurfaceVariantSecondary, other.onSurfaceVariantSecondary, t)!,
         surfaceContainerGreater:Color.lerp(surfaceContainerGreater, other.surfaceContainerGreater, t)!,
-        surfaceContainerMaximum: Color.lerp(surfaceContainerMaximum, other.surfaceContainerMaximum, t)!,
+        surfaceContainerSuperior:Color.lerp(surfaceContainerSuperior, other.surfaceContainerSuperior, t)!,
         surfaceContainerPlus: Color.lerp(surfaceContainerPlus,other.surfaceContainerPlus,t)!,
+        surfaceContainerMaximum: Color.lerp(surfaceContainerMaximum, other.surfaceContainerMaximum, t)!,
         surfaceContainerUltimate: Color.lerp(surfaceContainerUltimate, other.surfaceContainerUltimate, t)!,
-        onSurfaceHint: Color.lerp(onSurfaceHint, other.onSurfaceHint, t)!,
+        onSurfaceDeadlineUnset: Color.lerp(onSurfaceDeadlineUnset, other.onSurfaceDeadlineUnset, t)!,
+        onSurfaceTimeBlockLbl: Color.lerp(onSurfaceTimeBlockLbl, other.onSurfaceTimeBlockLbl, t)!,
         surfaceContainerDisabled:Color.lerp(surfaceContainerDisabled, other.surfaceContainerDisabled,t)!,
         darkPrimary: Color.lerp(darkPrimary, other.darkPrimary, t)!,
-        onFixedColors: Color.lerp(onFixedColors, other.onFixedColors, t)!,
+        notificationOverlaySuccess: Color.lerp(notificationOverlaySuccess, other.notificationOverlaySuccess, t)!,
+        notificationOverlayWarning: Color.lerp(notificationOverlayWarning, other.notificationOverlayWarning, t)!,
+        notificationOverlayError: Color.lerp(notificationOverlayError, other.notificationOverlayError, t)!,
+        notificationOverlayInfo: Color.lerp(notificationOverlayInfo, other.notificationOverlayInfo, t)!,
         mapStyle: other.mapStyle,
       );
     }

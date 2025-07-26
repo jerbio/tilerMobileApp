@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 
 class TileThemeNew {
   TileThemeNew._();
 
-  // Asset paths
   static const String evaluatingScheduleAsset =
       'assets/lottie/tiler-evaluating-card-swap.json';
 
@@ -17,7 +17,7 @@ class TileThemeNew {
       child: Container(
         width: MediaQuery.of(context).size.width,
         child: ColoredBox(
-          color: Colors.yellow,
+          color:TileColors.shimmerBackground,
           child: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,

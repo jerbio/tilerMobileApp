@@ -3,6 +3,7 @@ import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -135,8 +136,8 @@ class LocationRouteState extends State<LocationRoute> {
       style: isEnabled
           ? (isSelected
               ? TileButtonStyles.selected(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary)
-              : TileButtonStyles.enabled(borderColor: colorScheme.primary, foregroundColor: colorScheme.primary))
-          : TileButtonStyles.disabled(backgroundColor: tileThemeExtension.onSurfaceQuaternary, foregroundColor: colorScheme.onInverseSurface),
+              : TileButtonStyles.enabled(borderColor: colorScheme.primary))
+          : TileButtonStyles.disabled(backgroundColor: tileThemeExtension.onSurfaceSecondary, foregroundColor: TileColors.lightContent),
       icon: defaultLocationIcon,
       label: Text(locationText),
     );

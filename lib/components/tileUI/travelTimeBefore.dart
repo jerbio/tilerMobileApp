@@ -35,7 +35,7 @@ class TravelTimeBeforeState extends State<TravelTimeBefore> {
                 color: TileColors.travel, borderRadius: BorderRadius.circular(8)),
             child: Icon(
               Icons.directions_walk,
-              color: tileThemeExtension.onFixedColors,
+              color: TileColors.lightContent,
               size: 20.0,
             ),
           ),

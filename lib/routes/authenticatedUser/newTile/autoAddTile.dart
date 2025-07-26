@@ -79,9 +79,9 @@ class AutoAddTileState extends State<AutoAddTile> {
     InputDecoration inputFieldDecoration =
     TileInputStyles.generateTextInputDecoration(
       inputHint:  AppLocalizations.of(context)!.tileName,
-      fillColor:colorScheme.surfaceContainerLow,
+      fillColor:colorScheme.surfaceContainerLowest,
       borderColor: colorScheme.onInverseSurface,
-      textColor: tileThemeExtension.onSurfaceTertiary
+      hintTextColor: tileThemeExtension.onSurfaceHint
     );
 
     Widget inputField = Container(
@@ -122,7 +122,7 @@ class AutoAddTileState extends State<AutoAddTile> {
           Icons.timelapse_outlined,
           color: colorScheme.onInverseSurface,
         ),
-        decoration: TileDecorations.populatedDecoration(colorScheme.surfaceContainerLow),
+        decoration: TileDecorations.populatedDecoration(colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
         onPress: () {
           Map<String, dynamic> durationParams = {'duration': _duration};
@@ -152,7 +152,7 @@ class AutoAddTileState extends State<AutoAddTile> {
           Icons.location_pin,
           color: colorScheme.onInverseSurface,
         ),
-        decoration:  TileDecorations.populatedDecoration(colorScheme.surfaceContainerLow),
+        decoration:  TileDecorations.populatedDecoration(colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
         onPress: () {
           Location locationHolder = _location!;

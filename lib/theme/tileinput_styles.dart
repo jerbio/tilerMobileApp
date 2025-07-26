@@ -10,7 +10,7 @@ class TileInputStyles {
         Icon? prefixIcon,
         required fillColor,
         required borderColor,
-        required textColor,
+        required hintTextColor,
       }) {
     return InputDecoration(
       hintText: inputHint,
@@ -18,7 +18,7 @@ class TileInputStyles {
       isDense: true,
       icon: prefixIcon,
       hintStyle: TextStyle(
-          color: textColor,
+          color: hintTextColor,
           fontSize: TileDimensions.textFontSize,
           fontFamily: TileTextStyles.rubikFontName,
           fontWeight: FontWeight.w500),

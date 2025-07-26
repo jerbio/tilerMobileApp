@@ -175,6 +175,7 @@ flutter:
     - assets/images/regenerativeArt/workout_meditate_e77fbb2a-88b4-4c65-ac6b-c457145336d6_3.png
     - assets/rive/
     - assets/lottie/blackCars.json
+    - assets/lottie/whiteCars.json
     - assets/lottie/redCars.json
     - assets/lottie/red-bicycle.json
     - assets/lottie/black-bicycle.json
