@@ -17,6 +17,7 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tiler_app/widgets/accordion_timeline_view.dart';
 import 'package:tiler_app/widgets/day_timeline_view.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
@@ -798,11 +799,19 @@ class _DailyTileListState extends TileListState {
             // Convert SubCalendarEvents to TilerEvents and use DayTimelineView
             List<TilerEvent> tilerEvents = state.subEvents.cast<TilerEvent>();
 
-            return DayTimelineView(
-              tilerEvents: tilerEvents,
-              forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
-              selectedDate: selectedDate,
-            );
+            // return DayTimelineView(
+            //   tilerEvents: tilerEvents,
+            //   forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
+            //   selectedDate: selectedDate,
+            // );
+            return AccordionTimelineView(
+                tilerEvents: tilerEvents
+                    .where((event) =>
+                        (event as SubCalendarEvent).isViable != false)
+                    .toList(),
+                forecastMode:
+                    tilerEvents.any((event) => event.isWhatIf == true),
+                selectedDate: selectedDate);
           }
 
           if (state is ScheduleLoadingState) {
@@ -828,11 +837,19 @@ class _DailyTileListState extends TileListState {
             // Convert SubCalendarEvents to TilerEvents and use DayTimelineView
             List<TilerEvent> tilerEvents = state.subEvents.cast<TilerEvent>();
 
-            return DayTimelineView(
-              tilerEvents: tilerEvents,
-              forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
-              selectedDate: selectedDate,
-            );
+            // return DayTimelineView(
+            //   tilerEvents: tilerEvents,
+            //   forecastMode: tilerEvents.any((event) => event.isWhatIf == true),
+            //   selectedDate: selectedDate,
+            // );
+            return AccordionTimelineView(
+                tilerEvents: tilerEvents
+                    .where((event) =>
+                        (event as SubCalendarEvent).isViable != false)
+                    .toList(),
+                forecastMode:
+                    tilerEvents.any((event) => event.isWhatIf == true),
+                selectedDate: selectedDate);
           }
 
           if (state is ScheduleEvaluationState) {
