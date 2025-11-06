@@ -238,18 +238,15 @@ class _IntegrationItem extends StatelessWidget {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        //ey: change this color
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          //ey: change this color
-          color: Colors.grey[300]!,
+          color:tileThemeExtension.integrationBorder,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            //ey: change this color
-            color: Colors.black.withOpacity(0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -260,12 +257,12 @@ class _IntegrationItem extends StatelessWidget {
         leading: Container(
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: TileStyles.primaryColor.withOpacity(0.1),
+            color: colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.calendar_today,
-            color: TileStyles.primaryColor,
+            color: colorScheme.primary,
             size: 20,
           ),
         ),
@@ -284,8 +281,7 @@ class _IntegrationItem extends StatelessWidget {
             Text(
               providerText.toUpperCase(),
               style: TextStyle(
-                //ey: change this color
-                color: Colors.grey[600],
+                color: tileThemeExtension.onSurfaceMonthlyIntegration,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -300,7 +296,7 @@ class _IntegrationItem extends StatelessWidget {
                 'assets/icons/settings/MyLocations.svg',
                 width: 14,
                 height: 14,
-                color: Colors.grey[500],
+                color: tileThemeExtension.onSurfaceVariantSecondary,
               ),
               SizedBox(width: 4),
               GestureDetector(
@@ -308,7 +304,7 @@ class _IntegrationItem extends StatelessWidget {
                 child: Text(
                   _getCityFromLocation(integration.location, context),
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: tileThemeExtension.onSurfaceMonthlyIntegration,
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -321,20 +317,18 @@ class _IntegrationItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.chevron_right, color: Colors.grey[400]),
+              icon: Icon(Icons.chevron_right, color: tileThemeExtension.onSurfaceVariantSecondary,),
               onPressed: () => _navigateToCalendarItems(context, integration),
               tooltip: AppLocalizations.of(context)!.manageCalendars,
             ),
             SizedBox(width: 8),
             TextButton(
               style: TextButton.styleFrom(
-                //ey: it was red
-                foregroundColor: colorScheme.onSurface,
+                foregroundColor: colorScheme.onError,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  //ey: it was red
-                  side: BorderSide(color: colorScheme.primary),
+                  side: BorderSide(color: colorScheme.onError.withValues(alpha: 0.5)),
                 ),
                 minimumSize: Size(0, 32),
               ),

@@ -24,7 +24,7 @@ class MonthlyPickerDialog extends StatelessWidget {
               children: [
                 _buildHeader(context, state,colorScheme),
                 _buildMonthGrid(context, state,colorScheme),
-                _buildFooter(context,colorScheme),
+                _buildFooter(context),
               ],
             ),
           ),

@@ -196,6 +196,7 @@ class TileWidgetState extends State<TileWidget>
               fontFamily: TileTextStyles.rubikFontName,
 
           ),
+        ),
         )
       ],
     );
@@ -560,8 +561,7 @@ class TileWidgetState extends State<TileWidget>
       timeRange: widget.subEvent,
       fontSize: textFontSize,
       textColor:
-          //ey: here
-          isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor,
+          isTardy ? TileColors.late : colorScheme.onSurface,
     );
 
     Widget tileTimeFrame = Container(
@@ -601,7 +601,7 @@ class TileWidgetState extends State<TileWidget>
                             fontSize: textFontSize,
                             fontFamily: TileTextStyles.rubikFontName,
                             fontWeight: FontWeight.normal,
-                            color: TileColors.lateTextColor),
+                            color: TileColors.late),
                       )
                     : SizedBox.shrink()
               ],

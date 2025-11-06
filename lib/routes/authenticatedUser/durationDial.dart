@@ -36,7 +36,19 @@ class DurationDialState extends State<DurationDial> {
   }
 
   onTabTypeChange(value) {
-    if (value == AppLocalizations.of(context)!.custom) {
+    print("value is:");
+    print(value);
+
+    String durationText = AppLocalizations.of(context)!.custom;
+    if (durationTextCollection != null) {
+      if (value is int) {
+        durationText = durationTextCollection![value];
+      }
+    }
+
+    print("duration text: " + durationText.toString());
+
+    if (durationText == AppLocalizations.of(context)!.custom) {
       setState(() {
         _selectedPresetValue = null;
         _selectedPresetText = durationText;

@@ -101,7 +101,7 @@ class TileAddressState extends State<TileAddress> {
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
                 color: widget.isMonthlyView
-                    ? tileThemeExtension.onSurfaceMonthlyIcons
+                    ? tileThemeExtension.onSurfaceMonthlyIntegration
                     : colorScheme.onSurface,
                 size: TileDimensions.tileIconSize,
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/util.dart';
@@ -60,7 +61,7 @@ class _DayButtonState extends State<DayButton> {
               this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
           child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
               style: TextStyle(
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   color: this.widget.isSelected ? colorScheme.onSurface: tileThemeExtension.onSurfaceVariantSecondary,
               ),
           )

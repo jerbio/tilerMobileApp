@@ -11,7 +11,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color shadowEmptyTile;
   final Color shadowSearch;
   final Color onSurfaceDaySummary;
-  final Color onSurfaceMonthlyIcons;
+  final Color onSurfaceMonthlyIntegration;
   final Color onSurfaceHint;
   final Color onSurfaceSecondary;
   final Color onSurfaceVariantSecondary;
@@ -29,6 +29,8 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color notificationOverlayWarning;
   final Color notificationOverlayError;
   final Color notificationOverlayInfo;
+  final Color integrationBorder;
+  final Color integrationApproval;
   final String? mapStyle;
   const TileThemeExtension._(
       {
@@ -42,7 +44,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.shadowSearch,
         required this.primaryContainerLow,
         required this.onSurfaceDaySummary,
-        required this.onSurfaceMonthlyIcons,
+        required this.onSurfaceMonthlyIntegration,
         required this.surfaceContainerGreater,
         required this.surfaceContainerSuperior,
         required this.surfaceContainerPlus,
@@ -55,11 +57,13 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.onSurfaceVariantSecondary,
         required this.onSurfaceTimeBlockLbl,
         required this.darkPrimary,
-        required this.mapStyle,
         required this.notificationOverlaySuccess,
         required this.notificationOverlayWarning,
         required this.notificationOverlayError,
         required this.notificationOverlayInfo,
+        required this.integrationBorder,
+        required this.integrationApproval,
+        required this.mapStyle
       });
 
   static TileThemeExtension get light =>TileThemeExtension._(
@@ -73,7 +77,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       shadowSearch: TileColors.shadowSearchLight,
       primaryContainerLow: TileColors.primaryContainerLowLight,
       onSurfaceDaySummary: TileColors.onSurfaceDaySummaryLight,
-      onSurfaceMonthlyIcons: TileColors.onSurfaceMonthlyIconsLight,
+      onSurfaceMonthlyIntegration: TileColors.onSurfaceMonthlyIntegrationLight,
       onSurfaceHint: TileColors.onSurfaceHintLight,
       onSurfaceSecondary:  TileColors.onSurfaceSecondaryLight,
       onSurfaceVariantSecondary:TileColors.onSurfaceVariantSecondaryLight,
@@ -90,7 +94,10 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       notificationOverlayWarning: TileColors.notificationOverlayWarningLight,
       notificationOverlayError: TileColors.notificationOverlayErrorLight,
       notificationOverlayInfo: TileColors.notificationOverlayInfoLight,
+      integrationBorder: TileColors.integrationBorderLight,
+      integrationApproval: TileColors.integrationApprovalLight,
       mapStyle: null,
+
   );
 
   static TileThemeExtension get dark => TileThemeExtension._(
@@ -104,7 +111,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       shadowSearch: TileColors.shadowSearchDark,
       primaryContainerLow: TileColors.primaryContainerLowDark,
       onSurfaceDaySummary: TileColors.onSurfaceDaySummaryDark,
-      onSurfaceMonthlyIcons: TileColors.onSurfaceMonthlyIconsDark,
+      onSurfaceMonthlyIntegration: TileColors.onSurfaceMonthlyIntegrationDark,
       onSurfaceHint: TileColors.onSurfaceHintDark,
       onSurfaceSecondary: TileColors.onSurfaceSecondaryDark,
       onSurfaceVariantSecondary:TileColors.onSurfaceVariantSecondaryDark,
@@ -117,11 +124,13 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       onSurfaceTimeBlockLbl:TileColors.onSurfaceTimeBlockLblDark,
       surfaceContainerDisabled: TileColors.surfaceContainerDisabledDark,
       darkPrimary:TileColors.darkPrimary,
-      mapStyle:TileColors.darkMapStyle,
       notificationOverlaySuccess: TileColors.notificationOverlaySuccessDark,
       notificationOverlayWarning: TileColors.notificationOverlayWarningDark,
       notificationOverlayError: TileColors.notificationOverlayErrorDark,
       notificationOverlayInfo: TileColors.notificationOverlayInfoDark,
+      integrationBorder: TileColors.integrationBorderDark,
+      integrationApproval: TileColors.integrationApprovalDark,
+      mapStyle:TileColors.darkMapStyle,
   );
 
   @override
@@ -136,7 +145,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? shadowSearch,
     Color? primaryContainerLow,
     Color? onSurfaceDaySummary,
-    Color? onSurfaceMonthlyIcons,
+    Color? onSurfaceMonthlyIntegration,
     Color?  onSurfaceHint,
     Color? onSurfaceSecondary,
     Color? onSurfaceVariantSecondary,
@@ -153,7 +162,10 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? notificationOverlayWarning,
     Color? notificationOverlayError,
     Color? notificationOverlayInfo,
+    Color?  integrationBorder,
+    Color? integrationApproval,
     String? mapStyle
+
   }) {
     return TileThemeExtension._(
         shadowPreviewChartIconographyOuter: shadowPreviewChartIconographyOuter ?? this.shadowPreviewChartIconographyOuter,
@@ -166,7 +178,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         shadowSearch: shadowSearch ?? this.shadowSearch,
         primaryContainerLow: primaryContainerLow  ?? this.primaryContainerLow,
         onSurfaceDaySummary: onSurfaceDaySummary ?? this.onSurfaceDaySummary,
-        onSurfaceMonthlyIcons: onSurfaceMonthlyIcons ?? this.onSurfaceMonthlyIcons,
+        onSurfaceMonthlyIntegration: onSurfaceMonthlyIntegration ?? this.onSurfaceMonthlyIntegration,
         onSurfaceHint: onSurfaceHint ?? this.onSurfaceHint,
         onSurfaceSecondary: onSurfaceSecondary ?? this.onSurfaceSecondary,
         onSurfaceVariantSecondary: onSurfaceVariantSecondary ?? this.onSurfaceVariantSecondary,
@@ -183,6 +195,8 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         notificationOverlayWarning: notificationOverlayWarning ?? this.notificationOverlayWarning,
         notificationOverlayError: notificationOverlayError ?? this.notificationOverlayError,
         notificationOverlayInfo: notificationOverlayInfo ?? this.notificationOverlayInfo,
+        integrationBorder: integrationBorder ?? this.integrationBorder,
+        integrationApproval: integrationApproval ?? this.integrationApproval,
         mapStyle: mapStyle ?? this.mapStyle
     );
   }
@@ -202,7 +216,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         shadowPreviewChartIconographyInner: Color.lerp(shadowPreviewChartIconographyInner, other.shadowPreviewChartIconographyInner, t)!,
         shadowSearch: Color.lerp(shadowSearch, other.shadowSearch, t)!,
         onSurfaceDaySummary:  Color.lerp(onSurfaceDaySummary, other.onSurfaceDaySummary, t)!,
-        onSurfaceMonthlyIcons:  Color.lerp(onSurfaceMonthlyIcons, other.onSurfaceMonthlyIcons, t)!,
+        onSurfaceMonthlyIntegration:  Color.lerp(onSurfaceMonthlyIntegration, other.onSurfaceMonthlyIntegration, t)!,
         primaryContainerLow: Color.lerp(primaryContainerLow, other.primaryContainerLow, t)!,
         onSurfaceHint:Color.lerp(onSurfaceHint, other.onSurfaceHint, t)!,
         onSurfaceSecondary:Color.lerp(onSurfaceSecondary, other.onSurfaceSecondary, t)!,
@@ -220,6 +234,8 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         notificationOverlayWarning: Color.lerp(notificationOverlayWarning, other.notificationOverlayWarning, t)!,
         notificationOverlayError: Color.lerp(notificationOverlayError, other.notificationOverlayError, t)!,
         notificationOverlayInfo: Color.lerp(notificationOverlayInfo, other.notificationOverlayInfo, t)!,
+        integrationBorder: Color.lerp(integrationBorder, other.integrationBorder, t)!,
+        integrationApproval: Color.lerp(integrationApproval, other.integrationApproval, t)!,
         mapStyle: other.mapStyle,
       );
     }

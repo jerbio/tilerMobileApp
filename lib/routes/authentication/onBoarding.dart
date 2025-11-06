@@ -11,6 +11,7 @@ import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget
 import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import 'package:tiler_app/routes/authentication/authorizedRoute.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 
 
 class OnboardingView extends StatefulWidget {

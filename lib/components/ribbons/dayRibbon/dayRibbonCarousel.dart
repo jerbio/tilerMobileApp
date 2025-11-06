@@ -202,6 +202,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   }
 
   void infiniteCaller() {
+    if (!mounted) return;
     setState(() {
       slideLeft = finalSlideLeft;
       slideTop = 0;
@@ -209,29 +210,34 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     setTimeOutUpdate = Utility.setTimeOut(
         duration: uiRoll,
         callBack: () {
+          if (!mounted) return;
           setState(() {
             animatedSliderKey = ValueKey(Utility.getUuid);
             slideTop = 0;
             slideLeft = resetSlideLeft;
           });
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             infiniteCaller();
           });
         });
   }
 
   void startSlider() {
+    if (!mounted) return;
     sliderWidth = MediaQuery.of(context).size.width / 3;
     slideLeft = (-sliderWidth) + 5;
     setState(() {
       showLoader = true;
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       infiniteCaller();
     });
   }
 
   void stopSlider() {
+    if (!mounted) return;
     if (setTimeOutUpdate != null) {
       if (setTimeOutUpdate!.item2 != null) {
         setTimeOutUpdate!.item2!.cancel();
@@ -240,6 +246,14 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     setState(() {
       showLoader = false;
     });
+  }
+
+  @override
+  void dispose() {
+    if (setTimeOutUpdate?.item2 != null) {
+      setTimeOutUpdate!.item2!.cancel();
+    }
+    super.dispose();
   }
 
   Widget renderHorizontalLoader() {

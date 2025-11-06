@@ -268,7 +268,8 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       await authentication.deauthenticateCredentials();
       await secureStorageManager.deleteAllStorageData();
 
-      emit(DeviceSettingLoaded(
+      this.sessionProfile = SessionProfile();
+      emit(DeviceSettingInitial(
         isDarkMode: state.isDarkMode,
         shouldLogout: true,
       ));

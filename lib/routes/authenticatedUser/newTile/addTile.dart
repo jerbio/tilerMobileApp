@@ -495,7 +495,6 @@ class AddTileState extends State<AddTile> {
               style:TextStyle(
                 fontFamily: TileTextStyles.rubikFontName,
                 fontSize: 20,
-                fontFamily: TileStyles.rubikFontName,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,

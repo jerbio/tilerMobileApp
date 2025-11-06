@@ -63,8 +63,8 @@ class TileColors{
   static const Color onSurfaceVariantDark =Color(0xFFCAC4D0);
   static  Color onSurfaceDaySummaryLight = Color(0xFF999999);
   static  Color onSurfaceDaySummaryDark =  Color(0xFF666666);
-  static  Color onSurfaceMonthlyIconsLight = Colors.grey[600]!;
-  static  Color onSurfaceMonthlyIconsDark = Colors.grey[400]!;
+  static  Color onSurfaceMonthlyIntegrationLight = Colors.grey[600]!;
+  static  Color onSurfaceMonthlyIntegrationDark = Colors.grey[400]!;
   static const Color outlineLight = Color(0xFF79747E);
   static const Color outlineDark = Color(0xFF938F99);
   static const Color outlineVariantLight = Color(0xFFCAC4D0);
@@ -124,6 +124,14 @@ class TileColors{
   static const Color notificationOverlayErrorDark=Color(0xFF2A1419);
   static const Color notificationOverlayInfoLight=Color(0xFFE1F5FE);
   static const Color notificationOverlayInfoDark=Color(0xFF0F1F2A);
+  static final Color integrationBorderLight =  Colors.grey[300]!;
+  static final Color integrationBorderDark = Color(0xFF424650);
+  static final Color integrationApprovalLight =  Color.fromRGBO(9, 203, 156, 1);
+  static final Color integrationApprovalDark =
+  HSLColor.fromColor(integrationApprovalLight)
+      .withLightness(0.35)
+      .toColor();
+
   static const Color completedGreen=Colors.green;
   static  Color activeNotification=Colors.green[300]!;
   static const Color acceptedTileShare=Colors.green;
@@ -165,5 +173,6 @@ class TileColors{
   static const Color notificationWarningBorder=Color(0xFFFFA000);
   static const Color notificationErrorBorder=Color(0xFFD32F2F);
   static const Color notificationInfoBorder=Color(0xFF0288D1);
+
   static const String darkMapStyle = '''[{"elementType":"geometry","stylers":[{"color":"#212121"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#757575"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#212121"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#2c2c2c"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"}]}]''';
 }

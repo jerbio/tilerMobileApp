@@ -63,7 +63,7 @@ class MonthlyDailyTile extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.access_time_sharp,
-                      color: tileThemeExtension.onSurfaceMonthlyIcons,
+                      color: tileThemeExtension.onSurfaceMonthlyIntegration,
                       size: 16,
                     ),
                   ),
