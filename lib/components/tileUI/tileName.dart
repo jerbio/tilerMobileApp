@@ -48,6 +48,7 @@ class TileNameState extends State<TileName> {
       emojiField = Text(emojiString,
           style: TextStyle(
               fontSize: fontSize,
+              fontFamily: TileTextStyles.rubikFontName,
               fontWeight: FontWeight.bold,
              )
       );

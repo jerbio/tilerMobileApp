@@ -28,6 +28,15 @@ class _OnboardingViewState extends State<OnboardingView> {
     PrimaryLocationWidget(),
     WorkDayStartWidget(),
   ];
+  late ScheduleApi scheduleApi;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleApi = ScheduleApi(
+      getContextCallBack: () => context,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +47,7 @@ class _OnboardingViewState extends State<OnboardingView> {
       listener: (context, state) {
         if (state.step == OnboardingStep.skipped ||
             state.step == OnboardingStep.submitted) {
+          scheduleApi.buzzSchedule();
           Navigator.pushReplacement(context,
               MaterialPageRoute(builder: (context) => AuthorizedRoute()));
         }

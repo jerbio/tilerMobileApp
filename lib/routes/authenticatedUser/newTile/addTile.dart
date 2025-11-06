@@ -495,6 +495,7 @@ class AddTileState extends State<AddTile> {
               style:TextStyle(
                 fontFamily: TileTextStyles.rubikFontName,
                 fontSize: 20,
+                fontFamily: TileStyles.rubikFontName,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,
@@ -1106,7 +1107,18 @@ class AddTileState extends State<AddTile> {
     tile.AutoReviseDeadline = isAutoRevisable.toString();
     tile.Priority = priority.name.toString().toLowerCase();
 
+    var randomColor = _color ??
+        HSLColor.fromAHSL(
+                1,
+                (Utility.randomizer.nextDouble() * 360),
+                Utility.randomizer.nextDouble(),
+                (1 - (Utility.randomizer.nextDouble() * 0.45)))
+            .toColor();
+
     double colorConst = 255;
+    tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 

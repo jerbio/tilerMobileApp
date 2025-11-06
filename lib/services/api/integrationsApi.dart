@@ -55,6 +55,7 @@ class IntegrationApi extends AppApi {
               ? e.Message
               : LocalizationService.instance.translations.errorOccurred);
     }
+    return null;
   }
 
   Future<Map<String, dynamic>?> addIntegrationLocation(
@@ -120,5 +121,60 @@ class IntegrationApi extends AppApi {
       }
     }
     return false;
+  }
+  Future<CalendarItem?> updateCalendarItem({
+    required String calendarId,
+    required String calendarName,
+    required bool isSelected,
+    required String integrationId,
+    required String calendarItemId,
+  }) async {
+    try {
+      final isAuthenticated = await authentication.isUserAuthenticated();
+      if (!isAuthenticated.item1) {
+        throw TilerError(
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
+      }
+      await checkAndReplaceCredentialCache();
+
+      Map<String, dynamic> updateCalendarItemData = {
+        'CalendarId': calendarId,
+        'CalendarName': calendarName,
+        'IsSelected': isSelected,
+        'IntegrationId': integrationId,
+        'ThirdPartyType': 'google',
+        'CalendarItemId': calendarItemId,
+        'MobileApp': true,
+      };
+
+      // Inject common request parameters
+      Map<String, dynamic> injectedParams = await injectRequestParams(
+          updateCalendarItemData,
+          includeLocationParams: false);
+
+      Utility.debugPrint('Updating calendar item with data: $injectedParams');
+      var response = await sendPostRequest(
+          'api/Integrations/google/calendarItem', injectedParams,
+          injectLocation: false, analyze: false);
+
+      Utility.debugPrint('Update calendar item API response: ${response.body}');
+      var jsonResult = jsonDecode(response.body);
+
+      if (isJsonResponseOk(jsonResult)) {
+        if (isContentInResponse(jsonResult)) {
+          // Parse the updated calendar item from the response
+          return CalendarItem.fromJson(jsonResult['Content']);
+        }
+      }
+      return null;
+    } catch (e) {
+      Utility.debugPrint(
+          'Error updating calendar item: ${e is TilerError ? e.Message : e}');
+      throw TilerError(
+          Message: e is TilerError
+              ? e.Message
+              : LocalizationService.instance.translations.errorOccurred);
+    }
   }
 }

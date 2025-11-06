@@ -71,7 +71,7 @@ class WithinNowBatchState extends TileBatchState {
   double heightMargin = 262;
   double heightOfTimeBanner = 245;
   bool _pendingRendering = false;
-  bool _isEmptyTodayTile = false;
+  bool _isEmptydayTile = false;
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TextStyle dayHeaderTextStyle;
@@ -282,7 +282,7 @@ class WithinNowBatchState extends TileBatchState {
   }
 
   renderEmptyDayTile() {
-    _isEmptyTodayTile = true;
+    _isEmptydayTile = true;
     if (_emptyDayOpacity == 0) {
       Timer(Duration(milliseconds: 200), () {
         if (mounted) {
@@ -428,7 +428,7 @@ class WithinNowBatchState extends TileBatchState {
         child: ListView(
           shrinkWrap: true,
           controller: fullUiController,
-          physics: _isEmptyTodayTile ? NeverScrollableScrollPhysics() : null,
+          physics: _isEmptydayTile ? NeverScrollableScrollPhysics() : null,
           children: [
             ...precedingTileWidgets,
             // this is needed to ensure there is spacing between animated list and the bottom of the screen

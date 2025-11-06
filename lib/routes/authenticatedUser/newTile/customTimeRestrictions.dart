@@ -287,41 +287,6 @@ class CustomTimeRestrictionRouteState
             ),
           ),
         )
-                    ),
-              GestureDetector(
-                onTap: () {
-                  if (dayOfWeekRestriction.isSelected) {
-                    if (_hasCopied && _copiedDayIndex == dayOfWeekRestriction.dayIndex) {
-                      setState(() {
-                        _hasCopied = false;
-                        _copiedDayIndex = null;
-                        _copiedStart = null;
-                        _copiedEnd = null;
-                      });
-                    }
-                    else if (_hasCopied && _copiedDayIndex != dayOfWeekRestriction.dayIndex) {
-                      setState(() {
-                        dayOfWeekRestriction.start = _copiedStart!;
-                        dayOfWeekRestriction.end = _copiedEnd!;
-                      });
-                    } else {
-                      setState(() {
-                        _copiedStart = dayOfWeekRestriction.start;
-                        _copiedEnd = dayOfWeekRestriction.end;
-                        _copiedDayIndex = dayOfWeekRestriction.dayIndex;
-                        _hasCopied = true;
-                      });
-                    }
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: _buildCopyPasteIcon(dayOfWeekRestriction),
-                ),
-              ),
-            ]
-        ),
-
       ],
     );
     return retValue;

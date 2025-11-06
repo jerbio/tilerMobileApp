@@ -217,7 +217,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   AppLocalizations.of(context)!.startsInDuration(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 15
+                    fontSize: 15,
+                    fontFamily:TileTextStyles.rubikFontName,
                   ),
                 )
               ],

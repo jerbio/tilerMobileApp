@@ -14,7 +14,8 @@ sealed class DeviceSettingEvent extends Equatable {
 
 class InitializeDeviceSettingEvent extends DeviceSettingEvent {
   final Function getContextCallBack;
-  const InitializeDeviceSettingEvent({required String id, required this.getContextCallBack})
+  const InitializeDeviceSettingEvent(
+      {required String id, required this.getContextCallBack})
       : super(
           id: id,
           loadingType: LoadingType.initialization,
@@ -38,8 +39,7 @@ class LoadedDeviceSettingEvent extends DeviceSettingEvent {
 }
 
 class GetUserProfileDeviceSettingEvent extends DeviceSettingEvent {
-  const GetUserProfileDeviceSettingEvent(
-      {required String id})
+  const GetUserProfileDeviceSettingEvent({required String id})
       : super(id: id, loadingType: LoadingType.userProfile);
 
   @override
@@ -111,18 +111,24 @@ class LoadedUserProfileDeviceSettingEvent extends DeviceSettingEvent {
 
 class UpdateDarkModeMainSettingDeviceSettingEvent extends DeviceSettingEvent {
   final bool isDarkMode;
-  UpdateDarkModeMainSettingDeviceSettingEvent({required this.isDarkMode, required String id})
+  UpdateDarkModeMainSettingDeviceSettingEvent(
+      {required this.isDarkMode, required String id})
       : super(id: id, loadingType: LoadingType.none);
 
   @override
   List<Object> get props => [id, loadingType, isDarkMode];
 }
 
-
 class LogOutMainSettingDeviceSettingEvent extends DeviceSettingEvent {
-  LogOutMainSettingDeviceSettingEvent({required String id}) : super(id: id, loadingType: LoadingType.none);
+  final BuildContext context;
+  LogOutMainSettingDeviceSettingEvent(
+      {required String id, required this.context})
+      : super(id: id, loadingType: LoadingType.none);
 }
 
 class DeleteAccountMainSettingDeviceSettingEvent extends DeviceSettingEvent {
-  DeleteAccountMainSettingDeviceSettingEvent({required String id}) : super(id: id, loadingType: LoadingType.none);
+  final BuildContext context;
+  DeleteAccountMainSettingDeviceSettingEvent(
+      {required String id, required this.context})
+      : super(id: id, loadingType: LoadingType.none);
 }

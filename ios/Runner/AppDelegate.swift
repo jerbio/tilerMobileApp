@@ -3,6 +3,7 @@ import Flutter
 import GoogleMaps
 
 
+
 // Leaving the commented block below so in case in the future I need to handle google sign in manually I can look at the previous implementation
 // @UIApplicationMain
 // @objc class AppDelegate: FlutterAppDelegate {

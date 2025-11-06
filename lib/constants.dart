@@ -6,8 +6,8 @@ const bool isDebug = !isProduction;
 const bool isStaging = true;
 const bool isRemote = true;
 const prodDomain = 'tiler.app';
-const stagingDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
-const devDomain = 'localhost-44388-x-if7.conveyor.cloud';
+const stagingDomain = 'tiler-stage.conveyor.cloud';
+const devDomain = 'tiler-dev.conveyor.cloud';
 const String tilerDomain =
 isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
 const int stateRetrievalRetry = 100;

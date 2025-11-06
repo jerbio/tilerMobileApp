@@ -37,6 +37,8 @@ abstract class TileListState<T extends TileList> extends State<T>
   AnimationController? swipingAnimationController;
   Animation<double>? swipingAnimation;
   int swipeDirection = 0;
+  bool isSubEventModalShown = false;
+  StreamSubscription? hideNewSheeTileFuture;
   late ThemeData theme;
   late ColorScheme colorScheme;
 
@@ -294,28 +296,56 @@ abstract class TileListState<T extends TileList> extends State<T>
         var nameColor =
             Color.fromRGBO(redColor, greenColor, blueColor, opacity);
         var hslColor = HSLColor.fromColor(nameColor);
-        Color backgroundColor = hslColor
+        Color bgroundColor = hslColor
             .withLightness(hslColor.lightness)
             .toColor()
-            .withValues(alpha: 0.7);
+            .withAlpha((0.7 * 255).toInt());
+        if (isSubEventModalShown) {
+          print("SubEvent modal already shown, not showing again");
+          return;
+        }
         showModalBottomSheet(
           context: context,
           constraints: const BoxConstraints(maxWidth: 400),
-          builder: (BuildContext context) {
-            var future = Future.delayed(
-                const Duration(milliseconds: Constants.autoHideInMs));
-            var hideNewSheetTileFuture = future.asStream().listen((input) {
-              if (context.mounted) {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
+          builder: (BuildContext modalContext) {
+            print("modal bottom sheet called for new tile");
+            if (isSubEventModalShown) {
+              isSubEventModalShown = false;
+              var future = Future.delayed(
+                  const Duration(milliseconds: Constants.autoHideInMs));
+              if (hideNewSheeTileFuture != null) {
+                hideNewSheeTileFuture?.cancel();
               }
-            });
+              hideNewSheeTileFuture = future.asStream().listen((input) {
+                setState(() {
+                  print(
+                      "modal bottom sheet auto hide called and setState called");
+                  // isSubEventModalShown = false;
+                });
+                print("modal bottom sheet auto hide called");
+                if (modalContext.mounted) {
+                  print(
+                      "modal bottom sheet auto hide called and context is mounted");
+                  if (Navigator.canPop(modalContext)) {
+                    print(
+                        "modal bottom sheet auto hide called and Navigator can pop");
+                    Navigator.pop(modalContext);
+                  }
+                }
+              });
+            }
 
-            return GestureDetector(
-              onTap: () {
-                hideNewSheetTileFuture.cancel();
-                Navigator.pop(context);
+            return ElevatedButton(
+              onPressed: () {
+                if (hideNewSheeTileFuture != null) {
+                  hideNewSheeTileFuture?.cancel();
+                }
+
+                if (Navigator.canPop(modalContext)) {
+                  print(
+                      "modal bottom sheet auto hide called and Navigator can pop");
+                  Navigator.pop(modalContext);
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -323,21 +353,21 @@ abstract class TileListState<T extends TileList> extends State<T>
                         tileId: subEvent.calendarEvent?.id ?? subEvent.id!),
                   ),
                 ).whenComplete(() {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
+                  // if (Navigator.canPop(context)) {
+                  //   Navigator.pop(context);
+                  // }
                 });
               },
-              // style: ElevatedButton.styleFrom(
-              //   padding: EdgeInsets.all(0),
-              //   backgroundColor: Colors.transparent,
-              //   shadowColor: Colors.transparent,
-              // ),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.all(0),
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+              ),
               child: Container(
                 padding: const EdgeInsets.all(20),
                 height: 250,
                 width: 300,
-                decoration: BoxDecoration(color: backgroundColor),
+                decoration: BoxDecoration(color: bgroundColor),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -351,6 +381,9 @@ abstract class TileListState<T extends TileList> extends State<T>
             );
           },
         );
+        setState(() {
+          isSubEventModalShown = true;
+        });
       }
     }
   }

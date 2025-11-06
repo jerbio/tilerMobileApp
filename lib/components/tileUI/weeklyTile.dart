@@ -86,7 +86,8 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                 tileName,
                 maxLines: 3,
                 style: TextStyle(
-                  fontSize: 8
+                  fontSize: 8,
+                  fontFamily: TileTextStyles.rubikFontName
                 )
               ),
             ),
@@ -99,6 +100,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                   style:TextStyle(
                     fontSize: 10,
                     color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontFamily: TileTextStyles.rubikFontName,
                   ),
                 ),
               ),

@@ -60,6 +60,7 @@ class _DayButtonState extends State<DayButton> {
               this.widget.isSelected ? EdgeInsets.all(11) : EdgeInsets.all(17),
           child: Text(DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
               style: TextStyle(
+                  fontFamily: TileStyles.rubikFontName,
                   color: this.widget.isSelected ? colorScheme.onSurface: tileThemeExtension.onSurfaceVariantSecondary,
               ),
           )

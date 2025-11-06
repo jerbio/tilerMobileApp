@@ -128,7 +128,7 @@ class MonthlyPickerDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter(BuildContext context,ColorScheme colorScheme) {
+  Widget _buildFooter(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Align(

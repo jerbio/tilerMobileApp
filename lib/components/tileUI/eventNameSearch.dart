@@ -589,6 +589,7 @@ class EventNameSearchState extends SearchWidgetState {
 
             return Scaffold(
               resizeToAvoidBottomInset: false,
+              backgroundColor: TileStyles.defaultBackgroundColor,
               body: Container(
                   margin: TileSpacing.topMargin,
                   alignment: Alignment.topCenter,

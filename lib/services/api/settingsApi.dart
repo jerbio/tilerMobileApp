@@ -162,7 +162,7 @@ class SettingsApi extends AppApi {
 
   Future<UserSettings> updateUserSettings(UserSettings userSetting) async {
     Map<String, dynamic> userSettingMap = userSetting.toJsonForUpdate();
-    print("SENT TO API: ${userSettingMap}");
+    Utility.debugPrint("SENT TO API: ${userSettingMap}");
     return sendPostRequest('api/User/Settings', userSettingMap, analyze: false)
         .then((response) {
       if (response.statusCode == 200) {

@@ -207,6 +207,50 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     return SizedBox.shrink();
   }
 
+  Widget bottomNotes() {
+    String noteText = "";
+    if (this.designatedTile.tileTemplate?.miscData?.userNote != null) {
+      noteText = this.designatedTile.tileTemplate!.miscData!.userNote!;
+    }
+    if (!noteText.isNot_NullEmptyOrWhiteSpace()) {
+      return Text(AppLocalizations.of(context)!.ellipsisEmprtNotes);
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black12,
+        borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(5),
+            topRight: Radius.circular(5),
+            bottomLeft: Radius.circular(5),
+            bottomRight: Radius.circular(5)),
+      ),
+      padding: EdgeInsets.all(10),
+      width: double.infinity,
+      child: Text(noteText),
+    );
+  }
+
+  Widget renderTileForeCast() {
+    if (this.forecastResponse != null &&
+        this.forecastResponse!.peekDays != null) {
+      return TileForecast(forecastDays: this.forecastResponse!.peekDays!);
+    }
+    return SizedBox.shrink();
+  }
+
+  Widget bottomPanel() {
+    if (this.showNotes) {
+      return bottomNotes();
+    }
+
+    if (this.showForecasts) {
+      return renderTileForeCast();
+    }
+
+    return SizedBox.shrink();
+  }
+
   Widget designatedTileDetails() {
     const double fontSize = 14;
     const double iconSize = 14;

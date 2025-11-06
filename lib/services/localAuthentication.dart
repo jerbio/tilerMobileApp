@@ -33,7 +33,7 @@ class Authentication {
         }
       }
     } catch (e) {
-      print(e);
+      print('Error reloading credentials: $e');
     }
   }
 
@@ -78,6 +78,7 @@ class Authentication {
     if (isCachedCredentialValid()) {
       retValue = true;
     } else {
+      print('Cached credentials are not valid');
       await reLoadCredentialsCache().then((value) {
         retValue = isCachedCredentialValid();
       }).catchError((onError) {

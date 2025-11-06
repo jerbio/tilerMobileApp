@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/calendarItemsRoute.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
@@ -25,36 +26,9 @@ class IntegrationWidgetRoute extends StatelessWidget {
       ),
       onPressed: () =>
           context.read<IntegrationsBloc>().add(AddIntegrationEvent()),
-      // if(value !=null){
-      //   Location defaultLocation = Location.fromDefault();
-      //   Map<String, dynamic> locationParams = {
-      //     'location': defaultLocation,
-      //   };
-      //   Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //           builder: (context) => LocationRoute(
-      //             disableNickName: true,
-      //             hideHomeButton: true,
-      //             hideWorkButton: true,
-      //             locationArgs: locationParams,
-      //           )
-      //       )
-      //   ).whenComplete(() {
-      //     Location? populatedLocation = locationParams['location'] as Location? ?? Location.fromDefault();
-      //     AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
-      //     if (populatedLocation != null && value.containsKey('id')) {
-      //       String integrationId = value['id'];
-      //       integrationApi.addIntegrationLocation(populatedLocation, integrationId);
-      //     }
-      //   });
-      // }
-      // },
       child: Text(
         AppLocalizations.of(context)!.addGoogleCalendar,
-        style: TextStyle(
-          fontSize: 16
-        ),
+        style: TextStyle(fontSize: 16),
       ),
     );
   }
@@ -71,12 +45,21 @@ class IntegrationWidgetRoute extends StatelessWidget {
       return renderEmpty(context);
     }
     List<CalendarIntegration> orderedIntegrations = integrations;
-    return ListView.builder(
-      itemCount: orderedIntegrations.length,
-      itemBuilder: (context, index) {
-        final integration = orderedIntegrations[index];
-        return _IntegrationItem(integration: integration);
-      },
+
+    return Column(
+      children: [
+        SizedBox(height: 12),
+        Expanded(
+          child: ListView.separated(
+            itemCount: orderedIntegrations.length,
+            separatorBuilder: (context, index) => SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              final integration = orderedIntegrations[index];
+              return _IntegrationItem(integration: integration);
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -116,6 +99,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
         listener: (context, state) {
           NotificationOverlayMessage notificationOverlayMessage =
               NotificationOverlayMessage();
+          print("IntegrationWidgetRoute: state: $state");
           if (state is IntegrationAdded) {
             //_handleNewIntegration(context, state.integrationId);
           } else if (state is IntegrationDeleted) {
@@ -168,7 +152,7 @@ class _IntegrationItem extends StatelessWidget {
       return text[0].toUpperCase() + text.substring(1);
     }
 
-    String? _extractCity(String? text, ) {
+    String? _extractCity(String? text) {
       if (text != null && text.isNotEmpty) {
         List<String> parts = text.split(',').map((e) => e.trim()).toList();
         if (parts.length == 1) {
@@ -202,13 +186,42 @@ class _IntegrationItem extends StatelessWidget {
       Location? populatedLocation =
           locationParams['location'] as Location? ?? Location.fromDefault();
       AnalysticsSignal.send('INTEGRATION_GOOGLE_LOCATION_NAVIGATION');
-      if (populatedLocation != null) {
-        if (integration.id != null) {
-          integration.location = populatedLocation;
-          context.read<IntegrationsBloc>().add(UpdateIntegrationLocationEvent(
-              integrationId: integration.id!, location: populatedLocation));
-        }
+      if (integration.id != null) {
+        integration.location = populatedLocation;
+        context.read<IntegrationsBloc>().add(UpdateIntegrationLocationEvent(
+            integrationId: integration.id!, location: populatedLocation));
       }
+    });
+  }
+
+  void _navigateToCalendarItems(
+      BuildContext context, CalendarIntegration integration) {
+    IntegrationsBloc integrationsBloc = context.read<IntegrationsBloc>();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BlocProvider(
+          create: (context) => integrationsBloc,
+          child: CalendarItemsRoute(integration: integration),
+        ),
+      ),
+    ).whenComplete(() {
+      // Refresh the integrations list after returning from CalendarItemsRoute
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BlocProvider(
+            create: (context) => IntegrationsBloc(
+              getContextCallBack: () => context,
+              integrationType: integrationsBloc.integrationType,
+            ),
+            child: IntegrationWidgetRoute(),
+          ),
+        ),
+      );
     });
   }
 
@@ -219,55 +232,124 @@ class _IntegrationItem extends StatelessWidget {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
     final tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    return ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 0),
-        subtitle: Row(
+    String providerText = integration.calendarType ??
+        AppLocalizations.of(context)!.unknownProvider;
+
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        //ey: change this color
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          //ey: change this color
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            //ey: change this color
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: TileStyles.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            Icons.calendar_today,
+            color: TileStyles.primaryColor,
+            size: 20,
+          ),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SvgPicture.asset(
-                'assets/icons/settings/MyLocations.svg',
-                width: 16,
-                height: 16,
-                colorFilter: ColorFilter.mode(
-                  tileThemeExtension.onSurfaceVariantSecondary,
-                  BlendMode.srcIn,
-                )
+            Text(
+              titleText,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(width: 4),
-            GestureDetector(
-              onTap: () => _updateLocation(context, integration),
-              child: SizedBox(
-                width: 150,
-                child: Text(
-                  _getCityFromLocation(integration.location, context),
-                  style: TextStyle(color: tileThemeExtension.onSurfaceVariantSecondary),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
+            SizedBox(height: 2),
+            Text(
+              providerText.toUpperCase(),
+              style: TextStyle(
+                //ey: change this color
+                color: Colors.grey[600],
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
         ),
-        title: Container(
-          child: Text(
-            titleText,
-            style: TextStyle(overflow: TextOverflow.ellipsis),
+        subtitle: Padding(
+          padding: EdgeInsets.only(top: 8),
+          child: Row(
+            children: [
+              SvgPicture.asset(
+                'assets/icons/settings/MyLocations.svg',
+                width: 14,
+                height: 14,
+                color: Colors.grey[500],
+              ),
+              SizedBox(width: 4),
+              GestureDetector(
+                onTap: () => _updateLocation(context, integration),
+                child: Text(
+                  _getCityFromLocation(integration.location, context),
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 12,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ),
         ),
-        trailing: IntrinsicWidth(
-          child: TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor:colorScheme.onSurface,
-              padding: EdgeInsets.symmetric(horizontal: 30),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(color: colorScheme.primary),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.chevron_right, color: Colors.grey[400]),
+              onPressed: () => _navigateToCalendarItems(context, integration),
+              tooltip: AppLocalizations.of(context)!.manageCalendars,
+            ),
+            SizedBox(width: 8),
+            TextButton(
+              style: TextButton.styleFrom(
+                //ey: it was red
+                foregroundColor: colorScheme.onSurface,
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  //ey: it was red
+                  side: BorderSide(color: colorScheme.primary),
+                ),
+                minimumSize: Size(0, 32),
+              ),
+              onPressed: () => context
+                  .read<IntegrationsBloc>()
+                  .add(DeleteIntegrationEvent(integration: integration)),
+              child: Text(
+                AppLocalizations.of(context)!.disconnect,
+                style: TextStyle(fontSize: 12),
               ),
             ),
-            onPressed: () => context
-                .read<IntegrationsBloc>()
-                .add(DeleteIntegrationEvent(integration: integration)),
-            child: Text(AppLocalizations.of(context)!.disconnect),
-          ),
-        ));
+          ],
+        ),
+        onTap: () => _navigateToCalendarItems(context, integration),
+      ),
+    );
   }
 }
