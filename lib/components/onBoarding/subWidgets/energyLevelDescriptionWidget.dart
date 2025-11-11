@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
 
@@ -18,15 +19,16 @@ class EnergyLevelDescriptionWidget extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.0),
         height: 50,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30.0),
-          border: Border.all(color: tileThemeExtension.onSurfaceVariantSecondary),
+        decoration:  TileDecorations.onboardingBoxDecoration(
+            tileThemeExtension.onSurfaceVariantSecondary
         ),
         child: BlocBuilder<OnboardingBloc, OnboardingState>(
           builder: (context, state) {
             return DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: state.preferredDaySection,
+                value: ["Morning", "Midday", "Neutral"].contains(state.preferredDaySection)
+                    ? state.preferredDaySection
+                    : "Morning",
                 isExpanded: true,
                 iconEnabledColor: colorScheme.primary,
                 items: [

@@ -74,4 +74,29 @@ class TileDecorations {
         ],
       )
   );
+
+
+  static InputDecoration onboardingInputDecoration (Color borderColor, Color focusColor, String hintText)=>InputDecoration(
+    contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
+    border: OutlineInputBorder(
+      gapPadding: 40,
+      borderRadius: BorderRadius.circular(30.0),
+      borderSide: BorderSide(color:  borderColor),
+    ),
+    focusedBorder: OutlineInputBorder(
+      gapPadding: 40,
+      borderRadius: BorderRadius.circular(30.0),
+      borderSide: BorderSide(color: focusColor
+      ),
+    ),
+    hintText: hintText,
+    filled: true,
+    isDense: true,
+    fillColor: Colors.transparent,
+  );
+
+  static BoxDecoration onboardingBoxDecoration(Color borderColor)=>BoxDecoration(
+    borderRadius: BorderRadius.circular(30.0),
+    border: Border.all(color:borderColor)
+  );
 }

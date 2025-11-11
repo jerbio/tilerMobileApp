@@ -2,12 +2,18 @@ part of 'on_boarding_bloc.dart';
 
 enum OnboardingStep {
   initial,
+  dataLoaded,
   pageChanged,
   wakeUpTimeChanged,
   startingWorkDayChanged,
   preferredDaySectionChanged,
-  locationUpdated,
+  preferredWorkLocationUpdated,
+  getTimeAndLocation,
+  setPersonalProfile,
+  setWorkProfile,
   loading,
+  suggestionLoading,
+  suggestionLoaded,
   error,
   submitted,
   skipped,
@@ -19,21 +25,43 @@ class OnboardingState extends Equatable {
   final TimeOfDay? wakeUpTime;
   final TimeOfDay? startingWorkDayTime;
   final String? preferredDaySection;
-  final Location? selectedLocation;
+  final Location? selectedPreferredWorkLocation;
+  final String? userLongitude;
+  final String? userLatitude;
+  final int? timeZoneOffset;
+  final String? timeZone;
   final String? addressText;
-  final bool isLocationVerified;
+  final String? profession;
+  final bool isCustomProfession;
+  final RestrictionProfile? workProfile;
+  final RestrictionProfile? personalProfile;
+  final List<RecurringTask>? recurringTasks;
+  final List<String>?  usage;
+  final List<TileSuggestion>? suggestedTiles;
+  final List<TileSuggestion>? selectedSuggestionTiles;
   final String? error;
 
-  const OnboardingState({
+  const OnboardingState(  {
     this.step = OnboardingStep.initial,
     this.pageNumber,
     this.wakeUpTime,
     this.startingWorkDayTime,
     this.preferredDaySection,
-    this.selectedLocation,
+    this.selectedPreferredWorkLocation,
+    this.userLongitude,
+    this.userLatitude,
+    this.timeZoneOffset,
+    this.timeZone,
+    this.workProfile,
+    this.personalProfile,
     this.addressText,
-    this.isLocationVerified = false,
+    this.profession,
+    this.isCustomProfession = false,
     this.error,
+    this.recurringTasks,
+    this.suggestedTiles,
+    this.selectedSuggestionTiles,
+    this.usage
   });
 
   OnboardingState copyWith({
@@ -42,9 +70,20 @@ class OnboardingState extends Equatable {
     TimeOfDay? wakeUpTime,
     TimeOfDay? startingWorkDayTime,
     String? preferredDaySection,
-    Location? selectedLocation,
+    Location? selectedPreferredWorkLocation,
+    String? userLongitude,
+    String?userLatitude,
+    int? timeZoneOffset,
+    String? timeZone,
     String? addressText,
-    bool? isLocationVerified,
+    String? profession,
+    bool? isCustomProfession,
+    RestrictionProfile? workProfile,
+    RestrictionProfile? personalProfile,
+    List<RecurringTask>? recurringTasks,
+    List<String>?  usage,
+    List<TileSuggestion>? suggestedTiles,
+    List<TileSuggestion>? selectedSuggestionTiles,
     String? error,
   }) {
     return OnboardingState(
@@ -53,9 +92,20 @@ class OnboardingState extends Equatable {
       wakeUpTime: wakeUpTime ?? this.wakeUpTime,
       startingWorkDayTime: startingWorkDayTime ?? this.startingWorkDayTime,
       preferredDaySection: preferredDaySection ?? this.preferredDaySection,
-      selectedLocation: selectedLocation ?? this.selectedLocation,
+      selectedPreferredWorkLocation: selectedPreferredWorkLocation ?? this.selectedPreferredWorkLocation,
+      userLongitude: userLongitude ?? this.userLongitude ,
+      userLatitude: userLatitude ?? this.userLatitude,
+      timeZoneOffset: timeZoneOffset ?? this.timeZoneOffset,
+      timeZone: timeZone ?? this.timeZone ,
       addressText: addressText ?? this.addressText,
-      isLocationVerified: isLocationVerified ?? this.isLocationVerified,
+      profession:  profession ?? this.profession,
+      isCustomProfession: isCustomProfession ?? this.isCustomProfession,
+      workProfile: workProfile ?? this.workProfile,
+      personalProfile: personalProfile ?? this.personalProfile,
+      recurringTasks: recurringTasks ?? this.recurringTasks,
+      usage:  usage ?? this.usage,
+      suggestedTiles: suggestedTiles??this.suggestedTiles,
+      selectedSuggestionTiles: selectedSuggestionTiles??this.selectedSuggestionTiles,
       error: error ?? this.error,
     );
   }
@@ -67,9 +117,20 @@ class OnboardingState extends Equatable {
     wakeUpTime,
     startingWorkDayTime,
     preferredDaySection,
-    selectedLocation,
+    selectedPreferredWorkLocation,
+    userLongitude,
+    userLatitude,
+    timeZoneOffset,
+    timeZone,
+    workProfile,
+    personalProfile,
     addressText,
-    isLocationVerified,
+    profession,
+    isCustomProfession,
+    recurringTasks,
+    suggestedTiles,
+    selectedSuggestionTiles,
+    usage,
     error,
   ];
 }
