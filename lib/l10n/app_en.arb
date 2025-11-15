@@ -801,5 +801,7 @@
         "swipeRight":"Swipe Right>>",
         "swipeRightDescription":"No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.",
         "googleCalendarAndMore":"Google Calendar +\nmore calendars",
-        "googleCalendarAndMoreDescription":"Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress"
+        "googleCalendarAndMoreDescription":"Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress",
+        "selectSuggestions":"Select suggestions",
+        "typeSomething":"Type something here"
 }

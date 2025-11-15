@@ -118,7 +118,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       ));
       return;
     }
-    if(state.step==OnboardingStep.suggestionLoading)
+    if(state.step==OnboardingStep.suggestionLoading || state.step == OnboardingStep.suggestionRefreshing)
       return ;
     if (state.pageNumber! < 10) {
        _setWorkOrPersonalLoadedStep(emit);
@@ -253,12 +253,34 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
   void _onAddTileSuggestion(AddTileSuggestionEvent event, Emitter<OnboardingState> emit) {
     final updated = List<TileSuggestion>.from(state.selectedSuggestionTiles ?? [])..add(event.tile);
-    emit(state.copyWith(selectedSuggestionTiles: updated));
+    Map<int,TileSuggestion> updatedMap = state.removedSuggestedTilesMap ?? {};
+    List<TileSuggestion?> updatedSuggested = List<TileSuggestion?>.from(state.suggestedTiles ?? []);
+    if (event.isAddedByPill) {
+      final index = state.suggestedTiles?.indexWhere((t) => t?.tileName == event.tile.tileName ) ?? -1;
+      if (index != -1) {
+        updatedMap[index] = event.tile;
+        updatedSuggested[index] = null;
+      }
+    }
+
+    emit(state.copyWith(
+        selectedSuggestionTiles: updated,
+        suggestedTiles: updatedSuggested,
+        removedSuggestedTilesMap: updatedMap
+    ));
   }
 
   void _onRemoveTileSuggestion(RemoveTileSuggestionEvent event, Emitter<OnboardingState> emit) {
+    final removedTile = state.selectedSuggestionTiles![event.index];
     final updated = List<TileSuggestion>.from(state.selectedSuggestionTiles ?? [])..removeAt(event.index);
-    emit(state.copyWith(selectedSuggestionTiles: updated));
+    List<TileSuggestion?> updatedSuggested = List<TileSuggestion?>.from(state.suggestedTiles ?? []);
+
+    state.removedSuggestedTilesMap?.forEach((key, value) {
+      if (value.tileName == removedTile.tileName ) {
+        updatedSuggested[key] = removedTile;
+      }
+    });
+    emit(state.copyWith(selectedSuggestionTiles: updated,suggestedTiles: updatedSuggested));
   }
   void _onSkipOnboarding(
       SkipOnboardingEvent event, Emitter<OnboardingState> emit) async {
@@ -378,23 +400,31 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   }
 
   void _onFetchTileSuggestions(FetchTileSuggestionsEvent event, Emitter<OnboardingState> emit) async {
-    emit(state.copyWith(suggestedTiles: null,step: OnboardingStep.suggestionLoading));
-
+    emit(state.copyWith(suggestedTiles: [],step: event.isRefresh?OnboardingStep.suggestionRefreshing:OnboardingStep.suggestionLoading));
     try {
+
       if(state.profession!.isNotEmpty && state.profession != null) {
         List<TileSuggestion> tiles = await onBoardingApi
             .generateSuggestionTiles(
           profession: state.profession!,
           description:state.isCustomProfession?"give me a variant option of tasks to make an exciting balanced schedule":"",
-
         );
+
+        if (state.selectedSuggestionTiles != null && state.selectedSuggestionTiles!.isNotEmpty) {
+          tiles = tiles.where((tile) =>
+          !state.selectedSuggestionTiles!.any((selected) =>
+          selected.tileName?.toLowerCase() == tile.tileName?.toLowerCase())
+          ).toList();
+        }
+
         emit(state.copyWith(
-            suggestedTiles: tiles, step: OnboardingStep.suggestionLoaded));
+            suggestedTiles: tiles, step: OnboardingStep.suggestionLoaded,removedSuggestedTilesMap:{}));
       }
     } catch (e) {
       emit(state.copyWith(suggestedTiles: [],step: OnboardingStep.suggestionLoaded));
     }
   }
+
 
   bool _canProceedToNextPage(OnboardingState state) {
     if (state.pageNumber == 7) {

@@ -131,7 +131,7 @@ class TileColors{
   static final Color onDisabledOnboardingPillLight = Colors.grey.shade600;
   static final Color onDisabledOnboardingPillDark = Color(0xFFB0B8C0);
   static final Color suggestionLoadingOnboardingSurfaceLight =Color(0xFFECD4A9);
-  static final Color suggestionLoadingOnboardingSurfaceDark = Color(0xFFA67C3D);
+  static final Color suggestionLoadingOnboardingSurfaceDark = Color(0xFFE295A8);
   static final Color integrationApprovalLight =  Color.fromRGBO(9, 203, 156, 1);
   static final Color integrationApprovalDark =
   HSLColor.fromColor(integrationApprovalLight)

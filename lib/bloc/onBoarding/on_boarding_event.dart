@@ -104,7 +104,8 @@ class SelectProfessionEvent extends OnboardingEvent {
 }
 class AddTileSuggestionEvent extends OnboardingEvent {
   final TileSuggestion tile;
-  AddTileSuggestionEvent(this.tile);
+  final bool isAddedByPill;
+  AddTileSuggestionEvent({required this.tile,this.isAddedByPill=false});
   @override
   List<Object?> get props => [tile];
 }
@@ -116,7 +117,10 @@ class RemoveTileSuggestionEvent extends OnboardingEvent {
   List<Object?> get props => [index];
 }
 class FetchTileSuggestionsEvent extends OnboardingEvent {
+  final bool isRefresh;
+  FetchTileSuggestionsEvent({this.isRefresh = false});
 }
+
 class SkipOnboardingEvent extends OnboardingEvent {}
 
 class OnboardingRequestedEvent extends OnboardingEvent{}

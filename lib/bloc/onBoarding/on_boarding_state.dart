@@ -13,6 +13,7 @@ enum OnboardingStep {
   setWorkProfile,
   loading,
   suggestionLoading,
+  suggestionRefreshing,
   suggestionLoaded,
   error,
   submitted,
@@ -37,8 +38,9 @@ class OnboardingState extends Equatable {
   final RestrictionProfile? personalProfile;
   final List<RecurringTask>? recurringTasks;
   final List<String>?  usage;
-  final List<TileSuggestion>? suggestedTiles;
+  final List<TileSuggestion?>? suggestedTiles;
   final List<TileSuggestion>? selectedSuggestionTiles;
+  final Map<int, TileSuggestion>? removedSuggestedTilesMap;
   final String? error;
 
   const OnboardingState(  {
@@ -61,6 +63,7 @@ class OnboardingState extends Equatable {
     this.recurringTasks,
     this.suggestedTiles,
     this.selectedSuggestionTiles,
+    this.removedSuggestedTilesMap,
     this.usage
   });
 
@@ -82,8 +85,9 @@ class OnboardingState extends Equatable {
     RestrictionProfile? personalProfile,
     List<RecurringTask>? recurringTasks,
     List<String>?  usage,
-    List<TileSuggestion>? suggestedTiles,
+    List<TileSuggestion?>? suggestedTiles,
     List<TileSuggestion>? selectedSuggestionTiles,
+    Map<int, TileSuggestion>? removedSuggestedTilesMap,
     String? error,
   }) {
     return OnboardingState(
@@ -104,8 +108,9 @@ class OnboardingState extends Equatable {
       personalProfile: personalProfile ?? this.personalProfile,
       recurringTasks: recurringTasks ?? this.recurringTasks,
       usage:  usage ?? this.usage,
-      suggestedTiles: suggestedTiles??this.suggestedTiles,
-      selectedSuggestionTiles: selectedSuggestionTiles??this.selectedSuggestionTiles,
+      suggestedTiles: suggestedTiles ?? this.suggestedTiles,
+      selectedSuggestionTiles: selectedSuggestionTiles?? this.selectedSuggestionTiles,
+      removedSuggestedTilesMap: removedSuggestedTilesMap ?? this.removedSuggestedTilesMap,
       error: error ?? this.error,
     );
   }
@@ -130,6 +135,7 @@ class OnboardingState extends Equatable {
     recurringTasks,
     suggestedTiles,
     selectedSuggestionTiles,
+    removedSuggestedTilesMap,
     usage,
     error,
   ];

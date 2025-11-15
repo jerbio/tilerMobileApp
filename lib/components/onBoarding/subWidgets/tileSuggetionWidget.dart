@@ -13,21 +13,30 @@ class TileSuggestionsWidget extends StatefulWidget {
   _TileSuggestionsState createState() => _TileSuggestionsState();
 }
 
-class _TileSuggestionsState extends State<TileSuggestionsWidget> {
+class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTickerProviderStateMixin {
   TextEditingController customTileController = TextEditingController();
   late  AppLocalizations localizations;
   late ThemeData theme;
+  late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
+  late AnimationController _rotationController;
+  late double screenHeight;
 
   @override
   void initState() {
     super.initState();
+    customTileController.addListener(() => setState(() {}));
     context.read<OnboardingBloc>().add(FetchTileSuggestionsEvent());
+    _rotationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 1000),
+    );
   }
 
   @override
   void dispose() {
     customTileController.dispose();
+    _rotationController.dispose();
     super.dispose();
   }
 
@@ -35,11 +44,13 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> {
   void didChangeDependencies() {
     localizations=  AppLocalizations.of(context)!;
     theme = Theme.of(context);
+    colorScheme=theme.colorScheme;
     tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    screenHeight= MediaQuery.of(context).size.height ;
     super.didChangeDependencies();
   }
 
-  Widget _buildLoadingIndicator(ColorScheme colorScheme) {
+  Widget _buildLoadingIndicator() {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -68,11 +79,15 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
-
-    return BlocBuilder<OnboardingBloc, OnboardingState>(
+    return BlocConsumer<OnboardingBloc, OnboardingState>(
+      listener: (context, state) {
+        if (state.step == OnboardingStep.suggestionRefreshing) {
+          _rotationController.repeat();
+        } else {
+          _rotationController.stop();
+          _rotationController.reset();
+        }
+      },
       builder: (context, state) {
         return OnboardingSubWidget(
           title: localizations.tileSuggestions,
@@ -80,28 +95,11 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (state.step == OnboardingStep.suggestionLoading) ...[
-                _buildLoadingIndicator(colorScheme),
+              if (state.step == OnboardingStep.suggestionLoading || state.step == OnboardingStep.suggestionRefreshing) ...[
+                _buildLoadingIndicator(),
                 SizedBox(height: 16),
               ],
-
-              if (state.suggestedTiles != null && state.suggestedTiles!.isNotEmpty)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: state.suggestedTiles!.map((tile) {
-                    return OnboardingPillTag(
-                      text: tile.tileName ?? "",
-                      isEnabled: tile.isActive??true,
-                      onTap: () {
-                        context.read<OnboardingBloc>().add(AddTileSuggestionEvent(tile));
-                      },
-                    );
-                  }).toList(),
-                ),
-
               SizedBox(height: 16),
-
               Row(
                 children: [
                   Expanded(
@@ -111,49 +109,101 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> {
                       decoration: TileDecorations.onboardingInputDecoration(
                         tileThemeExtension.onSurfaceVariantSecondary,
                         colorScheme.tertiary,
-                        localizations.grabACoffee,
+                        localizations.typeSomething
                       ),
                     ),
                   ),
                   SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () {
-                      if (customTileController.text.trim().isNotEmpty) {
-                        final customTile = TileSuggestion(
-                          tileName: customTileController.text.trim(),
-                          durationInMs: 1800000
-                        );
-                        context.read<OnboardingBloc>().add(AddTileSuggestionEvent(customTile));
-                        customTileController.clear();
-                      }
+                    onPressed: customTileController.text.trim().isEmpty
+                        ? null
+                        : () {
+                      final customTile = TileSuggestion(
+                        tileName: customTileController.text.trim(),
+                        durationInMs: 1800000,
+                      );
+                      context.read<OnboardingBloc>().add(AddTileSuggestionEvent(tile: customTile));
+                      customTileController.clear();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: colorScheme.primary,
+                      backgroundColor:  customTileController.text.trim().isEmpty
+                          ? tileThemeExtension.disabledOnboardingPill : colorScheme.primary,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     ),
-                    child: Text(localizations.addPlus, style: TextStyle(color: colorScheme.onPrimary, fontSize: 16)),
+                    child: Text(localizations.addPlus, style: TextStyle(color: customTileController.text.trim().isEmpty
+                        ? tileThemeExtension.onDisabledOnboardingPill :colorScheme.onPrimary, fontSize: 16)),
                   ),
                 ],
               ),
 
+              SizedBox(height: 0),
+              Row(
+                children: [
+                  Text(
+                    localizations.selectSuggestions,
+                    style: TextStyle(
+                        color: colorScheme.onSurfaceVariant
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: state.step == OnboardingStep.suggestionRefreshing ? null : () {
+                      context.read<OnboardingBloc>().add(FetchTileSuggestionsEvent(isRefresh:true));
+                    },
+                    icon: RotationTransition(
+                      turns: _rotationController,
+                      child: Icon(
+                          Icons.refresh,
+                          color: state.step == OnboardingStep.suggestionRefreshing
+                              ? colorScheme.tertiary
+                              : tileThemeExtension.onDisabledOnboardingPill
+                      ),
+                    ),
+                    iconSize: 20,
+                  ),
+                ],
+              ),
               SizedBox(height: 16),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: screenHeight*0.3),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
 
-              if (state.selectedSuggestionTiles != null && state.selectedSuggestionTiles!.isNotEmpty)
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: state.selectedSuggestionTiles!.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    var tile = entry.value;
-                    return OnboardingPillTag(
-                      text: tile.tileName ?? "",
-                      onDelete: () {
-                        context.read<OnboardingBloc>().add(RemoveTileSuggestionEvent(index));
-                      },
-                    );
-                  }).toList(),
+                      if (state.selectedSuggestionTiles != null && state.selectedSuggestionTiles!.isNotEmpty)
+                        ...state.selectedSuggestionTiles!.asMap().entries.map((entry) {
+                          int index = entry.key;
+                          var tile = entry.value;
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: OnboardingPillTag(
+                              text: tile.tileName ?? "",
+                              onDelete: () {
+                                context.read<OnboardingBloc>().add(RemoveTileSuggestionEvent(index));
+                              },
+                            ),
+                          );
+                        }).toList(),
+
+                      if (state.suggestedTiles != null && state.suggestedTiles!.isNotEmpty)
+                        ...state.suggestedTiles!.where((tile) => tile != null).map((tile) {
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: OnboardingPillTag(
+                              text: tile!.tileName ?? "",
+                              isEnabled: false,
+                              onTap: () {
+                                if(state.step != OnboardingStep.suggestionLoading)
+                                  context.read<OnboardingBloc>().add(AddTileSuggestionEvent(tile: tile, isAddedByPill: true));
+                              },
+                            ),
+                          );
+                        }).toList(),
+                    ],
+                  ),
                 ),
+              ),
             ],
           ),
         );
