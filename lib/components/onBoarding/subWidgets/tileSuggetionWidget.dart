@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingPillTag.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingSubWidget.dart';
+import 'package:tiler_app/data/tileColor.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -70,7 +72,7 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
           SizedBox(width: 12),
           Text(
             localizations.tileProfiling,
-            style: TextStyle(fontSize: 12,color: colorScheme.onInverseSurface),
+            style: TextStyle(fontSize: 12,color: TileColors.darkContent),
           ),
         ],
       ),
