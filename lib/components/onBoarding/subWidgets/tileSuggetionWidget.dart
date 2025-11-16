@@ -70,7 +70,7 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
           SizedBox(width: 12),
           Text(
             localizations.tileProfiling,
-            style: TextStyle(fontSize: 12),
+            style: TextStyle(fontSize: 12,color: colorScheme.onInverseSurface),
           ),
         ],
       ),
