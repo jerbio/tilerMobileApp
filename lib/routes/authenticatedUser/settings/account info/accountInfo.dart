@@ -6,10 +6,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/userProfile.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,7 +26,7 @@ class AccountInfo extends StatelessWidget {
   UserProfile? _originalProfile;
   AccountInfo({Key? key}) : super(key: key);
 
-  void _showDeleteConfirmationDialog(BuildContext context) {
+  void _showDeleteConfirmationDialog(BuildContext context,ColorScheme colorScheme) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -35,7 +36,10 @@ class AccountInfo extends StatelessWidget {
               Text(AppLocalizations.of(context)!.deleteAccountConfirmation),
           actions: [
             TextButton(
-              child: Text(AppLocalizations.of(context)!.cancel),
+              child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: TextStyle(color:colorScheme.onSurface ),
+              ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
               },
@@ -43,13 +47,12 @@ class AccountInfo extends StatelessWidget {
             TextButton(
               child: Text(
                 AppLocalizations.of(context)!.delete,
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color:colorScheme.onError ),
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 context.read<DeviceSettingBloc>().add(
-                    DeleteAccountMainSettingDeviceSettingEvent(
-                        id: _requestId, context: dialogContext));
+                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId, context: dialogContext));
               },
             ),
           ],
@@ -58,23 +61,6 @@ class AccountInfo extends StatelessWidget {
     );
   }
 
-  Widget renderPending() {
-    List<Widget> centerElements = [
-      Center(
-          child: SizedBox(
-        child: CircularProgressIndicator(),
-        height: 200.0,
-        width: 200.0,
-      )),
-      Center(
-          child: Image.asset('assets/images/tiler_logo_black.png',
-              fit: BoxFit.cover, scale: 7)),
-    ];
-    return Container(
-      decoration: TileStyles.defaultBackground,
-      child: Center(child: Stack(children: centerElements)),
-    );
-  }
 
   String _displayRawDate(String? rawDate) {
     if (rawDate == null) return '';
@@ -131,9 +117,7 @@ class AccountInfo extends StatelessWidget {
     );
 
     if (picked != null && context.mounted) {
-      _dateOfBirthController.text =
-          DateFormat.yMd(Localizations.localeOf(context).languageCode)
-              .format(picked);
+      _dateOfBirthController.text = DateFormat('MM/dd/yyyy').format(picked);
       context.read<DeviceSettingBloc>().add(
             UpdateUserProfileDateOfBirthSettingEvent(
               id: _requestId,
@@ -155,7 +139,6 @@ class AccountInfo extends StatelessWidget {
         userProfile.lastName = names.skip(1).join(' ');
       }
     }
-
     userProfile.username = _usernameController.text;
     userProfile.phoneNumber = _phoneNumberController.text;
     final completer = Completer<bool>();
@@ -182,12 +165,12 @@ class AccountInfo extends StatelessWidget {
     return result;
   }
 
-  Widget _buildContent(BuildContext context, DeviceSettingState state) {
+  Widget _buildContent(BuildContext context, DeviceSettingState state,ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
     final userProfile = (state is DeviceSettingLoaded && state.id == _requestId)
         ? state.sessionProfile?.userProfile
         : null;
     if (state is DeviceUserProfileSettingLoading) {
-      return renderPending();
+      return PendingWidget();
     }
     return Column(
       children: [
@@ -195,26 +178,36 @@ class AccountInfo extends StatelessWidget {
         _buildTextField(
           AppLocalizations.of(context)!.fullName,
           controller: _fullNameController,
+          colorScheme: colorScheme,
+          tileThemeExtension: tileThemeExtension
         ),
         _buildTextField(
-          AppLocalizations.of(context)!.username,
-          controller: _usernameController,
+            AppLocalizations.of(context)!.username,
+            controller: _usernameController,
+            colorScheme: colorScheme,
+            tileThemeExtension:tileThemeExtension
         ),
         _buildTextField(
-          AppLocalizations.of(context)!.email,
-          controller: TextEditingController(
-              text: userProfile?.email ?? 'tiler@test.com'),
-          enabled: false,
-          filled: true,
+            AppLocalizations.of(context)!.email,
+            controller: TextEditingController(
+                text: userProfile?.email ?? 'tiler@test.com'),
+            enabled: false,
+            filled: true,
+            colorScheme: colorScheme,
+            tileThemeExtension:tileThemeExtension
         ),
         _buildTextField(
-          AppLocalizations.of(context)!.phoneNumber,
-          controller: _phoneNumberController,
+            AppLocalizations.of(context)!.phoneNumber,
+            controller: _phoneNumberController,
+            colorScheme: colorScheme,
+            tileThemeExtension:tileThemeExtension
         ),
         _buildTextField(
-          AppLocalizations.of(context)!.dateOfBirth,
-          controller: _dateOfBirthController,
-          onTap: () => _pickDate(context, userProfile),
+            AppLocalizations.of(context)!.dateOfBirth,
+            controller: _dateOfBirthController,
+            onTap: () => _pickDate(context, userProfile),
+            colorScheme: colorScheme,
+            tileThemeExtension:tileThemeExtension,
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10.0, top: 10),
@@ -222,11 +215,11 @@ class AccountInfo extends StatelessWidget {
             leading: SvgPicture.asset(
               'assets/icons/settings/DeleteAccount.svg',
               colorFilter:
-                  ColorFilter.mode(TileStyles.primaryColor, BlendMode.srcIn),
+                  ColorFilter.mode(colorScheme.primary, BlendMode.srcIn),
             ),
             title: Text(AppLocalizations.of(context)!.deleteAccount,
-                style: TextStyle(color: TileStyles.primaryColor)),
-            onTap: () => _showDeleteConfirmationDialog(context),
+                style: TextStyle(color: colorScheme.primary)),
+            onTap: () => _showDeleteConfirmationDialog(context,colorScheme),
           ),
         )
       ],
@@ -235,7 +228,6 @@ class AccountInfo extends StatelessWidget {
 
   void _checkForChanges() {
     if (_originalProfile == null) return;
-
     bool hasChanges = _fullNameController.text !=
             (_originalProfile?.fullName ?? '') ||
         _usernameController.text != (_originalProfile?.username ?? '') ||
@@ -269,6 +261,9 @@ class AccountInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
     context.read<DeviceSettingBloc>().add(
@@ -321,11 +316,12 @@ class AccountInfo extends StatelessWidget {
                         ? () => _saveUserProfile(
                             context, state.sessionProfile!.userProfile!)
                         : null,
-                    appBar: TileStyles.CancelAndProceedAppBar(
-                      AppLocalizations.of(context)!.accountInfo,
+                    appBar: AppBar(
+                      title: Text(AppLocalizations.of(context)!.accountInfo),
+                      automaticallyImplyLeading: false,
                     ),
                     routeName: AccountInfo.routeName,
-                    child: _buildContent(context, state));
+                    child: _buildContent(context, state,colorScheme,tileThemeExtension));
               });
         },
       ),
@@ -336,15 +332,18 @@ class AccountInfo extends StatelessWidget {
       {bool enabled = true,
       bool filled = false,
       VoidCallback? onTap,
-      required TextEditingController? controller}) {
+      required TextEditingController? controller,
+      required ColorScheme colorScheme,
+      required TileThemeExtension tileThemeExtension
+      }) {
     return Container(
       margin: EdgeInsets.only(bottom: 16, right: 20, left: 20),
       decoration: BoxDecoration(
-        color: filled ? Colors.grey[200] : Colors.white,
+        color: filled ?tileThemeExtension.surfaceContainerDisabled : colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: colorScheme.shadow.withValues(alpha: 0.1),
             blurRadius: 6,
             spreadRadius: 0,
             offset: const Offset(0, 4),
@@ -358,8 +357,6 @@ class AccountInfo extends StatelessWidget {
         enabled: enabled,
         decoration: InputDecoration(
           labelText: label,
-          filled: filled,
-          fillColor: filled ? Colors.grey[200] : Colors.white,
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

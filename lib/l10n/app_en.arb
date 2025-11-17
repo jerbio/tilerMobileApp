@@ -1,4 +1,4 @@
-{
+ {
     "whiteSpace": " ",
     "add": "Add",
     "setupCustomRestrictions": "Set up Custom restrictions",
@@ -163,6 +163,7 @@
     "tapToCreateNewTile": "Tap to create a new tile",
     "suggestions": "Suggestions",
     "progress": "Progress",
+    "youNeedToLeaveIn": "You need to leave in",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",
@@ -706,7 +707,8 @@
       "dateOfBirth":"Date Of Birth",
       "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
       "reachingServerIssues":"Issues with reaching Tiler servers",
-      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",      "disconnect":"Disconnect",
+      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",
+      "disconnect":"Disconnect",
       "integrationsSetLocation":"Set location",
       "googleCalender":"Google Calender",
       "passwordsMustMatch":"Passwords must match",
@@ -726,7 +728,7 @@
             "example": "3"
           },
           "totalCount": {
-            "type": "int", 
+            "type": "int",
             "example": "5"
           }
         }

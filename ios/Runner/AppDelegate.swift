@@ -1,5 +1,7 @@
 import UIKit
 import Flutter
+import GoogleMaps
+
 
 
 // Leaving the commented block below so in case in the future I need to handle google sign in manually I can look at the previous implementation
@@ -36,13 +38,13 @@ import Flutter
 
 import app_links
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    
+    GMSServices.provideAPIKey("REDACTED")
     GeneratedPluginRegistrant.register(with: self)
 
     // Retrieve the link from parameters

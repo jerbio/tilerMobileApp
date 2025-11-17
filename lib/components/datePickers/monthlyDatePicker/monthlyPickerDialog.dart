@@ -3,25 +3,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthlyPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return BlocBuilder<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
       builder: (context, state) {
         return Dialog(
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(20),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildHeader(context, state),
-                _buildMonthGrid(context, state),
+                _buildHeader(context, state,colorScheme),
+                _buildMonthGrid(context, state,colorScheme),
                 _buildFooter(context),
               ],
             ),
@@ -31,19 +33,18 @@ class MonthlyPickerDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, MonthlyUiDateManagerState state) {
+  Widget _buildHeader(BuildContext context, MonthlyUiDateManagerState state,ColorScheme colorScheme) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: TileStyles.primaryColor,
+        color:colorScheme.primary,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         children: [
           Text(
             DateFormat('MMM yyyy').format(state.tempDate),
-            style:
-                TextStyle(color: TileStyles.primaryContrastColor, fontSize: 20),
+            style: TextStyle(color: colorScheme.onPrimary, fontSize:20),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -51,7 +52,7 @@ class MonthlyPickerDialog extends StatelessWidget {
               Text(
                 '${state.year}',
                 style: TextStyle(
-                    color: TileStyles.primaryContrastColor, fontSize: 24),
+                    color: colorScheme.onPrimary, fontSize: 24),
               ),
               Row(
                 children: [
@@ -59,7 +60,8 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: -math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: TileStyles.primaryContrastColor),
+                          color: colorScheme.onPrimary,
+                      ),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()
@@ -69,7 +71,8 @@ class MonthlyPickerDialog extends StatelessWidget {
                     icon: Transform.rotate(
                       angle: math.pi / 2,
                       child: Icon(Icons.arrow_back_ios_new_sharp,
-                          color: TileStyles.primaryContrastColor),
+                          color: colorScheme.onPrimary,
+                      ),
                     ),
                     onPressed: () => context
                         .read<MonthlyUiDateManagerBloc>()
@@ -85,7 +88,7 @@ class MonthlyPickerDialog extends StatelessWidget {
   }
 
   Widget _buildMonthGrid(
-      BuildContext context, MonthlyUiDateManagerState state) {
+      BuildContext context, MonthlyUiDateManagerState state,ColorScheme colorScheme) {
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -108,7 +111,7 @@ class MonthlyPickerDialog extends StatelessWidget {
             decoration: isSelected
                 ? BoxDecoration(
                     border:
-                        Border.all(color: TileStyles.primaryColor, width: 2),
+                        Border.all(color: colorScheme.primary, width: 2),
                     borderRadius: BorderRadius.circular(12),
                   )
                 : null,
@@ -117,9 +120,7 @@ class MonthlyPickerDialog extends StatelessWidget {
               DateFormat('MMM').format(DateTime(state.year, month)),
               style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.normal,
-                color: TileStyles.defaultTextColor,
-              ),
+              )
             ),
           ),
         );
@@ -142,7 +143,8 @@ class MonthlyPickerDialog extends StatelessWidget {
             }
           },
           child: Text(AppLocalizations.of(context)!.save,
-              style: TileStyles.datePickersSaveStyle),
+              style: TileTextStyles.datePickersSaveStyle
+          ),
         ),
       ),
     );

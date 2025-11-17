@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:intl/intl.dart';
-
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TimeAndDate extends StatefulWidget {
@@ -20,11 +19,20 @@ class TimeAndDate extends StatefulWidget {
 }
 
 class _TimeAndDateState extends State<TimeAndDate> {
+  late ThemeData theme;
+
+
   late DateTime dateTime;
   @override
   void initState() {
     dateTime = this.widget.time;
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
   }
 
   Widget RenderTimePicker() {
@@ -55,13 +63,16 @@ class _TimeAndDateState extends State<TimeAndDate> {
       },
       child: Container(
         child: Container(
-            child: Text(formattedTimeOfDay,
-                style: TextStyle(
-                    color: Color.fromRGBO(31, 31, 31, 1),
-                    fontSize: 35,
-                    fontFamily: TileStyles.rubikFontName,
-                    fontWeight: FontWeight.w500))),
-      ),
+            child: Text(
+              formattedTimeOfDay,
+              style:TextStyle(
+                  fontSize: 35,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w500
+              ),
+            ),
+        ),
+      )
     );
   }
 
@@ -106,7 +117,6 @@ class _TimeAndDateState extends State<TimeAndDate> {
             child: Text(
               DateFormat.yMMMd(locale).format(dateTime),
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontFamily: 'Rubik'),
             )));
   }
 

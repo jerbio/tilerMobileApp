@@ -5,9 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class TimeScrubWidget extends StatefulWidget {
   late TimeRange timeline;
@@ -15,8 +19,8 @@ class TimeScrubWidget extends StatefulWidget {
   bool isTardy = true;
   TimeScrubWidget(
       {required this.timeline,
-      this.loadTimeScrub = false,
-      this.isTardy = false}) {
+        this.loadTimeScrub = false,
+        this.isTardy = false}) {
     assert(this.timeline != null);
   }
   @override
@@ -66,6 +70,15 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ColorScheme colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final timelineTextStyle=TextStyle(
+        fontFamily: TileTextStyles.rubikFontName,
+        fontSize: 10,
+        color: this.widget.loadTimeScrub
+            ? TileColors.lightContent
+            : colorScheme.onSurface);
     String locale = Localizations.localeOf(context).languageCode;
     bool isToday = widget.timeline.isInterfering(Utility.todayTimeline());
     var currentTimeInMs = Utility.msCurrentTime;
@@ -83,7 +96,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
         String startString = formatter
             .format(DateTime.fromMillisecondsSinceEpoch(start.toInt()));
         String endString =
-            formatter.format(DateTime.fromMillisecondsSinceEpoch(end.toInt()));
+        formatter.format(DateTime.fromMillisecondsSinceEpoch(end.toInt()));
 
         var backgroundShade = Container(
           width: maxWidthOfTimeline,
@@ -92,8 +105,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(10.0)),
             color: this.widget.loadTimeScrub
-                ? Colors.white
-                : Color.fromRGBO(105, 105, 105, 0.2),
+                ? colorScheme.surfaceContainerLowest
+                : tileThemeExtension!.surfaceContainerMaximum.withValues(alpha: 0.2),
           ),
         );
         var scrubberElements = <Widget>[backgroundShade];
@@ -108,7 +121,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
               margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                color: Colors.greenAccent,
+                color: TileColors.success,
               ),
             ),
           ); //Used up time
@@ -124,10 +137,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   color: Color.fromRGBO(colorRed, colorGreen, colorBlue, 1),
                   boxShadow: [
                     BoxShadow(
-                        color: Color.fromRGBO(150, 150, 150, 0.9),
+                        color: tileThemeExtension!.shadowTimeScrubMovingBall.withValues(alpha: 0.9),
                         blurRadius: 2,
                         spreadRadius: 2),
-                  ]),
+                  ]
+              ),
             ),
           ); // moving ball
           scrubberElements.add(usedUpTimeWidget);
@@ -138,6 +152,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
             child: Column(children: [
               Expanded(
                 child: Stack(
+                  clipBehavior: Clip.none,
                   children: scrubberElements,
                 ),
               ),
@@ -150,12 +165,7 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                       child: Text(
                         '$startString',
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 10,
-                            fontFamily: TileStyles.rubikFontName,
-                            color: this.widget.loadTimeScrub
-                                ? Colors.white
-                                : Colors.black),
+                        style: timelineTextStyle,
                       ),
                     ),
                   ),
@@ -166,13 +176,10 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                           child: Text(
                             '$endString',
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 10,
-                                fontFamily: TileStyles.rubikFontName,
-                                color: this.widget.loadTimeScrub
-                                    ? Colors.white
-                                    : Colors.black),
-                          )))
+                            style: timelineTextStyle,
+                          )
+                      )
+                  )
                 ],
               )
             ]));
@@ -191,7 +198,8 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                   AppLocalizations.of(context)!.elapsedDurationAgo(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
+                    fontSize: 15
+                  ),
                 )
               ],
             ),
@@ -204,12 +212,14 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Icon(Icons.timelapse),
+                Icon(Icons.timelapse, color:colorScheme.onSurface),
                 Text(
                   AppLocalizations.of(context)!.startsInDuration(elapsedTime),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                      fontSize: 15, fontFamily: TileStyles.rubikFontName),
+                    fontSize: 15,
+                    fontFamily:TileTextStyles.rubikFontName,
+                  ),
                 )
               ],
             ),

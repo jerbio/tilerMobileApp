@@ -12,17 +12,13 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TileBatch extends StatefulWidget {
-  static final TextStyle dayHeaderTextStyle = TextStyle(
-      fontSize: 40,
-      fontFamily: TileStyles.rubikFontName,
-      color: TileStyles.primaryColor,
-      fontWeight: FontWeight.w700);
+
   List<TilerEvent>? tiles;
   Timeline? sleepTimeline;
   int? dayIndex;
@@ -57,6 +53,8 @@ class TileBatchState extends State<TileBatch> {
   bool _pendingRendering = false;
   double _emptyDayOpacity = 0;
   final double daySummaryToHeightBuffer = 245;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
@@ -74,6 +72,13 @@ class TileBatchState extends State<TileBatch> {
       _dayData = this.widget.dayData!;
     }
     _list = ListModel(listKey: _listKey, removedItemBuilder: _buildRemovedItem);
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   TimelineSummary? get dayData {
@@ -189,12 +194,15 @@ class TileBatchState extends State<TileBatch> {
       );
     }
 
+
     Widget? sleepWidget;
+
     if (sleepTimeline != null) {
       Timeline sleepTimeline = this.sleepTimeline!;
       sleepWidget = SleepTileWidget(sleepTimeline);
       childrenColumnWidgets.add(sleepWidget);
     }
+
 
     evaluateTileDelta(renderedTiles.values);
     late Widget dayContent;
@@ -239,8 +247,8 @@ class TileBatchState extends State<TileBatch> {
           children: [
             animatedList!,
             MediaQuery.of(context).orientation == Orientation.landscape
-                ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles
+                ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles
           ],
         ),
       );
@@ -289,6 +297,7 @@ class TileBatchState extends State<TileBatch> {
 
     childrenColumnWidgets.add(
       RefreshIndicator(
+        color: colorScheme.tertiary,
         onRefresh: () async {
           final currentState = this.context.read<ScheduleBloc>().state;
           if (currentState is ScheduleEvaluationState) {

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class ContactInputFieldWidget extends StatefulWidget {
@@ -23,7 +24,9 @@ class ContactInputFieldWidget extends StatefulWidget {
 class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
   final TextEditingController _controller = TextEditingController();
   late List<Contact> _contacts = [];
-
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
@@ -32,6 +35,13 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
   @override
   void dispose() {
     _controller.dispose();
@@ -118,19 +128,20 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
       width: (MediaQuery.of(context)
           .size
           .width), // You can adjust the width or make it responsive
-      height: TileStyles.inputHeight,
+      height: TileDimensions.inputHeight,
       child: TextField(
-          style: TileStyles.inputTextStyle,
+          style: TileTextStyles.inputTextStyle(colorScheme.onSurface),
           controller: _controller,
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(
               hintStyle: TextStyle(
-                  fontSize: TileStyles.inputFontSize,
-                  fontFamily: TileStyles.rubikFontName,
-                  color: TileStyles.inputFieldTextColor,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontSize: TileDimensions.inputFontSize,
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w100),
               hintText: AppLocalizations.of(context)!.addContact,
-              border: InputBorder.none),
+              border: InputBorder.none
+          ),
           onSubmitted: (value) {
             _addContact(value);
           },
@@ -149,19 +160,19 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
             ? Icons.messenger_outline
             : Icons.person_2_outlined),
-        color: TileStyles.primaryContrastColor,
+        color: colorScheme.onPrimary,
       ),
       label: Text(contact.email ?? contact.phoneNumber ?? ""),
       deleteIcon: this.widget.isReadOnly
           ? null
           : Icon(
               Icons.close,
-              color: TileStyles.primaryContrastColor,
+              color: colorScheme.onPrimary
             ),
       side: BorderSide.none,
       onDeleted: this.widget.isReadOnly ? null : () => _removeContact(contact),
-      backgroundColor: TileStyles.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
+      backgroundColor: colorScheme.primary,
+      labelStyle: TextStyle(color: colorScheme.onPrimary),
     );
   }
 }

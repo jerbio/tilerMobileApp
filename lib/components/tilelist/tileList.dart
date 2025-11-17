@@ -10,15 +10,13 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
-import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/notifications/localNotificationService.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 
 /// This renders the list of tiles on a given day
 abstract class TileList extends StatefulWidget {
+
   static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
@@ -41,6 +39,9 @@ abstract class TileListState<T extends TileList> extends State<T>
   int swipeDirection = 0;
   bool isSubEventModalShown = false;
   StreamSubscription? hideNewSheeTileFuture;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
 
   @override
   void initState() {
@@ -50,10 +51,18 @@ abstract class TileListState<T extends TileList> extends State<T>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+
+  @override
   void dispose() {
     swipingAnimationController?.dispose();
     super.dispose();
   }
+
 
   void initializingSwipingAnimation(
       {Duration duration = const Duration(milliseconds: 300)}) {
@@ -183,31 +192,6 @@ abstract class TileListState<T extends TileList> extends State<T>
     }
   }
 
-  Widget renderPending({String? message}) {
-    List<Widget> centerElements = [
-      Center(
-          child: SizedBox(
-        child: CircularProgressIndicator(),
-        height: 200.0,
-        width: 200.0,
-      )),
-      Center(
-          child: Image.asset('assets/images/tiler_logo_black.png',
-              fit: BoxFit.cover, scale: 7)),
-    ];
-    if (message != null && message.isNotEmpty) {
-      centerElements.add(Center(
-        child: Container(
-          margin: EdgeInsets.fromLTRB(0, 120, 0, 0),
-          child: Text(message),
-        ),
-      ));
-    }
-    return Container(
-      decoration: TileStyles.defaultBackgroundDecoration,
-      child: Center(child: Stack(children: centerElements)),
-    );
-  }
 
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);

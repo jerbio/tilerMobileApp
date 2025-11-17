@@ -11,7 +11,8 @@ import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -109,11 +110,13 @@ class _MonthlyTileListState extends TileListState {
                 ),
         );
       }
-      monthRows.add(Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: weekBatches.map((batch) => batch).toList(),
-      ));
+      monthRows.add(
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: weekBatches.map((batch) => batch).toList(),
+        )
+      );
     }
     return monthRows;
   }
@@ -159,6 +162,7 @@ class _MonthlyTileListState extends TileListState {
         child: Container(
           margin: EdgeInsets.only(top: 150, right: 5, left: 5),
           child: RefreshIndicator(
+            color: colorScheme.tertiary,
             onRefresh: handleRefresh,
             child: CustomScrollView(
               physics: AlwaysScrollableScrollPhysics(),
@@ -169,8 +173,8 @@ class _MonthlyTileListState extends TileListState {
                 SliverToBoxAdapter(
                   child: MediaQuery.of(context).orientation ==
                           Orientation.landscape
-                      ? TileStyles.bottomLandScapePaddingForTileBatchListOfTiles
-                      : TileStyles.bottomPortraitPaddingForTileBatchListOfTiles,
+                      ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                      : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
                 ),
               ],
             ),
@@ -201,7 +205,7 @@ class _MonthlyTileListState extends TileListState {
         builder: (context, state) {
           final summaryState = context.watch<ScheduleSummaryBloc>().state;
           if (summaryState is ScheduleDaySummaryLoading && isInitialLoad) {
-            return renderPending();
+            return PendingWidget();
           }
           isInitialLoad = false;
 
@@ -210,7 +214,7 @@ class _MonthlyTileListState extends TileListState {
                 scheduleTimeline: timeLine,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
             refreshScheduleSummary(lookupTimeline: timeLine);
-            return renderPending();
+            return PendingWidget();
           }
           if (state is ScheduleLoadedState) {
             if (!(state is DelayedScheduleLoadedState)) {
@@ -241,7 +245,7 @@ class _MonthlyTileListState extends TileListState {
             }
 
             if (showPendingUI) {
-              return renderPending();
+              return PendingWidget();
             }
             return Stack(children: [
               buildMonthlyRenderSubCalendarTiles(
@@ -254,7 +258,7 @@ class _MonthlyTileListState extends TileListState {
                 buildMonthlyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
                 PendingWidget(
-                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
                 ),
               ],
             );

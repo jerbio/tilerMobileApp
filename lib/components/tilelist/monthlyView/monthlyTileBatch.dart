@@ -7,7 +7,8 @@ import 'package:tiler_app/components/tileUI/monthlyTile.dart';
 import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -78,6 +79,9 @@ class MonthlyTileBatchState extends TileBatchState {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=  theme.extension<TileThemeExtension>()!;
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth - 10) / 7 - 4;
     renderedTiles.clear();
@@ -149,10 +153,10 @@ class MonthlyTileBatchState extends TileBatchState {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
-            backgroundColor: Colors.white,
+            backgroundColor: colorScheme.surfaceContainerLowest,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(TileStyles.borderRadius)),
+                  top: Radius.circular(TileDimensions.borderRadius)),
             ),
             builder: (BuildContext context) {
               return Container(
@@ -165,7 +169,7 @@ class MonthlyTileBatchState extends TileBatchState {
                         bottom: MediaQuery.of(context).viewInsets.bottom),
                     child: Column(children: [
                       FractionallySizedBox(
-                        widthFactor: TileStyles.tileWidthRatio,
+                        widthFactor: TileDimensions.tileWidthRatio,
                         child: Text(
                           DateFormat('d MMM yyyy').format(
                               Utility.getTimeFromIndex(widget.dayIndex!)),
@@ -197,11 +201,11 @@ class MonthlyTileBatchState extends TileBatchState {
         margin: EdgeInsets.all(2),
         decoration: BoxDecoration(
           color: todayDayIndex == widget.dayIndex
-              ? TileStyles.primaryColor
-              : Color.fromRGBO(240, 240, 240, 1),
+              ? colorScheme.primary
+              : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: Colors.white,
+            color:colorScheme.onInverseSurface,
             width: 2,
           ),
         ),
@@ -214,11 +218,11 @@ class MonthlyTileBatchState extends TileBatchState {
                 margin: EdgeInsets.only(left: 2, top: 2),
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(220, 220, 220, 1),
+                  color:tileThemeExtension.surfaceContainerGreater,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!)
-                    .toString()),
+                child:Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!).toString().padLeft(2, '0')),
+
               ),
             ),
             if (animatedList != null) Flexible(child: animatedList!),

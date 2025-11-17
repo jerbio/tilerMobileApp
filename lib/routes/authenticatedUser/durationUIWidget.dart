@@ -1,7 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+
 
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
@@ -22,14 +23,16 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     int days = this._duration.inDays.floor();
     int totalHoursFloor = this._duration.inHours.floor();
     int hour = totalHoursFloor - (days * 24);
     int minute = this._duration.inMinutes.floor() - (totalHoursFloor * 60);
-    const unitTimeStyle = TextStyle(
-        color: Color.fromRGBO(180, 180, 180, 1),
+    TextStyle unitTimeStyle= TextStyle(
+        fontFamily: TileTextStyles.rubikFontName,
+        color: tileThemeExtension.onSurfaceHint,
         fontSize: 35,
-        fontFamily: TileStyles.rubikFontName,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 

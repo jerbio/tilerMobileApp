@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DurationDial extends StatefulWidget {
@@ -79,6 +78,9 @@ class DurationDialState extends State<DurationDial> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final
     Map durationParams = ModalRoute.of(context)?.settings.arguments as Map;
     if (!_isInitialize) {
       _isInitialize = true;
@@ -142,10 +144,10 @@ class DurationDialState extends State<DurationDial> {
               labels: durationTextCollection,
               initialLabelIndex: presetIndex,
               onToggle: onTabTypeChange,
-              activeFgColor: TileStyles.primaryContrastColor,
-              activeBgColor: [TileStyles.primaryColor],
-              inactiveBgColor: TileStyles.inactiveTextColor,
-              inactiveFgColor: TileStyles.primaryContrastColor,
+              activeBgColor: [colorScheme.primary],
+              activeFgColor: colorScheme.onPrimary,
+              inactiveBgColor: colorScheme.inversePrimary,
+              inactiveFgColor: colorScheme.onPrimary,
               animate: true,
               customWidths: [100, 100, 100],
               animationDuration: 300,
@@ -157,16 +159,7 @@ class DurationDialState extends State<DurationDial> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
         routeName: "durationDial",
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.duration,
-            style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
         child: Container(
@@ -174,7 +167,8 @@ class DurationDialState extends State<DurationDial> {
           alignment: Alignment.topCenter,
           child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: widgetColumn),
+              children: widgetColumn
+          ),
         ),
         onProceed: () {
           return this.onProceedTap();

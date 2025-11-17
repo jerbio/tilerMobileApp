@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/styles.dart';
 
 class SingleChoice extends StatefulWidget {
   final Function? onChanged;
@@ -22,26 +21,29 @@ class _SingleChoiceState extends State<SingleChoice> {
 
   @override
   Widget build(BuildContext context) {
+    final theme= Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return SegmentedButton<TilePriority>(
       style: ButtonStyle(
-          foregroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
-                return TileStyles.appBarTextColor;
+          foregroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState
+                  .selected)) {
+                return colorScheme.onPrimary;
               }
-              return TileStyles.primaryColor;
+              return colorScheme.primary;
             },
           ),
-          backgroundColor: MaterialStateProperty.resolveWith<Color>(
-            (Set<MaterialState> states) {
-              if (states.contains(MaterialState.selected)) {
-                return TileStyles.primaryColor;
+          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+            (Set<WidgetState> states) {
+              if (states.contains(WidgetState.selected)) {
+                return colorScheme.primary;
               }
               return Colors.transparent;
             },
           ),
-          side: MaterialStateBorderSide.resolveWith(
-              (states) => BorderSide(color: TileStyles.primaryColor))),
+          side: WidgetStateBorderSide.resolveWith(
+              (states) => BorderSide(color: colorScheme.primary))),
       segments: <ButtonSegment<TilePriority>>[
         ButtonSegment<TilePriority>(
             value: TilePriority.low,

@@ -1,6 +1,6 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+
 
 class OnBoardingProgressIndicator extends StatelessWidget {
   final int totalPages;
@@ -13,6 +13,9 @@ class OnBoardingProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalPages * 2 - 1, (index) {
@@ -24,16 +27,16 @@ class OnBoardingProgressIndicator extends StatelessWidget {
             decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: stepIndex <= currentPage
-                    ? TileStyles.primaryColor
+                    ? colorScheme.primary
                     : Colors.transparent,
                 border: Border.all(
-                  color: TileStyles.primaryColor,
+                  color: colorScheme.primary,
                   width: 2,
                 ),
                 boxShadow: stepIndex <= currentPage
                     ? [
                         BoxShadow(
-                          color: TileStyles.primaryColor.withOpacity(0.1),
+                          color: colorScheme.primary.withValues(alpha: 0.1),
                           spreadRadius: 5,
                           blurRadius: 5,
                           offset: Offset(0, 1),
@@ -45,8 +48,8 @@ class OnBoardingProgressIndicator extends StatelessWidget {
                 (stepIndex + 1).toString(),
                 style: TextStyle(
                   color: stepIndex <= currentPage
-                      ? Colors.white
-                      : TileStyles.primaryColor,
+                      ? colorScheme.onPrimary
+                      : colorScheme.primary,
                   fontWeight: FontWeight.w500,
                   fontSize: 18,
                 ),
@@ -62,7 +65,7 @@ class OnBoardingProgressIndicator extends StatelessWidget {
               lineLength: 65,
               dashGapLength: 8.0,
               dashRadius: 4,
-              dashColor: TileStyles.primaryColor,
+              dashColor: colorScheme.primary,
             ),
           );
         }

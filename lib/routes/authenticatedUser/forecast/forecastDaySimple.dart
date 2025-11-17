@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -24,10 +27,21 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
   final DateFormat formatter = DateFormat.jm();
   final double timeBarHeight = 20;
   GlobalKey containerSizeKey = GlobalKey();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+
   @override
   void initState() {
     super.initState();
     peekDay = this.widget.peekDay;
+  }
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
   }
 
   Widget renderDayOfWeek() {
@@ -36,13 +50,14 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       child: Text(
         peekDay.endTime?.tilerDayOfWeekName(context).substring(0, 3) ?? "",
         style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
             fontSize: 17,
-            fontFamily: TileStyles.rubikFontName,
             fontWeight: FontWeight.w500),
       ),
     );
   }
 
+  //ey: not used
   Widget renderTravelTime() {
     int travelTimeDurationInMs = peekDay.travelTime?.toInt() ?? 0;
     travelTimeDurationInMs =
@@ -58,7 +73,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
           width: height / (height / 16),
         ),
         Container(
-          color: Colors.green,
+          color: TileColors.activeForesCastTime,
           alignment: Alignment.center,
           width: 75,
           child: Text(
@@ -69,9 +84,9 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
                     abbreviations: true),
             style: TextStyle(
                 fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
-                color: Colors.red),
+                color: colorScheme.onError),
           ),
         )
       ],
@@ -102,9 +117,9 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
                       abbreviations: true),
               style: TextStyle(
                   fontSize: 15,
-                  fontFamily: TileStyles.rubikFontName,
+                  fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w300,
-                  color: Colors.green),
+                  color: TileColors.activeForesCastTime),
             ),
           )
         ],
@@ -119,7 +134,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       children: [
         Icon(
           Icons.error,
-          color: Colors.amber,
+          color: TileColors.accentWarning,
           size: 30.0,
         ),
         Container(
@@ -128,9 +143,9 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
             tardyCount.toString(),
             style: TextStyle(
                 fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
-                color: Colors.blue),
+                color:TileColors.tardyForecast),
           ),
         )
       ],
@@ -144,7 +159,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       width: inAndOutBarWidth,
       height: timeBarHeight / 3,
       decoration: BoxDecoration(
-          color: Colors.grey,
+          color: tileThemeExtension.onSurfaceVariantSecondary,
           borderRadius: BorderRadius.all(Radius.circular(5))),
     );
   }
@@ -177,7 +192,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
           width: fractionalWidth,
           height: timeBarHeight * 0.5,
           decoration: BoxDecoration(
-              color: Colors.green,
+              color: TileColors.activeForesCastTime,
               borderRadius: BorderRadius.all(Radius.circular(5))),
         ));
   }
@@ -204,12 +219,6 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
     );
   }
 
-  Widget renderSubEventCount() {
-    return Container(
-      color: Colors.blue,
-    );
-  }
-
   Widget renderTime(DateTime? timeInMs) {
     Widget innerWidget = SizedBox.shrink();
     if (timeInMs != null) {
@@ -227,13 +236,13 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
       child: Text(timeOfDay.format(context),
           style: TextStyle(
               fontSize: 14,
-              fontFamily: TileStyles.rubikFontName,
+              fontFamily: TileTextStyles.rubikFontName,
               fontWeight: FontWeight.w300)),
     );
   }
 
   double get screenWidth {
-    return MediaQuery.sizeOf(context).width * TileStyles.widthRatio;
+    return MediaQuery.sizeOf(context).width * TileDimensions.widthRatio;
   }
 
   double get inAndOutBarWidth {
@@ -258,7 +267,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
           ? BoxDecoration(
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: Colors.greenAccent,
+                color: TileColors.whatIfHighlight,
                 width: 1,
               ),
             )

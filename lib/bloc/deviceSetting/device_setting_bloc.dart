@@ -288,8 +288,7 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
     try {
       bool result = await authorizationApi.deleteTilerAccount();
       if (result) {
-        add(LogOutMainSettingDeviceSettingEvent(
-            id: event.id, context: event.context));
+        add(LogOutMainSettingDeviceSettingEvent(id: event.id, context: event.context));
       }
     } catch (e) {
       emit(DeviceSettingError(
@@ -300,4 +299,5 @@ class DeviceSettingBloc extends Bloc<DeviceSettingEvent, DeviceSettingState> {
       ));
     }
   }
+
 }

@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-
-import '../../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
@@ -21,13 +20,21 @@ class DaySummary extends StatefulWidget {
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
   bool pendingFlag = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
     super.initState();
     dayData = this.widget.dayTimelineSummary;
   }
-
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+  }
   bool get isPending {
     bool retValue = false;
     retValue = retValue ||
@@ -41,12 +48,13 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
-        highlightColor: Colors.white.withAlpha(100),
+        baseColor: colorScheme.primary.withAlpha(50),
+        highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
         child: Container(
           decoration: BoxDecoration(
-              color: Color.fromRGBO(31, 31, 31, 0.8),
-              borderRadius: BorderRadius.circular(8)),
+              color:colorScheme.onSurface.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(8),
+          ),
           width: 30.0,
           height: 30.0,
         ));
@@ -58,12 +66,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.error,
-              color: Colors.redAccent,
+              color: colorScheme.error,
               size: 30.0,
             ),
             Text(
               (dayData?.nonViable?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -79,12 +87,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.check_circle,
-              color: TileStyles.greenCheck,
+              color: TileColors.completedTeal,
               size: 30.0,
             ),
             Text(
               (dayData?.complete?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -102,12 +110,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.car_crash_outlined,
-              color: Colors.amberAccent,
+              color:TileColors.warning,
               size: 30.0,
             ),
             Text(
               (dayData?.tardy?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -170,9 +178,11 @@ class _DaySummaryState extends State<DaySummary> {
                 Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
                 style: TextStyle(
                     fontSize: 30,
-                    fontFamily: TileStyles.rubikFontName,
-                    color: TileStyles.primaryColor,
-                    fontWeight: FontWeight.w700)),
+                    fontFamily: TileTextStyles.rubikFontName,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
+                ),
+            ),
           );
 
           Widget buttonPress = GestureDetector(

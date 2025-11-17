@@ -2,7 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 
 class CancelAndProceedTemplateWidget extends StatefulWidget {
   Function? onCancel;
@@ -13,7 +14,6 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Widget? pendingWidget;
   bool hideButtons = false;
   String routeName;
-
   Widget? child;
   PreferredSizeWidget? appBar;
 
@@ -34,12 +34,50 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
 
 enum CancelAndProceedPathRoute { cancel, proceed }
 
+
 class CancelAndProceedTemplateWidgetState
     extends State<CancelAndProceedTemplateWidget> {
   bool showLoading = false;
   final String cancelAndProceedMapKey = 'cancelAndProceedData';
   final String historyKey = 'history';
   final String exitRouteKey = 'exitRoute';
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+    required BorderRadius borderRadius,
+    double iconRotation = 0.0,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: TileDimensions.proceedAndCancelButtonWidth,
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          color: colorScheme.primary,
+        ),
+          child: Center(
+            child: Transform.rotate(
+              angle: iconRotation,
+              child: Icon(
+                icon,
+                color: colorScheme.onPrimary,
+                size: 25,
+              ),
+            ),
+          ),
+        ),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
 
   bool _keyboardIsVisible() {
     return MediaQuery.of(context).viewInsets.bottom != 0;
@@ -96,38 +134,14 @@ class CancelAndProceedTemplateWidgetState
     double iconSize = 25;
     bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
-    Widget cancelButton = Align(
-      alignment: Alignment.bottomRight,
-      child: Container(
-        alignment: Alignment.centerRight,
-        // margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
-        width: TileStyles.proceedAndCancelButtonWidth,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topRight: Radius.circular(10),
-                bottomRight: Radius.circular(10)),
-            color: TileStyles.primaryColor),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            elevation: 0.0,
-            foregroundColor: Colors.transparent,
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent, // foreground
-          ),
-          child: Center(
-              child: Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 60, 50),
-                  child: Transform.rotate(
-                      angle: math.pi / 4,
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.add,
-                          color: Colors.white,
-                          size: iconSize,
-                        ),
-                        onPressed: null,
-                      )))),
-          onPressed: () async {
+    Widget cancelButton = _buildActionButton(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(10),
+        bottomRight: Radius.circular(10),
+      ),
+      icon:Icons.add,
+      iconRotation: math.pi / 4,
+      onPressed: () async {
             _setRouteAsCancelled();
             if (this.widget.onCancel != null) {
               Navigator.pop(context);
@@ -136,39 +150,19 @@ class CancelAndProceedTemplateWidgetState
               Navigator.pop(context);
             }
           },
-        ),
-      ),
     );
     List<Widget> bottomButtons = [];
 
     if ((this.widget.isProceedAllowed != null &&
         this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
-      proceedButton = Container(
-        width: TileStyles.proceedAndCancelButtonWidth,
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10), bottomLeft: Radius.circular(10)),
-            color: TileStyles.primaryColor),
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-              elevation: 0.0,
-              foregroundColor: Colors.transparent,
-              backgroundColor: Colors.transparent,
-              shadowColor: Colors.transparent, // foreground
-              alignment: Alignment.topLeft),
-          child: Container(
-            alignment: Alignment.centerLeft,
-            child: IconButton(
-              icon: Icon(
-                Icons.check,
-                color: Colors.white,
-                size: iconSize,
-              ),
-              onPressed: null,
-            ),
-          ),
-          onPressed: () async {
+      proceedButton = _buildActionButton(
+        icon: Icons.check,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          bottomLeft: Radius.circular(10),
+        ),
+        onPressed: () async {
             _setRouteAsProceed();
             if (this.widget.onProceed != null) {
               var proceedResult = this.widget.onProceed!();
@@ -196,7 +190,6 @@ class CancelAndProceedTemplateWidgetState
               Navigator.pop(context);
             }
           },
-        ),
       );
     }
 
@@ -206,7 +199,7 @@ class CancelAndProceedTemplateWidgetState
         bottomButtons.add(proceedButton);
       } else {
         bottomButtons.add(SizedBox.fromSize(
-          size: Size.fromWidth(TileStyles.proceedAndCancelButtonWidth),
+          size: Size.fromWidth(TileDimensions.proceedAndCancelButtonWidth),
         ));
       }
 
@@ -216,7 +209,7 @@ class CancelAndProceedTemplateWidgetState
             Container(
                 padding: EdgeInsets.fromLTRB(30, 0, 30, 0),
                 width: MediaQuery.of(context).size.width -
-                    2 * TileStyles.proceedAndCancelButtonWidth,
+                    2 * TileDimensions.proceedAndCancelButtonWidth,
                 child: this.widget.bottomWidget!));
       }
 
@@ -242,13 +235,17 @@ class CancelAndProceedTemplateWidgetState
                       width: (MediaQuery.of(context).size.width),
                       height: (MediaQuery.of(context).size.height),
                       decoration: new BoxDecoration(
-                          color: Colors.grey.shade200.withOpacity(0.5)),
+                          color: colorScheme.scrim,
+                      ),
                     ),
-                  ))));
+                  ),
+              ),
+          ),
+      );
       stackWidgets.add(blurWidget);
       stackWidgets.add(this.widget.pendingWidget ??
           PendingWidget(
-            imageAsset: TileStyles.evaluatingScheduleAsset,
+            imageAsset: TileThemeNew.evaluatingScheduleAsset,
           ));
     }
 
@@ -267,7 +264,6 @@ class CancelAndProceedTemplateWidgetState
     );
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: TileStyles.defaultBackgroundColor,
       appBar: this.widget.appBar,
       body: SafeArea(
         child: contentAndButton,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:maps_launcher/maps_launcher.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -42,6 +45,9 @@ class TileAddressState extends State<TileAddress> {
 
   @override
   Widget build(BuildContext context) {
+    final theme= Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     bool isAddressTexturl = false;
     String? addressString = widget.subEvent.addressDescription != null
         ? widget.subEvent.addressDescription
@@ -87,17 +93,17 @@ class TileAddressState extends State<TileAddress> {
               width: 25,
               height: 25,
               decoration: widget.isMonthlyView
-                  ? TileStyles.tileIconContainerBoxDecorationMonthly
-                  : TileStyles.tileIconContainerBoxDecoration,
+                  ? TileDecorations.tileIconContainerBoxDecorationMonthly(colorScheme.onSurface)
+                  : TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 !isAddressTexturl
                     ? Icons.location_on_rounded
                     : Icons.link_outlined,
                 color: widget.isMonthlyView
-                    ? Colors.grey[600]
-                    : TileStyles.defaultTextColor,
-                size: TileStyles.tileIconSize,
+                    ? tileThemeExtension.onSurfaceMonthlyIntegration
+                    : colorScheme.onSurface,
+                size: TileDimensions.tileIconSize,
               ),
             ),
             addressString != null
@@ -107,11 +113,10 @@ class TileAddressState extends State<TileAddress> {
                       child: Text(
                         addressString,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.normal,
-                            color: Color.fromRGBO(31, 31, 31, 1)),
+                        style:  TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontSize: 15
+                        ),
                       ),
                     ),
                   )

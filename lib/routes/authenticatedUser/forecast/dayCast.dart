@@ -5,15 +5,15 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/executionConstants.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/helperClass.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
 import '../../../constants.dart' as Constants;
 
@@ -42,7 +42,9 @@ class _WidgetGoogleMapState extends State<DayCast> {
   double minLevel = 1;
   double maxLevel = 14;
   double zoomLevel = 14;
-
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
@@ -96,7 +98,13 @@ class _WidgetGoogleMapState extends State<DayCast> {
       sendRequest();
     });
   }
-
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme= theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
   updateZoomLevel(List<LatitudeAndLongitude> LatitudeAndLongitudes) {
     const double y = 14.0 + (13 / 12799);
     const double x = (-13 / 6400.0);
@@ -125,6 +133,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
   Widget renderMap() {
     return GoogleMap(
+      style:tileThemeExtension.mapStyle,
       polylines: Set<Polyline>.of(polyLines.values),
       markers: markers,
       mapToolbarEnabled: true,
@@ -230,26 +239,27 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          centerTitle: true,
-          leading: TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Icon(
-              Icons.close,
-              color: TileStyles.appBarTextColor,
-            ),
+
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: TextButton(
+          style: TextButton.styleFrom(
+              foregroundColor:colorScheme.onPrimary
           ),
-          backgroundColor: TileStyles.appBarColor,
-          title: Text(
-            AppLocalizations.of(context)!.dayCast,
-            style: TileStyles.titleBarStyle,
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Icon(
+            Icons.close,
           ),
         ),
+        title: Text(
+          AppLocalizations.of(context)!.dayCast,
+        ),
+      ),
         body: source == null
-            ? const Center(
-                child: CircularProgressIndicator(),
+            ?  Center(
+                child: CircularProgressIndicator(color:colorScheme.tertiary),
               )
             : MediaQuery.of(context).orientation == Orientation.portrait
                 ? renderPortrait()
@@ -264,7 +274,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
   _handlePolylineTap(PolylineId polylineId, LatLng finish) {
     setState(() {
       Polyline newPolyline =
-          polyLines[polylineId]!.copyWith(colorParam: Colors.blue);
+          polyLines[polylineId]!.copyWith(colorParam: TileColors.bluePolyline);
 
       polyLines[polylineId] = newPolyline;
     });
@@ -280,7 +290,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
       polyLines.forEach((key, value) {
         if (value.color == Colors.blue) {
           Polyline newPolyline =
-              polyLines[value.polylineId]!.copyWith(colorParam: Colors.red);
+              polyLines[value.polylineId]!.copyWith(colorParam:  TileColors.redPolyline);
 
           polyLines[polylineId] = newPolyline;
         }
@@ -311,7 +321,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
       await _getRoutePolyline(
         start: source!,
         finish: elem,
-        color: Colors.green,
+        color:  TileColors.greenPolyline,
         id: 'firstPolyline $elem',
         width: 4,
       );
@@ -359,7 +369,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
         polylineId: PolylineId(id),
         consumeTapEvents: true,
         points: polylineCoordinates,
-        color: Colors.red,
+        color: TileColors.redPolyline,
         width: 4,
         onTap: () {
           _handlePolylineTap(

@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
@@ -14,21 +17,21 @@ class LocationSearchWidget extends SearchWidget {
   final bool? includeDeviceLocation;
   LocationSearchWidget(
       {onChanged,
-      textField,
-      onInputCompletion,
-      listView,
-      this.includeDeviceLocation = true,
-      renderBelowTextfield = true,
-      resultBoxDecoration,
-      this.onLocationSelection,
-      Key? key})
+        textField,
+        onInputCompletion,
+        listView,
+        this.includeDeviceLocation = true,
+        renderBelowTextfield = true,
+        resultBoxDecoration,
+        this.onLocationSelection,
+        Key? key})
       : super(
-            onChanged: onChanged,
-            textField: textField,
-            onInputCompletion: onInputCompletion,
-            renderBelowTextfield: renderBelowTextfield,
-            resultBoxDecoration: resultBoxDecoration,
-            key: key);
+      onChanged: onChanged,
+      textField: textField,
+      onInputCompletion: onInputCompletion,
+      renderBelowTextfield: renderBelowTextfield,
+      resultBoxDecoration: resultBoxDecoration,
+      key: key);
 
   Location? otherLocation;
   @override
@@ -42,6 +45,9 @@ class LocationSearchState extends SearchWidgetState {
   List<Widget> locationSearchResult = [];
   TextEditingController textController = TextEditingController();
   bool isRequestEnabled = true;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -51,11 +57,19 @@ class LocationSearchState extends SearchWidgetState {
     onChange = this.widget.onChanged;
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+
+  }
   onLocationTap(collapseResultContainer,
       {Location? location, bool onlyAddress = false}) {
     return () {
       LocationSearchWidget locationSearchWidget =
-          (this.widget as LocationSearchWidget);
+      (this.widget as LocationSearchWidget);
       setState(() {
         selectedLocation = location;
         isRequestEnabled = false;
@@ -95,7 +109,7 @@ class LocationSearchState extends SearchWidgetState {
         List<Widget> locationText = [
           FractionallySizedBox(
               alignment: FractionalOffset.center,
-              widthFactor: TileStyles.inputWidthFactor,
+              widthFactor: TileDimensions.inputWidthFactor,
               child: Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
                   padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
@@ -105,95 +119,97 @@ class LocationSearchState extends SearchWidgetState {
                       children: [
                         Expanded(
                             child: Text(
-                          location.address.toString(),
-                          maxLines: 1,
-                          style: TextStyle(
-                              fontSize: 15,
-                              fontFamily: TileStyles.rubikFontName,
-                              color: Color.fromRGBO(31, 31, 31, 1)),
-                          overflow: TextOverflow.ellipsis,
-                        ))
+                              location.address.toString(),
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontFamily: TileTextStyles.rubikFontName,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ))
                       ])))
         ];
         if (location.address != location.description) {
           locationText.add(FractionallySizedBox(
-              widthFactor: TileStyles.inputWidthFactor * 0.75,
+              widthFactor: TileDimensions.inputWidthFactor * 0.75,
               child: Container(
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                   alignment: Alignment.topLeft,
-                  child: Row(children: [
-                    Expanded(
-                        child: Text(location.description.toString(),
+                  child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            location.description.toString(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontFamily: 'Rubik',
-                                fontWeight: FontWeight.w700,
-                                color: Color.fromRGBO(31, 31, 31, 1))))
-                  ]))));
+                            style:TextStyle(
+                              fontSize: 15,
+                              fontFamily: TileTextStyles.rubikFontName,
+                              fontWeight: FontWeight.w700
+                              ,)
+                            ,)
+                          ,)
+                      ]
+                  )
+              )
+          )
+          );
         }
-
         addressChildren.add(Stack(
-          children: [
-            Container(
-              width: (MediaQuery.of(context).size.width *
-                      TileStyles.inputWidthFactor) -
-                  95,
-              alignment: Alignment.centerLeft,
-              margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
-              child: Column(
-                children: locationText,
-              ),
+        children: [
+          Container(
+            width: (MediaQuery.of(context).size.width *
+                TileDimensions.inputWidthFactor) - 95,
+            alignment: Alignment.centerLeft,
+            margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
+            child: Column(
+              children: locationText,
             ),
-            Positioned(
-              top: 36,
-              right: 0,
-              child: Row(
-                children: [
-                  Icon(
-                    location.source == null ||
-                            location.source!.isEmpty ||
-                            location.source! == 'none'
-                        ? Icons.save_outlined
-                        : Icons.cloud_outlined,
-                    color: TileStyles.activeColor,
-                  ),
-                  IconButton(
-                      onPressed: onLocationTap(collapseResultContainer,
-                          location: location, onlyAddress: true),
-                      icon: Icon(
-                        Icons.business,
-                        color: TileStyles.activeColor,
-                      ))
-                ],
-              ),
-            )
-          ],
-        ));
+        ),
+          Positioned(
+            top: 36,
+            right: 0,
+            child: Row(
+              children: [
+                Icon(
+                  location.source == null ||
+                      location.source!.isEmpty ||
+                      location.source! == 'none'
+                      ? Icons.save_outlined
+                      : Icons.cloud_outlined,
+                  color: TileColors.activeLocation,
+                ),
+                IconButton(
+                    onPressed: onLocationTap(collapseResultContainer,
+                        location: location, onlyAddress: true),
+                    icon: Icon(
+                      Icons.business,
+                      color: TileColors.activeLocation,
+                    ),
+                )
+              ],
+            ),
+          )
+        ],
+        ),
+        );
       }
-
       retValue = FractionallySizedBox(
-          widthFactor: TileStyles.inputWidthFactor,
+          widthFactor: TileDimensions.inputWidthFactor,
           child: Container(
               margin: EdgeInsets.fromLTRB(5, 10, 5, 10),
               child: GestureDetector(
-                onTap:
-                    onLocationTap(collapseResultContainer, location: location),
+                onTap: onLocationTap(collapseResultContainer, location: location),
                 child: Container(
                   height: 100,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10)),
+                    color: colorScheme.surfaceContainerLowest,
+                    borderRadius: BorderRadius.all(Radius.circular(10)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.white70.withOpacity(0.2),
+                        color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
                         spreadRadius: 5,
                         blurRadius: 5,
                         offset: Offset(0, 1),
@@ -206,23 +222,19 @@ class LocationSearchState extends SearchWidgetState {
                 ),
               ),
               decoration: BoxDecoration(
-                color: Colors.purple,
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10),
-                    bottomLeft: Radius.circular(10),
-                    bottomRight: Radius.circular(10)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    spreadRadius: 5,
-                    blurRadius: 5,
-                    offset: Offset(0, 1),
-                  ),
-                ],
-              )));
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.2),
+                        spreadRadius: 5,
+                        blurRadius: 5,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+              )
+          )
+      );
     }
-
     return retValue;
   }
 
@@ -246,14 +258,14 @@ class LocationSearchState extends SearchWidgetState {
         bool includeLocationParams = false;
         if (this.widget is LocationSearchWidget) {
           includeLocationParams =
-              (this.widget as LocationSearchWidget).includeDeviceLocation!;
+          (this.widget as LocationSearchWidget).includeDeviceLocation!;
         }
         List<Location> locations = await locationNameApi.getLocationsByName(
             name,
             includeLocationParams: includeLocationParams);
         retValue = locations
             .map((location) =>
-                locationNameWidget(location, collapseResultContainer))
+            locationNameWidget(location, collapseResultContainer))
             .toList();
         if (retValue.length == 0) {
           retValue = [
@@ -277,10 +289,8 @@ class LocationSearchState extends SearchWidgetState {
 
   @override
   Widget build(BuildContext context) {
-    Color hslLightColor =
-        TileStyles.primaryColorLightHSL.toColor(); //.withLightness(0.9);
-    var hslDarkColor =
-        TileStyles.primaryColorDarkHSL.toColor().withLightness(0.9);
+    Color lightColor = colorScheme.primaryContainer;
+    var darkColor = colorScheme.primaryContainer.withLightness(0.9);
     String hintText = AppLocalizations.of(context)!.address;
     this.widget.onChanged = this._onInputFieldChange;
     if (this.widget.textField == null) {
@@ -301,11 +311,11 @@ class LocationSearchState extends SearchWidgetState {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              hslLightColor,
-              hslLightColor,
-              hslLightColor,
-              hslDarkColor,
-              hslDarkColor,
+              lightColor,
+              lightColor,
+              lightColor,
+              darkColor,
+              darkColor,
             ]));
     this.widget.resultMargin = EdgeInsets.fromLTRB(0, 75, 0, 20);
     return super.build(context);

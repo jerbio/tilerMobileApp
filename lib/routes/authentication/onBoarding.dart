@@ -2,9 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
 import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
@@ -12,8 +11,8 @@ import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget
 import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import 'package:tiler_app/routes/authentication/authorizedRoute.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
+
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
@@ -22,31 +21,6 @@ class OnboardingView extends StatefulWidget {
   _OnboardingViewState createState() => _OnboardingViewState();
 }
 
-Widget renderPending() {
-  return Center(
-    child: Stack(
-      children: [
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Container(
-            decoration: TileStyles.defaultBackgroundDecoration,
-          ),
-        ),
-        Center(
-          child: SizedBox(
-            child: CircularProgressIndicator(),
-            height: 200.0,
-            width: 200.0,
-          ),
-        ),
-        Center(
-          child: Image.asset('assets/images/tiler_logo_black.png',
-              fit: BoxFit.cover, scale: 7),
-        ),
-      ],
-    ),
-  );
-}
 
 class _OnboardingViewState extends State<OnboardingView> {
   final List<Widget> pages = [
@@ -69,7 +43,7 @@ class _OnboardingViewState extends State<OnboardingView> {
   Widget build(BuildContext context) {
     // final localizationService = LocalizationService(AppLocalizations.of(context)!);
     NotificationOverlayMessage notificationOverlayMessage =
-        NotificationOverlayMessage();
+    NotificationOverlayMessage();
     return BlocConsumer<OnboardingBloc, OnboardingState>(
       listener: (context, state) {
         if (state.step == OnboardingStep.skipped ||
@@ -127,7 +101,7 @@ class _OnboardingViewState extends State<OnboardingView> {
                   ],
                 ),
               ),
-              if (state.step == OnboardingStep.loading) renderPending(),
+              if (state.step == OnboardingStep.loading) PendingWidget(blurSigma: 10,),
             ],
           ),
         );

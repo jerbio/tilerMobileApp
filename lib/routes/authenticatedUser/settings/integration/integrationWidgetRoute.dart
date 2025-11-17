@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/calendarItemsRoute.dart';
@@ -10,34 +11,18 @@ import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class IntegrationWidgetRoute extends StatelessWidget {
   static final String routeName = '/Integrations';
-  Widget renderPending() {
-    List<Widget> centerElements = [
-      Center(
-          child: SizedBox(
-        child: CircularProgressIndicator(),
-        height: 200.0,
-        width: 200.0,
-      )),
-      Center(
-          child: Image.asset('assets/images/tiler_logo_black.png',
-              fit: BoxFit.cover, scale: 7)),
-    ];
-    return Container(
-      decoration: TileStyles.defaultBackground,
-      child: Center(child: Stack(children: centerElements)),
-    );
-  }
 
-  Widget renderAddNewIntegration(BuildContext context) {
+
+  Widget renderAddNewIntegration(BuildContext context,ColorScheme colorScheme) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
-        backgroundColor: TileStyles.primaryColor,
-        foregroundColor: TileStyles.primaryContrastTextColor,
+        backgroundColor: colorScheme.primary,
+        foregroundColor: colorScheme.onPrimary,
       ),
       onPressed: () =>
           context.read<IntegrationsBloc>().add(AddIntegrationEvent()),
@@ -81,10 +66,10 @@ class IntegrationWidgetRoute extends StatelessWidget {
   Widget generateContent(IntegrationsState state, BuildContext context) {
     if (state is IntegrationsInitial) {
       context.read<IntegrationsBloc>().add(GetIntegrationsEvent());
-      return renderPending();
+      return PendingWidget();
     }
     if (state is IntegrationsLoading) {
-      return renderPending();
+      return PendingWidget();
     }
     if (state is IntegrationsLoaded) {
       if (state.integrations.isNotEmpty) {
@@ -101,10 +86,15 @@ class IntegrationWidgetRoute extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+
     return CancelAndProceedTemplateWidget(
       routeName: routeName,
-      appBar: TileStyles.CancelAndProceedAppBar(
-          AppLocalizations.of(context)!.googleCalender),
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.googleCalender,),
+        automaticallyImplyLeading: false,
+      ),
       child: BlocConsumer<IntegrationsBloc, IntegrationsState>(
         listener: (context, state) {
           NotificationOverlayMessage notificationOverlayMessage =
@@ -140,7 +130,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(50.0),
-                child: renderAddNewIntegration(context),
+                child: renderAddNewIntegration(context,colorScheme),
               ),
             ],
           );
@@ -239,21 +229,24 @@ class _IntegrationItem extends StatelessWidget {
   Widget build(BuildContext context) {
     String titleText =
         integration.email ?? integration.userId ?? integration.id ?? "";
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     String providerText = integration.calendarType ??
         AppLocalizations.of(context)!.unknownProvider;
 
     return Container(
       margin: EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.grey[300]!,
+          color:tileThemeExtension.integrationBorder,
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: colorScheme.shadow.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -264,12 +257,12 @@ class _IntegrationItem extends StatelessWidget {
         leading: Container(
           padding: EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: TileStyles.primaryColor.withOpacity(0.1),
+            color: colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
             Icons.calendar_today,
-            color: TileStyles.primaryColor,
+            color: colorScheme.primary,
             size: 20,
           ),
         ),
@@ -288,7 +281,7 @@ class _IntegrationItem extends StatelessWidget {
             Text(
               providerText.toUpperCase(),
               style: TextStyle(
-                color: Colors.grey[600],
+                color: tileThemeExtension.onSurfaceMonthlyIntegration,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -303,7 +296,7 @@ class _IntegrationItem extends StatelessWidget {
                 'assets/icons/settings/MyLocations.svg',
                 width: 14,
                 height: 14,
-                color: Colors.grey[500],
+                color: tileThemeExtension.onSurfaceVariantSecondary,
               ),
               SizedBox(width: 4),
               GestureDetector(
@@ -311,7 +304,7 @@ class _IntegrationItem extends StatelessWidget {
                 child: Text(
                   _getCityFromLocation(integration.location, context),
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: tileThemeExtension.onSurfaceMonthlyIntegration,
                     fontSize: 12,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -324,18 +317,18 @@ class _IntegrationItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.chevron_right, color: Colors.grey[400]),
+              icon: Icon(Icons.chevron_right, color: tileThemeExtension.onSurfaceVariantSecondary,),
               onPressed: () => _navigateToCalendarItems(context, integration),
               tooltip: AppLocalizations.of(context)!.manageCalendars,
             ),
             SizedBox(width: 8),
             TextButton(
               style: TextButton.styleFrom(
-                foregroundColor: Colors.red,
+                foregroundColor: colorScheme.onError,
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: Colors.red.withOpacity(0.5)),
+                  side: BorderSide(color: colorScheme.onError.withValues(alpha: 0.5)),
                 ),
                 minimumSize: Size(0, 32),
               ),

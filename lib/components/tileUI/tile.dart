@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart'
     show CameraPosition, GoogleMap, LatLng, MapType;
@@ -22,11 +20,14 @@ import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
 
@@ -34,6 +35,7 @@ import 'timeScrub.dart';
 /// Class creates tile widget that handles rendering the tile UI for a given
 /// user tile.
 ///
+
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
@@ -61,7 +63,10 @@ class TileWidgetState extends State<TileWidget>
     'walking': Icons.directions_walk,
     'transit': Icons.directions_transit,
   };
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
+  late  TileThemeExtension tileThemeExtension;
   final ExpansionTileController expansionTravelController =
       ExpansionTileController();
 
@@ -92,6 +97,14 @@ class TileWidgetState extends State<TileWidget>
       end: 0.0,
     ).animate(controller);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
   }
 
   void updateSubEvent(SubCalendarEvent subEvent) async {
@@ -161,17 +174,16 @@ class TileWidgetState extends State<TileWidget>
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Icon(transitIconMap[travelLeg.travelMedium] ?? Icons.directions_walk,
-            color: TileStyles.primaryColor, size: 20),
+            color: colorScheme.primary, size: 20),
         Flexible(
           child: Container(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             child: Text(
               travelLeg.description ?? "",
               style: TextStyle(
-                  fontSize: 15,
-                  fontFamily: TileStyles.rubikFontName,
-                  fontWeight: FontWeight.normal,
-                  color: TileStyles.defaultTextColor),
+              fontSize: 15,
+              fontFamily: TileTextStyles.rubikFontName,
+              )
             ),
           ),
         ),
@@ -180,11 +192,11 @@ class TileWidgetState extends State<TileWidget>
           child: Text(
             durationText.isNot_NullEmptyOrWhiteSpace() ? "($durationText)" : "",
             style: TextStyle(
-                fontSize: 15,
-                fontFamily: TileStyles.rubikFontName,
-                fontWeight: FontWeight.normal,
-                color: TileStyles.defaultTextColor),
+              fontSize: 15,
+              fontFamily: TileTextStyles.rubikFontName,
+
           ),
+        ),
         )
       ],
     );
@@ -228,14 +240,16 @@ class TileWidgetState extends State<TileWidget>
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                TileStyles.defaultBackgroundColor
+                colorScheme.surface
                     .withAlpha(0)
                     .withLightness(0.5),
-                TileStyles.defaultBackgroundColor,
-                TileStyles.defaultBackgroundColor,
-                TileStyles.defaultBackgroundColor,
+                colorScheme.surface,
+                colorScheme.surface,
+                colorScheme.surface,
               ],
-            )))
+            ),
+            ),
+        )
       ],
     );
   }
@@ -245,13 +259,16 @@ class TileWidgetState extends State<TileWidget>
     double iconSize = 20;
     double lottieHeight = 85;
     String lottieAsset =
-        isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
+        isTardy ? 'assets/lottie/redCars.json' :theme.brightness==Brightness.dark? 'assets/lottie/whiteCars.json': 'assets/lottie/blackCars.json';
 
     Color? textColor =
-        isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
+        isTardy ? TileColors.late : colorScheme.onSurface;
 
     List<LatitudeAndLongitude> latLongList = [];
-    Widget transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
+    Widget transitUIWidget = Lottie.asset(
+        lottieAsset,
+        height: lottieHeight,
+    );
     if (this.widget.subEvent.travelDetail != null) {
       TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
       int walkCount = 0;
@@ -312,14 +329,18 @@ class TileWidgetState extends State<TileWidget>
               padding: trainsitUIPadding,
               child: Row(
                 children: [
-                  Icon(Icons.directions_walk,
-                      color: TileStyles.primaryContrastColor, size: iconSize),
-                  Text(walkCount.toString(),
+                  Icon(
+                      Icons.directions_walk,
+                      color: colorScheme.onPrimary, size: iconSize
+                  ),
+                  Text(
+                    walkCount.toString(),
                       style: TextStyle(
                           fontSize: fontSize,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.normal,
-                          color: TileStyles.primaryContrastColor))
+                          fontFamily: TileTextStyles.rubikFontName,
+                          color: colorScheme.onPrimary
+                      ),
+                  )
                 ],
               ),
             ),
@@ -332,13 +353,14 @@ class TileWidgetState extends State<TileWidget>
               child: Row(
                 children: [
                   Icon(Icons.directions_transit,
-                      color: TileStyles.primaryContrastColor, size: iconSize),
+                      color: colorScheme.onPrimary, size: iconSize),
                   Text(stopCount.toString(),
                       style: TextStyle(
+                          fontFamily: TileTextStyles.rubikFontName,
                           fontSize: fontSize,
-                          fontFamily: TileStyles.rubikFontName,
-                          fontWeight: FontWeight.normal,
-                          color: TileStyles.primaryContrastColor))
+                          color: colorScheme.onPrimary
+                      ),
+                  )
                 ],
               ),
             ),
@@ -350,7 +372,7 @@ class TileWidgetState extends State<TileWidget>
           margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: TileStyles.primaryColor,
+            color: colorScheme.primary,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -399,48 +421,57 @@ class TileWidgetState extends State<TileWidget>
       child: Stack(
         children: [
           renderGoogleMaps(latLongList),
-          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Container(
-                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                height: 50,
-                width: 5,
-                child: AnimatedLine(
-                  Duration(milliseconds: 0),
-                  textColor,
-                  reverse: true,
-                )),
-            Row(
+          Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                    child: Text(startString,
-                        style: TextStyle(
-                            fontSize: fontSize,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.normal,
-                            color: textColor))),
-                transitUIWidget,
+                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                    height: 50,
+                    width: 5,
+                    child: AnimatedLine(
+                      Duration(milliseconds: 0),
+                      textColor,
+                      reverse: true,
+                    )),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                        child: Text(
+                            startString,
+                            style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: fontSize,
+                                color: textColor
+                            )
+                        )
+                    ),
+                    transitUIWidget,
+                    Container(
+                        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                        child: Text(
+                            endString,
+                            style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: fontSize,
+                                color: textColor)
+                        )
+                    )
+                  ],
+                ),
                 Container(
-                    margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                    child: Text(endString,
-                        style: TextStyle(
-                            fontSize: fontSize,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.normal,
-                            color: textColor)))
-              ],
-            ),
-            Container(
-                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                height: 50,
-                width: 5,
-                child: AnimatedLine(
-                  Duration(milliseconds: 0),
-                  textColor,
-                  reverse: true,
-                ))
-          ])
+                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                    height: 50,
+                    width: 5,
+                    child: AnimatedLine(
+                      Duration(milliseconds: 0),
+                      textColor,
+                      reverse: true,
+                    )
+                )
+          ]
+          )
         ],
       ),
     );
@@ -460,7 +491,7 @@ class TileWidgetState extends State<TileWidget>
     Widget editButton = IconButton(
         icon: Icon(
           Icons.edit_outlined,
-          color: TileStyles.defaultTextColor,
+          color: colorScheme.onSurface!,
           size: 20.0,
         ),
         onPressed: () {
@@ -508,6 +539,7 @@ class TileWidgetState extends State<TileWidget>
             Utility.msCurrentTime;
         duration = Duration(milliseconds: durationTillTravel);
       }
+
       if (duration.inMilliseconds > 0) {
         allElements.add(Container(
             margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -529,7 +561,7 @@ class TileWidgetState extends State<TileWidget>
       timeRange: widget.subEvent,
       fontSize: textFontSize,
       textColor:
-          isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor,
+          isTardy ? TileColors.late : colorScheme.onSurface,
     );
 
     Widget tileTimeFrame = Container(
@@ -541,15 +573,15 @@ class TileWidgetState extends State<TileWidget>
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration: TileStyles.tileIconContainerBoxDecoration,
+            decoration:  TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
             child: Icon(
               (this.widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
               color: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
-              size: TileStyles.tileIconSize,
+                  ? TileColors.late
+                  : colorScheme.onSurface,
+              size: TileDimensions.tileIconSize,
             ),
           ),
 
@@ -567,9 +599,9 @@ class TileWidgetState extends State<TileWidget>
                         AppLocalizations.of(context)!.parenthesisLate,
                         style: TextStyle(
                             fontSize: textFontSize,
-                            fontFamily: TileStyles.rubikFontName,
+                            fontFamily: TileTextStyles.rubikFontName,
                             fontWeight: FontWeight.normal,
-                            color: TileStyles.lateTextColor),
+                            color: TileColors.late),
                       )
                     : SizedBox.shrink()
               ],
@@ -595,6 +627,7 @@ class TileWidgetState extends State<TileWidget>
           },
           child: Icon(
             Icons.share,
+            color: colorScheme.onSurface,
             size: 20,
           ),
         ),
@@ -606,7 +639,7 @@ class TileWidgetState extends State<TileWidget>
         // Timescrub to show that it is elapsed
         allElements.add(
           FractionallySizedBox(
-            widthFactor: TileStyles.tileWidthRatio,
+            widthFactor: TileDimensions.tileWidthRatio,
             child: Container(
               margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
               child: TimeScrubWidget(
@@ -630,28 +663,28 @@ class TileWidgetState extends State<TileWidget>
           ),
         );
 
-        allElements.add(GestureDetector(
-            onTap: () {
-              setState(() {
-                isMoreDetailEnabled = false;
-              });
-            },
-            child: Icon(
-              Icons.arrow_drop_up,
-              size: 30,
-            )));
+        allElements.add(IconButton(
+          onPressed: () {
+            setState(() {
+              isMoreDetailEnabled = false;
+            });
+          },
+         icon: Icon(Icons.arrow_drop_up,),
+          color: colorScheme.onSurface,
+          iconSize: 30,
+
+        ));
       } else {
         allElements.add(
-          GestureDetector(
-            onTap: () {
+          IconButton(
+            onPressed: () {
               setState(() {
                 isMoreDetailEnabled = true;
               });
-            },
-            child: Icon(
-              Icons.arrow_drop_down,
-              size: 30,
-            ),
+            } ,
+            icon:Icon(Icons.arrow_drop_down),
+            color: colorScheme.onSurface,
+            iconSize: 30,
           ),
         );
       }
@@ -668,20 +701,20 @@ class TileWidgetState extends State<TileWidget>
         child: Material(
           type: MaterialType.transparency,
           child: FractionallySizedBox(
-            widthFactor: TileStyles.tileWidthRatio,
+            widthFactor: TileDimensions.tileWidthRatio,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surfaceContainerLowest,
                 border: Border.all(
                   color: this.widget.subEvent.isViable!
-                      ? Colors.white
-                      : Colors.black,
+                      ? colorScheme.onInverseSurface
+                      : colorScheme.onSurface,
                   width: this.widget.subEvent.isViable! ? 0 : 5,
                 ),
-                borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
                 boxShadow: [
                   BoxShadow(
-                    color: tileBackGroundColor.withOpacity(0.1),
+                    color: tileBackGroundColor.withValues(alpha: 0.1),
                     spreadRadius: 5,
                     blurRadius: 15,
                     offset: Offset(0, 1),
@@ -705,10 +738,10 @@ class TileWidgetState extends State<TileWidget>
                     ],
                   ),
                   border: Border.all(
-                    color: Colors.white,
+                    color: colorScheme.onInverseSurface,
                     width: 0.5,
                   ),
-                  borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
                 ),
                 child: Column(
                   mainAxisAlignment: allElements.length < 4

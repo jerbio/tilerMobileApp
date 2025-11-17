@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TileName extends StatefulWidget {
   SubCalendarEvent subEvent;
@@ -16,13 +16,13 @@ class TileName extends StatefulWidget {
 }
 
 class TileNameState extends State<TileName> {
-  TextStyle textStyle = TextStyle(
-      fontSize: 20,
-      fontFamily: TileStyles.rubikFontName,
-      fontWeight: FontWeight.w500,
-      color: Color.fromRGBO(31, 31, 31, 1));
   @override
   Widget build(BuildContext context) {
+    TextStyle textStyle =TextStyle(
+      fontFamily: TileTextStyles.rubikFontName,
+      fontSize: 20,
+      fontWeight: FontWeight.w500,
+    );
     if (this.widget.textStyle != null) {
       textStyle = this.widget.textStyle!;
     }
@@ -48,9 +48,10 @@ class TileNameState extends State<TileName> {
       emojiField = Text(emojiString,
           style: TextStyle(
               fontSize: fontSize,
-              fontFamily: TileStyles.rubikFontName,
+              fontFamily: TileTextStyles.rubikFontName,
               fontWeight: FontWeight.bold,
-              color: Color.fromRGBO(31, 31, 31, 1)));
+             )
+      );
     }
 
     if (subEvent.emojis == null || subEvent.emojis!.isEmpty) {
@@ -89,8 +90,10 @@ class TileNameState extends State<TileName> {
                     name,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: this.textStyle,
-                  )))
+                    style: textStyle,
+                  ),
+              ),
+          )
         ],
       ),
     );

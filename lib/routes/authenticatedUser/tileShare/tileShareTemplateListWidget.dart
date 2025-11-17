@@ -7,7 +7,6 @@ import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/simpleTileShareTemplareWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateDetail.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareTemplateListWidget extends StatefulWidget {
@@ -34,6 +33,9 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
   bool hasMore = true;
   bool isLoading = false;
   ValueKey listKey = ValueKey(Utility.getUuid);
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +48,13 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
     } else {
       tileShareTemplates = this.widget.tileShareTemplates!;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   String? get clusterId {
@@ -113,7 +122,7 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
     return Container(
       height: 40,
       alignment: AlignmentDirectional.topCenter,
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator(color: colorScheme.tertiary),
     );
   }
 
@@ -151,16 +160,9 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
               color: Colors.transparent,
               child: NameAndDateSheetWidget(
                 appBar: AppBar(
-                  centerTitle: true,
-                  elevation: 0,
                   automaticallyImplyLeading: false,
-                  backgroundColor: TileStyles.appBarColor,
                   title: Text(
                     AppLocalizations.of(context)!.edit,
-                    style: TextStyle(
-                        color: TileStyles.appBarTextColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 22),
                   ),
                 ),
                 endTime: tileShareTemplate.end != null
@@ -267,8 +269,8 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                         SlidableAction(
                           onPressed:
                               generateEditTileShareCallBack(tileShareTemplate),
-                          backgroundColor: TileStyles.accentColor,
-                          foregroundColor: TileStyles.primaryContrastColor,
+                          backgroundColor: colorScheme.tertiaryContainer,
+                          foregroundColor:  colorScheme.onTertiary,
                           icon: Icons.edit,
                           label: AppLocalizations.of(context)!.edit,
                         ),
@@ -280,8 +282,8 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                                     getTileShareTemplates(resetList: true));
                             ;
                           },
-                          backgroundColor: TileStyles.deletedBackgroundColor,
-                          foregroundColor: Colors.white,
+                          backgroundColor: colorScheme.onError,
+                          foregroundColor:colorScheme.onTertiary,
                           icon: Icons.delete,
                           label: AppLocalizations.of(context)!.tileShareDelete,
                         ),

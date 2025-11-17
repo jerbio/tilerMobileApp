@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 import 'bloc/integrations_bloc.dart';
 
@@ -15,43 +15,59 @@ class Connections extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final  localization= AppLocalizations.of(context)!;
     return CancelAndProceedTemplateWidget(
       routeName: routeName,
-      appBar: TileStyles.CancelAndProceedAppBar(
-          AppLocalizations.of(context)!.connections),
+      appBar:AppBar(
+        title: Text(localization.connections),
+        automaticallyImplyLeading: false,
+      ),
       child: ListView(
         children: [
           const SizedBox(height: 16),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/google.svg',
-            title: AppLocalizations.of(context)!.googleCalendar,
-            context: context,
+            title: localization.googleCalendar,
             onTap: () =>
                 _navigateToIntegration(context, IntegrationType.googleCalendar),
+              colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
+            localization:  localization,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/microsoft.svg',
-            title: AppLocalizations.of(context)!.microsoft,
-            context: context,
+            title: localization.microsoft,
             isComingSoon: true,
+            colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
+            localization:  localization,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/apple.svg',
-            title: AppLocalizations.of(context)!.appleCalendar,
-            context: context,
+            title: localization.appleCalendar,
             isComingSoon: true,
+            colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
+            localization:  localization,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/googleTasks.svg',
-            title: AppLocalizations.of(context)!.googleTasks,
-            context: context,
+            title: localization.googleTasks,
             isComingSoon: true,
+            colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
+            localization:  localization,
           ),
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/slack.svg',
-            title: AppLocalizations.of(context)!.slack,
-            context: context,
+            title: localization.slack,
             isComingSoon: true,
+            colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension!,
+            localization:  localization,
           ),
         ],
       ),
@@ -61,42 +77,45 @@ class Connections extends StatelessWidget {
   Widget _buildIntegrationRow({
     required String iconPath,
     required String title,
-    required BuildContext context,
+    required ColorScheme colorScheme,
+    required TileThemeExtension tileThemeExtension,
+    required AppLocalizations localization,
     bool isComingSoon = false,
     VoidCallback? onTap,
+
+
   }) {
     return ListTile(
       leading: SvgPicture.asset(
         iconPath,
         width: 24,
         height: 24,
+        colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
       ),
       title: Text(
         title,
-        style: const TextStyle(
+        style:  const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
         ),
       ),
-      trailing: _buildAddButton(onTap, !isComingSoon, context),
+      trailing: _buildAddButton(onTap, !isComingSoon,colorScheme,tileThemeExtension,localization),
       contentPadding: EdgeInsets.symmetric(horizontal: 30),
     );
   }
 
-  Widget _buildAddButton(
-      VoidCallback? onTap, bool isImplemented, BuildContext context) {
+  Widget _buildAddButton(VoidCallback? onTap, bool isImplemented,ColorScheme colorScheme,TileThemeExtension tileThemeExtension,AppLocalizations localization) {
     ButtonStyle _addStyle = TextButton.styleFrom(
-      foregroundColor: Colors.black,
+      foregroundColor:colorScheme.onSurface,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: TileStyles.primaryColor),
+        side: BorderSide(color: colorScheme.primary),
       ),
     );
 
     ButtonStyle _comingSoonStyle = TextButton.styleFrom(
-      backgroundColor: const Color(0xFFEEEEEE),
-      foregroundColor: const Color(0xFF999999),
+      backgroundColor: tileThemeExtension.surfaceContainerDisabled,
       padding: const EdgeInsets.symmetric(horizontal: 30),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -107,9 +126,7 @@ class Connections extends StatelessWidget {
       child: TextButton(
         style: isImplemented ? _addStyle : _comingSoonStyle,
         onPressed: isImplemented ? onTap : null,
-        child: Text(isImplemented
-            ? AppLocalizations.of(context)!.integrationAdd
-            : AppLocalizations.of(context)!.comingSoon),
+        child: Text(isImplemented ?  localization.add :  localization.comingSoon),
       ),
     );
   }

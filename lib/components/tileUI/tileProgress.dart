@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class Indicator extends StatelessWidget {
   const Indicator({
@@ -17,6 +19,7 @@ class Indicator extends StatelessWidget {
   final bool isSquare;
   final double size;
   final Color? textColor;
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +38,11 @@ class Indicator extends StatelessWidget {
         ),
         Text(
           text,
-          style: TextStyle(
+          style:TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: textColor,
-          ),
+            ),
         )
       ],
     );
@@ -59,6 +62,9 @@ class _TileProgressState extends State<TileProgress> {
   int completeCount = 0;
   int tiledCount = 0;
   int deletedCount = 0;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     // TODO: implement initState
@@ -68,12 +74,20 @@ class _TileProgressState extends State<TileProgress> {
     tiledCount =
         this.widget.calendarEvent.split! - (completeCount) - (deletedCount);
   }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+
+  }
 
   int touchedIndex = -1;
   final Map<TileStatus, Color> colorMapping = {
-    TileStatus.Complete: Color.fromRGBO(3, 206, 164, 1),
-    TileStatus.Delete: Color.fromRGBO(230, 57, 70, 1),
-    TileStatus.Scheduled: Color.fromRGBO(52, 89, 149, 1),
+    TileStatus.Complete: TileColors.completedTeal,
+    TileStatus.Delete: TileColors.deleted,
+    TileStatus.Scheduled: TileColors.scheduled,
   };
 
   List<PieChartSectionData> showingSections() {
@@ -90,8 +104,8 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? const BorderSide(color: Colors.greenAccent, width: 6)
-                  : BorderSide(color: Colors.greenAccent.withOpacity(0)),
+                  ?  BorderSide(color: TileColors.success, width: 6)
+                  : BorderSide(color:TileColors.success.withValues(alpha: 0)),
             );
           case 1:
             return PieChartSectionData(
@@ -101,8 +115,8 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? const BorderSide(color: Colors.blueAccent, width: 6)
-                  : BorderSide(color: Colors.blueAccent.withOpacity(0)),
+                  ? const BorderSide(color: TileColors.left, width: 6)
+                  : BorderSide(color: TileColors.left.withOpacity(0)),
             );
           case 2:
             return PieChartSectionData(
@@ -112,8 +126,8 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? const BorderSide(color: Colors.redAccent, width: 6)
-                  : BorderSide(color: Colors.redAccent.withOpacity(0)),
+                  ?  BorderSide(color:  TileColors.deletion, width: 6)
+                  : BorderSide(color: TileColors.deletion.withValues(alpha: 0)),
             );
           default:
             throw Error();
@@ -174,7 +188,7 @@ class _TileProgressState extends State<TileProgress> {
                   size: touchedIndex == 0 ? 18 : 16,
                   textColor: touchedIndex == 0
                       ? colorMapping[TileStatus.Complete]
-                      : Colors.black,
+                      : colorScheme.onSurface,
                 ),
                 Indicator(
                   color: colorMapping[TileStatus.Scheduled]!,
@@ -184,7 +198,7 @@ class _TileProgressState extends State<TileProgress> {
                   size: touchedIndex == 1 ? 18 : 16,
                   textColor: touchedIndex == 1
                       ? colorMapping[TileStatus.Scheduled]
-                      : Colors.black,
+                      : colorScheme.onSurface,
                 ),
                 Indicator(
                   color: colorMapping[TileStatus.Delete]!,
@@ -194,7 +208,7 @@ class _TileProgressState extends State<TileProgress> {
                   size: touchedIndex == 2 ? 18 : 16,
                   textColor: touchedIndex == 2
                       ? colorMapping[TileStatus.Delete]
-                      : Colors.black,
+                      : colorScheme.onSurface,
                 ),
               ],
             ),

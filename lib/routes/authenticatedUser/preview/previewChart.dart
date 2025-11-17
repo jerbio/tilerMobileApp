@@ -5,7 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class PreviewChart extends StatefulWidget {
@@ -24,6 +25,16 @@ class _PreviewChartState extends State<PreviewChart> {
   static final Color otherColor = Utility.randomColor;
   static final Color blockedOutColor = Utility.randomColor;
   bool showTime = true;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
   List<PreviewSection>? get previewGrouping {
     return this.widget.previewGrouping;
   }
@@ -40,16 +51,19 @@ class _PreviewChartState extends State<PreviewChart> {
     return Container(
       width: 120,
       height: 120,
-      decoration: BoxDecoration(boxShadow: [
-        const BoxShadow(
-          color: Color.fromRGBO(220, 220, 220, 0.5),
+      decoration: BoxDecoration(
+        boxShadow: [
+         BoxShadow(
+          color: tileThemeExtension.shadowPreviewChartIconographyOuter.withValues(alpha: 0.5),
         ),
         BoxShadow(
-          color: Colors.white,
+          color:  tileThemeExtension.shadowPreviewChartIconographyInner,
           spreadRadius: -4.0,
           blurRadius: 12.0,
         ),
-      ], borderRadius: BorderRadius.circular(110)),
+       ],
+        borderRadius: BorderRadius.circular(110)
+      ),
       child: Container(
           margin: EdgeInsets.fromLTRB(0, 70, 0, 0),
           child: this.icon ?? SizedBox.shrink()),
@@ -113,7 +127,7 @@ class _PreviewChartState extends State<PreviewChart> {
             // textScaler: TextScaler.linear(0.75),
             textAlign: TextAlign.center,
             style:
-                TextStyle(color: TileStyles.inputFieldTextColor, fontSize: 20),
+                TextStyle(color: colorScheme.onSurface, fontSize: 20),
           ),
         ),
       );
@@ -124,7 +138,10 @@ class _PreviewChartState extends State<PreviewChart> {
 
   Widget getCenterWidget() {
     return Stack(
-      children: [renderMiddleIconography(), ratioImagery()],
+      children: [
+        renderMiddleIconography(),
+        ratioImagery()
+      ],
     );
   }
 
@@ -132,12 +149,12 @@ class _PreviewChartState extends State<PreviewChart> {
   Widget build(BuildContext context) {
     double radius = 10;
     var borderSide = BorderSide(
-        color: TileStyles.primaryColor, width: 0.5, style: BorderStyle.solid);
+        color: colorScheme.primary, width: 0.5, style: BorderStyle.solid);
     if (this._timeline != null && this.previewGrouping != null) {
       List<PieChartSectionData> pieChartData = [];
       for (int i = 0; i < previewGrouping!.length; i++) {
         var eachPreviewGrouping = previewGrouping![i];
-        Color hueColor = TileStyles.chartHues[i % TileStyles.chartHues.length];
+        Color hueColor = TileColors.chartHues[i % TileColors.chartHues.length];
         if (eachPreviewGrouping.isNullGrouping == true) {
           Duration otherTiles = Duration.zero;
           Duration blockedOutTiles = Duration.zero;
@@ -164,7 +181,7 @@ class _PreviewChartState extends State<PreviewChart> {
                 radius: radius,
                 borderSide: borderSide,
                 titleStyle: TextStyle(
-                    fontSize: 12, color: TileStyles.accentContrastColor),
+                    fontSize: 12, color: colorScheme.onSurface),
                 value: otherTiles.inMinutes.toDouble()));
           }
           if (blockedOutTiles.inMinutes > 0) {
@@ -174,7 +191,7 @@ class _PreviewChartState extends State<PreviewChart> {
                 radius: radius,
                 borderSide: borderSide,
                 titleStyle: TextStyle(
-                    fontSize: 12, color: TileStyles.accentContrastColor),
+                    fontSize: 12, ),
                 value: blockedOutTiles.inMinutes.toDouble()));
           }
         } else {
@@ -202,7 +219,7 @@ class _PreviewChartState extends State<PreviewChart> {
               borderSide: borderSide,
               badgePositionPercentageOffset: 10,
               titleStyle: TextStyle(
-                  fontSize: 12, color: TileStyles.accentContrastColor),
+                  fontSize: 12),
               value: durationSum.inMinutes.toDouble()));
         }
       }

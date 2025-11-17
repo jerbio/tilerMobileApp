@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class TileTimeCellWidget extends TimeCellWidget {
   TileTimeCellWidget(
@@ -30,6 +30,8 @@ class _TileTimeCellState extends TimeCellWidgetState {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Positioned(
       top: topPosition,
       left: this.leftPosition,
@@ -38,11 +40,11 @@ class _TileTimeCellState extends TimeCellWidgetState {
             BoxDecoration(
               border: Border(
                   top: BorderSide(
-                      color: TileStyles.gridLineColor,
-                      width: TileStyles.thickness)),
+                      color: colorScheme.primary,
+                      width: TileDimensions.thickness)),
             ),
         height: this.widgetHeight,
-        width: MediaQuery.sizeOf(context).width - TileStyles.timeOfDayCellWidth,
+        width: MediaQuery.sizeOf(context).width - TileDimensions.timeOfDayCellWidth,
         child: this.widget.child,
       ),
     );

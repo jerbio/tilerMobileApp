@@ -7,7 +7,9 @@ import 'package:tiler_app/components/tileUI/monthlyTile.dart';
 import 'package:tiler_app/components/tilelist/DailyView/tileBatch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 class PrecedingMonthlyTileBatch extends TileBatch {
@@ -31,6 +33,9 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
   }
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=  theme.extension<TileThemeExtension>();
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth-10)/7-4;
     return BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
@@ -43,10 +48,10 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                 margin: EdgeInsets.only(left: 2, top: 2),
                 padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(220, 220, 220, 1),
+                  color: tileThemeExtension!.surfaceContainerGreater,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!).toString()),
+                child:Text(Utility.getDayOfMonthFromIndex(widget.dayIndex!).toString().padLeft(2, '0')),
               ),
             ),
           );
@@ -71,8 +76,18 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
               childrenColumnWidgets.add(MonthlyTileWidget(subEvent: allEvents[i]));
             }
             if (allEvents.length > 7) {
-              childrenColumnWidgets.add( Padding(
-                  padding: const EdgeInsets.only(left:2.0),child: Align(alignment:Alignment.topLeft,child: Text('•••', style: TextStyle(fontSize: 12)))));
+              childrenColumnWidgets.add(
+                  Padding(
+                      padding: const EdgeInsets.only(left:2.0),
+                      child: Align(
+                          alignment:Alignment.topLeft,
+                          child: Text(
+                              '•••',
+                              style: TextStyle(fontSize: 12)
+                          ),
+                      ),
+                  ),
+              );
             }
           }
           retValue =  GestureDetector(
@@ -81,10 +96,10 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  backgroundColor: Colors.white,
+                  backgroundColor: colorScheme.surfaceContainerLowest,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(TileStyles.borderRadius)),
+                        top: Radius.circular(TileDimensions.borderRadius)),
                   ),
                   builder: (BuildContext context) {
                     return Container(
@@ -106,7 +121,7 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                           child: Column(
                             children: [
                               FractionallySizedBox(
-                                widthFactor: TileStyles.tileWidthRatio,
+                                widthFactor: TileDimensions.tileWidthRatio,
                                 child: Text(
                                   DateFormat('d MMM yyyy')
                                       .format(Utility.getTimeFromIndex(widget.dayIndex!)),
@@ -134,10 +149,10 @@ class _PrecedingMonthlyTileBatchState extends TileBatchState {
                 padding: EdgeInsets.symmetric(vertical: 4,horizontal: 2),
                 margin: EdgeInsets.all(2),
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(240, 240, 240, 1),
+                  color: colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.green,
+                    color: TileColors.completedGreen,
                     width: 2,
                   ),
                 ),

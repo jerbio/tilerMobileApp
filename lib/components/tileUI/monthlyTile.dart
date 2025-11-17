@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+
 
 class MonthlyTileWidget extends StatefulWidget {
 
@@ -15,8 +16,10 @@ class MonthlyTileWidget extends StatefulWidget {
   MonthlyTileWidgetState createState() => MonthlyTileWidgetState();
 }
 class MonthlyTileWidgetState extends State<MonthlyTileWidget> {
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth =( screenWidth * 0.136).floorToDouble();
     int redColor = widget.subEvent.colorRed ?? 127;
@@ -40,8 +43,8 @@ class MonthlyTileWidgetState extends State<MonthlyTileWidget> {
         tileName,
         maxLines: 1,
         style: TextStyle(
+          fontFamily: TileTextStyles.rubikFontName,
           fontSize: 10,
-          fontFamily: TileStyles.rubikFontName,
         ),
         overflow: TextOverflow.ellipsis,
       ),

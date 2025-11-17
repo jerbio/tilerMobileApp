@@ -1,17 +1,19 @@
 import 'package:bloc/bloc.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/data/timeline.dart';
 import '../../services/analyticsSignal.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+
+
 
 part 'ui_date_manager_event.dart';
 part 'ui_date_manager_state.dart';
 
 class UiDateManagerBloc extends Bloc<UiDateManagerEvent, UiDateManagerState> {
-  final CarouselController dayRibbonCarouselController = CarouselController();
+  final CarouselSliderController dayRibbonCarouselController = CarouselSliderController();
   final Map<int, Tuple2<int, Timeline>> universalIndexToBatch = {};
 
   UiDateManagerBloc()

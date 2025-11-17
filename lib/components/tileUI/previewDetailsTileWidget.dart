@@ -3,10 +3,10 @@ import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
-import 'package:tiler_app/components/tileUI/playBackButtons.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 
 class PreviewDetailsTileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
@@ -25,6 +25,14 @@ class PreviewDetailsTileWidget extends StatefulWidget {
 }
 
 class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
   @override
   Widget build(BuildContext context) {
     return renderTileElement();
@@ -70,15 +78,15 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration: TileStyles.tileIconContainerBoxDecoration,
+            decoration: TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
             child: Icon(
               (widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
               color: (widget.subEvent.isTardy ?? false)
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
-              size: TileStyles.tileIconSize,
+                  ? TileColors.late
+                  : colorScheme.onSurface,
+              size: TileDimensions.tileIconSize,
             ),
           ),
           Padding(
@@ -86,8 +94,8 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
               textColor: (widget.subEvent.isTardy ?? false)
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+                  ? TileColors.late
+                  : colorScheme.onSurface,
             ),
           ),
         ],
@@ -96,7 +104,7 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
     allElements.add(tileTimeFrame);
 
     allElements.add(FractionallySizedBox(
-        widthFactor: TileStyles.tileWidthRatio,
+        widthFactor: TileDimensions.tileWidthRatio,
         child: Container(
             margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
             child: TimeScrubWidget(
@@ -120,7 +128,7 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
         padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
         decoration: BoxDecoration(
           color: tileBackGroundColor,
-          borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+          borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

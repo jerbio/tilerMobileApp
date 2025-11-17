@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../styles.dart';
 
 class CustomForecastField extends StatelessWidget {
   const CustomForecastField({
@@ -19,6 +18,8 @@ class CustomForecastField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Container(
       margin: EdgeInsets.only(
         bottom: height / (height / 18),
@@ -26,7 +27,7 @@ class CustomForecastField extends StatelessWidget {
       width: width,
       height: height / (height / 44),
       decoration: BoxDecoration(
-        color: Color(0xFF1F1F1F).withOpacity(0.05),
+        color: colorScheme.onSurface.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(
           height / (height / 6),
         ),
@@ -39,17 +40,22 @@ class CustomForecastField extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SvgPicture.asset(leadingIconPath),
+            SvgPicture.asset(
+              leadingIconPath,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).colorScheme.onSurface,
+                BlendMode.srcIn,
+              ),
+            ),
             SizedBox(
               width: height / (height / 15),
             ),
             Text(
               textButtonString,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                // fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 15),
                 fontWeight: FontWeight.w400,
-                color: Color(0xFF1F1F1F),
               ),
             )
           ],
