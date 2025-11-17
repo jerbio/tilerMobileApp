@@ -97,21 +97,31 @@ class _OnboardingViewState extends State<OnboardingView> {
                         ),
                       ),
                       Expanded(
-                        child: Center(
-                          child: AnimatedSwitcher(
-                            duration: Duration(milliseconds: 300),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
-                            child: Padding(
-                              key: ValueKey<int>(state.pageNumber ?? 0),
-                              padding:
-                              const EdgeInsets.symmetric(horizontal: 30.0),
-                              child: pages[state.pageNumber ?? 0],
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onHorizontalDragEnd: (details) {
+                            if (details.primaryVelocity! < 0) {
+                              context.read<OnboardingBloc>().add(NextPageEvent());
+                            } else if (details.primaryVelocity! > 0) {
+                              context.read<OnboardingBloc>().add(PreviousPageEvent());
+                            }
+                          },
+                          child: Center(
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 300),
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                              child: Padding(
+                                key: ValueKey<int>(state.pageNumber ?? 0),
+                                padding:
+                                const EdgeInsets.symmetric(horizontal: 30.0),
+                                child: pages[state.pageNumber ?? 0],
+                              ),
                             ),
                           ),
                         ),

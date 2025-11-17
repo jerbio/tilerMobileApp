@@ -140,6 +140,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onPreviousPageEvent(
       PreviousPageEvent event, Emitter<OnboardingState> emit) {
+    if(state.step==OnboardingStep.suggestionLoading || state.step == OnboardingStep.suggestionRefreshing)
+      return ;
     if (state.pageNumber! > 0) {
       emit(state.copyWith(
         step: OnboardingStep.pageChanged,
