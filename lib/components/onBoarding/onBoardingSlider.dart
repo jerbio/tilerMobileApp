@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tiler_app/components/onBoarding/videoPlayer.dart';
 import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -14,12 +15,14 @@ class IntroSlideData {
   final SlideType slideType;
   final List<String> description;
   final String? imagePath;
+  final String? videoPath;
 
   IntroSlideData({
     required this.title,
     required this.slideType,
     required this.description,
     this.imagePath,
+    this.videoPath
   });
 }
 
@@ -45,6 +48,7 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
       IntroSlideData(
         title: localizations.tilesVsBlocks,
         slideType: SlideType.toggleButton,
+        videoPath: "assets/videos/tiles_vs_blocks.mov",
         description: [localizations.vsTilesDescription,localizations.vsBlocksDescription],
       ),
       IntroSlideData(
@@ -187,6 +191,10 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
             ),
             textAlign: TextAlign.center,
           ),
+          if (slide.videoPath != null) ...[
+            SizedBox(height: 20),
+            VideoPlayerWidget(videoPath: slide.videoPath!),
+          ],
         ],
       ),
     );
