@@ -70,13 +70,6 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     return RestrictionProfile(daySelection: days);
   }
 
-  RestrictionProfile _createDefaultPersonalProfile() {
-    List<RestrictionDay?> days = List.filled(7, null);
-    days[0] = RestrictionDay(weekday: 0, restrictionTimeLine: RestrictionTimeLine(start: TimeOfDay(hour: 0, minute: 0), duration: Duration(hours: 23,minutes: 59),weekDay: 0));
-    days[6] = RestrictionDay(weekday: 6, restrictionTimeLine: RestrictionTimeLine(start: TimeOfDay(hour: 0, minute: 0), duration: Duration(hours: 23,minutes: 59),weekDay: 6));
-    return RestrictionProfile(daySelection: days);
-  }
-
   void _onFetchOnboardingData(
       FetchOnboardingDataEvent event, Emitter<OnboardingState> emit) async {
     emit(state.copyWith(step: OnboardingStep.loading));
@@ -97,7 +90,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
               ? onboardingData.preferredDaySections!.first
               : state.preferredDaySection,
           workProfile: profiles['work']?? _createDefaultWorkProfile(),
-          personalProfile: profiles['personal'] ?? _createDefaultPersonalProfile(),
+          personalProfile: profiles['personal'] ,
           recurringTasks: onboardingData.recurringTasks,
           usage: onboardingData.usage,
           selectedSuggestionTiles: onboardingData.tileSuggestions
