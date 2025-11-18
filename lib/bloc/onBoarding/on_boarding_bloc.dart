@@ -98,7 +98,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       } else {
         emit(state.copyWith(
           step: OnboardingStep.dataLoaded,
-           workProfile: profiles['work'],
+           workProfile: profiles['work']?? _createDefaultWorkProfile(),
           personalProfile: profiles['personal']
         ));
       }
@@ -308,7 +308,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onSetPersonalProfileEvent(
       SetPersonalProfileEvent event, Emitter<OnboardingState> emit) async {
-    RestrictionProfile personalProfile=_processRouteProfile(event.personalMap,state.personalProfile);
+    RestrictionProfile? personalProfile=_processRouteProfile(event.personalMap,state.personalProfile);
     emit(
       state.copyWith(
           personalProfile: personalProfile
@@ -319,7 +319,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onSetWorkProfileEvent(
       SetWorkProfileEvent event, Emitter<OnboardingState> emit) async {
-    RestrictionProfile workProfile=_processRouteProfile(event.workMap,state.workProfile);
+    RestrictionProfile? workProfile=_processRouteProfile(event.workMap,state.workProfile);
     emit(
         state.copyWith(
         workProfile: workProfile
@@ -395,7 +395,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     return '${hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}$period';
   }
 
-  RestrictionProfile _processRouteProfile(Map restrictionParams, RestrictionProfile? profile) {
+  RestrictionProfile? _processRouteProfile(Map restrictionParams, RestrictionProfile? profile) {
     if (restrictionParams.containsKey('routeRestrictionProfile')||restrictionParams.containsKey('restrictionProfile')) {
       RestrictionProfile? updatedProfile =
       restrictionParams['routeRestrictionProfile'] as RestrictionProfile?;
@@ -412,9 +412,9 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
         updatedProfile = profile;
       }
 
-      return updatedProfile!;
+      return updatedProfile;
     }
-    return profile!;
+    return profile;
   }
 
   void _onFetchTileSuggestions(FetchTileSuggestionsEvent event, Emitter<OnboardingState> emit) async {
