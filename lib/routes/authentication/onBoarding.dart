@@ -17,6 +17,7 @@ import 'package:tiler_app/components/onBoarding/subWidgets/timeAndLocationWidget
 import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
+import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -66,8 +67,11 @@ class _OnboardingViewState extends State<OnboardingView> {
       create: (context) => OnboardingBloc(onBoardingApi: OnBoardingApi(), settingsApi: SettingsApi(getContextCallBack: () => context))..add(FetchOnboardingDataEvent()),
       child: BlocConsumer<OnboardingBloc, OnboardingState>(
         listener: (context, state) {
-          if (state.step == OnboardingStep.skipped ||
-              state.step == OnboardingStep.submitted) {
+          if (state.step == OnboardingStep.skipped ) {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => AuthorizedRoute()));
+          }
+          if (state.step == OnboardingStep.submitted) {
             scheduleApi.buzzSchedule();
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => OnBoardingDescriptionSlider()));

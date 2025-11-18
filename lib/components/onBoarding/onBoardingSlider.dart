@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/onBoarding/videoPlayer.dart';
 import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
+import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 enum SlideType {
@@ -361,7 +362,8 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
         SizedBox(height: 20),
 
         GestureDetector(
-          onTap: () {
+          onTap: () async {
+            await OnBoardingSharedPreferencesHelper.setSkipOnboarding(true);
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => AuthorizedRoute()));
           },
