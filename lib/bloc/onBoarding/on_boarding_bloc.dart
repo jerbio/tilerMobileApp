@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:tiler_app/data/RecurringTask.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/onBoarding.dart';
+import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/services/api/onBoardingApi.dart';
@@ -54,6 +55,28 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     on<FetchTileSuggestionsEvent>(_onFetchTileSuggestions);
   }
 
+  RestrictionProfile _createDefaultWorkProfile() {
+    List<RestrictionDay?> days = List.filled(7, null);
+    for (int i = 1; i <= 5; i++) {
+      days[i] = RestrictionDay(
+          weekday: i,
+          restrictionTimeLine: RestrictionTimeLine(
+              start: TimeOfDay(hour: 8, minute: 0),
+              duration: Duration(hours: 9),
+              weekDay: i
+          )
+      );
+    }
+    return RestrictionProfile(daySelection: days);
+  }
+
+  RestrictionProfile _createDefaultPersonalProfile() {
+    List<RestrictionDay?> days = List.filled(7, null);
+    days[0] = RestrictionDay(weekday: 0, restrictionTimeLine: RestrictionTimeLine(start: TimeOfDay(hour: 0, minute: 0), duration: Duration(hours: 23,minutes: 59),weekDay: 0));
+    days[6] = RestrictionDay(weekday: 6, restrictionTimeLine: RestrictionTimeLine(start: TimeOfDay(hour: 0, minute: 0), duration: Duration(hours: 23,minutes: 59),weekDay: 6));
+    return RestrictionProfile(daySelection: days);
+  }
+
   void _onFetchOnboardingData(
       FetchOnboardingDataEvent event, Emitter<OnboardingState> emit) async {
     emit(state.copyWith(step: OnboardingStep.loading));
@@ -73,8 +96,8 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
           preferredDaySection: onboardingData.preferredDaySections?.isNotEmpty == true
               ? onboardingData.preferredDaySections!.first
               : state.preferredDaySection,
-          workProfile: profiles['work'],
-          personalProfile: profiles['personal'],
+          workProfile: profiles['work']?? _createDefaultWorkProfile(),
+          personalProfile: profiles['personal'] ?? _createDefaultPersonalProfile(),
           recurringTasks: onboardingData.recurringTasks,
           usage: onboardingData.usage,
           selectedSuggestionTiles: onboardingData.tileSuggestions
