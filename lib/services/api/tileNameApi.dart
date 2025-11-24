@@ -3,11 +3,14 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/util.dart';
 import 'dart:convert';
 
 import '../../constants.dart' as Constants;
 
 class TileNameApi extends AppApi {
+  TileNameApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<List<TilerEvent>>? chainPending;
 
   var nextRequestParams = [];
@@ -56,14 +59,15 @@ class TileNameApi extends AppApi {
 
       final queryParameters = {
         'Data': name,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'MobileApp': true.toString()
       };
 
       Uri uri = Uri.https(url, 'api/CalendarEvent/Name', queryParameters);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       if (chainPending != null) {
         var param = {

@@ -1,14 +1,11 @@
-import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart';
 import 'timeScrub.dart';
-
+//ey: not used
 class ChillTimeWidget extends StatefulWidget {
   late Timeline timeline;
   ChillTimeWidgetState? _state;
@@ -90,7 +87,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
 
     var timeScrub = FractionallySizedBox(
         alignment: FractionalOffset.center,
-        widthFactor: TileStyles.inputWidthFactor,
+        widthFactor: TileDimensions.inputWidthFactor,
         child: Container(
             margin: const EdgeInsets.fromLTRB(0, 30, 0, 0),
             child: TimeScrubWidget(
@@ -107,7 +104,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
       child: Material(
           type: MaterialType.transparency,
           child: FractionallySizedBox(
-              widthFactor: TileStyles.tileWidthRatio,
+              widthFactor: TileDimensions.tileWidthRatio,
               child: Container(
                 height: 350,
                 decoration: BoxDecoration(
@@ -116,7 +113,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
                     color: Colors.white,
                     width: 5,
                   ),
-                  borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.5),
@@ -135,7 +132,7 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
                         width: 0.5,
                       ),
                       borderRadius:
-                          BorderRadius.circular(TileStyles.borderRadius),
+                          BorderRadius.circular(TileDimensions.borderRadius),
                     ),
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),

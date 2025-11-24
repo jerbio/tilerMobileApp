@@ -6,7 +6,7 @@ import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -27,7 +27,7 @@ class _TileCarouselState extends State<TileCarousel> {
   final ItemPositionsListener dayPositionsListener =
       ItemPositionsListener.create();
 
-  SubCalendarEventApi subEventApi = new SubCalendarEventApi();
+  late SubCalendarEventApi subEventApi;
   List<SubCalendarEvent>? subEvents;
   Map<
       int,
@@ -36,6 +36,7 @@ class _TileCarouselState extends State<TileCarousel> {
   @override
   void initState() {
     super.initState();
+    subEventApi = new SubCalendarEventApi(getContextCallBack: () => context);
     this
         .context
         .read<SubCalendarTileBloc>()
@@ -105,6 +106,7 @@ class _TileCarouselState extends State<TileCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
     return BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
       listener: (context, state) {
         if (state is ListOfSubCalendarTileLoadedState) {
@@ -172,13 +174,12 @@ class _TileCarouselState extends State<TileCarousel> {
                                 margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
                                 child: Text(
                                     Utility.getTimeFromIndex(dayIndexes[index])
-                                        .humanDate,
-                                    style: TextStyle(
-                                        fontSize: 25,
-                                        fontFamily: TileStyles.rubikFontName,
-                                        fontWeight: FontWeight.w400,
-                                        color: const Color.fromRGBO(
-                                            31, 31, 31, 1))),
+                                        .humanDate(context),
+                                    style:TextStyle(
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontSize: 25,
+                                    ),
+                                ),
                               ),
                               renderHorizontalSubEvents(dayIndexes[index])
                             ]),

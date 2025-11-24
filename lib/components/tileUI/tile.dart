@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart'
+    show CameraPosition, GoogleMap, LatLng, MapType;
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
@@ -12,13 +12,22 @@ import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/components/tileUI/travelTimeBefore.dart';
+import 'package:tiler_app/data/executionEnums.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tiler_app/styles.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
 
@@ -26,6 +35,7 @@ import 'timeScrub.dart';
 /// Class creates tile widget that handles rendering the tile UI for a given
 /// user tile.
 ///
+
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
@@ -43,9 +53,22 @@ class TileWidget extends StatefulWidget {
 class TileWidgetState extends State<TileWidget>
     with SingleTickerProviderStateMixin {
   bool isMoreDetailEnabled = false;
+  double textFontSize = 15;
   StreamSubscription? pendingScheduleRefresh;
   late AnimationController controller;
   late Animation<double> fadeAnimation;
+  Map<String, IconData> transitIconMap = {
+    'driving': Icons.directions_car,
+    'bicycling': Icons.directions_bike,
+    'walking': Icons.directions_walk,
+    'transit': Icons.directions_transit,
+  };
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+
+  late  TileThemeExtension tileThemeExtension;
+  final ExpansionTileController expansionTravelController =
+      ExpansionTileController();
 
   @override
   void initState() {
@@ -74,6 +97,14 @@ class TileWidgetState extends State<TileWidget>
       end: 0.0,
     ).animate(controller);
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
   }
 
   void updateSubEvent(SubCalendarEvent subEvent) async {
@@ -110,60 +141,340 @@ class TileWidgetState extends State<TileWidget>
     return this.widget.subEvent.isTardy ?? false;
   }
 
+  String longLatString(Location location) {
+    return location.latitude.toString() + ',' + location.longitude.toString();
+  }
+
+  Future<void> _launchGoogleMaps(Location originLocation,
+      Location destinationLocation, String travelMode) async {
+    if (originLocation.isNotNullAndNotDefault &&
+        destinationLocation.isNotNullAndNotDefault) {
+      String origin = longLatString(originLocation);
+      String destination = longLatString(destinationLocation);
+      if (originLocation.address.isNot_NullEmptyOrWhiteSpace()) {
+        origin = Uri.encodeComponent(originLocation.address!);
+      }
+      if (destinationLocation.address.isNot_NullEmptyOrWhiteSpace()) {
+        destination = Uri.encodeComponent(destinationLocation.address!);
+      }
+
+      final url = Uri.parse(
+          'https://www.google.com/maps/dir/?api=1&origin=$origin&destination=$destination&travelmode=$travelMode');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url);
+      } else {
+        throw 'Could not launch $url';
+      }
+    }
+  }
+
+  Widget travelLegToWidget(TravelLeg travelLeg) {
+    String durationText = travelLeg.durationText ?? "";
+    Widget retValue = Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Icon(transitIconMap[travelLeg.travelMedium] ?? Icons.directions_walk,
+            color: colorScheme.primary, size: 20),
+        Flexible(
+          child: Container(
+            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+            child: Text(
+              travelLeg.description ?? "",
+              style: TextStyle(
+              fontSize: 15,
+              fontFamily: TileTextStyles.rubikFontName,
+              )
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            durationText.isNot_NullEmptyOrWhiteSpace() ? "($durationText)" : "",
+            style: TextStyle(
+              fontSize: 15,
+              fontFamily: TileTextStyles.rubikFontName,
+
+          ),
+        ),
+        )
+      ],
+    );
+    return retValue;
+  }
+
+  Widget renderGoogleMaps(List<LatitudeAndLongitude> latLongList) {
+    if (latLongList.isEmpty) {
+      return SizedBox.shrink();
+    }
+
+    var travelAvgLocation = LatitudeAndLongitude.averageLatLong(latLongList);
+    if (travelAvgLocation == null) {
+      return SizedBox.shrink();
+    }
+    double mapHeight = 190;
+    return Stack(
+      children: [
+        Container(
+          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          height: mapHeight,
+          width: MediaQuery.sizeOf(context).width,
+          child: GoogleMap(
+            mapToolbarEnabled: false,
+            zoomControlsEnabled: false,
+            zoomGesturesEnabled: false,
+            myLocationEnabled: false,
+            initialCameraPosition: CameraPosition(
+              target: LatLng(
+                  travelAvgLocation.latitude, travelAvgLocation.longitude),
+              zoom: 14.0,
+            ),
+            mapType: MapType.normal,
+          ),
+        ),
+        Container(
+            height: mapHeight,
+            width: MediaQuery.sizeOf(context).width,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                colorScheme.surface
+                    .withAlpha(0)
+                    .withLightness(0.5),
+                colorScheme.surface,
+                colorScheme.surface,
+                colorScheme.surface,
+              ],
+            ),
+            ),
+        )
+      ],
+    );
+  }
+
   Widget renderTravelTime(Timeline travelTimeLine) {
+    double fontSize = 20;
+    double iconSize = 20;
+    double lottieHeight = 85;
     String lottieAsset =
-        isTardy ? 'assets/lottie/redCars.json' : 'assets/lottie/blackCars.json';
+        isTardy ? 'assets/lottie/redCars.json' :theme.brightness==Brightness.dark? 'assets/lottie/whiteCars.json': 'assets/lottie/blackCars.json';
+
+    Color? textColor =
+        isTardy ? TileColors.late : colorScheme.onSurface;
+
+    List<LatitudeAndLongitude> latLongList = [];
+    Widget transitUIWidget = Lottie.asset(
+        lottieAsset,
+        height: lottieHeight,
+    );
+    if (this.widget.subEvent.travelDetail != null) {
+      TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
+      int walkCount = 0;
+      int stopCount = 0;
+      transitUIWidget = Lottie.asset(lottieAsset, height: lottieHeight);
+
+      if (travelDetail.before != null) {
+        if (travelDetail.before!.startLocation != null) {
+          var longLat =
+              travelDetail.before!.startLocation!.toLatitudeAndLongitude;
+          if (longLat != null) {
+            latLongList.add(longLat);
+          }
+        }
+        if (travelDetail.before!.endLocation != null) {
+          var longLat =
+              travelDetail.before!.endLocation!.toLatitudeAndLongitude;
+          if (longLat != null) {
+            latLongList.add(longLat);
+          }
+        }
+        if (travelDetail.before!.start != null &&
+            travelDetail.before!.end != null) {
+          travelTimeLine = Timeline.fromDateTimeAndDuration(
+              DateTime.fromMillisecondsSinceEpoch(
+                  travelDetail.before!.start!.toInt()),
+              Duration(
+                  milliseconds: travelDetail.before!.end!.toInt() -
+                      travelDetail.before!.start!.toInt()));
+        }
+        if (travelDetail.before!.travelMedium ==
+            TravelMedium.bicycling.name.toString().toLowerCase()) {
+          String bicycleLottieAsset = isTardy
+              ? 'assets/lottie/red-bicycle.json'
+              : 'assets/lottie/black-bicycle.json';
+          transitUIWidget =
+              Lottie.asset(bicycleLottieAsset, height: lottieHeight);
+        }
+      }
+
+      travelDetail.before?.travelLegs?.forEach((leg) {
+        if (leg.travelMedium ==
+            TravelMedium.transit.name.toString().toLowerCase()) {
+          ++stopCount;
+        } else if (leg.travelMedium ==
+            TravelMedium.walking.name.toString().toLowerCase()) {
+          ++walkCount;
+        }
+      });
+      EdgeInsets trainsitUIPadding = EdgeInsets.all(5);
+      if (walkCount > 0 || stopCount > 0) {
+        fontSize = 15;
+        iconSize = 15;
+        List<Widget> travelWidgets = [];
+        if (walkCount > 0) {
+          travelWidgets.add(
+            Container(
+              padding: trainsitUIPadding,
+              child: Row(
+                children: [
+                  Icon(
+                      Icons.directions_walk,
+                      color: colorScheme.onPrimary, size: iconSize
+                  ),
+                  Text(
+                    walkCount.toString(),
+                      style: TextStyle(
+                          fontSize: fontSize,
+                          fontFamily: TileTextStyles.rubikFontName,
+                          color: colorScheme.onPrimary
+                      ),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+        if (stopCount > 0) {
+          travelWidgets.add(
+            Container(
+              padding: trainsitUIPadding,
+              child: Row(
+                children: [
+                  Icon(Icons.directions_transit,
+                      color: colorScheme.onPrimary, size: iconSize),
+                  Text(stopCount.toString(),
+                      style: TextStyle(
+                          fontFamily: TileTextStyles.rubikFontName,
+                          fontSize: fontSize,
+                          color: colorScheme.onPrimary
+                      ),
+                  )
+                ],
+              ),
+            ),
+          );
+        }
+
+        transitUIWidget = Container(
+          padding: EdgeInsets.all(5),
+          margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: colorScheme.primary,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: travelWidgets,
+          ),
+        );
+        if (stopCount > 0 && travelDetail.before!.travelLegs != null) {
+          transitUIWidget = Container(
+            width: MediaQuery.sizeOf(context).width * 0.6,
+            child: ExpansionTile(
+              title: transitUIWidget,
+              children: travelDetail.before!.travelLegs!
+                  .map((leg) => travelLegToWidget(leg))
+                  .toList(),
+              controller: expansionTravelController,
+            ),
+          );
+        }
+      }
+    }
+
     String startString = MaterialLocalizations.of(context).formatTimeOfDay(
         TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(
             travelTimeLine.start!.toInt())));
     String endString = MaterialLocalizations.of(context).formatTimeOfDay(
         TimeOfDay.fromDateTime(
             DateTime.fromMillisecondsSinceEpoch(travelTimeLine.end!.toInt())));
-    Color? textColor =
-        isTardy ? TileStyles.lateTextColor : TileStyles.defaultTextColor;
-    Widget retValue =
-        Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Container(
-          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-          height: 50,
-          width: 5,
-          child: AnimatedLine(
-            Duration(milliseconds: 0),
-            textColor,
-            reverse: true,
-          )),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+
+    Widget retValue = InkWell(
+      onTap: () {
+        AnalysticsSignal.send('TRAVEL_TIME_TAP');
+        if (this.widget.subEvent.travelDetail != null) {
+          //this opens a redirect to google maps for directions to the location
+          TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
+          Location originLocation =
+              travelDetail.before?.startLocation ?? Location.fromDefault();
+          Location destinationLocation =
+              travelDetail.before?.endLocation ?? Location.fromDefault();
+          _launchGoogleMaps(
+              originLocation,
+              destinationLocation,
+              travelDetail.before?.travelMedium ??
+                  TravelMedium.driving.name.toLowerCase());
+        }
+      },
+      child: Stack(
         children: [
-          Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-              child: Text(startString,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Rubik',
-                      fontWeight: FontWeight.normal,
-                      color: textColor))),
-          Lottie.asset(lottieAsset, height: 85),
-          Container(
-              margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-              child: Text(endString,
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontFamily: 'Rubik',
-                      fontWeight: FontWeight.normal,
-                      color: textColor)))
+          renderGoogleMaps(latLongList),
+          Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                    height: 50,
+                    width: 5,
+                    child: AnimatedLine(
+                      Duration(milliseconds: 0),
+                      textColor,
+                      reverse: true,
+                    )),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                        margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                        child: Text(
+                            startString,
+                            style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: fontSize,
+                                color: textColor
+                            )
+                        )
+                    ),
+                    transitUIWidget,
+                    Container(
+                        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                        child: Text(
+                            endString,
+                            style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: fontSize,
+                                color: textColor)
+                        )
+                    )
+                  ],
+                ),
+                Container(
+                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                    height: 50,
+                    width: 5,
+                    child: AnimatedLine(
+                      Duration(milliseconds: 0),
+                      textColor,
+                      reverse: true,
+                    )
+                )
+          ]
+          )
         ],
       ),
-      Container(
-          padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-          height: 50,
-          width: 5,
-          child: AnimatedLine(
-            Duration(milliseconds: 0),
-            textColor,
-            reverse: true,
-          )),
-    ]);
+    );
 
     return retValue;
   }
@@ -174,13 +485,13 @@ class TileWidgetState extends State<TileWidget>
     int blueColor = subEvent.colorBlue == null ? 127 : subEvent.colorBlue!;
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor =
-        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
+        Color.fromRGBO(redColor, greenColor, blueColor, 1);
     bool isEditable = (!(this.widget.subEvent.isReadOnly ?? true));
 
     Widget editButton = IconButton(
         icon: Icon(
           Icons.edit_outlined,
-          color: TileStyles.defaultTextColor,
+          color: colorScheme.onSurface!,
           size: 20.0,
         ),
         onPressed: () {
@@ -228,6 +539,7 @@ class TileWidgetState extends State<TileWidget>
             Utility.msCurrentTime;
         duration = Duration(milliseconds: durationTillTravel);
       }
+
       if (duration.inMilliseconds > 0) {
         allElements.add(Container(
             margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
@@ -236,141 +548,213 @@ class TileWidgetState extends State<TileWidget>
     }
 
     if (widget.subEvent.address != null &&
-        widget.subEvent.address!.isNotEmpty) {
+            widget.subEvent.address!.isNotEmpty ||
+        subEvent.searchdDescription != null &&
+            subEvent.searchdDescription!.isNotEmpty) {
       var addressWidget = Container(
           margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
           child: TileAddress(widget.subEvent));
       allElements.insert(1, addressWidget);
     }
 
+    Widget timeFrameWidget = TimeFrameWidget(
+      timeRange: widget.subEvent,
+      fontSize: textFontSize,
+      textColor:
+          isTardy ? TileColors.late : colorScheme.onSurface,
+    );
+
     Widget tileTimeFrame = Container(
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Row(
         children: [
+          // Icon container
           Container(
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration: TileStyles.tileIconContainerBoxDecoration,
+            decoration:  TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
             child: Icon(
               (this.widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
               color: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
-              size: TileStyles.tileIconSize,
+                  ? TileColors.late
+                  : colorScheme.onSurface,
+              size: TileDimensions.tileIconSize,
             ),
           ),
+
+          // Text
           Padding(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: TimeFrameWidget(
-              timeRange: widget.subEvent,
-              textColor: isTardy
-                  ? TileStyles.lateTextColor
-                  : TileStyles.defaultTextColor,
+            child: Row(
+              children: [
+                timeFrameWidget,
+                SizedBox(
+                  width: 5,
+                ),
+                isTardy
+                    ? Text(
+                        AppLocalizations.of(context)!.parenthesisLate,
+                        style: TextStyle(
+                            fontSize: textFontSize,
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontWeight: FontWeight.normal,
+                            color: TileColors.late),
+                      )
+                    : SizedBox.shrink()
+              ],
             ),
           ),
         ],
       ),
     );
     allElements.add(tileTimeFrame);
+    if (widget.subEvent.tileShareDesignatedId.isNot_NullEmptyOrWhiteSpace()) {
+      allElements.add(
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    TileShareDetailWidget.byDesignatedTileShareId(
+                  designatedTileShareId: widget.subEvent.tileShareDesignatedId,
+                ),
+              ),
+            );
+          },
+          child: Icon(
+            Icons.share,
+            color: colorScheme.onSurface,
+            size: 20,
+          ),
+        ),
+      );
+    }
+
     if (isEditable) {
       if (isMoreDetailEnabled || (this.widget.subEvent.isCurrent)) {
-        allElements.add(FractionallySizedBox(
-            widthFactor: TileStyles.tileWidthRatio,
+        // Timescrub to show that it is elapsed
+        allElements.add(
+          FractionallySizedBox(
+            widthFactor: TileDimensions.tileWidthRatio,
             child: Container(
-                margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
-                child: TimeScrubWidget(
-                  timeline: widget.subEvent,
-                  isTardy: widget.subEvent.isTardy ?? false,
-                ))));
-        allElements.add(Container(
+              margin: const EdgeInsets.fromLTRB(0, 15, 0, 10),
+              child: TimeScrubWidget(
+                timeline: widget.subEvent,
+                isTardy: widget.subEvent.isTardy ?? false,
+              ),
+            ),
+          ),
+        );
+
+        // Actions Pane for widgets
+        allElements.add(
+          Container(
             margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
             child: PlayBack(
               widget.subEvent,
               forcedOption: (widget.subEvent.isRigid == true
                   ? [PlaybackOptions.Delete]
                   : null),
-            )));
-      } else {
-        allElements.add(GestureDetector(
-          onTap: () {
+            ),
+          ),
+        );
+
+        allElements.add(IconButton(
+          onPressed: () {
             setState(() {
-              isMoreDetailEnabled = true;
+              isMoreDetailEnabled = false;
             });
           },
-          child: Center(
-              child: Container(
-            width: 30,
-            height: 30,
-            margin: EdgeInsets.fromLTRB(0, 10, 0, 2),
-            child: Transform.rotate(
-              angle: pi / 2,
-              child: Icon(
-                Icons.chevron_right,
-                size: 30,
-              ),
-            ),
-            decoration: BoxDecoration(
-                color: Color.fromRGBO(31, 31, 31, .1),
-                borderRadius: BorderRadius.circular(25)),
-          )),
+         icon: Icon(Icons.arrow_drop_up,),
+          color: colorScheme.onSurface,
+          iconSize: 30,
+
         ));
+      } else {
+        allElements.add(
+          IconButton(
+            onPressed: () {
+              setState(() {
+                isMoreDetailEnabled = true;
+              });
+            } ,
+            icon:Icon(Icons.arrow_drop_down),
+            color: colorScheme.onSurface,
+            iconSize: 30,
+          ),
+        );
       }
     }
 
     return AnimatedSize(
-        duration: Duration(milliseconds: 250),
-        curve: Curves.fastOutSlowIn,
-        child: Container(
-          margin: (this.widget.subEvent.isCurrentTimeWithin ||
-                  this.isMoreDetailEnabled)
-              ? EdgeInsets.fromLTRB(0, 20, 0, 20)
-              : EdgeInsets.fromLTRB(0, 5, 0, 5),
-          child: Material(
-              type: MaterialType.transparency,
-              child: FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(
-                        color: this.widget.subEvent.isViable!
-                            ? Colors.white
-                            : Colors.black,
-                        width: this.widget.subEvent.isViable! ? 0 : 5,
-                      ),
-                      borderRadius:
-                          BorderRadius.circular(TileStyles.borderRadius),
-                      boxShadow: [
-                        BoxShadow(
-                          color: tileBackGroundColor.withOpacity(0.1),
-                          spreadRadius: 5,
-                          blurRadius: 15,
-                          offset: Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Container(
-                        padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                        decoration: BoxDecoration(
-                          color: tileBackGroundColor,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 0.5,
-                          ),
-                          borderRadius:
-                              BorderRadius.circular(TileStyles.borderRadius),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: allElements.length < 4
-                              ? MainAxisAlignment.spaceBetween
-                              : MainAxisAlignment.center,
-                          children: allElements,
-                        )),
-                  ))),
-        ));
+      duration: Duration(milliseconds: 250),
+      curve: Curves.fastOutSlowIn,
+      child: Container(
+        margin: (this.widget.subEvent.isCurrentTimeWithin ||
+                this.isMoreDetailEnabled)
+            ? EdgeInsets.fromLTRB(0, 20, 0, 20)
+            : EdgeInsets.fromLTRB(0, 5, 0, 5),
+        child: Material(
+          type: MaterialType.transparency,
+          child: FractionallySizedBox(
+            widthFactor: TileDimensions.tileWidthRatio,
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLowest,
+                border: Border.all(
+                  color: this.widget.subEvent.isViable!
+                      ? colorScheme.onInverseSurface
+                      : colorScheme.onSurface,
+                  width: this.widget.subEvent.isViable! ? 0 : 5,
+                ),
+                borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                boxShadow: [
+                  BoxShadow(
+                    color: tileBackGroundColor.withValues(alpha: 0.1),
+                    spreadRadius: 5,
+                    blurRadius: 15,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    radius: 1.5,
+                    center: Alignment.bottomRight,
+                    colors: <Color>[
+                      tileBackGroundColor.withLightness(0.65),
+                      tileBackGroundColor.withLightness(0.675),
+                      tileBackGroundColor.withLightness(0.70),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                      tileBackGroundColor.withLightness(0.75),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: colorScheme.onInverseSurface,
+                    width: 0.5,
+                  ),
+                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                ),
+                child: Column(
+                  mainAxisAlignment: allElements.length < 4
+                      ? MainAxisAlignment.spaceBetween
+                      : MainAxisAlignment.center,
+                  children: allElements,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override

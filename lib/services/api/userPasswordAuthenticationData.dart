@@ -6,7 +6,6 @@ import 'package:tiler_app/services/api/authorization.dart';
 import 'package:http/http.dart' as http;
 import '../../constants.dart' as Constants;
 
-
 class UserPasswordAuthenticationData extends AuthenticationData {
   bool isDefault = false;
   String? username;
@@ -93,15 +92,18 @@ class UserPasswordAuthenticationData extends AuthenticationData {
       );
       retValue.username = userName;
       retValue.password = password;
+      Constants.userName = userName;
       return retValue;
     } else {
-      var jsonResult = jsonDecode(response.body);
-      if (jsonResult.containsKey('error') &&
-          jsonResult.containsKey('error_description') &&
-          jsonResult['error_description'] != null &&
-          jsonResult['error_description'].isNotEmpty) {
-        retValue.errorMessage = jsonResult['error_description'];
-      }
+      try {
+        var jsonResult = jsonDecode(response.body);
+        if (jsonResult.containsKey('error') &&
+            jsonResult.containsKey('error_description') &&
+            jsonResult['error_description'] != null &&
+            jsonResult['error_description'].isNotEmpty) {
+          retValue.errorMessage = jsonResult['error_description'];
+        }
+      } catch (e) {}
       return retValue;
     }
   }

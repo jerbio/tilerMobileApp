@@ -1,24 +1,30 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
+import 'package:tiler_app/data/userSettings.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:http/http.dart' as http;
+import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
 
 class SettingsApi extends AppApi {
+  SettingsApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<Map<String, RestrictionProfile>> getUserRestrictionProfile() async {
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await this.authentication.reLoadCredentialsCache();
       Map<String, dynamic> restrictedUpdatedParams =
-          await injectRequestParams({}, includeLocationParams: false);
+      await injectRequestParams({}, includeLocationParams: false);
       String tilerDomain = Constants.tilerDomain;
       Uri uri = Uri.https(tilerDomain, 'Manage/GetRestrictionProfile');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -35,7 +41,9 @@ class SettingsApi extends AppApi {
         }
       }
     }
-    throw TilerError(message: "Issues with reaching TIler servers");
+    throw TilerError(
+      Message: LocalizationService.instance.translations.reachingServerIssues,
+    );
   }
 
   Future<RestrictionProfile> updateRestrictionProfile(
@@ -47,8 +55,8 @@ class SettingsApi extends AppApi {
       'RestrictionProfileType': restrictionProfileType
     };
     return sendPostRequest(
-            'Manage/RestrictionProfile', restrictionProfileParams,
-            analyze: false)
+        'Manage/RestrictionProfile', restrictionProfileParams,
+        analyze: false)
         .then((response) {
       if (response.statusCode == 200) {
         var jsonResult = jsonDecode(response.body);
@@ -61,7 +69,9 @@ class SettingsApi extends AppApi {
         }
       }
       print('restriction profile update issue');
-      throw TilerError(message: "Issues with reaching Tiler servers");
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
 
@@ -72,7 +82,9 @@ class SettingsApi extends AppApi {
       Uri uri = Uri.https(tilerDomain, 'Manage/GetStartOfDay');
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
@@ -80,7 +92,7 @@ class SettingsApi extends AppApi {
         if (isContentInResponse(jsonResult)) {
           Map<String, dynamic> jsonMap = jsonResult['Content'];
           StartOfDayConfig startOfDayConfig =
-              StartOfDayConfig.fromJson(jsonMap);
+          StartOfDayConfig.fromJson(jsonMap);
 
           return startOfDayConfig.toStartOfDay();
         }
@@ -91,10 +103,10 @@ class SettingsApi extends AppApi {
 
   Future<StartOfDay> updateStartOfDay(StartOfDay startOfDay) async {
     Map<String, dynamic> updateStartOfDayParams =
-        startOfDay.generateStartOfDayConfig().toJson();
+    startOfDay.generateStartOfDayConfig().toJson();
     updateStartOfDayParams.remove('TimeZoneOffSet');
     return sendPostRequest('Manage/UpdateStartOfDay', updateStartOfDayParams,
-            analyze: false)
+        analyze: false)
         .then((response) {
       if (response.statusCode == 200) {
         var jsonResult = jsonDecode(response.body);
@@ -102,14 +114,70 @@ class SettingsApi extends AppApi {
           if (isContentInResponse(jsonResult)) {
             Map<String, dynamic> jsonMap = jsonResult['Content'];
             StartOfDay retValue =
-                StartOfDayConfig.fromJson(jsonMap).toStartOfDay();
+            StartOfDayConfig.fromJson(jsonMap).toStartOfDay();
             return retValue;
           }
         }
       }
       print('Update start of day issue');
       print(response.body);
-      throw TilerError(message: "Issues with reaching TIler servers");
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
+    });
+  }
+
+  Future<UserSettings> getUserSettings() async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      var queryParameters = {
+        'MobileApp': true.toString(),
+      };
+      Uri uri = Uri.https(tilerDomain, 'api/User/Settings', queryParameters);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(
+            Message:
+                LocalizationService.instance.translations.authenticationIssues);
+      }
+      var response = await http.get(
+        uri,
+        headers: header,
+      );
+
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content']['settings'];
+            UserSettings retValue = UserSettings.fromJson(jsonMap);
+            return retValue;
+          }
+        }
+      }
+    }
+    throw TilerError();
+  }
+
+  Future<UserSettings> updateUserSettings(UserSettings userSetting) async {
+    Map<String, dynamic> userSettingMap = userSetting.toJsonForUpdate();
+    Utility.debugPrint("SENT TO API: ${userSettingMap}");
+    return sendPostRequest('api/User/Settings', userSettingMap, analyze: false)
+        .then((response) {
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map<String, dynamic> jsonMap = jsonResult['Content']['settings'];
+            UserSettings retValue = UserSettings.fromJson(jsonMap);
+            return retValue;
+          }
+        }
+      }
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
     });
   }
 }

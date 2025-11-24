@@ -11,20 +11,38 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tileColor.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/data/uiConfig.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileCarousel.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/colorSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/restrictionProfileSelectorWidget.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
+import '../../../constants.dart' as Constants;
 
 class TileDetail extends StatefulWidget {
-  final String tileId;
-  TileDetail({required this.tileId});
+  String? tileId;
+  String? designatedTileTemplateId;
+  bool loadSubEvents = false;
+  TileDetail({required this.tileId, this.loadSubEvents = true});
+  TileDetail.byTileId(
+      {required this.designatedTileTemplateId, this.loadSubEvents = true});
+  TileDetail.byDesignatedTileId(
+      {required this.designatedTileTemplateId, this.loadSubEvents = false});
 
   @override
   State<StatefulWidget> createState() => _TileDetailState();
@@ -35,7 +53,7 @@ class _TileDetailState extends State<TileDetail> {
   List<SubCalendarEvent>? subEvents;
   EditCalendarEvent? editTilerEvent;
   int? splitCount;
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
+  late CalendarEventApi calendarEventApi;
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
   EditTileNote? _editTileNote;
@@ -45,26 +63,101 @@ class _TileDetailState extends State<TileDetail> {
   EditDateAndTime? _editEndDateAndTime;
   Function? onProceed;
   String requestId = Utility.getUuid;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
+
+
+  bool reloadOtherEntitiesAfterLoadingCalevent = false;
+  late final SettingsApi settingsApi;
+  List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
+  RestrictionProfile? _workRestrictionProfile;
+  RestrictionProfile? _personalRestrictionProfile;
+  late TextStyle defaultFontStyle ;
+  static final String tileDetailCancelAndProceedRouteName =
+      "tileDetailCancelAndProceedRouteName";
+late ThemeData theme;
+late ColorScheme colorScheme;
+late TileThemeExtension tileThemeExtension;
+
 
   @override
   void initState() {
     super.initState();
-    this
-        .context
-        .read<CalendarTileBloc>()
-        .add(GetCalendarTileEvent(calEventId: this.widget.tileId));
-    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
-        calEventId: this.widget.tileId, blocSessionId: requestId));
-    this.context.read<SubCalendarTileBloc>().add(
-        GetListOfCalendarTilesSubTilesBlocEvent(
-            calEventId: this.widget.tileId, requestId: requestId));
+    calendarEventApi =
+        new CalendarEventApi(getContextCallBack: () => this.context);
+    settingsApi = new SettingsApi(getContextCallBack: () => this.context);
+    if (this.widget.tileId != null) {
+      this
+          .context
+          .read<CalendarTileBloc>()
+          .add(GetCalendarTileEvent(calEventId: this.widget.tileId!));
+      getCalendarEventLocation(this.widget.tileId!);
+      if (this.widget.loadSubEvents) {
+        getSubEvents(this.widget.tileId!);
+      }
+    } else if (this.widget.designatedTileTemplateId != null) {
+      reloadOtherEntitiesAfterLoadingCalevent = true;
+      this.context.read<CalendarTileBloc>().add(
+          GetCalendarTileEventByDesignatedTileTemplate(
+              tileTemplateId: this.widget.designatedTileTemplateId!));
+    }
+
+    settingsApi.getUserRestrictionProfile().then((response) {
+      if (response.length > 0) {
+        setState(() {
+          _listedRestrictionProfile = response.entries
+              .map<Tuple2<String, RestrictionProfile>>(
+                  (e) => Tuple2<String, RestrictionProfile>(e.key, e.value))
+              .toList();
+          if (_listedRestrictionProfile != null) {
+            _workRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.workProfileNickName)
+                .firstOrNull
+                ?.item2;
+            _personalRestrictionProfile = _listedRestrictionProfile!
+                .where((element) =>
+                    element.item1.toLowerCase() ==
+                    Constants.homeProfileNickName)
+                .firstOrNull
+                ?.item2;
+          }
+        });
+        return response;
+      }
+      setState(() {
+        _listedRestrictionProfile = null;
+      });
+      return response;
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    defaultFontStyle= TextStyle(
+        fontFamily: TileTextStyles.rubikFontName,
+        fontWeight: FontWeight.normal,
+        fontSize: 24,
+        color: colorScheme.tertiary
+    );
+    super.didChangeDependencies();
   }
 
   void onInputCountChange() {
     dataChange();
+  }
+
+  void getCalendarEventLocation(String tileId) {
+    this.context.read<LocationBloc>().add(GetLocationEvent.byCalEventId(
+        calEventId: tileId, blocSessionId: requestId));
+  }
+
+  void getSubEvents(String tileId) {
+    this.context.read<SubCalendarTileBloc>().add(
+        GetListOfCalendarTilesSubTilesBlocEvent(
+            calEventId: tileId, requestId: requestId));
   }
 
   void updateProceed() {
@@ -123,6 +216,7 @@ class _TileDetailState extends State<TileDetail> {
           isAlreadyLoaded: true,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
+          scheduleStatus: currentState.scheduleStatus,
           renderedTimelines: currentState.timelines));
     }
     bool isLocationCleared = false;
@@ -240,6 +334,31 @@ class _TileDetailState extends State<TileDetail> {
     });
   }
 
+  Widget _mainContainer({required Widget child,required IconData icon, EdgeInsets? padding,  EdgeInsets? childPadding}){
+    return Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        padding: padding ?? EdgeInsets.fromLTRB(10, 0, 0, 0),
+        decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLowest,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
+            border: Border.all(
+              color: colorScheme.onInverseSurface,
+              width: 1.5,
+            )
+        ),
+        child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(icon , color: colorScheme.primary),
+              Container(
+                padding: childPadding ?? EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: child,
+              )
+            ]
+        )
+    );
+  }
+
   Widget generateDurationPicker() {
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {
@@ -276,79 +395,43 @@ class _TileDetailState extends State<TileDetail> {
     }
     Widget retValue = new GestureDetector(
         onTap: setDuration,
-        child: Container(
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            decoration: BoxDecoration(
-                color: textBackgroundColor,
-                borderRadius: const BorderRadius.all(
-                  const Radius.circular(8.0),
-                ),
-                border: Border.all(
-                  color: textBorderColor,
-                  width: 1.5,
-                )),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
-                Container(
-                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      onPressed: setDuration,
-                      child: Text(
-                        textButtonString,
-                        style: TextStyle(
-                          fontFamily: TileStyles.rubikFontName,
-                        ),
-                      ),
-                    ))
-              ],
-            )));
+        child: _mainContainer(
+          icon: Icons.timelapse_outlined,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.tertiary,
+              textStyle: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            onPressed: setDuration,
+            child: Text(
+              textButtonString,
+              style: TextStyle(),
+            ),
+          ),
+        )
+    );
     return retValue;
   }
 
   Widget renderLocationTapable() {
     Function locationButton = (String locationString) {
-      return Container(
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        decoration: BoxDecoration(
-            color: textBackgroundColor,
-            borderRadius: const BorderRadius.all(
-              const Radius.circular(8.0),
+      return _mainContainer(
+        icon: Icons.location_pin,
+        child:TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: colorScheme.tertiary,
+            textStyle: const TextStyle(
+              fontSize: 20,
             ),
-            border: Border.all(
-              color: textBorderColor,
-              width: 1.5,
-            )),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Icon(Icons.location_pin, color: inputFieldIconColor),
-            Container(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                  onPressed: loadLocationRoute,
-                  child: Text(
-                    locationString,
-                    style: TextStyle(
-                      fontFamily: TileStyles.rubikFontName,
-                    ),
-                  ),
-                ))
-          ],
-        ),
+          ),
+          onPressed: loadLocationRoute,
+          child: Text(
+            locationString,
+            style: defaultFontStyle,
+          ),
+        )
       );
     };
 
@@ -366,6 +449,73 @@ class _TileDetailState extends State<TileDetail> {
     }, (locationLoadedError) {
       return locationButton(AppLocalizations.of(context)!.dashEmptyString);
     });
+  }
+
+  Widget renderRepetitionTapable() {
+    return _mainContainer(
+        icon: Icons.repeat_outlined,
+        childPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: RepetitionSelectorWidget(
+          onRepetitionUpdate: (repetition) {
+            if (this.editTilerEvent != null) {
+              this.editTilerEvent!.repetition = repetition;
+              dataChange();
+            }
+          },
+          repetition: this.editTilerEvent?.repetition,
+          textStyle: defaultFontStyle,
+        )
+    );
+  }
+
+  Widget renderHueTapable() {
+    return _mainContainer(
+        icon: Icons.format_color_fill_outlined,
+        padding: EdgeInsets.fromLTRB(10, 10, 0, 10),
+        childPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        child: ColorSelectorWidget(
+            onColorUpdate: (Color? updatedColor) {
+              if (updatedColor != null) {
+                editTilerEvent!.uiConfig = UIConfig.fromJson({});
+                editTilerEvent!.uiConfig!.tileColor =
+                    TileColor.fromColor(updatedColor);
+              }
+              dataChange();
+            },
+            color: editTilerEvent!.uiConfig!.tileColor!.toColor!
+        )
+    );
+
+  }
+
+  Widget renderRestrictionProfileTapable() {
+    return _mainContainer(
+      icon: Icons.switch_left,
+      childPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      child: RestrictionProfileSelectorWidget(
+        restrictionProfile: this.editTilerEvent?.restrictionProfile,
+        personalProfile: _personalRestrictionProfile,
+        workProfile: _workRestrictionProfile,
+        textStyle: this.defaultFontStyle,
+        onRestrictionProfileUpdate:
+            (RestrictionProfile? updatedRestrictionProfile) {
+          if (updatedRestrictionProfile != null) {
+            setState(() {
+              editTilerEvent!.restrictionProfile =
+                  updatedRestrictionProfile;
+              editTilerEvent!.restrictionProfileId =
+                  updatedRestrictionProfile.id;
+            });
+          } else {
+            setState(() {
+              editTilerEvent!.restrictionProfile = null;
+              editTilerEvent!.restrictionProfileId = null;
+            });
+          }
+          dataChange();
+        },
+      )
+    );
   }
 
   @override
@@ -398,6 +548,10 @@ class _TileDetailState extends State<TileDetail> {
                     editTilerEvent!.note = '';
                     editTilerEvent!.tileDuration = calEvent!.tileDuration;
                     _tileDuration = calEvent!.tileDuration;
+                    editTilerEvent!.repetition = calEvent!.repetition;
+                    editTilerEvent!.uiConfig = calEvent!.uiConfig;
+                    editTilerEvent!.restrictionProfile =
+                        calEvent!.restrictionProfile;
                     if (calEvent!.noteData != null) {
                       editTilerEvent!.note = calEvent!.noteData!.note;
                     }
@@ -414,6 +568,13 @@ class _TileDetailState extends State<TileDetail> {
                     }
                   }
                 });
+                if (this.reloadOtherEntitiesAfterLoadingCalevent &&
+                    state.calEvent.id.isNot_NullEmptyOrWhiteSpace()) {
+                  getCalendarEventLocation(state.calEvent.id!);
+                  if (this.widget.loadSubEvents) {
+                    getSubEvents(state.calEvent.id!);
+                  }
+                }
               }
             },
           ),
@@ -460,18 +621,10 @@ class _TileDetailState extends State<TileDetail> {
           })
         ],
         child: CancelAndProceedTemplateWidget(
+          routeName: tileDetailCancelAndProceedRouteName,
           onProceed: this.onProceed,
           appBar: AppBar(
-            backgroundColor: TileStyles.primaryColor,
-            title: Text(
-              AppLocalizations.of(context)!.edit,
-              style: TextStyle(
-                  color: TileStyles.appBarTextColor,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 22),
-            ),
-            centerTitle: true,
-            elevation: 0,
+            title: Text(AppLocalizations.of(context)!.edit),
             automaticallyImplyLeading: false,
           ),
           child: BlocBuilder<CalendarTileBloc, CalendarTileState>(
@@ -486,7 +639,9 @@ class _TileDetailState extends State<TileDetail> {
               _editTileName = EditTileName(
                 tileName: tileName,
                 isProcrastinate: isProcrastinateTile,
-                onInputChange: dataChange,
+                onInputChange: (_) {
+                  dataChange();
+                },
               );
 
               DateTime startTime =
@@ -509,7 +664,7 @@ class _TileDetailState extends State<TileDetail> {
 
               var inputChildWidgets = <Widget>[
                 FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: _editTileName!),
               ];
 
@@ -523,14 +678,14 @@ class _TileDetailState extends State<TileDetail> {
               );
 
               Widget durationWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     child: generateDurationPicker(),
                   ));
 
               Widget? locationWidget = FractionallySizedBox(
-                  widthFactor: TileStyles.tileWidthRatio,
+                  widthFactor: TileDimensions.tileWidthRatio,
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                     child: renderLocationTapable(),
@@ -538,7 +693,7 @@ class _TileDetailState extends State<TileDetail> {
               if (!isRigidTile && !isProcrastinateTile) {
                 if (this.editTilerEvent!.isAutoReviseDeadline != null) {
                   softDeadlineWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Row(
@@ -548,10 +703,11 @@ class _TileDetailState extends State<TileDetail> {
                               child: Text(
                                   AppLocalizations.of(context)!.softDeadline,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -559,7 +715,7 @@ class _TileDetailState extends State<TileDetail> {
                               child: Switch(
                                 value:
                                     this.editTilerEvent!.isAutoReviseDeadline!,
-                                activeColor: TileStyles.primaryColor,
+                                activeColor: colorScheme.primary,
                                 onChanged: (bool value) {
                                   setState(() {
                                     this.editTilerEvent!.isAutoReviseDeadline =
@@ -576,7 +732,7 @@ class _TileDetailState extends State<TileDetail> {
 
                 if (!this.calEvent!.isRecurring!) {
                   splitWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Row(
@@ -585,10 +741,11 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.split,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -604,7 +761,7 @@ class _TileDetailState extends State<TileDetail> {
                       ));
 
                   tileStartWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Column(
@@ -614,17 +771,18 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.start,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             _editStartDateAndTime!
                           ],
                         ),
                       ));
                   tileEndWidget = FractionallySizedBox(
-                      widthFactor: TileStyles.tileWidthRatio,
+                      widthFactor: TileDimensions.tileWidthRatio,
                       child: Container(
                         margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                         child: Column(
@@ -634,10 +792,11 @@ class _TileDetailState extends State<TileDetail> {
                             Container(
                               child: Text(AppLocalizations.of(context)!.end,
                                   style: TextStyle(
-                                      color: Color.fromRGBO(31, 31, 31, 1),
                                       fontSize: 15,
-                                      fontFamily: TileStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500)),
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w500
+                                  )
+                              ),
                             ),
                             _editEndDateAndTime!
                           ],
@@ -659,6 +818,28 @@ class _TileDetailState extends State<TileDetail> {
               if (locationWidget != null) {
                 inputChildWidgets.add(locationWidget);
               }
+
+              inputChildWidgets.add(FractionallySizedBox(
+                  widthFactor: TileDimensions.tileWidthRatio,
+                  child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: renderRestrictionProfileTapable())));
+
+              Widget repetitionWidget = FractionallySizedBox(
+                  widthFactor: TileDimensions.tileWidthRatio,
+                  child: Container(
+                      margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                      child: renderRepetitionTapable()));
+
+              inputChildWidgets.add(repetitionWidget);
+              if (editTilerEvent?.uiConfig?.tileColor?.toColor != null) {
+                inputChildWidgets.add(FractionallySizedBox(
+                    widthFactor: TileDimensions.tileWidthRatio,
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
+                        child: renderHueTapable())));
+              }
+
               if (splitWidget != null) {
                 inputChildWidgets.add(splitWidget);
               }
@@ -674,7 +855,7 @@ class _TileDetailState extends State<TileDetail> {
 
               if (subEvents != null && subEvents!.length > 0) {
                 inputChildWidgets.add(FractionallySizedBox(
-                    widthFactor: TileStyles.tileWidthRatio,
+                    widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: TileCarousel(
@@ -685,7 +866,7 @@ class _TileDetailState extends State<TileDetail> {
 
               return Container(
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 100),
-                margin: TileStyles.topMargin,
+                margin: TileSpacing.topMargin,
                 alignment: Alignment.topCenter,
                 child: ListView(
                   children: inputChildWidgets,

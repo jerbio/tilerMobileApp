@@ -1,27 +1,44 @@
-import 'dart:ui';
+import 'dart:async';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
+import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/components/dayRibbon/dayRibbonCarousel.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPickerPage.dart';
+import 'package:tiler_app/components/datePickers/weeklyDatePicker/weeklyPickerPage.dart';
+import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
+import 'package:tiler_app/components/ribbons/monthRibbon/monthRibbon.dart';
+import 'package:tiler_app/components/ribbons/weekRibbon/weekRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
-import 'package:tiler_app/components/tilelist/tileList.dart';
-import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
+import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
+import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+import 'package:tiler_app/data/previewSummary.dart';
+import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
+import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
+import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
+
+import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -33,62 +50,93 @@ class AuthorizedRoute extends StatefulWidget {
 
 class AuthorizedRouteState extends State<AuthorizedRoute>
     with TickerProviderStateMixin {
-  final SubCalendarEventApi subCalendarEventApi = new SubCalendarEventApi();
-  final ScheduleApi scheduleApi = new ScheduleApi();
+  late final PreviewApi previewApi;
+  late final SubCalendarEventApi subCalendarEventApi;
+  late final ScheduleApi scheduleApi;
+  PreviewSummary? previewSummary;
   final AccessManager accessManager = AccessManager();
-  Tuple3<Position, bool, bool> locationAccess = Tuple3(
-      Position(
-        altitudeAccuracy: 777.0,
-        headingAccuracy: 0.0,
-        longitude: Location.fromDefault().longitude!,
-        latitude: Location.fromDefault().latitude!,
-        timestamp: Utility.currentTime(),
-        heading: 0,
-        accuracy: 0,
-        altitude: 0,
-        speed: 0,
-        speedAccuracy: 0,
-      ),
-      false,
-      true);
+  bool renderLocationPermissionOverLay = false;
+
+  LocationProfile locationAccess = LocationProfile.empty();
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
-
+  late AppLinks _appLinks;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
     super.initState();
+    scheduleApi = new ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () {
+      return this.context;
+    });
+    previewApi = PreviewApi(getContextCallBack: () {
+      return this.context;
+    });
+    initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
-      localNotificationService.subscribeToRemoteNotification();
+      localNotificationService.subscribeToRemoteNotification(this.context);
     });
     localNotificationService.initialize(this.context);
+    previewApi.getSummary(Utility.todayTimeline()).then((value) {
+      this.previewSummary = value;
+    });
+    final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    final forecastBloc = BlocProvider.of<ForecastBloc>(context);
+    forecastBloc.whatIfApi = WhatIfApi(getContextCallBack: () {
+      return this.context;
+    });
+    print(
+        "DeviceSettingBloc: ${deviceSettingBloc.state}" + "- authorizedRoute");
+    deviceSettingBloc.add(InitializeDeviceSettingEvent(
+        id: "initializeDeviceSettingBloc",
+        getContextCallBack: () {
+          return this.context;
+        }));
+    scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+  void openAppLink(Uri uri) {
+    RedirectHandler.routePage(context, uri);
+  }
 
-    accessManager.locationAccess(statusCheck: true).then((value) {
-      setState(() {
-        if (value != null) {
-          locationAccess = value;
-          return;
-        }
-      });
+  Future<void> initDeepLinks() async {
+    // return;
+    _appLinks = AppLinks();
+
+    // Handle links
+    _linkSubscription = _appLinks.uriLinkStream.listen((uri) {
+      debugPrint('onAppLink: $uri');
+      openAppLink(uri);
     });
   }
 
   void _onBottomNavigationTap(int index) {
-    ActivePage selectedPage = ActivePage.tilelist;
     switch (index) {
       case 0:
         {
-          AnalysticsSignal.send('SEARCH_PRESSED');
-          Navigator.pushNamed(context, '/SearchTile');
+          AnalysticsSignal.send('TILE_SHARE_BUTTON');
+          Navigator.pushNamed(context, '/TileShare');
         }
         break;
       case 1:
         {
-          // Navigator.pushNamed(context, '/AddTile');
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
+          AnalysticsSignal.send('SEARCH_PRESSED');
+          Navigator.pushNamed(context, '/SearchTile');
         }
         break;
       case 2:
@@ -97,6 +145,77 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           Navigator.pushNamed(context, '/Setting');
         }
         break;
+      case 3:
+        {
+          final currentState = context.read<ScheduleBloc>().state;
+          AuthorizedRouteTileListPage newView;
+          switch (currentState.currentView) {
+            case AuthorizedRouteTileListPage.Daily:
+              context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
+              newView = AuthorizedRouteTileListPage.Weekly;
+              break;
+            case AuthorizedRouteTileListPage.Weekly:
+              newView = AuthorizedRouteTileListPage.Monthly;
+              context
+                  .read<MonthlyUiDateManagerBloc>()
+                  .add(LogOutMonthlyUiDateManagerEvent());
+              break;
+            case AuthorizedRouteTileListPage.Monthly:
+              context
+                  .read<WeeklyUiDateManagerBloc>()
+                  .add(LogOutWeeklyUiDateManagerEvent());
+              newView = AuthorizedRouteTileListPage.Daily;
+              break;
+            default:
+              newView = AuthorizedRouteTileListPage.Daily;
+          }
+          context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
+        }
+        break;
+    }
+  }
+
+  Widget _buildTileList(AuthorizedRouteTileListPage selectedListPage) {
+    switch (selectedListPage) {
+      case AuthorizedRouteTileListPage.Daily:
+        return DailyTileList();
+      case AuthorizedRouteTileListPage.Weekly:
+        return WeeklyTileList();
+      case AuthorizedRouteTileListPage.Monthly:
+        return MonthlyTileList();
+    }
+  }
+
+  Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
+    switch (selectedListPage) {
+      case AuthorizedRouteTileListPage.Daily:
+        DateTime dayRibbonDate = Utility.currentTime().dayDate;
+        if (this.context.read<UiDateManagerBloc>().state
+            is UiDateManagerUpdated) {
+          dayRibbonDate = (this.context.read<UiDateManagerBloc>().state
+                  as UiDateManagerUpdated)
+              .currentDate;
+        }
+        return DayRibbonCarousel(
+          dayRibbonDate,
+          autoUpdateAnchorDate: false,
+        );
+      case AuthorizedRouteTileListPage.Weekly:
+        return Stack(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: WeekPickerPage(),
+          ),
+          WeeklyRibbonCarousel()
+        ]);
+      case AuthorizedRouteTileListPage.Monthly:
+        return Stack(children: [
+          Align(
+            alignment: Alignment.topCenter,
+            child: MonthPickerPage(),
+          ),
+          MonthlyRibbon(),
+        ]);
     }
   }
 
@@ -117,24 +236,25 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return eventNameSearch;
   }
 
-  bool _iskeyboardVisible() {
-    return MediaQuery.of(context).viewInsets.bottom != 0;
-  }
-
+  //ey: not used since isAddButtonClicked is always false
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
-        onTap: () {
-          setState(() {
-            isAddButtonClicked = false;
-          });
-        },
-        child: Container(
-            height: MediaQuery.of(this.context).size.height,
-            width: MediaQuery.of(this.context).size.width,
-            color: Colors.amber,
-            child: Stack(children: <Widget>[
-              AutoAddTile(),
-            ])));
+      onTap: () {
+        setState(() {
+          isAddButtonClicked = false;
+        });
+      },
+      child: Container(
+        height: MediaQuery.of(this.context).size.height,
+        width: MediaQuery.of(this.context).size.width,
+        color: Colors.amber,
+        child: Stack(
+          children: <Widget>[
+            AutoAddTile(),
+          ],
+        ),
+      ),
+    );
 
     return containerWrapper;
   }
@@ -153,297 +273,170 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   void displayDialog(Size screenSize) {
-    showGeneralDialog(
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.white70,
-      transitionDuration: Duration(milliseconds: 300),
-      pageBuilder: (ctx, anim1, anim2) => AlertDialog(
-        contentPadding: EdgeInsets.fromLTRB(1, 1, 1, 1),
-        insetPadding: EdgeInsets.fromLTRB(0, 250, 0, 0),
-        titlePadding: EdgeInsets.fromLTRB(5, 5, 5, 5),
-        backgroundColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: Colors.white),
-          borderRadius: BorderRadius.all(
-            Radius.circular(20),
-          ),
-        ),
-        content: Container(
-          padding: const EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.white, width: 2),
-            borderRadius: BorderRadius.circular(20),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.topRight,
-              colors: [
-                TileStyles.primaryColorHSL.toColor().withOpacity(0.75),
-                TileStyles.primaryColorHSL
-                    .withLightness(TileStyles.primaryColorHSL.lightness + .2)
-                    .toColor()
-                    .withOpacity(0.75),
-              ],
-            ),
-          ),
-          child: SizedBox(
-            height: screenSize.height * 0.3,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // GestureDetector(
-                //   onTap: () {
-                //     Navigator.pop(context);
-                //     Navigator.of(context).pushNamed('/ForecastPreview');
-                //   },
-                //   child: ListTile(
-                //     leading: Image.asset('assets/images/binocular.png'),
-                //     title: Text(
-                //       AppLocalizations.of(context)!.forecast,
-                //       style: TextStyle(
-                //           fontSize: 20,
-                //           fontFamily: TileStyles.rubikFontName,
-                //           fontWeight: FontWeight.w300,
-                //           color: Colors.white),
-                //     ),
-                //   ),
-                // ),
-                GestureDetector(
-                  onTap: () {
-                    AnalysticsSignal.send('REVISE_BUTTON');
-                    final currentState =
-                        this.context.read<ScheduleBloc>().state;
-                    if (currentState is ScheduleLoadedState) {
-                      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-                            isAlreadyLoaded: true,
-                            renderedScheduleTimeline:
-                                currentState.lookupTimeline,
-                            renderedSubEvents: currentState.subEvents,
-                            renderedTimelines: currentState.timelines,
-                            message:
-                                AppLocalizations.of(context)!.revisingSchedule,
-                          ));
-                    }
-                    ScheduleApi().reviseSchedule().then((value) {
-                      AnalysticsSignal.send('REVISE_BUTTON_SUCCESS');
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    }).catchError((onError) {
-                      AnalysticsSignal.send('REVISE_BUTTON_FAILURE');
-                      final currentState =
-                          this.context.read<ScheduleBloc>().state;
-                      Fluttertoast.showToast(
-                          msg: onError!.message,
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.SNACKBAR,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.black45,
-                          textColor: Colors.white,
-                          fontSize: 16.0);
-                      if (currentState is ScheduleEvaluationState) {
-                        this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                              isAlreadyLoaded: true,
-                              previousSubEvents: currentState.subEvents,
-                              scheduleTimeline: currentState.lookupTimeline,
-                              previousTimeline: currentState.lookupTimeline,
-                            ));
-                        refreshScheduleSummary(currentState.lookupTimeline);
-                      }
-                    });
-                    Navigator.pop(context);
-                  },
-                  child: ListTile(
-                    leading: Icon(Icons.refresh, color: Colors.white),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        AppLocalizations.of(context)!.revise,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                    onTap: () {
-                      AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
-                      Navigator.pop(context);
-                      Navigator.pushNamed(context, '/Procrastinate')
-                          .whenComplete(() {
-                        var scheduleBloc =
-                            this.context.read<ScheduleBloc>().state;
-                        Timeline? lookupTimeline;
-                        if (scheduleBloc is ScheduleLoadedState) {
-                          this.context.read<ScheduleBloc>().add(
-                              GetScheduleEvent(
-                                  previousSubEvents: scheduleBloc.subEvents,
-                                  scheduleTimeline: scheduleBloc.lookupTimeline,
-                                  isAlreadyLoaded: true));
-                          lookupTimeline = scheduleBloc.lookupTimeline;
-                        }
-                        if (scheduleBloc is ScheduleInitialState) {
-                          this.context.read<ScheduleBloc>().add(
-                              GetScheduleEvent(
-                                  previousSubEvents: [],
-                                  scheduleTimeline:
-                                      Utility.initialScheduleTimeline,
-                                  isAlreadyLoaded: false));
-                          lookupTimeline = Utility.initialScheduleTimeline;
-                        }
-
-                        refreshScheduleSummary(lookupTimeline);
-                      });
-                    },
-                    child: Container(
-                      alignment: Alignment.centerLeft,
-                      child: ListTile(
-                        leading: SizedBox(
-                          width: 50,
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  bottom: 0,
-                                  left: -15,
-                                  child: Icon(Icons.chevron_right,
-                                      color: Colors.white)),
-                              Positioned(
-                                right: 0,
-                                top: 0,
-                                bottom: 0,
-                                left: 0,
-                                child: Icon(Icons.chevron_right,
-                                    color: Colors.white),
-                              ),
-                              Positioned(
-                                  right: 0,
-                                  top: 0,
-                                  bottom: 0,
-                                  left: 15,
-                                  child: Icon(Icons.chevron_right,
-                                      color: Colors.white)),
-                            ],
-                          ),
-                        ),
-                        contentPadding: EdgeInsets.all(5),
-                        title: Container(
-                          child: Text(
-                            AppLocalizations.of(context)!.deferAll,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontFamily: TileStyles.rubikFontName,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.white),
-                          ),
-                        ),
-                      ),
-                    )),
-                GestureDetector(
-                  onTap: () {
-                    AnalysticsSignal.send('NEW_ADD_TILE');
-                    Navigator.pop(context);
-                    Map<String, dynamic> newTileParams = {'newTile': null};
-
-                    Navigator.pushNamed(context, '/AddTile',
-                        arguments: newTileParams);
-                  },
-                  child: ListTile(
-                    leading: Icon(
-                      Icons.add,
-                      color: Colors.white,
-                    ),
-                    title: Container(
-                      padding: const EdgeInsets.fromLTRB(15.0, 0, 0, 0),
-                      child: Text(
-                        AppLocalizations.of(context)!.addTile,
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontFamily: TileStyles.rubikFontName,
-                            fontWeight: FontWeight.w300,
-                            color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        elevation: 2,
-      ),
-      transitionBuilder: (ctx, anim1, anim2, child) => BackdropFilter(
-        filter:
-            ImageFilter.blur(sigmaX: 4 * anim1.value, sigmaY: 4 * anim1.value),
-        child: FadeTransition(
-          child: child,
-          opacity: anim1,
-        ),
-      ),
+    final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
+    print("DeviceSettingBloc: ${deviceSettingBloc.state} - display dialog");
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(TileDimensions.borderRadius)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          child: PreviewAddWidget(
+              previewSummary: previewSummary,
+              onSubmit: (_) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              }),
+        );
+      },
     );
   }
 
-  void locationUpdate(Tuple3<Position, bool, bool> update) {
+  void locationUpdate(LocationProfile locationProfile) {
     setState(() {
-      locationAccess = update;
+      locationAccess = locationProfile;
       isLocationRequestTriggered = true;
     });
   }
 
-  Widget renderLocationRequest(AccessManager accessManager) {
-    return LocationAccessWidget(accessManager, locationUpdate);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // return renderLocationRequest();
-
-    print('isLocationRequestTriggered $isLocationRequestTriggered');
-    print('locationAccess $locationAccess');
-    if (!isLocationRequestTriggered &&
-        !locationAccess.item2 &&
-        locationAccess.item3) {
-      return renderLocationRequest(accessManager);
-    }
-
-    DayStatusWidget dayStatusWidget = DayStatusWidget();
-    List<Widget> widgetChildren = [
-      TileList(), //this is the default and we need to switch these to routes and so we dont loose back button support
-      Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
-              blurRadius: 7,
-              offset: const Offset(0, 7),
+   Widget _buildDailyCurrentDayButton(){
+     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+    return Positioned(
+      right: 0,
+      child: GestureDetector(
+        onTap: () {
+          uiDateManagerBloc.onDateButtonTapped(
+              Utility.currentTime(minuteLimitAccuracy: false));
+        },
+        child: Container(
+          height: 50,
+          width: 38,
+          padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: constraints.maxWidth * 0.9,
+                    child: Icon(
+                      FontAwesomeIcons.calendar,
+                      size: constraints.maxWidth,
+                      color:colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: constraints.maxHeight * 0.125,
+                  left: (constraints.maxWidth * 0.05),
+                  child: Center(
+                    child: Container(
+                      height: constraints.maxHeight * 0.55,
+                      width: constraints.maxHeight * 0.55,
+                      child: Center(
+                        child: Text(
+                          (Utility.currentTime().day).toString(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: DayRibbonCarousel(
-          Utility.currentTime().dayDate,
-          autoUpdateAnchorDate: true,
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBottomNavBar(){
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(30),
+        topLeft: Radius.circular(30),
+      ),
+      child: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.share,),
+              label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_month,
+              ),
+              label: ''),
+        ],
+        onTap: _onBottomNavigationTap,
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton(){
+    return FloatingActionButton(
+      backgroundColor:colorScheme.surface ,
+      onPressed: () {
+        AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+        displayDialog(MediaQuery.of(context).size);
+      },
+      child: AutoSwitchingWidget(
+        duration: Duration(milliseconds: 1000),
+        children: [
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_BlueBottom.png',
+            ),
+          ),
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_RedBottom.png',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget renderAuthorizedUserPageView() {
+    //ey: dayStatusWidget not used
+    //ey: never added to widget tree
+    DayStatusWidget dayStatusWidget = DayStatusWidget();
+    List<Widget> widgetChildren = [
+      BlocBuilder<ScheduleBloc, ScheduleState>(
+        builder: (context, state) {
+          return Stack(children: [
+            _buildTileList(state.currentView),
+            _ribbonCarousel(state.currentView),
+            if (state.currentView == AuthorizedRouteTileListPage.Daily)
+              _buildDailyCurrentDayButton()
+          ]);
+        },
+      ),
     ];
+    //ey: not used since isAddButtonClicked always false
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
     }
-    dayStatusWidget.onDayStatusChange(DateTime.now());
+
+    //ey: not really used
+    dayStatusWidget
+        .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
+
 
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
@@ -451,51 +444,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = ClipRRect(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(30),
-          topLeft: Radius.circular(30),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                Colors.white,
-                Colors.white,
-                Colors.white,
-              ])),
-          child: BottomNavigationBar(
-            items: [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search,
-                    color: TileStyles.primaryColorDarkHSL.toColor()),
-                label: '',
-              ),
-              BottomNavigationBarItem(
-                  icon: Icon(
-                    Icons.add,
-                    color: Color.fromRGBO(0, 0, 0, 0),
-                  ),
-                  label: ''),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.settings,
-                      color: TileStyles.primaryColorDarkHSL.toColor()),
-                  label: ''),
-            ],
-            unselectedItemColor: Colors.white,
-            selectedItemColor: Colors.black,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            onTap: _onBottomNavigationTap,
-          ),
-        ),
-      );
+      bottomNavigator = _buildBottomNavBar();
     }
-
     return Scaffold(
       extendBody: true,
       body: SafeArea(
@@ -507,21 +457,57 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: isAddButtonClicked
-          ? null
-          : FloatingActionButton(
-              backgroundColor: Colors.white,
-              onPressed: () {
-                AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-                displayDialog(MediaQuery.of(context).size);
-              },
-              child: Icon(
-                Icons.add,
-                size: 35,
-                color: TileStyles.primaryColorDarkHSL.toColor(),
-              ),
-            ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<DeviceSettingBloc, DeviceSettingState>(
+            listener: (context, state) {
+              if (state is DeviceLocationSettingUIPending) {
+                if (state.renderLoadingUI == true) {
+                  setState(() {
+                    renderLocationPermissionOverLay = true;
+                  });
+                }
+              }
+
+              if (state is DeviceSettingLoaded) {
+                setState(() {
+                  renderLocationPermissionOverLay = false;
+                });
+              }
+            },
+          ),
+          BlocListener<ScheduleBloc, ScheduleState>(
+            listener: (context, state) {
+              if (state is ScheduleLoadingState ||
+                  state is ScheduleLoadedState) {
+                final previewSummaryBloc =
+                    BlocProvider.of<PreviewSummaryBloc>(context);
+                if (!(previewSummaryBloc.state is PreviewSummaryLoading)) {
+                  previewSummaryBloc.add(GetPreviewSummaryEvent(
+                      timeline: Utility.todayTimeline()));
+                }
+              }
+            },
+          ),
+          BlocListener<PreviewSummaryBloc, PreviewSummaryState>(
+            listener: (context, state) {
+              if (state is PreviewSummaryLoaded) {
+                setState(() {
+                  previewSummary = state.previewSummary;
+                });
+              }
+            },
+          )
+        ],
+        child: BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+          return renderAuthorizedUserPageView();
+        }));
   }
 }

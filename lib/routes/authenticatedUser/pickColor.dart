@@ -1,11 +1,8 @@
-import 'dart:ffi';
 
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -21,6 +18,10 @@ class PickColor extends StatefulWidget {
 class PickColorState extends State<PickColor> {
   bool isCustomColorPicker = false;
   int selectedPresetIndex = 0;
+  double colorSelectorRadius = 60;
+  late double roundedSelectorRadius;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   final presetColors = <Color>[
     Color.fromRGBO(255, 255, 0, 1),
     Color.fromRGBO(135, 255, 221, 1),
@@ -40,12 +41,20 @@ class PickColorState extends State<PickColor> {
       .toColor();
   Color? initialColor;
   bool _isInitialize = false;
+  final String _colorPickernRouteName = "PickColorRoute";
 
   @override
   void initState() {
     super.initState();
     presetColors[0] =
         this.widget.color ?? this.initialColor ?? this.randomColorGenerator();
+    roundedSelectorRadius = colorSelectorRadius + 10;
+  }
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);;
+    colorScheme=theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   void onProceedTap() {
@@ -78,10 +87,13 @@ class PickColorState extends State<PickColor> {
   Widget renderEachClickablePreset(Color color) {
     Widget retValue = Container(
       margin: EdgeInsets.fromLTRB(5, 5, 0, 0),
-      width: 60,
-      height: 60,
+      width: colorSelectorRadius,
+      height: colorSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(240)), color: color),
+          borderRadius: BorderRadius.all(
+                Radius.circular(colorSelectorRadius * 4),
+              ),
+          color: color),
     );
 
     return retValue;
@@ -97,6 +109,69 @@ class PickColorState extends State<PickColor> {
     });
   }
 
+  Widget renderCollectionOfColors(
+      int gridCount, List<Tuple2<Widget, int>> clickablePresetWidgets) {
+    int gridColumnCount = 3;
+    List<Widget> rows = [];
+    List<Widget> rowWidgets = [];
+
+    Widget roundedSelectedBorder = Container(
+      width: roundedSelectorRadius,
+      height: roundedSelectorRadius,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          border: Border.all(
+              color: colorScheme.primary,
+              width: 2,
+          ),
+          color: Colors.transparent),
+    );
+    Widget tranparentSelectedBorder = Container(
+      width: roundedSelectorRadius,
+      height: roundedSelectorRadius,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          border: Border.all(color: Colors.transparent, width: 2),
+          color: Colors.transparent
+      ),
+    );
+    for (int i = 0; i < clickablePresetWidgets.length; i++) {
+      int modulo = i % gridColumnCount;
+      if (modulo == 0) {
+        rowWidgets = [];
+        rows.add(Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: rowWidgets,
+          ),
+        ));
+      }
+      var e = clickablePresetWidgets[i];
+      Widget tapableCircle = GestureDetector(
+        onTap: () {
+          handlePresetColorClick(e.item2);
+        },
+        child: Stack(
+          children: [
+            e.item2 == selectedPresetIndex
+                ? roundedSelectedBorder
+                : tranparentSelectedBorder,
+            e.item1
+          ],
+        ),
+      );
+      rowWidgets.add(tapableCircle);
+    }
+
+    Widget column = Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: rows,
+    );
+
+    return column;
+  }
+
   Widget renderPresetColors() {
     Widget shufflePreset = GestureDetector(
       child: Stack(
@@ -106,6 +181,7 @@ class PickColorState extends State<PickColor> {
             margin: EdgeInsets.fromLTRB(24, 24, 0, 0),
             child: Icon(
               Icons.shuffle,
+              // size: 70,
             ),
           )
         ],
@@ -122,52 +198,39 @@ class PickColorState extends State<PickColor> {
       clickablePresetWidgets.add(Tuple2(eachWidget, indexCounter));
     }
 
-    Widget roundedSelectedBorder = Container(
-      width: 70,
-      height: 70,
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(280)),
-          border: Border.all(color: TileStyles.primaryColor, width: 2),
-          color: Colors.transparent),
-    );
     Widget retValue = Container(
       alignment: Alignment.center,
-      // height: 450,
-      child: ListView(
-        // mainAxisAlignment: MainAxisAlignment.start,
+      child: Column(
         children: [
           Container(
-            padding: EdgeInsets.all(20),
-            alignment: Alignment.center,
-            height: 300,
-            width: 400,
-            decoration: BoxDecoration(
-                color: pickerColor.withOpacity(0.2),
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: GridView.count(
-              crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              children: [
-                ...clickablePresetWidgets.map<Widget>(
-                  (e) => GestureDetector(
-                    onTap: () {
-                      handlePresetColorClick(e.item2);
-                    },
-                    child: Stack(
-                      children: [
-                        e.item2 == selectedPresetIndex
-                            ? roundedSelectedBorder
-                            : SizedBox.shrink(),
-                        e.item1
-                      ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+              padding: EdgeInsets.all(20),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  color: pickerColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: renderCollectionOfColors(3, clickablePresetWidgets)),
           ElevatedButton(
+              style: ButtonStyle(
+                side: WidgetStateProperty.all(
+                    BorderSide(color: colorScheme.primary)),
+                shadowColor: WidgetStateProperty.resolveWith((states) {
+                  return Colors.transparent;
+                }),
+                elevation: WidgetStateProperty.resolveWith((states) {
+                  return 0;
+                }),
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
+                  return Colors.transparent;
+                }),
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
+                  return colorScheme.primary;;
+                }),
+                minimumSize: WidgetStateProperty.resolveWith((states) {
+                  return Size(MediaQuery.sizeOf(context).width - 20, 50);
+
+                  // Size.(MediaQuery.sizeOf(context).width);
+                }),
+              ),
               onPressed: () {
                 setState(() {
                   this.isCustomColorPicker = true;
@@ -198,14 +261,9 @@ class PickColorState extends State<PickColor> {
     }
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      routeName: _colorPickernRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.pickAColor,
-          style: TileStyles.titleBarStyle,
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.pickAColor),
         automaticallyImplyLeading: false,
       ),
       child: Container(

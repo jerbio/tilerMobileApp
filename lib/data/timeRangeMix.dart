@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/util.dart';
 
 mixin TimeRange {
@@ -17,18 +18,33 @@ mixin TimeRange {
     return retValue;
   }
 
+  TimeRange? interferingTimeRange(TimeRange timeRange) {
+    if (this.isInterfering(timeRange)) {
+      int start =
+          this.start! > timeRange.start! ? this.start! : timeRange.start!;
+      int end = this.end! < timeRange.end! ? this.end! : timeRange.end!;
+      return Timeline.fromDateTime(DateTime.fromMillisecondsSinceEpoch(start),
+          DateTime.fromMillisecondsSinceEpoch(end));
+    }
+    return null;
+  }
+
   bool isDateTimeWithin(DateTime time) {
     int currentTime = time.millisecondsSinceEpoch;
     return this.start! <= currentTime && this.end! > currentTime;
   }
 
   bool get isCurrentTimeWithin {
-    int currentTime = Utility.currentTime().millisecondsSinceEpoch;
+    int currentTime =
+        Utility.currentTime(minuteLimitAccuracy: false).millisecondsSinceEpoch;
     return this.start! <= currentTime && this.end! > currentTime;
   }
 
   bool get hasElapsed {
-    return this.end! < DateTime.now().millisecondsSinceEpoch.toDouble();
+    return this.end! <
+        Utility.currentTime(minuteLimitAccuracy: false)
+            .millisecondsSinceEpoch
+            .toDouble();
   }
 
   DateTime get startTime {

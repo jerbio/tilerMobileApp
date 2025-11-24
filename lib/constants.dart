@@ -1,12 +1,15 @@
 import 'dart:io';
 
-const bool isProduction = false;
+const bool isProduction = true;
 const bool isDebug = !isProduction;
+// const bool isDebug = true;
+const bool isStaging = true;
 const bool isRemote = true;
-const prodDomain = 'localhost-44322-tiler-prod.conveyor.cloud';
-const String devDomain =
-    isRemote ? 'localhost-44388-x-if7.conveyor.cloud' : '10.0.2.2:44322';
-const String tilerDomain = isProduction ? prodDomain : devDomain;
+const prodDomain = 'tiler.app';
+const stagingDomain = 'tiler-stage.conveyor.cloud';
+const devDomain = 'tiler-dev.conveyor.cloud';
+const String tilerDomain =
+isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
@@ -26,7 +29,8 @@ String googleClientIdKey =
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
 String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
-
+String googleMapsApiKey =
+    isProduction ? 'GOOGLE_MAPS_API_KEY' : 'GOOGLE_MAPS_API_KEY_DEV';
 final List<String> googleApiScopes = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/calendar',
@@ -42,3 +46,7 @@ final String workProfileNickName = "work";
 final String homeProfileNickName = "personal";
 final List<String> invalidLocationNames = ["anywhere"];
 final int autoCompleteMinCharLength = 3;
+final int numberOfDaysToLoad = 8;
+String? userId = "";
+String? userName = "";
+final Duration retryPermissionCheck = Duration(minutes: 60);

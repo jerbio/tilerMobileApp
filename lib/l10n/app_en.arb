@@ -1,4 +1,4 @@
-{
+ {
     "whiteSpace": " ",
     "add": "Add",
     "setupCustomRestrictions": "Set up Custom restrictions",
@@ -117,15 +117,15 @@
           "example": "5:14 PM"
         }
       }},
-      "endsAtTime": "Ends at {time}",
-      "@endsAtTime": {
-        "description": "Ends at time",
-        "placeholders": {
-          "time": {
-            "type": "String",
-            "example": "5:14 PM"
-          }
-        }},
+    "endsAtTime": "Ends at {time}",
+    "@endsAtTime": {
+      "description": "Ends at time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "5:14 PM"
+        }
+      }},
     "startsInTenMinutes": "Starts in ten minutes",
     "endsInTenMinutes": "Ends in five minutes",
     "startsInDuration": "Starts in {duration}",
@@ -134,7 +134,7 @@
       "placeholders": {
         "duration": {
           "type": "String",
-          "example": "5 Hours"
+          "example": "Starts in 5 Hours"
         }
       }},
     "concludesAtTime": "🏁 {tileName} concludes soon",
@@ -155,12 +155,15 @@
     "edit": "Edit",
     "workProfileHours": "Work Hours",
     "personalHours": "Personal Hours",
+    "setWorkProfileHours": "Set Work Hours",
+    "setPersonalHours": "Set Personal Hours",
+    "customHours": "Custom Hours",
     "logout": "Logout",
-    "bedTime": "Bed Time",
     "noteEllipsis": "Note...",
     "tapToCreateNewTile": "Tap to create a new tile",
     "suggestions": "Suggestions",
     "progress": "Progress",
+    "youNeedToLeaveIn": "You need to leave in",
     "youNeedToLeaveInDuration": "You need to leave in {duration}",
     "@youNeedToLeaveInDuration": {
       "description": "Description of time to depart",
@@ -243,6 +246,70 @@
           "example": "5 tiles"
         }
       }},
+    "numberOfTilesSelected": "{number} Tiles selected",
+    "@numberOfTilesSelected": {
+      "description": "Number of Tiles selected",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Tiles selected"
+        }
+      }},
+    "completeTiles":"Complete Tiles",
+    "thisFitsInYourSchedule": "This fits in your schedule.",
+      "warningColon": "Warning: ",
+      "oneEventAtRisk": "1 event at risk",
+      "countEventAtRisk": "{number} events at risk",
+      "@countEventAtRisk": {
+        "description": "Number of event at risk",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "5 events at risk"
+          }
+        }},
+    "oneConflict": "1 Conflict",
+    "countConflict": "{number} Conflicts",
+      "@countConflict": {
+        "description": "Number of conflict",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "1 Conflicts"
+          }
+        }},
+    "create": "Create",
+    "thisEventWouldCause": "This event would cause ",
+    "errorMessage": "Error: {message}",
+      "@errorMessage": {
+        "description": "Error message string",
+        "placeholders": {
+          "message": {
+            "type": "String",
+            "example": "Error: Message"
+          }
+        }},
+    "unScheduledTiles": "Unscheduled Tiles",
+    "numberOfUnScheduledTiles": "{number} Unscheduled Tiles",
+    "@numberOfUnScheduledTiles": {
+      "description": "Number of Unscheduled Tiles",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "5 Unscheduled Tiles"
+        }
+      }
+    },
+    "numberOfMoreUsers": "+{number} more",
+    "@numberOfMoreUsers": {
+      "description": "Number of more users",
+      "placeholders": {
+        "number": {
+          "type": "String",
+          "example": "+5 more"
+        }
+      }
+    },
     "unScheduled": "Unscheduled",
     "allScheduled": "All Scheduled",
     "getOnIt": "Get on it",
@@ -360,16 +427,381 @@
     "next":"Next",
     "previous":"Previous",
     "skip":"Skip",
-    "oClock":"*:00 AM",
-    "morningPerson":"Morning person",
+    "morningPerson":"🌅 Morning person",
     "morning":"Morning",
-    "midday":"Midday",
-    "noc":"Noc",
-    "middayPerson":"Midday person",
-    "nocPerson":"Noc person",
+    "middayPerson":"🌞 Midday person",
+    "nightPerson":"🌃 Night person",
     "enterAddress":"Enter your address",
     "wakeUpTimeQuestion":"What time do you usually wake up in the morning?",
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
-    "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?"
-  }
+    "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
+    "incompleteRequest":"Did not send complete request",
+    "addContact": "Add contact",
+    "deadlineTime": "Deadline: {time}",
+    "@deadlineTime": {
+      "description": "Deadline: time",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "Deadline: 12/25/24"
+        }
+      }},
+    "accept": "Accept",
+    "decline": "Decline",
+    "preview": "Preview",
+    "addTilette": "Add Tilette",
+    "tileShareName": "Tile Share Name",
+    "tileShare": "Tile Share",
+    "update": "Update",
+    "noDesignatedTiles": "No designated tiles",
+    "noTileCluster": "No Tile Shares Created",
+    "errorLoadingTilelist": "Error loading tilelist",
+    "failedToLoadTileShareCluster": "Failed to load tile share cluster",
+    "missingTileShareCluster": "Missing TileShare cluster",
+    "outBound": "OutBound",
+    "inBound": "Inbound",
+    "multiShare": "Multi Share",
+    "errorOccurred": "An error occurred!!\nPlease try again.",
+    "authenticationIssues":"Issues with authentication.",
+    "userIsNotAuthenticated":"User is not authenticated.",
+    "responseContentError":"Response does not contain expected Content.",
+    "responseHandlingError":"Failed to handle the response.",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "travel": "Travel",
+    "numberOfDayForecast": "{number}-day Forecast",
+    "@numberOfDayForecast": {
+        "description": "Number-day Forecast",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "5-day Forecast"
+          }
+        }},
+      "knotDuration": "--",
+      "failedToGetPreview": "Failed to get preview",
+      "noDriving": "No driving",
+      "tileShareNoteEllipsis": "Note...",
+    "hi": "Hi",
+    "welcome": "Welcome",
+    "passwordCreationMessagePart1": "Create a strong, unique password with ",
+    "passwordConditionMinLength": "at least six characters",
+    "passwordCreationMessageIncluding": ", including ",
+    "passwordConditionUppercaseLetters": "uppercase letters",
+    "passwordConditionLowercaseLetters": "lowercase letters",
+    "passwordConditionNumbers": "numbers",
+    "passwordConditionSpecialCharacter": "a special character",
+    "listSeparator": ", ",
+    "listFinalSeparator": ", and ",
+    "nonViableTimeSlot": "No viable timeslot",
+    "numberAm": "{number}AM",
+    "@numberAm": {
+        "description": "Time in AM",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "6AM"
+          }
+        }},
+    "numberPm": "{number}PM",
+    "@numberPm": {
+        "description": "Time in PM",
+        "placeholders": {
+          "number": {
+            "type": "String",
+            "example": "6PM"
+          }
+        }},
+    "dayCast": "DayCast",
+    "save":"Save",
+    "selectWeek":"Select a Week",
+    "selectYear":"Select Year",
+    "retrievingDataIssue":"Issue with retrieving data",
+    "recurring":"Recurring",
+    "nonRecurring":"Non-Recurring",
+    "dailyReurring":"Daily",
+    "weeklyReurring":"Weekly",
+    "biweeklyReurring":"Bi-Weekly",
+    "monthlyReurring":"Monthly",
+    "yearlyReurring":"Yearly",
+    "ellipsisEmprtNotes":"Notes...",
+    "tileShareDelete":"Delete",
+    "commaDelimiter":",",
+    "foreCastTile":"Forecast Tile",
+    "previewOthers":"Others",
+    "goodMorning":"GOod Morning",
+    "goodDay":"Good Day",
+    "goodEvening":"Good Evening",
+    "youHaveXBlocks": "You have {count} blocks coming up.",
+    "@youHaveXBlocks": {
+      "description": "Number of Blocks",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveXTiles": "You have {count} tiles coming up.",
+    "@youHaveXTiles": {
+      "description": "Number of tiles",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveXTileShares": "You have {count} tileshares coming up.",
+    "@youHaveXTileShares": {
+      "description": "Number of tileshares",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "countTileShare": "{count} tileshares",
+    "@countTileShare": {
+      "description": "Number of tileshares",
+      "placeholders": {
+        "count": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksAndCountTiles": "You have {blockCount} blocks and {tileCount} tiles coming up.",
+    "@youHaveCountBlocksAndCountTiles": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksAndCountTileShares": "You have {blockCount} blocks and {tileShareCount} tileshares coming up.",
+    "@youHaveCountBlocksAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountTilesAndCountTileShares": "You have {tileCount} tiles and {tileShareCount} tileshares coming up.",
+    "@youHaveCountTilesAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+    "youHaveCountBlocksCountTilesAndCountTileShares": "You have {blockCount} blocks, {tileCount} tiles and {tileShareCount} tileshares coming up.",
+    "@youHaveCountBlocksCountTilesAndCountTileShares": {
+      "description": "Number of blocks",
+      "placeholders": {
+        "blockCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileCount": {
+          "type": "String",
+          "example": "1"
+        },
+        "tileShareCount": {
+          "type": "String",
+          "example": "1"
+        }
+      }},
+      "noTilesPreview": "You have nothing coming up for the rest of today.",
+      "previewEllipsisText": "{shortenedText}...",
+      "@previewEllipsisText": {
+        "description": "Shortened text",
+        "placeholders": {
+          "shortenedText": {
+            "type": "String",
+            "example": "1"
+          }
+        }},
+      "createTile": "Create Tile",
+      "previewTileForecast": "Forecast",
+      "previewTileOptions": "Options",
+      "previewTileMore": "More",
+      "previewTileShuffle": "Shuffle",
+      "previewTileRevise": "Revise",
+      "previewTileDeferAll": "Defer All",
+      "previewLocationName": "Location",
+      "previewTagName": "Tag",
+      "previewClassificationName": "Classification",
+      "previewBlockedOut": "Blocked Out",
+      "accountInfo":"Account info",
+      "fistName":"First Name",
+      "lastName":"Last Name",
+      "tilePreferences":"Tile Preferences",
+      "notificationsPreferences":"Notifications Preferences",
+      "security":"Security",
+      "connections":"Connections",
+      "myLocations":"My Locations",
+      "aboutTiler":"About Tiler",
+      "darkMode":"Dark Mode",
+      "setLocation":"Set location",
+      "connectCalendars": "Connect your calendars",
+      "comingSoon": "Coming soon",
+      "googleCalendar":"Google Calendar",
+      "appleCalendar":"Apple Calendar",
+      "googleTasks":"Google Tasks",
+      "microsoft":"Microsoft",
+      "slack":"Slack",
+      "sleepDuration": "Sleep Duration",
+      "transportationMethodQuestion":"How do you move around?",
+      "defineYourTimeRestrictions": "Define Your Time Restrictions",
+      "setWorkHours": "Set Work Hours",
+      "setYourBlockOutHours": "Set Your Block Out Hours",
+      "travelMediumBiking": "Biking",
+      "travelMediumTransit": "Transit",
+      "travelMediumDriving": "Driving",
+      "travelMediumTransport": "Transport",
+      "previewRatioTimeMinutes": "{ratio} m",
+      "@previewRatioTimeMinutes": {
+        "description": "Ratio time in minutes",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 m"
+          }
+        }
+      },
+      "previewRatioTimeHours": "{ratio} hrs",
+      "@previewRatioTimeHours": {
+        "description": "Ratio time in hours",
+        "placeholders": {
+          "ratio": {
+            "type": "String",
+            "example": "4/5 hrs"
+          }
+        }
+      },
+      "bedTime": "Bed Time",
+      "sleepTime": "Sleep Time",
+      "tilePreferencesUpdatedSuccessfully": "Tile Preferences have been updated successfully.",
+      "notificationsPreferencesUpdatedSuccessfully": "Notifications Preferences have been updated successfully.",
+      "tileReminders":"Tile Reminders",
+      "appUpdates":"App Updates",
+      "marketingUpdates":"Marketing Updates",
+      "emailNotifications": "Email notifications",
+      "fullName":"Full Name",
+      "phoneNumber":"Phone Number",
+      "dateOfBirth":"Date Of Birth",
+      "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
+      "reachingServerIssues":"Issues with reaching Tiler servers",
+      "deleteAccountConfirmation":"Are you sure you want to delete your account? This action cannot be undone.",
+      "disconnect":"Disconnect",
+      "integrationsSetLocation":"Set location",
+      "googleCalender":"Google Calender",
+      "passwordsMustMatch":"Passwords must match",
+      "parenthesisLate":"(Late)",
+      "failedToAddIntegration":"Failed to add integration",
+      "unknownProvider":"Unknown Provider",
+      "manageCalendars":"Manage calendars",
+      "calendarItems":"Calendar Items",
+      "noCalendarItemsFound":"No calendar items found",
+      "calendarItemsWillAppearHere":"Your calendar items will appear here",
+      "calendarsActive":"{selectedCount} of {totalCount} calendars active",
+      "@calendarsActive": {
+        "description": "Shows count of active calendars",
+        "placeholders": {
+          "selectedCount": {
+            "type": "int",
+            "example": "3"
+          },
+          "totalCount": {
+            "type": "int",
+            "example": "5"
+          }
+        }
+      },
+      "toggleCalendarsToSync":"Toggle calendars to sync with Tiler",
+      "unknownCalendar":"Unknown Calendar",
+      "activeStatusBadge":"{selectedCount} of {totalCount} active",
+      "@activeStatusBadge": {
+        "description": "Status badge showing active count",
+        "placeholders": {
+          "selectedCount": {
+            "type": "int",
+            "example": "3"
+          },
+          "totalCount": {
+            "type": "int",
+            "example": "5"
+          }
+        }
+      },      "integrationCount":"{count} Integrations",
+      "@integrationCount": {
+        "description": "Shows count of integrations",
+        "placeholders": {
+          "count": {
+            "type": "int",
+            "example": "2"
+          }
+        }
+      },
+      "errorLoadingCalendarItems":"Error loading calendar items",
+      "integratedCalendars":"Calendars",
+      "integrationAdd": "Add",
+      "passwordsMustMatch":"Passwords must match",
+      "timeAndLocationTitle":"Time & Location",
+      "timeAndLocationSubTitle":"Where are you right now?\nWhat is the time over there?",
+      "timeAndLocationSecondarySubTitle":"Can we access your location to provide location-\nbased recommendations and notifications?",
+       "workProfileQuestion":"What is your typical daily routine like, set your work hours",
+        "personalProfileQuestion": "Tell us about your ‘me time’ during the week",
+        "grabACoffee":"Grab a coffee",
+        "recurringTasks":"Recurring Tasks",
+        "recurringTasksQuestion":"Are there any specific recurring tasks or activities you want to schedule in Tiler?",
+        "yourProfession":"Your Profession?",
+        "yourProfessionQuestion":"What do you do?",
+        "yourProfessionHint":"Describe what you do for work",
+        "medicalProfessional":"Medical Professional",
+        "softwareDeveloper":"Software Developer",
+        "student":"Student",
+        "engineer":"Engineer",
+        "fieldSalesProfessional":"Field Sales Professional",
+        "remoteWorker":"emote Worker & Digital Nomad",
+        "stayAtHomeParent":"Stay At Home Parent",
+        "clientAccountManagers":"Client/Account Managers",
+        "other":"Other",
+        "tileSuggestions":"Tile Suggestions",
+        "tileSuggestionsQuestion":"Select tiles that match your routine and let Tiler optimize your schedule",
+        "tileProfiling":"Tiler is profiling you based on your preferences..",
+        "addPlus":"Add +",
+        "personalScheduling":"Personal scheduling",
+        "workPlanning":"Work planning",
+        "teamCoordination":"Team coordination",
+        "fieldBaseCoordination":"Field-base coordination",
+        "academicScheduling":"Academic scheduling",
+        "clientManagement":"Client management",
+        "personalOrWork":"Personal or Work??",
+        "personalOrWorkQuestion":"What will you be using Tiler for?",
+        "enter3chars":"Enter at least 3 characters.",
+        "tilesVsBlocks":"Tiles vs Blocks",
+        "vsTilesDescription":"Get auto-generated Tiles for your, workouts,\ndeadlines and block out times events that aren't\nflexible.",
+        "vsBlocksDescription":"Blocks are fixed time periods reserved for important tiles that must happen at a specific time and date.",
+        "swipeRight":"Swipe Right>>",
+        "swipeRightDescription":"No more planning from scratch—just swipe\nright, and Tiler fits everything into your\nschedule seamlessly.",
+        "googleCalendarAndMore":"Google Calendar +\nmore calendars",
+        "googleCalendarAndMoreDescription":"Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress",
+        "selectSuggestions":"Select suggestions",
+        "typeSomething":"Type something here"
+}

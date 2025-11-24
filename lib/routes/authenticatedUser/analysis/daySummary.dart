@@ -5,7 +5,9 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DaySummary extends StatefulWidget {
@@ -18,12 +20,21 @@ class DaySummary extends StatefulWidget {
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
   bool pendingFlag = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+
   @override
   void initState() {
     super.initState();
     dayData = this.widget.dayTimelineSummary;
   }
-
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+  }
   bool get isPending {
     bool retValue = false;
     retValue = retValue ||
@@ -37,17 +48,17 @@ class _DaySummaryState extends State<DaySummary> {
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
     Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
-        highlightColor: Colors.white.withAlpha(100),
+        baseColor: colorScheme.primary.withAlpha(50),
+        highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
         child: Container(
           decoration: BoxDecoration(
-              color: Color.fromRGBO(31, 31, 31, 0.8),
-              borderRadius: BorderRadius.circular(8)),
+              color:colorScheme.onSurface.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(8),
+          ),
           width: 30.0,
           height: 30.0,
         ));
-    const textStyle = const TextStyle(
-        fontSize: 30, color: const Color.fromRGBO(153, 153, 153, 1));
+
     Widget? warnWidget = isPending ? pendingShimmer : null;
     if ((dayData?.nonViable?.length ?? 0) > 0) {
       warnWidget = Container(
@@ -55,12 +66,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.error,
-              color: Colors.redAccent,
+              color: colorScheme.error,
               size: 30.0,
             ),
             Text(
               (dayData?.nonViable?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -76,12 +87,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.check_circle,
-              color: TileStyles.greenCheck,
+              color: TileColors.completedTeal,
               size: 30.0,
             ),
             Text(
               (dayData?.complete?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -99,12 +110,12 @@ class _DaySummaryState extends State<DaySummary> {
           children: [
             Icon(
               Icons.car_crash_outlined,
-              color: Colors.amberAccent,
+              color:TileColors.warning,
               size: 30.0,
             ),
             Text(
               (dayData?.tardy?.length ?? 0).toString(),
-              style: textStyle,
+              style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary),
             )
           ],
         ),
@@ -127,82 +138,86 @@ class _DaySummaryState extends State<DaySummary> {
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
-        listeners: [
-          BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
-            listener: (context, state) {
-              if (state is ScheduleDaySummaryLoaded &&
-                  state.requestId == null) {
-                if (state.dayData != null && dayData != null) {
-                  TimelineSummary? latestDayData = state.dayData!
-                      .where((timelineSummary) =>
-                          timelineSummary.dayIndex == dayData?.dayIndex)
-                      .firstOrNull;
-                  setState(() {
-                    dayData = latestDayData;
-                    pendingFlag = false;
-                  });
-                }
-              }
-              if (state is ScheduleDaySummaryLoading &&
-                  state.requestId == null) {
+      listeners: [
+        BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
+          listener: (context, state) {
+            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+              if (state.dayData != null && dayData != null) {
+                TimelineSummary? latestDayData = state.dayData!
+                    .where((timelineSummary) =>
+                        timelineSummary.dayIndex == dayData?.dayIndex)
+                    .firstOrNull;
                 setState(() {
-                  pendingFlag = true;
+                  dayData = latestDayData;
+                  pendingFlag = false;
                 });
               }
-            },
-          ),
-        ],
-        child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
-          builder: (context, state) {
-            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-              TimelineSummary? latestDayData = state.dayData!
-                  .where((timelineSummary) =>
-                      timelineSummary.dayIndex == dayData?.dayIndex)
-                  .firstOrNull;
-              if (latestDayData != null) {
-                dayData = latestDayData;
-              }
             }
-
-            List<Widget> childElements = [renderDayMetricInfo()];
-            Widget dayDateText = Container(
-              child: Text(
-                  Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate,
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontFamily: TileStyles.rubikFontName,
-                      color: TileStyles.primaryColorDarkHSL.toColor(),
-                      fontWeight: FontWeight.w700)),
-            );
-            childElements.insert(0, dayDateText);
-            Widget buttonPress = GestureDetector(
-              onTap: () {
-                DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
-                DateTime end =
-                    Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
-                Timeline timeline = Timeline(
-                    start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SummaryPage(
-                              timeline: timeline,
-                            )));
-              },
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: childElements,
-              ),
-            );
-
-            Container retContainer = Container(
-                padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
-                height: 120,
-                child: buttonPress);
-
-            return retContainer;
+            if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+              setState(() {
+                pendingFlag = true;
+              });
+            }
           },
-        ));
+        ),
+      ],
+      child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
+        builder: (context, state) {
+          if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+            TimelineSummary? latestDayData = state.dayData!
+                .where((timelineSummary) =>
+                    timelineSummary.dayIndex == dayData?.dayIndex)
+                .firstOrNull;
+            if (latestDayData != null) {
+              dayData = latestDayData;
+            }
+          }
+
+          Widget dayDateText = Container(
+            child: Text(
+                Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
+                style: TextStyle(
+                    fontSize: 30,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
+                ),
+            ),
+          );
+
+          Widget buttonPress = GestureDetector(
+            onTap: () {
+              DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
+              DateTime end =
+                  Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
+              Timeline timeline = Timeline(
+                  start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => SummaryPage(
+                            timeline: timeline,
+                          )));
+            },
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [dayDateText, renderDayMetricInfo()],
+                ),
+              ],
+            ),
+          );
+
+          Container retContainer = Container(
+              padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
+              height: 120,
+              child: buttonPress);
+
+          return retContainer;
+        },
+      ),
+    );
   }
 }

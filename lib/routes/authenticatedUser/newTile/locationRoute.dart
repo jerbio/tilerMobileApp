@@ -3,9 +3,13 @@ import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
-import '../../../styles.dart';
 
 class LocationRoute extends StatefulWidget {
   Location? pushedLocation;
@@ -26,14 +30,27 @@ class LocationRoute extends StatefulWidget {
 }
 
 class LocationRouteState extends State<LocationRoute> {
-  final Color textBackgroundColor = Color.fromRGBO(0, 119, 170, .05);
-  final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
+
   Location? selectedLocation;
   TextEditingController? locationNickNameController;
   TextEditingController? locationAddressController;
   bool isLocationVerified = false;
   String? addressText;
   String? lookupNickNameText;
+  static final String locationCancelAndProceedRouteName =
+      "locationCancelAndProceedRouteName";
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+  late Color textBorderColor ;
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    textBorderColor=colorScheme.primaryContainer;
+  }
 
   onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
     setState(() {
@@ -93,9 +110,7 @@ class LocationRouteState extends State<LocationRoute> {
   Widget renderNickNameDefaultButton(Location location,
       {IconData? iconData, bool isEnabled = true, bool isSelected = false}) {
     String locationText = location.description!.capitalize();
-    Icon defaultLocationIcon = Icon(
-      iconData ?? Icons.location_pin,
-      color: isEnabled ? (isSelected ? Colors.white : null) : Colors.white,
+    Icon defaultLocationIcon = Icon(Icons.location_pin,
     );
 
     Widget retValue = ElevatedButton.icon(
@@ -120,9 +135,9 @@ class LocationRouteState extends State<LocationRoute> {
       },
       style: isEnabled
           ? (isSelected
-              ? TileStyles.selectedButtonStyle
-              : TileStyles.enabledButtonStyle)
-          : TileStyles.disabledButtonStyle,
+              ? TileButtonStyles.selected(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary)
+              : TileButtonStyles.enabled(borderColor: colorScheme.primary))
+          : TileButtonStyles.disabled(backgroundColor: tileThemeExtension.onSurfaceSecondary, foregroundColor: TileColors.lightContent),
       icon: defaultLocationIcon,
       label: Text(locationText),
     );
@@ -185,7 +200,7 @@ class LocationRouteState extends State<LocationRoute> {
     }
 
     TextField addressTextField = TextField(
-      style: TileStyles.fullScreenTextFieldStyle,
+      style: TileTextStyles.fullScreenTextFieldStyle,
       decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.address,
           filled: true,
@@ -205,7 +220,7 @@ class LocationRouteState extends State<LocationRoute> {
 
     Widget locationSearchWidget = FractionallySizedBox(
         alignment: FractionalOffset.center,
-        widthFactor: TileStyles.inputWidthFactor,
+        widthFactor: TileDimensions.inputWidthFactor,
         child: LocationSearchWidget(
             onChanged: (address) {
               onAddressTextChange(locationAddressController!);
@@ -216,13 +231,13 @@ class LocationRouteState extends State<LocationRoute> {
     Widget locationNickNameWidget = Align(
         alignment: Alignment.center,
         child: FractionallySizedBox(
-            widthFactor: TileStyles.inputWidthFactor,
+            widthFactor: TileDimensions.inputWidthFactor,
             child: Container(
               alignment: Alignment.topCenter,
               margin: EdgeInsets.fromLTRB(0, 90, 0, 0),
               child: TextField(
                 controller: locationNickNameController,
-                style: TileStyles.fullScreenTextFieldStyle,
+                style: TileTextStyles.fullScreenTextFieldStyle,
                 decoration: InputDecoration(
                   hintText: AppLocalizations.of(context)!.nickName,
                   filled: true,
@@ -240,10 +255,12 @@ class LocationRouteState extends State<LocationRoute> {
                 ),
               ),
             )));
+
     Widget locationAddressWidget = Container(
       alignment: Alignment.topCenter,
       child: locationSearchWidget,
     );
+
     List<Widget> routeStackWidgets = <Widget>[
       locationNickNameWidget,
       locationAddressWidget
@@ -317,6 +334,7 @@ class LocationRouteState extends State<LocationRoute> {
       children: routeStackWidgets,
     );
     return CancelAndProceedTemplateWidget(
+      routeName: locationCancelAndProceedRouteName,
       bottomWidget: clearAll(),
       child: Container(
         child: columnOfItems,

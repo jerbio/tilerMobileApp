@@ -13,17 +13,23 @@ part 'sub_calendar_tiles_state.dart';
 
 class SubCalendarTileBloc
     extends Bloc<SubCalendarTileEvent, SubCalendarTileState> {
-  SubCalendarEventApi subCalendarEventApi = SubCalendarEventApi();
-  CalendarEventApi calendarEventApi = new CalendarEventApi();
-  SubCalendarTileBloc() : super(SubCalendarTilesInitialState()) {
+  late SubCalendarEventApi subCalendarEventApi;
+  late CalendarEventApi calendarEventApi;
+  SubCalendarTileBloc({required Function getContextCallBack})
+      : super(SubCalendarTilesInitialState()) {
     on<GetSubCalendarTileBlocEvent>(_onLoadSubCalendarTile);
     on<ResetSubCalendarTileBlocEvent>(_onResetSubCalendarTile);
     on<GetListOfSubCalendarTilesBlocEvent>(_onLoadListOfSubCalendarTiles);
+
     on<NewSubCalendarTileBlocEvent>(_onNewSubTileCreatedState);
     on<GetListOfCalendarTilesSubTilesBlocEvent>(
         _onLoadListOfSubCalendarByCalendarEventId);
     on<ListOfSubCalendarTileBlocEvent>(_onListOfSubTiles);
     on<LogOutSubCalendarTileBlocEvent>(_onLogOutSubTileCreatedState);
+    subCalendarEventApi =
+        SubCalendarEventApi(getContextCallBack: getContextCallBack);
+    calendarEventApi =
+        new CalendarEventApi(getContextCallBack: getContextCallBack);
   }
 
   void _onResetSubCalendarTile(ResetSubCalendarTileBlocEvent event,
@@ -108,7 +114,7 @@ class SubCalendarTileBloc
 
   void _onLogOutSubTileCreatedState(LogOutSubCalendarTileBlocEvent event,
       Emitter<SubCalendarTileState> emit) async {
-    subCalendarEventApi = SubCalendarEventApi();
+    subCalendarEventApi = SubCalendarEventApi(getContextCallBack: () => null);
     emit(SubCalendarTilesLogOutState());
   }
 }

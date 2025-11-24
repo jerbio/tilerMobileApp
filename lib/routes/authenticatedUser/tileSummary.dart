@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
-import 'package:tiler_app/components/tileUI/tileDate.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -19,10 +20,20 @@ class TileSummary extends StatefulWidget {
 class _TileSummaryState extends State<TileSummary> {
   late SubCalendarEvent subEvent;
   final double iconSize = 25;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late  TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     super.initState();
     subEvent = this.widget.subEvent;
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   @override
@@ -32,7 +43,7 @@ class _TileSummaryState extends State<TileSummary> {
     int greenColor = subEvent.colorGreen == null ? 127 : subEvent.colorGreen!;
     var tileBackGroundColor = (subEvent.isViable ?? true)
         ? Color.fromRGBO(redColor, greenColor, blueColor, 0.2)
-        : TileStyles.nonViableBackgroundColor;
+        :tileThemeExtension.surfaceContainerPlus;
     int currentMsTime = Utility.msCurrentTime;
     late String temporalTextStatus = '';
     Duration duration = Duration();
@@ -66,7 +77,9 @@ class _TileSummaryState extends State<TileSummary> {
       margin: EdgeInsets.all(10),
       padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
       decoration: BoxDecoration(
-          color: tileBackGroundColor, borderRadius: BorderRadius.circular(8)),
+          color: tileBackGroundColor,
+          borderRadius: BorderRadius.circular(8),
+      ),
       child: Stack(
         children: [
           Positioned(
@@ -90,19 +103,21 @@ class _TileSummaryState extends State<TileSummary> {
                 },
                 icon: Icon(
                   Icons.edit_outlined,
-                  color: TileStyles.defaultTextColor,
+                  color: colorScheme.onSurface,
                   size: 20.0,
                 )),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              TileName(subEvent,
-                  textStyle: TextStyle(
-                      fontSize: 15,
-                      fontFamily: TileStyles.rubikFontName,
-                      fontWeight: FontWeight.w400,
-                      color: const Color.fromRGBO(31, 31, 31, 1))),
+              TileName(
+                  subEvent,
+                  textStyle:TextStyle(
+                    fontSize: 15,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    fontWeight: FontWeight.w400,
+                  )
+              ),
               TileAddress(subEvent),
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -113,13 +128,14 @@ class _TileSummaryState extends State<TileSummary> {
                       width: iconSize,
                       height: iconSize,
                       decoration: BoxDecoration(
-                          color: Color.fromRGBO(31, 31, 31, 0.1),
-                          borderRadius: BorderRadius.circular(8)),
+                          color: colorScheme.onSurface.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                      ),
                       child: Icon(
                         Icons.access_time_sharp,
                         color: (subEvent.isTardy ?? false)
-                            ? Colors.pink
-                            : TileStyles.defaultTextColor,
+                            ? TileColors.tardy
+                            : colorScheme.onSurface,
                         size: 20.0,
                       ),
                     ),
@@ -128,8 +144,8 @@ class _TileSummaryState extends State<TileSummary> {
                       child: TimeFrameWidget(
                         timeRange: widget.subEvent,
                         textColor: (subEvent.isTardy ?? false)
-                            ? Colors.pink
-                            : TileStyles.defaultTextColor,
+                            ? TileColors.tardy
+                            : colorScheme.onSurface,
                       ),
                     ),
                   ],
@@ -145,11 +161,12 @@ class _TileSummaryState extends State<TileSummary> {
                               width: iconSize,
                               height: iconSize,
                               decoration: BoxDecoration(
-                                  color: Color.fromRGBO(31, 31, 31, 0.1),
-                                  borderRadius: BorderRadius.circular(8)),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                              ),
                               child: Icon(
                                 Icons.check_circle_outline_outlined,
-                                color: Colors.green,
+                                color:TileColors.completedGreen,
                                 size: 20.0,
                               ),
                             ),
@@ -158,8 +175,10 @@ class _TileSummaryState extends State<TileSummary> {
                                 child: Text(
                                   temporalTextStatus,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontSize: 15, fontFamily: 'Rubik'),
+                                  style:TextStyle(
+                                      fontSize: 15,
+                                      fontFamily: TileTextStyles.rubikFontName
+                                  ),
                                 ))
                           ],
                         )
@@ -171,11 +190,12 @@ class _TileSummaryState extends State<TileSummary> {
                                   width: iconSize,
                                   height: iconSize,
                                   decoration: BoxDecoration(
-                                      color: Color.fromRGBO(31, 31, 31, 0.1),
-                                      borderRadius: BorderRadius.circular(8)),
+                                      color:colorScheme.onSurface.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: Icon(
                                     Icons.cancel_outlined,
-                                    color: Colors.redAccent,
+                                    color: colorScheme.error,
                                     size: 20.0,
                                   ),
                                 ),
@@ -184,9 +204,11 @@ class _TileSummaryState extends State<TileSummary> {
                                     child: Text(
                                       temporalTextStatus,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                          fontSize: 15, fontFamily: 'Rubik'),
-                                    ))
+                                      style:TextStyle(
+                                          fontSize: 15,
+                                          fontFamily: TileTextStyles.rubikFontName),
+                                    )
+                                )
                               ],
                             )
                           : Row(
@@ -196,8 +218,9 @@ class _TileSummaryState extends State<TileSummary> {
                                   width: iconSize,
                                   height: iconSize,
                                   decoration: BoxDecoration(
-                                      color: Color.fromRGBO(31, 31, 31, 0.1),
-                                      borderRadius: BorderRadius.circular(8)),
+                                      color: colorScheme.onSurface.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                  ),
                                   child: Icon(
                                     Icons.timelapse,
                                     size: 20.0,
@@ -209,7 +232,9 @@ class _TileSummaryState extends State<TileSummary> {
                                       temporalTextStatus,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
-                                          fontSize: 15, fontFamily: 'Rubik'),
+                                          fontSize: 15,
+                                          fontFamily: TileTextStyles.rubikFontName
+                                      ),
                                     ))
                               ],
                             ))

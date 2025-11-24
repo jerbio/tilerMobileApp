@@ -1,6 +1,6 @@
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/util.dart';
 
 class TilerCheckBox extends StatefulWidget {
   bool? isChecked;
@@ -26,18 +26,18 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     text = this.widget.text;
   }
 
-  Color getColor(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{
-      MaterialState.pressed,
-      MaterialState.hovered,
-      MaterialState.focused,
-      MaterialState.selected
+  Color getColor(Set<WidgetState> states) {
+    const Set<WidgetState> interactiveStates = <WidgetState>{
+      WidgetState.pressed,
+      WidgetState.hovered,
+      WidgetState.focused,
+      WidgetState.selected
     };
 
     if (states.any(interactiveStates.contains)) {
-      return TileStyles.primaryColor;
+      return Theme.of(context).colorScheme.primary;
     }
-    return TileStyles.disabledColor;
+    return Colors.transparent;
   }
 
   onTap() {
@@ -56,40 +56,33 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     bool checkStatus = isChecked;
     if (this.widget.isChecked != null) {
       checkStatus = this.widget.isChecked!;
     }
     Widget checkBox = Container(
-        decoration: BoxDecoration(
-          color: TileStyles.disabledColor,
-          border: Border.all(
-            color: Colors.white,
-            width: 0.5,
-          ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-        width: 38,
-        height: 38,
+        margin: EdgeInsets.fromLTRB(20, 0, 2, 0),
         child: Stack(
           children: [
-            Container(
-              padding: EdgeInsets.fromLTRB(1, 0, 0, 1),
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Stack(
-                  children: [Icon(Icons.check, color: Colors.white, size: 25)]),
-            ),
             Transform.scale(
-                scale: 2.0,
+                scale:  1,
                 child: Checkbox(
-                  checkColor: Colors.white,
-                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                  checkColor: colorScheme.onPrimary,
+                  fillColor: WidgetStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
-                  shape: CircleBorder(
-                      side:
-                          BorderSide(width: 2, color: TileStyles.primaryColor)),
+                  side: WidgetStateBorderSide.resolveWith((states) {
+                      return BorderSide(
+                        width: 3.0,
+                        color: states.contains(MaterialState.selected)
+                            ? colorScheme.primary
+                            : colorScheme.onPrimary.withLightness(0.7),
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      );
+                  }),
+                  shape: CircleBorder(),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;
@@ -103,18 +96,20 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
         ));
 
     Widget textBox = Container(
-      margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      margin: EdgeInsets.fromLTRB(12, 0, 0, 0),
       child: Text(this.text,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 20,
+              fontSize:15,
               fontWeight: FontWeight.w600,
               color: checkStatus
-                  ? TileStyles.primaryColorDarkHSL.toColor()
-                  : TileStyles.disabledTextColor)),
-    );
+                  ? colorScheme.onSurface
+                  :colorScheme.onPrimary.withLightness(0.7),
+              ),
+          ),
+      );
     return new GestureDetector(
         onTap: onTap,
         child: Container(

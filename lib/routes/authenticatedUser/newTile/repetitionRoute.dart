@@ -1,21 +1,21 @@
+import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
-import 'package:tiler_app/styles.dart';
+
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:weekday_selector/weekday_selector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RepetitionRoute extends StatefulWidget {
-  static final String routeName = '/repetitionRoute';
+  static final String routeName = '/RepetitionRoute';
   @override
   _RepetitionRouteState createState() => _RepetitionRouteState();
 }
@@ -34,6 +34,13 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   late Animation<double> _animation;
   bool isLoadedFromInitializer = false;
   Timeline? tileTimeline;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+
+
+  static final String repetitionCancelAndProceedRouteName =
+      "repetitionCancelAndProceedRouteName";
 
   @override
   void initState() {
@@ -73,6 +80,14 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         Tween<double>(begin: 0, end: 1).animate(_transparencyController);
   }
 
+  @override
+  void didChangeDependencies() {
+    theme=Theme.of(context);
+    colorScheme=theme.colorScheme;
+    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
+
   Widget frequencyWidget(RepetitionFrequency frequency, bool isSelected) {
     late String frequencyText;
     switch (frequency) {
@@ -109,8 +124,8 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         frequencyText,
         style: TextStyle(
           fontSize: 20,
-          color: isSelected ? Colors.blue : Colors.grey,
-          fontFamily: TileStyles.rubikFontName,
+          fontFamily: TileTextStyles.rubikFontName,
+          color: isSelected ? colorScheme.primary :tileThemeExtension.onSurfaceVariantSecondary,
         ),
       ),
     );
@@ -126,6 +141,14 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         : this.repetitionData!.repetitionEnd!;
     DateTime firstDate = _endDate.add(Duration(days: -100000));
     DateTime lastDate = _endDate.add(Duration(days: 100000));
+    if (this.repetitionData != null &&
+        this.repetitionData!.frequency == RepetitionFrequency.none) {
+      firstDate =
+          Utility.todayTimeline().startTime.subtract(Duration(days: 365 * 10));
+      lastDate =
+          Utility.todayTimeline().startTime.add(Duration(days: 365 * 10));
+      _endDate = Utility.todayTimeline().endTime.add(Utility.oneDay);
+    }
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,
@@ -160,42 +183,39 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 decoration: BoxDecoration(
-                    color: TileStyles.textBackgroundColor,
+                    color: colorScheme.surfaceContainerLowest,
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(8.0),
                     ),
                     border: Border.all(
                       color: this.isDeadlineValid()
-                          ? TileStyles.textBorderColor
-                          : Colors.redAccent,
+                          ? colorScheme.onInverseSurface
+                          : colorScheme.error,
                       width: 1.5,
                     )),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.calendar_month, color: TileStyles.iconColor),
+                    Icon(Icons.calendar_month, color: tileThemeExtension.onSurfaceSecondary),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextStyle(
-                                fontSize: 20,
-                                color: this.isDeadlineValid()
-                                    ? null
-                                    : Colors.redAccent),
-                          ),
                           onPressed: onDeadlineDateTap,
                           child: Text(
                             textButtonString,
                             style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                                 color: this.isDeadlineValid()
-                                    ? null
-                                    : Colors.grey),
+                                    ? colorScheme.tertiary
+                                    : colorScheme.onInverseSurface
+                            ),
                           ),
                         ))
                   ],
-                ))));
+                )
+            )
+        )
+    );
     return deadlineContainer;
   }
 
@@ -233,25 +253,25 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         weeklyRepetitionBool[weekDayIndex % 7] = true;
       }
     }
-
-    return Opacity(
-        opacity: _animation.value,
-        child: WeekdaySelector(
-          onChanged: (int index) {
-            RepetitionData updatedRepetitionData = repetitionData!;
-            if (updatedRepetitionData.weeklyRepetition != null) {
-              if (updatedRepetitionData.weeklyRepetition!.contains(index)) {
-                updatedRepetitionData.weeklyRepetition!.remove(index);
-              } else {
-                updatedRepetitionData.weeklyRepetition!.add(index);
-              }
-            }
-            setState(() {
-              repetitionData = updatedRepetitionData;
-            });
-          },
-          values: weeklyRepetitionBool,
-        ));
+    return SizedBox.shrink();
+    // return Opacity(
+    //     opacity: _animation.value,
+    //     child: WeekdaySelector(
+    //       onChanged: (int index) {
+    //         RepetitionData updatedRepetitionData = repetitionData!;
+    //         if (updatedRepetitionData.weeklyRepetition != null) {
+    //           if (updatedRepetitionData.weeklyRepetition!.contains(index)) {
+    //             updatedRepetitionData.weeklyRepetition!.remove(index);
+    //           } else {
+    //             updatedRepetitionData.weeklyRepetition!.add(index);
+    //           }
+    //         }
+    //         setState(() {
+    //           repetitionData = updatedRepetitionData;
+    //         });
+    //       },
+    //       values: weeklyRepetitionBool,
+    //     ));
   }
 
   bool isWeeklyRepetitionSelected() {
@@ -319,6 +339,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       return applicableRepetitionsSelectedMap[eachApplicableRepetition.item1]!;
     }).toList();
     return CancelAndProceedTemplateWidget(
+      routeName: repetitionCancelAndProceedRouteName,
       child: Container(
           alignment: Alignment.topCenter,
           child: Column(
@@ -345,12 +366,15 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                           applicableRepetitions[index].item1] = true;
                       RepetitionData? updatedRepetitionData = repetitionData ??
                           RepetitionData(
-                              frequency: applicableRepetitions[index].item1);
+                              frequency: applicableRepetitions[index].item1,
+                              isEnabled: true);
                       updatedRepetitionData.frequency =
                           applicableRepetitions[index].item1;
                       if (applicableRepetitions[index].item1 ==
                           RepetitionFrequency.none) {
-                        updatedRepetitionData = null;
+                        updatedRepetitionData.isEnabled = false;
+                      } else {
+                        updatedRepetitionData.isEnabled = true;
                       }
 
                       setState(() {
@@ -382,13 +406,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       onProceed: this.onProceed,
       onCancel: this.onCancel,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.repetition,
-          style: TileStyles.titleBarStyle,
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.repetition,),
         automaticallyImplyLeading: false,
       ),
     );

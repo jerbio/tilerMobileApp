@@ -1,114 +1,149 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../bloc/onBoarding/on_boarding_bloc.dart';
-import '../../../bloc/onBoarding/on_boarding_state.dart';
-import '../../../styles.dart';
-import '../../components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
-import '../../components/onBoarding/onBoardingProgressIndicator.dart';
-import '../../components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
-import '../../components/onBoarding/subWidgets/primaryLocationWidget.dart';
-import '../../components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
-import '../../components/onBoarding/subWidgets/workDayStartingWidget.dart';
-import '../../routes/authentication/authorizedRoute.dart';
+import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
+import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/components/onBoarding/bottmNavigatorBar/onBoardingBottomBar.dart';
+import 'package:tiler_app/components/onBoarding/onBoardingProgressIndicator.dart';
+import 'package:tiler_app/components/onBoarding/onBoardingSlider.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/energyLevelDescriptionWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/personalProfileWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/primaryLocationWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/professionWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/recurringTasksWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/tileSuggetionWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/tilerUsageWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/timeAndLocationWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/wakeUpTimeWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/workDayStartingWidget.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
+import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
+import 'package:tiler_app/services/api/onBoardingApi.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
+
+
 
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
+
   @override
   _OnboardingViewState createState() => _OnboardingViewState();
 }
 
-Widget renderPending() {
-  return Container(
-    decoration: TileStyles.defaultBackground,
-    child: Center(
-      child: Stack(
-        children: [
-          Center(
-            child: SizedBox(
-              child: CircularProgressIndicator(),
-              height: 200.0,
-              width: 200.0,
-            ),
-          ),
-          Center(
-            child: Image.asset('assets/images/tiler_logo_black.png',
-                fit: BoxFit.cover, scale: 7),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
 class _OnboardingViewState extends State<OnboardingView> {
+
   final List<Widget> pages = [
-    WeakUpTimeWidget(),
+    WakeUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
     PrimaryLocationWidget(),
     WorkDayStartWidget(),
+    TimeAndLocationWidget(),
+    WorkProfileWidget(),
+    PersonalProfileWidget(),
+    ProfessionWidget(),
+    TileSuggestionsWidget(),
+    RecurringTasksWidget(),
+    TilerUsageWidget(),
   ];
+  late ScheduleApi scheduleApi;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleApi = ScheduleApi(
+      getContextCallBack: () => context,
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<OnboardingBloc, OnboardingState>(
-      listener: (context, state) {
-        if (state.step == OnboardingStep.skipped ||
-            state.step == OnboardingStep.submitted) {
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => AuthorizedRoute()));
-        }
-        if (state.step == OnboardingStep.error && state.error != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error!)),
-          );
-        }
-      },
-      builder: (context, state) {
-        return Scaffold(
-          body: SafeArea(
-            child: Stack(
+    // final localizationService = LocalizationService(AppLocalizations.of(context)!);
+    NotificationOverlayMessage notificationOverlayMessage =
+    NotificationOverlayMessage();
+    return BlocProvider(
+      create: (context) => OnboardingBloc(onBoardingApi: OnBoardingApi(), settingsApi: SettingsApi(getContextCallBack: () => context))..add(FetchOnboardingDataEvent()),
+      child: BlocConsumer<OnboardingBloc, OnboardingState>(
+        listener: (context, state) {
+          if (state.step == OnboardingStep.skipped ) {
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => AuthorizedRoute()));
+          }
+          if (state.step == OnboardingStep.submitted) {
+            scheduleApi.buzzSchedule();
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => OnBoardingDescriptionSlider()));
+          }
+          if (state.step == OnboardingStep.error && state.error != null) {
+            notificationOverlayMessage.showToast(
+              context,
+              state.error!,
+              NotificationOverlayMessageType.error,
+            );
+          }
+        },
+
+        builder: (context, state) {
+          return Scaffold(
+            body: Stack(
               children: [
-                if (state.step == OnboardingStep.loading) renderPending(),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 16.0, horizontal: 30.0),
-                      child: OnBoardingProgressIndicator(
-                          currentPage: state.pageNumber ?? 0,
-                          totalPages: pages.length),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: AnimatedSwitcher(
-                          duration: Duration(milliseconds: 300),
-                          transitionBuilder:
-                              (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: child,
-                            );
+                SafeArea(
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 16.0, horizontal: 30.0),
+                        child: OnBoardingProgressIndicator(
+                            currentPage: state.pageNumber ?? 0,
+                            totalPages: pages.length
+                        ),
+                      ),
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onHorizontalDragEnd: (details) {
+                            if (details.primaryVelocity! < 0) {
+                              context.read<OnboardingBloc>().add(NextPageEvent());
+                            } else if (details.primaryVelocity! > 0) {
+                              context.read<OnboardingBloc>().add(PreviousPageEvent());
+                            }
                           },
-                          child: Padding(
-                            key: ValueKey<int>(state.pageNumber ?? 0),
-                            padding:
+                          child: Center(
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 300),
+                              transitionBuilder:
+                                  (Widget child, Animation<double> animation) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                              child: Padding(
+                                key: ValueKey<int>(state.pageNumber ?? 0),
+                                padding:
                                 const EdgeInsets.symmetric(horizontal: 30.0),
-                            child: pages[state.pageNumber ?? 0],
+                                child: pages[state.pageNumber ?? 0],
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    OnboardingBottomNavigationBar(
-                      currentPage: state.pageNumber ?? 0,
-                      totalPages: pages.length,
-                    ),
-                  ],
+                      OnboardingBottomNavigationBar(
+                        currentPage: state.pageNumber ?? 0,
+                        totalPages: pages.length,
+                      ),
+                    ],
+                  ),
                 ),
+                if (state.step == OnboardingStep.loading) PendingWidget(
+                  blurSigma: 10,),
               ],
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

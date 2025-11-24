@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
-import '../../../util.dart';
+
 
 class EditTileDate extends StatefulWidget {
   DateTime time;
   _EditTileDateState? _state;
   Function? onInputChange;
   bool isReadOnly = false;
+  TextStyle? textStyle;
   EditTileDate(
-      {required this.time, this.onInputChange, this.isReadOnly = false});
+      {required this.time,
+      this.onInputChange,
+      this.isReadOnly = false,
+      this.textStyle});
 
   @override
   State<EditTileDate> createState() {
@@ -65,7 +70,10 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
-    const textStyle = TileStyles.editTimeOrDateTimeStyle;
+    final theme=Theme.of(context);
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    TextStyle textStyle =
+        this.widget.textStyle ?? TileTextStyles.editTimeOrDateTime;
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
@@ -79,7 +87,7 @@ class _EditTileDateState extends State<EditTileDate> {
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
-                    color: TileStyles.iconColor,
+                    color: tileThemeExtension.onSurfaceSecondary,
                     size: 25,
                   )),
               Text(

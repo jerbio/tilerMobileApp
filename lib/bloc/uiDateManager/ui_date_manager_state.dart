@@ -7,17 +7,27 @@ abstract class UiDateManagerState extends Equatable {
   List<Object> get props => [];
 }
 
-class UiDateManagerInitial extends UiDateManagerState {
-  DateTime currentDate = Utility.currentTime().dayDate;
-  UiDateManagerInitial();
-}
+enum DateChangeTrigger { buttonPress, dateTimePassed }
 
 class UiDateManagerUpdated extends UiDateManagerState {
   DateTime previousDate;
   DateTime currentDate;
-  UiDateManagerUpdated({required this.currentDate, required this.previousDate});
+  DateChangeTrigger? dateChangeTrigger;
+
+  UiDateManagerUpdated(
+      {required this.currentDate,
+      required this.previousDate,
+      this.dateChangeTrigger});
   @override
   List<Object> get props => [currentDate, previousDate];
+
+  // @override
+  // String toString() {
+  //   return 'previousDate ' +
+  //       previousDate.toString() +
+  //       " || currentDate " +
+  //       currentDate.toString();
+  // }
 }
 
 class LoggedOutUiDateManagerUpdated extends UiDateManagerState {

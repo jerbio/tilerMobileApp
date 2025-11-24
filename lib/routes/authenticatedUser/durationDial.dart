@@ -1,12 +1,8 @@
-import 'dart:ffi';
-
 import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:switch_up/switch_up.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class DurationDial extends StatefulWidget {
@@ -23,8 +19,15 @@ class DurationDialState extends State<DurationDial> {
   Key switchUpID = ValueKey(Utility.getUuid);
   Duration _duration = Duration();
   bool _isInitialize = false;
+  String? _selectedPresetText = null;
   Duration? _selectedPresetValue = null;
   Map<String, Duration> durationStringToDuration = {};
+  List<String>? durationTextCollection;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void onProceedTap() {
     if (this.widget._params != null) {
@@ -33,14 +36,28 @@ class DurationDialState extends State<DurationDial> {
   }
 
   onTabTypeChange(value) {
-    if (value == AppLocalizations.of(context)!.custom) {
+    print("value is:");
+    print(value);
+
+    String durationText = AppLocalizations.of(context)!.custom;
+    if (durationTextCollection != null) {
+      if (value is int) {
+        durationText = durationTextCollection![value];
+      }
+    }
+
+    print("duration text: " + durationText.toString());
+
+    if (durationText == AppLocalizations.of(context)!.custom) {
       setState(() {
         _selectedPresetValue = null;
+        _selectedPresetText = durationText;
       });
     } else {
       setState(() {
-        _selectedPresetValue = durationStringToDuration[value];
+        _selectedPresetValue = durationStringToDuration[durationText];
         _duration = _selectedPresetValue!;
+        _selectedPresetText = durationText;
       });
     }
   }
@@ -52,7 +69,7 @@ class DurationDialState extends State<DurationDial> {
     });
   }
 
-  resetSselectedPresetValue() {
+  resetSelectedPresetValue() {
     if (_selectedPresetValue != null) {
       switchUpID = ValueKey(Utility.getUuid);
     }
@@ -61,6 +78,9 @@ class DurationDialState extends State<DurationDial> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final
     Map durationParams = ModalRoute.of(context)?.settings.arguments as Map;
     if (!_isInitialize) {
       _isInitialize = true;
@@ -76,10 +96,11 @@ class DurationDialState extends State<DurationDial> {
       Expanded(
           child: DurationPicker(
         duration: _duration,
+        key: ValueKey((_selectedPresetValue?.inMinutes ?? "custom-selection")),
         onChange: (val) {
           setState(() {
             _duration = val;
-            resetSselectedPresetValue();
+            resetSelectedPresetValue();
           });
         },
         snapToMins: 5.0,
@@ -88,9 +109,9 @@ class DurationDialState extends State<DurationDial> {
     if (this.widget.presetDurations != null &&
         this.widget.presetDurations!.length > 0) {
       List<Widget> tabButtons = [];
-      List<String> durationTextCollection = <String>[];
+      durationTextCollection = <String>[];
       this.widget.presetDurations!.forEach((eachDuration) {
-        String durationText = eachDuration.inHours > 0
+        String durationText = eachDuration.inHours >= 1
             ? (eachDuration.inHours == 1
                 ? AppLocalizations.of(context)!.oneHour
                 : AppLocalizations.of(context)!
@@ -101,47 +122,44 @@ class DurationDialState extends State<DurationDial> {
                     : AppLocalizations.of(context)!
                         .countMinutes(eachDuration.inMinutes.toString()))
                 : eachDuration.toHuman);
-        durationTextCollection.add(durationText);
+        if (durationTextCollection != null) {
+          durationTextCollection!.add(durationText);
+        }
         durationStringToDuration[durationText] = eachDuration;
         tabButtons.add(
           Text(durationText),
         );
       });
-      if (durationTextCollection.length > 0) {
-        durationTextCollection.add(AppLocalizations.of(context)!.custom);
+      if (durationTextCollection != null &&
+          durationTextCollection!.length > 0) {
+        durationTextCollection!.add(AppLocalizations.of(context)!.custom);
         durationStringToDuration[AppLocalizations.of(context)!.custom] =
             Duration.zero;
-        String switchUpvalue = _selectedPresetValue != null
-            ? durationTextCollection[
-                this.widget.presetDurations!.indexOf(_selectedPresetValue!)]
-            : AppLocalizations.of(context)!.custom;
+        int? presetIndex = durationTextCollection?.indexOf(
+            _selectedPresetText ?? AppLocalizations.of(context)!.custom);
         Widget switchUp = Container(
-          padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
-          key: switchUpID,
-          width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-          child: SwitchUp(
-            items: durationTextCollection,
-            onChanged: onTabTypeChange,
-            value: switchUpvalue,
-            color: TileStyles.oPrimaryColorHSL.toColor(),
-          ),
-        );
+            padding: EdgeInsets.fromLTRB(0, 100, 0, 0),
+            key: switchUpID,
+            child: ToggleSwitch(
+              labels: durationTextCollection,
+              initialLabelIndex: presetIndex,
+              onToggle: onTabTypeChange,
+              activeBgColor: [colorScheme.primary],
+              activeFgColor: colorScheme.onPrimary,
+              inactiveBgColor: colorScheme.inversePrimary,
+              inactiveFgColor: colorScheme.onPrimary,
+              animate: true,
+              customWidths: [100, 100, 100],
+              animationDuration: 300,
+            ));
         widgetColumn.insert(0, switchUp);
       }
     }
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+        routeName: "durationDial",
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.duration,
-            style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
         child: Container(
@@ -149,7 +167,8 @@ class DurationDialState extends State<DurationDial> {
           alignment: Alignment.topCenter,
           child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: widgetColumn),
+              children: widgetColumn
+          ),
         ),
         onProceed: () {
           return this.onProceedTap();

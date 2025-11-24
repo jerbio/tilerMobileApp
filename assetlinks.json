@@ -1,0 +1,9 @@
+[{
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.tiler",
+      "sha256_cert_fingerprints":
+      ["F1:0C:27:96:98:89:42:0C:EB:A8:50:3F:86:7D:C6:CA:DF:36:5B:0A:37:A2:56:62:13:CD:10:DC:D3:04:9C:E1"]
+    }
+  }]

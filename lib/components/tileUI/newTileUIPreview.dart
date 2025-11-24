@@ -5,18 +5,23 @@ import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
-class NewTileSheet extends StatefulWidget {
+class CreatedTileSheet extends StatefulWidget {
   final SubCalendarEvent subEvent;
-  NewTileSheet({required this.subEvent});
-  _NewTileSheetState createState() => _NewTileSheetState();
+  CreatedTileSheet({required this.subEvent});
+  _CreatedTileSheetState createState() => _CreatedTileSheetState();
 }
 
-class _NewTileSheetState extends State<NewTileSheet> {
+class _CreatedTileSheetState extends State<CreatedTileSheet> {
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     return Container(
       child: Column(
         children: [
@@ -38,27 +43,26 @@ class _NewTileSheetState extends State<NewTileSheet> {
                     height: 32,
                     margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                     decoration: BoxDecoration(
-                        color: Color.fromRGBO(31, 31, 31, 0.1),
+                        color: colorScheme.onSurface.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8)),
                     child: Icon(
                       Icons.calendar_month,
-                      color: Color.fromRGBO(0, 0, 0, 0.4),
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
                       size: 20.0,
                     ),
                   ),
                   Text(
-                    this.widget.subEvent.startTime.humanDate,
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontFamily: 'Rubik',
-                        fontWeight: FontWeight.normal,
-                        color: Color.fromRGBO(31, 31, 31, 1)),
+                    this.widget.subEvent.startTime.humanDate(context),
+                    style:TextStyle(
+                      fontFamily: TileTextStyles.rubikFontName,
+                      fontSize: 15,
+                    )
                   )
                 ],
               )),
           FractionallySizedBox(
               alignment: FractionalOffset.center,
-              widthFactor: TileStyles.inputWidthFactor,
+              widthFactor: TileDimensions.inputWidthFactor,
               child: Container(
                   margin: const EdgeInsets.fromLTRB(0, 20, 0, 0),
                   child: TimeScrubWidget(

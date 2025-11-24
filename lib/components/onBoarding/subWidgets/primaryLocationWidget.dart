@@ -1,12 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/locationSearchWidget.dart';
-import '../../../../../bloc/onBoarding/on_boarding_bloc.dart';
-import '../../../../../bloc/onBoarding/on_boarding_event.dart';
-import '../../../../../bloc/onBoarding/on_boarding_state.dart';
-import '../../../../../data/location.dart';
+import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
 
 class PrimaryLocationWidget extends StatefulWidget {
@@ -42,6 +41,9 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state.addressText != null &&
@@ -53,30 +55,23 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
             fontSize: 20.0,
             fontWeight: FontWeight.w400,
           ),
-          decoration: InputDecoration(
-            contentPadding: EdgeInsets.fromLTRB(20, 10, 20, 10),
-            border: OutlineInputBorder(
-              gapPadding: 40,
-              borderRadius: BorderRadius.circular(30.0),
-              borderSide: BorderSide(color: Colors.grey),
-            ),
-            hintText: AppLocalizations.of(context)!.enterAddress,
-            filled: true,
-            isDense: true,
-            fillColor: Colors.transparent,
+          decoration:TileDecorations.onboardingInputDecoration(
+            tileThemeExtension.onSurfaceVariantSecondary,
+            colorScheme.tertiary,
+            AppLocalizations.of(context)!.enterAddress,
           ),
           controller: locationAddressController,
         );
         Widget locationSearchWidget = Flexible(
           child: Material(
             child: LocationSearchWidget(
-                onChanged: (address) {
-                  context
-                      .read<OnboardingBloc>()
-                      .add(AddressTextChanged(address));
-                },
-                textField: addressTextField,
-                onLocationSelection: onAutoSuggestedLocationTap),
+              includeDeviceLocation: false,
+              onChanged: (address) {
+                context.read<OnboardingBloc>().add(AddressTextChanged(address));
+              },
+              textField: addressTextField,
+              onLocationSelection: onAutoSuggestedLocationTap,
+            ),
           ),
         );
 

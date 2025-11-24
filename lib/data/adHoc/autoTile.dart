@@ -1,14 +1,16 @@
+import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/util.dart';
 
-class AutoTile {
+class AutoTile with PreTile {
   String id = Utility.getUuid;
-  String description;
+  String? description;
   String? image;
   Duration? duration;
   Location? location;
   String? categoryId;
   DateTime? startTime;
+  DateTime? endTime;
   bool isLastCard;
   AutoTile(
       {required this.description,
@@ -16,5 +18,6 @@ class AutoTile {
       this.duration,
       this.categoryId,
       this.isLastCard = false,
-      this.startTime});
+      this.startTime,
+      this.endTime});
 }

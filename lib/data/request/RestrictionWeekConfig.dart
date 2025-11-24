@@ -5,6 +5,7 @@ part 'RestrictionWeekConfig.g.dart';
 @JsonSerializable(explicitToJson: true)
 class RestrictionWeekConfig {
   List<RestrictionWeekDayConfig>? WeekDayOption;
+  String? restrictionProfileId;
   String isEnabled = 'false';
   String timeZone = 'utc';
   RestrictionWeekConfig();

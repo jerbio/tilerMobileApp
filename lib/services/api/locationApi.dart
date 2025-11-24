@@ -5,9 +5,12 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/util.dart';
 import '../../constants.dart' as Constants;
 
 class LocationApi extends AppApi {
+  LocationApi({required Function? getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   Future<List<Location>>? chainPending;
   var nextRequestParams = [];
 
@@ -52,7 +55,8 @@ class LocationApi extends AppApi {
 
       final queryParameters = {
         'Data': name,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'MobileApp': true.toString(),
         'IncludeMapSearch': includeMapSearch.toString()
       };
@@ -63,7 +67,7 @@ class LocationApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Location/Name', injectedLocationParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       if (chainPending != null) {
         var param = {
@@ -115,7 +119,8 @@ class LocationApi extends AppApi {
         'Id': id,
         'SubEventId': subEventId,
         'CalendarEventId': calendarId,
-        'TimeZoneOffset': DateTime.now().timeZoneOffset.inHours.toString(),
+        'TimeZoneOffset':
+            Utility.currentTime().timeZoneOffset.inHours.toString(),
         'MobileApp': true.toString(),
       };
 
@@ -125,7 +130,7 @@ class LocationApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Location', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);

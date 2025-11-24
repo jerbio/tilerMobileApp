@@ -1,5 +1,6 @@
 import 'package:tiler_app/util.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import '../../constants.dart' as Constants;
 
 class AnalysticSession {
   final String _sessionId = Utility.uuid.toString();
@@ -40,8 +41,8 @@ class AnalysticsSignal {
     return AnalysticsSignal(session: newSession, tag: signalTag);
   }
 
-  Map<String, dynamic> toJson() {
-    Map<String, dynamic> retValue = {
+  Map<String, Object>? toJson() {
+    Map<String, Object> retValue = {
       'name': this.tag,
       'sessionId': this.session.sessionId,
       'sequnceNumber': this.session.sequenceNumber,
@@ -58,8 +59,12 @@ class AnalysticsSignal {
   }
 
   static Future send(String tag, {Map? additionalInfo}) async {
+    return "no-tag-set";
     if (tag.isEmpty) {
       return "no-tag-set";
+    }
+    if (Constants.isDebug) {
+      return;
     }
     AnalysticsSignal nextSignal = AnalysticsSignal.nextSignal(
         signalTag: tag, additionalInfo: additionalInfo);

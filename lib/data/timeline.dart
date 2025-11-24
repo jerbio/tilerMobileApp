@@ -3,6 +3,7 @@ import 'package:tiler_app/util.dart';
 
 class Timeline with TimeRange {
   String? id = Utility.getUuid;
+  List<Timeline>? occupiedSlots;
 
   DateTime get startTime {
     return Utility.localDateTimeFromMs(this.start!.toInt());
@@ -75,6 +76,20 @@ class Timeline with TimeRange {
       endString = json['end'].toString();
     }
 
+    if (json.containsKey('id') && json['id'] != null) {
+      id = json['id'] as String?;
+    }
+
+    String occupiedSlotsKey = "occupiedSlots";
+    if (json.containsKey(occupiedSlotsKey) && json[occupiedSlotsKey] != null) {
+      if (json[occupiedSlotsKey] is List) {
+        occupiedSlots = (json[occupiedSlotsKey] as List)
+            .where((element) => element != null)
+            .map<Timeline>((e) => Timeline.fromJson(e))
+            .toList();
+      }
+    }
+
     if (startString != null && endString != null) {
       this.start = int.parse(startString);
       this.end = int.parse(endString);
@@ -89,5 +104,12 @@ class Timeline with TimeRange {
     this.start = startTime.millisecondsSinceEpoch.toInt();
     this.end = startTime.add(duration).millisecondsSinceEpoch.toInt();
     assert(this.start! <= this.end!);
+  }
+
+  bool isEquivalent(Timeline other) {
+    if (this == other) {
+      return true;
+    }
+    return this.start == other.start && this.end == other.end;
   }
 }

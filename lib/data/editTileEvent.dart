@@ -1,3 +1,7 @@
+import 'package:tiler_app/data/repetition.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/uiConfig.dart';
+
 class EditTilerEvent {
   String? id;
   String? name;
@@ -13,6 +17,10 @@ class EditTilerEvent {
   String? addressDescription;
   String? address;
   bool? isAddressVerified;
+  Repetition? repetition;
+  UIConfig? uiConfig;
+  String? restrictionProfileId;
+  RestrictionProfile? restrictionProfile;
 
   bool get isValid {
     bool retValue = true;

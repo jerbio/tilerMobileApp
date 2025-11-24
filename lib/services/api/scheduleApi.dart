@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/combination.dart';
 import 'package:tiler_app/data/driveTime.dart';
 import 'package:tiler_app/data/overview_item.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'dart:convert';
 
@@ -21,19 +24,22 @@ import '../../constants.dart' as Constants;
 
 class ScheduleApi extends AppApi {
   bool preserveSubEventList = true;
+  ScheduleApi({required Function getContextCallBack})
+      : super(getContextCallBack: getContextCallBack);
   List<SubCalendarEvent> adhocGeneratedSubEvents = <SubCalendarEvent>[];
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>> getSubEvents(
-      Timeline timeLine) async {
+  Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
+      getSubEvents(Timeline timeLine) async {
     // return await getAdHocSubEvents(timeLine);
     // return await getAdHocSubEvents(Timeline.fromDateTimeAndDuration(
     //     Utility.todayTimeline().endTime.add(Utility.oneDay), Utility.oneDay));
     return await getSubEventsInScheduleRequest(timeLine);
   }
 
-  Future<Tuple2<List<Timeline>, List<SubCalendarEvent>>>
+  Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
-    print("|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
+    // Utility.debugPrint(
+    //     "|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
     if ((await this.authentication.isUserAuthenticated()).item1) {
       await checkAndReplaceCredentialCache();
 
@@ -54,7 +60,7 @@ class ScheduleApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
 
         var response = await http.get(uri, headers: header);
@@ -62,9 +68,9 @@ class ScheduleApi extends AppApi {
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
               jsonResult['Content'].containsKey('subCalendarEvents')) {
-            List subEventJson = jsonResult['Content']['subCalendarEvents'];
+            var contentData = jsonResult['Content'];
+            List subEventJson = contentData['subCalendarEvents'];
             List sleepTimelinesJson = [];
-            print("Got more data " + subEventJson.length.toString());
 
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
@@ -74,16 +80,38 @@ class ScheduleApi extends AppApi {
                 .map((eachSubEventJson) =>
                     SubCalendarEvent.fromJson(eachSubEventJson))
                 .toList();
-            Tuple2<List<Timeline>, List<SubCalendarEvent>> retValue =
-                new Tuple2(sleepTimelines, subEvents);
+            ScheduleStatus scheduleStatus = new ScheduleStatus();
+            if (contentData.containsKey('analysisId')) {
+              scheduleStatus.analysisId = contentData["analysisId"];
+            }
+            if (contentData.containsKey('evaluationId')) {
+              scheduleStatus.evaluationId = contentData["evaluationId"];
+            }
+
+            subEvents.forEach((eachSubEvent) {
+              if (scheduleStatus.evaluationId != null &&
+                  scheduleStatus.evaluationId!.isNotEmpty) {
+                eachSubEvent.evaluationId = scheduleStatus.evaluationId;
+              }
+              if (scheduleStatus.analysisId != null &&
+                  scheduleStatus.analysisId!.isNotEmpty) {
+                eachSubEvent.analysisId = scheduleStatus.analysisId;
+              }
+            });
+
+            Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>
+                retValue =
+                new Tuple3(sleepTimelines, subEvents, scheduleStatus);
             return retValue;
           }
         }
         throw TilerError(
-            message: 'Tiler disagrees with you, please try again later');
+            Message: 'Tiler disagrees with you, please try again later');
       }
     }
-    var retValue = new Tuple2<List<Timeline>, List<SubCalendarEvent>>([], []);
+    var retValue =
+        new Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>(
+            [], [], new ScheduleStatus());
     return retValue;
   }
 
@@ -106,27 +134,73 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/daySummarys', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
+      }
+      DateTime startOfRequest = Utility.currentTime();
+      var response = await http.get(uri, headers: header);
+      if (response.statusCode == HttpStatus.ok) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          if (isContentInResponse(jsonResult)) {
+            Map jsDayIndexToTimelineSummary = jsonResult['Content'];
+            Map<int, TimelineSummary> retValue = {};
+
+            for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
+              int jsDayIndex = int.parse(jsDayIndexString);
+              DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);
+              Map<String, dynamic> timelineSummaryJson =
+                  jsDayIndexToTimelineSummary[jsDayIndexString];
+              TimelineSummary timelineSummary =
+                  TimelineSummary.subCalendarEventFromJson(timelineSummaryJson);
+              timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
+              retValue[dateOfFirst.universalDayIndex] = timelineSummary;
+            }
+
+            return retValue;
+          }
+        }
+      }
+      DateTime endOfRequest = Utility.currentTime();
+      Duration awaitedDuration = Duration(
+          milliseconds: endOfRequest.millisecondsSinceEpoch -
+              startOfRequest.millisecondsSinceEpoch);
+
+      print("Response code is " + response.statusCode.toString());
+      print("awaitedDuration " + awaitedDuration.toString());
+      throw TilerError();
+    }
+    throw TilerError();
+  }
+
+  Future<ScheduleStatus> getScheduleStatus() async {
+    if ((await this.authentication.isUserAuthenticated()).item1) {
+      await checkAndReplaceCredentialCache();
+      String tilerDomain = Constants.tilerDomain;
+      String url = tilerDomain;
+
+      var timeline = Utility.initialScheduleTimeline;
+
+      DateTime dateTime = Utility.currentTime();
+      final queryParameters = {
+        'StartRange': timeline.start!.toInt().toString(),
+        'EndRange': timeline.end!.toInt().toString(),
+        'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
+        'MobileApp': true.toString()
+      };
+      Map<String, dynamic> updatedParams = await injectRequestParams(
+          queryParameters,
+          includeLocationParams: false);
+      Uri uri = Uri.https(url, 'api/Schedule/status', updatedParams);
+      var header = this.getHeaders();
+      if (header == null) {
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          Map jsDayIndexToTimelineSummary = jsonResult['Content'];
-          Map<int, TimelineSummary> retValue = {};
-
-          for (String jsDayIndexString in jsDayIndexToTimelineSummary.keys) {
-            int jsDayIndex = int.parse(jsDayIndexString);
-            DateTime dateOfFirst = Utility.getTimeFromIndexForJS(jsDayIndex);
-            Map<String, dynamic> timelineSummaryJson =
-                jsDayIndexToTimelineSummary[jsDayIndexString];
-            TimelineSummary timelineSummary =
-                TimelineSummary.subCalendarEventFromJson(timelineSummaryJson);
-            timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
-            retValue[dateOfFirst.universalDayIndex] = timelineSummary;
-          }
-
-          return retValue;
+          Map<String, dynamic> scheduleStatusJson = jsonResult['Content'];
+          return ScheduleStatus.fromJson(scheduleStatusJson);
         }
       }
       throw TilerError();
@@ -151,7 +225,7 @@ class ScheduleApi extends AppApi {
 
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.get(uri, headers: header);
         var jsonResult = jsonDecode(response.body);
@@ -250,7 +324,7 @@ class ScheduleApi extends AppApi {
   Future<Tuple2<SubCalendarEvent?, TilerError?>> addNewTile(
       NewTile tile) async {
     TilerError error = new TilerError();
-    error.message = "Did not send request";
+    error.Message = "Did not send request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -281,13 +355,14 @@ class ScheduleApi extends AppApi {
         Uri uri = Uri.https(url, 'api/Schedule/Event');
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.post(uri,
             headers: header, body: jsonEncode(injectedParameters));
 
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
+        print(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
             var subEventJson = jsonResult['Content'];
@@ -298,9 +373,9 @@ class ScheduleApi extends AppApi {
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching TIler servers";
+          error.Message = "Issues with reaching TIler servers";
         }
       }
     }
@@ -309,7 +384,7 @@ class ScheduleApi extends AppApi {
 
   Future procrastinateAll(Duration duration) async {
     TilerError error = new TilerError();
-    error.message = "Did not send procrastinate all request";
+    error.Message = "Did not send procrastinate all request";
     bool userIsAuthenticated = true;
     userIsAuthenticated =
         (await this.authentication.isUserAuthenticated()).item1;
@@ -329,21 +404,21 @@ class ScheduleApi extends AppApi {
         Uri uri = Uri.https(url, 'api/Schedule/ProcrastinateAll');
         var header = this.getHeaders();
         if (header == null) {
-          throw TilerError(message: 'Issues with authentication');
+          throw TilerError(Message: 'Issues with authentication');
         }
         var response = await http.post(uri,
             headers: header, body: jsonEncode(injectedParameters));
         var jsonResult = jsonDecode(response.body);
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
           return;
         }
         if (isTilerRequestError(jsonResult)) {
           var errorJson = jsonResult['Error'];
           error = TilerError.fromJson(errorJson);
-          throw FormatException(error.message!);
+          throw FormatException(error.Message!);
         } else {
-          error.message = "Issues with reaching TIler servers";
+          error.Message = "Issues with reaching TIler servers";
         }
       }
     }
@@ -351,12 +426,13 @@ class ScheduleApi extends AppApi {
   }
 
   Future reviseSchedule() async {
+    // return buzzSchedule();
     TilerError error = new TilerError();
-    error.message = "Failed to revise schedule";
+    error.Message = "Failed to revise schedule";
 
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
         return;
       }
@@ -365,7 +441,28 @@ class ScheduleApi extends AppApi {
         error = TilerError.fromJson(errorJson);
         throw error;
       } else {
-        error.message = "Issues with reaching Tiler servers";
+        error.Message = "Issues with reaching Tiler servers";
+        throw error;
+      }
+    });
+  }
+
+  Future buzzSchedule() async {
+    TilerError error = new TilerError();
+    error.Message = "Failed to Buzz schedule";
+
+    return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
+      var jsonResult = jsonDecode(response.body);
+      error.Message = "Issues with reaching Tiler servers";
+      if (isJsonResponseOk(jsonResult)) {
+        return;
+      }
+      if (isTilerRequestError(jsonResult)) {
+        var errorJson = jsonResult['Error'];
+        error = TilerError.fromJson(errorJson);
+        throw error;
+      } else {
+        error.Message = "Issues with reaching Tiler servers";
         throw error;
       }
     });
@@ -373,19 +470,22 @@ class ScheduleApi extends AppApi {
 
   Future shuffleSchedule() async {
     TilerError error = new TilerError();
-    error.message = "Failed to shuffle schedule";
+    error.Message = "Failed to shuffle schedule";
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
-      var jsonResult = jsonDecode(response.body);
-      error.message = "Issues with reaching Tiler servers";
-      if (isJsonResponseOk(jsonResult)) {
-        return;
-      }
-      if (isTilerRequestError(jsonResult)) {
-        var errorJson = jsonResult['Error'];
-        error = TilerError.fromJson(errorJson);
-        throw FormatException(error.message!);
-      } else {
-        error.message = "Issues with reaching Tiler servers";
+      error.Message = "Issues with reaching Tiler servers";
+      if (response.statusCode == HttpStatus.accepted) {
+        var jsonResult = jsonDecode(response.body);
+        if (isJsonResponseOk(jsonResult)) {
+          return;
+        }
+
+        if (isTilerRequestError(jsonResult)) {
+          var errorJson = jsonResult['Error'];
+          error = TilerError.fromJson(errorJson);
+          throw FormatException(error.Message!);
+        } else {
+          error.Message = "Issues with reaching Tiler servers";
+        }
       }
     });
   }
@@ -409,13 +509,13 @@ class ScheduleApi extends AppApi {
       Uri uri = Uri.https(url, 'api/Schedule/timelineSummary', updatedParams);
       var header = this.getHeaders();
       if (header == null) {
-        throw TilerError(message: 'Issues with authentication');
+        throw TilerError(Message: 'Issues with authentication');
       }
       var response = await http.get(uri, headers: header);
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
-          print(jsonResult);
+          // print(jsonResult);
           return TimelineSummary.subCalendarEventFromJson(
               jsonResult['Content']);
         }
@@ -442,7 +542,7 @@ class ScheduleApi extends AppApi {
 
           var header = this.getHeaders();
           if (header == null) {
-            throw TilerError(message: 'Issues with authentication');
+            throw TilerError(Message: 'Issues with authentication');
           }
 
           final response = await http.get(uri, headers: header);
@@ -450,7 +550,7 @@ class ScheduleApi extends AppApi {
           if (response.statusCode == 200 || response.statusCode == 201) {
             final json = jsonDecode(response.body);
 
-            final todayDate = DateTime.now();
+            final todayDate = Utility.currentTime();
             final newtodayDate =
                 DateTime(todayDate.year, todayDate.month, todayDate.day);
 

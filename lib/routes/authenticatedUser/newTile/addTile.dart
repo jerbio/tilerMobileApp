@@ -5,12 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:switch_up/switch_up.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
+import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
+import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -26,23 +32,28 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
-import '../../../bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
 
 class AddTile extends StatefulWidget {
-  Function? onAddTileClose;
-  Function? onAddingATile;
-  AutoTile? autoTile;
-  DateTime? autoDeadline;
+  final Function? onAddTileClose;
+  final Function? onAddingATile;
+  final PreTile? preTile;
+  final DateTime? autoDeadline;
   static final String routeName = '/AddTile';
   Map? newTileParams;
 
-  AddTile({this.autoTile, this.autoDeadline});
+  AddTile(
+      {this.preTile,
+      this.autoDeadline,
+      this.onAddTileClose,
+      this.onAddingATile,
+      Key? key})
+      : super(key: key);
   @override
   AddTileState createState() => AddTileState();
 }
@@ -51,38 +62,17 @@ class AddTileState extends State<AddTile> {
   Key switchUpKey = Key(Utility.getUuid);
   late AutoTile? autoTile;
   bool isAppointment = false;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color populatedTextColor = Colors.white;
-  final CarouselController tilerCarouselController = CarouselController();
+  late Color unPopulatedOnSurfaceColor;
+  late Color populatedOnSurfaceColor ;
+  late Color inputFieldIconColor;
+  final CarouselSliderController tilerCarouselController =
+      CarouselSliderController();
   String tileNameText = '';
   String splitCountText = '';
-  final LocationApi locationApi = LocationApi();
+
   Location? _homeLocation;
   Location? _workLocation;
-  final BoxDecoration boxDecoration = BoxDecoration(
-      color: Color.fromRGBO(31, 31, 31, 0.05),
-      border: Border.all(
-        color: TileStyles.primaryColorDarkHSL.toColor(),
-        width: 1,
-      ),
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ));
-  final BoxDecoration populatedDecoration = BoxDecoration(
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ),
-      gradient: LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          TileStyles.primaryColorDarkHSL.toColor(),
-          TileStyles.primaryColorLightHSL.toColor()
-        ],
-      ));
+
   TextEditingController tileNameController = TextEditingController();
   TextEditingController tileDeadline = TextEditingController();
   TextEditingController splitCountController = TextEditingController();
@@ -101,48 +91,86 @@ class AddTileState extends State<AddTile> {
   String? _restrictionProfileName;
   RestrictionProfile? _restrictionProfile;
   bool _isRestictionProfileManuallySet = false;
-  ScheduleApi scheduleApi = ScheduleApi();
-  SettingsApi settingsApi = SettingsApi();
+  late ScheduleApi scheduleApi;
+  late SettingsApi settingsApi;
+  late final LocationApi locationApi;
   StreamSubscription? pendingSendTextRequest;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
   TilePriority priority = TilePriority.medium;
+  static final String addTileCancelAndProceedRouteName =
+      "addTileCancelAndProceedRouteName";
 
+  final EdgeInsets configUpdateIconPadding =
+      const EdgeInsets.fromLTRB(5, 2, 5, 5);
+  final EdgeInsets configUpdatePadding =
+      const EdgeInsets.fromLTRB(5, 10, 10, 7);
+  bool isPendingAutoResult = false;
+  final inputBorderRadius = TileDimensions.inputFieldRadius;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late BoxDecoration boxDecoration;
+  late BoxDecoration populatedDecoration;
   @override
   void initState() {
+    scheduleApi = ScheduleApi(getContextCallBack: () => context);
+    settingsApi = SettingsApi(getContextCallBack: () => context);
+    locationApi = LocationApi(getContextCallBack: () => context);
     if (this.widget.autoDeadline != null) {
       _endTime = this.widget.autoDeadline!;
     }
-    if (this.widget.autoTile != null) {
-      _location = this.widget.autoTile!.location;
+    if (this.widget.preTile != null) {
+      _location = this.widget.preTile!.location;
+      print("location in preTile: ${_location}");
       tileNameController =
-          TextEditingController(text: this.widget.autoTile!.description);
-      _duration = this.widget.autoTile!.duration;
-      _startTime = this.widget.autoTile!.startTime ?? Utility.currentTime();
+          TextEditingController(text: this.widget.preTile!.description);
+      _duration = this.widget.preTile!.duration;
+      _startTime = this.widget.preTile!.startTime ?? Utility.currentTime();
+      if (_duration != null) {
+        _isDurationManuallySet = true;
+      }
       if (_location == null) {
         var future = new Future.delayed(
             const Duration(milliseconds: Constants.onTextChangeDelayInMs));
         // ignore: cancel_subscriptions
         StreamSubscription streamSubScription =
             future.asStream().listen((event) {
-          this
-              .scheduleApi
-              .getAutoResult(this.widget.autoTile!.description)
-              .then((remoteTileResponse) {
-            Location? _locationResponse;
-            if (remoteTileResponse.item2.isNotEmpty) {
-              _locationResponse = remoteTileResponse.item2.last;
-            }
-            if (mounted) {
+          if (this
+              .widget
+              .preTile!
+              .description
+              .isNot_NullEmptyOrWhiteSpace(minLength: 3)) {
+            setState(() {
+              isPendingAutoResult = true;
+            });
+            this
+                .scheduleApi
+                .getAutoResult(this.widget.preTile!.description!)
+                .then((remoteTileResponse) {
               setState(() {
-                if (!_isLocationManuallySet) {
-                  updateLocation(_locationResponse);
-                }
+                isPendingAutoResult = false;
               });
-              isSubmissionReady();
-            }
-          });
+              Location? _locationResponse;
+              if (remoteTileResponse.item2.isNotEmpty) {
+                _locationResponse = remoteTileResponse.item2.last;
+              }
+              if (mounted) {
+                setState(() {
+                  if (!_isLocationManuallySet) {
+                    updateLocation(_locationResponse);
+                  }
+                });
+                isSubmissionReady();
+              }
+            }).whenComplete(() {
+              if (mounted) {
+                setState(() {
+                  isPendingAutoResult = false;
+                });
+              }
+            });
+          }
         });
 
         setState(() {
@@ -208,12 +236,24 @@ class AddTileState extends State<AddTile> {
     super.initState();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    boxDecoration= TileDecorations.configUpdate_notSelected(colorScheme.primary);
+    populatedDecoration= TileDecorations.configUpdate_Selected(colorScheme.primary);
+    populatedOnSurfaceColor=colorScheme.onPrimary;
+    unPopulatedOnSurfaceColor=colorScheme.primary;
+    inputFieldIconColor=colorScheme.primary;
+
+  }
+
   void _onProceedTap() {
     return this.onSubmitButtonTap();
   }
 
   void onTileNameInput() {
-    // isSubmissionReady();
     if (tileNameText != tileNameController.text) {
       if (tileNameController.text.length >
           Constants.autoCompleteTriggerCharacterCount) {
@@ -362,15 +402,18 @@ class AddTileState extends State<AddTile> {
 
     Function retValue = () async {
       if (_isDurationManuallySet && _isLocationManuallySet ||
-          (this.widget.autoTile != null &&
-              this.widget.autoTile!.duration != null &&
-              this.widget.autoTile!.location != null)) {
+          (this.widget.preTile != null &&
+              this.widget.preTile!.duration != null &&
+              this.widget.preTile!.location != null)) {
         return;
       }
       var future = new Future.delayed(
           const Duration(milliseconds: Constants.onTextChangeDelayInMs));
       // ignore: cancel_subscriptions
       StreamSubscription streamSubScription = future.asStream().listen((event) {
+        setState(() {
+          isPendingAutoResult = true;
+        });
         this
             .scheduleApi
             .getAutoResult(tileNameController.text)
@@ -417,6 +460,12 @@ class AddTileState extends State<AddTile> {
             });
             isSubmissionReady();
           }
+        }).whenComplete(() {
+          if (mounted) {
+            setState(() {
+              isPendingAutoResult = false;
+            });
+          }
         });
       });
       if (mounted) {
@@ -437,101 +486,98 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(
             width: 380,
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
             child: TextField(
               controller: tileNameController,
-              style: TextStyle(
-                color: TileStyles.primaryColorDarkHSL.toColor(),
+              style:TextStyle(
+                fontFamily: TileTextStyles.rubikFontName,
                 fontSize: 20,
-                fontFamily: TileStyles.rubikFontName,
               ),
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.tileNameStar,
-                hintStyle:
-                    TextStyle(color: TileStyles.primaryColorDarkHSL.toColor()),
+                hintStyle: TextStyle(color: colorScheme.inversePrimary
+                    ),
                 filled: true,
                 isDense: true,
-                contentPadding: EdgeInsets.fromLTRB(10, 15, 10, 15),
-                fillColor: textBackgroundColor,
+                contentPadding: TileSpacing.inputFieldPadding,
+                fillColor: colorScheme.surfaceContainerLowest,
                 border: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(50.0),
-                  ),
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
-                  borderSide: BorderSide(color: textBorderColor, width: 2),
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
+                  borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: const BorderRadius.all(
-                    const Radius.circular(8.0),
-                  ),
+                  borderRadius: TileDimensions.inputFieldBorderRadius,
                   borderSide: BorderSide(
-                    color: textBorderColor,
+                    color: colorScheme.onInverseSurface,
                     width: 1.5,
                   ),
                 ),
               ),
-            )));
+            ),
+        ),
+    );
     return tileNameContainer;
   }
 
   Widget getSplitCountWidget() {
     Widget splitCountContainer = FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
-        child: Container(
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(AppLocalizations.of(context)!.howManyTimes,
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
-                SizedBox(
-                    width: 60,
-                    child: TextField(
-                      controller: splitCountController,
-                      keyboardType: TextInputType.numberWithOptions(
-                          signed: true, decimal: true),
-                      inputFormatters: <TextInputFormatter>[
-                        FilteringTextInputFormatter.digitsOnly
-                      ],
-                      decoration: InputDecoration(
-                        hintText: AppLocalizations.of(context)!.once,
-                        hintStyle: TextStyle(
-                            color: TileStyles.oPrimaryColorHSL.toColor()),
-                        filled: true,
-                        isDense: true,
-                        contentPadding: EdgeInsets.all(10),
-                        fillColor: textBackgroundColor,
-                        border: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(50.0),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(5.0),
-                          ),
-                          borderSide:
-                              BorderSide(color: Colors.white, width: 0.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: const BorderRadius.all(
-                            const Radius.circular(5.0),
-                          ),
-                          borderSide:
-                              BorderSide(color: textBorderColor, width: 0.5),
-                        ),
+      widthFactor: TileDimensions.widthRatio,
+      child: Container(
+        height: 60,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+                AppLocalizations.of(context)!.howManyTimes,
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700
+                ),
+            ),
+            SizedBox(
+                width: 60,
+                child: TextField(
+                  controller: splitCountController,
+                  keyboardType: TextInputType.numberWithOptions(
+                      signed: true, decimal: true),
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.digitsOnly
+                  ],
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context)!.once,
+                    hintStyle: TextStyle(color: colorScheme.primary),
+                    filled: true,
+                    isDense: true,
+                    contentPadding: EdgeInsets.all(10),
+                    fillColor: colorScheme.surfaceContainerLowest,
+                    border: OutlineInputBorder(
+                      borderRadius: const BorderRadius.all(
+                        const Radius.circular(50.0),
                       ),
-                    ))
-              ],
-            )));
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(
+                        inputBorderRadius,
+                      ),
+                      borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(inputBorderRadius),
+                      borderSide:
+                          BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
+                    ),
+                  ),
+                ))
+          ],
+        ),
+      ),
+    );
     return splitCountContainer;
   }
 
@@ -570,43 +616,52 @@ class AddTileState extends State<AddTile> {
       }
     }
     Widget retValue = new GestureDetector(
-        onTap: setDuration,
-        child: FractionallySizedBox(
-            widthFactor: TileStyles.widthRatio,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
+      onTap: setDuration,
+      child: FractionallySizedBox(
+        widthFactor: TileDimensions.widthRatio,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.all(
+                inputBorderRadius,
+              ),
+              border: Border.all(
+                color: colorScheme.onInverseSurface,
+                width: 1.5,
+              )),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
+              Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: 20,
                     ),
-                    border: Border.all(
-                      color: textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: setDuration,
-                          child: Text(
-                            textButtonString,
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                            ),
-                          ),
-                        ))
-                  ],
-                ))));
+                  ),
+                  onPressed: setDuration,
+                  child: Text(
+                    textButtonString,
+                    style: textButtonString ==
+                            AppLocalizations.of(context)!.durationStar
+                        ? TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: colorScheme.inversePrimary)
+                        : TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: colorScheme.onSurface),
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
     return retValue;
   }
 
@@ -645,17 +700,19 @@ class AddTileState extends State<AddTile> {
     }
 
     if (_repetitionData != null) {
-      isRepetitionSet = true;
+      isRepetitionSet = _repetitionData!.isEnabled;
     }
 
     Widget locationConfigButton = ConfigUpdateButton(
       text: locationName,
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
-        color: isLocationConfigSet ? populatedTextColor : iconColor,
+        color: isLocationConfigSet ? populatedOnSurfaceColor :unPopulatedOnSurfaceColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
+      textColor: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Location locationHolder = _location ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
@@ -684,12 +741,6 @@ class AddTileState extends State<AddTile> {
               _location = populatedLocation;
               _isLocationManuallySet = true;
               updateLocation(_location);
-              // if (!_isRestictionProfileManuallySet &&
-              //     _location != null &&
-              //     _listedRestrictionProfile != null &&
-              //     _listedRestrictionProfile!.isNotEmpty) {
-              //   if (_location!.description == Constants.workLocationNickName) {}
-              // }
             }
           });
         });
@@ -698,16 +749,18 @@ class AddTileState extends State<AddTile> {
 
     Widget repetitionConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.repetition,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.repeat_outlined,
-          color: isRepetitionSet ? populatedTextColor : iconColor,
+          color: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
         ),
         decoration: isRepetitionSet
             ? (isRepetitionValid()
                 ? populatedDecoration
-                : TileStyles.invalidBoxDecoration)
+                : TileDecorations.invalidBoxDecoration)
             : boxDecoration,
-        textColor: isRepetitionSet ? populatedTextColor : iconColor,
+        textColor: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
         onPress: () {
           Timeline tileTimeline = Utility.todayTimeline();
           RepetitionData? repetitionData = _repetitionData?.clone();
@@ -725,7 +778,7 @@ class AddTileState extends State<AddTile> {
             'tileTimeline': tileTimeline,
           };
           AnalysticsSignal.send('ADD_TILE_NEWTILE_REPETITION_OPEN');
-          Navigator.pushNamed(context, '/repetitionRoute',
+          Navigator.pushNamed(context, '/RepetitionRoute',
                   arguments: repetitionParams)
               .whenComplete(() {
             RepetitionData? updatedRepetitionData =
@@ -737,7 +790,8 @@ class AddTileState extends State<AddTile> {
             }
 
             repetitionParams['updatedRepetition'] as RepetitionData?;
-            if (updatedRepetitionData != null) {
+            if (updatedRepetitionData != null &&
+                updatedRepetitionData.isEnabled) {
               setState(() {
                 _repetitionData =
                     isRepetitionEndValid ? updatedRepetitionData : null;
@@ -751,18 +805,22 @@ class AddTileState extends State<AddTile> {
             isSubmissionReady();
           });
         });
+
+    //ey: this widget isn't used
     Widget reminderConfigButton = ConfigUpdateButton(
         text: AppLocalizations.of(context)!.reminder,
+        iconPadding: configUpdateIconPadding,
+        padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
-          color: iconColor,
+          color: unPopulatedOnSurfaceColor,
         ),
         decoration: BoxDecoration(
-            color: Color.fromRGBO(31, 31, 31, 0.05),
+            color: colorScheme.onSurface.withValues(alpha: 0.05),
             borderRadius: BorderRadius.all(
               const Radius.circular(10.0),
             )),
-        textColor: iconColor,
+        textColor: unPopulatedOnSurfaceColor,
         onPress: () {
           final scaffold = ScaffoldMessenger.of(context);
           scaffold.showSnackBar(
@@ -774,17 +832,20 @@ class AddTileState extends State<AddTile> {
             ),
           );
         });
+
     Widget timeRestrictionsConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: isTimeRestrictionConfigSet
           ? _restrictionProfileName ?? AppLocalizations.of(context)!.restriction
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
       prefixIcon: Icon(
         Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
+        color: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       ),
       decoration:
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedTextColor : iconColor,
+      textColor: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': _restrictionProfile,
@@ -827,32 +888,35 @@ class AddTileState extends State<AddTile> {
 
     BoxDecoration colorConfigUpdateDecoration = boxDecoration;
     Color selectedColor =
-        (isColorConfigSet ? (_color ?? populatedTextColor) : iconColor);
+        (isColorConfigSet ? (_color ?? populatedOnSurfaceColor) :unPopulatedOnSurfaceColor);
     Color inverseColor = Color.fromRGBO(255 - selectedColor.red,
         255 - selectedColor.green, 255 - selectedColor.blue, 1);
     if (isColorConfigSet) {
       colorConfigUpdateDecoration = BoxDecoration(
-          borderRadius: BorderRadius.all(
-            const Radius.circular(10.0),
-          ),
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [
-              selectedColor.withLightness(0.5),
-              selectedColor.withLightness(0.8)
-            ],
-          ));
+        borderRadius: BorderRadius.all(
+          const Radius.circular(10.0),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            selectedColor.withLightness(0.5),
+            selectedColor.withLightness(0.8)
+          ],
+        ),
+      );
     }
 
     Widget colorPickerConfigButton = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
-        color: isColorConfigSet ? (inverseColor) : iconColor,
+        color: isColorConfigSet ? (inverseColor) : unPopulatedOnSurfaceColor,
       ),
       decoration: colorConfigUpdateDecoration,
-      textColor: isColorConfigSet ? populatedTextColor : iconColor,
+      textColor: isColorConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       onPress: () {
         Color? colorHolder = _color;
         Map<String, dynamic> colorParams = {'color': colorHolder};
@@ -872,11 +936,13 @@ class AddTileState extends State<AddTile> {
     );
 
     Widget softDeadlineWidget = ConfigUpdateButton(
+      iconPadding: configUpdateIconPadding,
+      padding: configUpdatePadding,
       decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
-      textColor: _isAutoRevisable ? populatedTextColor : iconColor,
+      textColor: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       prefixIcon: Icon(
         Icons.check,
-        color: _isAutoRevisable ? populatedTextColor : iconColor,
+        color: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
       ),
       text: AppLocalizations.of(context)!.softDeadline,
       onPress: () {
@@ -912,7 +978,7 @@ class AddTileState extends State<AddTile> {
 
     Widget retValue = Container(
       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
+      width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.spaceAround,
@@ -1006,17 +1072,21 @@ class AddTileState extends State<AddTile> {
             .map((dayIndex) => dayIndex % 7)
             .join(',');
       }
-      tile.RepeatData = _repetitionData!.isAutoRepetitionEnd.toString();
+      tile.RepeatData = _repetitionData!.isForever.toString();
       tile.RepeatType = _repetitionData!.frequency.name;
     }
 
-    DateTime startTime = DateTime.now();
+    DateTime startTime = Utility.currentTime();
     startTime = DateTime(startTime.year, startTime.month, startTime.day, 0, 0);
 
     if (this.isAppointment) {
       tile.Rigid = true.toString();
-      startTime = this._startTime!;
-      _endTime = this._endTime!;
+      if (this._startTime != null) {
+        startTime = this._startTime!;
+        if (this._duration != null) {
+          _endTime = this._startTime!.add(this._duration!);
+        }
+      }
     }
 
     tile.EndYear = _endTime?.year.toString();
@@ -1044,9 +1114,10 @@ class AddTileState extends State<AddTile> {
                 (1 - (Utility.randomizer.nextDouble() * 0.45)))
             .toColor();
 
-    tile.BColor = randomColor.blue.toString();
-    tile.GColor = randomColor.green.toString();
-    tile.RColor = randomColor.red.toString();
+    double colorConst = 255;
+    tile.BColor = (randomColor.b * colorConst).toInt().toString();
+    tile.GColor = (randomColor.g * colorConst).toInt().toString();
+    tile.RColor = (randomColor.r * colorConst).toInt().toString();
 
     tile.ColorSelection = (-1).toString();
 
@@ -1083,7 +1154,7 @@ class AddTileState extends State<AddTile> {
               await Geolocator.openAppSettings();
               await Geolocator.openLocationSettings();
             },
-            textColor: Colors.redAccent,
+            textColor: colorScheme.error,
           ),
         ),
       );
@@ -1094,6 +1165,7 @@ class AddTileState extends State<AddTile> {
     if (currentState is ScheduleLoadedState) {
       this.context.read<ScheduleBloc>().add(EvaluateSchedule(
           isAlreadyLoaded: true,
+          scheduleStatus: currentState.scheduleStatus,
           renderedScheduleTimeline: currentState.lookupTimeline,
           renderedSubEvents: currentState.subEvents,
           renderedTimelines: currentState.timelines));
@@ -1111,7 +1183,7 @@ class AddTileState extends State<AddTile> {
       this
           .context
           .read<SubCalendarTileBloc>()
-          .emit(NewSubCalendarTilesLoadedState(subEvent: newlyAddedTile.item1));
+          .add(NewSubCalendarTileBlocEvent(subEvent: newlyAddedTile.item1));
 
       final currentState = this.context.read<ScheduleBloc>().state;
       if (currentState is ScheduleEvaluationState) {
@@ -1140,7 +1212,7 @@ class AddTileState extends State<AddTile> {
             action: SnackBarAction(
               label: AppLocalizations.of(context)!.close,
               onPressed: scaffold.hideCurrentSnackBar,
-              textColor: Colors.redAccent,
+              textColor: colorScheme.error,
             ),
           ),
         );
@@ -1178,43 +1250,53 @@ class AddTileState extends State<AddTile> {
         ? AppLocalizations.of(context)!.deadline_anytime
         : DateFormat.yMMMd().format(this._endTime!);
     Widget deadlineContainer = new GestureDetector(
-        onTap: this.onEndDateTap,
-        child: FractionallySizedBox(
-            widthFactor: TileStyles.widthRatio,
-            child: Container(
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                decoration: BoxDecoration(
-                    color: textBackgroundColor,
-                    borderRadius: const BorderRadius.all(
-                      const Radius.circular(8.0),
+      onTap: this.onEndDateTap,
+      child: FractionallySizedBox(
+        widthFactor: TileDimensions.widthRatio,
+        child: Container(
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLowest,
+            borderRadius: BorderRadius.all(
+              inputBorderRadius,
+            ),
+            border: Border.all(
+              color: colorScheme.onInverseSurface,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(Icons.calendar_month, color: inputFieldIconColor),
+              Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                        fontSize: 20,
                     ),
-                    border: Border.all(
-                      color: textBorderColor,
-                      width: 1.5,
-                    )),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Icon(Icons.calendar_month, color: inputFieldIconColor),
-                    Container(
-                        padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                        child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: const TextStyle(
-                              fontSize: 20,
-                            ),
-                          ),
-                          onPressed: onEndDateTap,
-                          child: Text(
-                            textButtonString,
-                            style: TextStyle(
-                              fontFamily: TileStyles.rubikFontName,
-                            ),
-                          ),
-                        ))
-                  ],
-                ))));
+                  ),
+                  onPressed: onEndDateTap,
+                  // TODO: work on this
+                  child: Text(
+                    textButtonString,
+                    style: this._endTime == null
+                        ? TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: colorScheme.inversePrimary)
+                        : TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            color: colorScheme.onSurface),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
     return deadlineContainer;
   }
 
@@ -1308,7 +1390,7 @@ class AddTileState extends State<AddTile> {
 
     appointmentWidgets.add(tileNameWidget);
     appointmentWidgets.add(FractionallySizedBox(
-        widthFactor: TileStyles.widthRatio,
+        widthFactor: TileDimensions.widthRatio,
         child: Container(child: startAndEndTime)));
 
     Widget tileWidgetWrapper = generateNewTileWidget(tileWidgets);
@@ -1320,62 +1402,68 @@ class AddTileState extends State<AddTile> {
       AppLocalizations.of(context)!.appointment
     ];
 
-    String switchUpvalue = !isAppointment ? tabButtons.first : tabButtons.last;
     Widget switchUp = Container(
-      width: MediaQuery.of(context).size.width * TileStyles.widthRatio,
-      child: SwitchUp(
-        key: switchUpKey,
-        items: tabButtons,
-        onChanged: onTabTypeChange,
-        value: switchUpvalue,
-        color: TileStyles.oPrimaryColorHSL.toColor(),
+      child: ToggleSwitch(
+        // key: switchUpKey,
+        initialLabelIndex: !isAppointment ? 0 : 1,
+        totalSwitches: 2,
+        animate: true,
+        labels: tabButtons,
+        onToggle: onTabTypeChange,
+        activeBgColor: [colorScheme.primary],
+        activeFgColor: colorScheme.onPrimary,
+        inactiveBgColor: colorScheme.inversePrimary,
+        inactiveFgColor: colorScheme.onPrimary,
       ),
     );
 
     Widget tileTypeCarousel = CarouselSlider(
-        carouselController: tilerCarouselController,
-        items: carouselItems,
-        options: CarouselOptions(
-          height:
-              isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
-          aspectRatio: 16 / 9,
-          viewportFraction: 1,
-          initialPage: 0,
-          enableInfiniteScroll: false,
-          reverse: false,
-          onPageChanged: (pageNumber, carouselData) {
-            if (carouselData == CarouselPageChangedReason.manual) {
-              if (pageNumber == 0) {
-                setAsTile();
-              } else {
-                setAsAppointment();
-              }
+      carouselController: tilerCarouselController,
+      items: carouselItems,
+      options: CarouselOptions(
+        height:
+            isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
+        aspectRatio: 16 / 9,
+        viewportFraction: 1,
+        initialPage: 0,
+        enableInfiniteScroll: false,
+        reverse: false,
+        onPageChanged: (pageNumber, carouselData) {
+          if (carouselData == CarouselPageChangedReason.manual) {
+            if (pageNumber == 0) {
+              setAsTile();
+            } else {
+              setAsAppointment();
             }
-          },
-          scrollDirection: Axis.horizontal,
-        ));
+          }
+        },
+        scrollDirection: Axis.horizontal,
+      ),
+    );
 
     childrenWidgets.add(tileTypeCarousel);
     childrenWidgets.add(switchUp);
     childrenWidgets.add(extraConfigCollection);
 
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
+      routeName: addTileCancelAndProceedRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.appBarColor,
-        title: Text(
-          AppLocalizations.of(context)!.addTile,
-          style: TileStyles.titleBarStyle,
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.addTile),
         automaticallyImplyLeading: false,
       ),
       child: Container(
-        margin: TileStyles.topMargin,
+        margin: TileSpacing.topMargin,
         alignment: Alignment.topCenter,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: childrenWidgets,
+        child: Stack(
+          children: [
+            isPendingAutoResult
+                ? TileThemeNew.getShimmerPending(context,colorScheme.primary)
+                : SizedBox.shrink(),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: childrenWidgets,
+            ),
+          ],
         ),
       ),
       onProceed: this.onProceed,
@@ -1385,7 +1473,7 @@ class AddTileState extends State<AddTile> {
               margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Text(
                 AppLocalizations.of(context)!.starAreRequired,
-                style: TextStyle(color: TileStyles.disabledTextColor),
+                style: TextStyle(color: colorScheme.onInverseSurface.withLightness(0.7)),
               ),
             )
           : null,
