@@ -80,14 +80,14 @@ class _PreloadedRestrictionsRouteState
 
   handleParamLoading() {
     Map? restrictionProfileParams =
-        ModalRoute.of(context)?.settings.arguments as Map?;
+    ModalRoute.of(context)?.settings.arguments as Map?;
     this.widget.params = restrictionProfileParams ?? {};
     RestrictionProfile? paramRestrictionProfile;
     List<Tuple2<String, RestrictionProfile>>? namedRestricitonProfile;
     if (this.widget.params!.containsKey('routeRestrictionProfile') &&
         !_isParamLoaded) {
       paramRestrictionProfile =
-          this.widget.params!['routeRestrictionProfile'] as RestrictionProfile?;
+      this.widget.params!['routeRestrictionProfile'] as RestrictionProfile?;
       _restrictionProfile = paramRestrictionProfile;
       if (_restrictionProfile != null) {
         _isAnyTime = !_restrictionProfile!.isAnyDayNotNull;
@@ -96,7 +96,7 @@ class _PreloadedRestrictionsRouteState
     if (this.widget.params!.containsKey('namedRestrictionProfiles') &&
         !_isParamLoaded) {
       namedRestricitonProfile = this.widget.params!['namedRestrictionProfiles']
-          as List<Tuple2<String, RestrictionProfile>>?;
+      as List<Tuple2<String, RestrictionProfile>>?;
       this._namedRestrictionProfiles = namedRestricitonProfile;
     }
     if (!_isParamLoaded) {
@@ -111,8 +111,8 @@ class _PreloadedRestrictionsRouteState
 
   bool isAnyTime() {
     this.widget._isAnyTime = (_restrictionProfile == null ||
-            _isAnyTime ||
-            !_restrictionProfile!.isEnabled)
+        _isAnyTime ||
+        !_restrictionProfile!.isEnabled)
         ? true
         : (generate.containsKey('anytime') ? generate['anytime']! : false);
     return this.widget._isAnyTime;
@@ -121,7 +121,7 @@ class _PreloadedRestrictionsRouteState
   @override
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
-    final   colorScheme=theme.colorScheme;
+    final  colorScheme=theme.colorScheme;
     final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     handleParamLoading();
     List<Widget> checkListElements = [
@@ -166,8 +166,7 @@ class _PreloadedRestrictionsRouteState
         ? TileButtonStyles.enabled(borderColor: colorScheme.primary)
         : TileButtonStyles.selected(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary);
 
-    return Scaffold(
-      body: Container(
+    return  Container(
         alignment: Alignment.center,
         child: Stack(alignment: Alignment.center, children: [
           FractionallySizedBox(
@@ -194,7 +193,7 @@ class _PreloadedRestrictionsRouteState
                 stackRouteHistory.add(_PreloadedRestrictionsRoute.routeName);
 
                 Navigator.pushNamed(context, '/CustomRestrictionsRoute',
-                        arguments: this.widget.params)
+                    arguments: this.widget.params)
                     .then((resultMap) async {
                   RestrictionProfile? restrictionProfile;
                   bool isAnytime = true;
@@ -234,7 +233,6 @@ class _PreloadedRestrictionsRouteState
             ),
           )
         ]),
-      ),
     );
   }
 }
@@ -256,7 +254,7 @@ class TimeRestrictionRouteState extends State<TimeRestrictionRoute> {
       child: stateWidget,
       onProceed: () {
         Map? restrictionProfileParams =
-            ModalRoute.of(context)?.settings.arguments as Map?;
+        ModalRoute.of(context)?.settings.arguments as Map?;
         if (stateWidget.isAnyTime) {
           if (restrictionProfileParams != null) {
             restrictionProfileParams['routeRestrictionProfile'] = null;

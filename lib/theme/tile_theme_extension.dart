@@ -30,6 +30,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color notificationOverlayError;
   final Color notificationOverlayInfo;
   final Color integrationBorder;
+  final Color disabledOnboardingPill;
+  final Color onDisabledOnboardingPill;
+  final Color suggestionLoadingOnboardingSurface;
   final Color integrationApproval;
   final String? mapStyle;
   const TileThemeExtension._(
@@ -62,6 +65,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.notificationOverlayError,
         required this.notificationOverlayInfo,
         required this.integrationBorder,
+        required this.disabledOnboardingPill,
+        required this.onDisabledOnboardingPill,
+        required this.suggestionLoadingOnboardingSurface,
         required this.integrationApproval,
         required this.mapStyle
       });
@@ -95,6 +101,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       notificationOverlayError: TileColors.notificationOverlayErrorLight,
       notificationOverlayInfo: TileColors.notificationOverlayInfoLight,
       integrationBorder: TileColors.integrationBorderLight,
+      disabledOnboardingPill: TileColors.disabledOnboardingPillLight,
+      onDisabledOnboardingPill: TileColors.onDisabledOnboardingPillLight,
+      suggestionLoadingOnboardingSurface: TileColors.suggestionLoadingOnboardingSurfaceLight,
       integrationApproval: TileColors.integrationApprovalLight,
       mapStyle: null,
 
@@ -129,6 +138,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       notificationOverlayError: TileColors.notificationOverlayErrorDark,
       notificationOverlayInfo: TileColors.notificationOverlayInfoDark,
       integrationBorder: TileColors.integrationBorderDark,
+      disabledOnboardingPill: TileColors.disabledOnboardingPillDark,
+      onDisabledOnboardingPill: TileColors.onDisabledOnboardingPillDark,
+      suggestionLoadingOnboardingSurface: TileColors.suggestionLoadingOnboardingSurfaceDark,
       integrationApproval: TileColors.integrationApprovalDark,
       mapStyle:TileColors.darkMapStyle,
   );
@@ -163,6 +175,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? notificationOverlayError,
     Color? notificationOverlayInfo,
     Color?  integrationBorder,
+    Color? disabledOnboardingPill,
+    Color? onDisabledOnboardingPill,
+    Color? suggestionLoadingOnboardingSurface,
     Color? integrationApproval,
     String? mapStyle
 
@@ -196,6 +211,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         notificationOverlayError: notificationOverlayError ?? this.notificationOverlayError,
         notificationOverlayInfo: notificationOverlayInfo ?? this.notificationOverlayInfo,
         integrationBorder: integrationBorder ?? this.integrationBorder,
+        disabledOnboardingPill: disabledOnboardingPill ?? this.disabledOnboardingPill,
+        onDisabledOnboardingPill: onDisabledOnboardingPill ?? this.onDisabledOnboardingPill,
+        suggestionLoadingOnboardingSurface: suggestionLoadingOnboardingSurface ?? this.suggestionLoadingOnboardingSurface,
         integrationApproval: integrationApproval ?? this.integrationApproval,
         mapStyle: mapStyle ?? this.mapStyle
     );
@@ -235,6 +253,9 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         notificationOverlayError: Color.lerp(notificationOverlayError, other.notificationOverlayError, t)!,
         notificationOverlayInfo: Color.lerp(notificationOverlayInfo, other.notificationOverlayInfo, t)!,
         integrationBorder: Color.lerp(integrationBorder, other.integrationBorder, t)!,
+        disabledOnboardingPill: Color.lerp(disabledOnboardingPill, other.disabledOnboardingPill, t)!,
+        onDisabledOnboardingPill: Color.lerp(onDisabledOnboardingPill, other.onDisabledOnboardingPill, t)!,
+        suggestionLoadingOnboardingSurface: Color.lerp(suggestionLoadingOnboardingSurface, other.suggestionLoadingOnboardingSurface, t)!,
         integrationApproval: Color.lerp(integrationApproval, other.integrationApproval, t)!,
         mapStyle: other.mapStyle,
       );

@@ -58,29 +58,31 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
   Widget build(BuildContext context) {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     bool checkStatus = isChecked;
     if (this.widget.isChecked != null) {
       checkStatus = this.widget.isChecked!;
     }
     Widget checkBox = Container(
         margin: EdgeInsets.fromLTRB(20, 0, 2, 0),
-        width: 24,
-        height: 24,
         child: Stack(
           children: [
             Transform.scale(
                 scale:  1,
                 child: Checkbox(
-                  checkColor: Colors.transparent,
+                  checkColor: colorScheme.onPrimary,
                   fillColor: WidgetStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
-                  shape: CircleBorder(
-                      side:
-                          BorderSide(width: 2, color: colorScheme.primary,
-                          ),
-                  ),
+                  side: WidgetStateBorderSide.resolveWith((states) {
+                      return BorderSide(
+                        width: 3.0,
+                        color: states.contains(MaterialState.selected)
+                            ? colorScheme.primary
+                            : colorScheme.onPrimary.withLightness(0.7),
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      );
+                  }),
+                  shape: CircleBorder(),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;

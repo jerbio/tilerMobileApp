@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -32,6 +31,8 @@ class _DayOfWeekRestriction {
 
 class CustomTimeRestrictionRoute extends StatefulWidget {
   Map? params;
+  final bool isOnBoarding;
+  CustomTimeRestrictionRoute({Key? key,this.isOnBoarding = false,this.params}):super(key: key);
   @override
   State<StatefulWidget> createState() => CustomTimeRestrictionRouteState();
 }
@@ -113,8 +114,9 @@ class CustomTimeRestrictionRouteState
     localMapOfWeekDayToDayRestriction['saturday'] = _DayOfWeekRestriction(
         weekDayText: AppLocalizations.of(this.context)!.saturday, dayIndex: 6);
 
-    Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
-    this.widget.params = args;
+    Map? args = widget.params ??
+        (ModalRoute.of(context)?.settings.arguments as Map?);
+    this.widget.params = args ?? {};
     if (args != null && args.containsKey('restrictionProfile')) {
       RestrictionProfile? restrictionProfileParams = args['restrictionProfile'];
       this.restrictionProfileParams = restrictionProfileParams;
@@ -328,6 +330,30 @@ class CustomTimeRestrictionRouteState
     return retValue;
   }
 
+  Map? getData() {
+    List<RestrictionDay?> daySelections = this
+        .mapOfWeekDayToDayRestriction
+        .values
+        .map((dayRestriction) => dayRestriction.isSelected
+        ? dayRestriction.toRestrictionDay()
+        : null)
+        .toList();
+
+    Map? resultMap = Map.from(this.paramArgs ?? {});
+
+    bool hasSelectedDays = daySelections.any((day) => day != null);
+
+    if (hasSelectedDays) {
+      RestrictionProfile restrictionProfile = RestrictionProfile(daySelection: daySelections);
+      resultMap['routeRestrictionProfile'] = restrictionProfile;
+    } else {
+      resultMap['routeRestrictionProfile'] = null;
+      resultMap['isAnyTime'] = true;
+    }
+
+    return resultMap;
+  }
+
   onProceed() {
     List<RestrictionDay?> daySelections = this
         .mapOfWeekDayToDayRestriction
@@ -367,35 +393,37 @@ class CustomTimeRestrictionRouteState
 
   @override
   Widget build(BuildContext context) {
-    Map restrictionProfileParams =
-    ModalRoute.of(context)?.settings.arguments as Map;
-    this.widget.params = restrictionProfileParams;
     if (!isMapOfDayRestrictionInitialized) {
       _initializeDayRestrictions();
     }
 
+    Widget mainContent= Stack(
+      children: [
+        Container(
+            padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Center(
+                child: Column(
+                  children: this
+                      .weekdays
+                      .map((weekdayString) => Padding(
+                    padding: EdgeInsets.only(bottom: 5,right: widget.isOnBoarding?0:25),
+                    child: generateEachDayWidget(
+                        this.mapOfWeekDayToDayRestriction[weekdayString]!),
+                  ))
+                      .toList(),
+                )
+            )
+        )
+      ],
+    );
+
+    if(widget.isOnBoarding)
+      return mainContent;
+
     return CancelAndProceedTemplateWidget(
-      routeName: customTimeRestrictionRouteName,
-      onProceed: isProceedReady() ? onProceed : null,
-      child: Stack(
-        children: [
-          Container(
-              padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-              child: Center(
-                  child: Column(
-                    children: this
-                        .weekdays
-                        .map((weekdayString) => Padding(
-                      padding: EdgeInsets.only(bottom: 5,right: 25),
-                      child: generateEachDayWidget(
-                          this.mapOfWeekDayToDayRestriction[weekdayString]!),
-                    ))
-                        .toList(),
-                  )
-              )
-          )
-        ],
-      ),
+        routeName: customTimeRestrictionRouteName,
+        onProceed: isProceedReady() ? onProceed : null,
+        child:mainContent
     );
   }
 }

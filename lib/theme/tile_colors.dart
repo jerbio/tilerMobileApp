@@ -126,6 +126,12 @@ class TileColors{
   static const Color notificationOverlayInfoDark=Color(0xFF0F1F2A);
   static final Color integrationBorderLight =  Colors.grey[300]!;
   static final Color integrationBorderDark = Color(0xFF424650);
+  static final Color disabledOnboardingPillLight =  Colors.grey.shade300;
+  static final Color disabledOnboardingPillDark = Color(0xFF4A5159);
+  static final Color onDisabledOnboardingPillLight = Colors.grey.shade600;
+  static final Color onDisabledOnboardingPillDark = Color(0xFFB0B8C0);
+  static final Color suggestionLoadingOnboardingSurfaceLight =Color(0xFFECD4A9);
+  static final Color suggestionLoadingOnboardingSurfaceDark = Color(0xFFE295A8);
   static final Color integrationApprovalLight =  Color.fromRGBO(9, 203, 156, 1);
   static final Color integrationApprovalDark =
   HSLColor.fromColor(integrationApprovalLight)

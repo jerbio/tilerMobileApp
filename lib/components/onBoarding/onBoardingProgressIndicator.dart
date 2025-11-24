@@ -18,9 +18,16 @@ class OnBoardingProgressIndicator extends StatelessWidget {
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(totalPages * 2 - 1, (index) {
+      children: List.generate( 7, (index) {
         if (index % 2 == 0) {
           int stepIndex = index ~/ 2;
+           if( totalPages-currentPage>4) {
+            stepIndex =currentPage+stepIndex ;
+            }else{
+               int backOffset = 4 - stepIndex;
+               int adjustment = totalPages - currentPage - backOffset;
+               stepIndex= currentPage + adjustment;
+             }
           return Container(
             width: 40,
             height: 40,

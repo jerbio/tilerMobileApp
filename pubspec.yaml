@@ -95,6 +95,7 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   flutter_slidable: ^3.1.2
   toggle_switch: ^2.3.0
+  video_player: ^2.8.0
 
 dev_dependencies:
   build_runner: ^2.4.5
@@ -197,6 +198,7 @@ flutter:
     - assets/images/iconScout/logout.svg
     - assets/icons/svg/google-outline---filled(24x24)@1x.svg
     - assets/icons/settings/
+    - assets/videos/
     # - images/a_dot_ham.jpeg
   generate: true
 
