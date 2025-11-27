@@ -17,6 +17,7 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late bool byIcon;
+  late double screenHeight;
 
   @override
   void initState() {
@@ -25,12 +26,15 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
     int currentYear = context.read<MonthlyUiDateManagerBloc>().state.year;
     _yearPages = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
     _pageController = PageController(initialPage: 2);
+
+
   }
 
   @override
   void didChangeDependencies() {
      theme=Theme.of(context);
      colorScheme=theme.colorScheme;
+     screenHeight=MediaQuery.of(context).size.height;
     super.didChangeDependencies();
   }
 
@@ -88,7 +92,7 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
               children: [
                 _buildHeader(state),
                 SizedBox(
-                  height: 240,
+                  height: screenHeight*0.25,
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: _yearPages.length,
