@@ -104,7 +104,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: ElevatedButton(
+                  child: TextButton(
                     onPressed: () {
                       context.read<WeeklyUiDateManagerBloc>().add(
                           UpdateSelectedWeek(
