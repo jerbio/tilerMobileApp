@@ -803,5 +803,163 @@
         "googleCalendarAndMore":"Google Calendar +\nmore calendars",
         "googleCalendarAndMoreDescription":"Sync your calendars, and let Tiler pull\neverything into one smart timeline.\nNo double booking, no stress",
         "selectSuggestions":"Select suggestions",
-        "typeSomething":"Type something here"
+        "typeSomething":"Type something here",
+        "leaveInDurationToArriveOnTime": "Leave in {duration} to arrive on time",
+        "@leaveInDurationToArriveOnTime": {
+          "description": "Proactive alert for departure time",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "10 min"
+            }
+          }
+        },
+        "leaveNowToArriveOnTime": "Leave now to arrive on time!",
+        "durationDrive": "{duration} drive",
+        "@durationDrive": {
+          "description": "Travel time by driving",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "15 min"
+            }
+          }
+        },
+        "durationTransit": "{duration} transit",
+        "@durationTransit": {
+          "description": "Travel time by transit",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "25 min"
+            }
+          }
+        },
+        "durationBike": "{duration} bike",
+        "@durationBike": {
+          "description": "Travel time by bike",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "20 min"
+            }
+          }
+        },
+        "durationWalk": "{duration} walk",
+        "@durationWalk": {
+          "description": "Travel time by walking",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "30 min"
+            }
+          }
+        },
+        "driveToDestination": "{duration} drive to {destination}",
+        "@driveToDestination": {
+          "description": "Drive time to destination",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "15 min"
+            },
+            "destination": {
+              "type": "String",
+              "example": "Office"
+            }
+          }
+        },
+        "transitToDestination": "{duration} transit to {destination}",
+        "@transitToDestination": {
+          "description": "Transit time to destination",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "25 min"
+            },
+            "destination": {
+              "type": "String",
+              "example": "Office"
+            }
+          }
+        },
+        "bikeToDestination": "{duration} bike to {destination}",
+        "@bikeToDestination": {
+          "description": "Bike time to destination",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "20 min"
+            },
+            "destination": {
+              "type": "String",
+              "example": "Office"
+            }
+          }
+        },
+        "walkToDestination": "{duration} walk to {destination}",
+        "@walkToDestination": {
+          "description": "Walk time to destination",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "30 min"
+            },
+            "destination": {
+              "type": "String",
+              "example": "Office"
+            }
+          }
+        },
+        "leaveByTime": "Leave by {time}",
+        "@leaveByTime": {
+          "description": "Time to leave by",
+          "placeholders": {
+            "time": {
+              "type": "String",
+              "example": "12:23 PM"
+            }
+          }
+        },
+        "trafficDetectedReroutingSuggested": "Traffic detected - rerouting suggested",
+        "trafficDelayMinutes": "Traffic: +{minutes} min delay",
+        "@trafficDelayMinutes": {
+          "description": "Traffic delay in minutes",
+          "placeholders": {
+            "minutes": {
+              "type": "String",
+              "example": "15"
+            }
+          }
+        },
+        "heavyTrafficExpected": "Heavy traffic expected",
+        "addWithAI": "Add with AI",
+        "lunchBreak": "Lunch Break",
+        "focusTime": "Focus Time",
+        "videoMeeting": "Video Meeting",
+        "sharedWith": "Shared with",
+        "durationMinutes": "{minutes}m",
+        "@durationMinutes": {
+          "description": "Duration in minutes",
+          "placeholders": {
+            "minutes": {
+              "type": "String",
+              "example": "45"
+            }
+          }
+        },
+        "durationHoursMinutes": "{hours}h {minutes}m",
+        "@durationHoursMinutes": {
+          "description": "Duration in hours and minutes",
+          "placeholders": {
+            "hours": {
+              "type": "String",
+              "example": "1"
+            },
+            "minutes": {
+              "type": "String",
+              "example": "30"
+            }
+          }
+        }
 }

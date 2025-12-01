@@ -9,6 +9,7 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow.dart';
+import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -253,8 +254,8 @@ class _DailyTileListState extends TileListState {
 
   void processUpcomingAndPrecedingTiles(
       Map<int, List<TilerEvent>> dayIndexToTileDict,
-      Map<int, TileBatch> upcomingDayTilesDict,
-      Map<int, TileBatch> precedingDayTilesDict) {
+      Map<int, Widget> upcomingDayTilesDict,
+      Map<int, Widget> precedingDayTilesDict) {
     Timeline relevantTimeline = getRelevantTimeLine();
     int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
     int startIndex = Utility.getDayIndex(
@@ -279,8 +280,14 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch upcomingTileBatch =
-              TileBatch(dayIndex: dayIndex, tiles: allTiles, key: key);
+          EnhancedTileBatch upcomingTileBatch = EnhancedTileBatch(
+            dayIndex: dayIndex,
+            tiles: allTiles,
+            key: key,
+            showEnhancedCards: true,
+            showTravelConnectors: true,
+            showTimelineMarkers: true,
+          );
           upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
         }
       } else {
@@ -291,8 +298,14 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch precedingDayTileBatch =
-              TileBatch(dayIndex: dayIndex, key: key, tiles: allTiles);
+          EnhancedTileBatch precedingDayTileBatch = EnhancedTileBatch(
+            dayIndex: dayIndex,
+            key: key,
+            tiles: allTiles,
+            showEnhancedCards: true,
+            showTravelConnectors: true,
+            showTimelineMarkers: true,
+          );
           precedingDayTilesDict[dayIndex] = precedingDayTileBatch;
         }
       }
@@ -320,8 +333,8 @@ class _DailyTileListState extends TileListState {
 
   Tuple2<int, List<Widget>> buildCarousel(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
-    Map<int, TileBatch> precedingDayTilesDict = new Map<int, TileBatch>();
-    Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
+    Map<int, Widget> precedingDayTilesDict = new Map<int, Widget>();
+    Map<int, Widget> upcomingDayTilesDict = new Map<int, Widget>();
     Map<int, Widget> dayIndexToWidget = {};
     List<Timeline> sleepTimelines = tileData!.item1;
     tileData.item2.sort((eachSubEventA, eachSubEventB) =>
@@ -337,24 +350,22 @@ class _DailyTileListState extends TileListState {
     Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
     processUpcomingAndPrecedingTiles(
         dayIndexToTileDict, upcomingDayTilesDict, precedingDayTilesDict);
-    List<TileBatch> precedingDayTiles = precedingDayTilesDict.values.toList();
-    precedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-        eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-    List<TileBatch> upcomingDayTiles = upcomingDayTilesDict.values.toList();
-    upcomingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-        eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-    List<TileBatch> childTileBatches = <TileBatch>[];
-    childTileBatches.addAll(precedingDayTiles);
-    precedingDayTiles.forEach((tileBatch) {
+    List<int> precedingDayIndexes = precedingDayTilesDict.keys.toList();
+    precedingDayIndexes.sort();
+    List<int> upcomingDayIndexes = upcomingDayTilesDict.keys.toList();
+    upcomingDayIndexes.sort();
+    List<Widget> childTileBatches = <Widget>[];
+
+    for (int dayIndex in precedingDayIndexes) {
+      Widget tileBatch = precedingDayTilesDict[dayIndex]!;
+      childTileBatches.add(tileBatch);
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
         child: tileBatch,
       );
-      if (tileBatch.dayIndex != null) {
-        dayIndexToWidget[tileBatch.dayIndex!] = widget;
-      }
-    });
+      dayIndexToWidget[dayIndex] = widget;
+    }
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
@@ -376,18 +387,15 @@ class _DailyTileListState extends TileListState {
       childTileBatches.add(tileBatch);
     }
 
-    childTileBatches.addAll(upcomingDayTiles);
-    upcomingDayTiles.forEach(
-      (tileBatch) {
-        Widget widget = Container(
-          height: MediaQuery.of(context).size.height,
-          child: tileBatch,
-        );
-        if (tileBatch.dayIndex != null) {
-          dayIndexToWidget[tileBatch.dayIndex!] = widget;
-        }
-      },
-    );
+    for (int dayIndex in upcomingDayIndexes) {
+      Widget tileBatch = upcomingDayTilesDict[dayIndex]!;
+      childTileBatches.add(tileBatch);
+      Widget widget = Container(
+        height: MediaQuery.of(context).size.height,
+        child: tileBatch,
+      );
+      dayIndexToWidget[dayIndex] = widget;
+    }
 
     List<int> sortedDayIndex = dayIndexToWidget.keys.toList();
     sortedDayIndex.sort();
@@ -653,7 +661,6 @@ class _DailyTileListState extends TileListState {
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
-
           if (state is ScheduleLoadingState) {
             if (state.message != null) {
               Fluttertoast.showToast(
