@@ -20,13 +20,18 @@ class MonthlyDailyTile extends StatelessWidget {
     final theme=Theme.of(context);
     final colorScheme=theme.colorScheme;
     final tileThemeExtension=theme.extension<TileThemeExtension>();
+    int redColor = subEvent.colorRed ?? 127;
+    int blueColor = subEvent.colorBlue ?? 127;
+    int greenColor = subEvent.colorGreen ?? 127;
+    var tileBackGroundColor = Color.fromRGBO(
+        redColor, greenColor, blueColor, 0.2);
     return FractionallySizedBox(
       widthFactor: TileDimensions.tileWidthRatio,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10),
         padding:  EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLowest,
+          color:tileBackGroundColor,
           borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
           boxShadow: [
             BoxShadow(
