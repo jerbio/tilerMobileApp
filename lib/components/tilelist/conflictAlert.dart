@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 
 /// Represents a scheduling conflict between two tiles
 class TileConflict {
@@ -109,11 +111,16 @@ class ConflictAlertWidget extends StatelessWidget {
     this.onResolve,
   }) : super(key: key);
 
-  String _formatDuration(Duration duration) {
+  String _formatDuration(BuildContext context, Duration duration) {
+    final l10n = AppLocalizations.of(context)!;
     if (duration.inHours > 0) {
-      return '${duration.inHours}h ${duration.inMinutes.remainder(60)}m';
+      final minutes = duration.inMinutes.remainder(60);
+      if (minutes > 0) {
+        return l10n.durationHoursMinutesShort(duration.inHours, minutes);
+      }
+      return l10n.durationHoursShort(duration.inHours);
     }
-    return '${duration.inMinutes}m';
+    return l10n.durationMinutesShort(duration.inMinutes);
   }
 
   IconData _getConflictIcon() {
@@ -140,20 +147,21 @@ class ConflictAlertWidget extends StatelessWidget {
     }
   }
 
-  String _getConflictMessage() {
-    final tile1Name = conflict.tile1.name ?? 'Event';
-    final tile2Name = conflict.tile2.name ?? 'Event';
-    final overlapStr = _formatDuration(conflict.overlapDuration);
+  String _getConflictMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tile1Name = conflict.tile1.name ?? l10n.tile;
+    final tile2Name = conflict.tile2.name ?? l10n.tile;
+    final overlapStr = _formatDuration(context, conflict.overlapDuration);
 
     switch (conflict.type) {
       case ConflictType.exactOverlap:
-        return '"$tile1Name" and "$tile2Name" are scheduled at the same time';
+        return l10n.conflictSameTime(tile1Name, tile2Name);
       case ConflictType.contains:
-        return '"$tile2Name" is during "$tile1Name" ($overlapStr overlap)';
+        return l10n.conflictDuring(tile2Name, tile1Name, overlapStr);
       case ConflictType.containedBy:
-        return '"$tile1Name" is during "$tile2Name" ($overlapStr overlap)';
+        return l10n.conflictDuring(tile1Name, tile2Name, overlapStr);
       case ConflictType.partialOverlap:
-        return '"$tile1Name" overlaps with "$tile2Name" by $overlapStr';
+        return l10n.conflictOverlaps(tile1Name, tile2Name, overlapStr);
     }
   }
 
@@ -162,6 +170,7 @@ class ConflictAlertWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final conflictColor = _getConflictColor(colorScheme);
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: onTap,
@@ -196,7 +205,7 @@ class ConflictAlertWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Schedule Conflict',
+                    l10n.scheduleConflict,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
@@ -205,7 +214,7 @@ class ConflictAlertWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _getConflictMessage(),
+                    _getConflictMessage(context),
                     style: TextStyle(
                       fontSize: 12,
                       color: colorScheme.onSurface.withAlpha(179),
@@ -226,9 +235,9 @@ class ConflictAlertWidget extends StatelessWidget {
                   minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: const Text(
-                  'Fix',
-                  style: TextStyle(
+                child: Text(
+                  l10n.fix,
+                  style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
                   ),
@@ -254,6 +263,7 @@ class CompactConflictIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -269,7 +279,7 @@ class CompactConflictIndicator extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             Text(
-              'Conflict: ${conflict.overlapDuration.inMinutes}m overlap',
+              l10n.conflictOverlapMinutes(conflict.overlapDuration.inMinutes),
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -297,6 +307,7 @@ class ConflictSummaryBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (conflicts.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: onTap,
@@ -342,8 +353,8 @@ class ConflictSummaryBanner extends StatelessWidget {
                 children: [
                   Text(
                     conflicts.length == 1
-                        ? '1 Schedule Conflict'
-                        : '${conflicts.length} Schedule Conflicts',
+                        ? l10n.oneScheduleConflict
+                        : l10n.countScheduleConflicts(conflicts.length),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
@@ -352,7 +363,7 @@ class ConflictSummaryBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Tap to review and resolve',
+                    l10n.tapToReviewAndResolve,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.white.withAlpha(204),
@@ -466,6 +477,7 @@ class StackedConflictCards extends StatefulWidget {
 class _StackedConflictCardsState extends State<StackedConflictCards>
     with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  String? _expandedActionsForTileId;
   late AnimationController _animationController;
   late Animation<double> _expandAnimation;
 
@@ -504,13 +516,16 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
         .formatTimeOfDay(TimeOfDay.fromDateTime(time));
   }
 
-  String _formatDuration(Duration duration) {
+  String _formatDuration(BuildContext context, Duration duration) {
+    final l10n = AppLocalizations.of(context)!;
     if (duration.inHours > 0) {
       final minutes = duration.inMinutes % 60;
-      if (minutes == 0) return '${duration.inHours}h';
-      return '${duration.inHours}h ${minutes}m';
+      if (minutes > 0) {
+        return l10n.durationHoursMinutesShort(duration.inHours, minutes);
+      }
+      return l10n.durationHoursShort(duration.inHours);
     }
-    return '${duration.inMinutes}m';
+    return l10n.durationMinutesShort(duration.inMinutes);
   }
 
   @override
@@ -600,7 +615,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    '${tiles.length} conflicts',
+                    AppLocalizations.of(context)!.countConflicts(tiles.length),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 11,
@@ -637,7 +652,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Tap to expand',
+                      AppLocalizations.of(context)!.tapToExpand,
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onSurface.withAlpha(179),
@@ -679,7 +694,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${tiles.length} Conflicting Events',
+                  AppLocalizations.of(context)!.conflictingTiles(tiles.length),
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 13,
@@ -725,7 +740,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
             },
           );
         }),
-        // Resolve button
+        // Footer with total overlap
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(12),
@@ -735,33 +750,13 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
                 const BorderRadius.vertical(bottom: Radius.circular(12)),
             border: Border.all(color: Colors.orange.shade200),
           ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Total overlap: ${_formatDuration(widget.conflictGroup.totalOverlap)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: colorScheme.onSurface.withAlpha(153),
-                  ),
-                ),
-              ),
-              ElevatedButton.icon(
-                onPressed: widget.onResolve,
-                icon: const Icon(Icons.auto_fix_high_rounded, size: 16),
-                label: const Text('Auto-resolve'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange.shade600,
-                  foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  textStyle: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
+          child: Text(
+            AppLocalizations.of(context)!.totalOverlap(
+                _formatDuration(context, widget.conflictGroup.totalOverlap)),
+            style: TextStyle(
+              fontSize: 12,
+              color: colorScheme.onSurface.withAlpha(153),
+            ),
           ),
         ),
       ],
@@ -784,58 +779,79 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
     final isLightBackground = hslColor.lightness > 0.6;
     final textColor = isLightBackground ? Colors.black87 : Colors.white;
 
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            tileColor,
-            hslColor
-                .withLightness((hslColor.lightness - 0.1).clamp(0, 1))
-                .toColor(),
+    return GestureDetector(
+      onTap: () {
+        if (widget.onTileTap != null) {
+          widget.onTileTap!(tile);
+        } else {
+          if (!(tile.isReadOnly ?? true)) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditTile(
+                  tileId:
+                      (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
+                  tileSource: tile.thirdpartyType,
+                  thirdPartyUserId: tile.thirdPartyUserId,
+                ),
+              ),
+            );
+          }
+        }
+      },
+      child: Container(
+        height: 100,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              tileColor,
+              hslColor
+                  .withLightness((hslColor.lightness - 0.1).clamp(0, 1))
+                  .toColor(),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: tileColor.withAlpha(isTop ? 100 : 50),
+              blurRadius: isTop ? 8 : 4,
+              offset: Offset(0, isTop ? 4 : 2),
+            ),
           ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          border: Border.all(
+            color: Colors.orange.withAlpha(isTop ? 150 : 100),
+            width: 2,
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: tileColor.withAlpha(isTop ? 100 : 50),
-            blurRadius: isTop ? 8 : 4,
-            offset: Offset(0, isTop ? 4 : 2),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.orange.withAlpha(isTop ? 150 : 100),
-          width: 2,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Time range
+            Text(
+              '${_formatTime(tile.startTime, context)} - ${_formatTime(tile.endTime, context)}',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: textColor.withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 4),
+            // Title
+            Text(
+              tile.name ?? AppLocalizations.of(context)!.untitledTile,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: textColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Time range
-          Text(
-            '${_formatTime(tile.startTime, context)} - ${_formatTime(tile.endTime, context)}',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: textColor.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 4),
-          // Title
-          Text(
-            tile.name ?? 'Untitled Event',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
       ),
     );
   }
@@ -859,130 +875,184 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
 
     final location = tile.addressDescription ?? tile.address;
     final duration = tile.duration;
+    final isActionsExpanded = _expandedActionsForTileId == tile.uniqueId;
 
-    return GestureDetector(
-      onTap: () {
-        if (widget.onTileTap != null) {
-          widget.onTileTap!(tile);
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TileDetail(tileId: tile.id),
-            ),
-          );
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(top: 1),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              tileColor,
-              hslColor
-                  .withLightness((hslColor.lightness - 0.1).clamp(0, 1))
-                  .toColor(),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border(
-            left: BorderSide(color: Colors.orange.shade200),
-            right: BorderSide(color: Colors.orange.shade200),
-          ),
-        ),
-        child: Row(
-          children: [
-            // Color indicator
-            Container(
-              width: 4,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.orange,
-                borderRadius: BorderRadius.circular(2),
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () {
+            if (!(tile.isReadOnly ?? true)) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditTile(
+                    tileId:
+                        (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
+                    tileSource: tile.thirdpartyType,
+                    thirdPartyUserId: tile.thirdPartyUserId,
+                  ),
+                ),
+              );
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(top: 1),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  tileColor,
+                  hslColor
+                      .withLightness((hslColor.lightness - 0.1).clamp(0, 1))
+                      .toColor(),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              border: Border(
+                left: BorderSide(color: Colors.orange.shade200),
+                right: BorderSide(color: Colors.orange.shade200),
               ),
             ),
-            const SizedBox(width: 12),
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Time range
-                  Text(
-                    '${_formatTime(tile.startTime, context)} - ${_formatTime(tile.endTime, context)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: secondaryTextColor,
-                    ),
+            child: Row(
+              children: [
+                // Color indicator
+                Container(
+                  width: 4,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(2),
                   ),
-                  const SizedBox(height: 2),
-                  // Title
-                  Text(
-                    tile.name ?? 'Untitled Event',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: textColor,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (location != null && location.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 12,
+                ),
+                const SizedBox(width: 12),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Time range
+                      Text(
+                        '${_formatTime(tile.startTime, context)} - ${_formatTime(tile.endTime, context)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                           color: secondaryTextColor,
                         ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            location,
-                            style: TextStyle(
-                              fontSize: 11,
+                      ),
+                      const SizedBox(height: 2),
+                      // Title
+                      Text(
+                        tile.name ?? AppLocalizations.of(context)!.untitledTile,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (location != null && location.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_outlined,
+                              size: 12,
                               color: secondaryTextColor,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                location,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: secondaryTextColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            // Duration badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: textColor.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                _formatDuration(duration),
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
+                    ],
+                  ),
                 ),
-              ),
+                // Duration badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: textColor.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _formatDuration(context, duration),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Arrow - toggles playback actions (only for Tiler tiles)
+                if (tile.isFromTiler)
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        if (_expandedActionsForTileId == tile.uniqueId) {
+                          _expandedActionsForTileId = null;
+                        } else {
+                          _expandedActionsForTileId = tile.uniqueId;
+                        }
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: isActionsExpanded
+                            ? textColor.withOpacity(0.2)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: AnimatedRotation(
+                        turns: isActionsExpanded ? 0.25 : 0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Icon(
+                          Icons.chevron_right_rounded,
+                          color: textColor.withOpacity(0.6),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
-            const SizedBox(width: 8),
-            // Arrow
-            Icon(
-              Icons.chevron_right_rounded,
-              color: textColor.withOpacity(0.6),
-              size: 20,
-            ),
-          ],
+          ),
         ),
-      ),
+        // Expandable playback actions (only for Tiler tiles)
+        if (tile.isFromTiler)
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            child: isActionsExpanded
+                ? Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border(
+                        left: BorderSide(color: Colors.orange.shade200),
+                        right: BorderSide(color: Colors.orange.shade200),
+                        bottom: BorderSide(color: Colors.orange.shade200),
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: PlayBack(tile),
+                  )
+                : const SizedBox.shrink(),
+          ),
+      ],
     );
   }
 

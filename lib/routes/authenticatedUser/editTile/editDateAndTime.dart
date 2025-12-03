@@ -56,10 +56,9 @@ class EditDateAndTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     _tileTime = EditTileTime(
       time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
@@ -72,7 +71,7 @@ class EditDateAndTime extends StatelessWidget {
     );
     return Container(
       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-      height: 60,
+      height: 50,
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(

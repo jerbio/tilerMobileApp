@@ -348,6 +348,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
             connector = CompactTravelIndicator(
               travelTimeMs: nextTile.travelTimeBefore?.toDouble(),
               travelMode: nextTile.travelDetail?.before?.travelMedium,
+              startLocation: nextTile.travelDetail?.before?.startLocation,
+              endLocation: nextTile.travelDetail?.before?.endLocation,
+              destinationAddress: nextTile.address,
             );
           }
 

@@ -961,5 +961,261 @@
               "example": "30"
             }
           }
-        }
+        },
+        "travelDurationMinutes": "{minutes} min",
+        "@travelDurationMinutes": {
+          "description": "Travel duration in minutes",
+          "placeholders": {
+            "minutes": {
+              "type": "int",
+              "example": "15"
+            }
+          }
+        },
+        "travelDurationHours": "{hours} hr",
+        "@travelDurationHours": {
+          "description": "Travel duration in hours",
+          "placeholders": {
+            "hours": {
+              "type": "int",
+              "example": "1"
+            }
+          }
+        },
+        "travelDurationHoursMinutes": "{hours} hr {minutes} min",
+        "@travelDurationHoursMinutes": {
+          "description": "Travel duration in hours and minutes",
+          "placeholders": {
+            "hours": {
+              "type": "int",
+              "example": "1"
+            },
+            "minutes": {
+              "type": "int",
+              "example": "30"
+            }
+          }
+        },
+        "travelViaRoute": "via {route}",
+        "@travelViaRoute": {
+          "description": "Via route name",
+          "placeholders": {
+            "route": {
+              "type": "String",
+              "example": "I-280"
+            }
+          }
+        },
+        "travelModeToDestination": " {travelMode} to ",
+        "@travelModeToDestination": {
+          "description": "Travel mode to destination",
+          "placeholders": {
+            "travelMode": {
+              "type": "String",
+              "example": "drive"
+            }
+          }
+        },
+        "travelModeDriving": "drive",
+        "travelModeWalking": "walk",
+        "travelModeBicycling": "bike",
+        "travelModeTransitLower": "transit",
+        "travelDurationCompact": "{minutes}m",
+        "@travelDurationCompact": {
+          "description": "Compact travel duration in minutes",
+          "placeholders": {
+            "minutes": {
+              "type": "int",
+              "example": "15"
+            }
+          }
+        },
+        "yourDayIsOptimized": "Your day is optimized.",
+        "yourDayAtAGlance": "Your day at a glance",
+        "totalTravelTimeToday": "{duration} of travel time today.",
+        "@totalTravelTimeToday": {
+          "description": "Total travel time for the day",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "45m"
+            }
+          }
+        },
+        "tilesScheduledForToday": "{count} tiles scheduled for today.",
+        "@tilesScheduledForToday": {
+          "description": "Number of tiles scheduled",
+          "placeholders": {
+            "count": {
+              "type": "int",
+              "example": "5"
+            }
+          }
+        },
+        "viewRoute": "View route",
+        "focusModeChip": "Focus Mode",
+        "showRouteChip": "Show Route",
+        "reOptimizeChip": "Re-optimize",
+        "todayColon": "Today:",
+        "tilesBlocksCount": "{tileCount} tiles, {blockCount} blocks",
+        "@tilesBlocksCount": {
+          "description": "Count of tiles and blocks",
+          "placeholders": {
+            "tileCount": {
+              "type": "int",
+              "example": "3"
+            },
+            "blockCount": {
+              "type": "int",
+              "example": "2"
+            }
+          }
+        },
+        "timeSavedColon": "Time saved:",
+        "travelTimeColon": "Travel time:",
+        "durationHoursMinutesShort": "{hours}h {minutes}m",
+        "@durationHoursMinutesShort": {
+          "description": "Duration in short format",
+          "placeholders": {
+            "hours": {
+              "type": "int",
+              "example": "1"
+            },
+            "minutes": {
+              "type": "int",
+              "example": "30"
+            }
+          }
+        },
+        "durationHoursShort": "{hours}h",
+        "@durationHoursShort": {
+          "description": "Duration in hours short format",
+          "placeholders": {
+            "hours": {
+              "type": "int",
+              "example": "1"
+            }
+          }
+        },
+        "durationMinutesShort": "{minutes}m",
+        "@durationMinutesShort": {
+          "description": "Duration in minutes short format",
+          "placeholders": {
+            "minutes": {
+              "type": "int",
+              "example": "30"
+            }
+          }
+        },
+        "hourAm": "{hour} AM",
+        "@hourAm": {
+          "description": "Hour in AM format",
+          "placeholders": {
+            "hour": {
+              "type": "int",
+              "example": "9"
+            }
+          }
+        },
+        "hourPm": "{hour} PM",
+        "@hourPm": {
+          "description": "Hour in PM format",
+          "placeholders": {
+            "hour": {
+              "type": "int",
+              "example": "3"
+            }
+          }
+        },
+        "scheduleConflict": "Schedule Conflict",
+        "conflictSameTime": "\"{tile1}\" and \"{tile2}\" are scheduled at the same time",
+        "@conflictSameTime": {
+          "placeholders": {
+            "tile1": {"type": "String"},
+            "tile2": {"type": "String"}
+          }
+        },
+        "conflictDuring": "\"{tile1}\" is during \"{tile2}\" ({overlap} overlap)",
+        "@conflictDuring": {
+          "placeholders": {
+            "tile1": {"type": "String"},
+            "tile2": {"type": "String"},
+            "overlap": {"type": "String"}
+          }
+        },
+        "conflictOverlaps": "\"{tile1}\" overlaps with \"{tile2}\" by {overlap}",
+        "@conflictOverlaps": {
+          "placeholders": {
+            "tile1": {"type": "String"},
+            "tile2": {"type": "String"},
+            "overlap": {"type": "String"}
+          }
+        },
+        "fix": "Fix",
+        "conflictOverlapMinutes": "Conflict: {minutes}m overlap",
+        "@conflictOverlapMinutes": {
+          "placeholders": {
+            "minutes": {"type": "int"}
+          }
+        },
+        "oneScheduleConflict": "1 Schedule Conflict",
+        "countScheduleConflicts": "{count} Schedule Conflicts",
+        "@countScheduleConflicts": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "tapToReviewAndResolve": "Tap to review and resolve",
+        "countConflicts": "{count} conflicts",
+        "@countConflicts": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "tapToExpand": "Tap to expand",
+        "conflictingTiles": "{count} Conflicting Tiles",
+        "@conflictingTiles": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "totalOverlap": "Total overlap: {duration}",
+        "@totalOverlap": {
+          "placeholders": {
+            "duration": {"type": "String"}
+          }
+        },
+        "autoResolve": "Auto-resolve",
+        "untitledTile": "Untitled Tile",
+        "tile": "Tile",
+        "todaysRoute": "Today's Route",
+        "noLocationsToday": "No locations today",
+        "addLocationsToSeeTodaysRoute": "Add locations to your tiles to see your daily route",
+        "countStops": "{count} stops",
+        "@countStops": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "routeOptimized": "Route optimized",
+        "savedTravelTime": "Saved {duration} of travel time",
+        "@savedTravelTime": {
+          "placeholders": {
+            "duration": {"type": "String"}
+          }
+        },
+        "firstStop": "First Stop",
+        "stop": "Stop",
+        "arriveBy": "Arrive by {time}",
+        "@arriveBy": {
+          "placeholders": {
+            "time": {"type": "String"}
+          }
+        },
+        "fromPreviousStop": "from previous stop",
+        "viewTile": "View Tile",
+        "editTile": "Edit Tile",
+        "startNavigation": "Start Navigation",
+        "noLocationAvailable": "No location",
+        "seeTodaysRoute": "See Today's Route"
 }

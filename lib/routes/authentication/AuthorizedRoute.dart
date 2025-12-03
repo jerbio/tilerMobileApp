@@ -104,12 +104,14 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       return this.context;
     });
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
   }
+
   void openAppLink(Uri uri) {
     RedirectHandler.routePage(context, uri);
   }
@@ -189,16 +191,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
-        DateTime dayRibbonDate = Utility.currentTime().dayDate;
-        if (this.context.read<UiDateManagerBloc>().state
-            is UiDateManagerUpdated) {
-          dayRibbonDate = (this.context.read<UiDateManagerBloc>().state
-                  as UiDateManagerUpdated)
-              .currentDate;
-        }
-        return DayRibbonCarousel(
-          dayRibbonDate,
-          autoUpdateAnchorDate: false,
+        // Wrap in BlocBuilder to respond to date changes
+        return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+          builder: (context, uiDateState) {
+            DateTime dayRibbonDate = Utility.currentTime().dayDate;
+            if (uiDateState is UiDateManagerUpdated) {
+              dayRibbonDate = uiDateState.currentDate;
+            }
+            // Hide ribbon when viewing current day - day summary is embedded in EnhancedWithinNowBatch
+            if (dayRibbonDate.isToday) {
+              return const SizedBox.shrink();
+            }
+            return DayRibbonCarousel(
+              dayRibbonDate,
+              autoUpdateAnchorDate: false,
+            );
+          },
         );
       case AuthorizedRouteTileListPage.Weekly:
         return Stack(children: [
@@ -304,8 +312,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
   }
 
-   Widget _buildDailyCurrentDayButton(){
-     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
+  Widget _buildDailyCurrentDayButton() {
+    final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
     return Positioned(
       right: 0,
       child: GestureDetector(
@@ -330,7 +338,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                     child: Icon(
                       FontAwesomeIcons.calendar,
                       size: constraints.maxWidth,
-                      color:colorScheme.primary,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),
@@ -357,7 +365,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildBottomNavBar(){
+  Widget _buildBottomNavBar() {
     return ClipRRect(
       borderRadius: BorderRadius.only(
         topRight: Radius.circular(30),
@@ -366,17 +374,18 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       child: BottomNavigationBar(
         items: [
           BottomNavigationBarItem(
-              icon: Icon(Icons.share,),
+              icon: Icon(
+                Icons.share,
+              ),
               label: ''),
           BottomNavigationBarItem(
             icon: Icon(Icons.search),
             label: '',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
           BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month,
+              icon: Icon(
+                Icons.calendar_month,
               ),
               label: ''),
         ],
@@ -385,9 +394,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildFloatingActionButton(){
+  Widget _buildFloatingActionButton() {
     return FloatingActionButton(
-      backgroundColor:colorScheme.surface ,
+      backgroundColor: colorScheme.surface,
       onPressed: () {
         AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
         displayDialog(MediaQuery.of(context).size);
@@ -418,13 +427,25 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     DayStatusWidget dayStatusWidget = DayStatusWidget();
     List<Widget> widgetChildren = [
       BlocBuilder<ScheduleBloc, ScheduleState>(
-        builder: (context, state) {
-          return Stack(children: [
-            _buildTileList(state.currentView),
-            _ribbonCarousel(state.currentView),
-            if (state.currentView == AuthorizedRouteTileListPage.Daily)
-              _buildDailyCurrentDayButton()
-          ]);
+        builder: (context, scheduleState) {
+          return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+            builder: (context, uiDateState) {
+              DateTime currentViewDate = Utility.currentTime().dayDate;
+              if (uiDateState is UiDateManagerUpdated) {
+                currentViewDate = uiDateState.currentDate;
+              }
+              final bool isViewingToday = currentViewDate.isToday;
+
+              return Stack(children: [
+                _buildTileList(scheduleState.currentView),
+                _ribbonCarousel(scheduleState.currentView),
+                if (scheduleState.currentView ==
+                        AuthorizedRouteTileListPage.Daily &&
+                    !isViewingToday)
+                  _buildDailyCurrentDayButton()
+              ]);
+            },
+          );
         },
       ),
     ];
@@ -436,7 +457,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     //ey: not really used
     dayStatusWidget
         .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
-
 
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
@@ -506,7 +526,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             },
           )
         ],
-        child: BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
+        child:
+            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
           return renderAuthorizedUserPageView();
         }));
   }

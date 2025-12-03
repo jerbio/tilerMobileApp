@@ -21,7 +21,6 @@ class TimeAndDate extends StatefulWidget {
 class _TimeAndDateState extends State<TimeAndDate> {
   late ThemeData theme;
 
-
   late DateTime dateTime;
   @override
   void initState() {
@@ -40,40 +39,38 @@ class _TimeAndDateState extends State<TimeAndDate> {
     final formattedTimeOfDay =
         localizations.formatTimeOfDay(TimeOfDay.fromDateTime(dateTime));
     return GestureDetector(
-      onTap: () {
-        if (this.widget.isReadOnly) {
-          return;
-        }
-        Future<TimeOfDay?> selectedTime = showTimePicker(
-          initialTime: TimeOfDay.fromDateTime(dateTime),
-          context: context,
-        );
-        selectedTime.then((timeOfDayUpdate) {
-          if (timeOfDayUpdate != null) {
-            DateTime updatedTime = DateTime(dateTime.year, dateTime.month,
-                dateTime.day, timeOfDayUpdate.hour, timeOfDayUpdate.minute);
-            setState(() {
-              dateTime = updatedTime;
-            });
-            if (this.widget.onInputChange != null) {
-              this.widget.onInputChange!(updatedTime);
-            }
+        onTap: () {
+          if (this.widget.isReadOnly) {
+            return;
           }
-        });
-      },
-      child: Container(
+          Future<TimeOfDay?> selectedTime = showTimePicker(
+            initialTime: TimeOfDay.fromDateTime(dateTime),
+            context: context,
+          );
+          selectedTime.then((timeOfDayUpdate) {
+            if (timeOfDayUpdate != null) {
+              DateTime updatedTime = DateTime(dateTime.year, dateTime.month,
+                  dateTime.day, timeOfDayUpdate.hour, timeOfDayUpdate.minute);
+              setState(() {
+                dateTime = updatedTime;
+              });
+              if (this.widget.onInputChange != null) {
+                this.widget.onInputChange!(updatedTime);
+              }
+            }
+          });
+        },
         child: Container(
+          child: Container(
             child: Text(
               formattedTimeOfDay,
-              style:TextStyle(
-                  fontSize: 35,
+              style: TextStyle(
+                  fontSize: 28,
                   fontFamily: TileTextStyles.rubikFontName,
-                  fontWeight: FontWeight.w500
-              ),
+                  fontWeight: FontWeight.w500),
             ),
-        ),
-      )
-    );
+          ),
+        ));
   }
 
   void onDateTap() async {

@@ -10,6 +10,7 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -312,7 +313,7 @@ class _DailyTileListState extends TileListState {
     }
   }
 
-  WithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
+  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
@@ -325,8 +326,8 @@ class _DailyTileListState extends TileListState {
         elapsedTiles.add(eachSubEvent);
       }
     }
-    return WithinNowBatch(
-      key: ValueKey("_within_upcoming_0"),
+    return EnhancedWithinNowBatch(
+      key: ValueKey("_enhanced_within_now_0"),
       tiles: [...elapsedTiles, ...notElapsedTiles],
     );
   }
@@ -369,22 +370,24 @@ class _DailyTileListState extends TileListState {
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
-      WithinNowBatch todayBatch = processTodayTiles(todayTiles);
+      EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
       childTileBatches.add(todayBatch);
       dayIndexToWidget[currentTime.universalDayIndex] = Container(
+        height: MediaQuery.of(context).size.height,
         child: todayBatch,
       );
     } else {
       DateTime currentTime = Utility.currentTime();
-      TileBatch tileBatch = TileBatch(
-        dayIndex: currentTime.universalDayIndex,
+      EnhancedWithinNowBatch emptyTodayBatch = EnhancedWithinNowBatch(
+        key: ValueKey("_enhanced_within_now_empty"),
         tiles: [],
       );
       Widget widget = Container(
-        child: tileBatch,
+        height: MediaQuery.of(context).size.height,
+        child: emptyTodayBatch,
       );
       dayIndexToWidget[currentTime.universalDayIndex] = widget;
-      childTileBatches.add(tileBatch);
+      childTileBatches.add(emptyTodayBatch);
     }
 
     for (int dayIndex in upcomingDayIndexes) {

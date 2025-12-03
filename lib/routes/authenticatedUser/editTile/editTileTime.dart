@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-
 class EditTileTime extends StatefulWidget {
-
   TimeOfDay time;
   _EditTileTimeState? _state;
   Function? onInputChange;
   bool isReadOnly = false;
-  bool isPref=false;
+  bool isPref = false;
   EditTileTime(
-      {required this.time, this.onInputChange, this.isReadOnly = false,this.isPref = false});
+      {required this.time,
+      this.onInputChange,
+      this.isReadOnly = false,
+      this.isPref = false});
 
   @override
   State<EditTileTime> createState() {
@@ -37,8 +38,8 @@ class _EditTileTimeState extends State<EditTileTime> {
   Widget build(BuildContext context) {
     const textStyle = TileTextStyles.editTimeOrDateTime;
     final localizations = MaterialLocalizations.of(context);
-    final theme=Theme.of(context);
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     final formattedTimeOfDay = localizations.formatTimeOfDay(time);
     return GestureDetector(
       onTap: () {
@@ -65,20 +66,19 @@ class _EditTileTimeState extends State<EditTileTime> {
         child: Row(
           children: [
             Container(
-                margin: EdgeInsets.fromLTRB(0, 0, widget.isPref?10:5, 0),
+                margin: EdgeInsets.fromLTRB(0, 0, widget.isPref ? 10 : 5, 0),
                 child: Icon(
                   Icons.access_time_sharp,
                   color: tileThemeExtension.onSurfaceSecondary,
-                  size: widget.isPref?18:25,
+                  size: widget.isPref ? 18 : 20,
                 )),
-            Text(
-              formattedTimeOfDay,
-              style: widget.isPref?textStyle.copyWith(
-                  color: tileThemeExtension.onSurfaceSecondary,
-                  decoration: TextDecoration.underline,
-                  decorationColor: tileThemeExtension.onSurfaceSecondary
-              ) :textStyle
-            ),
+            Text(formattedTimeOfDay,
+                style: widget.isPref
+                    ? textStyle.copyWith(
+                        color: tileThemeExtension.onSurfaceSecondary,
+                        decoration: TextDecoration.underline,
+                        decorationColor: tileThemeExtension.onSurfaceSecondary)
+                    : textStyle),
           ],
         ),
       ),

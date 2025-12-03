@@ -4,8 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-
-
 class EditTileDate extends StatefulWidget {
   DateTime time;
   _EditTileDateState? _state;
@@ -70,25 +68,23 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     TextStyle textStyle =
         this.widget.textStyle ?? TileTextStyles.editTimeOrDateTime;
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
           child: Row(
             children: [
               Container(
-                  width: 32,
-                  height: 32,
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
                     color: tileThemeExtension.onSurfaceSecondary,
-                    size: 25,
+                    size: 20,
                   )),
               Text(
                 DateFormat.yMMMd(locale).format(time),

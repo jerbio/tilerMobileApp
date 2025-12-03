@@ -3,7 +3,6 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
-
 class DurationUIWidget extends StatefulWidget {
   Duration duration;
   List<Duration>? presetDurations;
@@ -23,16 +22,16 @@ class _DurationUIWidgetState extends State<DurationUIWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     int days = this._duration.inDays.floor();
     int totalHoursFloor = this._duration.inHours.floor();
     int hour = totalHoursFloor - (days * 24);
     int minute = this._duration.inMinutes.floor() - (totalHoursFloor * 60);
-    TextStyle unitTimeStyle= TextStyle(
+    TextStyle unitTimeStyle = TextStyle(
         fontFamily: TileTextStyles.rubikFontName,
         color: tileThemeExtension.onSurfaceHint,
-        fontSize: 35,
+        fontSize: 28,
         fontWeight: FontWeight.w500);
     const topSpacing = EdgeInsets.fromLTRB(0, 0, 0, 10);
 

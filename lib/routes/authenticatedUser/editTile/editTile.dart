@@ -75,14 +75,11 @@ class _EditTileState extends State<EditTile> {
   static final String editTileCancelAndProceedName = "";
   late ThemeData theme;
   late ColorScheme colorScheme;
-  TextStyle labelStyle=TextStyle(
-      fontSize: 25,
+  TextStyle labelStyle = TextStyle(
+      fontSize: 20,
       fontFamily: TileTextStyles.rubikFontName,
-      fontWeight: FontWeight.w500
-  );
-  late  TileThemeExtension tileThemeExtension;
-
-
+      fontWeight: FontWeight.w500);
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -104,15 +101,15 @@ class _EditTileState extends State<EditTile> {
       });
     });
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-
-
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
+
   bool isScheduleTimelineReady(EditTilerEvent? editTilerEvent) {
     return editTilerEvent != null &&
         editTilerEvent.startTime != null &&
@@ -121,23 +118,25 @@ class _EditTileState extends State<EditTile> {
         editTilerEvent.calEndTime != null;
   }
 
-
-  Widget _tileHeader(String title){
-    return  Container(
+  Widget _tileHeader(String title) {
+    return Container(
       padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
       alignment: Alignment.centerLeft,
       child: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 20,
-            fontFamily: TileTextStyles.rubikFontName,
-          ),
+        title,
+        style: TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 20,
+          fontFamily: TileTextStyles.rubikFontName,
+        ),
       ),
     );
   }
 
-  Widget _tileBodyHeader({required IconData icon,required Color iconColor,required String tileCount}){
+  Widget _tileBodyHeader(
+      {required IconData icon,
+      required Color iconColor,
+      required String tileCount}) {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Row(
@@ -146,8 +145,8 @@ class _EditTileState extends State<EditTile> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-                color:colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(20),
+              color: colorScheme.onSurface.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(icon, color: iconColor),
           ),
@@ -167,13 +166,10 @@ class _EditTileState extends State<EditTile> {
   }
 
   Widget renderTardyTiles(List<SubCalendarEvent> tiles) {
-    Widget tardyHeader =_tileHeader(
-        tiles.isEmpty
-            ? AppLocalizations.of(context)!.late
-            : AppLocalizations.of(context)!
-            .lateDate(tiles.first.startTime.humanDate(context)
-        )
-    );
+    Widget tardyHeader = _tileHeader(tiles.isEmpty
+        ? AppLocalizations.of(context)!.late
+        : AppLocalizations.of(context)!
+            .lateDate(tiles.first.startTime.humanDate(context)));
 
     if (tiles.isEmpty) {
       return Align(
@@ -189,43 +185,39 @@ class _EditTileState extends State<EditTile> {
                     color: colorScheme.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(10)),
                 child: Container(
+                  alignment: Alignment.center,
+                  child: Stack(
                     alignment: Alignment.center,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Lottie.asset(
-                            'assets/lottie/abstract-waves-circles.json',
-                            height: 100
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    colorScheme.surfaceContainerLowest.withValues(alpha: 0.25),
-                                    colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
-                                  ]
-                              )
-                          ),
-                          width: MediaQuery.of(context).size.width *
-                              TileDimensions.widthRatio,
-                          height: 100,
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                              AppLocalizations.of(context)!.onTime,
-                              style:  TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 50,
-                                fontFamily: TileTextStyles.rubikFontName,
-                              )
-                          ),
-                        ),
-                      ],
-                    ),
+                    children: [
+                      Lottie.asset('assets/lottie/abstract-waves-circles.json',
+                          height: 100),
+                      Container(
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  colorScheme.surfaceContainerLowest
+                                      .withValues(alpha: 0.25),
+                                  colorScheme.surfaceContainerLowest
+                                      .withValues(alpha: 0.9),
+                                ])),
+                        width: MediaQuery.of(context).size.width *
+                            TileDimensions.widthRatio,
+                        height: 100,
+                      ),
+                      Align(
+                        alignment: Alignment.center,
+                        child: Text(AppLocalizations.of(context)!.onTime,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 50,
+                              fontFamily: TileTextStyles.rubikFontName,
+                            )),
+                      ),
+                    ],
+                  ),
                 ),
               )
             ],
@@ -233,7 +225,6 @@ class _EditTileState extends State<EditTile> {
         ),
       );
     }
-
 
     return Align(
       alignment: Alignment.center,
@@ -246,10 +237,11 @@ class _EditTileState extends State<EditTile> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(10)),
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(10)),
               child: Column(children: [
                 _tileBodyHeader(
-                    icon:Icons.warning,
+                    icon: Icons.warning,
                     iconColor: TileColors.warning,
                     tileCount: tiles.length.toString()),
                 Column(
@@ -290,13 +282,13 @@ class _EditTileState extends State<EditTile> {
               Container(
                 height: 20,
                 width: MediaQuery.of(context).size.width *
-                    TileDimensions.widthRatio -
+                        TileDimensions.widthRatio -
                     190,
                 child: Text(
                   subCalendarEventTile.name!,
-                  style:  TextStyle(
-                      fontFamily: TileTextStyles.rubikFontName,
-                      overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: TileTextStyles.rubikFontName,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
@@ -340,7 +332,7 @@ class _EditTileState extends State<EditTile> {
                   .humanDate(context),
               style: TextStyle(
                 fontSize: 12,
-                fontFamily:TileTextStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 color: colorScheme.onSurface.withValues(alpha: 0.8),
               ),
             ),
@@ -368,9 +360,15 @@ class _EditTileState extends State<EditTile> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest, borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                  children: [_tileBodyHeader(icon:Icons.error, iconColor: colorScheme.error,tileCount: tiles.length.toString()), renderListOfTiles(tiles)]),
+                  color: colorScheme.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Column(children: [
+                _tileBodyHeader(
+                    icon: Icons.error,
+                    iconColor: colorScheme.error,
+                    tileCount: tiles.length.toString()),
+                renderListOfTiles(tiles)
+              ]),
             )
           ],
         ),
@@ -438,7 +436,8 @@ class _EditTileState extends State<EditTile> {
                   : SizedBox.shrink();
               return Container(
                 height: 300,
-                color: tileThemeExtension.surfaceContainerPlus.withValues(alpha: 0.3),
+                color: tileThemeExtension.surfaceContainerPlus
+                    .withValues(alpha: 0.3),
                 child: Center(
                   child: ListView(
                     scrollDirection: Axis.horizontal,
@@ -451,38 +450,33 @@ class _EditTileState extends State<EditTile> {
           );
         },
         style: ButtonStyle(
-            padding: WidgetStateProperty.resolveWith(
-                (states) => EdgeInsets.all(0),
-            ),
+          padding: WidgetStateProperty.resolveWith(
+            (states) => EdgeInsets.all(0),
+          ),
         ),
         child: Stack(
           children: [
             Container(
               alignment: Alignment.center,
-              child: Text(
-                  AppLocalizations.of(context)!.prediction,
-                  style: TextStyle(
-                    fontSize: 20
-                  )
-              ),
+              child: Text(AppLocalizations.of(context)!.prediction,
+                  style: TextStyle(fontSize: 20)),
             ),
             Shimmer.fromColors(
-                baseColor: colorScheme.tertiaryContainer.withAlpha(75),
-                highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
-                child: Container(
-                  width: 400,
-                  decoration: BoxDecoration(
-                      color: colorScheme.onSurface.withValues(alpha:  0.8),
-                      borderRadius: BorderRadius.circular(30),
-                  ),
+              baseColor: colorScheme.tertiaryContainer.withAlpha(75),
+              highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
+              child: Container(
+                width: 400,
+                decoration: BoxDecoration(
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(30),
                 ),
+              ),
             ),
           ],
         ),
       );
     });
   }
-
 
   clearPredictionButton() {
     setState(() {
@@ -497,7 +491,6 @@ class _EditTileState extends State<EditTile> {
       );
     });
   }
-
 
   void onScheduleTimelineChange() {
     if (editTilerEvent != null && isScheduleTimelineReady(editTilerEvent)) {
@@ -549,7 +542,6 @@ class _EditTileState extends State<EditTile> {
   void onInputCountChange() {
     onScheduleTimelineChange();
   }
-
 
   Future<SubCalendarEvent> subEventUpdate() {
     AnalysticsSignal.send('EDIT_TILE_REQUEST_INITIALIZED');
@@ -687,8 +679,7 @@ class _EditTileState extends State<EditTile> {
             ),
           ),
           NextTileSuggestionCarouselWidget(
-              nextTileSuggestions: this.nextTileSuggestions!
-          ),
+              nextTileSuggestions: this.nextTileSuggestions!),
         ],
       );
     }
@@ -717,64 +708,73 @@ class _EditTileState extends State<EditTile> {
         this.subEvent?.calendarEvent?.id != null &&
         this.subEvent?.thirdpartyType == TileSource.tiler) {
       appBarActionButtons.add(
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => TileDetail(
-                            tileId: this.subEvent?.calendarEvent?.id ??
-                                this.widget.tileId,
-                            loadSubEvents: false,
-                          ))).whenComplete(() {
-                this.context.read<SubCalendarTileBloc>().add(
-                    GetSubCalendarTileBlocEvent(
-                        subEventId: this.widget.tileId,
-                        calendarSource: (this.widget.tileSource?.name ?? ""),
-                        thirdPartyUserId: this.widget.thirdPartyUserId));
-                subEvent = null;
-              });
-            },
-        style: TileButtonStyles.onlyIconsContrast(foregroundColor: colorScheme.onPrimary),
-        child: Icon(Icons.app_registration),
-      ),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => TileDetail(
+                          tileId: this.subEvent?.calendarEvent?.id ??
+                              this.widget.tileId,
+                          loadSubEvents: false,
+                        ))).whenComplete(() {
+              this.context.read<SubCalendarTileBloc>().add(
+                  GetSubCalendarTileBlocEvent(
+                      subEventId: this.widget.tileId,
+                      calendarSource: (this.widget.tileSource?.name ?? ""),
+                      thirdPartyUserId: this.widget.thirdPartyUserId));
+              subEvent = null;
+            });
+          },
+          style: TileButtonStyles.onlyIconsContrast(
+              foregroundColor: colorScheme.onPrimary),
+          child: Icon(Icons.app_registration),
+        ),
       );
     }
     return appBarActionButtons;
   }
+
   Widget _buildClusterContainer({
     required Widget child,
     EdgeInsets? margin,
     EdgeInsets? padding,
     String? svgAssets,
-
   }) {
+    // Apply default horizontal margin for consistent spacing like Settings page
+    final effectiveMargin = EdgeInsets.fromLTRB(
+      20,
+      margin?.top ?? 0,
+      20,
+      margin?.bottom ?? 0,
+    );
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
       ),
-      margin: margin,
-      padding: padding,
+      margin: effectiveMargin,
+      padding: padding ?? const EdgeInsets.symmetric(vertical: 16),
       child: svgAssets != null
           ? Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            bottom: -20,
-            right: -20,
-            child: SvgPicture.asset(
-              svgAssets,
-              height: 150,
-              colorFilter: ColorFilter.mode(
-                colorScheme.onSurface.withValues(alpha: 0.05),
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-          child,
-        ],
-      ) : child,
+              alignment: Alignment.center,
+              children: [
+                Positioned(
+                  bottom: -20,
+                  right: -20,
+                  child: SvgPicture.asset(
+                    svgAssets,
+                    height: 150,
+                    colorFilter: ColorFilter.mode(
+                      colorScheme.onSurface.withValues(alpha: 0.05),
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+                child,
+              ],
+            )
+          : child,
     );
   }
 
@@ -910,38 +910,37 @@ class _EditTileState extends State<EditTile> {
                 Widget splitWidget = FractionallySizedBox(
                     widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
-                      height: 80,
-                      margin: EdgeInsets.fromLTRB(30, 30, 0, 20),
+                      height: 70,
+                      margin: EdgeInsets.fromLTRB(30, 20, 0, 15),
                       child: Stack(
                         children: [
                           Container(
                             margin: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                            height: 50,
-                            child: Text(
-                                AppLocalizations.of(context)!.split,
-                                style: labelStyle
-                            ),
+                            height: 40,
+                            child: Text(AppLocalizations.of(context)!.split,
+                                style: labelStyle),
                           ),
                           Positioned(
-                              top: 45,
-                              child: Container(
-                                child: Text(
-                                    AppLocalizations.of(context)!.timeBlocks,
-                                    style:TextStyle(
-                                        color: tileThemeExtension.onSurfaceTimeBlockLbl,
-                                        fontWeight: FontWeight.w300,
-                                        fontSize: 20,
-                                        fontFamily: TileTextStyles.rubikFontName,
-                                    ),
+                            top: 40,
+                            child: Container(
+                              child: Text(
+                                AppLocalizations.of(context)!.timeBlocks,
+                                style: TextStyle(
+                                  color:
+                                      tileThemeExtension.onSurfaceTimeBlockLbl,
+                                  fontWeight: FontWeight.w300,
+                                  fontSize: 14,
+                                  fontFamily: TileTextStyles.rubikFontName,
                                 ),
                               ),
+                            ),
                           ),
                           Positioned(
                             top: 0,
                             right: 5,
                             child: Container(
                               width: 100,
-                              height: 100,
+                              height: 70,
                               child: TextField(
                                 decoration: InputDecoration(
                                   filled: true,
@@ -953,17 +952,18 @@ class _EditTileState extends State<EditTile> {
                                         BorderSide(color: Colors.transparent),
                                   ),
                                   focusedBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(color: textBorderColor)),
+                                      borderSide:
+                                          BorderSide(color: textBorderColor)),
                                   enabledBorder: UnderlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color: textBorderColor
-                                              .withLightness(0.8),
-                                      ),
+                                    borderSide: BorderSide(
+                                      color: textBorderColor.withLightness(0.8),
+                                    ),
                                   ),
-                                  contentPadding: EdgeInsets.fromLTRB(20, 5, 20, 0),
+                                  contentPadding:
+                                      EdgeInsets.fromLTRB(20, 5, 20, 0),
                                 ),
                                 textAlign: TextAlign.center,
-                                style:TextStyle(fontSize: 30),
+                                style: TextStyle(fontSize: 24),
                                 keyboardType: TextInputType.numberWithOptions(
                                     signed: true, decimal: true),
                                 controller: splitCountController,
@@ -974,13 +974,10 @@ class _EditTileState extends State<EditTile> {
                       ),
                     ));
 
-                inputChildWidgets.add(
-                    _buildClusterContainer(
-                      svgAssets: 'assets/images/iconScout/block.svg',
-                      margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-                      child: splitWidget
-                    )
-                );
+                inputChildWidgets.add(_buildClusterContainer(
+                    svgAssets: 'assets/images/iconScout/block.svg',
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+                    child: splitWidget));
                 if (_editCalEndDateAndTime != null &&
                     subEvent != null &&
                     subEvent!.isRecurring == true) {
@@ -1004,58 +1001,53 @@ class _EditTileState extends State<EditTile> {
                   durationAndDeadlineCluster.add(deadlineWidget);
                 }
                 tileProgressWidget = _buildClusterContainer(
-                        svgAssets: 'assets/images/iconScout/chart.svg',
-                        margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                        padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                        child: Column(children: [
-                          Container(
-                            margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
-                            alignment: Alignment.topLeft,
-                            child: Text(
-                              AppLocalizations.of(context)!.progress,
-                              style: this.labelStyle,
-                            ),
-                          ),
-                          TileProgress(
-                              calendarEvent: this.subEvent!.calendarEvent!
-                                  as CalendarEvent),
-                        ]
-                        )
-                    );
+                    svgAssets: 'assets/images/iconScout/chart.svg',
+                    margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
+                    padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                    child: Column(children: [
+                      Container(
+                        margin: EdgeInsets.fromLTRB(25, 0, 0, 0),
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          AppLocalizations.of(context)!.progress,
+                          style: this.labelStyle,
+                        ),
+                      ),
+                      TileProgress(
+                          calendarEvent:
+                              this.subEvent!.calendarEvent! as CalendarEvent),
+                    ]));
               }
               Widget nameAndSplitClusterWrapper = _buildClusterContainer(
-                margin: EdgeInsets.fromLTRB(0, 10, 0, 20),
-                padding: EdgeInsets.fromLTRB(0, 10, 0, 5),
+                margin: EdgeInsets.fromLTRB(0, 10, 0, 15),
+                padding: EdgeInsets.fromLTRB(0, 16, 0, 12),
                 child: Column(children: nameAndSplitCluster),
               );
 
               inputChildWidgets.insert(0, nameAndSplitClusterWrapper);
 
               Widget durationClusterWrapper = _buildClusterContainer(
-                  padding: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                  margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+                  padding: EdgeInsets.fromLTRB(0, 12, 0, 0),
                   svgAssets: 'assets/images/iconScout/deadline.svg',
-                  child:Container(
+                  child: Container(
                     alignment: Alignment.center,
                     child: Column(
-                    children: durationAndDeadlineCluster,
+                      children: durationAndDeadlineCluster,
                     ),
-                    margin: EdgeInsets.fromLTRB(0, 0, 0, 30),
-                  )
-              );
+                    margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+                  ));
 
               inputChildWidgets.add(durationClusterWrapper);
 
               if (_editTileNote != null && subEvent!.isFromTiler) {
-                inputChildWidgets.add(
-                    _buildClusterContainer(
+                inputChildWidgets.add(_buildClusterContainer(
                     margin: EdgeInsets.fromLTRB(0, 20, 0, 20),
-                    svgAssets:  'assets/images/iconScout/notes.svg',
-                    child:Container(
+                    svgAssets: 'assets/images/iconScout/notes.svg',
+                    child: Container(
                       child: _editTileNote!,
                       margin: EdgeInsets.fromLTRB(0, 30, 0, 10),
-                    )
-                )
-                );
+                    )));
               }
 
               List<PlaybackOptions> playbackOptions = [
@@ -1150,7 +1142,7 @@ class _EditTileState extends State<EditTile> {
               List<Widget> stackElements = <Widget>[
                 Container(
                   color: tileThemeExtension.primaryContainerLow,
-                  padding: EdgeInsets.fromLTRB(30, 0, 30, 100),
+                  padding: EdgeInsets.fromLTRB(10, 0, 10, 100),
                   alignment: Alignment.topCenter,
                   child: ListView(
                     children: inputChildWidgets,
@@ -1183,8 +1175,7 @@ class _EditTileState extends State<EditTile> {
           ),
           actions: this.getAppBarActionButtons(),
           automaticallyImplyLeading: false,
-        )
-    );
+        ));
   }
 
   @override

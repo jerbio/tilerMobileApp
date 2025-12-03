@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// Travel connector widget displayed between tiles showing travel time and route info
 /// Matches the design: "🚗 15 min drive to Office" with vertical connectors
@@ -37,18 +40,19 @@ class TravelConnector extends StatelessWidget {
     }
   }
 
-  String _formatDuration(double? durationMs) {
+  String _formatDuration(BuildContext context, double? durationMs) {
     if (durationMs == null || durationMs <= 0) return '';
+    final l10n = AppLocalizations.of(context)!;
     final minutes = (durationMs / 60000).round();
     if (minutes < 60) {
-      return '$minutes min';
+      return l10n.travelDurationMinutes(minutes);
     }
     final hours = minutes ~/ 60;
     final remainingMinutes = minutes % 60;
     if (remainingMinutes == 0) {
-      return '$hours hr';
+      return l10n.travelDurationHours(hours);
     }
-    return '$hours hr $remainingMinutes min';
+    return l10n.travelDurationHoursMinutes(hours, remainingMinutes);
   }
 
   String _getDestinationName() {
@@ -61,7 +65,7 @@ class TravelConnector extends StatelessWidget {
     return toTile.name ?? '';
   }
 
-  String? _getRouteName() {
+  String? _getRouteName(BuildContext context) {
     final travelDetail = toTile.travelDetail;
     if (travelDetail?.before?.travelLegs?.isNotEmpty == true) {
       // Try to find a route description from travel legs
@@ -70,7 +74,8 @@ class TravelConnector extends StatelessWidget {
         orElse: () => TravelLeg(),
       );
       if (mainLeg.description?.isNotEmpty == true) {
-        return 'via ${mainLeg.description}';
+        return AppLocalizations.of(context)!
+            .travelViaRoute(mainLeg.description!);
       }
     }
     return null;
@@ -86,10 +91,110 @@ class TravelConnector extends StatelessWidget {
     );
   }
 
+  /// Clean HTML tags from route description text
+  String _cleanRouteText(String text) {
+    // Remove HTML tags like <b>, </b>, etc.
+    return text.replaceAll(RegExp(r'<[^>]*>'), '');
+  }
+
+  /// Get localized travel mode text for display
+  String _getLocalizedTravelMode(BuildContext context, String? travelMode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (travelMode?.toLowerCase()) {
+      case 'driving':
+        return l10n.travelModeDriving;
+      case 'walking':
+        return l10n.travelModeWalking;
+      case 'bicycling':
+        return l10n.travelModeBicycling;
+      case 'transit':
+        return l10n.travelModeTransitLower;
+      default:
+        return l10n.travelModeDriving;
+    }
+  }
+
+  /// Get the travel mode parameter for Google Maps directions URL
+  String _getDirectionsTravelMode(String? travelMode) {
+    switch (travelMode?.toLowerCase()) {
+      case 'walking':
+        return 'walking';
+      case 'bicycling':
+        return 'bicycling';
+      case 'transit':
+        return 'transit';
+      case 'driving':
+      default:
+        return 'driving';
+    }
+  }
+
+  /// Convert Location to lat,lng string for Google Maps URL
+  String _longLatString(Location location) {
+    return '${location.latitude},${location.longitude}';
+  }
+
+  /// Launch Google Maps directions (similar to TileWidgetState._launchGoogleMaps)
+  Future<void> _launchGoogleMaps(
+    Location? originLocation,
+    Location? destinationLocation,
+    String travelMode,
+  ) async {
+    // Check if we have valid locations
+    final hasValidOrigin = originLocation?.isNotNullAndNotDefault ?? false;
+    final hasValidDestination =
+        destinationLocation?.isNotNullAndNotDefault ?? false;
+
+    if (!hasValidDestination) return;
+
+    // Build destination - prioritize address over coordinates
+    String destination;
+    if (destinationLocation!.address?.isNotEmpty == true) {
+      destination = Uri.encodeComponent(destinationLocation.address!);
+    } else {
+      destination = _longLatString(destinationLocation);
+    }
+
+    // Build origin if available - prioritize address over coordinates
+    String? origin;
+    if (hasValidOrigin) {
+      if (originLocation!.address?.isNotEmpty == true) {
+        origin = Uri.encodeComponent(originLocation.address!);
+      } else {
+        origin = _longLatString(originLocation);
+      }
+    }
+
+    // Build Google Maps directions URL
+    String url =
+        'https://www.google.com/maps/dir/?api=1&destination=$destination&travelmode=$travelMode';
+    if (origin != null) {
+      url += '&origin=$origin';
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Launch Google Maps directions to the destination
+  Future<void> _launchDirections() async {
+    final travelDetail = toTile.travelDetail?.before;
+    final travelMode = _getDirectionsTravelMode(travelDetail?.travelMedium);
+
+    // Get origin and destination locations from travel detail
+    final originLocation = travelDetail?.startLocation ?? fromTile.location;
+    final destinationLocation = travelDetail?.endLocation ?? toTile.location;
+
+    await _launchGoogleMaps(originLocation, destinationLocation, travelMode);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     final travelTime = toTile.travelTimeBefore;
     if (travelTime == null || travelTime <= 0) {
@@ -98,15 +203,16 @@ class TravelConnector extends StatelessWidget {
 
     final travelMode = toTile.travelDetail?.before?.travelMedium ?? 'driving';
     final isTardy = toTile.isTardy ?? false;
-    final durationText = _formatDuration(travelTime);
+    final durationText = _formatDuration(context, travelTime);
     final destination = _getDestinationName();
-    final routeName = _getRouteName();
+    final routeName = _getRouteName(context);
     final leaveByTime = _getLeaveByTime();
+    final localizedTravelMode = _getLocalizedTravelMode(context, travelMode);
 
     final primaryColor = isTardy ? TileColors.late : TileColors.travel;
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap ?? _launchDirections,
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
@@ -193,7 +299,7 @@ class TravelConnector extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          ' ${travelMode.toLowerCase()} to ',
+                          l10n.travelModeToDestination(localizedTravelMode),
                           style: TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
                             fontSize: 14,
@@ -213,6 +319,13 @@ class TravelConnector extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        // Navigation icon to indicate directions are available
+                        const SizedBox(width: 8),
+                        Icon(
+                          Icons.navigation_outlined,
+                          size: 16,
+                          color: primaryColor,
+                        ),
                       ],
                     ),
 
@@ -229,12 +342,17 @@ class TravelConnector extends StatelessWidget {
                                 color: colorScheme.onSurface.withOpacity(0.5),
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                routeName,
-                                style: TextStyle(
-                                  fontFamily: TileTextStyles.rubikFontName,
-                                  fontSize: 12,
-                                  color: colorScheme.onSurface.withOpacity(0.6),
+                              Flexible(
+                                child: Text(
+                                  _cleanRouteText(routeName),
+                                  style: TextStyle(
+                                    fontFamily: TileTextStyles.rubikFontName,
+                                    fontSize: 12,
+                                    color:
+                                        colorScheme.onSurface.withOpacity(0.6),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -250,7 +368,10 @@ class TravelConnector extends StatelessWidget {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                'Leave by ${MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(leaveByTime))}',
+                                l10n.leaveByTime(MaterialLocalizations.of(
+                                        context)
+                                    .formatTimeOfDay(
+                                        TimeOfDay.fromDateTime(leaveByTime))),
                                 style: TextStyle(
                                   fontFamily: TileTextStyles.rubikFontName,
                                   fontSize: 12,
@@ -316,16 +437,23 @@ class TravelConnector extends StatelessWidget {
 }
 
 /// Simple travel indicator for compact view (just shows icon and duration)
+/// Tappable to open Google Directions
 class CompactTravelIndicator extends StatelessWidget {
   final double? travelTimeMs;
   final String? travelMode;
   final bool isTardy;
+  final Location? startLocation;
+  final Location? endLocation;
+  final String? destinationAddress;
 
   const CompactTravelIndicator({
     Key? key,
     this.travelTimeMs,
     this.travelMode,
     this.isTardy = false,
+    this.startLocation,
+    this.endLocation,
+    this.destinationAddress,
   }) : super(key: key);
 
   IconData _getTravelModeIcon() {
@@ -343,10 +471,80 @@ class CompactTravelIndicator extends StatelessWidget {
     }
   }
 
-  String _formatDuration() {
+  String _formatDuration(BuildContext context) {
     if (travelTimeMs == null || travelTimeMs! <= 0) return '';
     final minutes = (travelTimeMs! / 60000).round();
-    return '${minutes}m';
+    return AppLocalizations.of(context)!.travelDurationCompact(minutes);
+  }
+
+  /// Get the travel mode parameter for Google Maps directions URL
+  String _getDirectionsTravelMode() {
+    switch (travelMode?.toLowerCase()) {
+      case 'walking':
+        return 'walking';
+      case 'bicycling':
+        return 'bicycling';
+      case 'transit':
+        return 'transit';
+      case 'driving':
+      default:
+        return 'driving';
+    }
+  }
+
+  /// Convert Location to lat,lng string for Google Maps URL
+  String _longLatString(Location location) {
+    return '${location.latitude},${location.longitude}';
+  }
+
+  /// Launch Google Maps directions (similar to TileWidgetState._launchGoogleMaps)
+  Future<void> _launchGoogleMaps(
+    Location? originLocation,
+    Location? destinationLocation,
+    String travelMode,
+  ) async {
+    // Check if we have valid locations
+    final hasValidOrigin = originLocation?.isNotNullAndNotDefault ?? false;
+    final hasValidDestination =
+        destinationLocation?.isNotNullAndNotDefault ?? false;
+
+    if (!hasValidDestination) return;
+
+    // Build destination - prioritize address over coordinates
+    String destination;
+    if (destinationLocation!.address?.isNotEmpty == true) {
+      destination = Uri.encodeComponent(destinationLocation.address!);
+    } else {
+      destination = _longLatString(destinationLocation);
+    }
+
+    // Build origin if available - prioritize address over coordinates
+    String? origin;
+    if (hasValidOrigin) {
+      if (originLocation!.address?.isNotEmpty == true) {
+        origin = Uri.encodeComponent(originLocation.address!);
+      } else {
+        origin = _longLatString(originLocation);
+      }
+    }
+
+    // Build Google Maps directions URL
+    String url =
+        'https://www.google.com/maps/dir/?api=1&destination=$destination&travelmode=$travelMode';
+    if (origin != null) {
+      url += '&origin=$origin';
+    }
+
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  /// Launch Google Maps directions
+  Future<void> _launchDirections() async {
+    final mode = _getDirectionsTravelMode();
+    await _launchGoogleMaps(startLocation, endLocation, mode);
   }
 
   @override
@@ -356,32 +554,45 @@ class CompactTravelIndicator extends StatelessWidget {
     }
 
     final color = isTardy ? TileColors.late : TileColors.travel;
+    final hasValidDestination = endLocation?.isNotNullAndNotDefault ?? false;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            _getTravelModeIcon(),
-            size: 14,
-            color: color,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            _formatDuration(),
-            style: TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
+    return GestureDetector(
+      onTap: hasValidDestination ? _launchDirections : null,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              _getTravelModeIcon(),
+              size: 14,
               color: color,
             ),
-          ),
-        ],
+            const SizedBox(width: 4),
+            Text(
+              _formatDuration(context),
+              style: TextStyle(
+                fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+            // Show directions arrow if tappable
+            if (hasValidDestination) ...[
+              const SizedBox(width: 4),
+              Icon(
+                Icons.navigation_outlined,
+                size: 12,
+                color: color,
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
