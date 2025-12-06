@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -9,6 +8,8 @@ import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/components/components.dart';
+import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
@@ -17,11 +18,8 @@ import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.d
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
-import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:intl/intl.dart';
 
 /// Enhanced WithinNowBatch matching the screen 1 design with:
 /// - Optimization card showing daily insights
@@ -130,194 +128,6 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     }
   }
 
-  /// Calculate today's statistics
-  _TodayStats _calculateTodayStats(List<TilerEvent> tiles) {
-    int tileCount = 0;
-    int blockCount = 0;
-    int completedCount = 0;
-    Duration totalTravelTime = Duration.zero;
-    Duration elapsedTravelTime = Duration.zero;
-
-    for (var tile in tiles) {
-      if (tile is SubCalendarEvent) {
-        // Count as block if isRigid flag is true
-        final isBlock = tile.isRigid == true;
-
-        if (isBlock) {
-          blockCount++;
-        } else {
-          tileCount++;
-        }
-
-        if (tile.isComplete) {
-          completedCount++;
-        }
-
-        // Sum up travel time
-        if (tile.travelTimeBefore != null && tile.travelTimeBefore! > 0) {
-          final travelDuration =
-              Duration(milliseconds: tile.travelTimeBefore!.toInt());
-          totalTravelTime += travelDuration;
-
-          // Add to elapsed if tile is complete or has started
-          final now = Utility.currentTime().millisecondsSinceEpoch;
-          if (tile.isComplete || (tile.start != null && tile.start! <= now)) {
-            elapsedTravelTime += travelDuration;
-          }
-        }
-      }
-    }
-
-    // Calculate travel completion percentage
-    final travelCompletionPercentage = totalTravelTime.inMinutes > 0
-        ? (elapsedTravelTime.inMilliseconds /
-                totalTravelTime.inMilliseconds *
-                100)
-            .round()
-        : 0;
-
-    return _TodayStats(
-      tileCount: tileCount,
-      blockCount: blockCount,
-      completedCount: completedCount,
-      travelCompletionPercentage: travelCompletionPercentage,
-      travelTime: totalTravelTime,
-      elapsedTravelTime: elapsedTravelTime,
-    );
-  }
-
-  /// Build day summary header that replaces the ribbon for today's view
-  Widget _buildDaySummaryHeader() {
-    final now = Utility.currentTime();
-    final dayOfWeek = DateFormat('EEEE').format(now); // e.g., "Monday"
-    final monthDay = DateFormat('MMMM d').format(now); // e.g., "December 1"
-    final l10n = AppLocalizations.of(context)!;
-
-    return Container(
-      margin: EdgeInsets.zero,
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Left side - Date information
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    l10n.today,
-                    style: TextStyle(
-                      fontFamily: TileTextStyles.rubikFontName,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      dayOfWeek,
-                      style: TextStyle(
-                        fontFamily: TileTextStyles.rubikFontName,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onPrimaryContainer,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                monthDay,
-                style: TextStyle(
-                  fontFamily: TileTextStyles.rubikFontName,
-                  fontSize: 15,
-                  color: colorScheme.onSurface.withOpacity(0.6),
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  /// Build quick action chips row
-  Widget _buildQuickActionChips() {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: colorScheme.surface,
-      child: Row(
-        children: [
-          _buildActionChip(
-            icon: Icons.route,
-            label: l10n.showRouteChip,
-            onTap: () {
-              _navigateToTodaysRoute();
-            },
-          ),
-          const SizedBox(width: 8),
-          _buildActionChip(
-            icon: Icons.refresh,
-            label: l10n.reOptimizeChip,
-            onTap: () {
-              _triggerRevise();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: colorScheme.outline.withOpacity(0.2),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: colorScheme.onSurface),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurface,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   /// Navigate to today's route page
   void _navigateToTodaysRoute() {
     // Get all tiles that have location info
@@ -327,7 +137,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         .where((tile) => tile.isViable ?? true)
         .toList();
 
-    final stats = _calculateTodayStats(tilesWithLocations);
+    final stats = TodayStats.fromTiles(tilesWithLocations);
 
     Navigator.push(
       context,
@@ -338,140 +148,6 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         ),
       ),
     );
-  }
-
-  /// Build today summary row with stats
-  Widget _buildTodaySummaryRow(_TodayStats stats) {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          // Today stats
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.todayColon,
-                  style: TextStyle(
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 12,
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-                Text(
-                  l10n.tilesBlocksCount(stats.tileCount, stats.blockCount),
-                  style: TextStyle(
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Travel time
-          if (stats.travelTime.inMinutes > 0) ...[
-            Container(
-              height: 30,
-              width: 1,
-              color: colorScheme.outline.withOpacity(0.2),
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.travelTimeColon,
-                  style: TextStyle(
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 12,
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      _formatDuration(stats.travelTime),
-                      style: TextStyle(
-                        fontFamily: TileTextStyles.rubikFontName,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Text('🚗', style: TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ],
-            ),
-          ],
-
-          // Travel completion percentage
-          Container(
-            margin: const EdgeInsets.only(left: 12),
-            child: _buildCompletionIndicator(stats.travelCompletionPercentage),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build circular completion indicator
-  Widget _buildCompletionIndicator(int percentage) {
-    return SizedBox(
-      width: 45,
-      height: 45,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          CircularProgressIndicator(
-            value: percentage / 100,
-            strokeWidth: 4,
-            backgroundColor: colorScheme.outline.withOpacity(0.2),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              percentage >= 70
-                  ? TileColors.completedTeal
-                  : percentage >= 40
-                      ? TileColors.progressMedium
-                      : colorScheme.primary,
-            ),
-          ),
-          Text(
-            '$percentage%',
-            style: TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Format duration for display
-  String _formatDuration(Duration duration) {
-    final l10n = AppLocalizations.of(context)!;
-    if (duration.inHours >= 1) {
-      final hours = duration.inHours;
-      final minutes = duration.inMinutes % 60;
-      if (minutes > 0) {
-        return l10n.durationHoursMinutesShort(hours, minutes);
-      }
-      return l10n.durationHoursShort(hours);
-    }
-    return l10n.durationMinutesShort(duration.inMinutes);
   }
 
   /// Get the next tile requiring departure
@@ -491,70 +167,6 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     return null;
   }
 
-  /// Format hour for display
-  String _formatHour(int hour) {
-    final l10n = AppLocalizations.of(context)!;
-    final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-    if (hour >= 12) {
-      return l10n.hourPm(displayHour);
-    }
-    return l10n.hourAm(displayHour);
-  }
-
-  /// Build a tile row with hour marker on the left
-  Widget _buildTileRowWithHourMarker(
-    TilerEvent tile, {
-    bool showHourMarker = true,
-    bool isCurrentHour = false,
-  }) {
-    final tileStartTime = tile.startTime;
-    final hour = tileStartTime.hour;
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Hour marker column
-        Container(
-          width: _hourMarkerWidth,
-          padding: const EdgeInsets.only(top: 12, right: 8),
-          child: showHourMarker
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      _formatHour(hour),
-                      style: TextStyle(
-                        fontFamily: TileTextStyles.rubikFontName,
-                        fontSize: 12,
-                        fontWeight:
-                            isCurrentHour ? FontWeight.w700 : FontWeight.w500,
-                        color: isCurrentHour
-                            ? colorScheme.primary
-                            : colorScheme.onSurface.withOpacity(0.5),
-                      ),
-                    ),
-                    if (isCurrentHour)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
-        // Tile content
-        Expanded(
-          child: _buildTileWidget(tile),
-        ),
-      ],
-    );
-  }
-
   /// Build the appropriate tile widget with expandable playback controls
   Widget _buildTileWidget(TilerEvent tile) {
     if (tile is SubCalendarEvent) {
@@ -566,17 +178,6 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       return EnhancedTileCard(subEvent: tile);
     }
     return TileWidget(tile);
-  }
-
-  /// Build travel connector row with optional hour marker
-  Widget _buildConnectorRowWithHourMarker(Widget connector) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(width: _hourMarkerWidth),
-        Expanded(child: connector),
-      ],
-    );
   }
 
   /// Build tiles list with travel connectors and conflict handling
@@ -625,34 +226,17 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           final group = conflictGroups[groupIndex];
 
           widgets.add(
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: _hourMarkerWidth,
-                  padding: const EdgeInsets.only(top: 12, right: 8),
-                  child: showHourMarker
-                      ? Text(
-                          _formatHour(tileHour),
-                          textAlign: TextAlign.right,
-                          style: TextStyle(
-                            fontFamily: TileTextStyles.rubikFontName,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: colorScheme.onSurface.withOpacity(0.5),
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                Expanded(
-                  child: StackedConflictCards(
-                    conflictGroup: group,
-                    onTileTap: (tile) {
-                      // Handle tile tap
-                    },
-                  ),
-                ),
-              ],
+            TileRowWithHourMarker(
+              hour: tileHour,
+              showHourMarker: showHourMarker,
+              isCurrentHour: isCurrentHour,
+              hourMarkerWidth: _hourMarkerWidth,
+              child: StackedConflictCards(
+                conflictGroup: group,
+                onTileTap: (tile) {
+                  // Handle tile tap
+                },
+              ),
             ),
           );
         }
@@ -660,11 +244,15 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       }
 
       // Regular tile
-      widgets.add(_buildTileRowWithHourMarker(
-        tile,
-        showHourMarker: showHourMarker,
-        isCurrentHour: isCurrentHour,
-      ));
+      widgets.add(
+        TileRowWithHourMarker(
+          hour: tileHour,
+          showHourMarker: showHourMarker,
+          isCurrentHour: isCurrentHour,
+          hourMarkerWidth: _hourMarkerWidth,
+          child: _buildTileWidget(tile),
+        ),
+      );
 
       // Add travel connector
       if (i < orderedTiles.length - 1) {
@@ -702,7 +290,12 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           }
 
           if (connector != null) {
-            widgets.add(_buildConnectorRowWithHourMarker(connector));
+            widgets.add(
+              ConnectorRowWithHourMarker(
+                connector: connector,
+                hourMarkerWidth: _hourMarkerWidth,
+              ),
+            );
           }
         }
       }
@@ -808,13 +401,13 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     }
 
     // Calculate stats
-    final stats = _calculateTodayStats(viableTiles.values.toList());
+    final stats = TodayStats.fromTiles(viableTiles.values.toList());
 
     // Build scrollable content widgets (below the sticky header)
     List<Widget> scrollableContent = [];
 
     // 1. Today summary row
-    scrollableContent.add(_buildTodaySummaryRow(stats));
+    scrollableContent.add(TodaySummaryRow(stats: stats));
 
     // 2. Proactive alert banner
     if (viableTiles.isNotEmpty) {
@@ -869,16 +462,9 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           // Sticky header with date and action chips
           SliverPersistentHeader(
             pinned: true,
-            delegate: _StickyActionChipsDelegate(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildDaySummaryHeader(),
-                  _buildQuickActionChips(),
-                ],
-              ),
-              minHeight: 160,
-              maxHeight: 160,
+            delegate: StickyDayHeaderDelegate(
+              onShowRoute: _navigateToTodaysRoute,
+              onReOptimize: _triggerRevise,
             ),
           ),
 
@@ -895,56 +481,5 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         ],
       ),
     );
-  }
-}
-
-/// Helper class for today's statistics
-class _TodayStats {
-  final int tileCount;
-  final int blockCount;
-  final int completedCount;
-  final int travelCompletionPercentage;
-  final Duration travelTime;
-  final Duration elapsedTravelTime;
-
-  const _TodayStats({
-    required this.tileCount,
-    required this.blockCount,
-    required this.completedCount,
-    required this.travelCompletionPercentage,
-    required this.travelTime,
-    required this.elapsedTravelTime,
-  });
-}
-
-/// Delegate for sticky action chips header
-class _StickyActionChipsDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-  final double minHeight;
-  final double maxHeight;
-
-  _StickyActionChipsDelegate({
-    required this.child,
-    required this.minHeight,
-    required this.maxHeight,
-  });
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  double get maxExtent => maxHeight;
-
-  @override
-  double get minExtent => minHeight;
-
-  @override
-  bool shouldRebuild(_StickyActionChipsDelegate oldDelegate) {
-    return maxHeight != oldDelegate.maxHeight ||
-        minHeight != oldDelegate.minHeight ||
-        child != oldDelegate.child;
   }
 }

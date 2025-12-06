@@ -1073,6 +1073,16 @@
         },
         "timeSavedColon": "Time saved:",
         "travelTimeColon": "Travel time:",
+        "travelTime": "Travel time: {duration}",
+        "@travelTime": {
+          "description": "Travel time with duration",
+          "placeholders": {
+            "duration": {
+              "type": "String",
+              "example": "45m"
+            }
+          }
+        },
         "durationHoursMinutesShort": "{hours}h {minutes}m",
         "@durationHoursMinutesShort": {
           "description": "Duration in short format",

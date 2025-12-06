@@ -3,7 +3,10 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:tiler_app/data/executionEnums.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/util.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -16,7 +19,9 @@ class RouteStop {
   final LatLng? location;
   final String label;
   final Duration? travelTimeFromPrevious;
-  final String? travelMode; // 'drive', 'walk', 'transit'
+  final TravelMedium travelMode;
+  final bool hasValidLocation; // Has valid lat/lng coordinates
+  final bool hasAddress; // Has address that can be used for navigation
 
   RouteStop({
     required this.order,
@@ -24,8 +29,25 @@ class RouteStop {
     this.location,
     required this.label,
     this.travelTimeFromPrevious,
-    this.travelMode,
+    this.travelMode = TravelMedium.driving,
+    this.hasValidLocation = false,
+    this.hasAddress = false,
   });
+
+  /// Whether this stop can be navigated to (has coordinates or address)
+  bool get isNavigable => hasValidLocation || hasAddress;
+
+  /// Get the address string for navigation
+  String? get navigationAddress {
+    if (tile.addressDescription != null &&
+        tile.addressDescription!.isNotEmpty) {
+      return tile.addressDescription;
+    }
+    if (tile.address != null && tile.address!.isNotEmpty) {
+      return tile.address;
+    }
+    return null;
+  }
 }
 
 /// Page showing today's route on a map with all tile locations
@@ -73,25 +95,44 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
   }
 
   void _processRouteStops() {
-    // Filter tiles with valid locations and sort by start time
-    final tilesWithLocations = widget.tiles
-        .where((tile) => _getLatLngFromTile(tile) != null)
+    // Filter tiles that have either valid locations OR addresses, and sort by start time
+    final tilesWithLocationsOrAddresses = widget.tiles
+        .where((tile) => _hasLocationOrAddress(tile))
         .toList()
       ..sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     // Create route stops
     _routeStops = [];
-    for (int i = 0; i < tilesWithLocations.length; i++) {
-      final tile = tilesWithLocations[i];
+    for (int i = 0; i < tilesWithLocationsOrAddresses.length; i++) {
+      final tile = tilesWithLocationsOrAddresses[i];
       final latLng = _getLatLngFromTile(tile);
+      final hasValidLocation = latLng != null;
+      final hasAddress = _hasValidAddress(tile);
 
       Duration? travelTime;
-      String? travelMode;
+      TravelMedium travelMode = TravelMedium.driving;
 
-      // Get travel time from tile's travel detail if available
-      if (tile.travelTimeBefore != null && tile.travelTimeBefore! > 0) {
-        travelTime = Duration(minutes: tile.travelTimeBefore!.toInt());
-        travelMode = 'drive'; // Default assumption
+      // Get travel time and mode from tile's travel detail if available
+      if (tile.travelDetail?.before != null) {
+        final travelData = tile.travelDetail!.before!;
+
+        // Get travel mode from travelMedium field
+        if (travelData.travelMedium != null) {
+          travelMode =
+              TravelMediumExtension.fromString(travelData.travelMedium);
+        }
+
+        // Get travel time - prefer duration from travel data, fall back to travelTimeBefore
+        if (travelData.duration != null && travelData.duration! > 0) {
+          travelTime = Duration(milliseconds: travelData.duration!.toInt());
+        }
+      }
+
+      // Fall back to travelTimeBefore if no travel detail
+      if (travelTime == null &&
+          tile.travelTimeBefore != null &&
+          tile.travelTimeBefore! > 0) {
+        travelTime = Duration(milliseconds: tile.travelTimeBefore!.toInt());
       }
 
       _routeStops.add(RouteStop(
@@ -102,6 +143,8 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
             tile.name ?? AppLocalizations.of(context)?.untitledTile ?? 'Tile',
         travelTimeFromPrevious: travelTime,
         travelMode: travelMode,
+        hasValidLocation: hasValidLocation,
+        hasAddress: hasAddress,
       ));
     }
 
@@ -114,6 +157,18 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  /// Check if tile has either valid coordinates or an address
+  bool _hasLocationOrAddress(SubCalendarEvent tile) {
+    return _getLatLngFromTile(tile) != null || _hasValidAddress(tile);
+  }
+
+  /// Check if tile has a valid address
+  bool _hasValidAddress(SubCalendarEvent tile) {
+    return (tile.addressDescription != null &&
+            tile.addressDescription!.isNotEmpty) ||
+        (tile.address != null && tile.address!.isNotEmpty);
   }
 
   /// Calculate initial camera position and zoom to fit all locations
@@ -203,6 +258,8 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
       final loc = tile.location!;
       if (loc.latitude != null &&
           loc.longitude != null &&
+          loc.latitude! <= Location.maxLongLat &&
+          loc.longitude! <= Location.maxLongLat &&
           loc.isNotNullAndNotDefault) {
         return LatLng(loc.latitude!, loc.longitude!);
       }
@@ -213,6 +270,8 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
       final endLoc = tile.travelDetail!.before!.endLocation!;
       if (endLoc.latitude != null &&
           endLoc.longitude != null &&
+          endLoc.latitude! <= Location.maxLongLat &&
+          endLoc.longitude! <= Location.maxLongLat &&
           endLoc.isNotNullAndNotDefault) {
         return LatLng(endLoc.latitude!, endLoc.longitude!);
       }
@@ -289,58 +348,31 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     return '${start.format(context)} - ${end.format(context)}';
   }
 
-  String _formatDuration(Duration duration) {
-    if (duration.inHours > 0) {
-      final minutes = duration.inMinutes.remainder(60);
-      if (minutes > 0) {
-        return '${duration.inHours}h ${minutes}m';
-      }
-      return '${duration.inHours}h';
-    }
-    return '${duration.inMinutes} min';
-  }
-
   /// Check if the selected stop has a valid navigable location
   bool _hasValidNavigableLocation(RouteStop? stop) {
-    if (stop == null) return false;
-
-    // Check if we have valid coordinates
-    if (stop.location != null) return true;
-
-    // Check if we have an address to navigate to
-    final tile = stop.tile;
-    if (tile.addressDescription != null && tile.addressDescription!.isNotEmpty)
-      return true;
-    if (tile.address != null && tile.address!.isNotEmpty) return true;
-
-    return false;
+    return stop?.isNavigable ?? false;
   }
 
   Future<void> _startNavigation() async {
     if (_selectedStopIndex == null || _routeStops.isEmpty) return;
 
     final stop = _routeStops[_selectedStopIndex!];
-    final tile = stop.tile;
+    final googleTravelMode = stop.travelMode.googleMapsMode;
 
     Uri? url;
 
-    // Try coordinates first
-    if (stop.location != null) {
+    // Try coordinates first if available
+    if (stop.hasValidLocation && stop.location != null) {
       final lat = stop.location!.latitude;
       final lng = stop.location!.longitude;
       url = Uri.parse(
-          'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=driving');
+          'https://www.google.com/maps/dir/?api=1&destination=$lat,$lng&travelmode=$googleTravelMode');
     }
     // Fall back to address
-    else if (tile.addressDescription != null &&
-        tile.addressDescription!.isNotEmpty) {
-      final encodedAddress = Uri.encodeComponent(tile.addressDescription!);
+    else if (stop.navigationAddress != null) {
+      final encodedAddress = Uri.encodeComponent(stop.navigationAddress!);
       url = Uri.parse(
-          'https://www.google.com/maps/dir/?api=1&destination=$encodedAddress&travelmode=driving');
-    } else if (tile.address != null && tile.address!.isNotEmpty) {
-      final encodedAddress = Uri.encodeComponent(tile.address!);
-      url = Uri.parse(
-          'https://www.google.com/maps/dir/?api=1&destination=$encodedAddress&travelmode=driving');
+          'https://www.google.com/maps/dir/?api=1&destination=$encodedAddress&travelmode=$googleTravelMode');
     }
 
     if (url == null) {
@@ -479,18 +511,8 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
 
         // Header overlay
         SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(colorScheme, l10n),
-
-              // Optimization message banner
-              if (widget.optimizationMessage != null ||
-                  widget.timeSaved != null)
-                _buildOptimizationBanner(colorScheme, l10n),
-            ],
-          ),
+          child: _buildHeader(colorScheme, l10n),
         ),
-
         // Bottom card showing selected stop or next stop
         Positioned(
           left: 0,
@@ -518,9 +540,31 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
   }
 
   Widget _buildHeader(ColorScheme colorScheme, AppLocalizations l10n) {
+    // Calculate total travel time from all stops and find dominant travel mode
+    Duration totalTravelTime = Duration.zero;
+    Map<TravelMedium, int> travelModeCounts = {};
+
+    for (final stop in _routeStops) {
+      if (stop.travelTimeFromPrevious != null) {
+        totalTravelTime += stop.travelTimeFromPrevious!;
+      }
+      travelModeCounts[stop.travelMode] =
+          (travelModeCounts[stop.travelMode] ?? 0) + 1;
+    }
+
+    // Get the most common travel mode
+    TravelMedium dominantTravelMode = TravelMedium.driving;
+    int maxCount = 0;
+    travelModeCounts.forEach((mode, count) {
+      if (count > maxCount) {
+        maxCount = count;
+        dominantTravelMode = mode;
+      }
+    });
+
     return Container(
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
@@ -532,91 +576,84 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => Navigator.pop(context),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              l10n.todaysRoute,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => Navigator.pop(context),
               ),
-            ),
-          ),
-          // Stop count badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              l10n.countStops(_routeStops.length),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onPrimaryContainer,
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  l10n.todaysRoute,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOptimizationBanner(
-      ColorScheme colorScheme, AppLocalizations l10n) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.teal.shade50,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.teal.shade200),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.teal.shade100,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.auto_awesome,
-              color: Colors.teal.shade700,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.optimizationMessage ?? l10n.routeOptimized,
+              // Stop count badge
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  l10n.countStops(_routeStops.length),
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Colors.teal.shade800,
+                    color: colorScheme.onPrimaryContainer,
                   ),
                 ),
-                if (widget.timeSaved != null)
+              ),
+            ],
+          ),
+          // Travel time row
+          if (totalTravelTime.inMinutes > 0 || widget.timeSaved != null)
+            Padding(
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, bottom: 4, top: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    dominantTravelMode.icon,
+                    size: 16,
+                    color: Colors.teal,
+                  ),
+                  const SizedBox(width: 6),
                   Text(
-                    l10n.savedTravelTime(_formatDuration(widget.timeSaved!)),
+                    l10n.travelTime(totalTravelTime.toHumanLocalized(context)),
                     style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.teal.shade600,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.teal.shade700,
                     ),
                   ),
-              ],
+                  if (widget.timeSaved != null) ...[
+                    const Spacer(),
+                    Icon(
+                      Icons.auto_awesome,
+                      size: 14,
+                      color: Colors.teal.shade600,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      widget.optimizationMessage ?? l10n.routeOptimized,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.teal.shade600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -845,15 +882,14 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
                     Row(
                       children: [
                         Icon(
-                          selectedStop.travelMode == 'walk'
-                              ? Icons.directions_walk
-                              : Icons.directions_car,
+                          selectedStop.travelMode.icon,
                           size: 16,
                           color: Colors.teal,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          _formatDuration(selectedStop.travelTimeFromPrevious!),
+                          selectedStop.travelTimeFromPrevious!
+                              .toHumanLocalized(context),
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.teal,

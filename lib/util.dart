@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'dart:math' as Math;
 import 'package:tiler_app/services/localizationService.dart';
@@ -884,6 +885,64 @@ extension DurationHuman on Duration {
   String toHumanLocalized(BuildContext context, {bool abbreviations = true}) {
     return Utility.toHuman(this,
         includeSeconds: false, abbreviations: abbreviations, context: context);
+  }
+}
+
+/// Extension on TravelMedium enum for common travel mode operations
+extension TravelMediumExtension on TravelMedium {
+  /// Get the icon for this travel mode
+  IconData get icon {
+    switch (this) {
+      case TravelMedium.walking:
+        return Icons.directions_walk;
+      case TravelMedium.bicycling:
+        return Icons.directions_bike;
+      case TravelMedium.transit:
+        return Icons.directions_transit;
+      case TravelMedium.driving:
+        return Icons.directions_car;
+    }
+  }
+
+  /// Get Google Maps travel mode parameter string
+  String get googleMapsMode {
+    switch (this) {
+      case TravelMedium.walking:
+        return 'walking';
+      case TravelMedium.bicycling:
+        return 'bicycling';
+      case TravelMedium.transit:
+        return 'transit';
+      case TravelMedium.driving:
+        return 'driving';
+    }
+  }
+
+  /// Get localized display text for this travel mode
+  String toLocalizedString(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (this) {
+      case TravelMedium.driving:
+        return l10n.travelModeDriving;
+      case TravelMedium.walking:
+        return l10n.travelModeWalking;
+      case TravelMedium.bicycling:
+        return l10n.travelModeBicycling;
+      case TravelMedium.transit:
+        return l10n.travelModeTransitLower;
+    }
+  }
+
+  /// Parse a string to TravelMedium enum, defaults to driving
+  static TravelMedium fromString(String? travelMediumStr) {
+    if (travelMediumStr == null) return TravelMedium.driving;
+    final lowerStr = travelMediumStr.toLowerCase();
+    for (final medium in TravelMedium.values) {
+      if (medium.name == lowerStr) {
+        return medium;
+      }
+    }
+    return TravelMedium.driving;
   }
 }
 

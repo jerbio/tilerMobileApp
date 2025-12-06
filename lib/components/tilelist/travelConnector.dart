@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Travel connector widget displayed between tiles showing travel time and route info
@@ -24,21 +26,6 @@ class TravelConnector extends StatelessWidget {
     this.warningMessage,
     this.onTap,
   }) : super(key: key);
-
-  IconData _getTravelModeIcon(String? travelMode) {
-    switch (travelMode?.toLowerCase()) {
-      case 'driving':
-        return Icons.directions_car;
-      case 'walking':
-        return Icons.directions_walk;
-      case 'bicycling':
-        return Icons.directions_bike;
-      case 'transit':
-        return Icons.directions_transit;
-      default:
-        return Icons.directions_car;
-    }
-  }
 
   String _formatDuration(BuildContext context, double? durationMs) {
     if (durationMs == null || durationMs <= 0) return '';
@@ -97,38 +84,6 @@ class TravelConnector extends StatelessWidget {
     return text.replaceAll(RegExp(r'<[^>]*>'), '');
   }
 
-  /// Get localized travel mode text for display
-  String _getLocalizedTravelMode(BuildContext context, String? travelMode) {
-    final l10n = AppLocalizations.of(context)!;
-    switch (travelMode?.toLowerCase()) {
-      case 'driving':
-        return l10n.travelModeDriving;
-      case 'walking':
-        return l10n.travelModeWalking;
-      case 'bicycling':
-        return l10n.travelModeBicycling;
-      case 'transit':
-        return l10n.travelModeTransitLower;
-      default:
-        return l10n.travelModeDriving;
-    }
-  }
-
-  /// Get the travel mode parameter for Google Maps directions URL
-  String _getDirectionsTravelMode(String? travelMode) {
-    switch (travelMode?.toLowerCase()) {
-      case 'walking':
-        return 'walking';
-      case 'bicycling':
-        return 'bicycling';
-      case 'transit':
-        return 'transit';
-      case 'driving':
-      default:
-        return 'driving';
-    }
-  }
-
   /// Convert Location to lat,lng string for Google Maps URL
   String _longLatString(Location location) {
     return '${location.latitude},${location.longitude}';
@@ -181,13 +136,16 @@ class TravelConnector extends StatelessWidget {
   /// Launch Google Maps directions to the destination
   Future<void> _launchDirections() async {
     final travelDetail = toTile.travelDetail?.before;
-    final travelMode = _getDirectionsTravelMode(travelDetail?.travelMedium);
+    final travelMode =
+        TravelMediumExtension.fromString(travelDetail?.travelMedium);
+    final googleTravelMode = travelMode.googleMapsMode;
 
     // Get origin and destination locations from travel detail
     final originLocation = travelDetail?.startLocation ?? fromTile.location;
     final destinationLocation = travelDetail?.endLocation ?? toTile.location;
 
-    await _launchGoogleMaps(originLocation, destinationLocation, travelMode);
+    await _launchGoogleMaps(
+        originLocation, destinationLocation, googleTravelMode);
   }
 
   @override
@@ -201,13 +159,14 @@ class TravelConnector extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final travelMode = toTile.travelDetail?.before?.travelMedium ?? 'driving';
+    final travelMode = TravelMediumExtension.fromString(
+        toTile.travelDetail?.before?.travelMedium);
     final isTardy = toTile.isTardy ?? false;
     final durationText = _formatDuration(context, travelTime);
     final destination = _getDestinationName();
     final routeName = _getRouteName(context);
     final leaveByTime = _getLeaveByTime();
-    final localizedTravelMode = _getLocalizedTravelMode(context, travelMode);
+    final localizedTravelMode = travelMode.toLocalizedString(context);
 
     final primaryColor = isTardy ? TileColors.late : TileColors.travel;
 
@@ -247,7 +206,7 @@ class TravelConnector extends StatelessWidget {
                       ),
                     ),
                     child: Icon(
-                      _getTravelModeIcon(travelMode),
+                      travelMode.icon,
                       size: 16,
                       color: primaryColor,
                     ),
@@ -440,7 +399,7 @@ class TravelConnector extends StatelessWidget {
 /// Tappable to open Google Directions
 class CompactTravelIndicator extends StatelessWidget {
   final double? travelTimeMs;
-  final String? travelMode;
+  final String? travelModeStr;
   final bool isTardy;
   final Location? startLocation;
   final Location? endLocation;
@@ -449,47 +408,21 @@ class CompactTravelIndicator extends StatelessWidget {
   const CompactTravelIndicator({
     Key? key,
     this.travelTimeMs,
-    this.travelMode,
+    String? travelMode,
     this.isTardy = false,
     this.startLocation,
     this.endLocation,
     this.destinationAddress,
-  }) : super(key: key);
+  })  : travelModeStr = travelMode,
+        super(key: key);
 
-  IconData _getTravelModeIcon() {
-    switch (travelMode?.toLowerCase()) {
-      case 'driving':
-        return Icons.directions_car;
-      case 'walking':
-        return Icons.directions_walk;
-      case 'bicycling':
-        return Icons.directions_bike;
-      case 'transit':
-        return Icons.directions_transit;
-      default:
-        return Icons.directions_car;
-    }
-  }
+  TravelMedium get travelMode =>
+      TravelMediumExtension.fromString(travelModeStr);
 
   String _formatDuration(BuildContext context) {
     if (travelTimeMs == null || travelTimeMs! <= 0) return '';
     final minutes = (travelTimeMs! / 60000).round();
     return AppLocalizations.of(context)!.travelDurationCompact(minutes);
-  }
-
-  /// Get the travel mode parameter for Google Maps directions URL
-  String _getDirectionsTravelMode() {
-    switch (travelMode?.toLowerCase()) {
-      case 'walking':
-        return 'walking';
-      case 'bicycling':
-        return 'bicycling';
-      case 'transit':
-        return 'transit';
-      case 'driving':
-      default:
-        return 'driving';
-    }
   }
 
   /// Convert Location to lat,lng string for Google Maps URL
@@ -543,7 +476,7 @@ class CompactTravelIndicator extends StatelessWidget {
 
   /// Launch Google Maps directions
   Future<void> _launchDirections() async {
-    final mode = _getDirectionsTravelMode();
+    final mode = travelMode.googleMapsMode;
     await _launchGoogleMaps(startLocation, endLocation, mode);
   }
 
@@ -568,7 +501,7 @@ class CompactTravelIndicator extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              _getTravelModeIcon(),
+              travelMode.icon,
               size: 14,
               color: color,
             ),
