@@ -28,8 +28,8 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme==theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -43,7 +43,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
         backgroundColor: colorScheme.inverseSurface,
-        textColor:  colorScheme.onInverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 

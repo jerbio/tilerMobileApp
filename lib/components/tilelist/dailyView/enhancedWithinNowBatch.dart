@@ -140,8 +140,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
     for (var tile in tiles) {
       if (tile is SubCalendarEvent) {
-        // Count as block if it has multiple participants (shared tile)
-        final isBlock = tile.tileShareDesignatedId?.isNotEmpty == true;
+        // Count as block if isRigid flag is true
+        final isBlock = tile.isRigid == true;
 
         if (isBlock) {
           blockCount++;

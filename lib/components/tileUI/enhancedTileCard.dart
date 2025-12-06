@@ -7,6 +7,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -73,19 +74,6 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final endFormatted = MaterialLocalizations.of(context)
         .formatTimeOfDay(TimeOfDay.fromDateTime(endTime));
     return '$startFormatted - $endFormatted';
-  }
-
-  String _formatDuration() {
-    final duration = widget.subEvent.duration;
-    if (duration.inHours > 0) {
-      final hours = duration.inHours;
-      final minutes = duration.inMinutes % 60;
-      if (minutes == 0) {
-        return '${hours}h';
-      }
-      return '${hours}h ${minutes}m';
-    }
-    return '${duration.inMinutes}m';
   }
 
   String? _getLocationText() {
@@ -197,21 +185,20 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     return GestureDetector(
       onTap: widget.onTap ??
           () {
-            if (!(widget.subEvent.isReadOnly ?? true)) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EditTile(
-                    tileId: (widget.subEvent.isFromTiler
-                            ? widget.subEvent.id
-                            : widget.subEvent.thirdpartyId) ??
-                        "",
-                    tileSource: widget.subEvent.thirdpartyType,
-                    thirdPartyUserId: widget.subEvent.thirdPartyUserId,
-                  ),
+            // Always allow navigation to EditTile - it handles read-only tiles properly
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditTile(
+                  tileId: (widget.subEvent.isFromTiler
+                          ? widget.subEvent.id
+                          : widget.subEvent.thirdpartyId) ??
+                      "",
+                  tileSource: widget.subEvent.thirdpartyType,
+                  thirdPartyUserId: widget.subEvent.thirdPartyUserId,
                 ),
-              );
-            }
+              ),
+            );
           },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -280,25 +267,41 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                   ],
                                 ],
                               ),
-                              // Duration badge
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  _formatDuration(),
-                                  style: TextStyle(
-                                    fontFamily: TileTextStyles.rubikFontName,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: textColor,
+                              // Duration badge with optional lock icon
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      widget.subEvent.duration
+                                          .toHumanLocalized(context),
+                                      style: TextStyle(
+                                        fontFamily:
+                                            TileTextStyles.rubikFontName,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: textColor,
+                                      ),
+                                    ),
                                   ),
-                                ),
+                                  // Rigid/locked indicator next to duration
+                                  if (widget.subEvent.isRigid == true) ...[
+                                    const SizedBox(width: 6),
+                                    Icon(
+                                      Icons.lock_outline,
+                                      size: 14,
+                                      color: textColor.withOpacity(0.6),
+                                    ),
+                                  ],
+                                ],
                               ),
                             ],
                           ),
@@ -445,23 +448,11 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                         ),
                       ),
 
-                    // Rigid/locked indicator
-                    if (widget.subEvent.isRigid == true)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Icon(
-                          Icons.lock_outline,
-                          size: 14,
-                          color: textColor.withOpacity(0.6),
-                        ),
-                      ),
-
                     // Paused indicator
                     if (isPaused)
                       Positioned(
                         top: 12,
-                        right: widget.subEvent.isRigid == true ? 30 : 12,
+                        right: 12,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),

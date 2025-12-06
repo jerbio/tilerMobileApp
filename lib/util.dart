@@ -421,7 +421,37 @@ class Utility {
   }
 
   static String toHuman(Duration duration,
-      {bool all = false, bool includeSeconds = false, abbreviations = false}) {
+      {bool all = false,
+      bool includeSeconds = false,
+      abbreviations = false,
+      BuildContext? context}) {
+    // If context is provided, use localized strings
+    if (context != null) {
+      final l10n = AppLocalizations.of(context)!;
+      Duration durationLeft = duration;
+      int days = durationLeft.inDays;
+      int hours = durationLeft.inHours % 24;
+      int minutes = durationLeft.inMinutes % 60;
+
+      if (abbreviations) {
+        // Short format using localized strings
+        if (days > 0) {
+          if (hours > 0) {
+            return '${days}d ${hours}h';
+          }
+          return '${days}d';
+        }
+        if (hours > 0) {
+          if (minutes > 0) {
+            return l10n.durationHoursMinutesShort(hours, minutes);
+          }
+          return l10n.durationHoursShort(hours);
+        }
+        return l10n.durationMinutesShort(minutes);
+      }
+    }
+
+    // Original non-localized implementation
     Duration durationLeft = duration;
     var stringArr = [];
     int days = durationLeft.inDays;
@@ -849,6 +879,11 @@ class Utility {
 extension DurationHuman on Duration {
   String get toHuman {
     return Utility.toHuman(this, includeSeconds: false);
+  }
+
+  String toHumanLocalized(BuildContext context, {bool abbreviations = true}) {
+    return Utility.toHuman(this,
+        includeSeconds: false, abbreviations: abbreviations, context: context);
   }
 }
 
