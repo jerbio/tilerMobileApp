@@ -4,6 +4,8 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/util.dart';
 
+enum RsvpStatus { accepted, declined, tentative, needsAction, notApplicable }
+
 class SubCalendarEvent extends TilerEvent {
   double? travelTimeBefore;
   double? travelTimeAfter;
@@ -19,6 +21,7 @@ class SubCalendarEvent extends TilerEvent {
   bool? _isAllDay;
   TilerEvent? calendarEvent;
   TravelDetail? travelDetail;
+  RsvpStatus? rsvp;
   bool isLocationInfoAvailable() {
     bool retValue = (this.address != null && this.address!.isNotEmpty) ||
         (this.addressDescription != null &&
@@ -35,7 +38,8 @@ class SubCalendarEvent extends TilerEvent {
       String? address,
       String? addressDescription,
       String? id,
-      String? userId})
+      String? userId,
+      this.rsvp})
       : super(
           start: start,
           end: end,
@@ -164,6 +168,31 @@ class SubCalendarEvent extends TilerEvent {
     }
     if (json['travelDetail'] != null) {
       travelDetail = TravelDetail.fromJson(json['travelDetail']);
+    }
+    if (json.containsKey('rsvp') && json['rsvp'] != null) {
+      String rsvpString = json['rsvp'].toString().toLowerCase();
+      switch (rsvpString) {
+        case 'accepted':
+          rsvp = RsvpStatus.accepted;
+          break;
+        case 'declined':
+          rsvp = RsvpStatus.declined;
+          break;
+        case 'tentative':
+          rsvp = RsvpStatus.tentative;
+          break;
+        case 'needsaction':
+        case 'needs_action':
+          rsvp = RsvpStatus.needsAction;
+          break;
+        case 'notapplicable':
+        case 'not_applicable':
+        case 'none':
+          rsvp = RsvpStatus.notApplicable;
+          break;
+        default:
+          rsvp = RsvpStatus.notApplicable;
+      }
     }
   }
 }

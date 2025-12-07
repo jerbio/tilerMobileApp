@@ -5,6 +5,7 @@ import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -326,16 +327,31 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                               ),
                               // Shared tile avatars
                               if (isShared)
-                                Container(
-                                  margin: const EdgeInsets.only(left: 8),
-                                  child: Row(
-                                    children: [
-                                      _buildAvatar(colorScheme),
-                                      Transform.translate(
-                                        offset: const Offset(-8, 0),
-                                        child: _buildAvatar(colorScheme),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TileShareDetailWidget
+                                                .byDesignatedTileShareId(
+                                          designatedTileShareId: widget
+                                              .subEvent.tileShareDesignatedId!,
+                                        ),
                                       ),
-                                    ],
+                                    );
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(left: 8),
+                                    child: Row(
+                                      children: [
+                                        _buildAvatar(colorScheme),
+                                        Transform.translate(
+                                          offset: const Offset(-8, 0),
+                                          child: _buildAvatar(colorScheme),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                             ],
