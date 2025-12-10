@@ -393,15 +393,33 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
-        if (tile.id != null &&
-            (((tile) as SubCalendarEvent?)?.isViable ?? true)) {
-          viableTiles[tile.uniqueId] = tile;
+        if (tile.id != null) {
+          final subEvent = tile as SubCalendarEvent?;
+          final isViable = subEvent?.isViable ?? true;
+          final isFromTiler = tile.isFromTiler;
+          final rsvpStatus = subEvent?.rsvp;
+
+          // Show tile if:
+          // 1. It's a Tiler tile and is viable, OR
+          // 2. It's a third-party tile (always show unless declined)
+          final isDeclined = rsvpStatus == RsvpStatus.declined;
+
+          if ((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) {
+            viableTiles[tile.uniqueId] = tile;
+          }
         }
       }
     }
 
     // Calculate stats
     final stats = TodayStats.fromTiles(viableTiles.values.toList());
+
+    // Update dayData with non-viable tiles for display in header
+    if (dayData != null && widget.tiles != null) {
+      dayData!.nonViable = widget.tiles!
+          .where((tile) => !((tile as SubCalendarEvent).isViable ?? true))
+          .toList();
+    }
 
     // Build scrollable content widgets (below the sticky header)
     List<Widget> scrollableContent = [];
@@ -463,6 +481,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           SliverPersistentHeader(
             pinned: true,
             delegate: StickyDayHeaderDelegate(
+              dayData: dayData,
               onShowRoute: _navigateToTodaysRoute,
               onReOptimize: _triggerRevise,
             ),

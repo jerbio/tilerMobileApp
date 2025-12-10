@@ -659,6 +659,7 @@
       "darkMode":"Dark Mode",
       "setLocation":"Set location",
       "connectCalendars": "Connect your calendars",
+      "configure": "Configure",
       "comingSoon": "Coming soon",
       "googleCalendar":"Google Calendar",
       "appleCalendar":"Apple Calendar",
@@ -1228,5 +1229,7 @@
         "noLocationAvailable": "No location",
         "seeTodaysRoute": "See Today's Route",
         "joinMeeting": "Join Meeting",
-        "openLink": "Open Link"
+        "openLink": "Open Link",
+        "actions": "Actions",
+        "hideActions": "Hide actions"
 }

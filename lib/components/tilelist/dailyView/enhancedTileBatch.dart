@@ -422,9 +422,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
-        if (eachTile.id != null &&
-            (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
-          renderedTiles[eachTile.uniqueId] = eachTile;
+        if (eachTile.id != null) {
+          final subEvent = eachTile as SubCalendarEvent?;
+          final isViable = subEvent?.isViable ?? true;
+          final isFromTiler = eachTile.isFromTiler;
+          final rsvpStatus = subEvent?.rsvp;
+
+          // Show tile if:
+          // 1. It's a Tiler tile and is viable, OR
+          // 2. It's a third-party tile (always show unless declined)
+          final isDeclined = rsvpStatus == RsvpStatus.declined;
+
+          if ((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) {
+            renderedTiles[eachTile.uniqueId] = eachTile;
+          }
         }
       });
     }

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/daySummaryHeader.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/quickActionChipsRow.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 
 /// Sticky header delegate for the day summary and action chips
 class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
   final DateTime? date;
+  final TimelineSummary? dayData;
   final VoidCallback? onShowRoute;
   final VoidCallback? onReOptimize;
   final double minHeight;
@@ -12,6 +14,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   StickyDayHeaderDelegate({
     this.date,
+    this.dayData,
     this.onShowRoute,
     this.onReOptimize,
     this.minHeight = 160,
@@ -25,7 +28,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DaySummaryHeader(date: date),
+          DaySummaryHeader(date: date, dayData: dayData),
           QuickActionChipsRow(
             onShowRoute: onShowRoute,
             onReOptimize: onReOptimize,
@@ -46,6 +49,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
     return maxHeight != oldDelegate.maxHeight ||
         minHeight != oldDelegate.minHeight ||
         date != oldDelegate.date ||
+        dayData != oldDelegate.dayData ||
         onShowRoute != oldDelegate.onShowRoute ||
         onReOptimize != oldDelegate.onReOptimize;
   }

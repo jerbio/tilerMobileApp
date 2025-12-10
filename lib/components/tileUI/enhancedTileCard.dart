@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/timeScrub.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Helper function to get location icon based on address type
@@ -22,8 +23,97 @@ IconData _getLocationIconForAddress(String address) {
       return Icons.link_outlined;
     case LocationType.physical:
     case LocationType.none:
-    default:
       return Icons.location_on_outlined;
+  }
+}
+
+/// RSVP status styling configuration
+class RsvpStyleConfig {
+  final double opacity;
+  final bool useDashedBorder;
+  final bool useOutlineStyle;
+  final IconData? badgeIcon;
+  final String? badgeText;
+  final Color? badgeColor;
+  final bool showStrikethrough;
+
+  const RsvpStyleConfig({
+    this.opacity = 1.0,
+    this.useDashedBorder = false,
+    this.useOutlineStyle = false,
+    this.badgeIcon,
+    this.badgeText,
+    this.badgeColor,
+    this.showStrikethrough = false,
+  });
+
+  /// Get style config based on RSVP status and tile source
+  static RsvpStyleConfig forEvent(SubCalendarEvent event) {
+    // Tiler-native tiles don't have RSVP
+    if (event.isFromTiler) {
+      return const RsvpStyleConfig();
+    }
+
+    switch (event.rsvp) {
+      case RsvpStatus.accepted:
+        return RsvpStyleConfig(
+          badgeIcon: Icons.check_circle_outline,
+          badgeColor: Colors.green.shade600,
+        );
+      case RsvpStatus.tentative:
+        return RsvpStyleConfig(
+          opacity: 0.7,
+          useDashedBorder: true,
+          badgeIcon: Icons.help_outline,
+          badgeText: 'Tentative',
+          badgeColor: Colors.amber.shade700,
+        );
+      case RsvpStatus.needsAction:
+        return RsvpStyleConfig(
+          opacity: 0.85,
+          useOutlineStyle: true,
+          badgeIcon: Icons.notifications_active_outlined,
+          badgeText: 'Respond',
+          badgeColor: Colors.orange.shade600,
+        );
+      case RsvpStatus.declined:
+        return RsvpStyleConfig(
+          opacity: 0.35,
+          showStrikethrough: true,
+          badgeIcon: Icons.cancel_outlined,
+          badgeColor: Colors.grey,
+        );
+      case RsvpStatus.notApplicable:
+      case null:
+        // Third-party tile without RSVP info - show source badge
+        return const RsvpStyleConfig();
+    }
+  }
+}
+
+/// Get icon for third-party calendar source
+IconData? _getSourceIcon(TileSource? source) {
+  switch (source) {
+    case TileSource.google:
+      return Icons.g_mobiledata; // Google icon
+    case TileSource.outlook:
+      return Icons.mail_outline; // Outlook icon
+    case TileSource.tiler:
+    case null:
+      return null;
+  }
+}
+
+/// Get color for third-party calendar source
+Color _getSourceColor(TileSource? source) {
+  switch (source) {
+    case TileSource.google:
+      return const Color(0xFF4285F4); // Google Blue
+    case TileSource.outlook:
+      return const Color(0xFF0078D4); // Microsoft Blue
+    case TileSource.tiler:
+    case null:
+      return Colors.grey;
   }
 }
 
@@ -55,6 +145,30 @@ class EnhancedTileCard extends StatefulWidget {
 
 class _EnhancedTileCardState extends State<EnhancedTileCard> {
   bool _isExpanded = false;
+
+  /// Check if the tile has any playback actions to show
+  /// Based on the logic in PlayBack widget
+  bool _hasPlaybackActions() {
+    final subEvent = widget.subEvent;
+
+    // Complete button is shown if isFromTiler is true
+    if (subEvent.isFromTiler) {
+      return true;
+    }
+
+    // Procrastinate button is shown if not rigid
+    if (subEvent.isRigid == null || !subEvent.isRigid!) {
+      return true;
+    }
+
+    // Play/pause button is shown if not rigid and (is current or is paused)
+    if ((subEvent.isRigid == null || !subEvent.isRigid!) &&
+        (subEvent.isCurrent || (subEvent.isPaused ?? false))) {
+      return true;
+    }
+
+    return false;
+  }
 
   String _formatTimeRange(BuildContext context) {
     final startTime = widget.subEvent.startTime;
@@ -124,9 +238,27 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     // Determine text color based on background brightness
     final hslColor = HSLColor.fromColor(tileColor);
     final isLightBackground = hslColor.lightness > 0.6;
-    final textColor = isLightBackground ? Colors.black87 : Colors.white;
-    final secondaryTextColor =
-        isLightBackground ? Colors.black54 : Colors.white.withOpacity(0.8);
+
+    // RSVP styling for third-party calendar events
+    final rsvpStyle = RsvpStyleConfig.forEvent(widget.subEvent);
+    final isThirdParty = !widget.subEvent.isFromTiler;
+    final effectiveOpacity = rsvpStyle.opacity;
+
+    // For outline style (needsAction), use tile color for text since background is surface
+    final Color textColor;
+    final Color secondaryTextColor;
+    if (rsvpStyle.useOutlineStyle) {
+      // Outline style has surface background, so use tile color or dark text
+      final surfaceIsLight = colorScheme.brightness == Brightness.light;
+      textColor = surfaceIsLight ? tileColor : tileColor;
+      secondaryTextColor = surfaceIsLight
+          ? tileColor.withOpacity(0.7)
+          : tileColor.withOpacity(0.8);
+    } else {
+      textColor = isLightBackground ? Colors.black87 : Colors.white;
+      secondaryTextColor =
+          isLightBackground ? Colors.black54 : Colors.white.withOpacity(0.8);
+    }
 
     final location = _getLocationText();
     final isTardy = widget.subEvent.isTardy ?? false;
@@ -153,355 +285,498 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
               ),
             );
           },
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: tileColor.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  hslColor
-                      .withLightness((hslColor.lightness + 0.05).clamp(0, 1))
-                      .toColor(),
-                  tileColor,
-                  hslColor
-                      .withLightness((hslColor.lightness - 0.05).clamp(0, 1))
-                      .toColor(),
-                ],
-              ),
-            ),
-            child: Column(
-              children: [
-                // Main content
-                Stack(
+      child: Opacity(
+        opacity: effectiveOpacity,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: rsvpStyle.useDashedBorder || rsvpStyle.useOutlineStyle
+                ? Border.all(
+                    color: tileColor,
+                    width: 2,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  )
+                : null,
+            boxShadow: rsvpStyle.useOutlineStyle
+                ? [] // No shadow for outline style
+                : [
+                    BoxShadow(
+                      color: tileColor.withOpacity(0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: CustomPaint(
+              painter: rsvpStyle.useDashedBorder
+                  ? DashedBorderPainter(
+                      color: tileColor,
+                      strokeWidth: 2,
+                      dashWidth: 8,
+                      dashSpace: 4,
+                      borderRadius: 16,
+                    )
+                  : null,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: rsvpStyle.useOutlineStyle
+                      ? null // No gradient for outline style
+                      : LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            hslColor
+                                .withLightness(
+                                    (hslColor.lightness + 0.05).clamp(0, 1))
+                                .toColor(),
+                            tileColor,
+                            hslColor
+                                .withLightness(
+                                    (hslColor.lightness - 0.05).clamp(0, 1))
+                                .toColor(),
+                          ],
+                        ),
+                  color: rsvpStyle.useOutlineStyle
+                      ? colorScheme.surface // White/surface for outline style
+                      : null,
+                ),
+                child: Column(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Top row: Time range + Weather + Duration
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // Main content
+                    Stack(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(
+                            16,
+                            // Add extra top padding if RSVP badge is shown
+                            (isThirdParty &&
+                                    rsvpStyle.badgeText != null &&
+                                    !isPaused)
+                                ? 28
+                                : 16,
+                            // Add extra right padding if source indicator is shown
+                            isThirdParty ? 32 : 16,
+                            16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Time range
+                              // Top row: Time range + Weather + Duration
                               Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _formatTimeRange(context),
-                                    style: TextStyle(
-                                      fontFamily: TileTextStyles.rubikFontName,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                      color: secondaryTextColor,
-                                    ),
+                                  // Time range
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _formatTimeRange(context),
+                                        style: TextStyle(
+                                          fontFamily:
+                                              TileTextStyles.rubikFontName,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: secondaryTextColor,
+                                        ),
+                                      ),
+                                      if (widget.showWeatherIcon &&
+                                          widget.weatherIcon != null) ...[
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          widget.weatherIcon,
+                                          size: 16,
+                                          color: secondaryTextColor,
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                  if (widget.showWeatherIcon &&
-                                      widget.weatherIcon != null) ...[
-                                    const SizedBox(width: 8),
-                                    Icon(
-                                      widget.weatherIcon,
-                                      size: 16,
-                                      color: secondaryTextColor,
-                                    ),
-                                  ],
+                                  // Duration badge with optional lock icon
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: rsvpStyle.useOutlineStyle
+                                              ? tileColor.withOpacity(0.15)
+                                              : Colors.white.withOpacity(0.2),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          widget.subEvent.duration
+                                              .toHumanLocalized(context),
+                                          style: TextStyle(
+                                            fontFamily:
+                                                TileTextStyles.rubikFontName,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: textColor,
+                                          ),
+                                        ),
+                                      ),
+                                      // Rigid/locked indicator next to duration
+                                      if (widget.subEvent.isRigid == true) ...[
+                                        const SizedBox(width: 6),
+                                        Icon(
+                                          Icons.lock_outline,
+                                          size: 14,
+                                          color: textColor.withOpacity(0.6),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
                                 ],
                               ),
-                              // Duration badge with optional lock icon
+
+                              const SizedBox(height: 10),
+
+                              // Tile name
                               Row(
-                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
+                                  Expanded(
                                     child: Text(
-                                      widget.subEvent.duration
-                                          .toHumanLocalized(context),
+                                      widget.subEvent.name ?? '',
                                       style: TextStyle(
                                         fontFamily:
                                             TileTextStyles.rubikFontName,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w700,
                                         color: textColor,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                  // Rigid/locked indicator next to duration
-                                  if (widget.subEvent.isRigid == true) ...[
-                                    const SizedBox(width: 6),
-                                    Icon(
-                                      Icons.lock_outline,
-                                      size: 14,
-                                      color: textColor.withOpacity(0.6),
+                                  // Shared tile avatars
+                                  if (isShared)
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                TileShareDetailWidget
+                                                    .byDesignatedTileShareId(
+                                              designatedTileShareId: widget
+                                                  .subEvent
+                                                  .tileShareDesignatedId!,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        margin: const EdgeInsets.only(left: 8),
+                                        child: Row(
+                                          children: [
+                                            _buildAvatar(colorScheme),
+                                            Transform.translate(
+                                              offset: const Offset(-8, 0),
+                                              child: _buildAvatar(colorScheme),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              // Time scrub for current tile
+                              if (isCurrent) ...[
+                                TimeScrubWidget(
+                                  timeline: widget.subEvent,
+                                  loadTimeScrub: true,
+                                  isTardy: isTardy,
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+
+                              // Bottom row: Location + Travel time
+                              Row(
+                                children: [
+                                  // Location badge - tappable to open maps/URL
+                                  if (location != null)
+                                    Expanded(
+                                      child: GestureDetector(
+                                        onTap: _onLocationTap,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: rsvpStyle.useOutlineStyle
+                                                ? tileColor.withOpacity(0.1)
+                                                : Colors.white
+                                                    .withOpacity(0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                _getLocationIcon(location),
+                                                size: 14,
+                                                color: textColor,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Flexible(
+                                                child: Text(
+                                                  location,
+                                                  style: TextStyle(
+                                                    fontFamily: TileTextStyles
+                                                        .rubikFontName,
+                                                    fontSize: 12,
+                                                    color: textColor,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                    decorationColor: textColor
+                                                        .withOpacity(0.5),
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Icon(
+                                                Icons.open_in_new,
+                                                size: 12,
+                                                color:
+                                                    textColor.withOpacity(0.7),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+
+                                  // Travel time indicator - tappable for Google Directions
+                                  if (hasTravel) ...[
+                                    const SizedBox(width: 8),
+                                    CompactTravelIndicator(
+                                      travelTimeMs:
+                                          widget.subEvent.travelTimeBefore,
+                                      travelMode: widget.subEvent.travelDetail
+                                          ?.before?.travelMedium,
+                                      isTardy: isTardy,
+                                      startLocation: widget.subEvent
+                                          .travelDetail?.before?.startLocation,
+                                      endLocation: widget.subEvent.travelDetail
+                                          ?.before?.endLocation,
+                                      destinationAddress:
+                                          widget.subEvent.address,
                                     ),
                                   ],
                                 ],
                               ),
                             ],
                           ),
+                        ),
 
-                          const SizedBox(height: 10),
-
-                          // Tile name
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  widget.subEvent.name ?? '',
-                                  style: TextStyle(
-                                    fontFamily: TileTextStyles.rubikFontName,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    color: textColor,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
+                        // Tardy indicator strip
+                        if (isTardy)
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 4,
+                              decoration: BoxDecoration(
+                                color: TileColors.late,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  bottomLeft: Radius.circular(16),
                                 ),
                               ),
-                              // Shared tile avatars
-                              if (isShared)
-                                GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            TileShareDetailWidget
-                                                .byDesignatedTileShareId(
-                                          designatedTileShareId: widget
-                                              .subEvent.tileShareDesignatedId!,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    margin: const EdgeInsets.only(left: 8),
-                                    child: Row(
-                                      children: [
-                                        _buildAvatar(colorScheme),
-                                        Transform.translate(
-                                          offset: const Offset(-8, 0),
-                                          child: _buildAvatar(colorScheme),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Time scrub for current tile
-                          if (isCurrent) ...[
-                            TimeScrubWidget(
-                              timeline: widget.subEvent,
-                              loadTimeScrub: true,
-                              isTardy: isTardy,
-                            ),
-                            const SizedBox(height: 12),
-                          ],
-
-                          // Bottom row: Location + Travel time
-                          Row(
-                            children: [
-                              // Location badge - tappable to open maps/URL
-                              if (location != null)
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: _onLocationTap,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            _getLocationIcon(location),
-                                            size: 14,
-                                            color: textColor,
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Flexible(
-                                            child: Text(
-                                              location,
-                                              style: TextStyle(
-                                                fontFamily: TileTextStyles
-                                                    .rubikFontName,
-                                                fontSize: 12,
-                                                color: textColor,
-                                                decoration:
-                                                    TextDecoration.underline,
-                                                decorationColor:
-                                                    textColor.withOpacity(0.5),
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            Icons.open_in_new,
-                                            size: 12,
-                                            color: textColor.withOpacity(0.7),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-
-                              // Travel time indicator - tappable for Google Directions
-                              if (hasTravel) ...[
-                                const SizedBox(width: 8),
-                                CompactTravelIndicator(
-                                  travelTimeMs:
-                                      widget.subEvent.travelTimeBefore,
-                                  travelMode: widget.subEvent.travelDetail
-                                      ?.before?.travelMedium,
-                                  isTardy: isTardy,
-                                  startLocation: widget.subEvent.travelDetail
-                                      ?.before?.startLocation,
-                                  endLocation: widget.subEvent.travelDetail
-                                      ?.before?.endLocation,
-                                  destinationAddress: widget.subEvent.address,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Tardy indicator strip
-                    if (isTardy)
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: 4,
-                          decoration: BoxDecoration(
-                            color: TileColors.late,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              bottomLeft: Radius.circular(16),
                             ),
                           ),
-                        ),
-                      ),
 
-                    // Paused indicator
-                    if (isPaused)
-                      Positioned(
-                        top: 12,
-                        right: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.9),
-                            borderRadius: BorderRadius.circular(8),
+                        // Paused indicator
+                        if (isPaused)
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.orange.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.pause,
+                                      size: 12, color: Colors.white),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'Paused',
+                                    style: TextStyle(
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.pause,
-                                  size: 12, color: Colors.white),
-                              const SizedBox(width: 2),
-                              Text(
-                                'Paused',
-                                style: TextStyle(
-                                  fontFamily: TileTextStyles.rubikFontName,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+
+                        // RSVP status badge (for third-party events) - positioned in top-left
+                        if (isThirdParty &&
+                            rsvpStyle.badgeText != null &&
+                            !isPaused)
+                          Positioned(
+                            top: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 3),
+                              decoration: BoxDecoration(
+                                color:
+                                    rsvpStyle.badgeColor?.withOpacity(0.95) ??
+                                        Colors.orange.withOpacity(0.95),
+                                borderRadius: BorderRadius.circular(6),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (rsvpStyle.badgeIcon != null) ...[
+                                    Icon(
+                                      rsvpStyle.badgeIcon,
+                                      size: 10,
+                                      color: Colors.white,
+                                    ),
+                                    const SizedBox(width: 3),
+                                  ],
+                                  Text(
+                                    rsvpStyle.badgeText!,
+                                    style: TextStyle(
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                        // Third-party source indicator (top-right, small circle)
+                        if (isThirdParty)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                color: _getSourceColor(
+                                    widget.subEvent.thirdpartyType),
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.15),
+                                    blurRadius: 3,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  _getSourceIcon(
+                                          widget.subEvent.thirdpartyType) ??
+                                      Icons.calendar_today,
+                                  size: 10,
                                   color: Colors.white,
                                 ),
                               ),
+                            ),
+                          ),
+                      ],
+                    ),
+
+                    // Expand/collapse button (only show if there are actions)
+                    if (_hasPlaybackActions())
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isExpanded = !_isExpanded;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.1),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                _isExpanded
+                                    ? Icons.keyboard_arrow_up
+                                    : Icons.keyboard_arrow_down,
+                                size: 20,
+                                color: textColor.withOpacity(0.7),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _isExpanded
+                                    ? AppLocalizations.of(context)!.hideActions
+                                    : AppLocalizations.of(context)!.actions,
+                                style: TextStyle(
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 11,
+                                  color: textColor.withOpacity(0.7),
+                                ),
+                              ),
                             ],
                           ),
                         ),
                       ),
+
+                    // Expandable playback controls (only show if there are actions)
+                    if (_hasPlaybackActions())
+                      AnimatedCrossFade(
+                        firstChild: const SizedBox.shrink(),
+                        secondChild: Container(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                          ),
+                          child: PlayBack(widget.subEvent),
+                        ),
+                        crossFadeState: _isExpanded
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 200),
+                      ),
                   ],
                 ),
-
-                // Expand/collapse button
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _isExpanded = !_isExpanded;
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.1),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _isExpanded
-                              ? Icons.keyboard_arrow_up
-                              : Icons.keyboard_arrow_down,
-                          size: 20,
-                          color: textColor.withOpacity(0.7),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _isExpanded ? 'Hide actions' : 'Actions',
-                          style: TextStyle(
-                            fontFamily: TileTextStyles.rubikFontName,
-                            fontSize: 11,
-                            color: textColor.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // Expandable playback controls
-                AnimatedCrossFade(
-                  firstChild: const SizedBox.shrink(),
-                  secondChild: Container(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                    ),
-                    child: PlayBack(widget.subEvent),
-                  ),
-                  crossFadeState: _isExpanded
-                      ? CrossFadeState.showSecond
-                      : CrossFadeState.showFirst,
-                  duration: const Duration(milliseconds: 200),
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -697,5 +972,68 @@ class FocusTimeTileCard extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Custom painter for dashed border effect (used for tentative RSVP status)
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+  final double borderRadius;
+
+  DashedBorderPainter({
+    required this.color,
+    this.strokeWidth = 2,
+    this.dashWidth = 8,
+    this.dashSpace = 4,
+    this.borderRadius = 16,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..addRRect(RRect.fromRectAndRadius(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Radius.circular(borderRadius),
+      ));
+
+    // Draw dashed border
+    final dashPath = Path();
+    final pathMetrics = path.computeMetrics();
+
+    for (final metric in pathMetrics) {
+      double distance = 0;
+      bool draw = true;
+
+      while (distance < metric.length) {
+        final length = draw ? dashWidth : dashSpace;
+        if (draw) {
+          dashPath.addPath(
+            metric.extractPath(distance, distance + length),
+            Offset.zero,
+          );
+        }
+        distance += length;
+        draw = !draw;
+      }
+    }
+
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant DashedBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.dashWidth != dashWidth ||
+        oldDelegate.dashSpace != dashSpace ||
+        oldDelegate.borderRadius != borderRadius;
   }
 }
