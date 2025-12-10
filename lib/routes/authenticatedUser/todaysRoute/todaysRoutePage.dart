@@ -20,8 +20,8 @@ class RouteStop {
   final String label;
   final Duration? travelTimeFromPrevious;
   final TravelMedium travelMode;
-  final bool hasValidLocation; // Has valid lat/lng coordinates
   final bool hasAddress; // Has address that can be used for navigation
+  final LocationType locationType;
 
   RouteStop({
     required this.order,
@@ -30,12 +30,13 @@ class RouteStop {
     required this.label,
     this.travelTimeFromPrevious,
     this.travelMode = TravelMedium.driving,
-    this.hasValidLocation = false,
     this.hasAddress = false,
+    this.locationType = LocationType.none,
   });
 
   /// Whether this stop can be navigated to (has coordinates or address)
-  bool get isNavigable => hasValidLocation || hasAddress;
+  bool get isNavigable => ((locationType != LocationType.videoConference &&
+      locationType != LocationType.onlineUrl));
 
   /// Get the address string for navigation
   String? get navigationAddress {
@@ -105,9 +106,23 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     _routeStops = [];
     for (int i = 0; i < tilesWithLocationsOrAddresses.length; i++) {
       final tile = tilesWithLocationsOrAddresses[i];
-      final latLng = _getLatLngFromTile(tile);
-      final hasValidLocation = latLng != null;
-      final hasAddress = _hasValidAddress(tile);
+
+      String? address = tile.address;
+      if (address == null || address.isEmpty) {
+        address = tile.addressDescription;
+      }
+      if (address == null || address.isEmpty) {
+        address = tile.searchdDescription;
+      }
+
+      final locationType = Utility.getLocationType(address);
+      var hasAddress = _hasValidAddress(tile);
+      var latLng = _getLatLngFromTile(tile);
+      if (locationType == LocationType.onlineUrl ||
+          locationType == LocationType.videoConference) {
+        hasAddress = false;
+        latLng = null;
+      }
 
       Duration? travelTime;
       TravelMedium travelMode = TravelMedium.driving;
@@ -143,8 +158,8 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
             tile.name ?? AppLocalizations.of(context)?.untitledTile ?? 'Tile',
         travelTimeFromPrevious: travelTime,
         travelMode: travelMode,
-        hasValidLocation: hasValidLocation,
         hasAddress: hasAddress,
+        locationType: locationType,
       ));
     }
 
@@ -254,6 +269,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
 
   LatLng? _getLatLngFromTile(SubCalendarEvent tile) {
     // Try to get location from tile's location object
+    print('Checking tile for location: ${tile.location}');
     if (tile.location != null) {
       final loc = tile.location!;
       if (loc.latitude != null &&
@@ -348,9 +364,10 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     return '${start.format(context)} - ${end.format(context)}';
   }
 
-  /// Check if the selected stop has a valid navigable location
-  bool _hasValidNavigableLocation(RouteStop? stop) {
-    return stop?.isNavigable ?? false;
+  /// Check if the selected stop has a valid navigable location or actionable link
+  bool _isStopActionable(RouteStop? stop) {
+    if (stop == null) return false;
+    return stop.locationType != LocationType.none;
   }
 
   Future<void> _startNavigation() async {
@@ -360,9 +377,17 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     final googleTravelMode = stop.travelMode.googleMapsMode;
 
     Uri? url;
-
-    // Try coordinates first if available
-    if (stop.hasValidLocation && stop.location != null) {
+    if (stop.locationType == LocationType.videoConference ||
+        stop.locationType == LocationType.onlineUrl) {
+      String? address = stop.tile.address ??
+          stop.tile.addressDescription ??
+          stop.tile.searchdDescription;
+      String? link = Utility.getLinkFromLocation(address);
+      if (link != null) {
+        url = Uri.parse(link);
+      }
+    } else if (stop.location != null) {
+      // Try coordinates first if available
       final lat = stop.location!.latitude;
       final lng = stop.location!.longitude;
       url = Uri.parse(
@@ -389,17 +414,21 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
       }
       return;
     }
-
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        print('Could not launch navigation URL: $url');
+      }
     }
   }
 
   void _fitMapToRoute() {
     if (_mapController == null || _routeStops.isEmpty) return;
 
-    final locations =
-        _routeStops.where((s) => s.location != null).map((s) => s.location!);
+    final locations = _routeStops.where((s) {
+      return s.location != null && s.isNavigable;
+    }).map((s) => s.location!);
     if (locations.isEmpty) return;
 
     double minLat = locations.first.latitude;
@@ -834,7 +863,13 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
                     Row(
                       children: [
                         Icon(
-                          Icons.location_on_outlined,
+                          selectedStop.locationType ==
+                                  LocationType.videoConference
+                              ? Icons.videocam_outlined
+                              : selectedStop.locationType ==
+                                      LocationType.onlineUrl
+                                  ? Icons.link_outlined
+                                  : Icons.location_on_outlined,
                           size: 16,
                           color: colorScheme.onSurface.withOpacity(0.5),
                         ),
@@ -954,23 +989,33 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
                         flex: 2,
                         child: Builder(
                           builder: (context) {
-                            final canNavigate =
-                                _hasValidNavigableLocation(selectedStop);
+                            final canAction = _isStopActionable(selectedStop);
+                            IconData navIcon = Icons.navigation_rounded;
+                            String navLabel = l10n.startNavigation;
+
+                            if (selectedStop.locationType ==
+                                LocationType.videoConference) {
+                              navIcon = Icons.videocam;
+                              navLabel = l10n.joinMeeting;
+                            } else if (selectedStop.locationType ==
+                                LocationType.onlineUrl) {
+                              navIcon = Icons.link;
+                              navLabel = l10n.openLink;
+                            }
+
                             return ElevatedButton.icon(
-                              onPressed: canNavigate ? _startNavigation : null,
+                              onPressed: canAction ? _startNavigation : null,
                               icon: Icon(
-                                canNavigate
-                                    ? Icons.navigation_rounded
+                                canAction
+                                    ? navIcon
                                     : Icons.location_off_rounded,
                                 size: 18,
                               ),
                               label: Text(
-                                canNavigate
-                                    ? l10n.startNavigation
-                                    : l10n.noLocationAvailable,
+                                canAction ? navLabel : l10n.noLocationAvailable,
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: canNavigate
+                                backgroundColor: canAction
                                     ? Colors.teal
                                     : Colors.grey.shade400,
                                 foregroundColor: Colors.white,

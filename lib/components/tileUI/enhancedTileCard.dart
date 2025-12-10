@@ -15,27 +15,16 @@ import 'package:url_launcher/url_launcher.dart';
 /// Helper function to get location icon based on address type
 /// Can be used by both stateful and stateless widgets
 IconData _getLocationIconForAddress(String address) {
-  final lowerAddress = address.toLowerCase();
-
-  // Check if it's a video meeting link
-  if (lowerAddress.contains('zoom') ||
-      lowerAddress.contains('meet.google') ||
-      lowerAddress.contains('teams.microsoft') ||
-      lowerAddress.contains('webex') ||
-      lowerAddress.contains('skype') ||
-      lowerAddress.contains('hangout')) {
-    return Icons.videocam_outlined;
+  switch (Utility.getLocationType(address)) {
+    case LocationType.videoConference:
+      return Icons.videocam_outlined;
+    case LocationType.onlineUrl:
+      return Icons.link_outlined;
+    case LocationType.physical:
+    case LocationType.none:
+    default:
+      return Icons.location_on_outlined;
   }
-
-  // Check if it's a URL
-  if (lowerAddress.startsWith('http://') ||
-      lowerAddress.startsWith('https://') ||
-      lowerAddress.startsWith('www.')) {
-    return Icons.link_outlined;
-  }
-
-  // Default to location icon for physical addresses
-  return Icons.location_on_outlined;
 }
 
 /// Enhanced tile card matching the Screen 2 design with:
@@ -92,44 +81,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
 
   /// Get the appropriate icon for the location type
   IconData _getLocationIcon(String location) {
-    final lowerLocation = location.toLowerCase();
-
-    // Check if it's a video meeting link
-    if (lowerLocation.contains('zoom') ||
-        lowerLocation.contains('meet.google') ||
-        lowerLocation.contains('teams.microsoft') ||
-        lowerLocation.contains('webex') ||
-        lowerLocation.contains('skype') ||
-        lowerLocation.contains('hangout')) {
-      return Icons.videocam_outlined;
-    }
-
-    // Check if it's a URL
-    if (_isStringUrl(location).item1) {
-      return Icons.link_outlined;
-    }
-
-    // Default to location icon for physical addresses
-    return Icons.location_on_outlined;
-  }
-
-  /// Check if a string is a URL
-  Tuple2<bool, String> _isStringUrl(String url) {
-    try {
-      bool retValue = Uri.parse(url).isAbsolute;
-      return Tuple2(retValue, url);
-    } catch (err) {
-      List<String> eachUrlComponent = url.split(" ");
-      if (eachUrlComponent.isNotEmpty) {
-        for (var element in eachUrlComponent) {
-          Tuple2<bool, String> isStringUrlTuple = _isStringUrl(element);
-          if (isStringUrlTuple.item1) {
-            return isStringUrlTuple;
-          }
-        }
-      }
-    }
-    return Tuple2(false, url);
+    return _getLocationIconForAddress(location);
   }
 
   /// Launch URL in browser
@@ -146,10 +98,10 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     addressLookup ??= widget.subEvent.searchdDescription;
 
     if (addressLookup != null) {
-      var isStringUrlResult = _isStringUrl(addressLookup);
-      if (isStringUrlResult.item1) {
+      String? link = Utility.getLinkFromLocation(addressLookup);
+      if (link != null) {
         // It's a URL - launch it
-        final Uri url = Uri.parse(isStringUrlResult.item2);
+        final Uri url = Uri.parse(link);
         await _launchUrl(url);
         return;
       }

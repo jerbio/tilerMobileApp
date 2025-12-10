@@ -169,8 +169,8 @@ class SubCalendarEvent extends TilerEvent {
     if (json['travelDetail'] != null) {
       travelDetail = TravelDetail.fromJson(json['travelDetail']);
     }
-    if (json.containsKey('rsvp') && json['rsvp'] != null) {
-      String rsvpString = json['rsvp'].toString().toLowerCase();
+    if (json.containsKey('rsvpStatus') && json['rsvpStatus'] != null) {
+      String rsvpString = json['rsvpStatus'].toString().toLowerCase();
       switch (rsvpString) {
         case 'accepted':
           rsvp = RsvpStatus.accepted;

@@ -275,5 +275,7 @@
     "editTile": "Editar Tile",
     "startNavigation": "Iniciar navegación",
     "noLocationAvailable": "Sin ubicación",
-    "seeTodaysRoute": "Ver ruta de hoy"
+    "seeTodaysRoute": "Ver ruta de hoy",
+    "joinMeeting": "Unirse a la reunión",
+    "openLink": "Abrir enlace"
 }
