@@ -62,7 +62,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   // State
   double _emptyDayOpacity = 0;
   bool _isEmptyDay = false;
-  List<TileConflict> _detectedConflicts = [];
+  List<ConflictGroup> _detectedConflicts = [];
 
   // Theming
   late ThemeData theme;
@@ -189,8 +189,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     // Detect conflicts
     final subCalendarEvents =
         orderedTiles.whereType<SubCalendarEvent>().toList();
-    _detectedConflicts = TileConflict.detectAll(subCalendarEvents);
-    final conflictGroups = ConflictGroup.groupConflicts(_detectedConflicts);
+    final conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
+    _detectedConflicts = conflictGroups;
 
     // Track tiles in conflict groups
     Set<String> tilesInConflictGroups = {};

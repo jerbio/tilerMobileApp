@@ -3,311 +3,28 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
-
-/// Represents a scheduling conflict between two tiles
-class TileConflict {
-  final SubCalendarEvent tile1;
-  final SubCalendarEvent tile2;
-  final Duration overlapDuration;
-  final ConflictType type;
-
-  TileConflict({
-    required this.tile1,
-    required this.tile2,
-    required this.overlapDuration,
-    required this.type,
-  });
-
-  /// Check if two tiles conflict (overlap in time)
-  static TileConflict? detect(SubCalendarEvent current, SubCalendarEvent next) {
-    if (current.start == null ||
-        current.end == null ||
-        next.start == null ||
-        next.end == null) {
-      return null;
-    }
-
-    final currentStart = current.start!;
-    final currentEnd = current.end!;
-    final nextStart = next.start!;
-    final nextEnd = next.end!;
-
-    // Check for overlap: tiles conflict if one starts before the other ends
-    if (currentStart < nextEnd && nextStart < currentEnd) {
-      // Calculate overlap duration
-      final overlapStart = currentStart > nextStart ? currentStart : nextStart;
-      final overlapEnd = currentEnd < nextEnd ? currentEnd : nextEnd;
-      final overlapMs = overlapEnd - overlapStart;
-
-      if (overlapMs > 0) {
-        // Determine conflict type
-        ConflictType type;
-        if (currentStart == nextStart && currentEnd == nextEnd) {
-          type = ConflictType.exactOverlap;
-        } else if (currentStart <= nextStart && currentEnd >= nextEnd) {
-          type = ConflictType.contains;
-        } else if (nextStart <= currentStart && nextEnd >= currentEnd) {
-          type = ConflictType.containedBy;
-        } else {
-          type = ConflictType.partialOverlap;
-        }
-
-        return TileConflict(
-          tile1: current,
-          tile2: next,
-          overlapDuration: Duration(milliseconds: overlapMs),
-          type: type,
-        );
-      }
-    }
-
-    return null;
-  }
-
-  /// Detect all conflicts in a list of tiles
-  static List<TileConflict> detectAll(List<SubCalendarEvent> tiles) {
-    List<TileConflict> conflicts = [];
-
-    // Sort tiles by start time
-    final sortedTiles = List<SubCalendarEvent>.from(tiles);
-    sortedTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
-
-    for (int i = 0; i < sortedTiles.length; i++) {
-      for (int j = i + 1; j < sortedTiles.length; j++) {
-        final conflict = detect(sortedTiles[i], sortedTiles[j]);
-        if (conflict != null) {
-          conflicts.add(conflict);
-        }
-        // Optimization: if next tile starts after current ends, no more conflicts possible
-        if (sortedTiles[j].start != null &&
-            sortedTiles[i].end != null &&
-            sortedTiles[j].start! >= sortedTiles[i].end!) {
-          break;
-        }
-      }
-    }
-
-    return conflicts;
-  }
-}
-
-enum ConflictType {
-  partialOverlap, // Tiles partially overlap
-  exactOverlap, // Tiles have exact same time
-  contains, // First tile contains second
-  containedBy, // First tile is contained by second
-}
-
-/// Widget that displays a conflict warning between tiles
-class ConflictAlertWidget extends StatelessWidget {
-  final TileConflict conflict;
-  final VoidCallback? onTap;
-  final VoidCallback? onResolve;
-
-  const ConflictAlertWidget({
-    Key? key,
-    required this.conflict,
-    this.onTap,
-    this.onResolve,
-  }) : super(key: key);
-
-  String _formatDuration(BuildContext context, Duration duration) {
-    final l10n = AppLocalizations.of(context)!;
-    if (duration.inHours > 0) {
-      final minutes = duration.inMinutes.remainder(60);
-      if (minutes > 0) {
-        return l10n.durationHoursMinutesShort(duration.inHours, minutes);
-      }
-      return l10n.durationHoursShort(duration.inHours);
-    }
-    return l10n.durationMinutesShort(duration.inMinutes);
-  }
-
-  IconData _getConflictIcon() {
-    switch (conflict.type) {
-      case ConflictType.exactOverlap:
-        return Icons.error_rounded;
-      case ConflictType.contains:
-      case ConflictType.containedBy:
-        return Icons.warning_amber_rounded;
-      case ConflictType.partialOverlap:
-        return Icons.schedule_rounded;
-    }
-  }
-
-  Color _getConflictColor(ColorScheme colorScheme) {
-    switch (conflict.type) {
-      case ConflictType.exactOverlap:
-        return colorScheme.error;
-      case ConflictType.contains:
-      case ConflictType.containedBy:
-        return Colors.orange;
-      case ConflictType.partialOverlap:
-        return Colors.amber.shade700;
-    }
-  }
-
-  String _getConflictMessage(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final tile1Name = conflict.tile1.name ?? l10n.tile;
-    final tile2Name = conflict.tile2.name ?? l10n.tile;
-    final overlapStr = _formatDuration(context, conflict.overlapDuration);
-
-    switch (conflict.type) {
-      case ConflictType.exactOverlap:
-        return l10n.conflictSameTime(tile1Name, tile2Name);
-      case ConflictType.contains:
-        return l10n.conflictDuring(tile2Name, tile1Name, overlapStr);
-      case ConflictType.containedBy:
-        return l10n.conflictDuring(tile1Name, tile2Name, overlapStr);
-      case ConflictType.partialOverlap:
-        return l10n.conflictOverlaps(tile1Name, tile2Name, overlapStr);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final conflictColor = _getConflictColor(colorScheme);
-    final l10n = AppLocalizations.of(context)!;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: conflictColor.withAlpha(25),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: conflictColor.withAlpha(77),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: conflictColor.withAlpha(51),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                _getConflictIcon(),
-                color: conflictColor,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.scheduleConflict,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                      color: conflictColor,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _getConflictMessage(context),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface.withAlpha(179),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            if (onResolve != null)
-              TextButton(
-                onPressed: onResolve,
-                style: TextButton.styleFrom(
-                  foregroundColor: conflictColor,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  l10n.fix,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact inline conflict indicator shown between tiles
-class CompactConflictIndicator extends StatelessWidget {
-  final TileConflict conflict;
-  final VoidCallback? onTap;
-
-  const CompactConflictIndicator({
-    Key? key,
-    required this.conflict,
-    this.onTap,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              size: 16,
-              color: Colors.orange,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              l10n.conflictOverlapMinutes(conflict.overlapDuration.inMinutes),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.orange.shade700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+import 'package:tiler_app/util.dart';
+import 'package:tuple/tuple.dart';
 
 /// Summary banner showing total conflicts for the day
 class ConflictSummaryBanner extends StatelessWidget {
-  final List<TileConflict> conflicts;
+  final List<ConflictGroup> conflictGroups;
   final VoidCallback? onTap;
 
   const ConflictSummaryBanner({
     Key? key,
-    required this.conflicts,
+    required this.conflictGroups,
     this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    if (conflicts.isEmpty) return const SizedBox.shrink();
+    if (conflictGroups.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
+
+    // Calculate total number of conflicts (tiles involved - 1 per group)
+    int conflictCount =
+        conflictGroups.fold(0, (sum, group) => sum + (group.tiles.length));
 
     return GestureDetector(
       onTap: onTap,
@@ -352,30 +69,17 @@ class ConflictSummaryBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    conflicts.length == 1
+                    conflictCount == 1
                         ? l10n.oneScheduleConflict
-                        : l10n.countScheduleConflicts(conflicts.length),
+                        : l10n.countScheduleConflicts(conflictCount),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: Colors.white,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    l10n.tapToReviewAndResolve,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withAlpha(204),
-                    ),
-                  ),
+                  )
                 ],
               ),
-            ),
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: Colors.white,
-              size: 24,
             ),
           ],
         ),
@@ -394,63 +98,29 @@ class ConflictGroup {
     required this.totalOverlap,
   });
 
-  /// Group conflicts into clusters of overlapping tiles
-  static List<ConflictGroup> groupConflicts(List<TileConflict> conflicts) {
-    if (conflicts.isEmpty) return [];
-
-    // Collect all unique tiles involved in conflicts
-    Map<String, SubCalendarEvent> allTiles = {};
-    Map<String, Set<String>> connections = {};
-
-    for (var conflict in conflicts) {
-      allTiles[conflict.tile1.uniqueId] = conflict.tile1;
-      allTiles[conflict.tile2.uniqueId] = conflict.tile2;
-
-      // Track connections
-      connections.putIfAbsent(conflict.tile1.uniqueId, () => {});
-      connections.putIfAbsent(conflict.tile2.uniqueId, () => {});
-      connections[conflict.tile1.uniqueId]!.add(conflict.tile2.uniqueId);
-      connections[conflict.tile2.uniqueId]!.add(conflict.tile1.uniqueId);
-    }
-
-    // Find connected components (groups of mutually conflicting tiles)
-    Set<String> visited = {};
+  /// Detect all conflict groups in a list of tiles
+  static List<ConflictGroup> detectGroups(List<SubCalendarEvent> tiles) {
     List<ConflictGroup> groups = [];
 
-    for (var tileId in allTiles.keys) {
-      if (visited.contains(tileId)) continue;
+    // Use Utility.getConflictingEvents to find clusters of conflicts
+    final conflictResult = Utility.getConflictingEvents(tiles);
+    final blobs = conflictResult.item1;
+    print(blobs.length.toString() + ' blobs found');
 
-      // BFS to find all connected tiles
-      List<SubCalendarEvent> groupTiles = [];
-      List<String> queue = [tileId];
+    for (var blob in blobs) {
+      final blobTiles = blob.AllTiles.whereType<SubCalendarEvent>().toList();
 
-      while (queue.isNotEmpty) {
-        var currentId = queue.removeAt(0);
-        if (visited.contains(currentId)) continue;
-        visited.add(currentId);
-
-        groupTiles.add(allTiles[currentId]!);
-
-        for (var connectedId in connections[currentId] ?? {}) {
-          if (!visited.contains(connectedId)) {
-            queue.add(connectedId);
-          }
-        }
-      }
+      // Skip if less than 2 tiles (no conflict)
+      if (blobTiles.length < 2) continue;
 
       // Sort by start time
-      groupTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+      blobTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+      print('Blob tiles: ${blobTiles.map((t) => t.name).toList()}');
 
-      // Calculate total overlap for this group
-      Duration totalOverlap = Duration.zero;
-      for (var conflict in conflicts) {
-        if (groupTiles.any((t) => t.uniqueId == conflict.tile1.uniqueId) &&
-            groupTiles.any((t) => t.uniqueId == conflict.tile2.uniqueId)) {
-          totalOverlap += conflict.overlapDuration;
-        }
-      }
+      final blobDuration =
+          Duration(milliseconds: (blob.end ?? 0) - (blob.start ?? 0));
 
-      groups.add(ConflictGroup(tiles: groupTiles, totalOverlap: totalOverlap));
+      groups.add(ConflictGroup(tiles: blobTiles, totalOverlap: blobDuration));
     }
 
     return groups;

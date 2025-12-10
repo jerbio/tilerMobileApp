@@ -57,7 +57,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   Map<String, TilerEvent>? pendingRenderedTiles;
   Map<String, TilerEvent> latestBuildTiles = {};
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
-  List<TileConflict> _detectedConflicts = [];
+  List<ConflictGroup> _detectedConflicts = [];
   List<Widget> childrenColumnWidgets = [];
   double _emptyDayOpacity = 0;
   final double daySummaryToHeightBuffer = 245;
@@ -217,10 +217,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     // First, detect conflict groups
     final subCalendarEvents =
         orderedTiles.whereType<SubCalendarEvent>().toList();
-    final conflicts = widget.showConflictAlerts
-        ? TileConflict.detectAll(subCalendarEvents)
-        : <TileConflict>[];
-    final conflictGroups = ConflictGroup.groupConflicts(conflicts);
+    final conflictGroups = widget.showConflictAlerts
+        ? ConflictGroup.detectGroups(subCalendarEvents)
+        : <ConflictGroup>[];
 
     // Create a set of tile IDs that are in conflict groups
     Set<String> tilesInConflictGroups = {};
@@ -468,12 +467,12 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
       final subCalendarEvents =
           renderedTiles.values.whereType<SubCalendarEvent>().toList();
-      _detectedConflicts = TileConflict.detectAll(subCalendarEvents);
+      _detectedConflicts = ConflictGroup.detectGroups(subCalendarEvents);
 
       if (_detectedConflicts.isNotEmpty) {
         childrenColumnWidgets.add(
           ConflictSummaryBanner(
-            conflicts: _detectedConflicts,
+            conflictGroups: _detectedConflicts,
             onTap: () {
               // Could show a modal with all conflicts
             },
