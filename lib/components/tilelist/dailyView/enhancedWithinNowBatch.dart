@@ -14,6 +14,7 @@ import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -397,6 +398,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   Widget build(BuildContext context) {
     // Process tiles
     Map<String, TilerEvent> viableTiles = {};
+    List<SubCalendarEvent> pendingRsvpTiles = [];
 
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
@@ -406,17 +408,32 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           final isFromTiler = tile.isFromTiler;
           final rsvpStatus = subEvent?.rsvp;
 
+          // Check if this is a pending RSVP tile (needs action or tentative)
+          final isPendingRsvp = !isFromTiler &&
+              (rsvpStatus == RsvpStatus.needsAction ||
+                  rsvpStatus == RsvpStatus.tentative);
+
+          // Track pending RSVP tiles separately
+          if (isPendingRsvp && subEvent != null) {
+            pendingRsvpTiles.add(subEvent);
+          }
+
           // Show tile if:
           // 1. It's a Tiler tile and is viable, OR
-          // 2. It's a third-party tile (always show unless declined)
+          // 2. It's a third-party tile that's accepted (not pending or declined)
           final isDeclined = rsvpStatus == RsvpStatus.declined;
+          final shouldShowInMainList = !isPendingRsvp;
 
-          if ((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) {
+          if (((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) &&
+              shouldShowInMainList) {
             viableTiles[tile.uniqueId] = tile;
           }
         }
       }
     }
+
+    // Sort pending RSVP tiles by start time
+    pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     // Calculate stats
     final stats = TodayStats.fromTiles(viableTiles.values.toList());
@@ -461,6 +478,18 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           ),
         );
       }
+    }
+
+    // 2c. Pending RSVP banner
+    if (pendingRsvpTiles.isNotEmpty) {
+      scrollableContent.add(
+        PendingRsvpBanner(
+          pendingTiles: pendingRsvpTiles,
+          onRsvpUpdated: () {
+            _triggerRefresh();
+          },
+        ),
+      );
     }
 
     // 3. Sleep tile if present

@@ -11,6 +11,7 @@ import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -431,6 +432,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     const double heightMargin = 262;
     renderedTiles = {};
 
+    // Track tiles with pending RSVP separately
+    List<SubCalendarEvent> pendingRsvpTiles = [];
+
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
         if (eachTile.id != null) {
@@ -439,17 +443,32 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           final isFromTiler = eachTile.isFromTiler;
           final rsvpStatus = subEvent?.rsvp;
 
+          // Check if this is a pending RSVP tile (needs action or tentative)
+          final isPendingRsvp = !isFromTiler &&
+              (rsvpStatus == RsvpStatus.needsAction ||
+                  rsvpStatus == RsvpStatus.tentative);
+
+          // Track pending RSVP tiles separately
+          if (isPendingRsvp && subEvent != null) {
+            pendingRsvpTiles.add(subEvent);
+          }
+
           // Show tile if:
           // 1. It's a Tiler tile and is viable, OR
-          // 2. It's a third-party tile (always show unless declined)
+          // 2. It's a third-party tile that's accepted (not pending or declined)
           final isDeclined = rsvpStatus == RsvpStatus.declined;
+          final shouldShowInMainList = !isPendingRsvp;
 
-          if ((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) {
+          if (((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) &&
+              shouldShowInMainList) {
             renderedTiles[eachTile.uniqueId] = eachTile;
           }
         }
       });
     }
+
+    // Sort pending RSVP tiles by start time
+    pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     childrenColumnWidgets = [];
 
@@ -527,6 +546,19 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           ),
         );
       }
+    }
+
+    // Show pending RSVP banner if there are tiles awaiting response
+    if (pendingRsvpTiles.isNotEmpty) {
+      childrenColumnWidgets.add(
+        PendingRsvpBanner(
+          pendingTiles: pendingRsvpTiles,
+          onRsvpUpdated: () {
+            // Trigger a refresh when RSVP is updated
+            refreshScheduleSummary();
+          },
+        ),
+      );
     }
 
     // Sleep widget

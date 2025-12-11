@@ -1255,5 +1255,36 @@
         "joinMeeting": "Join Meeting",
         "openLink": "Open Link",
         "actions": "Actions",
-        "hideActions": "Hide actions"
+        "hideActions": "Hide actions",
+        "pendingRsvpSingular": "1 Event Needs Response",
+        "pendingRsvpPlural": "{count} Events Need Response",
+        "@pendingRsvpPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "pendingRsvpHappeningNow": "Happening now - respond to join",
+        "pendingRsvpStartingSoon": "Starting soon - respond now",
+        "pendingRsvpWithinHour": "Starting within an hour",
+        "pendingRsvpUpcoming": "Upcoming - tap to respond",
+        "pendingRsvpTapToReview": "Tap to review and respond",
+        "pendingRsvpTitle": "Pending Responses",
+        "pendingRsvpSubtitle": "{count, plural, =1{1 event awaiting your response} other{{count} events awaiting your response}}",
+        "@pendingRsvpSubtitle": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "pendingRsvpUrgent": "Starting Soon",
+        "pendingRsvpLater": "Later Today & Upcoming",
+        "rsvpNeedsAction": "Needs Response",
+        "rsvpTentative": "Tentative",
+        "rsvpAccepted": "Accepted",
+        "rsvpDeclined": "Declined",
+        "unableToOpenLinkError": "Unable to open link: {link}",
+        "@unableToOpenLinkError": {
+          "placeholders": {
+            "link": {"type": "String"}
+          }
+        }
 }

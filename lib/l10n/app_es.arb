@@ -302,5 +302,36 @@
     "freeTime": "Tiempo Libre",
     "quickBreak": "Pausa Rápida",
     "shortBreak": "Pausa Corta",
-    "blockedTime": "Tiempo Bloqueado"
+    "blockedTime": "Tiempo Bloqueado",
+    "pendingRsvpSingular": "1 Evento Necesita Respuesta",
+    "pendingRsvpPlural": "{count} Eventos Necesitan Respuesta",
+    "@pendingRsvpPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "pendingRsvpHappeningNow": "Ocurriendo ahora - responde para unirte",
+    "pendingRsvpStartingSoon": "Comienza pronto - responde ahora",
+    "pendingRsvpWithinHour": "Comienza en una hora",
+    "pendingRsvpUpcoming": "Próximo - toca para responder",
+    "pendingRsvpTapToReview": "Toca para revisar y responder",
+    "pendingRsvpTitle": "Respuestas Pendientes",
+    "pendingRsvpSubtitle": "{count, plural, =1{1 evento esperando tu respuesta} other{{count} eventos esperando tu respuesta}}",
+    "@pendingRsvpSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "pendingRsvpUrgent": "Comienza Pronto",
+    "pendingRsvpLater": "Más Tarde Hoy y Próximos",
+    "rsvpNeedsAction": "Necesita Respuesta",
+    "rsvpTentative": "Tentativo",
+    "rsvpAccepted": "Aceptado",
+    "rsvpDeclined": "Rechazado",
+    "unableToOpenLinkError": "No se pudo abrir el enlace: {link}",
+    "@unableToOpenLinkError": {
+      "placeholders": {
+        "link": {"type": "String"}
+      }
+    }
 }
