@@ -245,6 +245,22 @@
     },
     "autoResolve": "Auto-resolver",
     "untitledTile": "Tile sin título",
+    "untitledEvent": "Sin título",
+    "extendedEventSingular": "1 Evento Extendido",
+    "extendedEventsPlural": "{count} Eventos Extendidos",
+    "@extendedEventsPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
+    "extendedEventsTitle": "Eventos Extendidos",
+    "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
+    "@extendedEventsSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
     "tile": "Tile",
     "todaysRoute": "Ruta de hoy",
     "noLocationsToday": "Sin ubicaciones hoy",

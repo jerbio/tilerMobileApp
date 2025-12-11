@@ -13,6 +13,7 @@ import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -186,9 +187,19 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     final now = DateTime.now();
     Set<int> displayedHours = {};
 
-    // Detect conflicts
+    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
+    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+    final regularTiles = orderedTiles.where((tile) {
+      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
+        final duration = tile.end! - tile.start!;
+        return duration < minDurationMs;
+      }
+      return true;
+    }).toList();
+
+    // Detect conflicts (only from regular tiles)
     final subCalendarEvents =
-        orderedTiles.whereType<SubCalendarEvent>().toList();
+        regularTiles.whereType<SubCalendarEvent>().toList();
     final conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
     _detectedConflicts = conflictGroups;
 
@@ -202,8 +213,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
     Set<int> renderedConflictGroups = {};
 
-    for (int i = 0; i < orderedTiles.length; i++) {
-      final tile = orderedTiles[i];
+    for (int i = 0; i < regularTiles.length; i++) {
+      final tile = regularTiles[i];
       final tileHour = tile.startTime.hour;
       final isCurrentHour = tile.startTime.day == now.day &&
           tile.startTime.month == now.month &&
@@ -255,10 +266,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       );
 
       // Add travel connector
-      if (i < orderedTiles.length - 1) {
+      if (i < regularTiles.length - 1) {
         TilerEvent? nextTile;
-        for (int j = i + 1; j < orderedTiles.length; j++) {
-          final candidate = orderedTiles[j];
+        for (int j = i + 1; j < regularTiles.length; j++) {
+          final candidate = regularTiles[j];
           if (candidate is SubCalendarEvent &&
               tilesInConflictGroups.contains(candidate.uniqueId)) {
             continue;
@@ -437,6 +448,20 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           ProactiveAlertBanner(
             nextTileWithTravel: nextDepartureTile,
             onDismiss: () {},
+          ),
+        );
+      }
+    }
+
+    // 2b. Extended tiles banner
+    if (viableTiles.isNotEmpty) {
+      final extendedTiles =
+          ExtendedTilesBanner.detectExtendedTiles(viableTiles.values.toList());
+
+      if (extendedTiles.isNotEmpty) {
+        scrollableContent.add(
+          ExtendedTilesBanner(
+            extendedTiles: extendedTiles,
           ),
         );
       }
