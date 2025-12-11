@@ -1286,5 +1286,49 @@
           "placeholders": {
             "link": {"type": "String"}
           }
+        },
+        "leaveNow": "Leave now!",
+        "leaveInMinutes": "Leave in {minutes} min",
+        "@leaveInMinutes": {
+          "description": "Short label for departure alert",
+          "placeholders": {
+            "minutes": {"type": "int"}
+          }
+        },
+        "multipleAlertsTitle": "{count} alerts",
+        "@multipleAlertsTitle": {
+          "description": "Title when multiple alerts are active",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipLeaveNow": "Leave Now",
+        "alertChipLeaveIn": "Leave {minutes}m",
+        "@alertChipLeaveIn": {
+          "description": "Chip label for travel alert with minutes",
+          "placeholders": {
+            "minutes": {"type": "int"}
+          }
+        },
+        "alertChipConflicts": "{count, plural, =1{1 Conflict} other{{count} Conflicts}}",
+        "@alertChipConflicts": {
+          "description": "Chip label for schedule conflicts",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipAllDay": "{count, plural, =1{1 All-Day} other{{count} All-Day}}",
+        "@alertChipAllDay": {
+          "description": "Chip label for extended/all-day events",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipRsvp": "{count, plural, =1{1 RSVP} other{{count} RSVPs}}",
+        "@alertChipRsvp": {
+          "description": "Chip label for pending RSVP responses",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
         }
 }

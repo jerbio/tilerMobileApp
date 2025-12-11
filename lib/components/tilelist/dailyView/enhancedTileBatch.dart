@@ -12,6 +12,7 @@ import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
+import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -486,28 +487,21 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       );
     }
 
-    // Proactive alert banner (only for today)
+    // Detect alerts data
+    SubCalendarEvent? nextDepartureTile;
+    List<ConflictGroup> conflictGroups = [];
+    List<SubCalendarEvent> extendedTiles = [];
+
+    // Get travel alert data (only for today)
     if (widget.showProactiveAlerts && _isToday && widget.tiles != null) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
-      final nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesList);
-
-      if (nextDepartureTile != null) {
-        childrenColumnWidgets.add(
-          ProactiveAlertBanner(
-            nextTileWithTravel: nextDepartureTile,
-            onDismiss: () {
-              // Handle dismiss if needed
-            },
-          ),
-        );
-      }
+      nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesList);
     }
 
-    // Detect and show conflicts (excluding extended tiles)
+    // Detect conflicts (excluding extended tiles)
     if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
-      // Filter out extended tiles before detecting conflicts
-      const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+      const int minDurationMs = 16 * 60 * 60 * 1000;
       final regularTiles = renderedTiles.values.where((tile) {
         if (tile is SubCalendarEvent &&
             tile.start != null &&
@@ -520,24 +514,77 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
       final subCalendarEvents =
           regularTiles.whereType<SubCalendarEvent>().toList();
-      _detectedConflicts = ConflictGroup.detectGroups(subCalendarEvents);
+      conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
+      _detectedConflicts = conflictGroups;
+    }
 
-      if (_detectedConflicts.isNotEmpty) {
+    // Detect extended tiles
+    if (renderedTiles.isNotEmpty) {
+      extendedTiles = ExtendedTilesBanner.detectExtendedTiles(
+          renderedTiles.values.toList());
+    }
+
+    // Count active alerts to decide between combined or individual banners
+    int activeAlertCount = 0;
+    if (nextDepartureTile != null) activeAlertCount++;
+    if (conflictGroups.isNotEmpty) activeAlertCount++;
+    if (extendedTiles.isNotEmpty) activeAlertCount++;
+    if (pendingRsvpTiles.isNotEmpty) activeAlertCount++;
+
+    // Use combined banner if more than 1 alert, otherwise show individual banners
+    if (activeAlertCount > 1) {
+      childrenColumnWidgets.add(
+        CombinedAlertsBanner(
+          nextTileWithTravel: nextDepartureTile,
+          onTravelTap: () {
+            // Navigate to the tile or show details
+          },
+          onTravelDismiss: () {
+            // Handle dismiss if needed
+          },
+          conflictGroups: conflictGroups,
+          onConflictTap: () {
+            // Could show a modal with all conflicts
+          },
+          extendedTiles: extendedTiles,
+          onExtendedTap: () {
+            CombinedAlertsBannerHelpers.showExtendedTilesModal(
+                context, extendedTiles);
+          },
+          pendingRsvpTiles: pendingRsvpTiles,
+          onRsvpTap: () {
+            CombinedAlertsBannerHelpers.showPendingRsvpModal(
+              context,
+              pendingRsvpTiles,
+              onRsvpUpdated: () => refreshScheduleSummary(),
+            );
+          },
+          onRsvpUpdated: () => refreshScheduleSummary(),
+        ),
+      );
+    } else {
+      // Show individual banners when only 0 or 1 alert is active
+      if (nextDepartureTile != null) {
+        childrenColumnWidgets.add(
+          ProactiveAlertBanner(
+            nextTileWithTravel: nextDepartureTile,
+            onDismiss: () {
+              // Handle dismiss if needed
+            },
+          ),
+        );
+      }
+
+      if (conflictGroups.isNotEmpty) {
         childrenColumnWidgets.add(
           ConflictSummaryBanner(
-            conflictGroups: _detectedConflicts,
+            conflictGroups: conflictGroups,
             onTap: () {
               // Could show a modal with all conflicts
             },
           ),
         );
       }
-    }
-
-    // Detect and show extended/all-day tiles
-    if (renderedTiles.isNotEmpty) {
-      final extendedTiles = ExtendedTilesBanner.detectExtendedTiles(
-          renderedTiles.values.toList());
 
       if (extendedTiles.isNotEmpty) {
         childrenColumnWidgets.add(
@@ -546,19 +593,17 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           ),
         );
       }
-    }
 
-    // Show pending RSVP banner if there are tiles awaiting response
-    if (pendingRsvpTiles.isNotEmpty) {
-      childrenColumnWidgets.add(
-        PendingRsvpBanner(
-          pendingTiles: pendingRsvpTiles,
-          onRsvpUpdated: () {
-            // Trigger a refresh when RSVP is updated
-            refreshScheduleSummary();
-          },
-        ),
-      );
+      if (pendingRsvpTiles.isNotEmpty) {
+        childrenColumnWidgets.add(
+          PendingRsvpBanner(
+            pendingTiles: pendingRsvpTiles,
+            onRsvpUpdated: () {
+              refreshScheduleSummary();
+            },
+          ),
+        );
+      }
     }
 
     // Sleep widget
