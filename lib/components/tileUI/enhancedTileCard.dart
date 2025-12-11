@@ -39,9 +39,9 @@ String? _sanitizeEmojis(String? text) {
   );
 
   final emojis = emojiRegex.allMatches(text).map((m) => m.group(0)!).toList();
-  
+
   if (emojis.isEmpty) return null;
-  
+
   // Limit to 3 emojis
   return emojis.take(3).join();
 }

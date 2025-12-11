@@ -8,6 +8,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -79,10 +80,12 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
   LatLng? _initialPosition;
   double _initialZoom = 13.0;
   LatLngBounds? _routeBounds;
+  late LocationApi _locationApi;
 
   @override
   void initState() {
     super.initState();
+    _locationApi = LocationApi(getContextCallBack: () => context);
   }
 
   @override
@@ -150,7 +153,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         travelTime = Duration(milliseconds: tile.travelTimeBefore!.toInt());
       }
 
-      _routeStops.add(RouteStop(
+      final routeStop = RouteStop(
         order: i + 1,
         tile: tile,
         location: latLng,
@@ -160,7 +163,18 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         travelMode: travelMode,
         hasAddress: hasAddress,
         locationType: locationType,
-      ));
+      );
+
+      _routeStops.add(routeStop);
+
+      // Check if physical location has (0,0) coordinates and has an address
+      if (locationType == LocationType.physical &&
+          latLng != null &&
+          latLng.latitude == 0.0 &&
+          latLng.longitude == 0.0 &&
+          hasAddress) {
+        _geocodeAddressInBackground(i, tile);
+      }
     }
 
     // Set initial position and calculate bounds
@@ -172,6 +186,60 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  /// Geocode address in the background and update the route stop location
+  Future<void> _geocodeAddressInBackground(
+      int stopIndex, SubCalendarEvent tile) async {
+    try {
+      final address = tile.addressDescription ?? tile.address;
+      if (address == null || address.isEmpty) return;
+
+      final locations = await _locationApi.getLocationsByName(
+        address,
+        includeMapSearch: true,
+        includeLocationParams: true,
+      );
+
+      if (locations.isNotEmpty && mounted) {
+        final location = locations.first;
+        if (location.latitude != null &&
+            location.longitude != null &&
+            location.latitude! != 0.0 &&
+            location.longitude! != 0.0) {
+          final newLatLng = LatLng(location.latitude!, location.longitude!);
+
+          // Update the route stop with the new coordinates
+          if (stopIndex < _routeStops.length) {
+            final oldStop = _routeStops[stopIndex];
+            _routeStops[stopIndex] = RouteStop(
+              order: oldStop.order,
+              tile: oldStop.tile,
+              location: newLatLng,
+              label: oldStop.label,
+              travelTimeFromPrevious: oldStop.travelTimeFromPrevious,
+              travelMode: oldStop.travelMode,
+              hasAddress: oldStop.hasAddress,
+              locationType: oldStop.locationType,
+            );
+
+            // Rebuild markers and polylines with updated location
+            setState(() {
+              _buildMarkersAndPolylines();
+              _calculateInitialCameraPosition();
+            });
+
+            // If this is the first update, refit the map
+            if (_mapController != null) {
+              Future.delayed(const Duration(milliseconds: 300), _fitMapToRoute);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail - this is a background operation
+      print('Background geocoding failed for tile ${tile.id}: $e');
+    }
   }
 
   /// Check if tile has either valid coordinates or an address
