@@ -27,6 +27,25 @@ IconData _getLocationIconForAddress(String address) {
   }
 }
 
+/// Extract and sanitize emojis from text
+/// Returns up to 3 emojis, filtering out non-emoji characters
+String? _sanitizeEmojis(String? text) {
+  if (text == null || text.isEmpty) return null;
+
+  // Emoji regex pattern - matches emoji characters including skin tones and ZWJ sequences
+  final emojiRegex = RegExp(
+    r'(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)',
+    unicode: true,
+  );
+
+  final emojis = emojiRegex.allMatches(text).map((m) => m.group(0)!).toList();
+  
+  if (emojis.isEmpty) return null;
+  
+  // Limit to 3 emojis
+  return emojis.take(3).join();
+}
+
 /// RSVP status styling configuration
 class RsvpStyleConfig {
   final double opacity;
@@ -459,11 +478,11 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                               // Tile name with optional emoji
                               Row(
                                 children: [
-                                  // Show emoji before name if available
-                                  if (widget.subEvent.emojis?.isNotEmpty ==
-                                      true) ...[
+                                  // Show emoji before name if available (max 3 emojis)
+                                  if (_sanitizeEmojis(widget.subEvent.emojis) !=
+                                      null) ...[
                                     Text(
-                                      widget.subEvent.emojis!,
+                                      _sanitizeEmojis(widget.subEvent.emojis)!,
                                       style: const TextStyle(fontSize: 20),
                                     ),
                                     const SizedBox(width: 8),
@@ -897,9 +916,9 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final durationMinutes = widget.subEvent.duration.inMinutes;
     final hour = startTime.hour;
 
-    // Check if tile has emojis to display
-    final hasEmojis = widget.subEvent.emojis?.isNotEmpty == true;
-    final emojis = widget.subEvent.emojis;
+    // Check if tile has emojis to display (sanitized, max 3 emojis)
+    final emojis = _sanitizeEmojis(widget.subEvent.emojis);
+    final hasEmojis = emojis != null;
 
     // Determine icon and display name based on time of day and duration
     final breakConfig = _getProcrastinateDisplayConfig(
@@ -983,7 +1002,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(
-                                    emojis!,
+                                    emojis,
                                     style: const TextStyle(fontSize: 22),
                                   ),
                                 )

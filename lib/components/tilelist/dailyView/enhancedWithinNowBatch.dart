@@ -566,6 +566,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       },
       child: CustomScrollView(
         controller: _scrollController,
+        shrinkWrap: true,
         physics: _isEmptyDay
             ? const NeverScrollableScrollPhysics()
             : const AlwaysScrollableScrollPhysics(),
@@ -583,6 +584,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           // Rest of the content
           SliverToBoxAdapter(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ...scrollableContent,
                 const SizedBox(height: 8),
