@@ -1198,6 +1198,22 @@
         },
         "autoResolve": "Auto-resolve",
         "untitledTile": "Untitled Tile",
+        "untitledEvent": "Untitled",
+        "extendedEventSingular": "1 Extended Event",
+        "extendedEventsPlural": "{count} Extended Events",
+        "@extendedEventsPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "extendedEventsTapToView": "Tap to view all-day and long events",
+        "extendedEventsTitle": "Extended Events",
+        "extendedEventsSubtitle": "{count, plural, =1{1 event over 16 hours} other{{count} events over 16 hours}}",
+        "@extendedEventsSubtitle": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
         "todaysRoute": "Today's Route",
         "noLocationsToday": "No locations today",
         "addLocationsToSeeTodaysRoute": "Add locations to your tiles to see your daily route",

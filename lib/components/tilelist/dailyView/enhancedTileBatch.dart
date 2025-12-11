@@ -10,6 +10,7 @@ import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -214,9 +215,19 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     final now = DateTime.now();
     Set<int> displayedHours = {};
 
-    // First, detect conflict groups
+    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
+    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+    final regularTiles = orderedTiles.where((tile) {
+      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
+        final duration = tile.end! - tile.start!;
+        return duration < minDurationMs;
+      }
+      return true;
+    }).toList();
+
+    // First, detect conflict groups (only from regular tiles)
     final subCalendarEvents =
-        orderedTiles.whereType<SubCalendarEvent>().toList();
+        regularTiles.whereType<SubCalendarEvent>().toList();
     final conflictGroups = widget.showConflictAlerts
         ? ConflictGroup.detectGroups(subCalendarEvents)
         : <ConflictGroup>[];
@@ -232,8 +243,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     // Track which conflict groups have been rendered
     Set<int> renderedConflictGroups = {};
 
-    for (int i = 0; i < orderedTiles.length; i++) {
-      final tile = orderedTiles[i];
+    for (int i = 0; i < regularTiles.length; i++) {
+      final tile = regularTiles[i];
       final tileHour = tile.startTime.hour;
       final isCurrentHour = tile.startTime.day == now.day &&
           tile.startTime.month == now.month &&
@@ -318,11 +329,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
 
       // Add travel connector to next non-conflicting tile
-      if (i < orderedTiles.length - 1 && widget.showTravelConnectors) {
+      if (i < regularTiles.length - 1 && widget.showTravelConnectors) {
         // Find the next non-conflicting tile
         TilerEvent? nextTile;
-        for (int j = i + 1; j < orderedTiles.length; j++) {
-          final candidate = orderedTiles[j];
+        for (int j = i + 1; j < regularTiles.length; j++) {
+          final candidate = regularTiles[j];
           if (candidate is SubCalendarEvent &&
               tilesInConflictGroups.contains(candidate.uniqueId)) {
             continue; // Skip tiles in conflict groups
@@ -474,10 +485,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
     }
 
-    // Detect and show conflicts
+    // Detect and show conflicts (excluding extended tiles)
     if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
+      // Filter out extended tiles before detecting conflicts
+      const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+      final regularTiles = renderedTiles.values.where((tile) {
+        if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
+          final duration = tile.end! - tile.start!;
+          return duration < minDurationMs;
+        }
+        return true;
+      }).toList();
+
       final subCalendarEvents =
-          renderedTiles.values.whereType<SubCalendarEvent>().toList();
+          regularTiles.whereType<SubCalendarEvent>().toList();
       _detectedConflicts = ConflictGroup.detectGroups(subCalendarEvents);
 
       if (_detectedConflicts.isNotEmpty) {
@@ -487,6 +508,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
             onTap: () {
               // Could show a modal with all conflicts
             },
+          ),
+        );
+      }
+    }
+
+    // Detect and show extended/all-day tiles
+    if (renderedTiles.isNotEmpty) {
+      final extendedTiles = ExtendedTilesBanner.detectExtendedTiles(
+          renderedTiles.values.toList());
+
+      if (extendedTiles.isNotEmpty) {
+        childrenColumnWidgets.add(
+          ExtendedTilesBanner(
+            extendedTiles: extendedTiles,
           ),
         );
       }
