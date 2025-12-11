@@ -456,9 +456,18 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
 
                               const SizedBox(height: 10),
 
-                              // Tile name
+                              // Tile name with optional emoji
                               Row(
                                 children: [
+                                  // Show emoji before name if available
+                                  if (widget.subEvent.emojis?.isNotEmpty ==
+                                      true) ...[
+                                    Text(
+                                      widget.subEvent.emojis!,
+                                      style: const TextStyle(fontSize: 20),
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
                                   Expanded(
                                     child: Text(
                                       widget.subEvent.name ?? '',
@@ -888,6 +897,10 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final durationMinutes = widget.subEvent.duration.inMinutes;
     final hour = startTime.hour;
 
+    // Check if tile has emojis to display
+    final hasEmojis = widget.subEvent.emojis?.isNotEmpty == true;
+    final emojis = widget.subEvent.emojis;
+
     // Determine icon and display name based on time of day and duration
     final breakConfig = _getProcrastinateDisplayConfig(
       durationMinutes: durationMinutes,
@@ -896,6 +909,12 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     );
     final IconData breakIcon = breakConfig.icon;
     final String displayName = breakConfig.displayName;
+
+    print('Is Emoji found: ${widget.subEvent.emojis}');
+
+    if (hasEmojis) {
+      print(widget.subEvent.emojis);
+    }
 
     return GestureDetector(
       onTap: widget.onTap ??
@@ -952,21 +971,35 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Time range with icon
+                          // Time range with icon or emoji
                           Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(10),
+                              // Show emoji if available, otherwise show icon
+                              if (hasEmojis)
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.25),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    emojis!,
+                                    style: const TextStyle(fontSize: 22),
+                                  ),
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Icon(
+                                    breakIcon,
+                                    size: 20,
+                                    color: textColor,
+                                  ),
                                 ),
-                                child: Icon(
-                                  breakIcon,
-                                  size: 20,
-                                  color: textColor,
-                                ),
-                              ),
                               const SizedBox(width: 12),
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1006,7 +1039,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              widget.subEvent.duration.toHumanLocalized(context),
+                              widget.subEvent.duration
+                                  .toHumanLocalized(context),
                               style: TextStyle(
                                 fontFamily: TileTextStyles.rubikFontName,
                                 fontSize: 12,
@@ -1021,7 +1055,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                       // Show original tile name if different from auto-generated display name
                       if (widget.subEvent.name != null &&
                           widget.subEvent.name!.isNotEmpty &&
-                          widget.subEvent.name!.toLowerCase() != displayName.toLowerCase()) ...[
+                          widget.subEvent.name!.toLowerCase() !=
+                              displayName.toLowerCase()) ...[
                         const SizedBox(height: 12),
                         Text(
                           widget.subEvent.name!,
