@@ -293,5 +293,14 @@
     "noLocationAvailable": "Sin ubicación",
     "seeTodaysRoute": "Ver ruta de hoy",
     "joinMeeting": "Unirse a la reunión",
-    "openLink": "Abrir enlace"
+    "openLink": "Abrir enlace",
+    "procrastinateBlockOut": "Descanso",
+    "lunchBreak": "Hora del Almuerzo",
+    "coffeeBreak": "Pausa para Café",
+    "morningBreak": "Pausa Matutina",
+    "afternoonBreak": "Pausa Vespertina",
+    "freeTime": "Tiempo Libre",
+    "quickBreak": "Pausa Rápida",
+    "shortBreak": "Pausa Corta",
+    "blockedTime": "Tiempo Bloqueado"
 }

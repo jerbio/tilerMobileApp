@@ -171,11 +171,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   /// Build the appropriate tile widget with expandable playback controls
   Widget _buildTileWidget(TilerEvent tile) {
     if (tile is SubCalendarEvent) {
-      // Check for procrastinate/break tiles using the isProcrastinate flag
-      if (tile.isProcrastinate == true) {
-        return LunchTileCard(subEvent: tile);
-      }
-      // Use EnhancedTileCard which now includes expandable playback controls
+      // EnhancedTileCard handles all tile types including procrastinate/break tiles
       return EnhancedTileCard(subEvent: tile);
     }
     return TileWidget(tile);

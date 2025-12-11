@@ -91,6 +91,17 @@ class RsvpStyleConfig {
   }
 }
 
+/// Configuration for procrastinate tile display
+class _ProcrastinateDisplayConfig {
+  final IconData icon;
+  final String displayName;
+
+  const _ProcrastinateDisplayConfig({
+    required this.icon,
+    required this.displayName,
+  });
+}
+
 /// Get icon for third-party calendar source
 IconData? _getSourceIcon(TileSource? source) {
   switch (source) {
@@ -145,6 +156,9 @@ class EnhancedTileCard extends StatefulWidget {
 
 class _EnhancedTileCardState extends State<EnhancedTileCard> {
   bool _isExpanded = false;
+
+  /// Check if the tile is a procrastinate/break tile
+  bool get _isProcrastinate => widget.subEvent.isProcrastinate == true;
 
   /// Check if the tile has any playback actions to show
   /// Based on the logic in PlayBack widget
@@ -226,6 +240,11 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
 
   @override
   Widget build(BuildContext context) {
+    // Render procrastinate/break tiles with special styling
+    if (_isProcrastinate) {
+      return _buildProcrastinateTile(context);
+    }
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -777,6 +796,315 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Configuration for procrastinate tile display (icon and name)
+  /// Uses duration and time of day to determine appropriate display - no string matching
+  /// since tile names may be internationalized
+  _ProcrastinateDisplayConfig _getProcrastinateDisplayConfig({
+    required int durationMinutes,
+    required int hour,
+    required BuildContext context,
+  }) {
+    IconData icon;
+    String displayName;
+
+    // Use time of day and duration for smart naming (no string matching for i18n support)
+    if (hour >= 11 && hour <= 14 && durationMinutes >= 30) {
+      // Lunch time window (11am-2pm) with substantial duration
+      icon = Icons.restaurant_outlined;
+      displayName = AppLocalizations.of(context)!.lunchBreak;
+    } else if (hour >= 6 && hour <= 9) {
+      // Morning break
+      icon = Icons.free_breakfast_outlined;
+      displayName = AppLocalizations.of(context)!.morningBreak;
+    } else if (hour >= 14 && hour <= 17) {
+      // Afternoon break
+      if (durationMinutes <= 15) {
+        icon = Icons.coffee_outlined;
+        displayName = AppLocalizations.of(context)!.coffeeBreak;
+      } else {
+        icon = Icons.free_breakfast_outlined;
+        displayName = AppLocalizations.of(context)!.afternoonBreak;
+      }
+    } else if (hour >= 17 || hour < 6) {
+      // Evening/night - free time or rest
+      icon = Icons.weekend_outlined;
+      displayName = AppLocalizations.of(context)!.freeTime;
+    } else {
+      // Default based on duration (mid-morning 9am-11am)
+      if (durationMinutes <= 15) {
+        icon = Icons.coffee_outlined;
+        displayName = AppLocalizations.of(context)!.quickBreak;
+      } else if (durationMinutes <= 30) {
+        icon = Icons.free_breakfast_outlined;
+        displayName = AppLocalizations.of(context)!.shortBreak;
+      } else if (durationMinutes <= 60) {
+        icon = Icons.weekend_outlined;
+        displayName = AppLocalizations.of(context)!.freeTime;
+      } else {
+        icon = Icons.event_available_outlined;
+        displayName = AppLocalizations.of(context)!.blockedTime;
+      }
+    }
+
+    return _ProcrastinateDisplayConfig(icon: icon, displayName: displayName);
+  }
+
+  /// Build a special card for procrastinate/break tiles
+  /// These tiles are used for blocking out time (breaks, pomodoro, free time, etc.)
+  Widget _buildProcrastinateTile(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isCurrent = widget.subEvent.isCurrentTimeWithin;
+
+    // Get tile colors - use tile's color or default to a calm blue/teal
+    final redColor = widget.subEvent.colorRed ?? 100;
+    final greenColor = widget.subEvent.colorGreen ?? 180;
+    final blueColor = widget.subEvent.colorBlue ?? 200;
+    final tileColor = Color.fromRGBO(redColor, greenColor, blueColor, 1);
+
+    // Determine text colors based on brightness
+    final hslColor = HSLColor.fromColor(tileColor);
+    final isLightBackground = hslColor.lightness > 0.5;
+    final textColor = isLightBackground ? Colors.black87 : Colors.white;
+    final secondaryTextColor =
+        isLightBackground ? Colors.black54 : Colors.white.withOpacity(0.8);
+
+    // Format time range
+    final startTime = widget.subEvent.startTime;
+    final endTime = widget.subEvent.endTime;
+    final startFormatted = MaterialLocalizations.of(context)
+        .formatTimeOfDay(TimeOfDay.fromDateTime(startTime));
+    final endFormatted = MaterialLocalizations.of(context)
+        .formatTimeOfDay(TimeOfDay.fromDateTime(endTime));
+    final timeRange = '$startFormatted - $endFormatted';
+
+    final durationMinutes = widget.subEvent.duration.inMinutes;
+    final hour = startTime.hour;
+
+    // Determine icon and display name based on time of day and duration
+    final breakConfig = _getProcrastinateDisplayConfig(
+      durationMinutes: durationMinutes,
+      hour: hour,
+      context: context,
+    );
+    final IconData breakIcon = breakConfig.icon;
+    final String displayName = breakConfig.displayName;
+
+    return GestureDetector(
+      onTap: widget.onTap ??
+          () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditTile(
+                  tileId: widget.subEvent.id ?? "",
+                  tileSource: widget.subEvent.thirdpartyType,
+                  thirdPartyUserId: widget.subEvent.thirdPartyUserId,
+                ),
+              ),
+            );
+          },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: tileColor.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  hslColor
+                      .withLightness((hslColor.lightness + 0.08).clamp(0, 1))
+                      .toColor(),
+                  tileColor,
+                  hslColor
+                      .withLightness((hslColor.lightness - 0.05).clamp(0, 1))
+                      .toColor(),
+                ],
+              ),
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Top row: Time range + Duration
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Time range with icon
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  breakIcon,
+                                  size: 20,
+                                  color: textColor,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    displayName,
+                                    style: TextStyle(
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: secondaryTextColor,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    timeRange,
+                                    style: TextStyle(
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          // Duration badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              widget.subEvent.duration.toHumanLocalized(context),
+                              style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: textColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Show original tile name if different from auto-generated display name
+                      if (widget.subEvent.name != null &&
+                          widget.subEvent.name!.isNotEmpty &&
+                          widget.subEvent.name!.toLowerCase() != displayName.toLowerCase()) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          widget.subEvent.name!,
+                          style: TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+
+                      // Time scrub for current tile
+                      if (isCurrent) ...[
+                        const SizedBox(height: 12),
+                        TimeScrubWidget(
+                          timeline: widget.subEvent,
+                          loadTimeScrub: true,
+                          isTardy: false,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                // Expand/collapse button (only show if there are actions)
+                if (_hasPlaybackActions())
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isExpanded = !_isExpanded;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.1),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _isExpanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            size: 20,
+                            color: textColor.withOpacity(0.7),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isExpanded
+                                ? AppLocalizations.of(context)!.hideActions
+                                : AppLocalizations.of(context)!.actions,
+                            style: TextStyle(
+                              fontFamily: TileTextStyles.rubikFontName,
+                              fontSize: 11,
+                              color: textColor.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // Expandable playback controls
+                if (_hasPlaybackActions())
+                  AnimatedCrossFade(
+                    firstChild: const SizedBox.shrink(),
+                    secondChild: Container(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                      ),
+                      child: PlayBack(widget.subEvent),
+                    ),
+                    crossFadeState: _isExpanded
+                        ? CrossFadeState.showSecond
+                        : CrossFadeState.showFirst,
+                    duration: const Duration(milliseconds: 200),
+                  ),
+              ],
             ),
           ),
         ),
