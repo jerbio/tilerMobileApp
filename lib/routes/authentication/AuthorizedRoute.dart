@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,8 +22,10 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
@@ -30,6 +33,7 @@ import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/chat.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -78,6 +82,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     previewApi = PreviewApi(getContextCallBack: () {
       return this.context;
     });
+
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
@@ -394,7 +399,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildPreviewFloatingActionButton() {
     return FloatingActionButton(
       backgroundColor: colorScheme.surface,
       onPressed: () {
@@ -420,7 +425,152 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
     );
   }
+  Widget _buildChatFloatingActionButton() {
+    return Padding(
+      padding: EdgeInsets.only(left: 30),
+      child: FloatingActionButton(
+        backgroundColor: colorScheme.surface,
+        //test get actions
+        // onPressed: () async {
+        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
+        //     return this.context;
+        //   });
+        //   //single
+        //   final actions = await chatApi.getActions([
+        //     "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBA2Y1NVPK7S7CP4KV",
+        //   ]);
+        //   //multiple
+        //   // final actions = await chatApi.getActions([
+        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBA2Y1NVPK7S7CP4KV",
+        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBDDRGKQVBJJ53CQZN",
+        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBMWHXYW3YWVVAPR2E"
+        //   // ]);
+        //
+        //   for (var action in actions) {
+        //     print("Action: ${action.descriptions} - Status: ${action.status}");
+        //   }
+        // },
+        // onPressed: () async{
+        //   //to get vibe session
+        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
+        //     return this.context;
+        //   });
+        //   final sessions = await chatApi.getVibeSessions();
+        //   if (sessions.isNotEmpty) {
+        //     sessions.sort((a, b) => b.creationTimeInMs.compareTo(a.creationTimeInMs));
+        //     final latestSession = sessions.first;
+        //     // print("Lastest Viber sesssion is ${latestSession.id}");
+        //     final messages = await chatApi.getMessages(latestSession.id);
+        //     for (var msg in messages) {
+        //       print("${msg.origin.name}: ${msg.content}");
+        //     }
+        //   }
+        // },
+        onPressed: () async {
+          ChatApi chatApi = ChatApi(getContextCallBack: () {
+            return this.context;
+          });
 
+          final sessions = await chatApi.getVibeSessions();
+          if (sessions.isNotEmpty && sessions !=null) {
+            sessions.sort((a, b) => b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
+            final latestSession = sessions.first;
+            //print("Latest session ${latestSession.id}\n");
+            final messages = await chatApi.getMessages(latestSession.id!);
+
+            // Extract IDS from msgs
+            final uniqueActionIds = <String>{};
+            for (var msg in messages) {
+              if (msg.actionIds != null) {
+                uniqueActionIds.addAll(msg.actionIds!);
+              }
+            }
+
+            if (uniqueActionIds.isEmpty) return;
+
+
+            final actionIdsList = uniqueActionIds.toList();
+
+            //start batching
+            //I'm planning to batch msgs so review if this batch is needed after batching msgs
+            const batchSize = 10;
+            final allActions = <VibeAction>[];
+
+            if (actionIdsList.length > batchSize) {
+              for (int i = 0; i < actionIdsList.length; i += batchSize) {
+                final end = (i + batchSize < actionIdsList.length) ? i + batchSize : actionIdsList.length;
+                final batch = actionIdsList.sublist(i, end);
+                final batchActions = await chatApi.getActions(batch);
+                allActions.addAll(batchActions);
+              }
+            } else {
+              final actions = await chatApi.getActions(actionIdsList);
+              allActions.addAll(actions);
+            }
+
+            final actionsMap = {
+              for (var action in allActions)
+                action.id: action
+            };
+            for (var msg in messages) {
+              print("${msg.origin!.name}: ${msg.content}");
+
+              if (msg.actionIds != null) {
+                for (var actionId in msg.actionIds!) {
+                  final action = actionsMap[actionId];
+                  if (action != null) {
+                    print("  → ${action.descriptions} [${action.status}]");
+                  }
+                }
+              }
+              print("");
+            }
+            final vibeResponse = await chatApi.sendChatMessage(
+                "Create a tile commit chat  services and model",
+                latestSession.id
+            );
+            String? newRequestId;
+            if (vibeResponse.prompts != null && vibeResponse.prompts!.isNotEmpty) {
+              final promptsList = vibeResponse.prompts!.values.toList();
+              print(vibeResponse.prompts!.values.last.content);
+              newRequestId = promptsList.last.requestId;
+            }
+            bool shouldShowButton = false;
+            if (newRequestId != null) {
+              try {
+                final vibeRequest = await chatApi.getVibeRequest(newRequestId);
+                shouldShowButton = vibeRequest?.isClosed != true;
+              } catch (e) {
+                print("Error getting vibeRequest: $e");
+              }
+            }
+            print("\n==========================");
+            if (shouldShowButton) {
+              print("┌──────────────┐");
+              print("│   [Action]   │");
+              print("└──────────────┘");
+            }
+            print("==========================\n");
+          }
+        },
+        child: Icon(
+          Icons.chat_outlined,
+          color: colorScheme.primary, // Match icon color
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButtons(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildChatFloatingActionButton(),
+        _buildPreviewFloatingActionButton(),
+      ],
+    );
+
+}
   Widget renderAuthorizedUserPageView() {
     //ey: dayStatusWidget not used
     //ey: never added to widget tree
@@ -477,7 +627,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton:_buildFloatingActionButtons(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
