@@ -663,7 +663,7 @@ class Utility {
           : false;
       List<String> descriptions = autoTileParam['descriptions'];
       List<Duration> durations = autoTileParam['durations'];
-      List<String> imageAsset = autoTileParam['assets'];
+      List<String> imageAsset = autoTileParam['assets'] ?? [];
 
       for (int descriptionIndex = 0;
           descriptionIndex < descriptions.length;
@@ -850,9 +850,6 @@ class Utility {
     orderedByStart.sort((eachTileBatchA, eachTileBatchB) =>
         eachTileBatchA.start!.compareTo(eachTileBatchB.start!));
     List<TilerEvent> AllSubEvents_List = orderedByStart.toList();
-
-    Map<TimeRange, List<TimeRange>> subEventToConflicting =
-        new Map<TimeRange, List<TimeRange>>();
 
     for (int i = 0; i < AllSubEvents_List.length && i >= 0; i++) {
       TilerEvent refSubCalendarEvent = AllSubEvents_List[i];

@@ -1,9 +1,9 @@
 import 'dart:io';
 
-const bool isProduction = true;
+const bool isProduction = false;
 const bool isDebug = !isProduction;
 // const bool isDebug = true;
-const bool isStaging = true;
+const bool isStaging = false;
 const bool isRemote = true;
 const prodDomain = 'tiler.app';
 const stagingDomain = 'tiler-stage.conveyor.cloud';

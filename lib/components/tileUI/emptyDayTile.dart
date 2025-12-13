@@ -27,7 +27,7 @@ class EmptyDayTileState extends State<EmptyDayTile> {
   final AppinioSwiperController controller = AppinioSwiperController();
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     Map<int, List<AutoTile>> autoTilesByDuration =
@@ -35,13 +35,14 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     emptyDayIndex = this.widget.dayIndex ??
         Utility.getDayIndex(this.widget.deadline ?? Utility.currentTime());
     int daySeed = emptyDayIndex;
-    int durationInMs =
-        autoTilesByDuration.keys.toList().getRandomize(seed: daySeed).first;
-    List<AutoTile> autoTilesWithDuplicateCategory =
-        autoTilesByDuration[durationInMs]!
+    int durationInMs = autoTilesByDuration.keys
+            .toList()
             .getRandomize(seed: daySeed)
-            .cast<AutoTile>()
-            .toList();
+            .firstOrNull ??
+        0;
+    List<AutoTile> autoTilesWithDuplicateCategory =
+        autoTilesByDuration[durationInMs] ??
+            [].getRandomize(seed: daySeed).cast<AutoTile>().toList();
     Map<String, AutoTile> categoryIds = {};
     autoTiles = <AutoTile>[];
     for (var eachAutoTile in autoTilesWithDuplicateCategory) {
@@ -54,12 +55,13 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     super.initState();
     this.disableTileListCarousel();
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   void disableTileListCarousel() {
@@ -114,17 +116,15 @@ class EmptyDayTileState extends State<EmptyDayTile> {
               dayIndex > this.emptyDayIndex
                   ? Icon(
                       Icons.arrow_right_outlined,
-                      color:colorScheme.primary,
+                      color: colorScheme.primary,
                     )
-                  : Icon(Icons.arrow_left_outlined,
-                      color: colorScheme.primary),
+                  : Icon(Icons.arrow_left_outlined, color: colorScheme.primary),
               Text(
                 DateFormat('d MMM').format(Utility.getTimeFromIndex(dayIndex)),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                     fontFamily: TileTextStyles.rubikFontName,
-                    color: colorScheme.primary
-                ),
+                    color: colorScheme.primary),
               )
             ],
           ),
@@ -149,7 +149,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
               Center(
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border.all(color: colorScheme.onInverseSurface, width: 2),
+                    border: Border.all(
+                        color: colorScheme.onInverseSurface, width: 2),
                     borderRadius: BorderRadius.circular(20),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -158,7 +159,9 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                         colorScheme.primary.withValues(alpha: 0.75),
                         colorScheme.primary
                             .withLightness(
-                            HSLColor.fromColor(colorScheme.primary).lightness + .2)
+                                HSLColor.fromColor(colorScheme.primary)
+                                        .lightness +
+                                    .2)
                             .withValues(alpha: 0.75),
                       ],
                     ),
@@ -187,154 +190,159 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               child: Text(
                                 AppLocalizations.of(context)!.addTile,
                                 style: TextStyle(
-                                    fontSize: 45,
-                                    color: colorScheme.onPrimary
-                                ),
+                                    fontSize: 45, color: colorScheme.onPrimary),
                               ),
                             )
                           ],
                         ),
-                      )
-                  ),
+                      )),
                 ),
               ),
-              AppinioSwiper(
-                controller: controller,
-                cardCount: cardData.length,
-                onSwipeEnd: (previousIndex, index, activity) {
-                  index = index - 1;
-                  if (index == -1 || index >= cardData.length) {
-                    return;
-                  }
+              cardData.isEmpty
+                  ? SizedBox.shrink()
+                  : AppinioSwiper(
+                      controller: controller,
+                      cardCount: cardData.length,
+                      onSwipeEnd: (previousIndex, index, activity) {
+                        index = index - 1;
+                        if (index == -1 || index >= cardData.length) {
+                          return;
+                        }
 
-                  AutoTile autoTile = autoTiles[index];
-                  if (autoTile.isLastCard) {
-                    return;
-                  }
-                  switch (activity) {
-                    case Swipe():
-                      if (activity.direction == AxisDirection.right) {
-                        AnalysticsSignal.send('AUTO_TILE_ADD', additionalInfo: {
-                          'description': autoTile.description,
-                          'duration': autoTile.duration?.inMilliseconds ?? -1
-                        });
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => AddTile(
-                                    preTile: autoTile,
-                                    autoDeadline: this.widget.deadline)));
-                      }
+                        AutoTile autoTile = autoTiles[index];
+                        if (autoTile.isLastCard ||
+                            autoTile.image == null ||
+                            autoTile.image!.isEmpty) {
+                          return;
+                        }
+                        switch (activity) {
+                          case Swipe():
+                            if (activity.direction == AxisDirection.right) {
+                              AnalysticsSignal.send('AUTO_TILE_ADD',
+                                  additionalInfo: {
+                                    'description': autoTile.description,
+                                    'duration':
+                                        autoTile.duration?.inMilliseconds ?? -1
+                                  });
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => AddTile(
+                                          preTile: autoTile,
+                                          autoDeadline: this.widget.deadline)));
+                            }
 
-                      break;
-                    case Unswipe():
-                      break;
-                    case CancelSwipe():
-                      break;
-                    case DrivenActivity():
-                      break;
-                  }
-                },
-                swipeOptions: SwipeOptions.only(left: true, right: true),
-                cardBuilder: (BuildContext context, int index) {
-                  AutoTile autoTile = autoTiles[index];
+                            break;
+                          case Unswipe():
+                            break;
+                          case CancelSwipe():
+                            break;
+                          case DrivenActivity():
+                            break;
+                        }
+                      },
+                      swipeOptions: SwipeOptions.only(left: true, right: true),
+                      cardBuilder: (BuildContext context, int index) {
+                        AutoTile autoTile = autoTiles[index];
 
-                  return Container(
-                    child: Column(
-                      children: [
-                        Expanded(
-                            child: ClipRRect(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(8),
-                                  topRight: Radius.circular(8),
-                                ),
-                                child: Image.asset(
-                                  autoTile.image!,
-                                  fit: BoxFit.cover,
-                                ))),
-                        FractionallySizedBox(
-                          alignment: FractionalOffset.center,
-                          widthFactor: 1,
-                          child: Container(
-                            height: 125,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.only(
-                                  bottomLeft: Radius.circular(10),
-                                  bottomRight: Radius.circular(10)
-                              ),
-                              color: colorScheme.surfaceContainerLowest,
-                              boxShadow: [
-                                BoxShadow(
-                                  color:  tileThemeExtension.shadowEmptyTile.withValues(alpha: 0.2),
-                                  spreadRadius: 1,
-                                  blurRadius: 1,
-                                  blurStyle: BlurStyle.normal,
-                                  offset: Offset(0, 1),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 10, 20, 0),
-                                        child: Text(
-                                          autoTile.description ?? "",
-                                          style: TileTextStyles.fullScreenTextFieldStyle
+                        return Container(
+                          child: Column(
+                            children: [
+                              Expanded(
+                                  child: ClipRRect(
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(8),
+                                        topRight: Radius.circular(8),
+                                      ),
+                                      child: Image.asset(
+                                        autoTile.image!,
+                                        fit: BoxFit.cover,
+                                      ))),
+                              FractionallySizedBox(
+                                alignment: FractionalOffset.center,
+                                widthFactor: 1,
+                                child: Container(
+                                  height: 125,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.only(
+                                        bottomLeft: Radius.circular(10),
+                                        bottomRight: Radius.circular(10)),
+                                    color: colorScheme.surfaceContainerLowest,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: tileThemeExtension
+                                            .shadowEmptyTile
+                                            .withValues(alpha: 0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 1,
+                                        blurStyle: BlurStyle.normal,
+                                        offset: Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          padding: EdgeInsets.fromLTRB(
+                                              20, 10, 20, 0),
+                                          child: Text(
+                                              autoTile.description ?? "",
+                                              style: TileTextStyles
+                                                  .fullScreenTextFieldStyle),
                                         ),
-                                    ),
+                                      ),
+                                      Flexible(
+                                          child: Container(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  20, 10, 20, 10),
+                                              child: Text(
+                                                autoTile.isLastCard
+                                                    ? '   '
+                                                    : (autoTile.duration
+                                                            ?.toHuman ??
+                                                        ''),
+                                                style: TextStyle(
+                                                    color: tileThemeExtension
+                                                        .onSurfaceVariantSecondary,
+                                                    fontSize: 16,
+                                                    fontFamily: TileTextStyles
+                                                        .rubikFontName,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              ))),
+                                      Flexible(
+                                          child: Container(
+                                              padding: EdgeInsets.fromLTRB(
+                                                  20, 0, 20, 0),
+                                              child: Text(
+                                                autoTile.isLastCard
+                                                    ? '   '
+                                                    : '(' +
+                                                        AppLocalizations.of(
+                                                                context)!
+                                                            .swipeRightToTileIt +
+                                                        ')',
+                                                style: TextStyle(
+                                                    color: tileThemeExtension
+                                                        .onSurfaceVariantSecondary,
+                                                    fontSize: 16,
+                                                    fontFamily: TileTextStyles
+                                                        .rubikFontName,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              )))
+                                    ],
+                                  ),
                                 ),
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 10, 20, 10),
-                                        child: Text(
-                                          autoTile.isLastCard
-                                              ? '   '
-                                              : (autoTile.duration?.toHuman ??
-                                                  ''),
-                                          style:TextStyle(
-                                              color: tileThemeExtension.onSurfaceVariantSecondary,
-                                              fontSize: 16,
-                                              fontFamily:
-                                              TileTextStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500
-                                          ),
-                                        )
-                                    )
-                                ),
-                                Flexible(
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(20, 0, 20, 0),
-                                        child: Text(
-                                          autoTile.isLastCard
-                                              ? '   '
-                                              : '(' +
-                                                  AppLocalizations.of(context)!
-                                                      .swipeRightToTileIt +
-                                                  ')',
-                                          style: TextStyle(
-                                              color: tileThemeExtension.onSurfaceVariantSecondary,
-                                              fontSize: 16,
-                                              fontFamily:
-                                              TileTextStyles.rubikFontName,
-                                              fontWeight: FontWeight.w500
-                                          ),
-                                        )
-                                    )
-                                )
-                              ],
-                            ),
+                              )
+                            ],
                           ),
-                        )
-                      ],
-                    ),
-                  );
-                },
-              )
+                        );
+                      },
+                    )
             ],
           ),
         ),
