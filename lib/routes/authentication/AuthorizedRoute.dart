@@ -22,6 +22,7 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
@@ -425,6 +426,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
     );
   }
+
   Widget _buildChatFloatingActionButton() {
     return Padding(
       padding: EdgeInsets.only(left: 30),
@@ -466,92 +468,140 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         //     }
         //   }
         // },
-        onPressed: () async {
-          ChatApi chatApi = ChatApi(getContextCallBack: () {
-            return this.context;
-          });
-
-          final sessions = await chatApi.getVibeSessions();
-          if (sessions.isNotEmpty && sessions !=null) {
-            sessions.sort((a, b) => b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
-            final latestSession = sessions.first;
-            //print("Latest session ${latestSession.id}\n");
-            final messages = await chatApi.getMessages(latestSession.id!);
-
-            // Extract IDS from msgs
-            final uniqueActionIds = <String>{};
-            for (var msg in messages) {
-              if (msg.actionIds != null) {
-                uniqueActionIds.addAll(msg.actionIds!);
-              }
-            }
-
-            if (uniqueActionIds.isEmpty) return;
-
-
-            final actionIdsList = uniqueActionIds.toList();
-
-            //start batching
-            //I'm planning to batch msgs so review if this batch is needed after batching msgs
-            const batchSize = 10;
-            final allActions = <VibeAction>[];
-
-            if (actionIdsList.length > batchSize) {
-              for (int i = 0; i < actionIdsList.length; i += batchSize) {
-                final end = (i + batchSize < actionIdsList.length) ? i + batchSize : actionIdsList.length;
-                final batch = actionIdsList.sublist(i, end);
-                final batchActions = await chatApi.getActions(batch);
-                allActions.addAll(batchActions);
-              }
-            } else {
-              final actions = await chatApi.getActions(actionIdsList);
-              allActions.addAll(actions);
-            }
-
-            final actionsMap = {
-              for (var action in allActions)
-                action.id: action
-            };
-            for (var msg in messages) {
-              print("${msg.origin!.name}: ${msg.content}");
-
-              if (msg.actionIds != null) {
-                for (var actionId in msg.actionIds!) {
-                  final action = actionsMap[actionId];
-                  if (action != null) {
-                    print("  → ${action.descriptions} [${action.status}]");
-                  }
-                }
-              }
-              print("");
-            }
-            final vibeResponse = await chatApi.sendChatMessage(
-                "Create a tile commit chat  services and model",
-                latestSession.id
-            );
-            String? newRequestId;
-            if (vibeResponse.prompts != null && vibeResponse.prompts!.isNotEmpty) {
-              final promptsList = vibeResponse.prompts!.values.toList();
-              print(vibeResponse.prompts!.values.last.content);
-              newRequestId = promptsList.last.requestId;
-            }
-            bool shouldShowButton = false;
-            if (newRequestId != null) {
-              try {
-                final vibeRequest = await chatApi.getVibeRequest(newRequestId);
-                shouldShowButton = vibeRequest?.isClosed != true;
-              } catch (e) {
-                print("Error getting vibeRequest: $e");
-              }
-            }
-            print("\n==========================");
-            if (shouldShowButton) {
-              print("┌──────────────┐");
-              print("│   [Action]   │");
-              print("└──────────────┘");
-            }
-            print("==========================\n");
-          }
+        // onPressed: () async {
+        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
+        //     return this.context;
+        //   });
+        //
+        //   final sessions = await chatApi.getVibeSessions();
+        //   if (sessions.isNotEmpty && sessions !=null) {
+        //     sessions.sort((a, b) =>
+        //         b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
+        //     final latestSession = sessions.first;
+        //     print("Latest session ${latestSession.id}\n");
+        //     final messages = await chatApi.getMessages(latestSession.id!);
+        //
+        //     // Extract IDS from msgs
+        //     final uniqueActionIds = <String>{};
+        //     for (var msg in messages) {
+        //       if (msg.actionIds != null) {
+        //         uniqueActionIds.addAll(msg.actionIds!);
+        //       }
+        //     }
+        //
+        //     if (uniqueActionIds.isEmpty) return;
+        //
+        //
+        //     final actionIdsList = uniqueActionIds.toList();
+        //
+        //     //start batching
+        //     //I'm planning to batch msgs so review if this batch is needed after batching msgs
+        //     const batchSize = 10;
+        //     final allActions = <VibeAction>[];
+        //
+        //     if (actionIdsList.length > batchSize) {
+        //       for (int i = 0; i < actionIdsList.length; i += batchSize) {
+        //         final end = (i + batchSize < actionIdsList.length) ? i +
+        //             batchSize : actionIdsList.length;
+        //         final batch = actionIdsList.sublist(i, end);
+        //         final batchActions = await chatApi.getActions(batch);
+        //         allActions.addAll(batchActions);
+        //       }
+        //     } else {
+        //       final actions = await chatApi.getActions(actionIdsList);
+        //       allActions.addAll(actions);
+        //     }
+        //
+        //     final actionsMap = {
+        //       for (var action in allActions)
+        //         action.id: action
+        //     };
+        //     for (var msg in messages) {
+        //       print("${msg.origin!.name}: ${msg.content}");
+        //
+        //       if (msg.actionIds != null) {
+        //         for (var actionId in msg.actionIds!) {
+        //           final action = actionsMap[actionId];
+        //           if (action != null) {
+        //             print("  → ${action.descriptions} [${action.status}]");
+        //           }
+        //         }
+        //       }
+        //       print("");
+        //     }
+        //     final vibeResponse = await chatApi.sendChatMessage(
+        //         "Create one more tile called cooking weekly food",
+        //         latestSession.id
+        //     );
+        //     String? newRequestId;
+        //     if (vibeResponse != null && vibeResponse.userMessage != null) {
+        //       print("${vibeResponse.userMessage!.origin?.name}: ${vibeResponse
+        //           .userMessage!.content}");
+        //     }
+        //     if (vibeResponse != null && vibeResponse.tilerMessage != null) {
+        //       print("${vibeResponse.tilerMessage!.origin?.name}: ${vibeResponse
+        //           .tilerMessage!.content}");
+        //
+        //       if (vibeResponse.tilerMessage!.actions != null) {
+        //         for (var action in vibeResponse.tilerMessage!.actions!) {
+        //           print("  → ${action.descriptions} [${action.status}]");
+        //         }
+        //       }
+        //
+        //       newRequestId = vibeResponse.tilerMessage!.requestId;
+        //     }
+        //     print("");
+        //
+        //     bool shouldShowButton = false;
+        //     if (newRequestId != null) {
+        //       try {
+        //         final vibeRequest = await chatApi.getVibeRequest(newRequestId);
+        //         shouldShowButton = vibeRequest?.isClosed != true;
+        //       } catch (e) {
+        //         print("Error getting vibeRequest: $e");
+        //       }
+        //     }
+        //     print("\n==========================");
+        //     if (shouldShowButton) {
+        //       print("┌──────────────┐");
+        //       print("│   [Action]   │");
+        //       print("└──────────────┘");
+        //     }
+        //     print("==========================\n");
+        //
+        //     if (shouldShowButton) {
+        //       print("Press 1 to accept actions, or any other key to skip:");
+        //       String userInput = "1";
+        //
+        //       if (userInput == "1" && newRequestId != null) {
+        //         print("\nExecuting actions...");
+        //         try {
+        //           final executedRequest = await chatApi.executeVibeRequest(
+        //             requestId: newRequestId,
+        //           );
+        //
+        //           if (executedRequest != null) {
+        //             print("✓ Actions executed successfully");
+        //             print(
+        //                 "After Schedule ID: ${executedRequest.afterScheduleId ??
+        //                     'N/A'}");
+        //           } else {
+        //             print("✗ Execution returned null");
+        //           }
+        //         } catch (e) {
+        //           print("✗ Error executing actions: $e");
+        //         }
+        //       }
+        //     }
+        //   }
+        // },
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) =>  VibeChat(),
+          );
         },
         child: Icon(
           Icons.chat_outlined,

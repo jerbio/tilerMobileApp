@@ -113,7 +113,6 @@ class ChatApi extends AppApi {
     }
   }
 
-
   Future<List<VibeAction>> getActions(List<String> actionIds) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
@@ -177,8 +176,6 @@ class ChatApi extends AppApi {
     }
   }
 
-
-
   Future<VibeRequest?> getVibeRequest(String requestId) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
@@ -226,7 +223,7 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<VibeResponse> sendChatMessage(String message, String? sessionId) async {
+  Future<VibeResponse?> sendChatMessage(String message, String? sessionId) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -257,8 +254,10 @@ class ChatApi extends AppApi {
         if (response.statusCode == 200 || response.statusCode==60000001) {
           var jsonResult = jsonDecode(response.body);
           //print("checking body ${response.body}");
-          var vibeResponseData = jsonResult['Content']['vibeResponse'];
-          return VibeResponse.fromJson(vibeResponseData);
+          if (jsonResult['Content'] != null && jsonResult['Content']['vibeResponse'] != null) {
+            return VibeResponse.fromJson(jsonResult['Content']['vibeResponse']);
+          }
+          return null;
         } else {
 
           throw TilerError(
@@ -279,12 +278,7 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<Map<String, dynamic>> executeVibeRequest(
-      String requestId,
-      {String? userLongitude,
-        String? userLatitude,
-        String? userLocationVerified}
-      ) async {
+  Future<VibeRequest?> executeVibeRequest({ required String requestId, String? userLongitude, String? userLatitude, String? userLocationVerified}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -317,7 +311,11 @@ class ChatApi extends AppApi {
         //print('Response code: ${response.statusCode}\nResponse: ${response.body}');
 
         if (response.statusCode == 200) {
-          return jsonDecode(response.body);
+          var jsonResult = jsonDecode(response.body);
+          if (jsonResult['Content'] != null && jsonResult['Content']['vibeRequest'] != null) {
+            return VibeRequest.fromJson(jsonResult['Content']['vibeRequest']);
+          }
+          return null;
         } else {
           throw TilerError(Message: 'Server returned ${response.statusCode}');
         }

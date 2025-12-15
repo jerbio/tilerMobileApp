@@ -1,33 +1,41 @@
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
-
 class VibeResponse {
-  final Map<String, VibeMessage>? prompts;
+  final VibeMessage? userMessage;
+  final VibeMessage? tilerMessage;
   final dynamic tilerUser;
 
   VibeResponse({
-    this.prompts,
+    this.userMessage,
+    this.tilerMessage,
     this.tilerUser,
   });
 
   factory VibeResponse.fromJson(Map<String, dynamic> json) {
-    Map<String, VibeMessage>? promptsMap;
+    VibeMessage? user;
+    VibeMessage? tiler;
 
     if (json['prompts'] != null) {
-      promptsMap = {};
       (json['prompts'] as Map<String, dynamic>).forEach((key, value) {
-        promptsMap![key] = VibeMessage.fromJson(value);
+        final msg = VibeMessage.fromJson(value);
+        if (msg.origin?.name == 'user') {
+          user = msg;
+        } else if (msg.origin?.name == 'tiler') {
+          tiler = msg;
+        }
       });
     }
 
     return VibeResponse(
-      prompts: promptsMap,
+      userMessage: user,
+      tilerMessage: tiler,
       tilerUser: json['tilerUser'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'prompts': prompts?.map((key, value) => MapEntry(key, value.toJson())),
+      'userMessage': userMessage?.toJson(),
+      'tilerMessage': tilerMessage?.toJson(),
       'tilerUser': tilerUser,
     };
   }
