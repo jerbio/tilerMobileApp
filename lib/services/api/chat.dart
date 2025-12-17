@@ -53,7 +53,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      //print('Exception in getVibeSessions: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -61,17 +60,16 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<List<VibeMessage>> getMessages(String sessionId) async {
+  Future<List<VibeMessage>> getMessages({required String sessionId,int batchSize = 5, int index = 0}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
         await checkAndReplaceCredentialCache();
-        //eyad
-        //we gonna use parameteres index and batch for batching msgs to avoid any timeout for backend endpoint
-        //while batching be carefull in case of duplicate in msgs since we may get same msgs several times
         String tilerDomain = Constants.tilerDomain;
         Map<String, String> queryParams = {
           'SessionId': sessionId,
+          'batchSize': batchSize.toString(),
+          'index': index.toString(),
         };
         Uri uri = Uri.https(tilerDomain, 'api/Vibe/Chat', queryParams);
 
@@ -83,9 +81,6 @@ class ChatApi extends AppApi {
         }
 
         http.Response response = await http.get(uri, headers: headers);
-        //print('Response code: ${response.statusCode}');
-        //print('Response from getMessages: ${response.body}');
-
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
           if (jsonResult['Content'] != null && jsonResult['Content']['chats'] != null) {
@@ -105,7 +100,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      //print('Exception in getMessages: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -118,20 +112,11 @@ class ChatApi extends AppApi {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
         await checkAndReplaceCredentialCache();
-        // final key = actionIds.length > 1 ? 'ActionIds' : 'ActionId';
-        // final queryParams = <String, String>{};
-        //
-        // for (var id in actionIds) {
-        //   queryParams[key] = id.toString();
-        // }
-
         final queryParams = <String, dynamic>{};
 
         if (actionIds.length == 1) {
-         // print("The used is is ActionId without s");
           queryParams['ActionId'] = actionIds[0];
         } else {
-          //print("The used is is ActionIds with s");
           queryParams['ActionIds'] = actionIds;
         }
         Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Action', queryParams);
@@ -168,7 +153,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception in getActions: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -215,7 +199,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      print('Exception in getVibeRequest: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -250,10 +233,8 @@ class ChatApi extends AppApi {
           body: jsonEncode(requestBody),
         );
 
-        //print('Response code is: ${response.statusCode}\nResponse from sendChatMessage: ${response.body}');
         if (response.statusCode == 200 || response.statusCode==60000001) {
           var jsonResult = jsonDecode(response.body);
-          //print("checking body ${response.body}");
           if (jsonResult['Content'] != null && jsonResult['Content']['vibeResponse'] != null) {
             return VibeResponse.fromJson(jsonResult['Content']['vibeResponse']);
           }
@@ -270,7 +251,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      //print('Exception in sendChatMessage: ${e is TilerError ? e.Message : "Unknown error"}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -308,7 +288,6 @@ class ChatApi extends AppApi {
           body: jsonEncode(requestBody),
         );
 
-        //print('Response code: ${response.statusCode}\nResponse: ${response.body}');
 
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
@@ -325,7 +304,6 @@ class ChatApi extends AppApi {
                 .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
-      //print('Exception: ${e is TilerError ? e.Message : e.toString()}');
       throw TilerError(
           Message: e is TilerError
               ? e.Message
@@ -333,3 +311,4 @@ class ChatApi extends AppApi {
     }
   }
 }
+

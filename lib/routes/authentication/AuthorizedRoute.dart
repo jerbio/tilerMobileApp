@@ -44,6 +44,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
+import '../../bloc/vibeChat/vibe_chat_bloc.dart' show LoadVibeChatSessionEvent, VibeChatBloc;
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -432,180 +433,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       padding: EdgeInsets.only(left: 30),
       child: FloatingActionButton(
         backgroundColor: colorScheme.surface,
-        //test get actions
-        // onPressed: () async {
-        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
-        //     return this.context;
-        //   });
-        //   //single
-        //   final actions = await chatApi.getActions([
-        //     "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBA2Y1NVPK7S7CP4KV",
-        //   ]);
-        //   //multiple
-        //   // final actions = await chatApi.getActions([
-        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBA2Y1NVPK7S7CP4KV",
-        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBDDRGKQVBJJ53CQZN",
-        //   //   "03eef855-d28a-4104-bff7-182c3037a186_vibeaction_1765454288587_01KC6MD5PBMWHXYW3YWVVAPR2E"
-        //   // ]);
-        //
-        //   for (var action in actions) {
-        //     print("Action: ${action.descriptions} - Status: ${action.status}");
-        //   }
-        // },
-        // onPressed: () async{
-        //   //to get vibe session
-        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
-        //     return this.context;
-        //   });
-        //   final sessions = await chatApi.getVibeSessions();
-        //   if (sessions.isNotEmpty) {
-        //     sessions.sort((a, b) => b.creationTimeInMs.compareTo(a.creationTimeInMs));
-        //     final latestSession = sessions.first;
-        //     // print("Lastest Viber sesssion is ${latestSession.id}");
-        //     final messages = await chatApi.getMessages(latestSession.id);
-        //     for (var msg in messages) {
-        //       print("${msg.origin.name}: ${msg.content}");
-        //     }
-        //   }
-        // },
-        // onPressed: () async {
-        //   ChatApi chatApi = ChatApi(getContextCallBack: () {
-        //     return this.context;
-        //   });
-        //
-        //   final sessions = await chatApi.getVibeSessions();
-        //   if (sessions.isNotEmpty && sessions !=null) {
-        //     sessions.sort((a, b) =>
-        //         b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
-        //     final latestSession = sessions.first;
-        //     print("Latest session ${latestSession.id}\n");
-        //     final messages = await chatApi.getMessages(latestSession.id!);
-        //
-        //     // Extract IDS from msgs
-        //     final uniqueActionIds = <String>{};
-        //     for (var msg in messages) {
-        //       if (msg.actionIds != null) {
-        //         uniqueActionIds.addAll(msg.actionIds!);
-        //       }
-        //     }
-        //
-        //     if (uniqueActionIds.isEmpty) return;
-        //
-        //
-        //     final actionIdsList = uniqueActionIds.toList();
-        //
-        //     //start batching
-        //     //I'm planning to batch msgs so review if this batch is needed after batching msgs
-        //     const batchSize = 10;
-        //     final allActions = <VibeAction>[];
-        //
-        //     if (actionIdsList.length > batchSize) {
-        //       for (int i = 0; i < actionIdsList.length; i += batchSize) {
-        //         final end = (i + batchSize < actionIdsList.length) ? i +
-        //             batchSize : actionIdsList.length;
-        //         final batch = actionIdsList.sublist(i, end);
-        //         final batchActions = await chatApi.getActions(batch);
-        //         allActions.addAll(batchActions);
-        //       }
-        //     } else {
-        //       final actions = await chatApi.getActions(actionIdsList);
-        //       allActions.addAll(actions);
-        //     }
-        //
-        //     final actionsMap = {
-        //       for (var action in allActions)
-        //         action.id: action
-        //     };
-        //     for (var msg in messages) {
-        //       print("${msg.origin!.name}: ${msg.content}");
-        //
-        //       if (msg.actionIds != null) {
-        //         for (var actionId in msg.actionIds!) {
-        //           final action = actionsMap[actionId];
-        //           if (action != null) {
-        //             print("  → ${action.descriptions} [${action.status}]");
-        //           }
-        //         }
-        //       }
-        //       print("");
-        //     }
-        //     final vibeResponse = await chatApi.sendChatMessage(
-        //         "Create one more tile called cooking weekly food",
-        //         latestSession.id
-        //     );
-        //     String? newRequestId;
-        //     if (vibeResponse != null && vibeResponse.userMessage != null) {
-        //       print("${vibeResponse.userMessage!.origin?.name}: ${vibeResponse
-        //           .userMessage!.content}");
-        //     }
-        //     if (vibeResponse != null && vibeResponse.tilerMessage != null) {
-        //       print("${vibeResponse.tilerMessage!.origin?.name}: ${vibeResponse
-        //           .tilerMessage!.content}");
-        //
-        //       if (vibeResponse.tilerMessage!.actions != null) {
-        //         for (var action in vibeResponse.tilerMessage!.actions!) {
-        //           print("  → ${action.descriptions} [${action.status}]");
-        //         }
-        //       }
-        //
-        //       newRequestId = vibeResponse.tilerMessage!.requestId;
-        //     }
-        //     print("");
-        //
-        //     bool shouldShowButton = false;
-        //     if (newRequestId != null) {
-        //       try {
-        //         final vibeRequest = await chatApi.getVibeRequest(newRequestId);
-        //         shouldShowButton = vibeRequest?.isClosed != true;
-        //       } catch (e) {
-        //         print("Error getting vibeRequest: $e");
-        //       }
-        //     }
-        //     print("\n==========================");
-        //     if (shouldShowButton) {
-        //       print("┌──────────────┐");
-        //       print("│   [Action]   │");
-        //       print("└──────────────┘");
-        //     }
-        //     print("==========================\n");
-        //
-        //     if (shouldShowButton) {
-        //       print("Press 1 to accept actions, or any other key to skip:");
-        //       String userInput = "1";
-        //
-        //       if (userInput == "1" && newRequestId != null) {
-        //         print("\nExecuting actions...");
-        //         try {
-        //           final executedRequest = await chatApi.executeVibeRequest(
-        //             requestId: newRequestId,
-        //           );
-        //
-        //           if (executedRequest != null) {
-        //             print("✓ Actions executed successfully");
-        //             print(
-        //                 "After Schedule ID: ${executedRequest.afterScheduleId ??
-        //                     'N/A'}");
-        //           } else {
-        //             print("✗ Execution returned null");
-        //           }
-        //         } catch (e) {
-        //           print("✗ Error executing actions: $e");
-        //         }
-        //       }
-        //     }
-        //   }
-        // },
         onPressed: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) =>  VibeChat(),
+            builder: (context) => BlocProvider(
+              create: (context) => VibeChatBloc(
+                chatApi: ChatApi(getContextCallBack: () => context),
+              )..add(LoadVibeChatSessionEvent()),
+              child: VibeChat(),
+            ),
           );
         },
         child: Icon(
           Icons.chat_outlined,
-          color: colorScheme.primary, // Match icon color
+          color: colorScheme.primary,
         ),
       ),
     );
