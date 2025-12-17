@@ -199,6 +199,8 @@ class _VibeChatState extends State<VibeChat> {
   Widget _buildActionTile({
     required VibeAction action,
   }) {
+    final statusColor = _getActionStatusColor(action.status);
+
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
@@ -209,7 +211,7 @@ class _VibeChatState extends State<VibeChat> {
           color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: _getActionStatusColor(action.status),
+            color: statusColor,
             width: 2,
           ),
         ),
@@ -224,6 +226,16 @@ class _VibeChatState extends State<VibeChat> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+             SizedBox(width: 4),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: statusColor,
+              ),
+            ),
+            SizedBox(width: 4),
           ],
         ),
       ),
