@@ -24,11 +24,13 @@ class _VibeChatState extends State<VibeChat> {
   late double  screenWidth ;
   late TileThemeExtension tileThemeExtension;
   late AppLocalizations localization;
+  late final TextEditingController _messageController;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _messageController = TextEditingController();
     _scrollController.addListener(() {
       if (_scrollController.position.extentAfter < 100 ){
         final state = context.read<VibeChatBloc>().state;
@@ -53,6 +55,7 @@ class _VibeChatState extends State<VibeChat> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -62,6 +65,9 @@ class _VibeChatState extends State<VibeChat> {
     NotificationOverlayMessage();
     return BlocConsumer<VibeChatBloc, VibeChatState>(
         listener: (context, state) {
+          if (state.step == VibeChatStep.loaded) {
+            _messageController.clear();
+          }
           if (state.step == VibeChatStep.error && state.error != null) {
             notificationOverlayMessage.showToast(
                 context,
@@ -87,7 +93,108 @@ class _VibeChatState extends State<VibeChat> {
               Flexible(
                 child: _buildContent(state),
               ),
+              _buildMessageInput(),
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMessageInput() {
+    return BlocBuilder<VibeChatBloc, VibeChatState>(
+      builder: (context, state) {
+        final isSending = state.step == VibeChatStep.sending;
+        final hasText = _messageController.text.trim().isNotEmpty;
+
+        return SafeArea(
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: 20,vertical: 4),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: colorScheme.outlineVariant,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _messageController,
+                    enabled: !isSending,
+                    decoration: InputDecoration(
+                      hintText: localization.describeATask,
+                      hintStyle: TextStyle(
+                        color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+                        fontSize: 16,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.only(
+                        left: 20,
+                        right: 12,
+                        top: 14,
+                        bottom: 14,
+                      ),
+                    ),
+                    maxLines: 5,
+                    minLines: 1,
+                    textCapitalization: TextCapitalization.sentences,
+                    style: TextStyle(
+                      fontSize: 18,
+                      height: 1.4,
+                    ),
+                    onChanged: (value) => setState(() {}),
+                  ),
+                ),
+
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal:4,vertical: 2),
+                  child: isSending
+                      ? Container(
+                    width: 36,
+                    height: 36,
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  )
+                      : IconButton(
+                    onPressed: hasText
+                        ? () {
+                      context.read<VibeChatBloc>().add(
+                        SendAMessageEvent(
+                          _messageController.text.trim(),
+                        ),
+                      );
+                    }
+                        : (){},
+                    icon: Icon(Icons.arrow_upward_rounded),
+                    iconSize: 20,
+                    style: IconButton.styleFrom(
+                      backgroundColor: hasText
+                          ? colorScheme.primary
+                          : tileThemeExtension.surfaceContainerGreater,
+                      foregroundColor: hasText
+                          ? colorScheme.onPrimary
+                          : tileThemeExtension.onSurfaceVariantSecondary,
+                      minimumSize: Size(36, 36),
+                      maximumSize: Size(36, 36),
+                      shape: CircleBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -115,6 +222,7 @@ class _VibeChatState extends State<VibeChat> {
 
     if (state.step == VibeChatStep.loaded ||
         state.step == VibeChatStep.loadingMore ||
+        state.step == VibeChatStep.sending ||
         state.step == VibeChatStep.error) {
       if (state.messages.isEmpty) {
         return _buildEmptyChat();
@@ -139,16 +247,29 @@ class _VibeChatState extends State<VibeChat> {
                   final message = state.messages[index];
                   final isUser = message.origin == MessageOrigin.user;
 
-                  return Column(
-                    children: [
-                      _buildMessage(message.content ?? '', isUser, screenWidth),
-                      if (message.actions != null && message.actions!.isNotEmpty)
-                        ...message.actions!
-                            .where((action) => action.type !=  'conversational_and_not_supported')
-                            .map((action) =>
-                            _buildActionTile(action: action)
-                        ),
-                    ],
+                  return TweenAnimationBuilder<double>(
+                      duration: Duration(milliseconds: 400),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, 20 * (1 - value)),
+                            child: child,
+                          ),
+                        );
+                      },
+                    child: Column(
+                      children: [
+                        _buildMessage(message.content ?? '', isUser, screenWidth),
+                        if (message.actions != null && message.actions!.isNotEmpty)
+                          ...message.actions!
+                              .where((action) => action.type !=  'conversational_and_not_supported')
+                              .map((action) =>
+                              _buildActionTile(action: action)
+                          ),
+                      ],
+                    ),
                   );
                 },
               ),

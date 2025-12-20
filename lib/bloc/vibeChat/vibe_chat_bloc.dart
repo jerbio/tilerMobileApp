@@ -12,6 +12,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   VibeChatBloc({required this.chatApi}) : super(VibeChatState()) {
     on<LoadVibeChatSessionEvent>(_onLoadVibeChatSession);
     on<LoadMoreMessagesEvent>(_onLoadMoreMessages);
+    on<SendAMessageEvent>(_onSendAMessage);
   }
 
   Future<void> _onLoadVibeChatSession(LoadVibeChatSessionEvent event, Emitter<VibeChatState> emit,) async {
@@ -187,10 +188,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     return match != null ? int.parse(match.group(1)!) : 0;
   }
 
-  Future<void> _onLoadMoreMessages(
-      LoadMoreMessagesEvent event,
-      Emitter<VibeChatState> emit,
-      ) async {
+  Future<void> _onLoadMoreMessages(LoadMoreMessagesEvent event, Emitter<VibeChatState> emit,) async {
     if (state.step == VibeChatStep.loadingMore || !state.hasMoreMessages) return;
 
     try {
@@ -226,6 +224,48 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         messages: combinedMessages,
         hasMoreMessages: newMessages.length == 5,
         currentIndex: state.currentIndex + 5,
+      ));
+
+    } catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e.toString(),
+      ));
+    }
+  }
+
+  Future<void> _onSendAMessage(SendAMessageEvent event, Emitter<VibeChatState> emit,) async {
+    try {
+      emit(state.copyWith(step: VibeChatStep.sending));
+
+      final response = await chatApi.sendChatMessage(
+        event.message,
+        state.sessionId.isEmpty ? null : state.sessionId,
+      );
+
+      if (response == null ||  response.prompts ==null || response.prompts!.isEmpty) {
+        emit(state.copyWith(step: VibeChatStep.loaded));
+        return;
+      }
+
+      final existingIds = state.messages.map((m) => m.id).toSet();
+      final newMessages = response.prompts!.where((m) => !existingIds.contains(m.id)).toList();
+      final combinedMessages = [...state.messages, ...newMessages];
+
+      combinedMessages.sort((a, b) {
+        final timestampA = _extractTimestamp(a.id ?? '');
+        final timestampB = _extractTimestamp(b.id ?? '');
+        return timestampA.compareTo(timestampB);
+      });
+
+      final newSessionId = state.sessionId.isEmpty && newMessages.isNotEmpty
+          ? newMessages.first.sessionId ?? state.sessionId
+          : state.sessionId;
+      emit(state.copyWith(
+        sessionId: newSessionId,
+        step: VibeChatStep.loaded,
+        messages: combinedMessages,
+        currentIndex: combinedMessages.length
       ));
 
     } catch (e) {

@@ -5,6 +5,7 @@ enum VibeChatStep {
   loading,
   loaded,
   loadingMore,
+  sending,
   error,
 }
 

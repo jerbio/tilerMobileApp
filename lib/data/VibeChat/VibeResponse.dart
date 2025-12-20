@@ -1,42 +1,37 @@
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
+import 'package:tiler_app/data/userProfile.dart';
+
 class VibeResponse {
-  final VibeMessage? userMessage;
-  final VibeMessage? tilerMessage;
-  final dynamic tilerUser;
+  final List<VibeMessage>? prompts;
+  final UserProfile? tilerUser;
 
   VibeResponse({
-    this.userMessage,
-    this.tilerMessage,
+    this.prompts,
     this.tilerUser,
   });
 
   factory VibeResponse.fromJson(Map<String, dynamic> json) {
-    VibeMessage? user;
-    VibeMessage? tiler;
+    List<VibeMessage>? promptsList;
 
     if (json['prompts'] != null) {
+      promptsList = [];
       (json['prompts'] as Map<String, dynamic>).forEach((key, value) {
-        final msg = VibeMessage.fromJson(value);
-        if (msg.origin?.name == 'user') {
-          user = msg;
-        } else if (msg.origin?.name == 'tiler') {
-          tiler = msg;
-        }
+        promptsList!.add(VibeMessage.fromJson(value));
       });
     }
 
     return VibeResponse(
-      userMessage: user,
-      tilerMessage: tiler,
-      tilerUser: json['tilerUser'],
+      prompts: promptsList,
+      tilerUser: json['tilerUser'] != null
+          ? UserProfile.fromJson(json['tilerUser'])
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'userMessage': userMessage?.toJson(),
-      'tilerMessage': tilerMessage?.toJson(),
-      'tilerUser': tilerUser,
+      'prompts': prompts?.map((p) => p.toJson()).toList(),
+      'tilerUser': tilerUser?.toJson(),
     };
   }
 }
