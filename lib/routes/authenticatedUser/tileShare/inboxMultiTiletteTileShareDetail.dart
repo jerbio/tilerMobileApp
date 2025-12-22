@@ -7,7 +7,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -54,6 +54,7 @@ class _InboxMultiTiletteTileShareDetailWidget
       getTileShareCluster();
     }
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -188,7 +189,7 @@ class _InboxMultiTiletteTileShareDetailWidget
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
                     style: TileTextStyles.defaultText,
                   )
                 ],
@@ -291,11 +292,14 @@ class _InboxMultiTiletteTileShareDetailWidget
   //ey: not used
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style:  TileButtonStyles.enabled(borderColor: colorScheme.primary),
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },
-        icon: Icon(Icons.add,color: colorScheme.onSurface,),
+        icon: Icon(
+          Icons.add,
+          color: colorScheme.onSurface,
+        ),
         label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
@@ -344,9 +348,7 @@ class _InboxMultiTiletteTileShareDetailWidget
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor:colorScheme.onPrimary
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,

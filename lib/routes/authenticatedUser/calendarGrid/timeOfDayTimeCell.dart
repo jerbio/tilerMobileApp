@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeCellWidget.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TimeOfDayTimeCellWidget extends TimeCellWidget {
   final TimeOfDay? start;
@@ -21,8 +21,8 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     String formattedTimeOfDay = "";
     if (this.widget.start != null) {
       int hour = this.widget.start!.hour;

@@ -7,7 +7,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/inboxMultiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/multiTiletteTileShareDetail.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/singleTiletteTileShareDetail.dart';
@@ -81,6 +81,7 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       getDesignatedTileShareId(this.widget.designatedTileShareId!);
     }
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -180,7 +181,9 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
       deleteIcon: null,
       side: BorderSide.none,
       backgroundColor: colorScheme.primary,
-      labelStyle: TextStyle(color: colorScheme.onPrimary,),
+      labelStyle: TextStyle(
+        color: colorScheme.onPrimary,
+      ),
     );
   }
 
@@ -230,8 +233,8 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileTextStyles.defaultText,
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               ),

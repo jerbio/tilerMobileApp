@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
@@ -31,9 +31,9 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {'duration': _duration};
       Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
@@ -71,47 +71,49 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     Widget durationIcon = this.widget.icon ??
         Icon(Icons.timelapse_outlined, color: colorScheme.onSurface);
     Widget retValue = new GestureDetector(
-        onTap: setDuration,
-        child: Container(
-            padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-            height: TileDimensions.inputHeight,
-            decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLowest,
-                borderRadius: TileDimensions.inputFieldBorderRadius,
-                border: Border.all(
-                  color: colorScheme.onInverseSurface,
-                  width: 1.5,
-                ),
-                boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowMainInputContainer)]
+      onTap: setDuration,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
+        height: TileDimensions.inputHeight,
+        decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLowest,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
+            border: Border.all(
+              color: colorScheme.onInverseSurface,
+              width: 1.5,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                durationIcon,
-                Container(
-                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(
-                          fontSize: TileDimensions.inputFontSize,
-                        ),
-                      ),
-                      onPressed: setDuration,
-                      child: Text(
-                        textButtonString,
-                        style: TextStyle(
-                          fontFamily: TileTextStyles.rubikFontName,
-                          color: colorScheme.onSurface,
-                          fontWeight: (_duration ?? Duration.zero).inSeconds >
-                                  Duration.secondsPerMinute
-                              ? TileTextStyles.inputFieldFontWeight
-                              : TileTextStyles.inputFieldHintFontWeight,
-                        ),
-                      ),
-                    ))
-              ],
-            ),
+            boxShadow: [
+              TileBoxShadows.inputFieldBoxShadow(
+                  tileThemeExtension!.shadowMainInputContainer)
+            ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            durationIcon,
+            Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: TileDimensions.inputFontSize,
+                    ),
+                  ),
+                  onPressed: setDuration,
+                  child: Text(
+                    textButtonString,
+                    style: TextStyle(
+                      fontFamily: TileTextStyles.rubikFontName,
+                      color: colorScheme.onSurface,
+                      fontWeight: (_duration ?? Duration.zero).inSeconds >
+                              Duration.secondsPerMinute
+                          ? TileTextStyles.inputFieldFontWeight
+                          : TileTextStyles.inputFieldHintFontWeight,
+                    ),
+                  ),
+                ))
+          ],
         ),
+      ),
     );
     return retValue;
   }

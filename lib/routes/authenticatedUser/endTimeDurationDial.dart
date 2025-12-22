@@ -4,7 +4,7 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class EndTimeDurationResult {
   DateTime time;
@@ -76,7 +76,7 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
     );
     return CancelAndProceedTemplateWidget(
         routeName: endTimeDurationRouteName,
-        appBar:AppBar(
+        appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
@@ -93,11 +93,9 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
                     onDurationChange(val);
                   },
                   snapToMins: 5.0,
-                )
-                ),
+                )),
                 timeAndDate
-              ]
-          ),
+              ]),
         ),
         onProceed: isProceedReady() ? this.onProceedTap : null);
 

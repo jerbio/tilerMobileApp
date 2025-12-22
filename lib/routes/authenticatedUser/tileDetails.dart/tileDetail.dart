@@ -25,7 +25,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSe
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/restrictionProfileSelectorWidget.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_spacing.dart';
@@ -64,19 +64,17 @@ class _TileDetailState extends State<TileDetail> {
   Function? onProceed;
   String requestId = Utility.getUuid;
 
-
   bool reloadOtherEntitiesAfterLoadingCalevent = false;
   late final SettingsApi settingsApi;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   RestrictionProfile? _workRestrictionProfile;
   RestrictionProfile? _personalRestrictionProfile;
-  late TextStyle defaultFontStyle ;
+  late TextStyle defaultFontStyle;
   static final String tileDetailCancelAndProceedRouteName =
       "tileDetailCancelAndProceedRouteName";
-late ThemeData theme;
-late ColorScheme colorScheme;
-late TileThemeExtension tileThemeExtension;
-
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -133,15 +131,14 @@ late TileThemeExtension tileThemeExtension;
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    defaultFontStyle= TextStyle(
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    defaultFontStyle = TextStyle(
         fontFamily: TileTextStyles.rubikFontName,
         fontWeight: FontWeight.normal,
         fontSize: 24,
-        color: colorScheme.tertiary
-    );
+        color: colorScheme.tertiary);
     super.didChangeDependencies();
   }
 
@@ -334,7 +331,11 @@ late TileThemeExtension tileThemeExtension;
     });
   }
 
-  Widget _mainContainer({required Widget child,required IconData icon, EdgeInsets? padding,  EdgeInsets? childPadding}){
+  Widget _mainContainer(
+      {required Widget child,
+      required IconData icon,
+      EdgeInsets? padding,
+      EdgeInsets? childPadding}) {
     return Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
         padding: padding ?? EdgeInsets.fromLTRB(10, 0, 0, 0),
@@ -344,19 +345,14 @@ late TileThemeExtension tileThemeExtension;
             border: Border.all(
               color: colorScheme.onInverseSurface,
               width: 1.5,
-            )
-        ),
-        child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Icon(icon , color: colorScheme.primary),
-              Container(
-                padding: childPadding ?? EdgeInsets.fromLTRB(5, 0, 0, 0),
-                child: child,
-              )
-            ]
-        )
-    );
+            )),
+        child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+          Icon(icon, color: colorScheme.primary),
+          Container(
+            padding: childPadding ?? EdgeInsets.fromLTRB(5, 0, 0, 0),
+            child: child,
+          )
+        ]));
   }
 
   Widget generateDurationPicker() {
@@ -410,29 +406,27 @@ late TileThemeExtension tileThemeExtension;
               style: TextStyle(),
             ),
           ),
-        )
-    );
+        ));
     return retValue;
   }
 
   Widget renderLocationTapable() {
     Function locationButton = (String locationString) {
       return _mainContainer(
-        icon: Icons.location_pin,
-        child:TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: colorScheme.tertiary,
-            textStyle: const TextStyle(
-              fontSize: 20,
+          icon: Icons.location_pin,
+          child: TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: colorScheme.tertiary,
+              textStyle: const TextStyle(
+                fontSize: 20,
+              ),
             ),
-          ),
-          onPressed: loadLocationRoute,
-          child: Text(
-            locationString,
-            style: defaultFontStyle,
-          ),
-        )
-      );
+            onPressed: loadLocationRoute,
+            child: Text(
+              locationString,
+              style: defaultFontStyle,
+            ),
+          ));
     };
 
     var locBlocState = this.context.read<LocationBloc>().state;
@@ -464,8 +458,7 @@ late TileThemeExtension tileThemeExtension;
           },
           repetition: this.editTilerEvent?.repetition,
           textStyle: defaultFontStyle,
-        )
-    );
+        ));
   }
 
   Widget renderHueTapable() {
@@ -482,40 +475,35 @@ late TileThemeExtension tileThemeExtension;
               }
               dataChange();
             },
-            color: editTilerEvent!.uiConfig!.tileColor!.toColor!
-        )
-    );
-
+            color: editTilerEvent!.uiConfig!.tileColor!.toColor!));
   }
 
   Widget renderRestrictionProfileTapable() {
     return _mainContainer(
-      icon: Icons.switch_left,
-      childPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-      child: RestrictionProfileSelectorWidget(
-        restrictionProfile: this.editTilerEvent?.restrictionProfile,
-        personalProfile: _personalRestrictionProfile,
-        workProfile: _workRestrictionProfile,
-        textStyle: this.defaultFontStyle,
-        onRestrictionProfileUpdate:
-            (RestrictionProfile? updatedRestrictionProfile) {
-          if (updatedRestrictionProfile != null) {
-            setState(() {
-              editTilerEvent!.restrictionProfile =
-                  updatedRestrictionProfile;
-              editTilerEvent!.restrictionProfileId =
-                  updatedRestrictionProfile.id;
-            });
-          } else {
-            setState(() {
-              editTilerEvent!.restrictionProfile = null;
-              editTilerEvent!.restrictionProfileId = null;
-            });
-          }
-          dataChange();
-        },
-      )
-    );
+        icon: Icons.switch_left,
+        childPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: RestrictionProfileSelectorWidget(
+          restrictionProfile: this.editTilerEvent?.restrictionProfile,
+          personalProfile: _personalRestrictionProfile,
+          workProfile: _workRestrictionProfile,
+          textStyle: this.defaultFontStyle,
+          onRestrictionProfileUpdate:
+              (RestrictionProfile? updatedRestrictionProfile) {
+            if (updatedRestrictionProfile != null) {
+              setState(() {
+                editTilerEvent!.restrictionProfile = updatedRestrictionProfile;
+                editTilerEvent!.restrictionProfileId =
+                    updatedRestrictionProfile.id;
+              });
+            } else {
+              setState(() {
+                editTilerEvent!.restrictionProfile = null;
+                editTilerEvent!.restrictionProfileId = null;
+              });
+            }
+            dataChange();
+          },
+        ));
   }
 
   @override
@@ -705,9 +693,7 @@ late TileThemeExtension tileThemeExtension;
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500
-                                  )
-                              ),
+                                      fontWeight: FontWeight.w500)),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -743,9 +729,7 @@ late TileThemeExtension tileThemeExtension;
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500
-                                  )
-                              ),
+                                      fontWeight: FontWeight.w500)),
                             ),
                             Container(
                               margin: const EdgeInsets.fromLTRB(45, 0, 0, 0),
@@ -773,9 +757,7 @@ late TileThemeExtension tileThemeExtension;
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500
-                                  )
-                              ),
+                                      fontWeight: FontWeight.w500)),
                             ),
                             _editStartDateAndTime!
                           ],
@@ -794,9 +776,7 @@ late TileThemeExtension tileThemeExtension;
                                   style: TextStyle(
                                       fontSize: 15,
                                       fontFamily: TileTextStyles.rubikFontName,
-                                      fontWeight: FontWeight.w500
-                                  )
-                              ),
+                                      fontWeight: FontWeight.w500)),
                             ),
                             _editEndDateAndTime!
                           ],

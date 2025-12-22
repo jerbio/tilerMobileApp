@@ -2,7 +2,7 @@ import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 
 class DurationDial extends StatefulWidget {
@@ -78,10 +78,10 @@ class DurationDialState extends State<DurationDial> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final
-    Map durationParams = ModalRoute.of(context)?.settings.arguments as Map;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final Map durationParams =
+        ModalRoute.of(context)?.settings.arguments as Map;
     if (!_isInitialize) {
       _isInitialize = true;
       this.widget._params = durationParams;
@@ -167,8 +167,7 @@ class DurationDialState extends State<DurationDial> {
           alignment: Alignment.topCenter,
           child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
-              children: widgetColumn
-          ),
+              children: widgetColumn),
         ),
         onProceed: () {
           return this.onProceedTap();

@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -28,7 +28,6 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
 
-
   @override
   void initState() {
     super.initState();
@@ -46,12 +45,13 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
             .toList() ??
         [];
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-     theme= Theme.of(context);
-     colorScheme = theme.colorScheme;
-     tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   void updateCalendarItemLocally(String calendarItemId, bool isSelected) {
@@ -73,7 +73,8 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
           Icon(
             Icons.calendar_today_outlined,
             size: 64,
-            color: tileThemeExtension.onSurfaceVariantSecondary.withValues(alpha: 0.87),
+            color: tileThemeExtension.onSurfaceVariantSecondary
+                .withValues(alpha: 0.87),
           ),
           SizedBox(height: 16),
           Text(
@@ -113,10 +114,12 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
           margin: EdgeInsets.only(bottom: 24),
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: tileThemeExtension.integrationApproval .withValues(alpha: 0.1),
+            color:
+                tileThemeExtension.integrationApproval.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: tileThemeExtension.integrationApproval .withValues(alpha: 0.3),
+              color:
+                  tileThemeExtension.integrationApproval.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -124,7 +127,7 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
               Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: tileThemeExtension.integrationApproval ,
+                  color: tileThemeExtension.integrationApproval,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -144,7 +147,7 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: tileThemeExtension.integrationApproval ,
+                        color: tileThemeExtension.integrationApproval,
                       ),
                     ),
                     Text(
@@ -195,7 +198,7 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
       child: CancelAndProceedTemplateWidget(
         routeName: CalendarItemsRoute.routeName,
         //ey re check very imp
-        appBar:  AppBar(
+        appBar: AppBar(
           title: Text(AppLocalizations.of(context)!.integratedCalendars),
           centerTitle: true,
           titleTextStyle: TextStyle(
@@ -273,9 +276,9 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
   Widget build(BuildContext context) {
     String calendarName = widget.calendarItem.name ??
         AppLocalizations.of(context)!.unknownCalendar;
-    final theme=Theme.of(context);
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     return BlocListener<IntegrationsBloc, IntegrationsState>(
       listener: (context, state) {
@@ -303,7 +306,9 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
           color: TileColors.lightContent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? tileThemeExtension.integrationApproval  : tileThemeExtension.integrationBorder,
+            color: isSelected
+                ? tileThemeExtension.integrationApproval
+                : tileThemeExtension.integrationBorder,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
@@ -320,7 +325,9 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
             width: 16,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? tileThemeExtension.integrationApproval : tileThemeExtension.surfaceContainerSuperior,
+              color: isSelected
+                  ? tileThemeExtension.integrationApproval
+                  : tileThemeExtension.surfaceContainerSuperior,
               shape: BoxShape.circle,
             ),
             child: isSelected
@@ -356,14 +363,14 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(tileThemeExtension.integrationApproval ),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        tileThemeExtension.integrationApproval),
                   ),
                 )
               : Switch(
                   value: isSelected,
                   onChanged: (_) => _toggleSelection(),
-                  activeColor:tileThemeExtension.integrationApproval ,
+                  activeColor: tileThemeExtension.integrationApproval,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
           onTap: _toggleSelection,

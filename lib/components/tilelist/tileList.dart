@@ -10,13 +10,12 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 
 /// This renders the list of tiles on a given day
 abstract class TileList extends StatefulWidget {
-
   static final String routeName = '/TileList';
   TileList({Key? key}) : super(key: key);
 
@@ -42,7 +41,6 @@ abstract class TileListState<T extends TileList> extends State<T>
   late ThemeData theme;
   late ColorScheme colorScheme;
 
-
   @override
   void initState() {
     super.initState();
@@ -62,7 +60,6 @@ abstract class TileListState<T extends TileList> extends State<T>
     swipingAnimationController?.dispose();
     super.dispose();
   }
-
 
   void initializingSwipingAnimation(
       {Duration duration = const Duration(milliseconds: 300)}) {
@@ -191,7 +188,6 @@ abstract class TileListState<T extends TileList> extends State<T>
           lookupTimeline: currentState.previousLookupTimeline);
     }
   }
-
 
   void handleAutoRefresh(List<SubCalendarEvent> tiles) {
     List<TilerEvent> orderedTiles = Utility.orderTiles(tiles);

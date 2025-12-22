@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'dart:math' as math;
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class MonthlyPickerDialog extends StatefulWidget {
@@ -21,20 +21,24 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
 
   @override
   void initState() {
-    byIcon=false;
+    byIcon = false;
     super.initState();
     int currentYear = context.read<MonthlyUiDateManagerBloc>().state.year;
-    _yearPages = [currentYear - 2, currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+    _yearPages = [
+      currentYear - 2,
+      currentYear - 1,
+      currentYear,
+      currentYear + 1,
+      currentYear + 2
+    ];
     _pageController = PageController(initialPage: 2);
-
-
   }
 
   @override
   void didChangeDependencies() {
-     theme=Theme.of(context);
-     colorScheme=theme.colorScheme;
-     screenHeight=MediaQuery.of(context).size.height;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    screenHeight = MediaQuery.of(context).size.height;
     super.didChangeDependencies();
   }
 
@@ -43,14 +47,12 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
     _pageController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-
-
-
     return BlocBuilder<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
       buildWhen: (previous, current) =>
-      previous.tempDate != current.tempDate ||
+          previous.tempDate != current.tempDate ||
           previous.year != current.year,
       builder: (context, state) {
         if (state.year != _yearPages[2]) {
@@ -58,28 +60,27 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
             final selectedIndex = _yearPages.indexOf(state.year);
             if (selectedIndex != -1) {
               if (_pageController.hasClients) {
-                _pageController.animateToPage(
+                _pageController
+                    .animateToPage(
                   selectedIndex,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeOut,
-                ).then((_){
-                  if(state.year> _yearPages[2] ){
+                )
+                    .then((_) {
+                  if (state.year > _yearPages[2]) {
                     _yearPages.add(_yearPages.last + 1);
                     _yearPages.removeAt(0);
                     _pageController.jumpToPage(2);
-                  }else if(state.year< _yearPages[2] && state.year>0){
-                    _yearPages.insert(0,_yearPages.first - 1);
+                  } else if (state.year < _yearPages[2] && state.year > 0) {
+                    _yearPages.insert(0, _yearPages.first - 1);
                     _yearPages.removeLast();
                     _pageController.jumpToPage(2);
                   }
                   byIcon = false;
                 });
-
-
               }
             }
-          }
-          );
+          });
         }
         return Dialog(
           child: Container(
@@ -92,14 +93,16 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
               children: [
                 _buildHeader(state),
                 SizedBox(
-                  height: screenHeight*0.25,
+                  height: screenHeight * 0.25,
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: _yearPages.length,
                     onPageChanged: (index) {
-                      if(byIcon) return;
+                      if (byIcon) return;
                       if (!mounted) return;
-                      context.read<MonthlyUiDateManagerBloc>().add(ChangeYear(year: _yearPages[index]));
+                      context
+                          .read<MonthlyUiDateManagerBloc>()
+                          .add(ChangeYear(year: _yearPages[index]));
                     },
                     itemBuilder: (context, index) {
                       return _buildMonthGrid(state);
@@ -115,7 +118,7 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
     );
   }
 
-  Widget _buildHeader( MonthlyUiDateManagerState state) {
+  Widget _buildHeader(MonthlyUiDateManagerState state) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -127,32 +130,32 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(
-                icon: Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios_new_sharp,
                   ),
-                onPressed: () {
-                  context.read<MonthlyUiDateManagerBloc>().add(ChangeYear(year: state.year - 1));
-                  byIcon=true;
-                }
-              ),
+                  onPressed: () {
+                    context
+                        .read<MonthlyUiDateManagerBloc>()
+                        .add(ChangeYear(year: state.year - 1));
+                    byIcon = true;
+                  }),
               Text(
                 '${state.year}',
-                style: TextStyle(
-                    fontSize: 24
-                ),
+                style: TextStyle(fontSize: 24),
               ),
               IconButton(
-                icon: Transform.rotate(
-                  angle: math.pi ,
-                  child: Icon(
-                    Icons.arrow_back_ios_new_sharp,
+                  icon: Transform.rotate(
+                    angle: math.pi,
+                    child: Icon(
+                      Icons.arrow_back_ios_new_sharp,
+                    ),
                   ),
-                ),
-                onPressed: (){
-                  context.read<MonthlyUiDateManagerBloc>().add(ChangeYear(year: state.year + 1));
-                  byIcon=true;
-                }
-              ),
+                  onPressed: () {
+                    context
+                        .read<MonthlyUiDateManagerBloc>()
+                        .add(ChangeYear(year: state.year + 1));
+                    byIcon = true;
+                  }),
             ],
           ),
         ],
@@ -182,18 +185,15 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
             margin: const EdgeInsets.all(5.0),
             decoration: isSelected
                 ? BoxDecoration(
-                    border:
-                        Border.all(color: colorScheme.primary, width: 2),
+                    border: Border.all(color: colorScheme.primary, width: 2),
                     borderRadius: BorderRadius.circular(12),
                   )
                 : null,
             alignment: Alignment.center,
-            child: Text(
-              DateFormat('MMM').format(DateTime(state.year, month)),
-              style: TextStyle(
-                fontSize: 16,
-              )
-            ),
+            child: Text(DateFormat('MMM').format(DateTime(state.year, month)),
+                style: TextStyle(
+                  fontSize: 16,
+                )),
           ),
         );
       },
@@ -215,8 +215,7 @@ class _MonthlyPickerDialogState extends State<MonthlyPickerDialog> {
             }
           },
           child: Text(AppLocalizations.of(context)!.save,
-              style: TileTextStyles.datePickersSaveStyle
-          ),
+              style: TileTextStyles.datePickersSaveStyle),
         ),
       ),
     );

@@ -9,7 +9,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/analysis/daySummary.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// Timeline view that displays tiles alongside hour markers,
 /// similar to a calendar day view with travel time between events.

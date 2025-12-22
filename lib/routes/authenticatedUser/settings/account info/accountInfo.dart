@@ -13,7 +13,7 @@ import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class AccountInfo extends StatelessWidget {
   static final String routeName = '/accountInfo';
@@ -26,7 +26,8 @@ class AccountInfo extends StatelessWidget {
   UserProfile? _originalProfile;
   AccountInfo({Key? key}) : super(key: key);
 
-  void _showDeleteConfirmationDialog(BuildContext context,ColorScheme colorScheme) {
+  void _showDeleteConfirmationDialog(
+      BuildContext context, ColorScheme colorScheme) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -37,8 +38,8 @@ class AccountInfo extends StatelessWidget {
           actions: [
             TextButton(
               child: Text(
-                  AppLocalizations.of(context)!.cancel,
-                  style: TextStyle(color:colorScheme.onSurface ),
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(color: colorScheme.onSurface),
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
@@ -47,12 +48,13 @@ class AccountInfo extends StatelessWidget {
             TextButton(
               child: Text(
                 AppLocalizations.of(context)!.delete,
-                style: TextStyle(color:colorScheme.onError ),
+                style: TextStyle(color: colorScheme.onError),
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop();
                 context.read<DeviceSettingBloc>().add(
-                    DeleteAccountMainSettingDeviceSettingEvent(id: _requestId, context: dialogContext));
+                    DeleteAccountMainSettingDeviceSettingEvent(
+                        id: _requestId, context: dialogContext));
               },
             ),
           ],
@@ -60,7 +62,6 @@ class AccountInfo extends StatelessWidget {
       },
     );
   }
-
 
   String _displayRawDate(String? rawDate) {
     if (rawDate == null) return '';
@@ -165,7 +166,8 @@ class AccountInfo extends StatelessWidget {
     return result;
   }
 
-  Widget _buildContent(BuildContext context, DeviceSettingState state,ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
+  Widget _buildContent(BuildContext context, DeviceSettingState state,
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     final userProfile = (state is DeviceSettingLoaded && state.id == _requestId)
         ? state.sessionProfile?.userProfile
         : null;
@@ -175,39 +177,31 @@ class AccountInfo extends StatelessWidget {
     return Column(
       children: [
         const SizedBox(height: 16),
-        _buildTextField(
-          AppLocalizations.of(context)!.fullName,
-          controller: _fullNameController,
-          colorScheme: colorScheme,
-          tileThemeExtension: tileThemeExtension
-        ),
-        _buildTextField(
-            AppLocalizations.of(context)!.username,
+        _buildTextField(AppLocalizations.of(context)!.fullName,
+            controller: _fullNameController,
+            colorScheme: colorScheme,
+            tileThemeExtension: tileThemeExtension),
+        _buildTextField(AppLocalizations.of(context)!.username,
             controller: _usernameController,
             colorScheme: colorScheme,
-            tileThemeExtension:tileThemeExtension
-        ),
-        _buildTextField(
-            AppLocalizations.of(context)!.email,
+            tileThemeExtension: tileThemeExtension),
+        _buildTextField(AppLocalizations.of(context)!.email,
             controller: TextEditingController(
                 text: userProfile?.email ?? 'tiler@test.com'),
             enabled: false,
             filled: true,
             colorScheme: colorScheme,
-            tileThemeExtension:tileThemeExtension
-        ),
-        _buildTextField(
-            AppLocalizations.of(context)!.phoneNumber,
+            tileThemeExtension: tileThemeExtension),
+        _buildTextField(AppLocalizations.of(context)!.phoneNumber,
             controller: _phoneNumberController,
             colorScheme: colorScheme,
-            tileThemeExtension:tileThemeExtension
-        ),
+            tileThemeExtension: tileThemeExtension),
         _buildTextField(
-            AppLocalizations.of(context)!.dateOfBirth,
-            controller: _dateOfBirthController,
-            onTap: () => _pickDate(context, userProfile),
-            colorScheme: colorScheme,
-            tileThemeExtension:tileThemeExtension,
+          AppLocalizations.of(context)!.dateOfBirth,
+          controller: _dateOfBirthController,
+          onTap: () => _pickDate(context, userProfile),
+          colorScheme: colorScheme,
+          tileThemeExtension: tileThemeExtension,
         ),
         Padding(
           padding: const EdgeInsets.only(left: 10.0, top: 10),
@@ -219,7 +213,7 @@ class AccountInfo extends StatelessWidget {
             ),
             title: Text(AppLocalizations.of(context)!.deleteAccount,
                 style: TextStyle(color: colorScheme.primary)),
-            onTap: () => _showDeleteConfirmationDialog(context,colorScheme),
+            onTap: () => _showDeleteConfirmationDialog(context, colorScheme),
           ),
         )
       ],
@@ -261,9 +255,9 @@ class AccountInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
     context.read<DeviceSettingBloc>().add(
@@ -321,7 +315,8 @@ class AccountInfo extends StatelessWidget {
                       automaticallyImplyLeading: false,
                     ),
                     routeName: AccountInfo.routeName,
-                    child: _buildContent(context, state,colorScheme,tileThemeExtension));
+                    child: _buildContent(
+                        context, state, colorScheme, tileThemeExtension));
               });
         },
       ),
@@ -334,12 +329,13 @@ class AccountInfo extends StatelessWidget {
       VoidCallback? onTap,
       required TextEditingController? controller,
       required ColorScheme colorScheme,
-      required TileThemeExtension tileThemeExtension
-      }) {
+      required TileThemeExtension tileThemeExtension}) {
     return Container(
       margin: EdgeInsets.only(bottom: 16, right: 20, left: 20),
       decoration: BoxDecoration(
-        color: filled ?tileThemeExtension.surfaceContainerDisabled : colorScheme.surfaceContainerLowest,
+        color: filled
+            ? tileThemeExtension.surfaceContainerDisabled
+            : colorScheme.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(

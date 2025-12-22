@@ -5,7 +5,7 @@ import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/api/integrationsApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 part 'integrations_event.dart';
 part 'integrations_state.dart';

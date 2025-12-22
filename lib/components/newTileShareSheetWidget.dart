@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
+import 'package:tiler_app/l10n/app_localizations.dart'; // Add this import
 import 'package:tiler_app/components/TextInputWidget.dart';
 import 'package:tiler_app/components/durationInputWidget.dart';
 import 'package:tiler_app/data/contact.dart';
@@ -97,8 +97,8 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLowest,
@@ -178,7 +178,8 @@ class NewTileSheetState extends State<NewTileShareSheetWidget> {
                       this.widget.onAddTile!(newTile);
                     }
                   },
-                  style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
+                  style: TileButtonStyles.enabled(
+                      borderColor: colorScheme.primary),
                   icon: Icon(Icons.check),
                   label: Text(this.widget.newTile == null
                       ? AppLocalizations.of(context)!.add

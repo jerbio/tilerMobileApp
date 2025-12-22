@@ -32,7 +32,7 @@ import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
 
 enum LocationType { videoConference, onlineUrl, physical, none }

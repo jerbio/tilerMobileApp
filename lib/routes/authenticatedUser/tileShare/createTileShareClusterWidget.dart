@@ -7,7 +7,7 @@ import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -244,7 +244,7 @@ class _CreateTileShareClusterWidgetState
       return SizedBox.shrink();
     } else {
       return ElevatedButton.icon(
-          style:  TileButtonStyles.enabled(borderColor: colorScheme.primary),
+          style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
           onPressed: () {
             Navigator.push(
                 context,
@@ -257,10 +257,7 @@ class _CreateTileShareClusterWidgetState
               Navigator.of(context).pop(false);
             });
           },
-          icon: Icon(
-              Icons.bento_outlined,
-              color: colorScheme.onPrimary
-          ),
+          icon: Icon(Icons.bento_outlined, color: colorScheme.onPrimary),
           label: SizedBox.shrink());
     }
   }

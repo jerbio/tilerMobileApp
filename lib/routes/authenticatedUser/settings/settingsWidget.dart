@@ -10,7 +10,7 @@ import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
@@ -26,10 +26,10 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final  textColor =colorScheme.onSurface;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textColor = colorScheme.onSurface;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
@@ -71,7 +71,9 @@ class Settings extends StatelessWidget {
       child: CancelAndProceedTemplateWidget(
         routeName: Settings.routeName,
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.settings,),
+          title: Text(
+            AppLocalizations.of(context)!.settings,
+          ),
           automaticallyImplyLeading: false,
         ),
         child: Column(
@@ -125,7 +127,7 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
               color: colorScheme.primary,
-              onTap:() {
+              onTap: () {
                 AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
                 OneSignal.logout().then((value) {
                   print("successful logged out of onesignal");
@@ -148,7 +150,8 @@ class Settings extends StatelessWidget {
             // ),
             // _buildDivider(),
             Spacer(),
-            Center(child: _buildDarkModeSwitch(colorScheme,tileThemeExtension)),
+            Center(
+                child: _buildDarkModeSwitch(colorScheme, tileThemeExtension)),
           ],
         ),
       ),
@@ -174,16 +177,16 @@ class Settings extends StatelessWidget {
           colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
         ),
         title: Text(title, style: TextStyle(color: color)),
-        onTap: onTap
-    );
+        onTap: onTap);
   }
 
-  Widget _buildDarkModeSwitch(ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
+  Widget _buildDarkModeSwitch(
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
       builder: (context, state) {
         return Center(
           child: Padding(
-            padding: EdgeInsets.only( bottom: 100),
+            padding: EdgeInsets.only(bottom: 100),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -195,13 +198,11 @@ class Settings extends StatelessWidget {
                     ThemeManager.setThemeMode(value).then((_) {
                       context.read<DeviceSettingBloc>().add(
                           UpdateDarkModeMainSettingDeviceSettingEvent(
-                              isDarkMode: value,
-                              id: _requestId
-                          )
-                      );
+                              isDarkMode: value, id: _requestId));
                     });
                   },
-                  inactiveTrackColor:  tileThemeExtension.onSurfaceVariantSecondary,
+                  inactiveTrackColor:
+                      tileThemeExtension.onSurfaceVariantSecondary,
                   thumbColor: WidgetStateProperty.all(colorScheme.surface),
                   thumbIcon: WidgetStateProperty.resolveWith((states) {
                     return Icon(

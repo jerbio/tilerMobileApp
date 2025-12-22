@@ -20,7 +20,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';

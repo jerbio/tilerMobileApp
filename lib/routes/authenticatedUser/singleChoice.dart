@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 
 class SingleChoice extends StatefulWidget {
@@ -21,14 +21,13 @@ class _SingleChoiceState extends State<SingleChoice> {
 
   @override
   Widget build(BuildContext context) {
-    final theme= Theme.of(context);
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     return SegmentedButton<TilePriority>(
       style: ButtonStyle(
           foregroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
-              if (states.contains(WidgetState
-                  .selected)) {
+              if (states.contains(WidgetState.selected)) {
                 return colorScheme.onPrimary;
               }
               return colorScheme.primary;

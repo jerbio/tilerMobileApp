@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingSubWidget.dart';
 
 class TimeAndLocationWidget extends StatelessWidget {
@@ -9,11 +9,11 @@ class TimeAndLocationWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final localizations=AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
     return OnboardingSubWidget(
-      title:localizations.timeAndLocationTitle,
-      questionText:  localizations.timeAndLocationSubTitle,
-      questionSubText:  localizations.timeAndLocationSecondarySubTitle,
+      title: localizations.timeAndLocationTitle,
+      questionText: localizations.timeAndLocationSubTitle,
+      questionSubText: localizations.timeAndLocationSecondarySubTitle,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -22,7 +22,9 @@ class TimeAndLocationWidget extends StatelessWidget {
             height: 45,
             child: ElevatedButton(
               onPressed: () {
-                context.read<OnboardingBloc>().add(GetTimeAndLocationEvent(true));
+                context
+                    .read<OnboardingBloc>()
+                    .add(GetTimeAndLocationEvent(true));
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: colorScheme.primary,
@@ -46,10 +48,11 @@ class TimeAndLocationWidget extends StatelessWidget {
             height: 45,
             child: OutlinedButton(
               onPressed: () {
-                context.read<OnboardingBloc>().add(GetTimeAndLocationEvent(false));
+                context
+                    .read<OnboardingBloc>()
+                    .add(GetTimeAndLocationEvent(false));
               },
               style: OutlinedButton.styleFrom(
-
                 foregroundColor: colorScheme.onSurface,
                 side: BorderSide(color: colorScheme.onSurface),
                 shape: RoundedRectangleBorder(
@@ -61,7 +64,6 @@ class TimeAndLocationWidget extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 21,
                   fontWeight: FontWeight.w700,
-
                 ),
               ),
             ),

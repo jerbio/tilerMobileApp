@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -13,11 +13,11 @@ class EditTileName extends StatefulWidget {
   double? width;
   EditTileName(
       {required this.tileName,
-        this.onInputChange,
-        this.isProcrastinate = false,
-        this.isReadOnly = false,
-        this.textStyle,
-        this.width});
+      this.onInputChange,
+      this.isProcrastinate = false,
+      this.isReadOnly = false,
+      this.textStyle,
+      this.width});
 
   String get name {
     return tileName;
@@ -28,7 +28,6 @@ class EditTileName extends StatefulWidget {
 }
 
 class _EditTileNameState extends State<EditTileName> {
-
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -44,8 +43,8 @@ class _EditTileNameState extends State<EditTileName> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     String procrastinateText =
         AppLocalizations.of(context)!.procrastinateBlockOut;
     return Container(
@@ -55,7 +54,7 @@ class _EditTileNameState extends State<EditTileName> {
         minLines: 1,
         maxLines: 5,
         textInputAction:
-        Platform.isAndroid ? TextInputAction.newline : TextInputAction.done,
+            Platform.isAndroid ? TextInputAction.newline : TextInputAction.done,
         initialValue: this.widget.isProcrastinate ? procrastinateText : null,
         enabled: !(this.widget.isProcrastinate) && !(this.widget.isReadOnly),
         controller: this.widget.isProcrastinate ? null : _controller,
@@ -75,10 +74,12 @@ class _EditTileNameState extends State<EditTileName> {
             borderSide: BorderSide(color: Colors.transparent),
           ),
           focusedBorder: UnderlineInputBorder(
-              borderSide: BorderSide(color: colorScheme.primaryContainer, width: 1)),
+              borderSide:
+                  BorderSide(color: colorScheme.primaryContainer, width: 1)),
           enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                  color: colorScheme.primaryContainer.withLightness(0.8), width: 1)),
+                  color: colorScheme.primaryContainer.withLightness(0.8),
+                  width: 1)),
         ),
       ),
     );

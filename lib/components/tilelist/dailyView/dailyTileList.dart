@@ -21,7 +21,7 @@ import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';

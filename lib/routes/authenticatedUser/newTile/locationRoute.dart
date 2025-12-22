@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/location.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-
 
 class LocationRoute extends StatefulWidget {
   Location? pushedLocation;
@@ -30,7 +29,6 @@ class LocationRoute extends StatefulWidget {
 }
 
 class LocationRouteState extends State<LocationRoute> {
-
   Location? selectedLocation;
   TextEditingController? locationNickNameController;
   TextEditingController? locationAddressController;
@@ -42,14 +40,14 @@ class LocationRouteState extends State<LocationRoute> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
-  late Color textBorderColor ;
+  late Color textBorderColor;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    textBorderColor=colorScheme.primaryContainer;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    textBorderColor = colorScheme.primaryContainer;
   }
 
   onAutoSuggestedLocationTap({Location? location, bool onlyAddress = false}) {
@@ -110,7 +108,8 @@ class LocationRouteState extends State<LocationRoute> {
   Widget renderNickNameDefaultButton(Location location,
       {IconData? iconData, bool isEnabled = true, bool isSelected = false}) {
     String locationText = location.description!.capitalize();
-    Icon defaultLocationIcon = Icon(Icons.location_pin,
+    Icon defaultLocationIcon = Icon(
+      Icons.location_pin,
     );
 
     Widget retValue = ElevatedButton.icon(
@@ -135,9 +134,13 @@ class LocationRouteState extends State<LocationRoute> {
       },
       style: isEnabled
           ? (isSelected
-              ? TileButtonStyles.selected(backgroundColor: colorScheme.primary, foregroundColor: colorScheme.onPrimary)
+              ? TileButtonStyles.selected(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary)
               : TileButtonStyles.enabled(borderColor: colorScheme.primary))
-          : TileButtonStyles.disabled(backgroundColor: tileThemeExtension.onSurfaceSecondary, foregroundColor: TileColors.lightContent),
+          : TileButtonStyles.disabled(
+              backgroundColor: tileThemeExtension.onSurfaceSecondary,
+              foregroundColor: TileColors.lightContent),
       icon: defaultLocationIcon,
       label: Text(locationText),
     );

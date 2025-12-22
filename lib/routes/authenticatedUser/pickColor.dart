@@ -1,8 +1,7 @@
-
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -50,10 +49,12 @@ class PickColorState extends State<PickColor> {
         this.widget.color ?? this.initialColor ?? this.randomColorGenerator();
     roundedSelectorRadius = colorSelectorRadius + 10;
   }
+
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);;
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    ;
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -91,8 +92,8 @@ class PickColorState extends State<PickColor> {
       height: colorSelectorRadius,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.all(
-                Radius.circular(colorSelectorRadius * 4),
-              ),
+            Radius.circular(colorSelectorRadius * 4),
+          ),
           color: color),
     );
 
@@ -119,10 +120,11 @@ class PickColorState extends State<PickColor> {
       width: roundedSelectorRadius,
       height: roundedSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(roundedSelectorRadius)),
           border: Border.all(
-              color: colorScheme.primary,
-              width: 2,
+            color: colorScheme.primary,
+            width: 2,
           ),
           color: Colors.transparent),
     );
@@ -130,10 +132,10 @@ class PickColorState extends State<PickColor> {
       width: roundedSelectorRadius,
       height: roundedSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(roundedSelectorRadius)),
+          borderRadius:
+              BorderRadius.all(Radius.circular(roundedSelectorRadius)),
           border: Border.all(color: Colors.transparent, width: 2),
-          color: Colors.transparent
-      ),
+          color: Colors.transparent),
     );
     for (int i = 0; i < clickablePresetWidgets.length; i++) {
       int modulo = i % gridColumnCount;
@@ -223,7 +225,8 @@ class PickColorState extends State<PickColor> {
                   return Colors.transparent;
                 }),
                 foregroundColor: WidgetStateProperty.resolveWith((states) {
-                  return colorScheme.primary;;
+                  return colorScheme.primary;
+                  ;
                 }),
                 minimumSize: WidgetStateProperty.resolveWith((states) {
                   return Size(MediaQuery.sizeOf(context).width - 20, 50);

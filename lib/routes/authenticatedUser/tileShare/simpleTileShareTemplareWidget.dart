@@ -5,7 +5,7 @@ import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/designatedUserCircle.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -35,6 +35,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
     super.initState();
     isReadOnly = this.widget.isReadOnly ?? true;
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -58,7 +59,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
           Text(
             AppLocalizations.of(context)!.numberOfMoreUsers(
                 (designatedUsers.length - maxContactItems).toString()),
-              style: TileTextStyles.defaultText,
+            style: TileTextStyles.defaultText,
           )
         else
           SizedBox.shrink()
@@ -72,7 +73,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
     const double iconSize = 12;
     const TextStyle textStyle = TextStyle(
       fontFamily: TileTextStyles.rubikFontName,
-        fontSize: fontSize,
+      fontSize: fontSize,
     );
     return Card(
       surfaceTintColor: Colors.transparent,

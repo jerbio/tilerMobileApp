@@ -19,7 +19,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
@@ -45,10 +45,11 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
     this.context.read<ForecastBloc>().add(ResetEvent());
   }
+
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -181,6 +182,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       ),
     );
   }
+
   Widget _buildActionButton({
     required Widget icon,
     required String text,
@@ -203,129 +205,145 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       ),
     );
   }
+
   Widget _buildTripleChevron() {
     return Container(
       width: 60,
       height: 20,
       child: Stack(
         children: [
-          Positioned(right: 0, top: 0, bottom: 0, left: -15, child: Icon(Icons.chevron_right, color: colorScheme.primary)),
-          Positioned(right: 0, top: 0, bottom: 0, left: 0, child: Icon(Icons.chevron_right, color: colorScheme.primary)),
-          Positioned(right: 0, top: 0, bottom: 0, left: 15, child: Icon(Icons.chevron_right, color: colorScheme.primary)),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: -15,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: 0,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: 15,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
         ],
       ),
     );
   }
+
   Widget renderProcrastinateAllButton() {
     return _buildActionButton(
-        text: AppLocalizations.of(context)!.previewTileDeferAll,
-        icon:_buildTripleChevron(),
-        onPressed: () {
-          AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
-          Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
-            var scheduleBloc = this.context.read<ScheduleBloc>().state;
+      text: AppLocalizations.of(context)!.previewTileDeferAll,
+      icon: _buildTripleChevron(),
+      onPressed: () {
+        AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
+        Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
+          var scheduleBloc = this.context.read<ScheduleBloc>().state;
 
-            Timeline? lookupTimeline;
-            if (scheduleBloc is ScheduleLoadedState) {
-              this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  previousSubEvents: scheduleBloc.subEvents,
-                  scheduleTimeline: scheduleBloc.lookupTimeline,
-                  isAlreadyLoaded: true));
-              lookupTimeline = scheduleBloc.lookupTimeline;
-            }
-            if (scheduleBloc is ScheduleInitialState) {
-              this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  previousSubEvents: [],
-                  scheduleTimeline: Utility.initialScheduleTimeline,
-                  isAlreadyLoaded: false));
-              lookupTimeline = Utility.initialScheduleTimeline;
-            }
-
-            refreshScheduleSummary(lookupTimeline);
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-            this.context.read<ForecastBloc>().add(ResetEvent());
-          });
-        },
-        );
-  }
-
-  Widget renderMoreSettingsButton() {
-    return _buildActionButton(
-        icon: Icon(Icons.more_time, color: colorScheme.primary, size: 20),
-        text: AppLocalizations.of(context)!.previewTileOptions,
-        onPressed: () {
-          Location? location = null;
-          if (newTile != null &&
-              ((newTile!.LocationAddress != null &&
-                      newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()) ||
-                  (newTile!.LocationTag != null &&
-                      newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace()) ||
-                  (newTile!.LocationId != null &&
-                      newTile!.LocationId.isNot_NullEmptyOrWhiteSpace()))) {
-            location = Location.fromDefault();
-            location.isDefault = false;
-            location.isNull = false;
-            location.id = newTile?.LocationId;
-            location.description = newTile?.LocationTag;
-            location.address = newTile?.LocationAddress;
-            location.source = newTile?.LocationSource;
-            if (newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() ==
-                true) {
-              bool? isLocationVerified = bool.tryParse(
-                  newTile!.LocationIsVerified!,
-                  caseSensitive: false);
-              if (isLocationVerified != null) {
-                location.isVerified = isLocationVerified;
-              }
-            }
+          Timeline? lookupTimeline;
+          if (scheduleBloc is ScheduleLoadedState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                previousSubEvents: scheduleBloc.subEvents,
+                scheduleTimeline: scheduleBloc.lookupTimeline,
+                isAlreadyLoaded: true));
+            lookupTimeline = scheduleBloc.lookupTimeline;
+          }
+          if (scheduleBloc is ScheduleInitialState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                previousSubEvents: [],
+                scheduleTimeline: Utility.initialScheduleTimeline,
+                isAlreadyLoaded: false));
+            lookupTimeline = Utility.initialScheduleTimeline;
           }
 
-          SimpleAdditionTile preTile = SimpleAdditionTile(
-              description: newTile?.Name,
-              duration: newTile?.getDuration(),
-              location: location);
-          AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
+          refreshScheduleSummary(lookupTimeline);
           if (Navigator.canPop(context)) {
             Navigator.pop(context);
           }
           this.context.read<ForecastBloc>().add(ResetEvent());
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => AddTile(preTile: preTile)));
-        },
+        });
+      },
+    );
+  }
+
+  Widget renderMoreSettingsButton() {
+    return _buildActionButton(
+      icon: Icon(Icons.more_time, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileOptions,
+      onPressed: () {
+        Location? location = null;
+        if (newTile != null &&
+            ((newTile!.LocationAddress != null &&
+                    newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()) ||
+                (newTile!.LocationTag != null &&
+                    newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace()) ||
+                (newTile!.LocationId != null &&
+                    newTile!.LocationId.isNot_NullEmptyOrWhiteSpace()))) {
+          location = Location.fromDefault();
+          location.isDefault = false;
+          location.isNull = false;
+          location.id = newTile?.LocationId;
+          location.description = newTile?.LocationTag;
+          location.address = newTile?.LocationAddress;
+          location.source = newTile?.LocationSource;
+          if (newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() ==
+              true) {
+            bool? isLocationVerified = bool.tryParse(
+                newTile!.LocationIsVerified!,
+                caseSensitive: false);
+            if (isLocationVerified != null) {
+              location.isVerified = isLocationVerified;
+            }
+          }
+        }
+
+        SimpleAdditionTile preTile = SimpleAdditionTile(
+            description: newTile?.Name,
+            duration: newTile?.getDuration(),
+            location: location);
+        AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => AddTile(preTile: preTile)));
+      },
     );
   }
 
   Widget renderShuffleButton() {
     return _buildActionButton(
-        icon: FaIcon(FontAwesomeIcons.shuffle, color: colorScheme.primary, size: 20),
-        text: AppLocalizations.of(context)!.previewTileShuffle,
-        onPressed: () {
-          AnalysticsSignal.send('SHUFFLE_BUTTON');
-          this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-          this.context.read<ForecastBloc>().add(ResetEvent());
-        },
+      icon: FaIcon(FontAwesomeIcons.shuffle,
+          color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileShuffle,
+      onPressed: () {
+        AnalysticsSignal.send('SHUFFLE_BUTTON');
+        this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+      },
     );
   }
 
   Widget renderRefresh() {
     return _buildActionButton(
-        icon: Icon(Icons.refresh, color: colorScheme.primary, size: 20),
-        text: AppLocalizations.of(context)!.previewTileRevise,
-        onPressed: () {
-          AnalysticsSignal.send('REVISE_BUTTON');
-          this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-          this.context.read<ForecastBloc>().add(ResetEvent());
-        },
+      icon: Icon(Icons.refresh, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileRevise,
+      onPressed: () {
+        AnalysticsSignal.send('REVISE_BUTTON');
+        this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+      },
     );
   }
 

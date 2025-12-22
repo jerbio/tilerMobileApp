@@ -1,18 +1,16 @@
-
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../util.dart';
 import '../authentication/AuthorizedRoute.dart';
 import '../authentication/onBoarding.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 enum WelcomeType { register, login }
 
 class WelcomeScreen extends StatefulWidget {
   final WelcomeType welcomeType;
   final String firstName;
-
 
   const WelcomeScreen({
     super.key,
@@ -36,10 +34,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
+
   Future<void> checkOnboarding() async {
     await Future.delayed(Duration(seconds: 3));
     bool nextPage = await Utility.checkOnboardingStatus();
@@ -157,7 +156,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     Orientation orientation = MediaQuery.of(context).orientation;
 
     return Scaffold(
-      backgroundColor:colorScheme.primary,
+      backgroundColor: colorScheme.primary,
       body: SafeArea(
         child: orientation == Orientation.portrait
             ? _buildPortraitLayout(context, height, width)
