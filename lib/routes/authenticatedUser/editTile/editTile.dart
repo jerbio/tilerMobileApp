@@ -12,6 +12,7 @@ import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/components/tileUI/tileProgress.dart';
+import 'package:tiler_app/components/thirdPartyDecisionBar.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
@@ -72,6 +73,8 @@ class _EditTileState extends State<EditTile> {
   List<NextTileSuggestion>? nextTileSuggestions;
   Preview? beforePrediction;
   Preview? afterPrediction;
+  bool isRsvpProcessing = false;
+  String? rsvpError;
   static final String editTileCancelAndProceedName = "";
   late ThemeData theme;
   late ColorScheme colorScheme;
@@ -664,6 +667,58 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
+  bool get shouldShowThirdPartyDecisionBar {
+    if (subEvent == null) {
+      return false;
+    }
+    if (subEvent!.thirdpartyType == TileSource.tiler) {
+      return false;
+    }
+    // Show for any actionable RSVP status (allow changing responses)
+    return subEvent!.rsvp == RsvpStatus.needsAction ||
+        subEvent!.rsvp == RsvpStatus.tentative ||
+        subEvent!.rsvp == RsvpStatus.accepted ||
+        subEvent!.rsvp == RsvpStatus.declined;
+  }
+
+  Future<void> handleRsvpUpdate(RsvpStatus updateStatus) async {
+    if (subEvent == null || editTilerEvent == null) {
+      return;
+    }
+    setState(() {
+      isRsvpProcessing = true;
+      rsvpError = null;
+    });
+    editTilerEvent!.rsvpStatusUpdate = updateStatus;
+    try {
+      final updatedSubEvent =
+          await subCalendarEventApi.updateSubEvent(editTilerEvent!);
+
+      final currentState = this.context.read<ScheduleBloc>().state;
+      var stateResult = ScheduleBloc.preserveState(currentState);
+      List<SubCalendarEvent>? subEvents = stateResult.item1;
+      Timeline? lookupTimeline = stateResult.item3;
+      this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+          isAlreadyLoaded: true,
+          previousSubEvents: subEvents,
+          scheduleTimeline: lookupTimeline,
+          previousTimeline: lookupTimeline,
+          forceRefresh: true));
+      refreshScheduleSummary(lookupTimeline);
+      setState(() {
+        subEvent = updatedSubEvent;
+        editTilerEvent!.rsvpStatusUpdate = null;
+        isRsvpProcessing = false;
+      });
+    } catch (e) {
+      editTilerEvent!.rsvpStatusUpdate = null;
+      setState(() {
+        isRsvpProcessing = false;
+        rsvpError = e.toString();
+      });
+    }
+  }
+
   Widget renderNextTileSuggestionContainer() {
     Widget retValue = SizedBox.shrink();
     if (this.nextTileSuggestions != null &&
@@ -842,6 +897,20 @@ class _EditTileState extends State<EditTile> {
               );
 
               var inputChildWidgets = <Widget>[];
+
+              if (shouldShowThirdPartyDecisionBar) {
+                inputChildWidgets.add(_buildClusterContainer(
+                    margin: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                    child: ThirdPartyDecisionBar(
+                      source: subEvent!.thirdpartyType,
+                      rsvpStatus: subEvent!.rsvp,
+                      isProcessing: isRsvpProcessing,
+                      errorText: rsvpError,
+                      onAccept: () => handleRsvpUpdate(RsvpStatus.accepted),
+                      onDecline: () => handleRsvpUpdate(RsvpStatus.declined),
+                    )));
+              }
+
               String tileNote = this.editTilerEvent?.note ??
                   this.subEvent!.noteData?.note ??
                   '';

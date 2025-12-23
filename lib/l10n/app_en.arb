@@ -1330,5 +1330,32 @@
           "placeholders": {
             "count": {"type": "int"}
           }
+        },
+        "accept": "Accept",
+        "@accept": {
+          "description": "Accept button label for RSVP"
+        },
+        "accepted": "Accepted",
+        "@accepted": {
+          "description": "Status when event is accepted"
+        },
+        "decline": "Decline",
+        "@decline": {
+          "description": "Decline button label for RSVP"
+        },
+        "declined": "Declined",
+        "@declined": {
+          "description": "Status when event is declined"
+        },
+        "respondToCalendar": "Respond to {calendarSource}",
+        "@respondToCalendar": {
+          "description": "Prompt to respond to calendar event",
+          "placeholders": {
+            "calendarSource": {"type": "String"}
+          }
+        },
+        "unknown": "Calendar invite",
+        "@unknown": {
+          "description": "Default label for unknown calendar source"
         }
 }
