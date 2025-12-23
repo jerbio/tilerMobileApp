@@ -1802,6 +1802,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pendingRsvpLater => 'Later Today & Upcoming';
 
   @override
+  String get declinedRsvpSingular => '1 Declined Event';
+
+  @override
+  String declinedRsvpPlural(int count) {
+    return '$count Declined Events';
+  }
+
+  @override
+  String get declinedRsvp => 'Declined Events';
+
+  @override
+  String rsvpMixedOnePending(int declinedCount) {
+    return '1 Pending, $declinedCount Declined';
+  }
+
+  @override
+  String rsvpMixedOneDeclined(int pendingCount) {
+    return '$pendingCount Pending, 1 Declined';
+  }
+
+  @override
+  String rsvpMixed(int pendingCount, int declinedCount) {
+    return '$pendingCount Pending, $declinedCount Declined';
+  }
+
+  @override
   String get rsvpNeedsAction => 'Needs Response';
 
   @override

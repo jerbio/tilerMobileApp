@@ -44,7 +44,7 @@ class EditTilerEvent {
 
   String? getRsvpStatusUpdateString() {
     if (rsvpStatusUpdate == null) return null;
-    
+
     if (rsvpStatusUpdate == RsvpStatus.accepted) {
       return 'Accepted';
     } else if (rsvpStatusUpdate == RsvpStatus.declined) {
@@ -52,7 +52,7 @@ class EditTilerEvent {
     } else if (rsvpStatusUpdate == RsvpStatus.tentative) {
       return 'Tentative';
     }
-    
+
     return null;
   }
 }

@@ -9,15 +9,17 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Summary banner showing tiles with pending RSVP (needs action or tentative)
+/// Summary banner showing tiles with pending RSVP (needs action or tentative) and declined tiles
 /// Auto-updates to surface the most relevant upcoming tiles
 class PendingRsvpBanner extends StatefulWidget {
   final List<SubCalendarEvent> pendingTiles;
+  final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpUpdated;
 
   const PendingRsvpBanner({
     Key? key,
     required this.pendingTiles,
+    this.declinedTiles = const [],
     this.onRsvpUpdated,
   }) : super(key: key);
 
@@ -95,7 +97,8 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
   @override
   void didUpdateWidget(PendingRsvpBanner oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.pendingTiles != widget.pendingTiles) {
+    if (oldWidget.pendingTiles != widget.pendingTiles ||
+        oldWidget.declinedTiles != widget.declinedTiles) {
       _updateMostUrgentTile();
     }
   }
@@ -115,6 +118,34 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
     }
   }
 
+  String _getBannerTitle(AppLocalizations l10n, int totalCount) {
+    final pendingCount = widget.pendingTiles.length;
+    final declinedCount = widget.declinedTiles.length;
+
+    if (pendingCount > 0 && declinedCount > 0) {
+      // Both pending and declined
+      if (pendingCount == 1 && declinedCount == 1) {
+        return l10n.rsvpMixedOneDeclined(1);
+      } else if (pendingCount == 1) {
+        return l10n.rsvpMixedOnePending(declinedCount);
+      } else if (declinedCount == 1) {
+        return l10n.rsvpMixedOneDeclined(pendingCount);
+      } else {
+        return l10n.rsvpMixed(pendingCount, declinedCount);
+      }
+    } else if (pendingCount > 0) {
+      // Only pending
+      return totalCount == 1
+          ? l10n.pendingRsvpSingular
+          : l10n.pendingRsvpPlural(totalCount);
+    } else {
+      // Only declined
+      return totalCount == 1
+          ? l10n.declinedRsvpSingular
+          : l10n.declinedRsvpPlural(declinedCount);
+    }
+  }
+
   void _showPendingRsvpModal(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -122,6 +153,7 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
       backgroundColor: Colors.transparent,
       builder: (context) => PendingRsvpModal(
         pendingTiles: widget.pendingTiles,
+        declinedTiles: widget.declinedTiles,
         onRsvpUpdated: widget.onRsvpUpdated,
       ),
     );
@@ -175,12 +207,15 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.pendingTiles.isEmpty) return const SizedBox.shrink();
+    if (widget.pendingTiles.isEmpty && widget.declinedTiles.isEmpty) {
+      return const SizedBox.shrink();
+    }
     final l10n = AppLocalizations.of(context)!;
 
     final urgencyColor = _getUrgencyColor();
     final hasNeedsAction =
         widget.pendingTiles.any((t) => t.rsvp == RsvpStatus.needsAction);
+    final totalCount = widget.pendingTiles.length + widget.declinedTiles.length;
 
     return GestureDetector(
       onTap: () => _showPendingRsvpModal(context),
@@ -227,23 +262,23 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.pendingTiles.length == 1
-                        ? l10n.pendingRsvpSingular
-                        : l10n.pendingRsvpPlural(widget.pendingTiles.length),
+                    _getBannerTitle(l10n, totalCount),
                     style: const TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    _getUrgencyText(context),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white.withAlpha(204),
+                  if (_mostUrgentTile != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      _getUrgencyText(context),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withAlpha(204),
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -262,11 +297,13 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
 /// Modal showing list of pending RSVP tiles with actions
 class PendingRsvpModal extends StatelessWidget {
   final List<SubCalendarEvent> pendingTiles;
+  final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpUpdated;
 
   const PendingRsvpModal({
     Key? key,
     required this.pendingTiles,
+    this.declinedTiles = const [],
     this.onRsvpUpdated,
   }) : super(key: key);
 
@@ -441,7 +478,8 @@ class PendingRsvpModal extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        l10n.pendingRsvpSubtitle(pendingTiles.length),
+                        l10n.pendingRsvpSubtitle(
+                            pendingTiles.length + declinedTiles.length),
                         style: TextStyle(
                           fontSize: 13,
                           color: colorScheme.onSurface.withAlpha(153),
@@ -510,6 +548,41 @@ class PendingRsvpModal extends StatelessWidget {
                 // Upcoming section
                 ...upcomingTiles
                     .map((tile) => _buildTileItem(context, tile, false)),
+
+                // Declined section
+                if (declinedTiles.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.cancel_outlined,
+                          color: Colors.grey.shade600,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          l10n.declinedRsvp,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '(${declinedTiles.length})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onSurface.withAlpha(102),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ...declinedTiles
+                      .map((tile) => _buildTileItem(context, tile, false)),
+                ],
               ],
             ),
           ),
@@ -526,6 +599,7 @@ class PendingRsvpModal extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final isDeclined = tile.rsvp == RsvpStatus.declined;
 
     final startTime = tile.startTime;
     final endTime = tile.endTime;
@@ -535,140 +609,143 @@ class PendingRsvpModal extends StatelessWidget {
     final isVideoConference = Utility.getLocationType(locationAddress) ==
         LocationType.videoConference;
 
-    return InkWell(
-      onTap: () => _navigateToEditTile(context, tile),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: isUrgent
-            ? BoxDecoration(
-                color: Colors.red.withAlpha(15),
-              )
-            : null,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                // Color indicator and source icon
-                Container(
-                  width: 4,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: tile.color ?? colorScheme.primary,
-                    borderRadius: BorderRadius.circular(2),
+    return Opacity(
+      opacity: isDeclined ? 0.5 : 1.0,
+      child: InkWell(
+        onTap: () => _navigateToEditTile(context, tile),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: isUrgent
+              ? BoxDecoration(
+                  color: Colors.red.withAlpha(15),
+                )
+              : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  // Color indicator and source icon
+                  Container(
+                    width: 4,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: tile.color ?? colorScheme.primary,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
+                  const SizedBox(width: 12),
 
-                // Tile info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Title with source icon
-                      Row(
-                        children: [
-                          Icon(
-                            _getSourceIcon(tile.thirdpartyType),
-                            size: 16,
+                  // Tile info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title with source icon
+                        Row(
+                          children: [
+                            Icon(
+                              _getSourceIcon(tile.thirdpartyType),
+                              size: 16,
+                              color: colorScheme.onSurface.withAlpha(153),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                tile.name ?? l10n.untitledEvent,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: colorScheme.onSurface,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Time and duration
+                        Text(
+                          '${DateFormat('EEE, MMM d • h:mm a').format(startTime)} - ${DateFormat('h:mm a').format(endTime)}',
+                          style: TextStyle(
+                            fontSize: 13,
                             color: colorScheme.onSurface.withAlpha(153),
                           ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              tile.name ?? l10n.untitledEvent,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                color: colorScheme.onSurface,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-
-                      // Time and duration
-                      Text(
-                        '${DateFormat('EEE, MMM d • h:mm a').format(startTime)} - ${DateFormat('h:mm a').format(endTime)}',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: colorScheme.onSurface.withAlpha(153),
                         ),
+                      ],
+                    ),
+                  ),
+
+                  // RSVP status badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _getRsvpStatusColor(tile.rsvp, colorScheme)
+                          .withAlpha(30),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: _getRsvpStatusColor(tile.rsvp, colorScheme)
+                            .withAlpha(100),
+                      ),
+                    ),
+                    child: Text(
+                      _getRsvpStatusText(context, tile.rsvp),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: _getRsvpStatusColor(tile.rsvp, colorScheme),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Quick actions row
+              if (hasLocation || isVideoConference)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16, top: 8),
+                  child: Row(
+                    children: [
+                      // Join meeting button (if video conference)
+                      if (isVideoConference)
+                        _buildQuickAction(
+                          context,
+                          icon: Icons.videocam_rounded,
+                          label: l10n.joinMeeting,
+                          color: Colors.blue,
+                          onTap: () => _openLocation(context, locationAddress),
+                        ),
+
+                      // Open location button (if has location)
+                      if (hasLocation && !isVideoConference)
+                        _buildQuickAction(
+                          context,
+                          icon: _getLocationIcon(locationAddress),
+                          label: l10n.openLink,
+                          color: Colors.green,
+                          onTap: () => _openLocation(context, locationAddress),
+                        ),
+
+                      const Spacer(),
+
+                      // Edit tile button
+                      _buildQuickAction(
+                        context,
+                        icon: Icons.edit_outlined,
+                        label: l10n.editTile,
+                        color: colorScheme.primary,
+                        onTap: () => _navigateToEditTile(context, tile),
                       ),
                     ],
                   ),
                 ),
-
-                // RSVP status badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getRsvpStatusColor(tile.rsvp, colorScheme)
-                        .withAlpha(30),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: _getRsvpStatusColor(tile.rsvp, colorScheme)
-                          .withAlpha(100),
-                    ),
-                  ),
-                  child: Text(
-                    _getRsvpStatusText(context, tile.rsvp),
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: _getRsvpStatusColor(tile.rsvp, colorScheme),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-
-            // Quick actions row
-            if (hasLocation || isVideoConference)
-              Padding(
-                padding: const EdgeInsets.only(left: 16, top: 8),
-                child: Row(
-                  children: [
-                    // Join meeting button (if video conference)
-                    if (isVideoConference)
-                      _buildQuickAction(
-                        context,
-                        icon: Icons.videocam_rounded,
-                        label: l10n.joinMeeting,
-                        color: Colors.blue,
-                        onTap: () => _openLocation(context, locationAddress),
-                      ),
-
-                    // Open location button (if has location)
-                    if (hasLocation && !isVideoConference)
-                      _buildQuickAction(
-                        context,
-                        icon: _getLocationIcon(locationAddress),
-                        label: l10n.openLink,
-                        color: Colors.green,
-                        onTap: () => _openLocation(context, locationAddress),
-                      ),
-
-                    const Spacer(),
-
-                    // Edit tile button
-                    _buildQuickAction(
-                      context,
-                      icon: Icons.edit_outlined,
-                      label: l10n.editTile,
-                      color: colorScheme.primary,
-                      onTap: () => _navigateToEditTile(context, tile),
-                    ),
-                  ],
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

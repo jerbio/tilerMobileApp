@@ -3239,6 +3239,42 @@ abstract class AppLocalizations {
   /// **'Later Today & Upcoming'**
   String get pendingRsvpLater;
 
+  /// No description provided for @declinedRsvpSingular.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Declined Event'**
+  String get declinedRsvpSingular;
+
+  /// No description provided for @declinedRsvpPlural.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Declined Events'**
+  String declinedRsvpPlural(int count);
+
+  /// No description provided for @declinedRsvp.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined Events'**
+  String get declinedRsvp;
+
+  /// No description provided for @rsvpMixedOnePending.
+  ///
+  /// In en, this message translates to:
+  /// **'1 Pending, {declinedCount} Declined'**
+  String rsvpMixedOnePending(int declinedCount);
+
+  /// No description provided for @rsvpMixedOneDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'{pendingCount} Pending, 1 Declined'**
+  String rsvpMixedOneDeclined(int pendingCount);
+
+  /// No description provided for @rsvpMixed.
+  ///
+  /// In en, this message translates to:
+  /// **'{pendingCount} Pending, {declinedCount} Declined'**
+  String rsvpMixed(int pendingCount, int declinedCount);
+
   /// No description provided for @rsvpNeedsAction.
   ///
   /// In en, this message translates to:

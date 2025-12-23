@@ -1277,6 +1277,33 @@
         },
         "pendingRsvpUrgent": "Starting Soon",
         "pendingRsvpLater": "Later Today & Upcoming",
+        "declinedRsvpSingular": "1 Declined Event",
+        "declinedRsvpPlural": "{count} Declined Events",
+        "@declinedRsvpPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "declinedRsvp": "Declined Events",
+        "rsvpMixedOnePending": "1 Pending, {declinedCount} Declined",
+        "@rsvpMixedOnePending": {
+          "placeholders": {
+            "declinedCount": {"type": "int"}
+          }
+        },
+        "rsvpMixedOneDeclined": "{pendingCount} Pending, 1 Declined",
+        "@rsvpMixedOneDeclined": {
+          "placeholders": {
+            "pendingCount": {"type": "int"}
+          }
+        },
+        "rsvpMixed": "{pendingCount} Pending, {declinedCount} Declined",
+        "@rsvpMixed": {
+          "placeholders": {
+            "pendingCount": {"type": "int"},
+            "declinedCount": {"type": "int"}
+          }
+        },
         "rsvpNeedsAction": "Needs Response",
         "rsvpTentative": "Tentative",
         "rsvpAccepted": "Accepted",

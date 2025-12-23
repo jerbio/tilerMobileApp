@@ -58,6 +58,7 @@ class CombinedAlertsBanner extends StatefulWidget {
 
   // RSVP data
   final List<SubCalendarEvent> pendingRsvpTiles;
+  final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpTap;
   final VoidCallback? onRsvpUpdated;
 
@@ -71,6 +72,7 @@ class CombinedAlertsBanner extends StatefulWidget {
     this.extendedTiles = const [],
     this.onExtendedTap,
     this.pendingRsvpTiles = const [],
+    this.declinedTiles = const [],
     this.onRsvpTap,
     this.onRsvpUpdated,
   }) : super(key: key);
@@ -285,21 +287,48 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
       ));
     }
 
-    // 4. RSVP alert
-    if (widget.pendingRsvpTiles.isNotEmpty) {
+    // 4. RSVP alert (pending + declined)
+    if (widget.pendingRsvpTiles.isNotEmpty || widget.declinedTiles.isNotEmpty) {
       final hasNeedsAction =
           widget.pendingRsvpTiles.any((t) => t.rsvp == RsvpStatus.needsAction);
+      final totalCount =
+          widget.pendingRsvpTiles.length + widget.declinedTiles.length;
+      final pendingCount = widget.pendingRsvpTiles.length;
+      final declinedCount = widget.declinedTiles.length;
+
+      // Determine appropriate label based on what's present
+      String label;
+      if (pendingCount > 0 && declinedCount > 0) {
+        // Both pending and declined
+        if (pendingCount == 1 && declinedCount == 1) {
+          label = l10n.rsvpMixedOneDeclined(1);
+        } else if (pendingCount == 1) {
+          label = l10n.rsvpMixedOnePending(declinedCount);
+        } else if (declinedCount == 1) {
+          label = l10n.rsvpMixedOneDeclined(pendingCount);
+        } else {
+          label = l10n.rsvpMixed(pendingCount, declinedCount);
+        }
+      } else if (pendingCount > 0) {
+        // Only pending
+        label = totalCount == 1
+            ? l10n.pendingRsvpSingular
+            : l10n.pendingRsvpPlural(totalCount);
+      } else {
+        // Only declined
+        label = totalCount == 1
+            ? l10n.declinedRsvpSingular
+            : l10n.declinedRsvpPlural(totalCount);
+      }
 
       alerts.add(ActiveAlert(
         type: AlertType.rsvp,
-        count: widget.pendingRsvpTiles.length,
+        count: totalCount,
         color: _getRsvpUrgencyColor(),
         icon: hasNeedsAction
             ? Icons.pending_actions_rounded
             : Icons.help_outline_rounded,
-        label: widget.pendingRsvpTiles.length == 1
-            ? l10n.pendingRsvpSingular
-            : l10n.pendingRsvpPlural(widget.pendingRsvpTiles.length),
+        label: label,
         onTap: widget.onRsvpTap,
       ));
     }
@@ -571,6 +600,7 @@ extension CombinedAlertsBannerHelpers on CombinedAlertsBanner {
   static void showPendingRsvpModal(
     BuildContext context,
     List<SubCalendarEvent> pendingTiles, {
+    List<SubCalendarEvent> declinedTiles = const [],
     VoidCallback? onRsvpUpdated,
   }) {
     showModalBottomSheet(
@@ -579,6 +609,7 @@ extension CombinedAlertsBannerHelpers on CombinedAlertsBanner {
       backgroundColor: Colors.transparent,
       builder: (context) => PendingRsvpModal(
         pendingTiles: pendingTiles,
+        declinedTiles: declinedTiles,
         onRsvpUpdated: onRsvpUpdated,
       ),
     );

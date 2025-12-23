@@ -195,9 +195,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       return true;
     }).toList();
 
-    // Detect conflicts (only from regular tiles)
-    final subCalendarEvents =
-        regularTiles.whereType<SubCalendarEvent>().toList();
+    // Detect conflicts (only from regular tiles, excluding declined events)
+    final subCalendarEvents = regularTiles
+        .whereType<SubCalendarEvent>()
+        .where((tile) => tile.rsvp != RsvpStatus.declined)
+        .toList();
     final conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
     _detectedConflicts = conflictGroups;
 
@@ -400,6 +402,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     // Process tiles
     Map<String, TilerEvent> viableTiles = {};
     List<SubCalendarEvent> pendingRsvpTiles = [];
+    List<SubCalendarEvent> declinedTiles = [];
+    final now = Utility.currentTime().millisecondsSinceEpoch;
 
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
@@ -414,27 +418,32 @@ class EnhancedWithinNowBatchState extends TileBatchState {
               (rsvpStatus == RsvpStatus.needsAction ||
                   rsvpStatus == RsvpStatus.tentative);
 
-          // Track pending RSVP tiles separately
+          // Check if this is a declined tile
+          final isDeclined = !isFromTiler && rsvpStatus == RsvpStatus.declined;
+
+          // Track pending RSVP tiles separately (exclude past events)
           if (isPendingRsvp && subEvent != null) {
             pendingRsvpTiles.add(subEvent);
           }
 
-          // Show tile if:
-          // 1. It's a Tiler tile and is viable, OR
-          // 2. It's a third-party tile that's accepted (not pending or declined)
-          final isDeclined = rsvpStatus == RsvpStatus.declined;
-          final shouldShowInMainList = !isPendingRsvp;
+          // Track declined tiles separately (exclude old events)
+          if (isDeclined && subEvent != null) {
+            declinedTiles.add(subEvent);
+          }
 
-          if (((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) &&
-              shouldShowInMainList) {
+          // Show tile if it's not pending RSVP and not declined
+          final shouldShowInMainList = !isPendingRsvp && !isDeclined;
+
+          if (shouldShowInMainList && isViable) {
             viableTiles[tile.uniqueId] = tile;
           }
         }
       }
     }
 
-    // Sort pending RSVP tiles by start time
+    // Sort pending RSVP and declined tiles by start time
     pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+    declinedTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     // Calculate stats
     final stats = TodayStats.fromTiles(viableTiles.values.toList());
@@ -473,8 +482,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     if (nextDepartureTile != null) activeAlertCount++;
     if (_detectedConflicts.isNotEmpty) activeAlertCount++;
     if (extendedTiles.isNotEmpty) activeAlertCount++;
-    if (pendingRsvpTiles.isNotEmpty) activeAlertCount++;
-
+    if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty)
+      activeAlertCount++;
     // Use combined banner if more than 1 alert, otherwise show individual banners
     if (activeAlertCount > 1) {
       scrollableContent.add(
@@ -494,10 +503,12 @@ class EnhancedWithinNowBatchState extends TileBatchState {
                 context, extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
+          declinedTiles: declinedTiles,
           onRsvpTap: () {
             CombinedAlertsBannerHelpers.showPendingRsvpModal(
               context,
               pendingRsvpTiles,
+              declinedTiles: declinedTiles,
               onRsvpUpdated: () => _triggerRefresh(),
             );
           },
@@ -523,10 +534,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         );
       }
 
-      if (pendingRsvpTiles.isNotEmpty) {
+      if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
         scrollableContent.add(
           PendingRsvpBanner(
             pendingTiles: pendingRsvpTiles,
+            declinedTiles: declinedTiles,
             onRsvpUpdated: () {
               _triggerRefresh();
             },

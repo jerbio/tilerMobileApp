@@ -433,8 +433,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     const double heightMargin = 262;
     renderedTiles = {};
 
-    // Track tiles with pending RSVP separately
+    // Track tiles with pending RSVP and declined separately
     List<SubCalendarEvent> pendingRsvpTiles = [];
+    List<SubCalendarEvent> declinedTiles = [];
+    final now = Utility.currentTime().millisecondsSinceEpoch;
 
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
@@ -449,27 +451,33 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
               (rsvpStatus == RsvpStatus.needsAction ||
                   rsvpStatus == RsvpStatus.tentative);
 
-          // Track pending RSVP tiles separately
+          // Check if this is a declined tile
+          final isDeclined = !isFromTiler && rsvpStatus == RsvpStatus.declined;
+
+          // Track pending RSVP tiles separately (exclude past events)
           if (isPendingRsvp && subEvent != null) {
+            // Only include tiles that haven't ended yet
             pendingRsvpTiles.add(subEvent);
           }
 
-          // Show tile if:
-          // 1. It's a Tiler tile and is viable, OR
-          // 2. It's a third-party tile that's accepted (not pending or declined)
-          final isDeclined = rsvpStatus == RsvpStatus.declined;
-          final shouldShowInMainList = !isPendingRsvp;
+          // Track declined tiles separately (exclude old events)
+          if (isDeclined && subEvent != null) {
+            declinedTiles.add(subEvent);
+          }
 
-          if (((isFromTiler && isViable) || (!isFromTiler && !isDeclined)) &&
-              shouldShowInMainList) {
+          // Show tile in main list if not pending RSVP and not declined
+          final shouldShowInMainList = !isPendingRsvp && !isDeclined;
+
+          if (shouldShowInMainList && isViable) {
             renderedTiles[eachTile.uniqueId] = eachTile;
           }
         }
       });
     }
 
-    // Sort pending RSVP tiles by start time
+    // Sort pending RSVP and declined tiles by start time
     pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+    declinedTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     childrenColumnWidgets = [];
 
@@ -499,7 +507,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesList);
     }
 
-    // Detect conflicts (excluding extended tiles)
+    // Detect conflicts (excluding extended tiles and declined events)
     if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
       const int minDurationMs = 16 * 60 * 60 * 1000;
       final regularTiles = renderedTiles.values.where((tile) {
@@ -512,8 +520,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         return true;
       }).toList();
 
-      final subCalendarEvents =
-          regularTiles.whereType<SubCalendarEvent>().toList();
+      // Exclude declined events from conflict detection
+      final subCalendarEvents = regularTiles
+          .whereType<SubCalendarEvent>()
+          .where((tile) => tile.rsvp != RsvpStatus.declined)
+          .toList();
       conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
       _detectedConflicts = conflictGroups;
     }
@@ -529,7 +540,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     if (nextDepartureTile != null) activeAlertCount++;
     if (conflictGroups.isNotEmpty) activeAlertCount++;
     if (extendedTiles.isNotEmpty) activeAlertCount++;
-    if (pendingRsvpTiles.isNotEmpty) activeAlertCount++;
+    if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty)
+      activeAlertCount++;
 
     // Use combined banner if more than 1 alert, otherwise show individual banners
     if (activeAlertCount > 1) {
@@ -552,10 +564,12 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
                 context, extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
+          declinedTiles: declinedTiles,
           onRsvpTap: () {
             CombinedAlertsBannerHelpers.showPendingRsvpModal(
               context,
               pendingRsvpTiles,
+              declinedTiles: declinedTiles,
               onRsvpUpdated: () => refreshScheduleSummary(),
             );
           },
@@ -594,10 +608,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         );
       }
 
-      if (pendingRsvpTiles.isNotEmpty) {
+      if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
         childrenColumnWidgets.add(
           PendingRsvpBanner(
             pendingTiles: pendingRsvpTiles,
+            declinedTiles: declinedTiles,
             onRsvpUpdated: () {
               refreshScheduleSummary();
             },
