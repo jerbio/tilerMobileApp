@@ -430,6 +430,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tapToCreateNewTile => 'Tap to create a new tile';
 
   @override
+  String get emptyDayHeaderLine1 => 'No plans yet.';
+
+  @override
+  String get emptyDayFooterLine1 => 'Get started in seconds—';
+
+  @override
+  String get emptyDayFooterLine2 => 'import calendars or create tiles.';
+
+  @override
+  String get emptyDayOr => 'or';
+
+  @override
+  String get emptyDayImportGoogleCalendarButton => 'Import Google Calendar';
+
+  @override
   String get suggestions => 'Suggestions';
 
   @override

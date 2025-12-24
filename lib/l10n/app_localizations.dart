@@ -908,6 +908,36 @@ abstract class AppLocalizations {
   /// **'Tap to create a new tile'**
   String get tapToCreateNewTile;
 
+  /// No description provided for @emptyDayHeaderLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'No plans yet.'**
+  String get emptyDayHeaderLine1;
+
+  /// No description provided for @emptyDayFooterLine1.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started in seconds—'**
+  String get emptyDayFooterLine1;
+
+  /// No description provided for @emptyDayFooterLine2.
+  ///
+  /// In en, this message translates to:
+  /// **'import calendars or create tiles.'**
+  String get emptyDayFooterLine2;
+
+  /// No description provided for @emptyDayOr.
+  ///
+  /// In en, this message translates to:
+  /// **'or'**
+  String get emptyDayOr;
+
+  /// No description provided for @emptyDayImportGoogleCalendarButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Google Calendar'**
+  String get emptyDayImportGoogleCalendarButton;
+
   /// No description provided for @suggestions.
   ///
   /// In en, this message translates to:

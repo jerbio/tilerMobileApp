@@ -7,6 +7,7 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -180,19 +181,116 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            Text(
+                              AppLocalizations.of(context)!.emptyDayHeaderLine1,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary,
+                                fontSize: 22,
+                                height: 1.2,
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.15),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 4,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                             Icon(
                               Icons.add,
                               color: colorScheme.onPrimary,
                               size: 60,
                             ),
+                            const SizedBox(height: 8),
                             Container(
-                              margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+                              margin: EdgeInsets.fromLTRB(0, 6, 0, 0),
                               child: Text(
                                 AppLocalizations.of(context)!.addTile,
                                 style: TextStyle(
-                                    fontSize: 45, color: colorScheme.onPrimary),
+                                    fontSize: 38,
+                                    color: colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w600),
                               ),
-                            )
+                            ),
+                            const SizedBox(height: 18),
+                            Text(
+                              AppLocalizations.of(context)!.emptyDayOr,
+                              style: TextStyle(
+                                color: colorScheme.onPrimary
+                                    .withValues(alpha: 0.5),
+                                fontSize: 13,
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                            const SizedBox(height: 14),
+                            TextButton.icon(
+                              style: TextButton.styleFrom(
+                                foregroundColor: colorScheme.onPrimary,
+                                side: BorderSide(
+                                  color: colorScheme.onPrimary
+                                      .withValues(alpha: 0.35),
+                                  width: 1,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 22, vertical: 10),
+                              ),
+                              icon: const Icon(Icons.calendar_today_outlined),
+                              label: Text(
+                                AppLocalizations.of(context)!
+                                    .emptyDayImportGoogleCalendarButton,
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                              onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  Connections.routeName,
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    AppLocalizations.of(context)!
+                                        .emptyDayFooterLine1,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: colorScheme.onPrimary
+                                          .withValues(alpha: 0.65),
+                                      fontSize: 13,
+                                      height: 1.3,
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  Text(
+                                    AppLocalizations.of(context)!
+                                        .emptyDayFooterLine2,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: colorScheme.onPrimary
+                                          .withValues(alpha: 0.65),
+                                      fontSize: 13,
+                                      height: 1.3,
+                                      fontFamily: TileTextStyles.rubikFontName,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       )),

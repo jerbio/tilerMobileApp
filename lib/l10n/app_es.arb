@@ -404,5 +404,10 @@
     "unknown": "Invitación de calendario",
     "@unknown": {
       "description": "Default label for unknown calendar source"
-    }
+    },
+    "emptyDayHeaderLine1": "Aún no hay planes.",
+    "emptyDayFooterLine1": "Comienza en segundos—",
+    "emptyDayFooterLine2": "importa calendarios o crea tiles.",
+    "emptyDayOr": "o",
+    "emptyDayImportGoogleCalendarButton": "Importar Google Calendar"
 }
