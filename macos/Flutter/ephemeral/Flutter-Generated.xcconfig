@@ -1,10 +1,10 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=/Users/mhdeyadalhafi/Developer/flutter
-FLUTTER_APPLICATION_PATH=/Users/mhdeyadalhafi/Developer/Flutter projects/tilerMobileApp-forkedd
+FLUTTER_ROOT=C:\Users\jerom\Documents\flutter
+FLUTTER_APPLICATION_PATH=C:\Users\jerom\Documents\Visual Studio 2015\Projects\WagTapDir\dev\tilerApp\tiler_app
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
-FLUTTER_BUILD_NAME=1.0.812
-FLUTTER_BUILD_NUMBER=123
+FLUTTER_BUILD_NAME=1.0.910
+FLUTTER_BUILD_NUMBER=137
 DART_OBFUSCATION=false
 TRACK_WIDGET_CREATION=true
 TREE_SHAKE_ICONS=false
