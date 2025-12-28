@@ -2,12 +2,11 @@ import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class ProcrastinateAll extends StatefulWidget {
@@ -18,11 +17,20 @@ class ProcrastinateAll extends StatefulWidget {
 class _ProcrastinateAllState extends State<ProcrastinateAll> {
   Duration _duration = Duration();
   late ScheduleApi _scheduleApi;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
     super.initState();
     _scheduleApi = ScheduleApi(getContextCallBack: () => context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   static final String procrastinateAllCancelAndProceedRouteName =
@@ -34,8 +42,8 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
@@ -65,16 +73,7 @@ class _ProcrastinateAllState extends State<ProcrastinateAll> {
     return CancelAndProceedTemplateWidget(
       routeName: procrastinateAllCancelAndProceedRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.defer,
-          style: TextStyle(
-              color: TileStyles.appBarTextColor,
-              fontWeight: FontWeight.w800,
-              fontSize: 22),
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.defer),
         automaticallyImplyLeading: false,
       ),
       child: Container(

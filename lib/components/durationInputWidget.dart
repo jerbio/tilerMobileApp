@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/util.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_box_shadows.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class DurationInputWidget extends StatefulWidget {
   final Duration? duration;
@@ -18,9 +19,6 @@ class DurationInputWidget extends StatefulWidget {
 
 class _DurationInputWidgetState extends State<DurationInputWidget> {
   Duration? _setDuration;
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
   @override
   void initState() {
     super.initState();
@@ -33,6 +31,9 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     final void Function()? setDuration = () async {
       Map<String, dynamic> durationParams = {'duration': _duration};
       Navigator.pushNamed(context, '/DurationDial', arguments: durationParams)
@@ -68,43 +69,52 @@ class _DurationInputWidgetState extends State<DurationInputWidget> {
     }
 
     Widget durationIcon = this.widget.icon ??
-        Icon(Icons.timelapse_outlined, color: inputFieldIconColor);
+        Icon(Icons.timelapse_outlined, color: colorScheme.onSurface);
     Widget retValue = new GestureDetector(
-        onTap: setDuration,
-        child: Container(
-            padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-            height: TileStyles.inputHeight,
-            decoration: BoxDecoration(
-                color: textBackgroundColor,
-                borderRadius: TileStyles.inputFieldBorderRadius,
-                boxShadow: [TileStyles.inputFieldBoxShadow]),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                durationIcon,
-                Container(
-                    padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        textStyle: const TextStyle(
-                          fontSize: TileStyles.inputFontSize,
-                        ),
-                      ),
-                      onPressed: setDuration,
-                      child: Text(
-                        textButtonString,
-                        style: TextStyle(
-                          color: TileStyles.inputFieldTextColor,
-                          fontWeight: (_duration ?? Duration.zero).inSeconds >
-                                  Duration.secondsPerMinute
-                              ? TileStyles.inputFieldFontWeight
-                              : TileStyles.inputFieldHintFontWeight,
-                          fontFamily: TileStyles.rubikFontName,
-                        ),
-                      ),
-                    ))
-              ],
-            )));
+      onTap: setDuration,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
+        height: TileDimensions.inputHeight,
+        decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerLowest,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
+            border: Border.all(
+              color: colorScheme.onInverseSurface,
+              width: 1.5,
+            ),
+            boxShadow: [
+              TileBoxShadows.inputFieldBoxShadow(
+                  tileThemeExtension!.shadowMainInputContainer)
+            ]),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            durationIcon,
+            Container(
+                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: const TextStyle(
+                      fontSize: TileDimensions.inputFontSize,
+                    ),
+                  ),
+                  onPressed: setDuration,
+                  child: Text(
+                    textButtonString,
+                    style: TextStyle(
+                      fontFamily: TileTextStyles.rubikFontName,
+                      color: colorScheme.onSurface,
+                      fontWeight: (_duration ?? Duration.zero).inSeconds >
+                              Duration.secondsPerMinute
+                          ? TileTextStyles.inputFieldFontWeight
+                          : TileTextStyles.inputFieldHintFontWeight,
+                    ),
+                  ),
+                ))
+          ],
+        ),
+      ),
+    );
     return retValue;
   }
 }

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_box_shadows.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+
+import '../theme/tile_text_styles.dart';
 
 class DateInputWidget extends StatefulWidget {
   final Function? onDateChange;
@@ -14,9 +18,6 @@ class DateInputWidget extends StatefulWidget {
 }
 
 class _DateInputWidgetState extends State<DateInputWidget> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
-  final Color inputFieldIconColor = TileStyles.inputFieldTextColor;
   String textButtonString = "";
   DateTime? _time;
   @override
@@ -64,40 +65,46 @@ class _DateInputWidgetState extends State<DateInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     return InkWell(
       onTap: onDateTap,
       child: Container(
           padding: EdgeInsets.fromLTRB(30, 10, 10, 10),
-          height: TileStyles.inputHeight,
+          height: TileDimensions.inputHeight,
           decoration: BoxDecoration(
-              color: textBackgroundColor,
-              borderRadius: TileStyles.inputFieldBorderRadius,
-              boxShadow: [TileStyles.inputFieldBoxShadow],
+              color: colorScheme.surfaceContainerLowest,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+              boxShadow: [
+                TileBoxShadows.inputFieldBoxShadow(
+                    tileThemeExtension!.shadowMainInputContainer)
+              ],
               border: Border.all(
-                color: textBorderColor,
+                color: colorScheme.onInverseSurface,
                 width: 1.5,
               )),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(Icons.calendar_month, color: inputFieldIconColor),
+              Icon(Icons.calendar_month, color: colorScheme.onSurface),
               Container(
                   padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                   child: TextButton(
                     style: TextButton.styleFrom(
                       textStyle: const TextStyle(
-                        fontSize: TileStyles.inputFontSize,
+                        fontSize: TileDimensions.inputFontSize,
                       ),
                     ),
                     onPressed: onDateTap,
                     child: Text(
                       textButtonString,
                       style: TextStyle(
-                        color: TileStyles.inputFieldTextColor,
+                        fontFamily: TileTextStyles.rubikFontName,
+                        color: colorScheme.onSurface,
                         fontWeight: (this._time != null)
-                            ? TileStyles.inputFieldFontWeight
-                            : TileStyles.inputFieldHintFontWeight,
-                        fontFamily: TileStyles.rubikFontName,
+                            ? TileTextStyles.inputFieldFontWeight
+                            : TileTextStyles.inputFieldHintFontWeight,
                       ),
                     ),
                   ))

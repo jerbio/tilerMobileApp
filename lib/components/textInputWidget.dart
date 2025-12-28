@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_box_shadows.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TextInputWidget extends StatefulWidget {
   final Function? onTextChange;
@@ -12,8 +16,6 @@ class TextInputWidget extends StatefulWidget {
 }
 
 class _TextInputWidgetState extends State<TextInputWidget> {
-  final Color textBackgroundColor = TileStyles.textBackgroundColor;
-  final Color textBorderColor = TileStyles.textBorderColor;
   String? value = null;
   late final TextEditingController textFieldController;
   @override
@@ -32,41 +34,44 @@ class _TextInputWidgetState extends State<TextInputWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     Widget tileNameContainer = Container(
-        height: TileStyles.inputHeight,
+        height: TileDimensions.inputHeight,
         decoration: BoxDecoration(
-          borderRadius: TileStyles.inputFieldBorderRadius,
+          borderRadius: TileDimensions.inputFieldBorderRadius,
           boxShadow: [
-            TileStyles.inputFieldBoxShadow,
+            TileBoxShadows.inputFieldBoxShadow(tileThemeExtension.shadowMainInputContainer)
           ],
         ),
         child: TextField(
           controller: textFieldController,
           style: TextStyle(
-              fontSize: TileStyles.inputFontSize,
-              fontFamily: TileStyles.rubikFontName,
-              color: TileStyles.inputFieldTextColor,
+              fontSize: TileDimensions.inputFontSize,
+              fontFamily: TileTextStyles.rubikFontName,
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w400),
           decoration: InputDecoration(
             hintText: this.widget.placeHolder,
             hintStyle: TextStyle(
-                color: TileStyles.inputFieldTextColor,
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w100),
             filled: true,
             isDense: true,
-            contentPadding: TileStyles.inputFieldPadding,
-            fillColor: textBackgroundColor,
+            contentPadding: TileSpacing.inputFieldPadding,
+            fillColor: colorScheme.surfaceContainerLowest,
             border: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
-              borderSide: BorderSide(color: textBorderColor, width: 2),
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+              borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide(
-                color: textBorderColor,
+                color: colorScheme.onInverseSurface,
                 width: 1.5,
               ),
             ),

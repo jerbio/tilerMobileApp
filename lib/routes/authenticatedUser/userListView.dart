@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/contact.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
+//ey: not used
 class UserListViewWidget extends StatefulWidget {
   final List<Contact>? contacts;
   final Function? onContactListUpdate;
@@ -29,7 +30,7 @@ class _UserListViewState extends State<UserListViewWidget> {
       child: CircleAvatar(
         child: Text(
           contact.displayedIdentifier?.capitalize()[0] ?? "",
-          style: TileStyles.defaultTextStyle,
+          style: TileTextStyles.defaultText,
         ),
       ),
     );
@@ -50,7 +51,7 @@ class _UserListViewState extends State<UserListViewWidget> {
           Text(
             AppLocalizations.of(context)!.numberOfMoreUsers(
                 (viableContacts.length - maxContactItems).toString()),
-            style: TileStyles.defaultTextStyle,
+            style: TileTextStyles.defaultText,
           )
         else
           SizedBox.shrink()

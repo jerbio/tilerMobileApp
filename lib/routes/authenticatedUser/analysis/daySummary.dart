@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-
-import '../../../bloc/uiDateManager/ui_date_manager_bloc.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
@@ -21,11 +19,20 @@ class DaySummary extends StatefulWidget {
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
   bool pendingFlag = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
     super.initState();
     dayData = this.widget.dayTimelineSummary;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   bool get isPending {
@@ -37,94 +44,106 @@ class _DaySummaryState extends State<DaySummary> {
     return retValue;
   }
 
+  Widget _buildShimmer() {
+    return Shimmer.fromColors(
+      baseColor: colorScheme.primary.withAlpha(50),
+      highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.onSurface.withValues(alpha: 0.8),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        width: 18.0,
+        height: 18.0,
+      ),
+    );
+  }
+
+  Widget _buildMetricChip({
+    required IconData icon,
+    required Color iconColor,
+    required int count,
+    bool isPending = false,
+  }) {
+    if (isPending) {
+      return _buildShimmer();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: iconColor, size: 20),
+        const SizedBox(width: 2),
+        Text(
+          count.toString(),
+          style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colorScheme.onSurface,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget renderDayMetricInfo() {
+    final nonViableCount = dayData?.nonViable?.length ?? 0;
+    final completeCount = dayData?.complete?.length ?? 0;
+    final tardyCount = dayData?.tardy?.length ?? 0;
+
     List<Widget> rowSymbolElements = <Widget>[];
     const iconMargin = EdgeInsets.fromLTRB(5, 0, 5, 0);
-    Widget pendingShimmer = Shimmer.fromColors(
-        baseColor: TileStyles.primaryColorLightHSL.toColor().withAlpha(50),
-        highlightColor: Colors.white.withAlpha(100),
-        child: Container(
-          decoration: BoxDecoration(
-              color: Color.fromRGBO(31, 31, 31, 0.8),
-              borderRadius: BorderRadius.circular(8)),
-          width: 30.0,
-          height: 30.0,
-        ));
 
-    Widget? warnWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.nonViable?.length ?? 0) > 0) {
-      warnWidget = Container(
-        child: Row(
-          children: [
-            Icon(
-              Icons.error,
-              color: Colors.redAccent,
-              size: 30.0,
-            ),
-            Text(
-              (dayData?.nonViable?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
-            )
-          ],
+    if (nonViableCount > 0 || isPending) {
+      rowSymbolElements.add(
+        Container(
+          margin: iconMargin,
+          child: _buildMetricChip(
+            icon: Icons.error,
+            iconColor: colorScheme.error,
+            count: nonViableCount,
+            isPending: isPending,
+          ),
         ),
       );
     }
-    if (warnWidget != null) {
-      rowSymbolElements.add(Container(margin: iconMargin, child: warnWidget));
-    }
-    Widget? completeWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.complete?.length ?? 0) > 0) {
-      completeWidget = Container(
-        child: Row(
-          children: [
-            Icon(
-              Icons.check_circle,
-              color: TileStyles.greenCheck,
-              size: 30.0,
-            ),
-            Text(
-              (dayData?.complete?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
-            )
-          ],
+
+    if (completeCount > 0 || isPending) {
+      rowSymbolElements.add(
+        Container(
+          margin: iconMargin,
+          child: _buildMetricChip(
+            icon: Icons.check_circle,
+            iconColor: TileColors.completedTeal,
+            count: completeCount,
+            isPending: isPending,
+          ),
         ),
       );
     }
-    if (completeWidget != null) {
-      rowSymbolElements
-          .add(Container(margin: iconMargin, child: completeWidget));
-    }
 
-    Widget? tardyWidget = isPending ? pendingShimmer : null;
-    if ((dayData?.tardy?.length ?? 0) > 0) {
-      tardyWidget = Container(
-        child: Row(
-          children: [
-            Icon(
-              Icons.car_crash_outlined,
-              color: Colors.amberAccent,
-              size: 30.0,
-            ),
-            Text(
-              (dayData?.tardy?.length ?? 0).toString(),
-              style: TileStyles.daySummaryStyle,
-            )
-          ],
+    if (tardyCount > 0 || isPending) {
+      rowSymbolElements.add(
+        Container(
+          margin: iconMargin,
+          child: _buildMetricChip(
+            icon: Icons.car_crash_outlined,
+            iconColor: TileColors.warning,
+            count: tardyCount,
+            isPending: isPending,
+          ),
         ),
       );
     }
-    if (tardyWidget != null) {
-      rowSymbolElements.add(Container(margin: iconMargin, child: tardyWidget));
-    }
 
-    Widget retValue = Container(
+    return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 20, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: rowSymbolElements,
       ),
     );
-    return retValue;
   }
 
   @override
@@ -167,12 +186,14 @@ class _DaySummaryState extends State<DaySummary> {
 
           Widget dayDateText = Container(
             child: Text(
-                Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
-                style: TextStyle(
-                    fontSize: 30,
-                    fontFamily: TileStyles.rubikFontName,
-                    color: TileStyles.primaryColor,
-                    fontWeight: FontWeight.w700)),
+              Utility.getTimeFromIndex(dayData!.dayIndex!).humanDate(context),
+              style: TextStyle(
+                fontSize: 28,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
+            ),
           );
 
           Widget buttonPress = GestureDetector(

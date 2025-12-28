@@ -5,9 +5,10 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/endTimeDurationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationUIWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class StartEndDurationTimeline extends StatefulWidget {
   late DateTime start;
@@ -79,7 +80,7 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
         MaterialPageRoute(
             builder: (context) => EndTimeDurationDial(
                 startTime: this._start,
-                duraton: this._duration))).then((value) {
+                duration: this._duration))).then((value) {
       if (value != null && value is EndTimeDurationResult) {
         Duration duration = value.duration ??
             Duration(
@@ -97,11 +98,13 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
+
     TextStyle textTitleStyle = this.widget.headerTextStyle ??
         const TextStyle(
-            color: Color.fromRGBO(30, 30, 30, 1),
+            fontFamily: TileTextStyles.rubikFontName,
             fontSize: 20,
-            fontFamily: 'Rubik',
             fontWeight: FontWeight.w500);
 
     return Container(
@@ -121,7 +124,7 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                   alignment: Alignment.topLeft,
                   color: !this.widget.isReadOnly
                       ? Colors.transparent
-                      : TileStyles.disabledBackgroundColor,
+                      : tileThemeExtension.surfaceContainerDisabled,
                   child: TimeAndDate(
                     time: this._start,
                     onInputChange: onTimeChange,
@@ -147,7 +150,7 @@ class _StartEndDurationTimelineState extends State<StartEndDurationTimeline> {
                     alignment: Alignment.center,
                     color: !this.widget.isReadOnly
                         ? Colors.transparent
-                        : TileStyles.disabledBackgroundColor,
+                        : tileThemeExtension.surfaceContainerDisabled,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

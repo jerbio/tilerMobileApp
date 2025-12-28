@@ -18,7 +18,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
 
 enum NotificationIdTypes { none, nextTile, userSetReminder, depatureTime }
@@ -94,30 +94,20 @@ class LocalNotificationService {
     }
   }
 
-  void showMessage(String message) {
+  void showMessage(String message, ColorScheme colorScheme) {
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
   completeTile(BuildContext context, SubCalendarEvent subTile) async {
-    showMessage(AppLocalizations.of(context)!.completing);
+    final colorScheme = Theme.of(context).colorScheme;
+    showMessage(AppLocalizations.of(context)!.completing, colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
       DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);

@@ -6,13 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
 
 class TileProcrastinateRoute extends StatefulWidget {
@@ -33,12 +32,21 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
   Duration? _selectedPresetValue = null;
   Map<String, Duration> durationStringToDuration = {};
   late SubCalendarEventApi _subCalendarEventApi;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
     super.initState();
     _subCalendarEventApi =
         new SubCalendarEventApi(getContextCallBack: () => context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   static final String tileProcrastinateCancelAndProceedRouteName =
@@ -50,19 +58,8 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
@@ -181,16 +178,7 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
         routeName: tileProcrastinateCancelAndProceedRouteName,
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.duration,
-            style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
         child: Container(

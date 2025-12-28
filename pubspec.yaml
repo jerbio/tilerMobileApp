@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.816+127
+version: 1.0.910+137
 
 
 environment:
@@ -35,7 +35,7 @@ dependencies:
   flutter_secure_storage: ^9.2.2
   http: ^1.2.2
   # intl: ^0.18.1
-  intl: ^0.19.0
+  intl: ^0.20.2
   json_annotation: ^4.3.0
   tuple: ^2.0.0
   uuid: ^4.5.1
@@ -95,6 +95,7 @@ dependencies:
   flutter_polyline_points: ^2.1.0
   flutter_slidable: ^3.1.2
   toggle_switch: ^2.3.0
+  video_player: ^2.8.0
 
 dev_dependencies:
   build_runner: ^2.4.5
@@ -138,43 +139,23 @@ flutter:
     - assets/images/tiler_logo_white.png
     - assets/images/tiler_logo_white_text.png
     - assets/images/binocular.png
-    - assets/images/regenerativeArt/pictimely_we_are_not_Gods_064eb660-6cca-44bb-b75b-12da4555ef30.png
-    - assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_renovating_their_home_699323d1-6938-4a45-9ec9-01ae9bbef757.png
-    - assets/images/regenerativeArt/pictimely_Do_some_origami_43731a0a-393c-434e-ab3e-1c5bb10143b2.png
-    - assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_taking_dance_lessons_with_d_d3c2a283-1c7a-4391-b960-de2f5087d487.png
-    - assets/images/regenerativeArt/pictimely_design_a_photo_of_diverse_people_watching_movie_with__2aca0b05-74a4-49ea-a7c3-07b8542cd627.png
-    - assets/images/regenerativeArt/pictimely_image_of_someone_creating_or_making_something_or_a_ma_2a50defa-b851-4671-9cfd-41eaa5636130.png
-    - assets/images/regenerativeArt/pictimely_Make_a_bird_feeder_28f817f4-f638-4730-bf9c-4273f6a6ef33.png
-    - assets/images/regenerativeArt/pictimely_Reorganize_your_closets_abdd967a-9592-444b-b772-0326fa46d8ea.png
-    - assets/images/regenerativeArt/pictimely_plant_indoor_garden_fb195907-8fd8-4c03-b998-61eb0d000f5f.png
-    - assets/images/regenerativeArt/pictimely_make_a_tshirt_05b6d04b-a565-4683-bbf8-6e208acee019.png
-    - assets/images/regenerativeArt/pictimely_take_a_nap_d7b1437a-eb98-458b-ad54-50ccd9792ea1.png
     - assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_going_on_relaxing_walk_b08a6746-c6f7-4937-86fa-445978011119.png
-    - assets/images/regenerativeArt/pictimely_people_trying_to_find_something_to_do_while_listening_7fcfd84e-fde9-44b1-8835-470d9ff7036d.png
     - assets/images/regenerativeArt/pictimely_decorate_a_room_05c28f1e-30fb-44f9-9738-30fe5decab93.png
     - assets/images/regenerativeArt/pictimely_design_a_photo_of_diverse_people_doing_laundry_f83ffa56-27d2-4556-9bbb-175a92ec9b85.png
     - assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_meeting_up_with_friends_fcf525d6-df39-4b54-887d-fc5afd8c1caa.png
     - assets/images/regenerativeArt/pictimely_design_a_photo_of_someone_working_on_their_home_89d45464-6ce9-4623-b0c4-dcbe9bee8a96.png
     - assets/images/regenerativeArt/cleanup_kitchen_prep_7fd5f130-8833-42be-be26-faf4b0110b2f_3.png
-    - assets/images/regenerativeArt/deep_work_1d44e16d-2072-4f65-911c-6bb627aaba09_3.png
     - assets/images/regenerativeArt/deep_work_81053022-ead4-4edc-b689-a17a294c420d_3.png
     - assets/images/regenerativeArt/deep_work_aa3ab045-791b-4d59-be21-546c08bc554f_1.png
-    - assets/images/regenerativeArt/deep_work_acf26d59-afaa-4640-9889-88956ed2ee43_2.png
-    - assets/images/regenerativeArt/deep_work_cfbe12aa-5c51-40d4-aa80-e9b62db66345_0.png
-    - assets/images/regenerativeArt/doing_dishes_engaged_in_weekend_hou_7fd5f130-8833-42be-be26-faf4b0110b2f_1.png
-    - assets/images/regenerativeArt/grocery_shopping_60303322-5768-43c0-9388-0d1ab44c63d8_0.png
-    - assets/images/regenerativeArt/grocery_shopping_84a6eb72-ae75-46d1-9230-a73ea0b29884_0.png
-    - assets/images/regenerativeArt/journal_quiet_time_4025f1e6-101e-482d-bdcd-7b7d70111a2c_3.png
-    - assets/images/regenerativeArt/morning_plan_88ff361e-17fe-4157-b942-3f94a5205b47_1.png
     - assets/images/regenerativeArt/plan_trip_2dde37b4-6596-42c3-adc0-c8daf853c4ed_0.png
     - assets/images/regenerativeArt/public_transit_2dde37b4-6596-42c3-adc0-c8daf853c4ed_3.png
     - assets/images/regenerativeArt/run_workout_a94bbb89-2f18-47fc-8280-7bf2634259da_2.png
-    - assets/images/regenerativeArt/tour_city_547c9b0f-280d-46bb-94ce-c45205bc0b29_2.png
     - assets/images/regenerativeArt/work_out_run_a94bbb89-2f18-47fc-8280-7bf2634259da_1.png
     - assets/images/regenerativeArt/workout_meditate_e77fbb2a-88b4-4c65-ac6b-c457145336d6_1.png
     - assets/images/regenerativeArt/workout_meditate_e77fbb2a-88b4-4c65-ac6b-c457145336d6_3.png
     - assets/rive/
     - assets/lottie/blackCars.json
+    - assets/lottie/whiteCars.json
     - assets/lottie/redCars.json
     - assets/lottie/red-bicycle.json
     - assets/lottie/black-bicycle.json
@@ -196,7 +177,7 @@ flutter:
     - assets/images/iconScout/logout.svg
     - assets/icons/svg/google-outline---filled(24x24)@1x.svg
     - assets/icons/settings/
-    # - images/a_dot_ham.jpeg
+    - assets/videos/
   generate: true
 
   # An image asset can refer to one or more resolution-specific "variants", see

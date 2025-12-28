@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/repetition.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -21,10 +21,18 @@ class RepetitionSelectorWidget extends StatefulWidget {
 
 class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
   Repetition? _repetition;
+  late ThemeData theme;
+
   @override
   void initState() {
     super.initState();
     this._repetition = this.widget.repetition;
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    super.didChangeDependencies();
   }
 
   Widget renderRepetitionDisabled() {

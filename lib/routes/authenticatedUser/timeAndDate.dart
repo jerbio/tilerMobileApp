@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:intl/intl.dart';
-
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TimeAndDate extends StatefulWidget {
   DateTime time = Utility.currentTime();
@@ -20,6 +19,8 @@ class TimeAndDate extends StatefulWidget {
 }
 
 class _TimeAndDateState extends State<TimeAndDate> {
+  late ThemeData theme;
+
   late DateTime dateTime;
   @override
   void initState() {
@@ -27,42 +28,49 @@ class _TimeAndDateState extends State<TimeAndDate> {
     super.initState();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+  }
+
   Widget RenderTimePicker() {
     final localizations = MaterialLocalizations.of(context);
     final formattedTimeOfDay =
         localizations.formatTimeOfDay(TimeOfDay.fromDateTime(dateTime));
     return GestureDetector(
-      onTap: () {
-        if (this.widget.isReadOnly) {
-          return;
-        }
-        Future<TimeOfDay?> selectedTime = showTimePicker(
-          initialTime: TimeOfDay.fromDateTime(dateTime),
-          context: context,
-        );
-        selectedTime.then((timeOfDayUpdate) {
-          if (timeOfDayUpdate != null) {
-            DateTime updatedTime = DateTime(dateTime.year, dateTime.month,
-                dateTime.day, timeOfDayUpdate.hour, timeOfDayUpdate.minute);
-            setState(() {
-              dateTime = updatedTime;
-            });
-            if (this.widget.onInputChange != null) {
-              this.widget.onInputChange!(updatedTime);
-            }
+        onTap: () {
+          if (this.widget.isReadOnly) {
+            return;
           }
-        });
-      },
-      child: Container(
+          Future<TimeOfDay?> selectedTime = showTimePicker(
+            initialTime: TimeOfDay.fromDateTime(dateTime),
+            context: context,
+          );
+          selectedTime.then((timeOfDayUpdate) {
+            if (timeOfDayUpdate != null) {
+              DateTime updatedTime = DateTime(dateTime.year, dateTime.month,
+                  dateTime.day, timeOfDayUpdate.hour, timeOfDayUpdate.minute);
+              setState(() {
+                dateTime = updatedTime;
+              });
+              if (this.widget.onInputChange != null) {
+                this.widget.onInputChange!(updatedTime);
+              }
+            }
+          });
+        },
         child: Container(
-            child: Text(formattedTimeOfDay,
-                style: TextStyle(
-                    color: Color.fromRGBO(31, 31, 31, 1),
-                    fontSize: 35,
-                    fontFamily: TileStyles.rubikFontName,
-                    fontWeight: FontWeight.w500))),
-      ),
-    );
+          child: Container(
+            child: Text(
+              formattedTimeOfDay,
+              style: TextStyle(
+                  fontSize: 28,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w500),
+            ),
+          ),
+        ));
   }
 
   void onDateTap() async {
@@ -106,7 +114,6 @@ class _TimeAndDateState extends State<TimeAndDate> {
             child: Text(
               DateFormat.yMMMd(locale).format(dateTime),
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontFamily: 'Rubik'),
             )));
   }
 

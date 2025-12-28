@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
+import 'package:tiler_app/l10n/app_localizations.dart'; // Add this import
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
@@ -16,7 +16,12 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_spacing.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import '../../../constants.dart' as Constants;
 
@@ -39,18 +44,18 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   bool? _isLocationManuallySet = false;
   late ScheduleApi scheduleApi;
   Location? _locationResponse;
-  final Color iconColor = TileStyles.primaryColor;
-  // final Color inputFieldIconColor = TileStyles.primaryColorDarkHSL.toColor();
-  // final Color iconColor = TileStyles.primaryColorDarkHSL.toColor();
-  final Color populatedTextColor = TileStyles.primaryContrastTextColor;
-  final BoxDecoration boxDecoration = TileStyles.configUpdate_notSelected;
+
   // final BoxDecoration populatedDecoration = TileStyles.configUpdate_Selected;
-  final BoxDecoration populatedDecoration = BoxDecoration(
-      borderRadius: BorderRadius.all(
-        const Radius.circular(10.0),
-      ),
-      color: TileStyles.primaryColor);
+
   late final LocationApi locationApi;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+  late BoxDecoration boxDecoration;
+  late Color unPopulatedOnSurfaceColor;
+  late Color populatedOnSurfaceColor;
+  late BoxDecoration populatedDecoration;
+
   Location? _homeLocation;
   Location? _workLocation;
   bool isPendingAutoResult = false;
@@ -75,8 +80,27 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         });
       });
     });
+    this.newTile =
+        NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    boxDecoration =
+        TileDecorations.configUpdate_notSelected(colorScheme.primary);
+    populatedOnSurfaceColor = colorScheme.onPrimary;
+    unPopulatedOnSurfaceColor = colorScheme.primary;
+    populatedDecoration = BoxDecoration(
+        borderRadius: BorderRadius.all(
+          const Radius.circular(10.0),
+        ),
+        color: colorScheme.primary);
     addButtonStyle = ButtonStyle(
-      side: WidgetStateProperty.all(BorderSide(color: TileStyles.primaryColor)),
+      side: WidgetStateProperty.all(BorderSide(color: colorScheme.primary)),
       shadowColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
@@ -86,20 +110,15 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       backgroundColor: WidgetStateProperty.resolveWith((states) {
         return Colors.transparent;
       }),
-      foregroundColor: WidgetStateProperty.resolveWith((states) {
-        return TileStyles.primaryColor;
-      }),
       minimumSize: WidgetStateProperty.resolveWith((states) {
         return Size(MediaQuery.sizeOf(context).width - 20, 50);
       }),
     );
-    this.newTile =
-        NewTile.fromJson((this.widget.newTile ?? NewTile()).toJson());
   }
 
   Widget _renderOptionalFields() {
     return Padding(
-      padding: TileStyles.inpuPadding,
+      padding: TileSpacing.inputPadding,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -263,18 +282,14 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         child: Column(
           children: [
             FaIcon(
-              TileStyles.forecastIcon,
-              color: isLoaded
-                  ? TileStyles.primaryContrastColor
-                  : TileStyles.primaryColor,
+              FontAwesomeIcons.binoculars,
+              color: isLoaded ? colorScheme.onPrimary : colorScheme.primary,
               size: 16,
             ),
             Text(AppLocalizations.of(context)!.previewTileForecast,
                 style: TextStyle(
                   fontSize: 8,
-                  color: isLoaded
-                      ? TileStyles.primaryContrastColor
-                      : TileStyles.primaryColor,
+                  color: isLoaded ? colorScheme.onPrimary : colorScheme.primary,
                 ))
           ],
         ),
@@ -284,8 +299,8 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
           minimumSize: Size(width, height),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           backgroundColor: isLoaded
-              ? TileStyles.primaryColor
-              : TileStyles.primaryContrastColor,
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerLowest,
         ));
   }
 
@@ -310,13 +325,13 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         children: [
           foreCastButton(buttonPressed),
           Shimmer.fromColors(
-              baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
-              highlightColor: TileStyles.primaryColor.withLightness(0.7),
+              baseColor: colorScheme.tertiaryContainer.withAlpha(75),
+              highlightColor: colorScheme.primary.withLightness(0.7),
               child: Container(
                 width: width,
                 height: height,
                 decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, 0.8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(30)),
               )),
         ],
@@ -389,15 +404,21 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       prefixIcon: Icon(
         Icons.location_pin,
         size: 15,
-        color: isLocationConfigSet ? populatedTextColor : iconColor,
+        color: isLocationConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       textStyle: TextStyle(
         fontSize: 15,
-        fontFamily: TileStyles.rubikFontName,
-        color: isLocationConfigSet ? populatedTextColor : iconColor,
+        fontFamily: TileTextStyles.rubikFontName,
+        color: isLocationConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedTextColor : iconColor,
+      textColor: isLocationConfigSet
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       onPress: () {
         Location locationHolder = _locationResponse ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
@@ -461,7 +482,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         child: Stack(
           children: [
             isPendingAutoResult
-                ? TileStyles.getShimmerPending(context)
+                ? TileThemeNew.getShimmerPending(context, colorScheme.primary)
                 : SizedBox.shrink(),
             Container(
               decoration: BoxDecoration(
@@ -475,15 +496,15 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: TileStyles.defaultBackgroundColor,
+                      color: colorScheme.surfaceContainerLowest,
                     ),
                     padding: EdgeInsets.all(16),
                     child: Text(
                       AppLocalizations.of(context)!.addTile,
                       style: TextStyle(
-                        color: TileStyles.accentContrastColor,
-                        fontFamily: TileStyles.rubikFontName,
-                        fontSize: TileStyles.textFontSize,
+                        color: colorScheme.onSurface,
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: TileDimensions.textFontSize,
                       ),
                     ),
                     alignment: Alignment.centerLeft,
@@ -492,7 +513,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                     dimension: 5,
                   ),
                   Padding(
-                    padding: TileStyles.inpuPadding,
+                    padding: TileSpacing.inputPadding,
                     child: TextInputWidget(
                       placeHolder: AppLocalizations.of(context)!.tileName,
                       value: newTile.Name,
@@ -503,7 +524,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                     dimension: 5,
                   ),
                   Padding(
-                    padding: TileStyles.inpuPadding,
+                    padding: TileSpacing.inputPadding,
                     child: DurationInputWidget(
                       duration: _getDuration(),
                       onDurationChange: onDurationChange,

@@ -3,8 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/bloc/integrations_bloc.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
-import 'package:tiler_app/styles.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class CalendarItemsRoute extends StatefulWidget {
@@ -22,6 +24,9 @@ class CalendarItemsRoute extends StatefulWidget {
 
 class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
   late List<CalendarItem> localCalendarItems;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -39,6 +44,14 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
                 ))
             .toList() ??
         [];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   void updateCalendarItemLocally(String calendarItemId, bool isSelected) {
@@ -60,14 +73,15 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
           Icon(
             Icons.calendar_today_outlined,
             size: 64,
-            color: Colors.grey[400],
+            color: tileThemeExtension.onSurfaceVariantSecondary
+                .withValues(alpha: 0.87),
           ),
           SizedBox(height: 16),
           Text(
             AppLocalizations.of(context)!.noCalendarItemsFound,
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey[600],
+              color: tileThemeExtension.onSurfaceMonthlyIntegration,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -76,7 +90,7 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
             AppLocalizations.of(context)!.calendarItemsWillAppearHere,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[500],
+              color: tileThemeExtension.onSurfaceVariantSecondary,
             ),
           ),
         ],
@@ -100,10 +114,12 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
           margin: EdgeInsets.only(bottom: 24),
           padding: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: TileStyles.greenApproval.withOpacity(0.1),
+            color:
+                tileThemeExtension.integrationApproval.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: TileStyles.greenApproval.withOpacity(0.3),
+              color:
+                  tileThemeExtension.integrationApproval.withValues(alpha: 0.3),
             ),
           ),
           child: Row(
@@ -111,12 +127,12 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
               Container(
                 padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: TileStyles.greenApproval,
+                  color: tileThemeExtension.integrationApproval,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.check,
-                  color: TileStyles.primaryContrastColor,
+                  color: TileColors.lightContent,
                   size: 20,
                 ),
               ),
@@ -131,13 +147,13 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: TileStyles.greenApproval,
+                        color: tileThemeExtension.integrationApproval,
                       ),
                     ),
                     Text(
                       AppLocalizations.of(context)!.toggleCalendarsToSync,
                       style: TextStyle(
-                        color: Colors.grey[700],
+                        color: tileThemeExtension.onSurfaceMonthlyIntegration,
                         fontSize: 12,
                       ),
                     ),
@@ -174,15 +190,23 @@ class _CalendarItemsRouteState extends State<CalendarItemsRoute> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.errorMessage),
-              backgroundColor: Colors.red,
+              backgroundColor: colorScheme.onError,
             ),
           );
         }
       },
       child: CancelAndProceedTemplateWidget(
         routeName: CalendarItemsRoute.routeName,
-        appBar: TileStyles.CancelAndProceedAppBar(
-            AppLocalizations.of(context)!.integratedCalendars),
+        //ey re check very imp
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.integratedCalendars),
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontFamily: TileTextStyles.rubikFontName,
+          ),
+          leading: SizedBox.shrink(),
+        ),
         child: Container(
           padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
           child: renderCalendarItems(context),
@@ -252,6 +276,9 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
   Widget build(BuildContext context) {
     String calendarName = widget.calendarItem.name ??
         AppLocalizations.of(context)!.unknownCalendar;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     return BlocListener<IntegrationsBloc, IntegrationsState>(
       listener: (context, state) {
@@ -269,22 +296,24 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.errorMessage),
-              backgroundColor: Colors.red,
+              backgroundColor: colorScheme.onError,
             ),
           );
         }
       },
       child: Container(
         decoration: BoxDecoration(
-          color: TileStyles.primaryContrastColor,
+          color: TileColors.lightContent,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? TileStyles.greenApproval : Colors.grey[300]!,
+            color: isSelected
+                ? tileThemeExtension.integrationApproval
+                : tileThemeExtension.integrationBorder,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: colorScheme.shadow.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: Offset(0, 2),
             ),
@@ -296,13 +325,15 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
             width: 16,
             height: 16,
             decoration: BoxDecoration(
-              color: isSelected ? TileStyles.greenApproval : Colors.grey[400],
+              color: isSelected
+                  ? tileThemeExtension.integrationApproval
+                  : tileThemeExtension.surfaceContainerSuperior,
               shape: BoxShape.circle,
             ),
             child: isSelected
                 ? Icon(
                     Icons.check,
-                    color: TileStyles.primaryContrastColor,
+                    color: TileColors.lightContent,
                     size: 12,
                   )
                 : null,
@@ -312,7 +343,7 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: Colors.black87,
+              color: TileColors.darkContent,
             ),
           ),
           subtitle: widget.calendarItem.description != null
@@ -320,7 +351,7 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
                   widget.calendarItem.description!,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey[600],
+                    color: tileThemeExtension.onSurfaceMonthlyIntegration,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -332,14 +363,14 @@ class _CalendarItemTileState extends State<_CalendarItemTile> {
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor:
-                        AlwaysStoppedAnimation<Color>(TileStyles.greenApproval),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                        tileThemeExtension.integrationApproval),
                   ),
                 )
               : Switch(
                   value: isSelected,
                   onChanged: (_) => _toggleSelection(),
-                  activeColor: TileStyles.greenApproval,
+                  activeColor: tileThemeExtension.integrationApproval,
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
           onTap: _toggleSelection,

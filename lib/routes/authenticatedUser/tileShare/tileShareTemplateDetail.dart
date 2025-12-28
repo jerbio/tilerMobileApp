@@ -11,10 +11,11 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class TileShareTemplateDetailWidget extends StatefulWidget {
@@ -44,12 +45,13 @@ class _TileShareTemplateDetailState
   final verticalSpacer = SizedBox(height: 8);
   late List<DesignatedUser> designatedUsers;
   Map<Contact, DesignatedUser> designatedUsersToContact = {};
-
   bool hasTextChanged = false;
   String? noteResult = null;
   String? focusedText = null;
   TextEditingController noteFieldController = TextEditingController();
   FocusNode notesFieldFocusNode = FocusNode();
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -77,6 +79,13 @@ class _TileShareTemplateDetailState
     notesFieldFocusNode.addListener(() {
       onNoteFieldOutOfFocus();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   void onNoteFieldChange() {
@@ -252,6 +261,7 @@ class _TileShareTemplateDetailState
                 children: [
                   Icon(
                     Icons.calendar_today,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
@@ -281,7 +291,7 @@ class _TileShareTemplateDetailState
                       MaterialLocalizations.of(context).formatFullDate(
                           DateTime.fromMillisecondsSinceEpoch(
                               tileShareTemplate.end!)),
-                      style: TileStyles.defaultTextStyle,
+                      style: TileTextStyles.defaultText,
                     ),
                   )
                 ],
@@ -294,12 +304,14 @@ class _TileShareTemplateDetailState
                 children: [
                   Icon(
                     Icons.person_2_outlined,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileStyles.defaultTextStyle)
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    style: TileTextStyles.defaultText,
+                  )
                 ],
               ),
             verticalSpacer,
@@ -315,7 +327,7 @@ class _TileShareTemplateDetailState
   }
 
   Widget renderLoading() {
-    return CircularProgressIndicator();
+    return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
   void renderModal() {
@@ -368,7 +380,7 @@ class _TileShareTemplateDetailState
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10))),
-                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
                   )
                 else
                   SizedBox.shrink()
@@ -497,21 +509,18 @@ class _TileShareTemplateDetailState
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
           automaticallyImplyLeading: false,
-          centerTitle: true,
           leading: TextButton(
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
             ),
           ),
           title: this.tileShareTemplate.name != null
               ? Text(
                   this.tileShareTemplate.name ??
                       AppLocalizations.of(context)!.tileShare,
-                  style: TileStyles.titleBarStyle,
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -519,7 +528,6 @@ class _TileShareTemplateDetailState
                     if (this.tileShareTemplate.name == null)
                       Icon(
                         Icons.share,
-                        color: TileStyles.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),
@@ -529,7 +537,6 @@ class _TileShareTemplateDetailState
                     Text(
                       this.tileShareTemplate.name ??
                           AppLocalizations.of(context)!.tileShare,
-                      style: TileStyles.titleBarStyle,
                     )
                   ],
                 ),

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
-
-import '../../../util.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class EditTileDate extends StatefulWidget {
   DateTime time;
@@ -69,23 +68,23 @@ class _EditTileDateState extends State<EditTileDate> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     TextStyle textStyle =
-        this.widget.textStyle ?? TileStyles.editTimeOrDateTimeStyle;
+        this.widget.textStyle ?? TileTextStyles.editTimeOrDateTime;
     String locale = Localizations.localeOf(context).languageCode;
     return GestureDetector(
         onTap: onEndDateTap,
         child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
+          padding: const EdgeInsets.fromLTRB(15, 0, 0, 0),
           child: Row(
             children: [
               Container(
-                  width: 32,
-                  height: 32,
                   margin: const EdgeInsets.fromLTRB(0, 0, 5, 0),
                   child: Icon(
                     Icons.calendar_month,
-                    color: TileStyles.iconColor,
-                    size: 25,
+                    color: tileThemeExtension.onSurfaceSecondary,
+                    size: 20,
                   )),
               Text(
                 DateFormat.yMMMd(locale).format(time),

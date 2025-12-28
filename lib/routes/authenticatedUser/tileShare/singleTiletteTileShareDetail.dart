@@ -8,10 +8,12 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class SingleTiletteTileShareDetailWidget extends StatefulWidget {
@@ -40,6 +42,8 @@ class _SingleTiletteTileShareDetailWidget
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
   late List<Contact> contacts;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -54,6 +58,13 @@ class _SingleTiletteTileShareDetailWidget
     isLoading = true;
     getTileShareCluster();
     contacts = this.tileShareCluster.contacts ?? [];
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Future getTileShareCluster() async {
@@ -134,22 +145,6 @@ class _SingleTiletteTileShareDetailWidget
     return Text("Resource not found");
   }
 
-  Widget _buildContactPill(Contact contact) {
-    return Chip(
-      avatar: Icon(
-        (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
-            ? Icons.messenger_outline
-            : Icons.email_outlined),
-        color: TileStyles.primaryContrastColor,
-      ),
-      label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: null,
-      side: BorderSide.none,
-      backgroundColor: TileStyles.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
-    );
-  }
-
   Widget renderTileShareCluster() {
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
@@ -171,6 +166,7 @@ class _SingleTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.calendar_today,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
@@ -178,7 +174,7 @@ class _SingleTiletteTileShareDetailWidget
                     MaterialLocalizations.of(context).formatFullDate(
                         DateTime.fromMillisecondsSinceEpoch(
                             cluster.endTimeInMs!)),
-                    style: TileStyles.defaultTextStyle,
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               )
@@ -190,12 +186,13 @@ class _SingleTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.person_2_outlined,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
                   Text(
                       (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileStyles.defaultTextStyle)
+                      style: TileTextStyles.defaultText)
                 ],
               ),
             verticalSpacer,
@@ -207,7 +204,7 @@ class _SingleTiletteTileShareDetailWidget
   }
 
   Widget renderLoading() {
-    return CircularProgressIndicator();
+    return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
   void renderModal() {
@@ -261,7 +258,7 @@ class _SingleTiletteTileShareDetailWidget
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10))),
-                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
                   )
                 else
                   SizedBox.shrink()
@@ -273,9 +270,10 @@ class _SingleTiletteTileShareDetailWidget
     );
   }
 
+  //ey: not used
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style: TileStyles.enabledButtonStyle,
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },
@@ -366,21 +364,18 @@ class _SingleTiletteTileShareDetailWidget
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
           automaticallyImplyLeading: false,
-          centerTitle: true,
           leading: TextButton(
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
             ),
           ),
           title: this.tileShareCluster.name != null
               ? Text(
                   this.tileShareCluster.name ??
                       AppLocalizations.of(context)!.tileShare,
-                  style: TileStyles.titleBarStyle,
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -388,7 +383,6 @@ class _SingleTiletteTileShareDetailWidget
                     if (this.tileShareCluster.name == null)
                       Icon(
                         Icons.share,
-                        color: TileStyles.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),
@@ -398,7 +392,6 @@ class _SingleTiletteTileShareDetailWidget
                     Text(
                       this.tileShareCluster.name ??
                           AppLocalizations.of(context)!.tileShare,
-                      style: TileStyles.titleBarStyle,
                     )
                   ],
                 ),

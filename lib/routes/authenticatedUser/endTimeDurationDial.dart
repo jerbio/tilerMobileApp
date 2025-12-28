@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/routes/authenticatedUser/timeAndDate.dart';
-import 'package:tiler_app/styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class EndTimeDurationResult {
   DateTime time;
@@ -15,12 +14,12 @@ class EndTimeDurationResult {
 
 class EndTimeDurationDial extends StatefulWidget {
   late DateTime startTime;
-  late Duration duraton;
+  late Duration duration;
 
-  EndTimeDurationDial({required this.startTime, required this.duraton});
+  EndTimeDurationDial({required this.startTime, required this.duration});
   EndTimeDurationDial.fromTimeRange(TimeRange timeRange) {
     this.startTime = Utility.localDateTimeFromMs(timeRange.start!);
-    this.duraton = timeRange.duration;
+    this.duration = timeRange.duration;
   }
   @override
   _EndTimeDurationDialState createState() => _EndTimeDurationDialState();
@@ -33,14 +32,14 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
 
   @override
   void initState() {
-    _duration = this.widget.duraton;
+    _duration = this.widget.duration;
     _end = this.widget.startTime.add(_duration);
 
     super.initState();
   }
 
   bool isProceedReady() {
-    return _duration.inMinutes != this.widget.duraton.inMinutes &&
+    return _duration.inMinutes != this.widget.duration.inMinutes &&
         Utility.utcEpochMillisecondsFromDateTime(this._end) >
             Utility.utcEpochMillisecondsFromDateTime(this.widget.startTime);
   }
@@ -78,16 +77,7 @@ class _EndTimeDurationDialState extends State<EndTimeDurationDial> {
     return CancelAndProceedTemplateWidget(
         routeName: endTimeDurationRouteName,
         appBar: AppBar(
-          backgroundColor: TileStyles.primaryColor,
-          title: Text(
-            AppLocalizations.of(context)!.duration,
-            style: TextStyle(
-                color: TileStyles.appBarTextColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 22),
-          ),
-          centerTitle: true,
-          elevation: 0,
+          title: Text(AppLocalizations.of(context)!.duration),
           automaticallyImplyLeading: false,
         ),
         child: Container(

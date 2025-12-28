@@ -1,27 +1,49 @@
 import 'package:flutter/material.dart';
 
 class OnboardingSubWidget extends StatelessWidget {
+  final String? title;
   final String? questionText;
+  final String? questionSubText;
   final Widget? child;
-  const OnboardingSubWidget({this.questionText, this.child});
+  const OnboardingSubWidget({this.questionText, this.child, this.title, this.questionSubText});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Text(
-            questionText!,
-            style: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w400,
+        if(title!=null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30.0),
+            child: Text(
+              title!,
+              style: TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w600
+              ),
             ),
-            textAlign: TextAlign.left,
           ),
+        Text(
+          questionText!,
+          style: TextStyle(
+            fontSize: 18.0,
+            fontWeight: FontWeight.w400,
+          ),
+          textAlign: title!=null?TextAlign.center:TextAlign.left,
         ),
+        if(questionSubText!=null)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40.0),
+            child: Text(
+              questionSubText!,
+              style: TextStyle(
+                fontSize: 14.0,
+                fontWeight: FontWeight.w400,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
         SizedBox(height: 20.0),
         child!,
       ],

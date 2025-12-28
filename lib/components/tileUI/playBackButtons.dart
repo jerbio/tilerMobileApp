@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -18,7 +18,8 @@ class PlayBack extends StatefulWidget {
   List<PlaybackOptions>? forcedOption;
   Function? callBack;
   bool isWeeklyView;
-  PlayBack(this.subEvent, {this.forcedOption, this.callBack,this.isWeeklyView=false});
+  PlayBack(this.subEvent,
+      {this.forcedOption, this.callBack, this.isWeeklyView = false});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -26,6 +27,8 @@ class PlayBack extends StatefulWidget {
 class PlayBackState extends State<PlayBack> {
   late SubCalendarEventApi _subCalendarEventApi;
   SubCalendarEvent? _subEvent;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -34,25 +37,21 @@ class PlayBackState extends State<PlayBack> {
         new SubCalendarEventApi(getContextCallBack: () => context);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+
   void showMessage(String message) {
     Fluttertoast.showToast(
         msg: message,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
@@ -104,7 +103,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: request));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   resumeTile() async {
@@ -157,7 +156,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: request));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   setAsNowTile() async {
@@ -210,7 +209,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: requestFuture));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   completeTile() async {
@@ -262,7 +261,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: requestFuture));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   deleteTile() async {
@@ -318,21 +317,53 @@ class PlayBackState extends State<PlayBack> {
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
     }
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   procrastinate() async {
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     if (subTile.id != null && subTile.id!.isNotEmpty) {
-      if(widget.isWeeklyView) Navigator.pop(context);
-        Navigator.of(context).push(
-           MaterialPageRoute(
-               builder: (context) =>
-                   TileProcrastinateRoute(
-                     tileId: subTile.id!,
-                     callBack: this.widget.callBack,
-                   )));
+      if (widget.isWeeklyView) Navigator.pop(context);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => TileProcrastinateRoute(
+                tileId: subTile.id!,
+                callBack: this.widget.callBack,
+              )));
     }
+  }
+
+  Widget _buildActionButton({
+    required VoidCallback onTap,
+    required IconData icon,
+    required String label,
+    double iconSize = 24,
+    double rotationAngle = 0.0,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
+            child: Transform.rotate(
+              angle: rotationAngle,
+              child: Icon(
+                icon,
+                color: colorScheme.onSurface,
+                size: iconSize,
+              ),
+            ),
+            decoration: BoxDecoration(
+              color: colorScheme.onSurface.withValues(alpha: .1),
+              borderRadius: BorderRadius.circular(25),
+            ),
+          ),
+          Text(label, style: TextStyle(fontSize: 12))
+        ],
+      ),
+    );
   }
 
   @override
@@ -345,71 +376,24 @@ class PlayBackState extends State<PlayBack> {
     Widget? completeButton;
     var playBackElements = <Widget>[];
     if ((widget.subEvent.isFromTiler)) {
-      completeButton = GestureDetector(
+      completeButton = _buildActionButton(
           onTap: completeTile,
-          child: Column(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Icon(Icons.check),
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, .1),
-                    borderRadius: BorderRadius.circular(25)),
-              ),
-              Text(AppLocalizations.of(context)!.complete,
-                  style: TextStyle(fontSize: 12))
-            ],
-          ));
+          icon: Icons.check,
+          label: AppLocalizations.of(context)!.complete);
       playBackElements.add(completeButton);
     }
     alreadyAddedButton.add(PlaybackOptions.Complete);
-
-    deleteButton = Column(
-      children: [
-        GestureDetector(
-            onTap: deleteTile,
-            child: Container(
-              width: 50,
-              height: 50,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Icon(
-                Icons.close,
-                size: 35,
-              ),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, .1),
-                  borderRadius: BorderRadius.circular(25)),
-            )),
-        Text(AppLocalizations.of(context)!.delete,
-            style: TextStyle(fontSize: 12))
-      ],
-    );
-
-    setAsNowButton = Column(
-      children: [
-        GestureDetector(
-            onTap: setAsNowTile,
-            child: Container(
-              width: 50,
-              height: 50,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Transform.rotate(
-                angle: -pi / 2,
-                child: Icon(
-                  Icons.chevron_right,
-                  size: 35,
-                ),
-              ),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, .1),
-                  borderRadius: BorderRadius.circular(25)),
-            )),
-        Text(AppLocalizations.of(context)!.now, style: TextStyle(fontSize: 12))
-      ],
-    );
-
+    deleteButton = _buildActionButton(
+        onTap: deleteTile,
+        icon: Icons.close,
+        iconSize: 35,
+        label: AppLocalizations.of(context)!.delete);
+    setAsNowButton = _buildActionButton(
+        onTap: setAsNowTile,
+        icon: Icons.chevron_right,
+        iconSize: 35,
+        rotationAngle: -pi / 2,
+        label: AppLocalizations.of(context)!.now);
     if (((widget.subEvent.isFromTiler)) &&
         (!(widget.subEvent.isProcrastinate ?? false)) &&
         (!(widget.subEvent.isCurrent ||
@@ -417,29 +401,11 @@ class PlayBackState extends State<PlayBack> {
       playBackElements.add(setAsNowButton);
       alreadyAddedButton.add(PlaybackOptions.Now);
     }
-    procrastinateButton = Column(
-      children: [
-        GestureDetector(
-            onTap: procrastinate,
-            child: Container(
-              width: 50,
-              height: 50,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Transform.rotate(
-                angle: 0,
-                child: Icon(
-                  Icons.chevron_right,
-                  size: 35,
-                ),
-              ),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, .1),
-                  borderRadius: BorderRadius.circular(25)),
-            )),
-        Text(AppLocalizations.of(context)!.defer,
-            style: TextStyle(fontSize: 12))
-      ],
-    );
+    procrastinateButton = _buildActionButton(
+        onTap: procrastinate,
+        icon: Icons.chevron_right,
+        iconSize: 35,
+        label: AppLocalizations.of(context)!.defer);
 
     if (widget.subEvent.isRigid == null ||
         (widget.subEvent.isRigid != null && !widget.subEvent.isRigid!)) {
@@ -450,49 +416,21 @@ class PlayBackState extends State<PlayBack> {
     if ((widget.subEvent.isRigid != null && !widget.subEvent.isRigid!) &&
         (widget.subEvent.isCurrent ||
             (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
-      playPauseButton = Column(
-        children: [
-          GestureDetector(
-            onTap: pauseTile,
-            child: Container(
-              width: 50,
-              height: 50,
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-              child: Icon(Icons.pause_rounded),
-              decoration: BoxDecoration(
-                  color: Color.fromRGBO(31, 31, 31, .1),
-                  borderRadius: BorderRadius.circular(25)),
-            ),
-          ),
-          Text(AppLocalizations.of(context)!.pause,
-              style: TextStyle(fontSize: 12))
-        ],
-      );
+      playPauseButton = _buildActionButton(
+          onTap: pauseTile,
+          icon: Icons.pause_rounded,
+          label: AppLocalizations.of(context)!.pause);
 
       if (widget.subEvent.isPaused != null && widget.subEvent.isPaused!) {
-        playPauseButton = Column(
-          children: [
-            GestureDetector(
-              onTap: resumeTile,
-              child: Container(
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.fromLTRB(0, 0, 0, 10),
-                child: Icon(Icons.play_arrow_rounded),
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, .1),
-                    borderRadius: BorderRadius.circular(25)),
-              ),
-            ),
-            Text(AppLocalizations.of(context)!.resume,
-                style: TextStyle(fontSize: 12))
-          ],
-        );
+        playPauseButton = _buildActionButton(
+            onTap: resumeTile,
+            icon: Icons.play_arrow_rounded,
+            label: AppLocalizations.of(context)!.resume);
       }
       if (playBackElements.isNotEmpty) {
-        playBackElements.insert(1, playPauseButton as Column);
+        playBackElements.insert(1, playPauseButton);
       } else {
-        playBackElements.add(playPauseButton as Column);
+        playBackElements.add(playPauseButton);
       }
       alreadyAddedButton.add(PlaybackOptions.PlayPause);
     }

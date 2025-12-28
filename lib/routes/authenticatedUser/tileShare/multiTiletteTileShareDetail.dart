@@ -2,17 +2,18 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/newTileShareSheetWidget.dart';
-import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class MultiTiletteTileShareDetailWidget extends StatefulWidget {
@@ -38,6 +39,8 @@ class _MultiTiletteTileShareDetailWidget
   );
   bool isAddingTiletteLoading = false;
   final verticalSpacer = SizedBox(height: 8);
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -49,6 +52,13 @@ class _MultiTiletteTileShareDetailWidget
       isLoading = true;
       getTileShareCluster();
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   Future getTileShareCluster() async {
@@ -133,22 +143,6 @@ class _MultiTiletteTileShareDetailWidget
     return Text("Resource not found");
   }
 
-  Widget _buildContactPill(Contact contact) {
-    return Chip(
-      avatar: Icon(
-        (contact.phoneNumber.isNot_NullEmptyOrWhiteSpace()
-            ? Icons.messenger_outline
-            : Icons.email_outlined),
-        color: TileStyles.primaryContrastColor,
-      ),
-      label: Text(contact.email ?? contact.phoneNumber ?? ""),
-      deleteIcon: null,
-      side: BorderSide.none,
-      backgroundColor: TileStyles.primaryColor,
-      labelStyle: TextStyle(color: Colors.white),
-    );
-  }
-
   Widget renderTileShareCluster() {
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
@@ -171,6 +165,7 @@ class _MultiTiletteTileShareDetailWidget
                   Icon(
                     Icons.calendar_today,
                     size: 16,
+                    color: colorScheme.onSurface,
                   ),
                   rowSpacer,
                   GestureDetector(
@@ -199,7 +194,7 @@ class _MultiTiletteTileShareDetailWidget
                       MaterialLocalizations.of(context).formatFullDate(
                           DateTime.fromMillisecondsSinceEpoch(
                               cluster.endTimeInMs!)),
-                      style: TileStyles.defaultTextStyle,
+                      style: TileTextStyles.defaultText,
                     ),
                   )
                 ],
@@ -212,12 +207,14 @@ class _MultiTiletteTileShareDetailWidget
                 children: [
                   Icon(
                     Icons.person_2_outlined,
+                    color: colorScheme.onSurface,
                     size: 16,
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileStyles.defaultTextStyle)
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    style: TileTextStyles.defaultText,
+                  )
                 ],
               )
           ],
@@ -225,7 +222,7 @@ class _MultiTiletteTileShareDetailWidget
   }
 
   Widget renderLoading() {
-    return CircularProgressIndicator();
+    return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
   void renderModal(
@@ -281,7 +278,7 @@ class _MultiTiletteTileShareDetailWidget
                         borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10))),
-                    imageAsset: TileStyles.evaluatingScheduleAsset,
+                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
                   )
                 else
                   SizedBox.shrink()
@@ -295,7 +292,7 @@ class _MultiTiletteTileShareDetailWidget
 
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style: TileStyles.enabledButtonStyle,
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },
@@ -323,7 +320,7 @@ class _MultiTiletteTileShareDetailWidget
             renderTileShareCluster(),
             Divider(),
             if (this.isTileListLoading == true)
-              CircularProgressIndicator()
+              CircularProgressIndicator(color: colorScheme.tertiary)
             else
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -351,21 +348,18 @@ class _MultiTiletteTileShareDetailWidget
 
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: TileStyles.appBarColor,
           automaticallyImplyLeading: false,
-          centerTitle: true,
           leading: TextButton(
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
-              color: TileStyles.appBarTextColor,
             ),
           ),
           title: this.tileShareCluster?.name != null
               ? Text(
                   this.tileShareCluster?.name ??
                       AppLocalizations.of(context)!.tileShare,
-                  style: TileStyles.titleBarStyle,
                 )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -373,7 +367,6 @@ class _MultiTiletteTileShareDetailWidget
                     if (this.tileShareCluster?.name == null)
                       Icon(
                         Icons.share,
-                        color: TileStyles.appBarTextColor,
                       )
                     else
                       SizedBox.shrink(),
@@ -383,7 +376,6 @@ class _MultiTiletteTileShareDetailWidget
                     Text(
                       this.tileShareCluster?.name ??
                           AppLocalizations.of(context)!.tileShare,
-                      style: TileStyles.titleBarStyle,
                     )
                   ],
                 ),

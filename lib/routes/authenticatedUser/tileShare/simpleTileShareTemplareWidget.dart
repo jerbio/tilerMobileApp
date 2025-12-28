@@ -1,13 +1,14 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/data/designatedUser.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/designatedUserCircle.dart';
-import 'package:tiler_app/styles.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TileShareTemplateSimpleWidget extends StatefulWidget {
   final TileShareTemplate? tileShareTemplate;
@@ -23,6 +24,8 @@ class TileShareTemplateSimpleWidget extends StatefulWidget {
 
 class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
   late bool isReadOnly = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   final rowSpacer = SizedBox.square(
     dimension: 8,
   );
@@ -33,13 +36,20 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
     isReadOnly = this.widget.isReadOnly ?? true;
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+  }
+
   Widget generateUserCircles(List<DesignatedUser> designatedUsers) {
     List<Widget> allCircleWidgets = [];
     for (int i = 0; i < maxContactItems && i < designatedUsers.length; i++) {
       allCircleWidgets.add(DesignatedUserCircle(
         designatedUser: designatedUsers[i],
-        color: TileStyles
-            .randomDefaultHues[i % TileStyles.randomDefaultHues.length],
+        color: TileColors
+            .randomDefaultHues[i % TileColors.randomDefaultHues.length],
       ));
     }
     return Row(
@@ -49,7 +59,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
           Text(
             AppLocalizations.of(context)!.numberOfMoreUsers(
                 (designatedUsers.length - maxContactItems).toString()),
-            style: TileStyles.defaultTextStyle,
+            style: TileTextStyles.defaultText,
           )
         else
           SizedBox.shrink()
@@ -62,12 +72,12 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
     const double fontSize = 12;
     const double iconSize = 12;
     const TextStyle textStyle = TextStyle(
-        fontSize: fontSize,
-        fontFamily: TileStyles.rubikFontName,
-        color: const Color.fromRGBO(40, 40, 40, 1));
+      fontFamily: TileTextStyles.rubikFontName,
+      fontSize: fontSize,
+    );
     return Card(
       surfaceTintColor: Colors.transparent,
-      elevation: TileStyles.defaultCardElevation,
+      elevation: TileDimensions.defaultCardElevation,
       margin: EdgeInsets.all(10),
       child: Padding(
           padding: EdgeInsets.all(10),
@@ -84,6 +94,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                       children: [
                         Icon(
                           Icons.calendar_today,
+                          color: colorScheme.onSurface,
                           size: iconSize,
                         ),
                         rowSpacer,
@@ -111,7 +122,7 @@ class _TileShareTemplateState extends State<TileShareTemplateSimpleWidget> {
                     padding: EdgeInsets.all(0),
                     icon: Icon(
                       Icons.delete,
-                      color: TileStyles.primaryColor,
+                      color: colorScheme.primary,
                     ),
                     onPressed: () {
                       if (this.widget.onDelete != null) {

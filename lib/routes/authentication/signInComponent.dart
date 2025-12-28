@@ -15,12 +15,15 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../services/api/authorization.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
-import '../../styles.dart';
 import '../../util.dart';
 
 class SignInComponent extends StatefulWidget {
@@ -113,7 +116,12 @@ class SignInComponentState extends State<SignInComponent>
   late final AuthorizationApi authApi;
   NotificationOverlayMessage notificationOverlayMessage =
       NotificationOverlayMessage();
-  final inputFieldFillColor = Color.fromRGBO(255, 255, 255, .75);
+
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late Color inputFieldFillColor;
+  late TileThemeExtension tileThemeExtension;
+  late ButtonStyle elevatedButtonStyle;
 
   @override
   void initState() {
@@ -148,6 +156,18 @@ class SignInComponentState extends State<SignInComponent>
 
     _onPasswordFocusChange();
     _onConfirmPasswordFocusChange();
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    inputFieldFillColor = colorScheme.surfaceContainerLowest;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    elevatedButtonStyle = ElevatedButton.styleFrom(
+      foregroundColor: colorScheme.tertiary,
+    );
+    super.didChangeDependencies();
   }
 
   void _onPasswordFocusChange() {
@@ -193,19 +213,8 @@ class SignInComponentState extends State<SignInComponent>
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  void showErrorMessage(String message) {
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.SNACKBAR,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.black45,
-        textColor: Colors.red,
+        backgroundColor: colorScheme.inverseSurface,
+        textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
 
@@ -487,12 +496,14 @@ class SignInComponentState extends State<SignInComponent>
       ),
       child: Row(children: [
         CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+            valueColor: AlwaysStoppedAnimation<Color>(
+                colorScheme.surfaceContainerLowest)),
         Container(
             padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Text(
               message,
-              style: TextStyle(color: Colors.white, fontSize: 20),
+              style: TextStyle(
+                  color: colorScheme.surfaceContainerLowest, fontSize: 20),
             ))
       ]),
     )));
@@ -689,7 +700,7 @@ class SignInComponentState extends State<SignInComponent>
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
       ),
     );
@@ -712,7 +723,7 @@ class SignInComponentState extends State<SignInComponent>
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
       ),
     );
@@ -785,7 +796,7 @@ class SignInComponentState extends State<SignInComponent>
         ),
         contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
         border: OutlineInputBorder(
-            borderRadius: TileStyles.inputFieldBorderRadius,
+            borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
         fillColor: inputFieldFillColor,
       ),
@@ -799,7 +810,8 @@ class SignInComponentState extends State<SignInComponent>
         child: Text(
           AppLocalizations.of(context)!.forgotPasswordBtn,
           style: TextStyle(
-              color: Color(0xFF880E4F), decoration: TextDecoration.underline),
+              color: TileColors.forgetPassword,
+              decoration: TextDecoration.underline),
         ),
       ),
     );
@@ -811,11 +823,10 @@ class SignInComponentState extends State<SignInComponent>
               instructionMessage,
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
-                fontWeight: FontWeight.w300,
-                fontSize: calculateSizeByHeight(12),
-                color: Colors.red,
-              ),
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w300,
+                  fontSize: calculateSizeByHeight(12),
+                  color: colorScheme.onError),
             )
           : SizedBox.shrink(),
     );
@@ -827,10 +838,10 @@ class SignInComponentState extends State<SignInComponent>
               AppLocalizations.of(context)!.passwordsDontMatch,
               textAlign: TextAlign.start,
               style: TextStyle(
-                fontFamily: TileStyles.rubikFontName,
+                fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 fontSize: calculateSizeByHeight(12),
-                color: Colors.red,
+                color: colorScheme.onError,
               ),
             )
           : SizedBox.shrink(),
@@ -849,6 +860,7 @@ class SignInComponentState extends State<SignInComponent>
     var signUpButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
         icon: Icon(Icons.person_add),
         label: Text(AppLocalizations.of(context)!.signUp),
         onPressed: setAsRegistrationScreen,
@@ -858,6 +870,7 @@ class SignInComponentState extends State<SignInComponent>
     var signInButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
         icon: Icon(Icons.arrow_forward),
         label: Text(AppLocalizations.of(context)!.signIn),
         onPressed: userNamePasswordSignIn,
@@ -868,10 +881,11 @@ class SignInComponentState extends State<SignInComponent>
         ? SizedBox(
             width: 200,
             child: ElevatedButton.icon(
+                style: elevatedButtonStyle,
                 onPressed: signInToGoogle,
                 icon: FaIcon(
                   FontAwesomeIcons.google,
-                  color: Colors.white,
+                  color: TileColors.lightContent,
                 ),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
           )
@@ -880,6 +894,7 @@ class SignInComponentState extends State<SignInComponent>
     var backToSignInButton = SizedBox(
       width: isForgetPasswordScreen ? 200 : null,
       child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
         label: Text(AppLocalizations.of(context)!.signIn),
         icon: Icon(Icons.arrow_back),
         onPressed: setAsSignInScreen,
@@ -889,6 +904,7 @@ class SignInComponentState extends State<SignInComponent>
     var forgetPasswordButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
         icon: Icon(Icons.lock_reset),
         label: Text(AppLocalizations.of(context)!.resetPassword),
         onPressed: forgetPassword,
@@ -896,6 +912,7 @@ class SignInComponentState extends State<SignInComponent>
     );
 
     var registerUserButton = ElevatedButton.icon(
+      style: elevatedButtonStyle,
       label: Text(AppLocalizations.of(context)!.signUp),
       icon: Icon(Icons.person_add),
       onPressed: registerUser,
@@ -933,7 +950,6 @@ class SignInComponentState extends State<SignInComponent>
         controller: confirmPasswordEditingController,
         obscureText: !_isPasswordVisible,
         autofillHints: [AutofillHints.newPassword],
-        cursorColor: Colors.purple,
         decoration: InputDecoration(
           hintText: AppLocalizations.of(context)!.confirmPassword,
           filled: true,
@@ -941,7 +957,7 @@ class SignInComponentState extends State<SignInComponent>
           prefixIcon: Icon(Icons.lock),
           contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
           border: OutlineInputBorder(
-              borderRadius: TileStyles.inputFieldBorderRadius,
+              borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide.none),
           fillColor: inputFieldFillColor,
         ),
@@ -1005,10 +1021,12 @@ class SignInComponentState extends State<SignInComponent>
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(40.0),
                 topRight: Radius.circular(40.0)),
-            color: Color.fromRGBO(245, 245, 245, 0.2),
+            color: colorScheme.surface.withValues(alpha: 0.2),
             boxShadow: [
               BoxShadow(
-                  color: Color.fromRGBO(245, 245, 245, 0.25), spreadRadius: 5),
+                  color: tileThemeExtension.shadowSignInContainer
+                      .withValues(alpha: 0.25),
+                  spreadRadius: 5),
             ],
           ),
           padding: EdgeInsets.symmetric(

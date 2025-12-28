@@ -1,15 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
 class _DayOfWeekRestriction {
   String weekDayText = '';
@@ -31,6 +31,9 @@ class _DayOfWeekRestriction {
 
 class CustomTimeRestrictionRoute extends StatefulWidget {
   Map? params;
+  final bool isOnBoarding;
+  CustomTimeRestrictionRoute({Key? key, this.isOnBoarding = false, this.params})
+      : super(key: key);
   @override
   State<StatefulWidget> createState() => CustomTimeRestrictionRouteState();
 }
@@ -59,9 +62,21 @@ class CustomTimeRestrictionRouteState
 
   static final String customTimeRestrictionRouteName =
       "customTimeRestrictionRouteName";
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   Future<TimeOfDay?> _selectTime(
@@ -102,8 +117,9 @@ class CustomTimeRestrictionRouteState
     localMapOfWeekDayToDayRestriction['saturday'] = _DayOfWeekRestriction(
         weekDayText: AppLocalizations.of(this.context)!.saturday, dayIndex: 6);
 
-    Map? args = ModalRoute.of(context)?.settings.arguments as Map?;
-    this.widget.params = args;
+    Map? args =
+        widget.params ?? (ModalRoute.of(context)?.settings.arguments as Map?);
+    this.widget.params = args ?? {};
     if (args != null && args.containsKey('restrictionProfile')) {
       RestrictionProfile? restrictionProfileParams = args['restrictionProfile'];
       this.restrictionProfileParams = restrictionProfileParams;
@@ -152,15 +168,15 @@ class CustomTimeRestrictionRouteState
     final bool isSelected = day.isSelected;
     final bool showPaste = _hasCopied && !isCopiedDay;
 
-    Color iconColor = TileStyles.disabledTextColor;
+    Color iconColor = colorScheme.onInverseSurface.withLightness(0.7);
 
     if (isSelected) {
       if (showPaste) {
-        iconColor = TileStyles.primaryColor;
+        iconColor = colorScheme.primary;
       } else if (isCopiedDay) {
-        iconColor = Colors.cyanAccent;
+        iconColor = TileColors.copied;
       } else {
-        iconColor = TileStyles.primaryColor;
+        iconColor = colorScheme.primary;
       }
     }
 
@@ -170,35 +186,17 @@ class CustomTimeRestrictionRouteState
       height: 24,
       child: showPaste
           ? SvgPicture.asset(
-        'assets/icons/settings/paste-icon.svg',
-        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-      )
+              'assets/icons/settings/paste-icon.svg',
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+            )
           : SvgPicture.asset(
-        'assets/icons/settings//copy-icon.svg',
-        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-      ),
+              'assets/icons/settings//copy-icon.svg',
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+            ),
     );
   }
 
   Widget generateEachDayWidget(_DayOfWeekRestriction dayOfWeekRestriction) {
-    var borderRadius = BorderRadius.all(
-      const Radius.circular(10.0),
-    );
-    BoxDecoration timeBoxDecoration = BoxDecoration(
-        borderRadius: borderRadius,
-        border: Border(bottom: BorderSide(color: TileStyles.disabledColor)));
-    if (dayOfWeekRestriction.isSelected) {
-      timeBoxDecoration = BoxDecoration(
-          borderRadius: borderRadius,
-          color: TileStyles.primaryColorLightHSL.toColor());
-
-      if (!dayOfWeekRestriction
-          .toRestrictionDay()
-          .restrictionTimeLine!
-          .isValid) {
-        timeBoxDecoration = BoxDecoration(color: TileStyles.accentColor);
-      }
-    }
     final localizations = MaterialLocalizations.of(context);
     Widget retValue = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -217,112 +215,141 @@ class CustomTimeRestrictionRouteState
             });
           },
         ),
-        Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                    GestureDetector(
-          onTap: () async {
-            var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
-            if (dayOfWeekRestriction.isSelected) {
-              TimeOfDay? timeOfDay = await _selectTime(
-                  this.context, dayOfWeekRestriction.start);
-              if (timeOfDay != null) {
-                dayOfWeekRestriction.start = timeOfDay;
-                mapOfWeekDays[
-                        this.weekdays[dayOfWeekRestriction.dayIndex]] =
-                    dayOfWeekRestriction;
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+          GestureDetector(
+            onTap: () async {
+              var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
+              if (dayOfWeekRestriction.isSelected) {
+                TimeOfDay? timeOfDay =
+                    await _selectTime(this.context, dayOfWeekRestriction.start);
+                if (timeOfDay != null) {
+                  dayOfWeekRestriction.start = timeOfDay;
+                  mapOfWeekDays[this.weekdays[dayOfWeekRestriction.dayIndex]] =
+                      dayOfWeekRestriction;
+                }
+                this.setState(() {
+                  mapOfWeekDayToDayRestriction = mapOfWeekDays;
+                });
               }
-              this.setState(() {
-                mapOfWeekDayToDayRestriction = mapOfWeekDays;
-              });
-            }
-          },
-          child:Container(
-            padding: EdgeInsets.only(bottom: 2),
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: TileStyles.disabledTextColor, width: 2)),
-            ),
-            child: Text(
-              localizations.formatTimeOfDay(dayOfWeekRestriction.start),
-              style: TextStyle(
-                fontSize: 16,
-              ),
-            ),
-          ),
-                    ),
-              Center(
-                  child: Text(
-                    ' - ',
-                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.w300),
-                    ),
-              ),
-                    GestureDetector(
-        onTap: () async {
-          var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
-          if (dayOfWeekRestriction.isSelected) {
-            TimeOfDay? timeOfDay =
-                await _selectTime(this.context, dayOfWeekRestriction.end);
-            if (timeOfDay != null) {
-              dayOfWeekRestriction.end = timeOfDay;
-              mapOfWeekDays[
-                      this.weekdays[dayOfWeekRestriction.dayIndex]] =
-                  dayOfWeekRestriction;
-            }
-            this.setState(() {
-              mapOfWeekDayToDayRestriction = mapOfWeekDays;
-            });
-          }
-        },
-        child:Container(
-          padding: EdgeInsets.only(bottom: 2),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: TileStyles.disabledTextColor, width: 2)),
-          ),
-          child: Text(
-            localizations.formatTimeOfDay(dayOfWeekRestriction.end),
-            style: TextStyle(
-              fontSize: 16,
-            ),
-          ),
-        )
-                    ),
-              GestureDetector(
-                onTap: () {
-                  if (dayOfWeekRestriction.isSelected) {
-                    if (_hasCopied && _copiedDayIndex == dayOfWeekRestriction.dayIndex) {
-                      setState(() {
-                        _hasCopied = false;
-                        _copiedDayIndex = null;
-                        _copiedStart = null;
-                        _copiedEnd = null;
-                      });
-                    }
-                    else if (_hasCopied && _copiedDayIndex != dayOfWeekRestriction.dayIndex) {
-                      setState(() {
-                        dayOfWeekRestriction.start = _copiedStart!;
-                        dayOfWeekRestriction.end = _copiedEnd!;
-                      });
-                    } else {
-                      setState(() {
-                        _copiedStart = dayOfWeekRestriction.start;
-                        _copiedEnd = dayOfWeekRestriction.end;
-                        _copiedDayIndex = dayOfWeekRestriction.dayIndex;
-                        _hasCopied = true;
-                      });
-                    }
-                  }
-                },
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: _buildCopyPasteIcon(dayOfWeekRestriction),
+            },
+            child: Container(
+              padding: EdgeInsets.only(bottom: 2),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: colorScheme.onInverseSurface.withLightness(0.7),
+                    width: 2,
+                  ),
                 ),
               ),
-            ]
-        ),
-
+              child: Text(
+                localizations.formatTimeOfDay(dayOfWeekRestriction.start),
+                style: TextStyle(
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+          Center(
+            child: Text(
+              ' - ',
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.w300),
+            ),
+          ),
+          GestureDetector(
+              onTap: () async {
+                var mapOfWeekDays = this.mapOfWeekDayToDayRestriction;
+                if (dayOfWeekRestriction.isSelected) {
+                  TimeOfDay? timeOfDay =
+                      await _selectTime(this.context, dayOfWeekRestriction.end);
+                  if (timeOfDay != null) {
+                    dayOfWeekRestriction.end = timeOfDay;
+                    mapOfWeekDays[
+                            this.weekdays[dayOfWeekRestriction.dayIndex]] =
+                        dayOfWeekRestriction;
+                  }
+                  this.setState(() {
+                    mapOfWeekDayToDayRestriction = mapOfWeekDays;
+                  });
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.only(bottom: 2),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                        color: colorScheme.onInverseSurface.withLightness(0.7),
+                        width: 2),
+                  ),
+                ),
+                child: Text(
+                  localizations.formatTimeOfDay(dayOfWeekRestriction.end),
+                  style: TextStyle(
+                    fontSize: 16,
+                  ),
+                ),
+              )),
+          GestureDetector(
+            onTap: () {
+              if (dayOfWeekRestriction.isSelected) {
+                if (_hasCopied &&
+                    _copiedDayIndex == dayOfWeekRestriction.dayIndex) {
+                  setState(() {
+                    _hasCopied = false;
+                    _copiedDayIndex = null;
+                    _copiedStart = null;
+                    _copiedEnd = null;
+                  });
+                } else if (_hasCopied &&
+                    _copiedDayIndex != dayOfWeekRestriction.dayIndex) {
+                  setState(() {
+                    dayOfWeekRestriction.start = _copiedStart!;
+                    dayOfWeekRestriction.end = _copiedEnd!;
+                  });
+                } else {
+                  setState(() {
+                    _copiedStart = dayOfWeekRestriction.start;
+                    _copiedEnd = dayOfWeekRestriction.end;
+                    _copiedDayIndex = dayOfWeekRestriction.dayIndex;
+                    _hasCopied = true;
+                  });
+                }
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: _buildCopyPasteIcon(dayOfWeekRestriction),
+            ),
+          ),
+        ]),
       ],
     );
     return retValue;
+  }
+
+  Map? getData() {
+    List<RestrictionDay?> daySelections = this
+        .mapOfWeekDayToDayRestriction
+        .values
+        .map((dayRestriction) => dayRestriction.isSelected
+            ? dayRestriction.toRestrictionDay()
+            : null)
+        .toList();
+
+    Map? resultMap = Map.from(this.paramArgs ?? {});
+
+    bool hasSelectedDays = daySelections.any((day) => day != null);
+
+    if (hasSelectedDays) {
+      RestrictionProfile restrictionProfile =
+          RestrictionProfile(daySelection: daySelections);
+      resultMap['routeRestrictionProfile'] = restrictionProfile;
+    } else {
+      resultMap['routeRestrictionProfile'] = null;
+      resultMap['isAnyTime'] = true;
+    }
+
+    return resultMap;
   }
 
   onProceed() {
@@ -364,35 +391,34 @@ class CustomTimeRestrictionRouteState
 
   @override
   Widget build(BuildContext context) {
-    Map restrictionProfileParams =
-        ModalRoute.of(context)?.settings.arguments as Map;
-    this.widget.params = restrictionProfileParams;
     if (!isMapOfDayRestrictionInitialized) {
       _initializeDayRestrictions();
     }
 
+    Widget mainContent = Stack(
+      children: [
+        Container(
+            padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
+            child: Center(
+                child: Column(
+              children: this
+                  .weekdays
+                  .map((weekdayString) => Padding(
+                        padding: EdgeInsets.only(
+                            bottom: 5, right: widget.isOnBoarding ? 0 : 25),
+                        child: generateEachDayWidget(
+                            this.mapOfWeekDayToDayRestriction[weekdayString]!),
+                      ))
+                  .toList(),
+            )))
+      ],
+    );
+
+    if (widget.isOnBoarding) return mainContent;
+
     return CancelAndProceedTemplateWidget(
         routeName: customTimeRestrictionRouteName,
         onProceed: isProceedReady() ? onProceed : null,
-        child: Stack(
-            children: [
-              Container(
-                padding: EdgeInsets.fromLTRB(0, 20, 0, 0),
-                child: Center(
-                    child: Column(
-                        children: this
-                            .weekdays
-                            .map((weekdayString) => Padding(
-                          padding: EdgeInsets.only(bottom: 5,right: 25),
-                          child: generateEachDayWidget(
-                              this.mapOfWeekDayToDayRestriction[weekdayString]!),
-                        ))
-                            .toList(),
-                    )
-              )
-              )
-            ],
-          ),
-        );
+        child: mainContent);
   }
 }

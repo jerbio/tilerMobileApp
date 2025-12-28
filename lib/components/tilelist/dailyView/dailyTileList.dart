@@ -9,17 +9,19 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow.dart';
+import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
@@ -31,8 +33,6 @@ class DailyTileList extends TileList {
 
 class _DailyTileListState extends TileListState {
   Map? contextParams;
-  BoxDecoration previousTileBatchDecoration =
-      BoxDecoration(color: Colors.white);
   Key carouselKey = ValueKey(Utility.getUuid);
   Map<String, Map<String, SubCalendarEvent>> statusToSubEvents = {};
   Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
@@ -255,8 +255,8 @@ class _DailyTileListState extends TileListState {
 
   void processUpcomingAndPrecedingTiles(
       Map<int, List<TilerEvent>> dayIndexToTileDict,
-      Map<int, TileBatch> upcomingDayTilesDict,
-      Map<int, TileBatch> precedingDayTilesDict) {
+      Map<int, Widget> upcomingDayTilesDict,
+      Map<int, Widget> precedingDayTilesDict) {
     Timeline relevantTimeline = getRelevantTimeLine();
     int todayDayIndex = Utility.getDayIndex(Utility.currentTime());
     int startIndex = Utility.getDayIndex(
@@ -281,8 +281,14 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch upcomingTileBatch =
-              TileBatch(dayIndex: dayIndex, tiles: allTiles, key: key);
+          EnhancedTileBatch upcomingTileBatch = EnhancedTileBatch(
+            dayIndex: dayIndex,
+            tiles: allTiles,
+            key: key,
+            showEnhancedCards: true,
+            showTravelConnectors: true,
+            showTimelineMarkers: true,
+          );
           upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
         }
       } else {
@@ -293,15 +299,21 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          TileBatch precedingDayTileBatch =
-              TileBatch(dayIndex: dayIndex, key: key, tiles: allTiles);
+          EnhancedTileBatch precedingDayTileBatch = EnhancedTileBatch(
+            dayIndex: dayIndex,
+            key: key,
+            tiles: allTiles,
+            showEnhancedCards: true,
+            showTravelConnectors: true,
+            showTimelineMarkers: true,
+          );
           precedingDayTilesDict[dayIndex] = precedingDayTileBatch;
         }
       }
     }
   }
 
-  WithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
+  EnhancedWithinNowBatch processTodayTiles(List<TilerEvent> todayTiles) {
     DateTime currentTime = Utility.currentTime();
     List<TilerEvent> elapsedTiles = [];
     List<TilerEvent> notElapsedTiles = [];
@@ -314,16 +326,16 @@ class _DailyTileListState extends TileListState {
         elapsedTiles.add(eachSubEvent);
       }
     }
-    return WithinNowBatch(
-      key: ValueKey("_within_upcoming_0"),
+    return EnhancedWithinNowBatch(
+      key: ValueKey("_enhanced_within_now_0"),
       tiles: [...elapsedTiles, ...notElapsedTiles],
     );
   }
 
   Tuple2<int, List<Widget>> buildCarousel(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
-    Map<int, TileBatch> precedingDayTilesDict = new Map<int, TileBatch>();
-    Map<int, TileBatch> upcomingDayTilesDict = new Map<int, TileBatch>();
+    Map<int, Widget> precedingDayTilesDict = new Map<int, Widget>();
+    Map<int, Widget> upcomingDayTilesDict = new Map<int, Widget>();
     Map<int, Widget> dayIndexToWidget = {};
     List<Timeline> sleepTimelines = tileData!.item1;
     tileData.item2.sort((eachSubEventA, eachSubEventB) =>
@@ -339,57 +351,54 @@ class _DailyTileListState extends TileListState {
     Map<int, List<TilerEvent>> dayIndexToTileDict = dayToTiles.item1;
     processUpcomingAndPrecedingTiles(
         dayIndexToTileDict, upcomingDayTilesDict, precedingDayTilesDict);
-    List<TileBatch> precedingDayTiles = precedingDayTilesDict.values.toList();
-    precedingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-        eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-    List<TileBatch> upcomingDayTiles = upcomingDayTilesDict.values.toList();
-    upcomingDayTiles.sort((eachTileBatchA, eachTileBatchB) =>
-        eachTileBatchA.dayIndex!.compareTo(eachTileBatchB.dayIndex!));
-    List<TileBatch> childTileBatches = <TileBatch>[];
-    childTileBatches.addAll(precedingDayTiles);
-    precedingDayTiles.forEach((tileBatch) {
+    List<int> precedingDayIndexes = precedingDayTilesDict.keys.toList();
+    precedingDayIndexes.sort();
+    List<int> upcomingDayIndexes = upcomingDayTilesDict.keys.toList();
+    upcomingDayIndexes.sort();
+    List<Widget> childTileBatches = <Widget>[];
+
+    for (int dayIndex in precedingDayIndexes) {
+      Widget tileBatch = precedingDayTilesDict[dayIndex]!;
+      childTileBatches.add(tileBatch);
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
-        decoration: previousTileBatchDecoration,
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
         child: tileBatch,
       );
-      if (tileBatch.dayIndex != null) {
-        dayIndexToWidget[tileBatch.dayIndex!] = widget;
-      }
-    });
+      dayIndexToWidget[dayIndex] = widget;
+    }
 
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
-      WithinNowBatch todayBatch = processTodayTiles(todayTiles);
+      EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
       childTileBatches.add(todayBatch);
       dayIndexToWidget[currentTime.universalDayIndex] = Container(
+        height: MediaQuery.of(context).size.height,
         child: todayBatch,
       );
     } else {
       DateTime currentTime = Utility.currentTime();
-      TileBatch tileBatch = TileBatch(
-        dayIndex: currentTime.universalDayIndex,
+      EnhancedWithinNowBatch emptyTodayBatch = EnhancedWithinNowBatch(
+        key: ValueKey("_enhanced_within_now_empty"),
         tiles: [],
       );
       Widget widget = Container(
-        child: tileBatch,
+        height: MediaQuery.of(context).size.height,
+        child: emptyTodayBatch,
       );
       dayIndexToWidget[currentTime.universalDayIndex] = widget;
-      childTileBatches.add(tileBatch);
+      childTileBatches.add(emptyTodayBatch);
     }
 
-    childTileBatches.addAll(upcomingDayTiles);
-    upcomingDayTiles.forEach(
-      (tileBatch) {
-        Widget widget = Container(
-          height: MediaQuery.of(context).size.height,
-          child: tileBatch,
-        );
-        if (tileBatch.dayIndex != null) {
-          dayIndexToWidget[tileBatch.dayIndex!] = widget;
-        }
-      },
-    );
+    for (int dayIndex in upcomingDayIndexes) {
+      Widget tileBatch = upcomingDayTilesDict[dayIndex]!;
+      childTileBatches.add(tileBatch);
+      Widget widget = Container(
+        height: MediaQuery.of(context).size.height,
+        child: tileBatch,
+      );
+      dayIndexToWidget[dayIndex] = widget;
+    }
 
     List<int> sortedDayIndex = dayIndexToWidget.keys.toList();
     sortedDayIndex.sort();
@@ -655,8 +664,6 @@ class _DailyTileListState extends TileListState {
     return MultiBlocListener(
       listeners: [
         BlocListener<ScheduleBloc, ScheduleState>(listener: (context, state) {
-          // print("ScheduleBloc state is " + state.toString());
-
           if (state is ScheduleLoadingState) {
             if (state.message != null) {
               Fluttertoast.showToast(
@@ -664,8 +671,8 @@ class _DailyTileListState extends TileListState {
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.SNACKBAR,
                   timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.black45,
-                  textColor: Colors.white,
+                  backgroundColor: colorScheme.inverseSurface,
+                  textColor: colorScheme.onInverseSurface,
                   fontSize: 16.0);
             }
           }
@@ -780,7 +787,7 @@ class _DailyTileListState extends TileListState {
                 scheduleTimeline: timeLine,
                 previousSubEvents: List<SubCalendarEvent>.empty()));
             refreshScheduleSummary(lookupTimeline: timeLine);
-            return renderPending();
+            return PendingWidget();
           }
 
           if (state is ScheduleLoadedState) {
@@ -814,7 +821,7 @@ class _DailyTileListState extends TileListState {
                       .isDateTimeWithin(dateMangerBloc.currentDate);
             }
             if (showPendingUI) {
-              return renderPending();
+              return PendingWidget();
             }
             return Stack(children: [
               buildDailyRenderSubCalendarTiles(
@@ -828,7 +835,7 @@ class _DailyTileListState extends TileListState {
                 buildDailyRenderSubCalendarTiles(
                     Tuple2(state.timelines, state.subEvents)),
                 PendingWidget(
-                  imageAsset: TileStyles.evaluatingScheduleAsset,
+                  imageAsset: TileThemeNew.evaluatingScheduleAsset,
                 ),
               ],
             );

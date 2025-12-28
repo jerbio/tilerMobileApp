@@ -10,14 +10,14 @@ import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class Settings extends StatelessWidget {
@@ -26,9 +26,10 @@ class Settings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final textColor =
-        brightness == Brightness.dark ? Colors.white : Colors.black;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textColor = colorScheme.onSurface;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     return BlocListener<DeviceSettingBloc, DeviceSettingState>(
       listener: (context, state) {
         NotificationOverlayMessage notificationOverlayMessage =
@@ -69,8 +70,12 @@ class Settings extends StatelessWidget {
       },
       child: CancelAndProceedTemplateWidget(
         routeName: Settings.routeName,
-        appBar: TileStyles.CancelAndProceedAppBar(
-            AppLocalizations.of(context)!.settings),
+        appBar: AppBar(
+          title: Text(
+            AppLocalizations.of(context)!.settings,
+          ),
+          automaticallyImplyLeading: false,
+        ),
         child: Column(
           children: [
             _buildListTile(
@@ -92,7 +97,7 @@ class Settings extends StatelessWidget {
               onTap: () =>
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
-            _buildDivider(),
+            _buildDivider(tileThemeExtension),
             // _buildListTile(
             //   icon: 'assets/icons/settings/Security.svg',
             //   title: AppLocalizations.of(context)!.security,
@@ -111,7 +116,7 @@ class Settings extends StatelessWidget {
             //   color: textColor,
             //   onTap: () => Navigator.pushNamed(context, '/myLocations'),
             // ),
-            _buildDivider(),
+            _buildDivider(tileThemeExtension),
             // _buildListTile(
             //   icon: 'assets/icons/settings/AboutTiler.svg',
             //   title: AppLocalizations.of(context)!.aboutTiler,
@@ -121,12 +126,8 @@ class Settings extends StatelessWidget {
             _buildListTile(
               icon: 'assets/icons/settings/Logout.svg',
               title: AppLocalizations.of(context)!.logout,
-              color: TileStyles.primaryColor,
+              color: colorScheme.primary,
               onTap: () {
-                // context
-                //     .read<DeviceSettingBloc>()
-                //     .add(LogOutMainSettingDeviceSettingEvent(id: _requestId));
-
                 AnalysticsSignal.send('SETTINGS_LOG_OUT_USER');
                 OneSignal.logout().then((value) {
                   print("successful logged out of onesignal");
@@ -143,22 +144,24 @@ class Settings extends StatelessWidget {
             // _buildListTile(
             //   icon: 'assets/icons/settings/DeleteAccount.svg',
             //   title: AppLocalizations.of(context)!.deleteAccount,
-            //   color: TileStyles.primaryColor,
+            //   color: TileColors.primaryColor,
             //   onTap: () => context.read<DeviceSettingBloc>().add(
             //       DeleteAccountMainSettingDeviceSettingEvent(id: _requestId)),
             // ),
             // _buildDivider(),
-            // Center(child: _buildDarkModeSwitch()),
+            Spacer(),
+            Center(
+                child: _buildDarkModeSwitch(colorScheme, tileThemeExtension)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(TileThemeExtension tileThemeExtension) {
     return Container(
       height: 1,
-      color: Colors.grey.shade300,
+      color: tileThemeExtension.surfaceContainerGreater,
       margin: EdgeInsets.only(left: 50, right: 40),
     );
   }
@@ -177,12 +180,13 @@ class Settings extends StatelessWidget {
         onTap: onTap);
   }
 
-  Widget _buildDarkModeSwitch() {
+  Widget _buildDarkModeSwitch(
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
       builder: (context, state) {
         return Center(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.only(bottom: 100),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -197,16 +201,15 @@ class Settings extends StatelessWidget {
                               isDarkMode: value, id: _requestId));
                     });
                   },
-                  activeColor: Colors.black,
-                  inactiveTrackColor: Colors.grey.shade300,
-                  activeTrackColor: Colors.black,
-                  thumbColor: WidgetStateProperty.all(Colors.white),
+                  inactiveTrackColor:
+                      tileThemeExtension.onSurfaceVariantSecondary,
+                  thumbColor: WidgetStateProperty.all(colorScheme.surface),
                   thumbIcon: WidgetStateProperty.resolveWith((states) {
                     return Icon(
                       state.isDarkMode
                           ? Icons.nightlight_round
                           : Icons.wb_sunny,
-                      color: Colors.grey.shade600,
+                      color: tileThemeExtension.onSurfaceVariantSecondary,
                       size: 18,
                     );
                   }),

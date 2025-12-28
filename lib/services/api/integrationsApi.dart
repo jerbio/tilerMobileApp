@@ -157,10 +157,10 @@ class IntegrationApi extends AppApi {
       var response = await sendPostRequest(
           'api/Integrations/google/calendarItem', injectedParams,
           injectLocation: false, analyze: false);
-      
+
       Utility.debugPrint('Update calendar item API response: ${response.body}');
       var jsonResult = jsonDecode(response.body);
-      
+
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
           // Parse the updated calendar item from the response

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
 
 enum WidgetOrder { iconText, textIcon }
 
@@ -15,13 +14,15 @@ class onBoardingBottomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     return Container(
       decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: TileStyles.primaryColor,
+          color: colorScheme.primary,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: colorScheme.shadow.withValues(alpha: 0.1),
               spreadRadius: 5,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -32,7 +33,7 @@ class onBoardingBottomButton extends StatelessWidget {
         height: 60.0,
         child: IconButton(
             iconSize: 32.0,
-            icon: Icon(icon, color: Colors.white),
+            icon: Icon(icon, color:colorScheme.onPrimary),
             onPressed: press),
       ),
     );

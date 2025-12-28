@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_event.dart';
 import 'package:tiler_app/bloc/forecast/forecast_state.dart';
@@ -21,8 +19,8 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 
 class PreviewAddWidget extends StatefulWidget {
@@ -38,6 +36,8 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   bool isPendingAdd = false;
   NewTile? newTile;
   late final ScheduleApi scheduleApi;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -46,14 +46,21 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     this.context.read<ForecastBloc>().add(ResetEvent());
   }
 
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
+  }
+
   Widget renderPreview() {
-    var perviewHeight = MediaQuery.sizeOf(context).height - modalHeight;
-    if (perviewHeight < 200) {
+    var previewHeight = MediaQuery.sizeOf(context).height - modalHeight;
+    if (previewHeight < 200) {
       return SizedBox.shrink();
     }
     return Container(
-        height: perviewHeight,
-        color: TileStyles.defaultBackgroundColor,
+        height: previewHeight,
+        color: colorScheme.surfaceContainerLowest,
         width: MediaQuery.sizeOf(context).width,
         child: PreviewWidget(
           subEvents: this.widget.previewSummary?.tiles ?? [],
@@ -63,9 +70,9 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
 
   onSubmit(NewTile newTile) {
     Color randomColor = Utility.randomColor;
-    newTile.RColor = randomColor.red.toString();
-    newTile.BColor = randomColor.blue.toString();
-    newTile.GColor = randomColor.green.toString();
+    newTile.RColor = (randomColor.r * 255).round().toString();
+    newTile.BColor = (randomColor.b * 255).round().toString();
+    newTile.GColor = (randomColor.g * 255).round().toString();
     newTile.Opacity = '1';
     final currentState = this.context.read<ScheduleBloc>().state;
     if (currentState is ScheduleLoadedState) {
@@ -122,7 +129,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             action: SnackBarAction(
               label: AppLocalizations.of(context)!.close,
               onPressed: scaffold.hideCurrentSnackBar,
-              textColor: Colors.redAccent,
+              textColor: colorScheme.error,
             ),
           ),
         );
@@ -171,252 +178,173 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         backgroundDecoration: BoxDecoration(
             borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(10), topRight: Radius.circular(10))),
-        imageAsset: TileStyles.evaluatingScheduleAsset,
+        imageAsset: TileThemeNew.evaluatingScheduleAsset,
       ),
     );
   }
 
-  Widget foreCastButton(Function() onPressed) {
+  Widget _buildActionButton({
+    required Widget icon,
+    required String text,
+    required VoidCallback onPressed,
+  }) {
     return ElevatedButton(
-        child: Column(
-          children: [
-            FaIcon(
-              TileStyles.forecastIcon,
-              color: TileStyles.primaryColor,
-              size: 20,
-            ),
-            Text(AppLocalizations.of(context)!.previewTileForecast,
-                style: TextStyle(
-                  fontSize: 9,
-                ))
-          ],
-        ),
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(0),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ));
+      child: Column(
+        children: [
+          icon,
+          Text(
+            text,
+            style: TextStyle(fontSize: 9, color: colorScheme.primary),
+          )
+        ],
+      ),
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.all(0),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
   }
 
-  Widget renderForecastButton() {
-    var buttonPressed = () {
-      AnalysticsSignal.send('FORECAST_BUTTON_PRESSED');
-      Navigator.pushNamed(context, '/ForecastPreview');
-    };
-    ForecastState forecastState = this.context.read<ForecastBloc>().state;
-    if (forecastState is ForecastLoaded) {
-      return SizedBox.shrink();
-    }
-    if (forecastState is ForecastInitial) {
-      return foreCastButton(buttonPressed);
-    }
-    return InkWell(
-      onTap: buttonPressed,
+  Widget _buildTripleChevron() {
+    return Container(
+      width: 60,
+      height: 20,
       child: Stack(
         children: [
-          foreCastButton(buttonPressed),
-          Shimmer.fromColors(
-              baseColor: TileStyles.accentColorHSL.toColor().withAlpha(75),
-              highlightColor: TileStyles.primaryColor.withLightness(0.7),
-              child: Container(
-                width: 65,
-                height: 40,
-                decoration: BoxDecoration(
-                    color: Color.fromRGBO(31, 31, 31, 0.8),
-                    borderRadius: BorderRadius.circular(30)),
-              )),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: -15,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: 0,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
+          Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              left: 15,
+              child: Icon(Icons.chevron_right, color: colorScheme.primary)),
         ],
       ),
     );
   }
 
-  Widget renderProcastinateAllButton() {
-    const Color cheveronColor = TileStyles.primaryColor;
-    return ElevatedButton(
-        child: Column(
-          children: [
-            Container(
-              width: 60,
-              height: 20,
-              child: Stack(
-                children: [
-                  Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      left: -15,
-                      child: Icon(Icons.chevron_right, color: cheveronColor)),
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    left: 0,
-                    child: Icon(Icons.chevron_right, color: cheveronColor),
-                  ),
-                  Positioned(
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      left: 15,
-                      child: Icon(Icons.chevron_right, color: cheveronColor)),
-                ],
-              ),
-            ),
-            Text(AppLocalizations.of(context)!.previewTileDeferAll,
-                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
-          ],
-        ),
-        onPressed: () {
-          AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
+  Widget renderProcrastinateAllButton() {
+    return _buildActionButton(
+      text: AppLocalizations.of(context)!.previewTileDeferAll,
+      icon: _buildTripleChevron(),
+      onPressed: () {
+        AnalysticsSignal.send('PROCRASTINATE_ALL_BUTTON_PRESSED');
+        Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
+          var scheduleBloc = this.context.read<ScheduleBloc>().state;
 
-          Navigator.pushNamed(context, '/Procrastinate').whenComplete(() {
-            var scheduleBloc = this.context.read<ScheduleBloc>().state;
+          Timeline? lookupTimeline;
+          if (scheduleBloc is ScheduleLoadedState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                previousSubEvents: scheduleBloc.subEvents,
+                scheduleTimeline: scheduleBloc.lookupTimeline,
+                isAlreadyLoaded: true));
+            lookupTimeline = scheduleBloc.lookupTimeline;
+          }
+          if (scheduleBloc is ScheduleInitialState) {
+            this.context.read<ScheduleBloc>().add(GetScheduleEvent(
+                previousSubEvents: [],
+                scheduleTimeline: Utility.initialScheduleTimeline,
+                isAlreadyLoaded: false));
+            lookupTimeline = Utility.initialScheduleTimeline;
+          }
 
-            Timeline? lookupTimeline;
-            if (scheduleBloc is ScheduleLoadedState) {
-              this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  previousSubEvents: scheduleBloc.subEvents,
-                  scheduleTimeline: scheduleBloc.lookupTimeline,
-                  isAlreadyLoaded: true));
-              lookupTimeline = scheduleBloc.lookupTimeline;
-            }
-            if (scheduleBloc is ScheduleInitialState) {
-              this.context.read<ScheduleBloc>().add(GetScheduleEvent(
-                  previousSubEvents: [],
-                  scheduleTimeline: Utility.initialScheduleTimeline,
-                  isAlreadyLoaded: false));
-              lookupTimeline = Utility.initialScheduleTimeline;
-            }
-
-            refreshScheduleSummary(lookupTimeline);
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-            this.context.read<ForecastBloc>().add(ResetEvent());
-          });
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(0),
-          backgroundColor: TileStyles.primaryContrastColor,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ));
+          refreshScheduleSummary(lookupTimeline);
+          if (Navigator.canPop(context)) {
+            Navigator.pop(context);
+          }
+          this.context.read<ForecastBloc>().add(ResetEvent());
+        });
+      },
+    );
   }
 
   Widget renderMoreSettingsButton() {
-    return ElevatedButton(
-        child: Column(
-          children: [
-            Icon(
-              Icons.more_time,
-              color: TileStyles.primaryColor,
-              size: 20,
-            ),
-            Text(AppLocalizations.of(context)!.previewTileOptions,
-                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
-          ],
-        ),
-        onPressed: () {
-          Location? location = null;
-          if (newTile != null &&
-              ((newTile!.LocationAddress != null &&
-                      newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()) ||
-                  (newTile!.LocationTag != null &&
-                      newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace()) ||
-                  (newTile!.LocationId != null &&
-                      newTile!.LocationId.isNot_NullEmptyOrWhiteSpace()))) {
-            location = Location.fromDefault();
-            location.isDefault = false;
-            location.isNull = false;
-            location.id = newTile?.LocationId;
-            location.description = newTile?.LocationTag;
-            location.address = newTile?.LocationAddress;
-            location.source = newTile?.LocationSource;
-            if (newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() ==
-                true) {
-              bool? isLocationVerified = bool.tryParse(
-                  newTile!.LocationIsVerified!,
-                  caseSensitive: false);
-              if (isLocationVerified != null) {
-                location.isVerified = isLocationVerified;
-              }
+    return _buildActionButton(
+      icon: Icon(Icons.more_time, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileOptions,
+      onPressed: () {
+        Location? location = null;
+        if (newTile != null &&
+            ((newTile!.LocationAddress != null &&
+                    newTile!.LocationAddress.isNot_NullEmptyOrWhiteSpace()) ||
+                (newTile!.LocationTag != null &&
+                    newTile!.LocationTag.isNot_NullEmptyOrWhiteSpace()) ||
+                (newTile!.LocationId != null &&
+                    newTile!.LocationId.isNot_NullEmptyOrWhiteSpace()))) {
+          location = Location.fromDefault();
+          location.isDefault = false;
+          location.isNull = false;
+          location.id = newTile?.LocationId;
+          location.description = newTile?.LocationTag;
+          location.address = newTile?.LocationAddress;
+          location.source = newTile?.LocationSource;
+          if (newTile?.LocationIsVerified.isNot_NullEmptyOrWhiteSpace() ==
+              true) {
+            bool? isLocationVerified = bool.tryParse(
+                newTile!.LocationIsVerified!,
+                caseSensitive: false);
+            if (isLocationVerified != null) {
+              location.isVerified = isLocationVerified;
             }
           }
+        }
 
-          SimpleAdditionTile preTile = SimpleAdditionTile(
-              description: newTile?.Name,
-              duration: newTile?.getDuration(),
-              location: location);
-          AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-          this.context.read<ForecastBloc>().add(ResetEvent());
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => AddTile(preTile: preTile)));
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(0),
-          backgroundColor: TileStyles.primaryContrastColor,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ));
+        SimpleAdditionTile preTile = SimpleAdditionTile(
+            description: newTile?.Name,
+            duration: newTile?.getDuration(),
+            location: location);
+        AnalysticsSignal.send('ADD_MORE_TILE_SETTINGS_BUTTON');
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => AddTile(preTile: preTile)));
+      },
+    );
   }
 
   Widget renderShuffleButton() {
-    return ElevatedButton(
-        child: Column(
-          children: [
-            FaIcon(
-              FontAwesomeIcons.shuffle,
-              color: TileStyles.primaryColor,
-              size: 20,
-            ),
-            Text(AppLocalizations.of(context)!.previewTileShuffle,
-                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
-          ],
-        ),
-        onPressed: () {
-          AnalysticsSignal.send('SHUFFLE_BUTTON');
-          this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-          this.context.read<ForecastBloc>().add(ResetEvent());
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(0),
-          backgroundColor: TileStyles.primaryContrastColor,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ));
+    return _buildActionButton(
+      icon: FaIcon(FontAwesomeIcons.shuffle,
+          color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileShuffle,
+      onPressed: () {
+        AnalysticsSignal.send('SHUFFLE_BUTTON');
+        this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+      },
+    );
   }
 
   Widget renderRefresh() {
-    return ElevatedButton(
-        child: Column(
-          children: [
-            Icon(
-              Icons.refresh,
-              color: TileStyles.primaryColor,
-              size: 20,
-            ),
-            Text(AppLocalizations.of(context)!.previewTileRevise,
-                style: TextStyle(fontSize: 9, color: TileStyles.primaryColor))
-          ],
-        ),
-        onPressed: () {
-          AnalysticsSignal.send('REVISE_BUTTON');
-          this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
-          if (Navigator.canPop(context)) {
-            Navigator.pop(context);
-          }
-          this.context.read<ForecastBloc>().add(ResetEvent());
-        },
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(0),
-          backgroundColor: TileStyles.primaryContrastColor,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ));
+    return _buildActionButton(
+      icon: Icon(Icons.refresh, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.previewTileRevise,
+      onPressed: () {
+        AnalysticsSignal.send('REVISE_BUTTON');
+        this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        this.context.read<ForecastBloc>().add(ResetEvent());
+      },
+    );
   }
 
   Widget renderModal() {
@@ -424,7 +352,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         alignment: Alignment.bottomCenter,
         margin: EdgeInsets.fromLTRB(
             0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
-        color: TileStyles.defaultBackgroundColor,
+        color: colorScheme.surfaceContainerLowest,
         width: MediaQuery.sizeOf(context).width,
         height: modalHeight,
         child: Column(
@@ -437,7 +365,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
                 children: [
                   renderRefresh(),
                   renderShuffleButton(),
-                  renderProcastinateAllButton(),
+                  renderProcrastinateAllButton(),
                   renderMoreSettingsButton(),
                 ],
               ),

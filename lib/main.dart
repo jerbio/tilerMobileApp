@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
@@ -16,6 +15,7 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 // import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
@@ -32,7 +32,6 @@ import 'package:tiler_app/routes/authenticatedUser/settings/account%20info/accou
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/connetions.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/integration/integrationWidgetRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/notificationPreferences.dart';
-//import 'package:tiler_app/routes/authenticatedUser/settings/settings.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/tilePreferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileListWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
@@ -40,18 +39,18 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/services/themerHelper.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
 
 import 'services/api/onBoardingApi.dart';
@@ -102,14 +101,14 @@ class _TilerAppState extends State<TilerApp> {
   }
 
   @override
-  void initState(){
+  void initState() {
     onBoardingApi = OnBoardingApi();
     _loadTheme();
     notificationOverlayMessage = NotificationOverlayMessage();
     super.initState();
   }
 
-  Widget renderPending() {
+  Widget splashScreen() {
     return Center(
         child: Stack(children: [
       Center(
@@ -146,11 +145,6 @@ class _TilerAppState extends State<TilerApp> {
                     return this.context;
                   })),
           BlocProvider(create: (context) => TileListCarouselBloc()),
-          BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!)),
-          BlocProvider(
-              create: (context) => ForecastBloc(getContextCallBack: () {
-                    return this.context;
-                  })),
           BlocProvider(
               create: (context) => DeviceSettingBloc(
                     getContextCallBack: () {
@@ -158,6 +152,11 @@ class _TilerAppState extends State<TilerApp> {
                     },
                     initialIsDarkMode: isDarkMode,
                   )),
+          //BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!, SettingsApi(getContextCallBack: () => context))),
+          BlocProvider(
+              create: (context) => ForecastBloc(getContextCallBack: () {
+                    return this.context;
+                  })),
           BlocProvider(
               create: (context) => ScheduleBloc(getContextCallBack: () {
                     return this.context;
@@ -176,18 +175,8 @@ class _TilerAppState extends State<TilerApp> {
               return MaterialApp(
                 title: 'Tiler',
                 debugShowCheckedModeBanner: false,
-                theme: ThemeData(
-                  fontFamily: TileStyles.rubikFontName,
-                  primarySwatch:
-                      MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
-                  visualDensity: VisualDensity.adaptivePlatformDensity,
-                ),
-                darkTheme: ThemeData(
-                  fontFamily: TileStyles.rubikFontName,
-                  primarySwatch:
-                      MaterialColor(0xFF880E4F, TileStyles.themeMaterialColor),
-                  visualDensity: VisualDensity.adaptivePlatformDensity,
-                ),
+                theme: TileThemeData.lightTheme,
+                darkTheme: TileThemeData.darkTheme,
                 themeMode:
                     settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
                 routes: <String, WidgetBuilder>{
@@ -224,7 +213,8 @@ class _TilerAppState extends State<TilerApp> {
                   '/notificationsPreferences': (ctx) =>
                       NotificationPreferences(),
                   '/Connections': (ctx) => Connections(),
-                  '/tilePreferences': (ctx) => TilePreferencesScreen()
+                  '/tilePreferences': (ctx) => TilePreferencesScreen(),
+                  '/onBoardingWorkProfile': (ctx) => WorkProfileWidget()
                 },
                 localizationsDelegates: [
                   AppLocalizations.delegate,
@@ -242,7 +232,7 @@ class _TilerAppState extends State<TilerApp> {
                         AsyncSnapshot<Tuple2<bool, String>> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         // While waiting for the future to complete, show the splash screen
-                        return renderPending();
+                        return splashScreen();
                       } else {
                         // // Check if AppLocalizations is available
                         // if (AppLocalizations.of(context) != null) {
@@ -273,7 +263,7 @@ class _TilerAppState extends State<TilerApp> {
                                     .issuesConnectingToTiler,
                                 NotificationOverlayMessageType.error,
                               );
-                              return renderPending();
+                              return splashScreen();
                             }
                             authentication?.deauthenticateCredentials();
                             retValue = SignInRoute();
@@ -290,7 +280,7 @@ class _TilerAppState extends State<TilerApp> {
                                   AsyncSnapshot<bool> onboardingSnapshot) {
                                 if (onboardingSnapshot.connectionState ==
                                     ConnectionState.waiting) {
-                                  return renderPending();
+                                  return splashScreen();
                                 } else if (onboardingSnapshot.hasError) {
                                   notificationOverlayMessage!.showToast(
                                     context,
@@ -308,13 +298,12 @@ class _TilerAppState extends State<TilerApp> {
                           }
                         } else {
                           // If there's no data and no error, continue showing the splash screen
-                          retValue = renderPending();
+                          retValue = splashScreen();
                         }
                         return retValue;
                       }
                     }),
               );
             }));
-
   }
 }

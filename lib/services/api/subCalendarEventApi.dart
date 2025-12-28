@@ -184,6 +184,12 @@ class SubCalendarEventApi extends AppApi {
       'ThirdPartyType': subEvent.thirdPartyType.toString(),
       'Notes': subEvent.note.toString(),
     };
+
+    String? rsvpUpdateValue = subEvent.getRsvpStatusUpdateString();
+    if (rsvpUpdateValue != null) {
+      queryParameters['RsvpStatusUpdate'] = rsvpUpdateValue;
+    }
+    
     return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);

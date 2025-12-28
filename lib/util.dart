@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'dart:math' as Math;
 import 'package:tiler_app/services/localizationService.dart';
@@ -31,8 +32,10 @@ import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
+
+enum LocationType { videoConference, onlineUrl, physical, none }
 
 class Utility {
   final List<String> months = [
@@ -327,6 +330,75 @@ class Utility {
     return false;
   }
 
+  static LocationType getLocationType(String? address) {
+    if (address == null || address.isEmpty) {
+      return LocationType.none;
+    }
+    final lowerAddress = address.toLowerCase();
+
+    // Check if it's a video meeting link
+    if (lowerAddress.contains('zoom') ||
+        lowerAddress.contains('meet.google') ||
+        lowerAddress.contains('teams.microsoft') ||
+        lowerAddress.contains('webex') ||
+        lowerAddress.contains('skype') ||
+        lowerAddress.contains('hangout')) {
+      return LocationType.videoConference;
+    }
+
+    // Check if it's a URL
+    if (lowerAddress.startsWith('http://') ||
+        lowerAddress.startsWith('https://') ||
+        lowerAddress.startsWith('www.')) {
+      return LocationType.onlineUrl;
+    }
+
+    try {
+      if (Uri.parse(address).isAbsolute) {
+        return LocationType.onlineUrl;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Check for embedded URLs
+    List<String> eachUrlComponent = address.split(" ");
+    if (eachUrlComponent.length > 1) {
+      for (var element in eachUrlComponent) {
+        if (getLocationType(element) == LocationType.onlineUrl) {
+          return LocationType.onlineUrl;
+        }
+      }
+    }
+
+    return LocationType.physical;
+  }
+
+  static String? getLinkFromLocation(String? address) {
+    if (address == null || address.isEmpty) {
+      return null;
+    }
+
+    try {
+      if (Uri.parse(address).isAbsolute) {
+        return address;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    List<String> eachUrlComponent = address.split(" ");
+    if (eachUrlComponent.length > 1) {
+      for (var element in eachUrlComponent) {
+        String? link = getLinkFromLocation(element);
+        if (link != null) {
+          return link;
+        }
+      }
+    }
+    return null;
+  }
+
   static bool isKeyboardVisible(BuildContext context) {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
@@ -421,7 +493,37 @@ class Utility {
   }
 
   static String toHuman(Duration duration,
-      {bool all = false, bool includeSeconds = false, abbreviations = false}) {
+      {bool all = false,
+      bool includeSeconds = false,
+      abbreviations = false,
+      BuildContext? context}) {
+    // If context is provided, use localized strings
+    if (context != null) {
+      final l10n = AppLocalizations.of(context)!;
+      Duration durationLeft = duration;
+      int days = durationLeft.inDays;
+      int hours = durationLeft.inHours % 24;
+      int minutes = durationLeft.inMinutes % 60;
+
+      if (abbreviations) {
+        // Short format using localized strings
+        if (days > 0) {
+          if (hours > 0) {
+            return '${days}d ${hours}h';
+          }
+          return '${days}d';
+        }
+        if (hours > 0) {
+          if (minutes > 0) {
+            return l10n.durationHoursMinutesShort(hours, minutes);
+          }
+          return l10n.durationHoursShort(hours);
+        }
+        return l10n.durationMinutesShort(minutes);
+      }
+    }
+
+    // Original non-localized implementation
     Duration durationLeft = duration;
     var stringArr = [];
     int days = durationLeft.inDays;
@@ -561,7 +663,7 @@ class Utility {
           : false;
       List<String> descriptions = autoTileParam['descriptions'];
       List<Duration> durations = autoTileParam['durations'];
-      List<String> imageAsset = autoTileParam['assets'];
+      List<String> imageAsset = autoTileParam['assets'] ?? [];
 
       for (int descriptionIndex = 0;
           descriptionIndex < descriptions.length;
@@ -749,9 +851,6 @@ class Utility {
         eachTileBatchA.start!.compareTo(eachTileBatchB.start!));
     List<TilerEvent> AllSubEvents_List = orderedByStart.toList();
 
-    Map<TimeRange, List<TimeRange>> subEventToConflicting =
-        new Map<TimeRange, List<TimeRange>>();
-
     for (int i = 0; i < AllSubEvents_List.length && i >= 0; i++) {
       TilerEvent refSubCalendarEvent = AllSubEvents_List[i];
       List<TilerEvent> possibleInterferring =
@@ -849,6 +948,69 @@ class Utility {
 extension DurationHuman on Duration {
   String get toHuman {
     return Utility.toHuman(this, includeSeconds: false);
+  }
+
+  String toHumanLocalized(BuildContext context, {bool abbreviations = true}) {
+    return Utility.toHuman(this,
+        includeSeconds: false, abbreviations: abbreviations, context: context);
+  }
+}
+
+/// Extension on TravelMedium enum for common travel mode operations
+extension TravelMediumExtension on TravelMedium {
+  /// Get the icon for this travel mode
+  IconData get icon {
+    switch (this) {
+      case TravelMedium.walking:
+        return Icons.directions_walk;
+      case TravelMedium.bicycling:
+        return Icons.directions_bike;
+      case TravelMedium.transit:
+        return Icons.directions_transit;
+      case TravelMedium.driving:
+        return Icons.directions_car;
+    }
+  }
+
+  /// Get Google Maps travel mode parameter string
+  String get googleMapsMode {
+    switch (this) {
+      case TravelMedium.walking:
+        return 'walking';
+      case TravelMedium.bicycling:
+        return 'bicycling';
+      case TravelMedium.transit:
+        return 'transit';
+      case TravelMedium.driving:
+        return 'driving';
+    }
+  }
+
+  /// Get localized display text for this travel mode
+  String toLocalizedString(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (this) {
+      case TravelMedium.driving:
+        return l10n.travelModeDriving;
+      case TravelMedium.walking:
+        return l10n.travelModeWalking;
+      case TravelMedium.bicycling:
+        return l10n.travelModeBicycling;
+      case TravelMedium.transit:
+        return l10n.travelModeTransitLower;
+    }
+  }
+
+  /// Parse a string to TravelMedium enum, defaults to driving
+  static TravelMedium fromString(String? travelMediumStr) {
+    if (travelMediumStr == null) return TravelMedium.driving;
+    final lowerStr = travelMediumStr.toLowerCase();
+    for (final medium in TravelMedium.values) {
+      if (medium.name == lowerStr) {
+        return medium;
+      }
+    }
+    return TravelMedium.driving;
   }
 }
 
@@ -1034,6 +1196,11 @@ extension ColorExtension on Color {
     HSLColor hslColor = HSLColor.fromColor(this);
     return hslColor.withLightness(lightness).toColor();
   }
+
+  // Color withOpacity(double opacity) {
+  //   return Color.fromARGB((opacity * 255).toInt(), (this.r * 255).toInt(),
+  //       (this.g * 255).toInt(), (this.b * 255).toInt());
+  // }
 
   Color withOpacity(double opacity) {
     return Color.fromARGB((opacity * 255).toInt(), (this.r * 255).toInt(),

@@ -1,10 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 
@@ -22,7 +19,8 @@ class PickColorState extends State<PickColor> {
   int selectedPresetIndex = 0;
   double colorSelectorRadius = 60;
   late double roundedSelectorRadius;
-
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   final presetColors = <Color>[
     Color.fromRGBO(255, 255, 0, 1),
     Color.fromRGBO(135, 255, 221, 1),
@@ -50,6 +48,14 @@ class PickColorState extends State<PickColor> {
     presetColors[0] =
         this.widget.color ?? this.initialColor ?? this.randomColorGenerator();
     roundedSelectorRadius = colorSelectorRadius + 10;
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    ;
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   void onProceedTap() {
@@ -85,8 +91,9 @@ class PickColorState extends State<PickColor> {
       width: colorSelectorRadius,
       height: colorSelectorRadius,
       decoration: BoxDecoration(
-          borderRadius:
-              BorderRadius.all(Radius.circular(colorSelectorRadius * 4)),
+          borderRadius: BorderRadius.all(
+            Radius.circular(colorSelectorRadius * 4),
+          ),
           color: color),
     );
 
@@ -115,7 +122,10 @@ class PickColorState extends State<PickColor> {
       decoration: BoxDecoration(
           borderRadius:
               BorderRadius.all(Radius.circular(roundedSelectorRadius)),
-          border: Border.all(color: TileStyles.primaryColor, width: 2),
+          border: Border.all(
+            color: colorScheme.primary,
+            width: 2,
+          ),
           color: Colors.transparent),
     );
     Widget tranparentSelectedBorder = Container(
@@ -203,21 +213,22 @@ class PickColorState extends State<PickColor> {
               child: renderCollectionOfColors(3, clickablePresetWidgets)),
           ElevatedButton(
               style: ButtonStyle(
-                side: MaterialStateProperty.all(
-                    BorderSide(color: TileStyles.primaryColor)),
-                shadowColor: MaterialStateProperty.resolveWith((states) {
+                side: WidgetStateProperty.all(
+                    BorderSide(color: colorScheme.primary)),
+                shadowColor: WidgetStateProperty.resolveWith((states) {
                   return Colors.transparent;
                 }),
-                elevation: MaterialStateProperty.resolveWith((states) {
+                elevation: WidgetStateProperty.resolveWith((states) {
                   return 0;
                 }),
-                backgroundColor: MaterialStateProperty.resolveWith((states) {
+                backgroundColor: WidgetStateProperty.resolveWith((states) {
                   return Colors.transparent;
                 }),
-                foregroundColor: MaterialStateProperty.resolveWith((states) {
-                  return TileStyles.primaryColor;
+                foregroundColor: WidgetStateProperty.resolveWith((states) {
+                  return colorScheme.primary;
+                  ;
                 }),
-                minimumSize: MaterialStateProperty.resolveWith((states) {
+                minimumSize: WidgetStateProperty.resolveWith((states) {
                   return Size(MediaQuery.sizeOf(context).width - 20, 50);
 
                   // Size.(MediaQuery.sizeOf(context).width);
@@ -255,13 +266,7 @@ class PickColorState extends State<PickColor> {
     CancelAndProceedTemplateWidget retValue = CancelAndProceedTemplateWidget(
       routeName: _colorPickernRouteName,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
-        title: Text(
-          AppLocalizations.of(context)!.pickAColor,
-          style: TileStyles.titleBarStyle,
-        ),
-        centerTitle: true,
-        elevation: 0,
+        title: Text(AppLocalizations.of(context)!.pickAColor),
         automaticallyImplyLeading: false,
       ),
       child: Container(

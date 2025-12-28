@@ -21,7 +21,6 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
-import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -36,7 +35,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
@@ -64,6 +63,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   ActivePage selecedBottomMenu = ActivePage.tilelist;
   bool isLocationRequestTriggered = false;
   late AppLinks _appLinks;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   StreamSubscription<Uri>? _linkSubscription;
   @override
   void initState() {
@@ -102,6 +103,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
       return this.context;
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
   }
 
   void openAppLink(Uri uri) {
@@ -183,16 +191,22 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
-        DateTime dayRibbonDate = Utility.currentTime().dayDate;
-        if (this.context.read<UiDateManagerBloc>().state
-            is UiDateManagerUpdated) {
-          dayRibbonDate = (this.context.read<UiDateManagerBloc>().state
-                  as UiDateManagerUpdated)
-              .currentDate;
-        }
-        return DayRibbonCarousel(
-          dayRibbonDate,
-          autoUpdateAnchorDate: false,
+        // Wrap in BlocBuilder to respond to date changes
+        return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+          builder: (context, uiDateState) {
+            DateTime dayRibbonDate = Utility.currentTime().dayDate;
+            if (uiDateState is UiDateManagerUpdated) {
+              dayRibbonDate = uiDateState.currentDate;
+            }
+            // Hide ribbon when viewing current day - day summary is embedded in EnhancedWithinNowBatch
+            if (dayRibbonDate.isToday) {
+              return const SizedBox.shrink();
+            }
+            return DayRibbonCarousel(
+              dayRibbonDate,
+              autoUpdateAnchorDate: false,
+            );
+          },
         );
       case AuthorizedRouteTileListPage.Weekly:
         return Stack(children: [
@@ -230,6 +244,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return eventNameSearch;
   }
 
+  //ey: not used since isAddButtonClicked is always false
   Widget generatePredictiveAdd() {
     Widget containerWrapper = GestureDetector(
       onTap: () {
@@ -271,10 +286,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(TileStyles.borderRadius)),
+            top: Radius.circular(TileDimensions.borderRadius)),
       ),
       builder: (BuildContext context) {
         return Container(
@@ -298,139 +312,162 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     });
   }
 
-  Widget renderAuthorizedUserPageView() {
+  Widget _buildDailyCurrentDayButton() {
     final uiDateManagerBloc = BlocProvider.of<UiDateManagerBloc>(context);
-    DayStatusWidget dayStatusWidget = DayStatusWidget();
-    List<Widget> widgetChildren = [
-      BlocBuilder<ScheduleBloc, ScheduleState>(
-        builder: (context, state) {
-          return Stack(children: [
-            _buildTileList(state.currentView),
-            _ribbonCarousel(state.currentView),
-            if (state.currentView == AuthorizedRouteTileListPage.Daily)
-              Positioned(
-                right: 0,
-                child: GestureDetector(
-                  onTap: () {
-                    uiDateManagerBloc.onDateButtonTapped(
-                        Utility.currentTime(minuteLimitAccuracy: false));
-                  },
+    return Positioned(
+      right: 0,
+      child: GestureDetector(
+        onTap: () {
+          uiDateManagerBloc.onDateButtonTapped(
+              Utility.currentTime(minuteLimitAccuracy: false));
+        },
+        child: Container(
+          height: 50,
+          width: 38,
+          padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
+          child: LayoutBuilder(
+            builder: (context, constraints) => Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
                   child: Container(
-                    height: 50,
-                    width: 38,
-                    color: TileStyles.defaultBackgroundColor,
-                    padding: EdgeInsets.fromLTRB(0, 0, 8, 0),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => Stack(
-                        children: [
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            top: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: constraints.maxWidth * 0.9,
-                              child: Icon(
-                                FontAwesomeIcons.calendar,
-                                size: constraints.maxWidth,
-                                color: TileStyles.primaryColor,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: constraints.maxHeight * 0.125,
-                            left: (constraints.maxWidth * 0.05),
-                            child: Center(
-                              child: Container(
-                                height: constraints.maxHeight * 0.55,
-                                width: constraints.maxHeight * 0.55,
-                                child: Center(
-                                  child: Text(
-                                    (Utility.currentTime().day).toString(),
-                                    style: TextStyle(
-                                      fontFamily: TileStyles.rubikFontName,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                    width: constraints.maxWidth * 0.9,
+                    child: Icon(
+                      FontAwesomeIcons.calendar,
+                      size: constraints.maxWidth,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: constraints.maxHeight * 0.125,
+                  left: (constraints.maxWidth * 0.05),
+                  child: Center(
+                    child: Container(
+                      height: constraints.maxHeight * 0.55,
+                      width: constraints.maxHeight * 0.55,
+                      child: Center(
+                        child: Text(
+                          (Utility.currentTime().day).toString(),
+                        ),
                       ),
                     ),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomNavBar() {
+    return ClipRRect(
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(30),
+        topLeft: Radius.circular(30),
+      ),
+      child: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.share,
               ),
-          ]);
+              label: ''),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: '',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.calendar_month,
+              ),
+              label: ''),
+        ],
+        onTap: _onBottomNavigationTap,
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButton() {
+    return FloatingActionButton(
+      backgroundColor: colorScheme.surface,
+      onPressed: () {
+        AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+        displayDialog(MediaQuery.of(context).size);
+      },
+      child: AutoSwitchingWidget(
+        duration: Duration(milliseconds: 1000),
+        children: [
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_BlueBottom.png',
+            ),
+          ),
+          Transform.scale(
+            scale: 0.618,
+            child: Image.asset(
+              'assets/images/wire_tilerLogo_RedBottom.png',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget renderAuthorizedUserPageView() {
+    //ey: dayStatusWidget not used
+    //ey: never added to widget tree
+    DayStatusWidget dayStatusWidget = DayStatusWidget();
+    List<Widget> widgetChildren = [
+      BlocBuilder<ScheduleBloc, ScheduleState>(
+        builder: (context, scheduleState) {
+          return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
+            builder: (context, uiDateState) {
+              DateTime currentViewDate = Utility.currentTime().dayDate;
+              if (uiDateState is UiDateManagerUpdated) {
+                currentViewDate = uiDateState.currentDate;
+              }
+              final bool isViewingToday = currentViewDate.isToday;
+
+              return Stack(children: [
+                _buildTileList(scheduleState.currentView),
+                _ribbonCarousel(scheduleState.currentView),
+                if (scheduleState.currentView ==
+                        AuthorizedRouteTileListPage.Daily &&
+                    !isViewingToday)
+                  _buildDailyCurrentDayButton()
+              ]);
+            },
+          );
         },
       ),
     ];
+    //ey: not used since isAddButtonClicked always false
     if (isAddButtonClicked) {
       widgetChildren.add(generatePredictiveAdd());
     }
+
+    //ey: not really used
     dayStatusWidget
         .onDayStatusChange(Utility.currentTime(minuteLimitAccuracy: false));
 
-    // Bottom Navbar Widget
     Widget? bottomNavigator;
     if (selecedBottomMenu == ActivePage.search) {
       bottomNavigator = null;
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = ClipRRect(
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(30),
-          topLeft: Radius.circular(30),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                TileStyles.defaultBackgroundColor,
-                TileStyles.defaultBackgroundColor,
-                TileStyles.defaultBackgroundColor,
-              ],
-            ),
-          ),
-          child: BottomNavigationBar(
-            items: [
-              BottomNavigationBarItem(
-                  backgroundColor: TileStyles.defaultBackgroundColor,
-                  icon: Icon(
-                    Icons.share,
-                    color: TileStyles.primaryColor,
-                  ),
-                  label: ''),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search, color: TileStyles.primaryColor),
-                label: '',
-              ),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.settings, color: TileStyles.primaryColor),
-                  label: ''),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_month,
-                      color: TileStyles.primaryColor),
-                  label: ''),
-            ],
-            unselectedItemColor: TileStyles.defaultBackgroundColor,
-            selectedItemColor: Colors.black,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            onTap: _onBottomNavigationTap,
-          ),
-        ),
-      );
+      bottomNavigator = _buildBottomNavBar();
     }
-
     return Scaffold(
       extendBody: true,
-      backgroundColor: TileStyles.defaultBackgroundColor,
       body: SafeArea(
         bottom: false,
         child: Container(
@@ -440,30 +477,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: TileStyles.defaultBackgroundColor,
-        onPressed: () {
-          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-          displayDialog(MediaQuery.of(context).size);
-        },
-        child: AutoSwitchingWidget(
-          duration: Duration(milliseconds: 1000),
-          children: [
-            Transform.scale(
-              scale: 0.618,
-              child: Image.asset(
-                'assets/images/wire_tilerLogo_BlueBottom.png',
-              ),
-            ),
-            Transform.scale(
-              scale: 0.618,
-              child: Image.asset(
-                'assets/images/wire_tilerLogo_RedBottom.png',
-              ),
-            ),
-          ],
-        ),
-      ),
+      floatingActionButton: _buildFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -514,9 +528,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ],
         child:
             BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return Scaffold(
-              backgroundColor: TileStyles.defaultBackgroundColor,
-              body: renderAuthorizedUserPageView());
+          return renderAuthorizedUserPageView();
         }));
   }
 }

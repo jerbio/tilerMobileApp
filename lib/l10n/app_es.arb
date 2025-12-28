@@ -1,3 +1,408 @@
 {
-    "helloWorld": "¡Hola Mundo!"
+    "helloWorld": "¡Hola Mundo!",
+    "travelDurationMinutes": "{minutes} min",
+    "@travelDurationMinutes": {
+      "description": "Travel duration in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "15"
+        }
+      }
+    },
+    "travelDurationHours": "{hours} hr",
+    "@travelDurationHours": {
+      "description": "Travel duration in hours",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        }
+      }
+    },
+    "travelDurationHoursMinutes": "{hours} hr {minutes} min",
+    "@travelDurationHoursMinutes": {
+      "description": "Travel duration in hours and minutes",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        },
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
+      }
+    },
+    "travelViaRoute": "por {route}",
+    "@travelViaRoute": {
+      "description": "Via route name",
+      "placeholders": {
+        "route": {
+          "type": "String",
+          "example": "I-280"
+        }
+      }
+    },
+    "travelModeToDestination": " {travelMode} a ",
+    "@travelModeToDestination": {
+      "description": "Travel mode to destination",
+      "placeholders": {
+        "travelMode": {
+          "type": "String",
+          "example": "conducir"
+        }
+      }
+    },
+    "travelModeDriving": "conducir",
+    "travelModeWalking": "caminar",
+    "travelModeBicycling": "bicicleta",
+    "travelModeTransitLower": "transporte",
+    "leaveByTime": "Salir a las {time}",
+    "@leaveByTime": {
+      "description": "Time to leave by",
+      "placeholders": {
+        "time": {
+          "type": "String",
+          "example": "12:23 PM"
+        }
+      }
+    },
+    "travelDurationCompact": "{minutes}m",
+    "@travelDurationCompact": {
+      "description": "Compact travel duration in minutes",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "15"
+        }
+      }
+    },
+    "yourDayIsOptimized": "Tu día está optimizado.",
+    "yourDayAtAGlance": "Tu día de un vistazo",
+    "totalTravelTimeToday": "{duration} de tiempo de viaje hoy.",
+    "@totalTravelTimeToday": {
+      "description": "Total travel time for the day",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45m"
+        }
+      }
+    },
+    "tilesScheduledForToday": "{count} tiles programados para hoy.",
+    "@tilesScheduledForToday": {
+      "description": "Number of items scheduled",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "5"
+        }
+      }
+    },
+    "viewRoute": "Ver ruta",
+    "focusModeChip": "Modo Enfoque",
+    "showRouteChip": "Mostrar Ruta",
+    "reOptimizeChip": "Re-optimizar",
+    "todayColon": "Hoy:",
+    "tilesBlocksCount": "{tileCount} tiles, {blockCount} bloques",
+    "@tilesBlocksCount": {
+      "description": "Count of tiles and blocks",
+      "placeholders": {
+        "tileCount": {
+          "type": "int",
+          "example": "3"
+        },
+        "blockCount": {
+          "type": "int",
+          "example": "2"
+        }
+      }
+    },
+    "timeSavedColon": "Tiempo ahorrado:",
+    "travelTimeColon": "Tiempo de viaje:",
+    "travelTime": "Tiempo de viaje: {duration}",
+    "@travelTime": {
+      "description": "Travel time with duration",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45m"
+        }
+      }
+    },
+    "durationHoursMinutesShort": "{hours}h {minutes}m",
+    "@durationHoursMinutesShort": {
+      "description": "Duration in short format",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        },
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
+      }
+    },
+    "durationHoursShort": "{hours}h",
+    "@durationHoursShort": {
+      "description": "Duration in hours short format",
+      "placeholders": {
+        "hours": {
+          "type": "int",
+          "example": "1"
+        }
+      }
+    },
+    "durationMinutesShort": "{minutes}m",
+    "@durationMinutesShort": {
+      "description": "Duration in minutes short format",
+      "placeholders": {
+        "minutes": {
+          "type": "int",
+          "example": "30"
+        }
+      }
+    },
+    "hourAm": "{hour} AM",
+    "@hourAm": {
+      "description": "Hour in AM format",
+      "placeholders": {
+        "hour": {
+          "type": "int",
+          "example": "9"
+        }
+      }
+    },
+    "hourPm": "{hour} PM",
+    "@hourPm": {
+      "description": "Hour in PM format",
+      "placeholders": {
+        "hour": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "scheduleConflict": "Conflicto de horario",
+    "conflictSameTime": "\"{tile1}\" y \"{tile2}\" están programados a la misma hora",
+    "@conflictSameTime": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"}
+      }
+    },
+    "conflictDuring": "\"{tile1}\" es durante \"{tile2}\" ({overlap} de superposición)",
+    "@conflictDuring": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"},
+        "overlap": {"type": "String"}
+      }
+    },
+    "conflictOverlaps": "\"{tile1}\" se superpone con \"{tile2}\" por {overlap}",
+    "@conflictOverlaps": {
+      "placeholders": {
+        "tile1": {"type": "String"},
+        "tile2": {"type": "String"},
+        "overlap": {"type": "String"}
+      }
+    },
+    "fix": "Arreglar",
+    "conflictOverlapMinutes": "Conflicto: {minutes}m de superposición",
+    "@conflictOverlapMinutes": {
+      "placeholders": {
+        "minutes": {"type": "int"}
+      }
+    },
+    "oneScheduleConflict": "1 Conflicto de horario",
+    "countScheduleConflicts": "{count} Conflictos de horario",
+    "@countScheduleConflicts": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "tapToReviewAndResolve": "Toca para revisar y resolver",
+    "countConflicts": "{count} conflictos",
+    "@countConflicts": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "tapToExpand": "Toca para expandir",
+    "conflictingTiles": "{count} Tiles en conflicto",
+    "@conflictingTiles": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "totalOverlap": "Superposición total: {duration}",
+    "@totalOverlap": {
+      "placeholders": {
+        "duration": {"type": "String"}
+      }
+    },
+    "autoResolve": "Auto-resolver",
+    "untitledTile": "Tile sin título",
+    "untitledEvent": "Sin título",
+    "extendedEventSingular": "1 Evento Extendido",
+    "extendedEventsPlural": "{count} Eventos Extendidos",
+    "@extendedEventsPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
+    "extendedEventsTitle": "Eventos Extendidos",
+    "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
+    "@extendedEventsSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "tile": "Tile",
+    "todaysRoute": "Ruta de hoy",
+    "noLocationsToday": "Sin ubicaciones hoy",
+    "addLocationsToSeeTodaysRoute": "Agrega ubicaciones a tus tiles para ver tu ruta diaria",
+    "countStops": "{count} paradas",
+    "@countStops": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "routeOptimized": "Ruta optimizada",
+    "savedTravelTime": "Ahorraste {duration} de tiempo de viaje",
+    "@savedTravelTime": {
+      "placeholders": {
+        "duration": {"type": "String"}
+      }
+    },
+    "firstStop": "Primera parada",
+    "stop": "Parada",
+    "arriveBy": "Llegar a las {time}",
+    "@arriveBy": {
+      "placeholders": {
+        "time": {"type": "String"}
+      }
+    },
+    "fromPreviousStop": "desde la parada anterior",
+    "viewTile": "Ver Tile",
+    "editTile": "Editar Tile",
+    "startNavigation": "Iniciar navegación",
+    "noLocationAvailable": "Sin ubicación",
+    "seeTodaysRoute": "Ver ruta de hoy",
+    "joinMeeting": "Unirse a la reunión",
+    "openLink": "Abrir enlace",
+    "procrastinateBlockOut": "Descanso",
+    "lunchBreak": "Hora del Almuerzo",
+    "coffeeBreak": "Pausa para Café",
+    "morningBreak": "Pausa Matutina",
+    "afternoonBreak": "Pausa Vespertina",
+    "freeTime": "Tiempo Libre",
+    "quickBreak": "Pausa Rápida",
+    "shortBreak": "Pausa Corta",
+    "blockedTime": "Tiempo Bloqueado",
+    "pendingRsvpSingular": "1 Evento Necesita Respuesta",
+    "pendingRsvpPlural": "{count} Eventos Necesitan Respuesta",
+    "@pendingRsvpPlural": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "pendingRsvpHappeningNow": "Ocurriendo ahora - responde para unirte",
+    "pendingRsvpStartingSoon": "Comienza pronto - responde ahora",
+    "pendingRsvpWithinHour": "Comienza en una hora",
+    "pendingRsvpUpcoming": "Próximo - toca para responder",
+    "pendingRsvpTapToReview": "Toca para revisar y responder",
+    "pendingRsvpTitle": "Respuestas Pendientes",
+    "pendingRsvpSubtitle": "{count, plural, =1{1 evento esperando tu respuesta} other{{count} eventos esperando tu respuesta}}",
+    "@pendingRsvpSubtitle": {
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "pendingRsvpUrgent": "Comienza Pronto",
+    "pendingRsvpLater": "Más Tarde Hoy y Próximos",
+    "rsvpNeedsAction": "Necesita Respuesta",
+    "rsvpTentative": "Tentativo",
+    "rsvpAccepted": "Aceptado",
+    "rsvpDeclined": "Rechazado",
+    "unableToOpenLinkError": "No se pudo abrir el enlace: {link}",
+    "@unableToOpenLinkError": {
+      "placeholders": {
+        "link": {"type": "String"}
+      }
+    },
+    "leaveNow": "¡Sal ahora!",
+    "leaveInMinutes": "Sal en {minutes} min",
+    "@leaveInMinutes": {
+      "description": "Short label for departure alert",
+      "placeholders": {
+        "minutes": {"type": "int"}
+      }
+    },
+    "multipleAlertsTitle": "{count} alertas",
+    "@multipleAlertsTitle": {
+      "description": "Title when multiple alerts are active",
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "alertChipLeaveNow": "Sal Ahora",
+    "alertChipLeaveIn": "Sal {minutes}m",
+    "@alertChipLeaveIn": {
+      "description": "Chip label for travel alert with minutes",
+      "placeholders": {
+        "minutes": {"type": "int"}
+      }
+    },
+    "alertChipConflicts": "{count, plural, =1{1 Conflicto} other{{count} Conflictos}}",
+    "@alertChipConflicts": {
+      "description": "Chip label for schedule conflicts",
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "alertChipAllDay": "{count, plural, =1{1 Todo el día} other{{count} Todo el día}}",
+    "@alertChipAllDay": {
+      "description": "Chip label for extended/all-day events",
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "alertChipRsvp": "{count, plural, =1{1 RSVP} other{{count} RSVPs}}",
+    "@alertChipRsvp": {
+      "description": "Chip label for pending RSVP responses",
+      "placeholders": {
+        "count": {"type": "int"}
+      }
+    },
+    "accept": "Aceptar",
+    "@accept": {
+      "description": "Accept button label for RSVP"
+    },
+    "accepted": "Aceptado",
+    "@accepted": {
+      "description": "Status when event is accepted"
+    },
+    "decline": "Rechazar",
+    "@decline": {
+      "description": "Decline button label for RSVP"
+    },
+    "declined": "Rechazado",
+    "@declined": {
+      "description": "Status when event is declined"
+    },
+    "respondToCalendar": "Responder a {calendarSource}",
+    "@respondToCalendar": {
+      "description": "Prompt to respond to calendar event",
+      "placeholders": {
+        "calendarSource": {"type": "String"}
+      }
+    },
+    "unknown": "Invitación de calendario",
+    "@unknown": {
+      "description": "Default label for unknown calendar source"
+    }
 }

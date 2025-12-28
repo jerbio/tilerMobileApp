@@ -1,6 +1,6 @@
-import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/util.dart';
 
 class TilerCheckBox extends StatefulWidget {
   bool? isChecked;
@@ -26,16 +26,16 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
     text = this.widget.text;
   }
 
-  Color getColor(Set<MaterialState> states) {
-    const Set<MaterialState> interactiveStates = <MaterialState>{
-      MaterialState.pressed,
-      MaterialState.hovered,
-      MaterialState.focused,
-      MaterialState.selected
+  Color getColor(Set<WidgetState> states) {
+    const Set<WidgetState> interactiveStates = <WidgetState>{
+      WidgetState.pressed,
+      WidgetState.hovered,
+      WidgetState.focused,
+      WidgetState.selected
     };
 
     if (states.any(interactiveStates.contains)) {
-      return TileStyles.primaryColor;
+      return Theme.of(context).colorScheme.primary;
     }
     return Colors.transparent;
   }
@@ -56,26 +56,33 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
     bool checkStatus = isChecked;
     if (this.widget.isChecked != null) {
       checkStatus = this.widget.isChecked!;
     }
     Widget checkBox = Container(
         margin: EdgeInsets.fromLTRB(20, 0, 2, 0),
-        width: 24,
-        height: 24,
         child: Stack(
           children: [
             Transform.scale(
                 scale:  1,
                 child: Checkbox(
-                  checkColor: Colors.transparent,
-                  fillColor: MaterialStateProperty.resolveWith(getColor),
+                  checkColor: colorScheme.onPrimary,
+                  fillColor: WidgetStateProperty.resolveWith(getColor),
                   value: checkStatus,
                   splashRadius: 15,
-                  shape: CircleBorder(
-                      side:
-                          BorderSide(width: 2, color: TileStyles.primaryColor)),
+                  side: WidgetStateBorderSide.resolveWith((states) {
+                      return BorderSide(
+                        width: 3.0,
+                        color: states.contains(MaterialState.selected)
+                            ? colorScheme.primary
+                            : colorScheme.onPrimary.withLightness(0.7),
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      );
+                  }),
+                  shape: CircleBorder(),
                   onChanged: (bool? value) {
                     setState(() {
                       isChecked = value!;
@@ -95,12 +102,14 @@ class TilerCheckBoxState extends State<TilerCheckBox> {
           overflow: TextOverflow.ellipsis,
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontSize: 15,
+              fontSize:15,
               fontWeight: FontWeight.w600,
               color: checkStatus
-                  ? Colors.black
-                  : TileStyles.disabledTextColor)),
-    );
+                  ? colorScheme.onSurface
+                  :colorScheme.onPrimary.withLightness(0.7),
+              ),
+          ),
+      );
     return new GestureDetector(
         onTap: onTap,
         child: Container(

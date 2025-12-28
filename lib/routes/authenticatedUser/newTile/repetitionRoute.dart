@@ -1,17 +1,18 @@
+import 'package:flutter/material.dart';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
-import 'package:tiler_app/styles.dart';
+
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-// import 'package:weekday_selector/weekday_selector.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class RepetitionRoute extends StatefulWidget {
   static final String routeName = '/RepetitionRoute';
@@ -33,6 +34,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   late Animation<double> _animation;
   bool isLoadedFromInitializer = false;
   Timeline? tileTimeline;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   static final String repetitionCancelAndProceedRouteName =
       "repetitionCancelAndProceedRouteName";
@@ -75,6 +79,14 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         Tween<double>(begin: 0, end: 1).animate(_transparencyController);
   }
 
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
+
   Widget frequencyWidget(RepetitionFrequency frequency, bool isSelected) {
     late String frequencyText;
     switch (frequency) {
@@ -111,8 +123,10 @@ class _RepetitionRouteState extends State<RepetitionRoute>
         frequencyText,
         style: TextStyle(
           fontSize: 20,
-          color: isSelected ? Colors.blue : Colors.grey,
-          fontFamily: TileStyles.rubikFontName,
+          fontFamily: TileTextStyles.rubikFontName,
+          color: isSelected
+              ? colorScheme.primary
+              : tileThemeExtension.onSurfaceVariantSecondary,
         ),
       ),
     );
@@ -170,38 +184,32 @@ class _RepetitionRouteState extends State<RepetitionRoute>
                 margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                 padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
                 decoration: BoxDecoration(
-                    color: TileStyles.textBackgroundColor,
+                    color: colorScheme.surfaceContainerLowest,
                     borderRadius: const BorderRadius.all(
                       const Radius.circular(8.0),
                     ),
                     border: Border.all(
                       color: this.isDeadlineValid()
-                          ? TileStyles.textBorderColor
-                          : Colors.redAccent,
+                          ? colorScheme.onInverseSurface
+                          : colorScheme.error,
                       width: 1.5,
                     )),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Icon(Icons.calendar_month, color: TileStyles.iconColor),
+                    Icon(Icons.calendar_month,
+                        color: tileThemeExtension.onSurfaceSecondary),
                     Container(
                         padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
                         child: TextButton(
-                          style: TextButton.styleFrom(
-                            textStyle: TextStyle(
-                                fontSize: 20,
-                                color: this.isDeadlineValid()
-                                    ? null
-                                    : Colors.redAccent),
-                          ),
                           onPressed: onDeadlineDateTap,
                           child: Text(
                             textButtonString,
                             style: TextStyle(
-                                fontFamily: TileStyles.rubikFontName,
+                                fontFamily: TileTextStyles.rubikFontName,
                                 color: this.isDeadlineValid()
-                                    ? null
-                                    : Colors.grey),
+                                    ? colorScheme.tertiary
+                                    : colorScheme.onInverseSurface),
                           ),
                         ))
                   ],
@@ -396,13 +404,9 @@ class _RepetitionRouteState extends State<RepetitionRoute>
       onProceed: this.onProceed,
       onCancel: this.onCancel,
       appBar: AppBar(
-        backgroundColor: TileStyles.primaryColor,
         title: Text(
           AppLocalizations.of(context)!.repetition,
-          style: TileStyles.titleBarStyle,
         ),
-        centerTitle: true,
-        elevation: 0,
         automaticallyImplyLeading: false,
       ),
     );

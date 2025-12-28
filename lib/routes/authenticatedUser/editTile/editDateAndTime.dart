@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class EditDateAndTime extends StatelessWidget {
   DateTime time;
@@ -56,7 +56,9 @@ class EditDateAndTime extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color textBorderColor = TileStyles.primaryColorLightHSL.toColor();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     _tileTime = EditTileTime(
       time: TimeOfDay.fromDateTime(time.toLocal()),
       onInputChange: onTimeChange,
@@ -69,17 +71,17 @@ class EditDateAndTime extends StatelessWidget {
     );
     return Container(
       padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-      height: 60,
+      height: 50,
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: TileStyles.primaryColorLightHSL.toColor(),
+            color: colorScheme.primaryContainer,
             width: 1,
           ),
         ),
         color: !this.isReadOnly
             ? Colors.transparent
-            : TileStyles.disabledBackgroundColor,
+            : tileThemeExtension.surfaceContainerDisabled,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -8,6 +8,8 @@ abstract class OnboardingEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class FetchOnboardingDataEvent extends OnboardingEvent {}
+
 class NextPageEvent extends OnboardingEvent {}
 
 class PreviousPageEvent extends OnboardingEvent {}
@@ -36,22 +38,88 @@ class PreferredDaySectionUpdated extends OnboardingEvent {
 
 class AddressTextChanged extends OnboardingEvent {
   final String addressText;
-
   AddressTextChanged(this.addressText);
-
   @override
   List<Object?> get props => [addressText];
 }
 
 class LocationSelected extends OnboardingEvent {
   final Location location;
-
   LocationSelected(this.location);
-
   @override
   List<Object?> get props => [location];
 }
 
+class GetTimeAndLocationEvent extends OnboardingEvent{
+  final bool approved;
+  GetTimeAndLocationEvent( this.approved);
+
+  @override
+  List<Object> get props => [approved];
+}
+
+class SetWorkProfileEvent extends OnboardingEvent{
+  final Map workMap;
+  SetWorkProfileEvent( this.workMap);
+
+  @override
+  List<Object?> get props => [workMap];
+}
+
+class AddRecurringTaskEvent extends OnboardingEvent {
+  final String taskName;
+  AddRecurringTaskEvent(this.taskName);
+  @override
+  List<Object?> get props => [taskName];
+}
+
+class RemoveRecurringTaskEvent extends OnboardingEvent {
+  final int index;
+  RemoveRecurringTaskEvent(this.index);
+  @override
+  List<Object?> get props => [index];
+}
+
+class SetPersonalProfileEvent extends OnboardingEvent{
+  final Map personalMap;
+  SetPersonalProfileEvent( this.personalMap);
+
+  @override
+  List<Object?> get props => [personalMap];
+}
+
+class SelectUsageEvent extends OnboardingEvent {
+  final String usageItem;
+  SelectUsageEvent(this.usageItem);
+  @override
+  List<Object?> get props => [usageItem];
+}
+
+class SelectProfessionEvent extends OnboardingEvent {
+  final String profession;
+  final bool isCustom;
+  SelectProfessionEvent( {required this.profession,this.isCustom = false});
+  @override
+  List<Object?> get props => [profession];
+}
+class AddTileSuggestionEvent extends OnboardingEvent {
+  final TileSuggestion tile;
+  final bool isAddedByPill;
+  AddTileSuggestionEvent({required this.tile,this.isAddedByPill=false});
+  @override
+  List<Object?> get props => [tile];
+}
+
+class RemoveTileSuggestionEvent extends OnboardingEvent {
+  final int index;
+  RemoveTileSuggestionEvent(this.index);
+  @override
+  List<Object?> get props => [index];
+}
+class FetchTileSuggestionsEvent extends OnboardingEvent {
+  final bool isRefresh;
+  FetchTileSuggestionsEvent({this.isRefresh = false});
+}
 
 class SkipOnboardingEvent extends OnboardingEvent {}
 

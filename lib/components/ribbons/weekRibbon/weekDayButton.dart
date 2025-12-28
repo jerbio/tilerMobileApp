@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_decorations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class WeekDayButton extends StatefulWidget {
@@ -26,12 +27,17 @@ class _WeekDayButtonState extends State<WeekDayButton> {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
     List<Widget> childWidgets = [
       Container(
         margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-        decoration: dateTime.isToday?TileStyles.ribbonsButtonSelectedDecoration.copyWith(borderRadius: BorderRadius.all(
-          const Radius.circular(10.0),
-        ),):TileStyles.ribbonsButtonDefaultDecoration,
+        decoration:  dateTime.isToday?
+        TileDecorations.ribbonsButtonSelectedDecoration(colorScheme.primary).copyWith(
+            borderRadius: BorderRadius.all(Radius.circular(10.0),
+            )
+        ) : TileDecorations.ribbonsButtonDefaultDecoration(colorScheme.surfaceContainer),
         alignment: Alignment.center,
         height: 40,
         width: 40,
@@ -39,8 +45,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           DateFormat(DateFormat.DAY).format(this.dateTime),
           style:TextStyle(
               fontSize: 20,
-              fontFamily: TileStyles.rubikFontName,
-              color:  dateTime.isToday?Colors.white:Colors.black
+              color:  dateTime.isToday?colorScheme.onPrimary:tileThemeExtension.onSurfaceVariantSecondary
           ),
         ),
       ),
@@ -49,9 +54,8 @@ class _WeekDayButtonState extends State<WeekDayButton> {
           child: Text(
                 DateFormat(DateFormat.ABBR_WEEKDAY).format(this.dateTime),
                 style: TextStyle(
-                    fontSize: 12,
-                    fontFamily: TileStyles.rubikFontName,
-                    color: Colors.grey)
+                    color:  tileThemeExtension.onSurfaceVariantSecondary,
+                )
               ),
       )
     ];
@@ -60,7 +64,7 @@ class _WeekDayButtonState extends State<WeekDayButton> {
         child: Text(
           DateFormat(DateFormat.ABBR_MONTH).format(this.dateTime),
           style:  TextStyle(
-              color: Colors.grey
+            color:  tileThemeExtension.onSurfaceVariantSecondary,
           ),
         ),
       ));

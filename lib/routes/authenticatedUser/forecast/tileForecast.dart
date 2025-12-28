@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/dayCast.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDaySimple.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TileForecast extends StatefulWidget {
   final List<PeekDay> forecastDays;
@@ -35,8 +35,8 @@ class _ForecastState extends State<TileForecast> {
                 AppLocalizations.of(context)!
                     .numberOfDayForecast(forecastDays.length.toString()),
                 style: TextStyle(
+                    fontFamily: TileTextStyles.rubikFontName,
                     fontSize: 17,
-                    fontFamily: TileStyles.rubikFontName,
                     fontWeight: FontWeight.w500)),
           ),
         ],

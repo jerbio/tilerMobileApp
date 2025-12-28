@@ -3,7 +3,9 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/components/tileUI/tileName.dart';
 import 'package:tiler_app/components/tileUI/tileAddress.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
-import 'package:tiler_app/styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
+
 
 class MonthlyDailyTile extends StatelessWidget {
   late SubCalendarEvent subEvent;
@@ -15,17 +17,25 @@ class MonthlyDailyTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme=Theme.of(context);
+    final colorScheme=theme.colorScheme;
+    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    int redColor = subEvent.colorRed ?? 127;
+    int blueColor = subEvent.colorBlue ?? 127;
+    int greenColor = subEvent.colorGreen ?? 127;
+    var tileBackGroundColor = Color.fromRGBO(
+        redColor, greenColor, blueColor, 0.2);
     return FractionallySizedBox(
-      widthFactor: TileStyles.tileWidthRatio,
+      widthFactor: TileDimensions.tileWidthRatio,
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 10),
         padding:  EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(TileStyles.borderRadius),
+          color:tileBackGroundColor,
+          borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: tileThemeExtension!.shadowSecondary.withValues(alpha: 0.1),
               spreadRadius: 2,
               blurRadius: 5,
               offset: Offset(0, 1),
@@ -53,12 +63,12 @@ class MonthlyDailyTile extends StatelessWidget {
                     height: 25,
                     margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
                     decoration: BoxDecoration(
-                      color: Colors.grey[200],
+                      color: colorScheme.onSurface.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.access_time_sharp,
-                      color: Colors.grey[600],
+                      color: tileThemeExtension.onSurfaceMonthlyIntegration,
                       size: 16,
                     ),
                   ),

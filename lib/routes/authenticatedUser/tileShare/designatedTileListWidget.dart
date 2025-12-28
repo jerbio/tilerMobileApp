@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
@@ -20,6 +20,8 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
   final int pageSize = 5;
   bool hasMore = true;
   bool isLoading = false;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
   @override
   void initState() {
     super.initState();
@@ -34,6 +36,13 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
     } else {
       designatedTiles = this.widget.designatedTiles!;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   void getTiles() {
@@ -87,7 +96,7 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
     return Container(
       height: 40,
       alignment: AlignmentDirectional.topCenter,
-      child: CircularProgressIndicator(),
+      child: CircularProgressIndicator(color: colorScheme.tertiary),
     );
   }
 
