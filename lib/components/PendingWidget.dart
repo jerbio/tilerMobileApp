@@ -12,15 +12,19 @@ class PendingWidget extends StatelessWidget {
   bool blurBackGround = false;
   String? message;
   PendingWidget(
-      {backgroundDecoration, this.imageAsset, this.blurBackGround = true,this.blurSigma, this.message}) {
+      {backgroundDecoration,
+      this.imageAsset,
+      this.blurBackGround = true,
+      this.blurSigma,
+      this.message}) {
     if (backgroundDecoration != null && backgroundDecoration is Decoration) {
       decoration = backgroundDecoration;
     }
   }
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     Widget imageAsset = Image.asset(
       this.imageAsset ?? 'assets/images/tiler_logo_black.png',
       fit: BoxFit.cover,
@@ -68,7 +72,8 @@ class PendingWidget extends StatelessWidget {
         child: new Center(
             child: new ClipRect(
                 child: new BackdropFilter(
-          filter: new ImageFilter.blur(sigmaX: blurSigma??2.0, sigmaY: blurSigma??2.0),
+          filter: new ImageFilter.blur(
+              sigmaX: blurSigma ?? 2.0, sigmaY: blurSigma ?? 2.0),
           child: new Container(
             width: (MediaQuery.of(context).size.width),
             height: (MediaQuery.of(context).size.height),
@@ -78,16 +83,12 @@ class PendingWidget extends StatelessWidget {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10))),
           ),
-        )
-            )
-        )
-    );
+        ))));
 
     Widget pendingRender = centerRenderWidget;
     if (this.blurBackGround) {
       pendingRender = backgroundBlurWithCenterWidget;
     }
-
 
     return Container(
       decoration: this.decoration,

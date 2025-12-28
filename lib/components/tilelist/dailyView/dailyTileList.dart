@@ -439,7 +439,8 @@ class _DailyTileListState extends TileListState {
     }).toList());
 
     // Add edge loading placeholder at the end (for loading future days)
-    Widget futureEdgeLoadingWidget = _buildEdgeLoadingWidget(isLoadingPast: false);
+    Widget futureEdgeLoadingWidget =
+        _buildEdgeLoadingWidget(isLoadingPast: false);
     carouselItems.add(futureEdgeLoadingWidget);
     dayIndexToCarouselIndex[_edgeLoadingFutureIndex] =
         Tuple2(caroselIndexCounter, futureEdgeLoadingWidget);
@@ -506,10 +507,10 @@ class _DailyTileListState extends TileListState {
   }
 
   Widget _buildEdgeLoadingWidget({required bool isLoadingPast}) {
-    String message = isLoadingPast 
-        ? AppLocalizations.of(context)!.loadingPreviousDays 
+    String message = isLoadingPast
+        ? AppLocalizations.of(context)!.loadingPreviousDays
         : AppLocalizations.of(context)!.loadingUpcomingDays;
-    
+
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
