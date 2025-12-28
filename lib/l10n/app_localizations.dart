@@ -3376,6 +3376,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Calendar invite'**
   String get unknown;
+
+  /// Message shown when loading schedule for previous days
+  ///
+  /// In en, this message translates to:
+  /// **'Loading previous days...'**
+  String get loadingPreviousDays;
+
+  /// Message shown when loading schedule for upcoming days
+  ///
+  /// In en, this message translates to:
+  /// **'Loading upcoming days...'**
+  String get loadingUpcomingDays;
 }
 
 class _AppLocalizationsDelegate

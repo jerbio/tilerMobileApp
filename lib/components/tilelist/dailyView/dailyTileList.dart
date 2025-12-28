@@ -421,7 +421,7 @@ class _DailyTileListState extends TileListState {
     dayIndexToCarouselIndex = {};
 
     // Add edge loading placeholder at the beginning (for loading past days)
-    Widget pastEdgeLoadingWidget = _buildEdgeLoadingWidget();
+    Widget pastEdgeLoadingWidget = _buildEdgeLoadingWidget(isLoadingPast: true);
     carouselItems.add(pastEdgeLoadingWidget);
     dayIndexToCarouselIndex[_edgeLoadingPastIndex] =
         Tuple2(caroselIndexCounter, pastEdgeLoadingWidget);
@@ -439,7 +439,7 @@ class _DailyTileListState extends TileListState {
     }).toList());
 
     // Add edge loading placeholder at the end (for loading future days)
-    Widget futureEdgeLoadingWidget = _buildEdgeLoadingWidget();
+    Widget futureEdgeLoadingWidget = _buildEdgeLoadingWidget(isLoadingPast: false);
     carouselItems.add(futureEdgeLoadingWidget);
     dayIndexToCarouselIndex[_edgeLoadingFutureIndex] =
         Tuple2(caroselIndexCounter, futureEdgeLoadingWidget);
@@ -505,11 +505,15 @@ class _DailyTileListState extends TileListState {
     });
   }
 
-  Widget _buildEdgeLoadingWidget() {
+  Widget _buildEdgeLoadingWidget({required bool isLoadingPast}) {
+    String message = isLoadingPast 
+        ? AppLocalizations.of(context)!.loadingPreviousDays 
+        : AppLocalizations.of(context)!.loadingUpcomingDays;
+    
     return Container(
       height: MediaQuery.of(context).size.height,
       decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
-      child: PendingWidget(),
+      child: PendingWidget(message: message),
     );
   }
 
@@ -810,7 +814,7 @@ class _DailyTileListState extends TileListState {
               // Track if we were loading from an edge before resetting flags
               bool wasLoadingPast = _isLoadingPastDays;
               bool wasLoadingFuture = _isLoadingFutureDays;
-              
+
               setState(() {
                 loadedTimeline = state.timelines;
                 loadedSubCalendarEvent = state.subEvents;
@@ -825,7 +829,7 @@ class _DailyTileListState extends TileListState {
                 _isLoadingPastDays = false;
                 _isLoadingFutureDays = false;
               });
-              
+
               // After rebuild, navigate to the newly loaded day
               if (wasLoadingPast || wasLoadingFuture) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -840,12 +844,15 @@ class _DailyTileListState extends TileListState {
                     if (actualDayIndexes.isNotEmpty) {
                       actualDayIndexes.sort();
                       int earliestDayIndex = actualDayIndexes.first;
-                      int? carouselIndex = dayIndexToCarouselIndex[earliestDayIndex]?.item1;
+                      int? carouselIndex =
+                          dayIndexToCarouselIndex[earliestDayIndex]?.item1;
                       if (carouselIndex != null) {
-                        tileListDayCarouselController.animateToPage(carouselIndex);
+                        tileListDayCarouselController
+                            .animateToPage(carouselIndex);
                       }
                     }
-                  } else if (wasLoadingFuture && dayIndexToCarouselIndex.isNotEmpty) {
+                  } else if (wasLoadingFuture &&
+                      dayIndexToCarouselIndex.isNotEmpty) {
                     // Find the latest actual day index and navigate there
                     List<int> actualDayIndexes = dayIndexToCarouselIndex.keys
                         .where((k) => k >= 0)
@@ -853,9 +860,11 @@ class _DailyTileListState extends TileListState {
                     if (actualDayIndexes.isNotEmpty) {
                       actualDayIndexes.sort();
                       int latestDayIndex = actualDayIndexes.last;
-                      int? carouselIndex = dayIndexToCarouselIndex[latestDayIndex]?.item1;
+                      int? carouselIndex =
+                          dayIndexToCarouselIndex[latestDayIndex]?.item1;
                       if (carouselIndex != null) {
-                        tileListDayCarouselController.animateToPage(carouselIndex);
+                        tileListDayCarouselController
+                            .animateToPage(carouselIndex);
                       }
                     }
                   }

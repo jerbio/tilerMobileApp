@@ -10,8 +10,9 @@ class PendingWidget extends StatelessWidget {
   double? width;
   double? blurSigma;
   bool blurBackGround = false;
+  String? message;
   PendingWidget(
-      {backgroundDecoration, this.imageAsset, this.blurBackGround = true,this.blurSigma}) {
+      {backgroundDecoration, this.imageAsset, this.blurBackGround = true,this.blurSigma, this.message}) {
     if (backgroundDecoration != null && backgroundDecoration is Decoration) {
       decoration = backgroundDecoration;
     }
@@ -33,21 +34,30 @@ class PendingWidget extends StatelessWidget {
     }
 
     Widget centerRenderWidget = Center(
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if(this.imageAsset==null)
-          Center(
-              child: SizedBox(
-                child: CircularProgressIndicator(
-                  color: colorScheme.tertiary,
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              imageAsset,
+              if (this.imageAsset == null)
+                SizedBox(
+                  child: CircularProgressIndicator(
+                    color: colorScheme.tertiary,
+                  ),
+                  height: 200.0,
+                  width: 200.0,
                 ),
-                height: 200.0,
-                width: 200.0,
-              )),
-          Center(
-              child: imageAsset
+            ],
           ),
+          if (this.message != null) SizedBox(height: 16),
+          if (this.message != null)
+            Text(
+              this.message!,
+              style: theme.textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
         ],
       ),
     );

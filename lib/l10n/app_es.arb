@@ -404,5 +404,13 @@
     "unknown": "Invitación de calendario",
     "@unknown": {
       "description": "Default label for unknown calendar source"
+    },
+    "loadingPreviousDays": "Cargando días anteriores...",
+    "@loadingPreviousDays": {
+      "description": "Message shown when loading schedule for previous days"
+    },
+    "loadingUpcomingDays": "Cargando próximos días...",
+    "@loadingUpcomingDays": {
+      "description": "Message shown when loading schedule for upcoming days"
     }
 }

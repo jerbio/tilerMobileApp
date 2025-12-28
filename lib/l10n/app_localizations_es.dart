@@ -1913,4 +1913,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get unknown => 'Invitación de calendario';
+
+  @override
+  String get loadingPreviousDays => 'Cargando días anteriores...';
+
+  @override
+  String get loadingUpcomingDays => 'Cargando próximos días...';
 }

@@ -1384,5 +1384,13 @@
         "unknown": "Calendar invite",
         "@unknown": {
           "description": "Default label for unknown calendar source"
+        },
+        "loadingPreviousDays": "Loading previous days...",
+        "@loadingPreviousDays": {
+          "description": "Message shown when loading schedule for previous days"
+        },
+        "loadingUpcomingDays": "Loading upcoming days...",
+        "@loadingUpcomingDays": {
+          "description": "Message shown when loading schedule for upcoming days"
         }
 }
