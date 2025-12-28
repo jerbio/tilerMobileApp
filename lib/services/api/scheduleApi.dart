@@ -55,6 +55,8 @@ class ScheduleApi extends AppApi {
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
           'MobileApp': true.toString()
         };
+        // print("Get sub events with params: $queryParameters");
+        print("Get sub events for timeline ${timeLine.toString()} |||||||");
         Uri uri =
             Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
 
@@ -71,7 +73,8 @@ class ScheduleApi extends AppApi {
             var contentData = jsonResult['Content'];
             List subEventJson = contentData['subCalendarEvents'];
             List sleepTimelinesJson = [];
-
+            print(
+                "Done fetching sub events from server ${timeLine.toString()} |||||||");
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
                 .toList();

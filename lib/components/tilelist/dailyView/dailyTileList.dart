@@ -48,6 +48,12 @@ class _DailyTileListState extends TileListState {
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
   int? carouselSliderIndex = null;
 
+  // Edge loading placeholders - these mark the loading pages at carousel edges
+  static const int _edgeLoadingPastIndex = -1;
+  static const int _edgeLoadingFutureIndex = -2;
+  bool _isLoadingPastDays = false;
+  bool _isLoadingFutureDays = false;
+
   @override
   void initState() {
     super.initState();
@@ -413,7 +419,16 @@ class _DailyTileListState extends TileListState {
     int initialCarouselIndex = -1;
     List<Widget> carouselItems = [];
     dayIndexToCarouselIndex = {};
-    carouselItems = sortedDayIndex.map<Widget>((dayIndex) {
+
+    // Add edge loading placeholder at the beginning (for loading past days)
+    Widget pastEdgeLoadingWidget = _buildEdgeLoadingWidget(isLoadingPast: true);
+    carouselItems.add(pastEdgeLoadingWidget);
+    dayIndexToCarouselIndex[_edgeLoadingPastIndex] =
+        Tuple2(caroselIndexCounter, pastEdgeLoadingWidget);
+    caroselIndexCounter++;
+
+    // Add actual day widgets
+    carouselItems.addAll(sortedDayIndex.map<Widget>((dayIndex) {
       if (initialCarouselIndex < 0 && currentDayIndex == dayIndex) {
         initialCarouselIndex = caroselIndexCounter;
       }
@@ -421,9 +436,18 @@ class _DailyTileListState extends TileListState {
           Tuple2(caroselIndexCounter, dayIndexToWidget[dayIndex]!);
       ++caroselIndexCounter;
       return dayIndexToWidget[dayIndex]!;
-    }).toList();
-    if (initialCarouselIndex < 0 && carouselItems.length > 0) {
-      initialCarouselIndex = 0;
+    }).toList());
+
+    // Add edge loading placeholder at the end (for loading future days)
+    Widget futureEdgeLoadingWidget =
+        _buildEdgeLoadingWidget(isLoadingPast: false);
+    carouselItems.add(futureEdgeLoadingWidget);
+    dayIndexToCarouselIndex[_edgeLoadingFutureIndex] =
+        Tuple2(caroselIndexCounter, futureEdgeLoadingWidget);
+
+    if (initialCarouselIndex < 0 && carouselItems.length > 1) {
+      // Default to first actual day (skip past edge loading placeholder)
+      initialCarouselIndex = 1;
     }
     print("expected dayIndex currentDayIndex " + currentDayIndex.toString());
 
@@ -482,6 +506,56 @@ class _DailyTileListState extends TileListState {
     });
   }
 
+  Widget _buildEdgeLoadingWidget({required bool isLoadingPast}) {
+    String message = isLoadingPast
+        ? AppLocalizations.of(context)!.loadingPreviousDays
+        : AppLocalizations.of(context)!.loadingUpcomingDays;
+
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
+      child: PendingWidget(message: message),
+    );
+  }
+
+  void _triggerEdgeLoading({required bool isLoadingPast}) {
+    if (isLoadingPast && _isLoadingPastDays) return;
+    if (!isLoadingPast && _isLoadingFutureDays) return;
+
+    setState(() {
+      if (isLoadingPast) {
+        _isLoadingPastDays = true;
+      } else {
+        _isLoadingFutureDays = true;
+      }
+    });
+
+    final currentState = context.read<UiDateManagerBloc>().state;
+    DateTime currentDate = Utility.currentTime().dayDate;
+    if (currentState is UiDateManagerUpdated) {
+      currentDate = currentState.currentDate;
+    }
+
+    // Calculate the date to load based on direction
+    List<int> sortedDayIndexes = dayIndexToCarouselIndex.keys
+        .where((k) => k >= 0) // Exclude edge loading markers
+        .toList();
+    sortedDayIndexes.sort();
+
+    DateTime targetDate;
+    if (isLoadingPast && sortedDayIndexes.isNotEmpty) {
+      int earliestDayIndex = sortedDayIndexes.first;
+      targetDate = Utility.getTimeFromIndex(earliestDayIndex - 1).dayDate;
+    } else if (!isLoadingPast && sortedDayIndexes.isNotEmpty) {
+      int latestDayIndex = sortedDayIndexes.last;
+      targetDate = Utility.getTimeFromIndex(latestDayIndex + 1).dayDate;
+    } else {
+      targetDate = currentDate;
+    }
+
+    reloadSchedule(targetDate, forceRenderingPage: false, incremental: true);
+  }
+
   Widget buildDailyRenderSubCalendarTiles(
       Tuple2<List<Timeline>, List<SubCalendarEvent>>? tileData) {
     Tuple2<int, List<Widget>> carouselData = buildCarousel(tileData);
@@ -518,14 +592,34 @@ class _DailyTileListState extends TileListState {
               if (value.item1 == pageNumber && dayIndexOfTileBatch == null) {
                 dayIndexOfTileBatch = key;
                 tileBatchTupleData = value;
-                dateOfCurrenCarouselIndex = Utility.getTimeFromIndex(key);
+                // Only compute date for actual day indexes, not edge loading markers
+                if (key >= 0) {
+                  dateOfCurrenCarouselIndex = Utility.getTimeFromIndex(key);
+                }
               }
             });
             print("dateOfCurrenCarouselIndex: " +
                 dateOfCurrenCarouselIndex.toString());
 
+            // Check if user swiped to an edge loading placeholder
+            if (carouselData == CarouselPageChangedReason.manual &&
+                dayIndexOfTileBatch != null) {
+              if (dayIndexOfTileBatch == _edgeLoadingPastIndex) {
+                // User swiped to the past edge loading page
+                AnalysticsSignal.send('DAY_SWIPE_EDGE_PAST');
+                _triggerEdgeLoading(isLoadingPast: true);
+                return;
+              } else if (dayIndexOfTileBatch == _edgeLoadingFutureIndex) {
+                // User swiped to the future edge loading page
+                AnalysticsSignal.send('DAY_SWIPE_EDGE_FUTURE');
+                _triggerEdgeLoading(isLoadingPast: false);
+                return;
+              }
+            }
+
             if (carouselData == CarouselPageChangedReason.manual &&
                 dayIndexOfTileBatch != null &&
+                dayIndexOfTileBatch! >= 0 &&
                 tileBatchTupleData != null) {
               var uiDateManagerState =
                   this.context.read<UiDateManagerBloc>().state;
@@ -718,6 +812,10 @@ class _DailyTileListState extends TileListState {
                 incrementalIdToMapping.remove(eventId);
               }
             } else {
+              // Track if we were loading from an edge before resetting flags
+              bool wasLoadingPast = _isLoadingPastDays;
+              bool wasLoadingFuture = _isLoadingFutureDays;
+
               setState(() {
                 loadedTimeline = state.timelines;
                 loadedSubCalendarEvent = state.subEvents;
@@ -728,7 +826,51 @@ class _DailyTileListState extends TileListState {
                   String carouselId = _generateCarouselKeyId(statusId);
                   carouselKey = ValueKey(carouselId);
                 }
+                // Reset edge loading flags when new data is loaded
+                _isLoadingPastDays = false;
+                _isLoadingFutureDays = false;
               });
+
+              // After rebuild, navigate to the newly loaded day
+              if (wasLoadingPast || wasLoadingFuture) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (!mounted) return;
+                  // Navigate to the first actual day (index 1, after past edge placeholder)
+                  // for past loading, or second-to-last (before future edge placeholder) for future
+                  if (wasLoadingPast && dayIndexToCarouselIndex.isNotEmpty) {
+                    // Find the earliest actual day index and navigate there
+                    List<int> actualDayIndexes = dayIndexToCarouselIndex.keys
+                        .where((k) => k >= 0)
+                        .toList();
+                    if (actualDayIndexes.isNotEmpty) {
+                      actualDayIndexes.sort();
+                      int earliestDayIndex = actualDayIndexes.first;
+                      int? carouselIndex =
+                          dayIndexToCarouselIndex[earliestDayIndex]?.item1;
+                      if (carouselIndex != null) {
+                        tileListDayCarouselController
+                            .animateToPage(carouselIndex);
+                      }
+                    }
+                  } else if (wasLoadingFuture &&
+                      dayIndexToCarouselIndex.isNotEmpty) {
+                    // Find the latest actual day index and navigate there
+                    List<int> actualDayIndexes = dayIndexToCarouselIndex.keys
+                        .where((k) => k >= 0)
+                        .toList();
+                    if (actualDayIndexes.isNotEmpty) {
+                      actualDayIndexes.sort();
+                      int latestDayIndex = actualDayIndexes.last;
+                      int? carouselIndex =
+                          dayIndexToCarouselIndex[latestDayIndex]?.item1;
+                      if (carouselIndex != null) {
+                        tileListDayCarouselController
+                            .animateToPage(carouselIndex);
+                      }
+                    }
+                  }
+                });
+              }
             }
           }
         }),

@@ -10,16 +10,21 @@ class PendingWidget extends StatelessWidget {
   double? width;
   double? blurSigma;
   bool blurBackGround = false;
+  String? message;
   PendingWidget(
-      {backgroundDecoration, this.imageAsset, this.blurBackGround = true,this.blurSigma}) {
+      {backgroundDecoration,
+      this.imageAsset,
+      this.blurBackGround = true,
+      this.blurSigma,
+      this.message}) {
     if (backgroundDecoration != null && backgroundDecoration is Decoration) {
       decoration = backgroundDecoration;
     }
   }
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     Widget imageAsset = Image.asset(
       this.imageAsset ?? 'assets/images/tiler_logo_black.png',
       fit: BoxFit.cover,
@@ -33,21 +38,30 @@ class PendingWidget extends StatelessWidget {
     }
 
     Widget centerRenderWidget = Center(
-      child: Stack(
-        alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if(this.imageAsset==null)
-          Center(
-              child: SizedBox(
-                child: CircularProgressIndicator(
-                  color: colorScheme.tertiary,
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              imageAsset,
+              if (this.imageAsset == null)
+                SizedBox(
+                  child: CircularProgressIndicator(
+                    color: colorScheme.tertiary,
+                  ),
+                  height: 200.0,
+                  width: 200.0,
                 ),
-                height: 200.0,
-                width: 200.0,
-              )),
-          Center(
-              child: imageAsset
+            ],
           ),
+          if (this.message != null) SizedBox(height: 16),
+          if (this.message != null)
+            Text(
+              this.message!,
+              style: theme.textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
         ],
       ),
     );
@@ -58,7 +72,8 @@ class PendingWidget extends StatelessWidget {
         child: new Center(
             child: new ClipRect(
                 child: new BackdropFilter(
-          filter: new ImageFilter.blur(sigmaX: blurSigma??2.0, sigmaY: blurSigma??2.0),
+          filter: new ImageFilter.blur(
+              sigmaX: blurSigma ?? 2.0, sigmaY: blurSigma ?? 2.0),
           child: new Container(
             width: (MediaQuery.of(context).size.width),
             height: (MediaQuery.of(context).size.height),
@@ -68,16 +83,12 @@ class PendingWidget extends StatelessWidget {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10))),
           ),
-        )
-            )
-        )
-    );
+        ))));
 
     Widget pendingRender = centerRenderWidget;
     if (this.blurBackGround) {
       pendingRender = backgroundBlurWithCenterWidget;
     }
-
 
     return Container(
       decoration: this.decoration,

@@ -1926,4 +1926,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknown => 'Calendar invite';
+
+  @override
+  String get loadingPreviousDays => 'Loading previous days...';
+
+  @override
+  String get loadingUpcomingDays => 'Loading upcoming days...';
 }

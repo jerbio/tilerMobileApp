@@ -409,5 +409,13 @@
     "emptyDayFooterLine1": "Comienza en segundos—",
     "emptyDayFooterLine2": "importa calendarios o crea tiles.",
     "emptyDayOr": "o",
-    "emptyDayImportGoogleCalendarButton": "Importar Google Calendar"
+    "emptyDayImportGoogleCalendarButton": "Importar Google Calendar",
+    "loadingPreviousDays": "Cargando días anteriores...",
+    "@loadingPreviousDays": {
+      "description": "Message shown when loading schedule for previous days"
+    },
+    "loadingUpcomingDays": "Cargando próximos días...",
+    "@loadingUpcomingDays": {
+      "description": "Message shown when loading schedule for upcoming days"
+    }
 }
