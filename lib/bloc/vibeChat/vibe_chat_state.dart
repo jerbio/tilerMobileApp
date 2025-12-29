@@ -6,6 +6,8 @@ enum VibeChatStep {
   loaded,
   loadingMore,
   sending,
+  recording,
+  transcribing,
   error,
 }
 
@@ -16,6 +18,7 @@ class VibeChatState extends Equatable {
   final bool hasMoreMessages;
   final int currentIndex;
   final String? error;
+  final String? transcribedText;
 
   const VibeChatState({
     this.step = VibeChatStep.initial,
@@ -24,6 +27,7 @@ class VibeChatState extends Equatable {
     this.hasMoreMessages = true,
     this.currentIndex = 0,
     this.error,
+    this.transcribedText
   });
 
   VibeChatState copyWith({
@@ -33,6 +37,7 @@ class VibeChatState extends Equatable {
     bool? hasMoreMessages,
     int? currentIndex,
     String? error,
+    String? transcribedText
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -41,6 +46,7 @@ class VibeChatState extends Equatable {
       hasMoreMessages: hasMoreMessages ?? this.hasMoreMessages,
       currentIndex: currentIndex ?? this.currentIndex,
       error: error ?? this.error,
+      transcribedText: transcribedText ?? this.transcribedText
     );
   }
 
@@ -52,5 +58,6 @@ class VibeChatState extends Equatable {
     hasMoreMessages,
     currentIndex,
     error,
+    transcribedText
   ];
 }

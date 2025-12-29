@@ -1,19 +1,35 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/chat.dart';
+import 'dart:developer' as developer;
+
+import 'package:tiler_app/services/audiRecordingService.dart';
 part 'vibe_chat_event.dart';
 part 'vibe_chat_state.dart';
 
+
 class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   final ChatApi chatApi;
+  AudioRecordingService? _audioService;
 
   VibeChatBloc({required this.chatApi}) : super(VibeChatState()) {
     on<LoadVibeChatSessionEvent>(_onLoadVibeChatSession);
     on<LoadMoreMessagesEvent>(_onLoadMoreMessages);
     on<SendAMessageEvent>(_onSendAMessage);
+    on<StartRecordingEvent>(_onStartRecording);
+    on<StopRecordingAndTranscribeEvent>(_onStopRecordingAndTranscribe);
+    on<CancelRecordingEvent>(_onCancelRecording);
+    on<ClearTranscribedTextEvent>(_onClearTranscribedText);
   }
+
+  Stream<double> get amplitudeStream => _audioService?.amplitudeStream ?? Stream.empty();
 
   Future<void> _onLoadVibeChatSession(LoadVibeChatSessionEvent event, Emitter<VibeChatState> emit,) async {
     try {
@@ -43,7 +59,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e.toString(),
+        error: (e as TilerError).Message,
       ));
     }
   }
@@ -229,7 +245,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e.toString(),
+        error: (e as TilerError).Message,
       ));
     }
   }
@@ -271,8 +287,74 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e.toString(),
+        error: (e as TilerError).Message,
       ));
     }
   }
-}
+
+  Future<void> _onStartRecording(StartRecordingEvent event, Emitter<VibeChatState> emit,) async {
+    try {
+      if (_audioService != null) {
+        await _audioService!.cancelRecording();
+        _audioService!.dispose();
+      }
+      _audioService = AudioRecordingService();
+      await _audioService!.startRecording();
+      emit(state.copyWith(step: VibeChatStep.recording));
+    } catch (e) {
+      _audioService?.dispose();
+      _audioService = null;
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: (e as TilerError).Message,
+      ));
+    }
+  }
+
+  Future<void> _onStopRecordingAndTranscribe(StopRecordingAndTranscribeEvent event, Emitter<VibeChatState> emit,) async {
+    try {
+
+      emit(state.copyWith(step: VibeChatStep.transcribing));
+
+      final webMPath = await _audioService!.stopRecording();
+      _audioService = null;
+      final transcriptionText = await chatApi.transcribeAudio(webMPath);
+      await File(webMPath).delete();
+      if (transcriptionText.isNotEmpty) {
+        emit(state.copyWith(
+          step: VibeChatStep.loaded,
+          transcribedText: transcriptionText,
+        ));
+      } else {
+        emit(state.copyWith(step: VibeChatStep.loaded));
+      }
+    } catch (e) {
+      _audioService?.dispose();
+      _audioService = null;
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError ? e.Message : 'Transcription failed',
+      ));
+    }
+  }
+
+  Future<void> _onCancelRecording(
+      CancelRecordingEvent event,
+      Emitter<VibeChatState> emit,
+      ) async {
+    if (_audioService != null) {
+      await _audioService!.cancelRecording();
+      _audioService = null;
+    }
+
+    emit(state.copyWith(
+      step: VibeChatStep.loaded,
+      transcribedText: '',
+    ));
+  }
+
+  void _onClearTranscribedText(ClearTranscribedTextEvent event, Emitter<VibeChatState> emit) {
+    emit(state.copyWith(transcribedText: ''));
+  }
+
+ }
