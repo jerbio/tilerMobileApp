@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/util.dart';
@@ -32,14 +33,27 @@ class LocationApi extends AppApi {
   }
 
   Future<List<Location>> _createLocationFuture(Uri uri, var header) async {
-    var pendingRequest = http.get(uri, headers: header);
+    var pendingRequest = httpClient.get(uri, headers: header).timeout(
+      AppApi.requestTimeout,
+      onTimeout: () {
+        throw TilerError(
+            Message: LocalizationService.instance.translations.requestTimeout);
+      },
+    );
     http.Response response = await pendingRequest;
     while (nextRequestParams.length > 0) {
       var params = nextRequestParams.last;
       nextRequestParams = [];
       header = params['header'];
       uri = params['uri'];
-      response = await http.get(uri, headers: header);
+      response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
     }
     this.chainPending = null;
     return processLocationList(response);

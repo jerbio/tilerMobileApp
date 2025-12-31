@@ -8,6 +8,7 @@ import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -40,8 +41,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.post(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .post(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -88,8 +97,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.post(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .post(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -189,7 +206,14 @@ class TileShareClusterApi extends AppApi {
           throw TilerError(Message: 'Issues with authentication');
         }
 
-        var response = await http.get(uri, headers: header);
+        var response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
@@ -250,7 +274,14 @@ class TileShareClusterApi extends AppApi {
           throw TilerError(Message: 'Issues with authentication');
         }
 
-        Response response = await http.get(uri, headers: header);
+        Response response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         HandleHttpStatusFailure(response);
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
@@ -311,8 +342,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.put(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .put(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -369,8 +408,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.post(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .post(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -424,8 +471,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.put(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .put(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -473,8 +528,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.delete(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .delete(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -513,8 +576,16 @@ class TileShareClusterApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.delete(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .delete(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";

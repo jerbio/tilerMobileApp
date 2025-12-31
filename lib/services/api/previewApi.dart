@@ -5,7 +5,7 @@ import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
-import 'package:http/http.dart' as http;
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -36,7 +36,14 @@ class PreviewApi extends AppApi {
           throw TilerError(Message: 'Issues with authentication');
         }
 
-        var response = await http.get(uri, headers: header);
+        var response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         if (response.statusCode == HttpStatus.ok) {
           var jsonResult = jsonDecode(response.body);
           if (isJsonResponseOk(jsonResult)) {

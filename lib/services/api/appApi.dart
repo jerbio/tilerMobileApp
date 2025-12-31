@@ -10,7 +10,6 @@ import 'package:http/http.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/routes/authenticatedUser/locationAccess.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
@@ -23,14 +22,23 @@ import '../../constants.dart' as Constants;
 abstract class AppApi {
   static const String _analyzePath = 'api/Analysis/Analyze';
   static const int batchCount = 10;
+  static const Duration requestTimeout = Duration(seconds: 180);
+  static const Duration connectionTimeout = Duration(seconds: 180);
 
   List<Tuple3<StreamSubscription, Future, String>>? pendingFuture;
   late Authentication authentication;
   late AccessManager accessManager;
   Function? getContextCallBack;
+  late http.Client httpClient;
+
   AppApi({required this.getContextCallBack}) {
     authentication = new Authentication();
     accessManager = AccessManager();
+    httpClient = http.Client();
+  }
+
+  void dispose() {
+    httpClient.close();
   }
 
   bool isJsonResponseOk(Map jsonResult) {
@@ -208,41 +216,64 @@ abstract class AppApi {
           if (header != null) {
             Uri uri = Uri.https(url, requestPath);
             print("Called POST REQUEST " + requestPath + " domain:" + url);
-            if (usePutRequest) {
-              return http
-                  .put(uri,
-                      headers: header, body: jsonEncode(injectedParameters))
-                  .then((value) async {
+
+            try {
+              Response response;
+              if (usePutRequest) {
+                response = await httpClient
+                    .put(uri,
+                        headers: header, body: jsonEncode(injectedParameters))
+                    .timeout(
+                  requestTimeout,
+                  onTimeout: () {
+                    throw TilerError(
+                        Message:
+                            'Request timed out after ${requestTimeout.inSeconds} seconds');
+                  },
+                );
                 print("Concluded Sending PUT REQUEST " +
                     requestPath +
                     "\t Code: " +
-                    value.statusCode.toString());
-
-                if (analyze) {
-                  analyzeSchedule(injectLocation: injectLocation);
-                }
-                return value;
-              }).catchError((onError) {
-                print("Issues with PUT REQUEST " + requestPath);
-                return onError;
-              });
-            }
-            return http
-                .post(uri,
-                    headers: header, body: jsonEncode(injectedParameters))
-                .then((value) async {
-              print("Concluded Sending POST REQUEST " +
-                  requestPath +
-                  "\t Code: " +
-                  value.statusCode.toString());
-              if (analyze) {
-                analyzeSchedule(injectLocation: injectLocation);
+                    response.statusCode.toString());
+              } else {
+                response = await httpClient
+                    .post(uri,
+                        headers: header, body: jsonEncode(injectedParameters))
+                    .timeout(
+                  requestTimeout,
+                  onTimeout: () {
+                    throw TilerError(
+                        Message:
+                            'Request timed out after ${requestTimeout.inSeconds} seconds');
+                  },
+                );
+                print("Concluded Sending POST REQUEST " +
+                    requestPath +
+                    "\t Code: " +
+                    response.statusCode.toString());
               }
-              return value;
-            }).catchError((onError) {
-              print("Issues with POST REQUEST " + requestPath);
-              return onError;
-            });
+
+              // Only analyze if request was successful
+              if (analyze && response.statusCode == HttpStatus.ok) {
+                // Run analyze in background, don't wait for it
+                analyzeSchedule(injectLocation: injectLocation)
+                    .catchError((error) {
+                  print("Background analyze failed: $error");
+                });
+              }
+
+              return response;
+            } catch (e) {
+              print("Error with " +
+                  (usePutRequest ? "PUT" : "POST") +
+                  " REQUEST " +
+                  requestPath +
+                  ": $e");
+              if (e is TilerError) {
+                rethrow;
+              }
+              throw TilerError(Message: 'Network error: ${e.toString()}');
+            }
           }
           throw TilerError(
               Message: LocalizationService
@@ -272,15 +303,28 @@ abstract class AppApi {
   }
 
   Future analyzeSchedule({bool injectLocation = false}) async {
-    var header = this.getHeaders();
-    if (header != null) {
-      String tilerDomain = Constants.tilerDomain;
-      String analyzeUrl = tilerDomain;
-      Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
-      Map<String, dynamic> analyzeParameters =
-      await injectRequestParams({}, includeLocationParams: injectLocation);
-      await http.post(analyzeUri,
-          headers: header, body: jsonEncode(analyzeParameters));
+    try {
+      var header = this.getHeaders();
+      if (header != null) {
+        String tilerDomain = Constants.tilerDomain;
+        String analyzeUrl = tilerDomain;
+        Uri analyzeUri = Uri.https(analyzeUrl, analyzePath);
+        Map<String, dynamic> analyzeParameters = await injectRequestParams({},
+            includeLocationParams: injectLocation);
+        await httpClient
+            .post(analyzeUri,
+                headers: header, body: jsonEncode(analyzeParameters))
+            .timeout(
+          Duration(seconds: 20),
+          onTimeout: () {
+            print("Analyze schedule timed out");
+            return http.Response('{}', 408);
+          },
+        );
+      }
+    } catch (e) {
+      print("Error in analyzeSchedule: $e");
+      // Don't throw - this is a background operation
     }
   }
 

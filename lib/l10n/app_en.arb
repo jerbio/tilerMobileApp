@@ -1397,5 +1397,37 @@
         "loadingUpcomingDays": "Loading upcoming days...",
         "@loadingUpcomingDays": {
           "description": "Message shown when loading schedule for upcoming days"
+        },
+        "requestTimeout": "Request timeout - please check your connection",
+        "@requestTimeout": {
+          "description": "Error message shown when an HTTP request times out"
+        },
+        "failedToPauseTile": "Failed to pause tile",
+        "@failedToPauseTile": {
+          "description": "Error when pausing a tile fails"
+        },
+        "failedToResumeTile": "Failed to resume tile",
+        "@failedToResumeTile": {
+          "description": "Error when resuming a tile fails"
+        },
+        "failedToMoveUpTask": "Failed to move up task",
+        "@failedToMoveUpTask": {
+          "description": "Error when moving a task to now fails"
+        },
+        "failedToUpdateTile": "Failed to update tile",
+        "@failedToUpdateTile": {
+          "description": "Error when updating a tile fails"
+        },
+        "failedToBuzzSchedule": "Failed to buzz schedule",
+        "@failedToBuzzSchedule": {
+          "description": "Error when buzzing the schedule fails"
+        },
+        "failedToShuffleSchedule": "Failed to shuffle schedule",
+        "@failedToShuffleSchedule": {
+          "description": "Error when shuffling the schedule fails"
+        },
+        "failedToProcrastinateTile": "Failed to procrastinate tile",
+        "@failedToProcrastinateTile": {
+          "description": "Error when procrastinating a tile fails"
         }
 }

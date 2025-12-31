@@ -3,7 +3,6 @@ import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
-import 'package:http/http.dart' as http;
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 
@@ -36,7 +35,14 @@ class IntegrationApi extends AppApi {
                 LocalizationService.instance.translations.authenticationIssues);
       }
       Utility.debugPrint('Requesting integrations with headers: $header');
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       Utility.debugPrint('Integrations API response: ${response.body}');
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
@@ -109,9 +115,18 @@ class IntegrationApi extends AppApi {
 
       var injectedDeleteIntegrationParameters =
           await injectRequestParams(deleteIntegrationParameters);
-      var response = await http.delete(uri,
-          headers: header,
-          body: json.encode(injectedDeleteIntegrationParameters));
+      var response = await httpClient
+          .delete(uri,
+              headers: header,
+              body: json.encode(injectedDeleteIntegrationParameters))
+          .timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
@@ -122,6 +137,7 @@ class IntegrationApi extends AppApi {
     }
     return false;
   }
+
   Future<CalendarItem?> updateCalendarItem({
     required String calendarId,
     required String calendarName,

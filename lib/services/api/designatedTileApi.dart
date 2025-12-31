@@ -1,10 +1,10 @@
-import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'dart:convert';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/contactModel.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../constants.dart' as Constants;
@@ -42,8 +42,16 @@ class DesignatedTileApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.put(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .put(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -96,8 +104,16 @@ class DesignatedTileApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.delete(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .delete(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -150,7 +166,14 @@ class DesignatedTileApi extends AppApi {
           throw TilerError(Message: 'Issues with authentication');
         }
 
-        Response response = await http.get(uri, headers: header);
+        Response response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         HandleHttpStatusFailure(response);
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {

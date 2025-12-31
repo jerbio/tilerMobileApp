@@ -417,5 +417,37 @@
     "loadingUpcomingDays": "Cargando próximos días...",
     "@loadingUpcomingDays": {
       "description": "Message shown when loading schedule for upcoming days"
+    },
+    "requestTimeout": "Tiempo de solicitud agotado - por favor verifique su conexión",
+    "@requestTimeout": {
+      "description": "Error message shown when an HTTP request times out"
+    },
+    "failedToPauseTile": "Error al pausar el tile",
+    "@failedToPauseTile": {
+      "description": "Error when pausing a tile fails"
+    },
+    "failedToResumeTile": "Error al reanudar el tile",
+    "@failedToResumeTile": {
+      "description": "Error when resuming a tile fails"
+    },
+    "failedToMoveUpTask": "Error al mover la tarea",
+    "@failedToMoveUpTask": {
+      "description": "Error when moving a task to now fails"
+    },
+    "failedToUpdateTile": "Error al actualizar el tile",
+    "@failedToUpdateTile": {
+      "description": "Error when updating a tile fails"
+    },
+    "failedToBuzzSchedule": "Error al notificar la programación",
+    "@failedToBuzzSchedule": {
+      "description": "Error when buzzing the schedule fails"
+    },
+    "failedToShuffleSchedule": "Error al mezclar la programación",
+    "@failedToShuffleSchedule": {
+      "description": "Error when shuffling the schedule fails"
+    },
+    "failedToProcrastinateTile": "Error al posponer el tile",
+    "@failedToProcrastinateTile": {
+      "description": "Error when procrastinating a tile fails"
     }
 }

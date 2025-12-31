@@ -3418,6 +3418,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading upcoming days...'**
   String get loadingUpcomingDays;
+
+  /// Error message shown when an HTTP request times out
+  ///
+  /// In en, this message translates to:
+  /// **'Request timeout - please check your connection'**
+  String get requestTimeout;
+
+  /// Error when pausing a tile fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to pause tile'**
+  String get failedToPauseTile;
+
+  /// Error when resuming a tile fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to resume tile'**
+  String get failedToResumeTile;
+
+  /// Error when moving a task to now fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to move up task'**
+  String get failedToMoveUpTask;
+
+  /// Error when updating a tile fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update tile'**
+  String get failedToUpdateTile;
+
+  /// Error when buzzing the schedule fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to buzz schedule'**
+  String get failedToBuzzSchedule;
+
+  /// Error when shuffling the schedule fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to shuffle schedule'**
+  String get failedToShuffleSchedule;
+
+  /// Error when procrastinating a tile fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to procrastinate tile'**
+  String get failedToProcrastinateTile;
 }
 
 class _AppLocalizationsDelegate

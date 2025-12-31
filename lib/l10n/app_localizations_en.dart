@@ -1932,4 +1932,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingUpcomingDays => 'Loading upcoming days...';
+
+  @override
+  String get requestTimeout => 'Request timeout - please check your connection';
+
+  @override
+  String get failedToPauseTile => 'Failed to pause tile';
+
+  @override
+  String get failedToResumeTile => 'Failed to resume tile';
+
+  @override
+  String get failedToMoveUpTask => 'Failed to move up task';
+
+  @override
+  String get failedToUpdateTile => 'Failed to update tile';
+
+  @override
+  String get failedToBuzzSchedule => 'Failed to buzz schedule';
+
+  @override
+  String get failedToShuffleSchedule => 'Failed to shuffle schedule';
+
+  @override
+  String get failedToProcrastinateTile => 'Failed to procrastinate tile';
 }

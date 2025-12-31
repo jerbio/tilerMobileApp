@@ -1934,4 +1934,29 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get loadingUpcomingDays => 'Cargando próximos días...';
+
+  @override
+  String get requestTimeout =>
+      'Tiempo de solicitud agotado - por favor verifique su conexión';
+
+  @override
+  String get failedToPauseTile => 'Error al pausar el tile';
+
+  @override
+  String get failedToResumeTile => 'Error al reanudar el tile';
+
+  @override
+  String get failedToMoveUpTask => 'Error al mover la tarea';
+
+  @override
+  String get failedToUpdateTile => 'Error al actualizar el tile';
+
+  @override
+  String get failedToBuzzSchedule => 'Error al notificar la programación';
+
+  @override
+  String get failedToShuffleSchedule => 'Error al mezclar la programación';
+
+  @override
+  String get failedToProcrastinateTile => 'Error al posponer el tile';
 }
