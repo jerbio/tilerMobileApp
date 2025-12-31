@@ -1289,7 +1289,7 @@
         },
         "audioConversionFailed":"Audio conversion failed",
         "recordingPathIsEmpty":"Recording path is empty",
-        "noActiveRecording":"No active recording"
+        "noActiveRecording":"No active recording",
         "seeTodaysRoute": "See Today's Route",
         "joinMeeting": "Join Meeting",
         "openLink": "Open Link",

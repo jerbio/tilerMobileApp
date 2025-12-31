@@ -3179,6 +3179,60 @@ abstract class AppLocalizations {
   /// **'See Today\'s Route'**
   String get seeTodaysRoute;
 
+  /// No description provided for @whatWouldYouLikeToDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do?'**
+  String get whatWouldYouLikeToDo;
+
+  /// No description provided for @describeATask.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe a task, we\'ll handle the tiling.'**
+  String get describeATask;
+
+  /// No description provided for @microphonePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission denied.'**
+  String get microphonePermissionDenied;
+
+  /// No description provided for @failedToStartRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start recording: {error}'**
+  String failedToStartRecording(String error);
+
+  /// No description provided for @failedToStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to stop recording: {error}'**
+  String failedToStopRecording(String error);
+
+  /// No description provided for @audioConversionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio conversion error: {error}'**
+  String audioConversionError(String error);
+
+  /// No description provided for @audioConversionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio conversion failed'**
+  String get audioConversionFailed;
+
+  /// No description provided for @recordingPathIsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording path is empty'**
+  String get recordingPathIsEmpty;
+
+  /// No description provided for @noActiveRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'No active recording'**
+  String get noActiveRecording;
+
   /// No description provided for @joinMeeting.
   ///
   /// In en, this message translates to:

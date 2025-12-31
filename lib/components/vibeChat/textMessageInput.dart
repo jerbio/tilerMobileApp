@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TextMessageInput extends StatefulWidget {
   final TextEditingController controller;
@@ -66,7 +66,7 @@ class _TextMessageInputState extends State<TextMessageInput> {
               child: TextField(
                 scrollPadding: EdgeInsets.only(bottom: 100),
                 controller: widget.controller,
-                enabled: !isSending && !isTranscribing,
+                enabled: state.step == VibeChatStep.loaded,
                 decoration: InputDecoration(
                   hintText: isTranscribing ? 'Transcribing${'.' * _dotCount}' : localization.describeATask,
                   hintStyle: TextStyle(
