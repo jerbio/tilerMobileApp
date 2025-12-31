@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,8 +22,11 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+import 'package:tiler_app/components/vibeChat/vibeChat.dart';
+import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
@@ -30,6 +34,7 @@ import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/chat.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -39,6 +44,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
+import '../../bloc/vibeChat/vibe_chat_bloc.dart' show LoadVibeChatSessionEvent, VibeChatBloc;
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -78,6 +84,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     previewApi = PreviewApi(getContextCallBack: () {
       return this.context;
     });
+
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
@@ -394,7 +401,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildPreviewFloatingActionButton() {
     return FloatingActionButton(
       backgroundColor: colorScheme.surface,
       onPressed: () {
@@ -421,6 +428,42 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
+  Widget _buildChatFloatingActionButton() {
+    return Padding(
+      padding: EdgeInsets.only(left: 30),
+      child: FloatingActionButton(
+        backgroundColor: colorScheme.surface,
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (context) => BlocProvider(
+              create: (context) => VibeChatBloc(
+                chatApi: ChatApi(getContextCallBack: () => context),
+              )..add(LoadVibeChatSessionEvent()),
+              child: VibeChat(),
+            ),
+          );
+        },
+        child: Icon(
+          Icons.chat_outlined,
+          color: colorScheme.primary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionButtons(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildChatFloatingActionButton(),
+        _buildPreviewFloatingActionButton(),
+      ],
+    );
+
+}
   Widget renderAuthorizedUserPageView() {
     //ey: dayStatusWidget not used
     //ey: never added to widget tree
@@ -477,7 +520,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton:_buildFloatingActionButtons(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
