@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class EditTileNote extends StatefulWidget {
@@ -23,7 +23,6 @@ class EditTileNote extends StatefulWidget {
 }
 
 class _EditTileNoteState extends State<EditTileNote> {
-
   late TextEditingController _controller = TextEditingController();
   @override
   void initState() {
@@ -39,8 +38,8 @@ class _EditTileNoteState extends State<EditTileNote> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     String procrastinateText =
         AppLocalizations.of(context)!.procrastinateBlockOut;
     return FractionallySizedBox(
@@ -59,11 +58,10 @@ class _EditTileNoteState extends State<EditTileNote> {
             enabled:
                 !(this.widget.isProcrastinate) && !(this.widget.isReadOnly),
             controller: this.widget.isProcrastinate ? null : _controller,
-            style:TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: 20,
-              fontWeight: FontWeight.w500
-            ),
+            style: TextStyle(
+                fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 20,
+                fontWeight: FontWeight.w500),
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context)!.noteEllipsis,
               filled: true,
@@ -79,7 +77,8 @@ class _EditTileNoteState extends State<EditTileNote> {
                 borderRadius: const BorderRadius.all(
                   const Radius.circular(8.0),
                 ),
-                borderSide: BorderSide(color: colorScheme.primaryContainer, width: 2),
+                borderSide:
+                    BorderSide(color: colorScheme.primaryContainer, width: 2),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: const BorderRadius.all(

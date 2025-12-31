@@ -20,7 +20,7 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class WeeklyTileList extends TileList {
   static final String routeName = '/WeeklyTileList';
@@ -48,9 +48,9 @@ class _WeeklyTileListState extends TileListState {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -117,7 +117,9 @@ class _WeeklyTileListState extends TileListState {
                     Icon(Icons.error, color: colorScheme.error, size: 20.0),
                     Text(
                       (dayData.nonViable?.length ?? 0).toString(),
-                      style: TileTextStyles.daySummary(color:tileThemeExtension.onSurfaceDaySummary, size:20),
+                      style: TileTextStyles.daySummary(
+                          color: tileThemeExtension.onSurfaceDaySummary,
+                          size: 20),
                     )
                   ],
                 ),
@@ -225,8 +227,10 @@ class _WeeklyTileListState extends TileListState {
                   children: rowItems,
                 ),
                 MediaQuery.of(context).orientation == Orientation.landscape
-                    ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                    : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
+                    ? TileDimensions
+                        .bottomLandScapePaddingForTileBatchListOfTiles
+                    : TileDimensions
+                        .bottomPortraitPaddingForTileBatchListOfTiles,
               ],
             ),
           ),

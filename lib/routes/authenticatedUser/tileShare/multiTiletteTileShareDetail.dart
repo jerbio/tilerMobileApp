@@ -8,7 +8,7 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/request/tileShareClusterModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareTemplateListWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -42,7 +42,6 @@ class _MultiTiletteTileShareDetailWidget
   late ThemeData theme;
   late ColorScheme colorScheme;
 
-
   @override
   void initState() {
     super.initState();
@@ -61,6 +60,7 @@ class _MultiTiletteTileShareDetailWidget
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
   }
+
   Future getTileShareCluster() async {
     bool tileLoadingState = false;
     if (this.widget.tileShareClusterData.id.isNot_NullEmptyOrWhiteSpace()) {
@@ -143,7 +143,6 @@ class _MultiTiletteTileShareDetailWidget
     return Text("Resource not found");
   }
 
-
   Widget renderTileShareCluster() {
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
@@ -213,8 +212,8 @@ class _MultiTiletteTileShareDetailWidget
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileTextStyles.defaultText,
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               )
@@ -293,7 +292,7 @@ class _MultiTiletteTileShareDetailWidget
 
   Widget addTileShare() {
     return ElevatedButton.icon(
-        style:  TileButtonStyles.enabled(borderColor: colorScheme.primary),
+        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
         onPressed: () {
           renderModal();
         },
@@ -351,9 +350,7 @@ class _MultiTiletteTileShareDetailWidget
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor:colorScheme.onPrimary
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,

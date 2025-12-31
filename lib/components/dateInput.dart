@@ -4,7 +4,7 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_box_shadows.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 import '../theme/tile_text_styles.dart';
 
@@ -65,9 +65,9 @@ class _DateInputWidgetState extends State<DateInputWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     return InkWell(
       onTap: onDateTap,
       child: Container(
@@ -76,7 +76,10 @@ class _DateInputWidgetState extends State<DateInputWidget> {
           decoration: BoxDecoration(
               color: colorScheme.surfaceContainerLowest,
               borderRadius: TileDimensions.inputFieldBorderRadius,
-              boxShadow: [TileBoxShadows.inputFieldBoxShadow(tileThemeExtension!.shadowMainInputContainer)],
+              boxShadow: [
+                TileBoxShadows.inputFieldBoxShadow(
+                    tileThemeExtension!.shadowMainInputContainer)
+              ],
               border: Border.all(
                 color: colorScheme.onInverseSurface,
                 width: 1.5,

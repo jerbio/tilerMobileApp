@@ -15,7 +15,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class MonthlyTileList extends TileList {
   static final String routeName = '/MonthlyTileList';
@@ -110,13 +110,11 @@ class _MonthlyTileListState extends TileListState {
                 ),
         );
       }
-      monthRows.add(
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: weekBatches.map((batch) => batch).toList(),
-        )
-      );
+      monthRows.add(Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: weekBatches.map((batch) => batch).toList(),
+      ));
     }
     return monthRows;
   }
@@ -173,8 +171,10 @@ class _MonthlyTileListState extends TileListState {
                 SliverToBoxAdapter(
                   child: MediaQuery.of(context).orientation ==
                           Orientation.landscape
-                      ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                      : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
+                      ? TileDimensions
+                          .bottomLandScapePaddingForTileBatchListOfTiles
+                      : TileDimensions
+                          .bottomPortraitPaddingForTileBatchListOfTiles,
                 ),
               ],
             ),

@@ -5,7 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/userSettings.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/notificationsPreferences/bloc/notifications_bloc.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -32,11 +32,10 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
-
 
   Widget _buildSectionHeader(String icon, String title) {
     return Padding(
@@ -47,14 +46,13 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             icon,
             width: 20,
             height: 20,
-            colorFilter: ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
+            colorFilter:
+                ColorFilter.mode(colorScheme.onSurface, BlendMode.srcIn),
           ),
           const SizedBox(width: 8),
           Text(
-              title,
-              style: const TextStyle(
-                  fontSize: 16
-              ),
+            title,
+            style: const TextStyle(fontSize: 16),
           ),
         ],
       ),
@@ -64,10 +62,7 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
   Widget _buildToggle(String text, bool value, ValueChanged<bool> onChanged) {
     return SwitchListTile(
       activeTrackColor: TileColors.activeNotification,
-      title: Text(
-          text,
-          style: const TextStyle(fontSize: 14)
-      ),
+      title: Text(text, style: const TextStyle(fontSize: 14)),
       value: value,
       onChanged: onChanged,
     );
@@ -96,8 +91,8 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
     return result;
   }
 
-  Widget _buildContent(
-      BuildContext context, NotificationPreferencesLoaded state,ColorScheme colorScheme) {
+  Widget _buildContent(BuildContext context,
+      NotificationPreferencesLoaded state, ColorScheme colorScheme) {
     return CancelAndProceedTemplateWidget(
       onProceed: (state is NotificationPreferencesLoaded &&
               (state as NotificationPreferencesLoaded).hasChanges)
@@ -106,7 +101,9 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
       routeName: NotificationPreferences
           .notificationPreferencesCancelAndProceedRouteName,
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.notificationsPreferences,),
+        title: Text(
+          AppLocalizations.of(context)!.notificationsPreferences,
+        ),
         automaticallyImplyLeading: false,
       ),
       child: Padding(
@@ -124,7 +121,6 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
                       UpdateTileReminders(value),
                     );
               },
-
             ),
             _buildToggle(
               AppLocalizations.of(context)!.appUpdates,
@@ -220,7 +216,7 @@ class _NotificationPreferencesState extends State<NotificationPreferences> {
             }
             return Stack(
               children: [
-                _buildContent(context, loadedState,colorScheme),
+                _buildContent(context, loadedState, colorScheme),
                 if (state is NotificationPreferencesLoading ||
                     state is NotificationPreferencesInitial)
                   PendingWidget(blurSigma: 10),

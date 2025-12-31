@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tuple/tuple.dart';
 
@@ -24,12 +24,10 @@ class RestrictionProfileSelectorWidget extends StatefulWidget {
 
 class _RestrictionProfileSelectorWidget
     extends State<RestrictionProfileSelectorWidget> {
-
   @override
   void initState() {
     super.initState();
   }
-
 
   RestrictionProfile? get _restrictionProfile {
     return this.widget.restrictionProfile;
@@ -69,7 +67,7 @@ class _RestrictionProfileSelectorWidget
 
     return TextButton(
       style: TextButton.styleFrom(
-        textStyle:const TextStyle(
+        textStyle: const TextStyle(
           fontSize: 20,
         ),
       ),

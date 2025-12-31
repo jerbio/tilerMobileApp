@@ -4,7 +4,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// Proactive alert banner that shows "Leave in X min to arrive on time"
 /// Displayed at the top of the timeline when user needs to leave soon

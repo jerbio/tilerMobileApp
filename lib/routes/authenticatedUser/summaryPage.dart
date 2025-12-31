@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 import 'package:fl_chart/fl_chart.dart' as flchart;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/analysis.dart';
 import 'package:tiler_app/data/driveTime.dart';
@@ -55,11 +55,12 @@ class _SummaryPage extends State<SummaryPage> {
     scheduleApi = ScheduleApi(getContextCallBack: () => context);
     initialize();
   }
+
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   Future<void> initialize() async {
@@ -184,16 +185,14 @@ class _SummaryPage extends State<SummaryPage> {
     return selectedItems;
   }
 
-
   Widget renderChecklistDates(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = Container(
       padding: EdgeInsets.fromLTRB(10, 5, 5, 5),
       width: 110,
       height: 30,
       decoration: BoxDecoration(
-          color:colorScheme.onSurface.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10)
-      ),
+          color: colorScheme.onSurface.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -207,16 +206,14 @@ class _SummaryPage extends State<SummaryPage> {
             ),
           ),
           Text(
-            (subCalendarEventTile.calendarEventEndTime ??
-                    subCalendarEventTile.startTime)
-                .humanDate(context),
-            style:  TextStyle(
-                fontSize: 12,
-                color: colorScheme.onSurface.withValues(alpha: 0.8),
-                fontFamily: TileTextStyles.rubikFontName,
-                fontWeight: FontWeight.w600
-            )
-          ),
+              (subCalendarEventTile.calendarEventEndTime ??
+                      subCalendarEventTile.startTime)
+                  .humanDate(context),
+              style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurface.withValues(alpha: 0.8),
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -224,106 +221,103 @@ class _SummaryPage extends State<SummaryPage> {
     return retValue;
   }
 
-  Widget _mainContainer({required Widget child,required String headerTitle}){
+  Widget _mainContainer({required Widget child, required String headerTitle}) {
     return Align(
         alignment: Alignment.center,
         child: Container(
             margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
-            child:Column(
-              children: [
-                _mainHeader(headerTitle),
-                child
-              ],
-            )
-        )
-    );
-}
-Widget _mainBody({required int tileCount,required IconData headerIcon,required Widget child, Color? headerIconColor=null,VoidCallback? iconOnPressed=null}){
+            width:
+                MediaQuery.of(context).size.width * TileDimensions.widthRatio,
+            child: Column(
+              children: [_mainHeader(headerTitle), child],
+            )));
+  }
+
+  Widget _mainBody(
+      {required int tileCount,
+      required IconData headerIcon,
+      required Widget child,
+      Color? headerIconColor = null,
+      VoidCallback? iconOnPressed = null}) {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color:colorScheme.surfaceContainerLowest,
-          borderRadius: BorderRadius.circular(10)
-      ),
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(10)),
       child: Column(
-          children: [
-            _mainBodyHeader(
-              icon: headerIcon,
-              iconColor: headerIconColor,
-              count: tileCount,
-              onPressed: iconOnPressed,
-            ),
-            child
-          ],
+        children: [
+          _mainBodyHeader(
+            icon: headerIcon,
+            iconColor: headerIconColor,
+            count: tileCount,
+            onPressed: iconOnPressed,
+          ),
+          child
+        ],
       ),
-  );
-}
-
-Widget _emptyBody({required String lottieName, required String title}){
-  return Container(
-    decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(10)
-    ),
-    child: Container(
-        alignment: Alignment.center,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Lottie.asset(
-                lottieName,
-                height: 100
-            ),
-            Container(
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        colorScheme.surfaceContainerLowest.withValues(alpha: 0.25),
-                        colorScheme.surfaceContainerLowest.withValues(alpha: 0.9),
-                      ])),
-              width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
-              height: 100,
-            ),
-            Align(
-              alignment: Alignment.center,
-              child: Text(
-                  title,
-                  style:TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 50,
-                    fontFamily: TileTextStyles.rubikFontName,
-                  )
-              ),
-            ),
-          ],
-        )),
-  );
-}
-
-  Widget _mainHeader(String headerTitle){
-    return Container(
-      padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
-      alignment: Alignment.centerLeft,
-      child: Text(
-        headerTitle,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w500,
-          fontFamily: TileTextStyles.rubikFontName,
-        ),
-      )
     );
+  }
+
+  Widget _emptyBody({required String lottieName, required String title}) {
+    return Container(
+      decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(10)),
+      child: Container(
+          alignment: Alignment.center,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Lottie.asset(lottieName, height: 100),
+              Container(
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          colorScheme.surfaceContainerLowest
+                              .withValues(alpha: 0.25),
+                          colorScheme.surfaceContainerLowest
+                              .withValues(alpha: 0.9),
+                        ])),
+                width: MediaQuery.of(context).size.width *
+                    TileDimensions.widthRatio,
+                height: 100,
+              ),
+              Align(
+                alignment: Alignment.center,
+                child: Text(title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 50,
+                      fontFamily: TileTextStyles.rubikFontName,
+                    )),
+              ),
+            ],
+          )),
+    );
+  }
+
+  Widget _mainHeader(String headerTitle) {
+    return Container(
+        padding: EdgeInsets.fromLTRB(0, 0, 0, 10),
+        alignment: Alignment.centerLeft,
+        child: Text(
+          headerTitle,
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w500,
+            fontFamily: TileTextStyles.rubikFontName,
+          ),
+        ));
   }
 
   Widget _mainBodyHeader({
     required IconData icon,
-    Color? iconColor=null,
+    Color? iconColor = null,
     required int count,
-    VoidCallback? onPressed=null,
+    VoidCallback? onPressed = null,
   }) {
     return Container(
       margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -334,23 +328,19 @@ Widget _emptyBody({required String lottieName, required String title}){
             height: 40,
             decoration: BoxDecoration(
                 color: colorScheme.onSurface.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(20)
-            ),
-            child: onPressed !=null?
-            IconButton(
-                onPressed: onPressed,
-                icon:Icon(icon)
-            )
-                :Icon(icon,color: iconColor),
+                borderRadius: BorderRadius.circular(20)),
+            child: onPressed != null
+                ? IconButton(onPressed: onPressed, icon: Icon(icon))
+                : Icon(icon, color: iconColor),
           ),
           Container(
             margin: EdgeInsets.fromLTRB(20, 0, 0, 0),
             child: Text(
-                AppLocalizations.of(context)!.countTile(count.toString()),
-                style:  TextStyle(
-                  fontSize: 25,
-                  fontFamily: TileTextStyles.rubikFontName,
-                ),
+              AppLocalizations.of(context)!.countTile(count.toString()),
+              style: TextStyle(
+                fontSize: 25,
+                fontFamily: TileTextStyles.rubikFontName,
+              ),
             ),
           )
         ],
@@ -358,14 +348,14 @@ Widget _emptyBody({required String lottieName, required String title}){
     );
   }
 
-  void _toEditTile(SubCalendarEvent subCalendarEventTile){
+  void _toEditTile(SubCalendarEvent subCalendarEventTile) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EditTile(
           tileId: (subCalendarEventTile.isFromTiler
-              ? subCalendarEventTile.id
-              : subCalendarEventTile.thirdpartyId) ??
+                  ? subCalendarEventTile.id
+                  : subCalendarEventTile.thirdpartyId) ??
               "",
           tileSource: subCalendarEventTile.thirdpartyType,
           thirdPartyUserId: subCalendarEventTile.thirdPartyUserId,
@@ -377,18 +367,15 @@ Widget _emptyBody({required String lottieName, required String title}){
   Widget renderTile(SubCalendarEvent subCalendarEventTile) {
     Widget retValue = TextButton(
       style: TextButton.styleFrom(
-          foregroundColor: colorScheme.tertiary,
-          padding: EdgeInsets.all(0)
-      ),
-      onPressed:() =>  _toEditTile(subCalendarEventTile),
+          foregroundColor: colorScheme.tertiary, padding: EdgeInsets.all(0)),
+      onPressed: () => _toEditTile(subCalendarEventTile),
       child: Container(
         decoration: BoxDecoration(
             border: Border.all(
                 width: 0.5,
                 color: subCalendarEventTile.priority == TilePriority.high
-                    ?  TileColors.highPriority
-                    : Colors.transparent
-            ),
+                    ? TileColors.highPriority
+                    : Colors.transparent),
             borderRadius: BorderRadius.circular(5)),
         padding: EdgeInsets.all(10),
         child: Row(
@@ -397,18 +384,17 @@ Widget _emptyBody({required String lottieName, required String title}){
             Row(
               children: [
                 Container(
-                    height: 20,
-                    width: 20,
-                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                    decoration: BoxDecoration(
-                        color: subCalendarEventTile.color ?? Colors.transparent,
-                        borderRadius: BorderRadius.circular(5)
-                    ),
+                  height: 20,
+                  width: 20,
+                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                  decoration: BoxDecoration(
+                      color: subCalendarEventTile.color ?? Colors.transparent,
+                      borderRadius: BorderRadius.circular(5)),
                 ),
                 Container(
                   height: 20,
                   width: MediaQuery.of(context).size.width *
-                      TileDimensions.widthRatio -
+                          TileDimensions.widthRatio -
                       205,
                   child: Text(
                     subCalendarEventTile.isProcrastinate == true
@@ -420,7 +406,7 @@ Widget _emptyBody({required String lottieName, required String title}){
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-             children: [renderChecklistDates(subCalendarEventTile)],
+              children: [renderChecklistDates(subCalendarEventTile)],
             ),
           ],
         ),
@@ -428,8 +414,6 @@ Widget _emptyBody({required String lottieName, required String title}){
     );
     return retValue;
   }
-
-
 
   Widget renderListOfTiles(
     double height,
@@ -439,7 +423,7 @@ Widget _emptyBody({required String lottieName, required String title}){
     // List<GlobalKey<_TileToBeCompletedState>> tileKeys = List.generate(
     //   tiles.length,
     //   (_) => GlobalKey<_TileToBeCompletedState>(),
-   // );
+    // );
     return Column(
       children: tiles.asMap().entries.map<Widget>((entry) {
         int index = entry.key;
@@ -453,26 +437,23 @@ Widget _emptyBody({required String lottieName, required String title}){
   Widget renderCompleteTiles(double height, List<SubCalendarEvent> tiles) {
     if (tiles.isEmpty) {
       return _mainContainer(
-              headerTitle: AppLocalizations.of(context)!.complete,
-              child:_emptyBody(
-                  lottieName: 'assets/lottie/abstract-waves-lines.json',
-                  title: AppLocalizations.of(context)!.getOnIt,
-              )
-      );
+          headerTitle: AppLocalizations.of(context)!.complete,
+          child: _emptyBody(
+            lottieName: 'assets/lottie/abstract-waves-lines.json',
+            title: AppLocalizations.of(context)!.getOnIt,
+          ));
     }
 
     return _mainContainer(
-      headerTitle: AppLocalizations.of(context)!.complete,
-        child:_mainBody(
+        headerTitle: AppLocalizations.of(context)!.complete,
+        child: _mainBody(
             tileCount: tiles.length,
             headerIcon: Icons.check_circle,
-            headerIconColor:  TileColors.completedTeal,
-            child:  renderListOfTiles(
+            headerIconColor: TileColors.completedTeal,
+            child: renderListOfTiles(
               height,
               tiles,
-            )
-        )
-    );
+            )));
   }
 
   Widget renderCheckList(List<SubCalendarEvent> tiles,
@@ -499,7 +480,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                   height: 20,
                   width: 20,
                   child: Checkbox.adaptive(
-                    focusColor:TileColors.checkUnscheduled,
+                    focusColor: TileColors.checkUnscheduled,
                     value: //false,
                         checkBoxStates[index],
                     onChanged: (value) {
@@ -530,7 +511,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                     alignment: Alignment.centerLeft,
                     height: 35,
                     width: MediaQuery.of(context).size.width *
-                        TileDimensions.widthRatio -
+                            TileDimensions.widthRatio -
                         205,
                     child: Text(
                       e.isProcrastinate == true
@@ -549,8 +530,7 @@ Widget _emptyBody({required String lottieName, required String title}){
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 GestureDetector(
-                    onTap: () =>  _toEditTile(e),
-                    child: renderChecklistDates(e))
+                    onTap: () => _toEditTile(e), child: renderChecklistDates(e))
               ],
             ),
           ],
@@ -568,8 +548,7 @@ Widget _emptyBody({required String lottieName, required String title}){
         return TextButton(
             style: TextButton.styleFrom(
                 foregroundColor: colorScheme.tertiary,
-                padding: EdgeInsets.all(0)
-            ),
+                padding: EdgeInsets.all(0)),
             onPressed: switchTapFunction,
             child: Container(
               decoration: BoxDecoration(
@@ -577,8 +556,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                       width: 0.5,
                       color: e.priority == TilePriority.high
                           ? TileColors.highPriority
-                          : Colors.transparent
-                  ),
+                          : Colors.transparent),
                   borderRadius: BorderRadius.circular(5)),
               padding: EdgeInsets.all(10),
               child: Row(
@@ -596,7 +574,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                       Container(
                         height: 20,
                         width: MediaQuery.of(context).size.width *
-                            TileDimensions.widthRatio -
+                                TileDimensions.widthRatio -
                             205,
                         child: Text(
                           e.isProcrastinate == true
@@ -604,7 +582,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                                   .procrastinateBlockOut
                               : e.name ?? "",
                           style: TextStyle(
-                              fontFamily:TileTextStyles.rubikFontName,
+                              fontFamily: TileTextStyles.rubikFontName,
                               overflow: TextOverflow.ellipsis,
                               fontWeight: FontWeight.w600),
                         ),
@@ -615,56 +593,48 @@ Widget _emptyBody({required String lottieName, required String title}){
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       GestureDetector(
-                          onTap: () =>  _toEditTile(e),
+                          onTap: () => _toEditTile(e),
                           child: renderChecklistDates(e))
                     ],
                   ),
                 ],
               ),
-            )
-        );
+            ));
       }).toList(),
     );
   }
 
-  void _completeFunction() async{
+  void _completeFunction() async {
     List<String> eventIds = selectedUnscheduledItems
         .map((element) => element.id)
         .where((id) => id != null)
         .cast<String>()
         .toList();
-    List<String> eventThirdPartyTypes =
-    selectedUnscheduledItems
-        .map((element) => element
-        .thirdpartyType?.name
-        .toLowerCase())
+    List<String> eventThirdPartyTypes = selectedUnscheduledItems
+        .map((element) => element.thirdpartyType?.name.toLowerCase())
         .where((id) => id != null)
         .cast<String>()
         .toList();
-    List<String> eventThirdPartyUserIds =
-    selectedUnscheduledItems
+    List<String> eventThirdPartyUserIds = selectedUnscheduledItems
         .map((element) {
-      if (element
-          .thirdPartyUserId.isEmpty ||
-          element.thirdPartyUserId == '') {
-        return 'tiler-account';
-      } else {
-        return element.thirdPartyUserId;
-      }
-    })
+          if (element.thirdPartyUserId.isEmpty ||
+              element.thirdPartyUserId == '') {
+            return 'tiler-account';
+          } else {
+            return element.thirdPartyUserId;
+          }
+        })
         .where((id) => id.isNotEmpty)
         .cast<String>()
         .toList();
-    List<String> eventThirdPartyEventId =
-    selectedUnscheduledItems
+    List<String> eventThirdPartyEventId = selectedUnscheduledItems
         .map((element) {
-      if (element.thirdpartyId!.isEmpty ||
-          element.thirdpartyId == '') {
-        return '';
-      } else {
-        return element.thirdpartyId;
-      }
-    })
+          if (element.thirdpartyId!.isEmpty || element.thirdpartyId == '') {
+            return '';
+          } else {
+            return element.thirdpartyId;
+          }
+        })
         .where((id) => id != null)
         .cast<String>()
         .toList();
@@ -672,42 +642,37 @@ Widget _emptyBody({required String lottieName, required String title}){
     String eventIdString = eventIds
         .where(
           (element) => element != null,
-    )
+        )
         .join(',');
-    String eventThirdPartyTypeString =
-    eventThirdPartyTypes.join(',');
-    String eventThirdPartyUserIdString =
-    eventThirdPartyUserIds.join(',');
+    String eventThirdPartyTypeString = eventThirdPartyTypes.join(',');
+    String eventThirdPartyUserIdString = eventThirdPartyUserIds.join(',');
     _showLoadingDialog();
 
     // Wait for the task completion
-    bool success =
-    await BlocProvider.of<ScheduleSummaryBloc>(
-        context)
-        .completeTasks(
-        eventIdString,
-        eventThirdPartyTypeString,
-        eventThirdPartyUserIdString);
+    bool success = await BlocProvider.of<ScheduleSummaryBloc>(context)
+        .completeTasks(eventIdString, eventThirdPartyTypeString,
+            eventThirdPartyUserIdString);
 
     if (success) {
       await initialize();
       Future.delayed(Duration(seconds: 2), () {
         Navigator.pop(context);
       });
-    };
+    }
+    ;
   }
 
-  Widget _unscheduledCompleteRow({required List<bool> checkBoxStates,required double height,}){
+  Widget _unscheduledCompleteRow({
+    required List<bool> checkBoxStates,
+    required double height,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           AppLocalizations.of(context)!.numberOfTilesSelected(
-              checkBoxStates
-                  .where((value) => value == true)
-                  .length
-                  .toString()),
+              checkBoxStates.where((value) => value == true).length.toString()),
           style: TextStyle(
             fontFamily: TileTextStyles.rubikFontName,
             color: colorScheme.primary,
@@ -756,58 +721,56 @@ Widget _emptyBody({required String lottieName, required String title}){
     }
     return _mainContainer(
         headerTitle: AppLocalizations.of(context)!.unScheduled,
-        child:_mainBody(
+        child: _mainBody(
             tileCount: tiles.length,
-            headerIcon:   isCheckStateActive ? Icons.close : Icons.error,
-            headerIconColor:  isCheckStateActive ? null : colorScheme.error,
-            iconOnPressed: isCheckStateActive ? () => setState(() => isCheckStateActive = false) : null,
+            headerIcon: isCheckStateActive ? Icons.close : Icons.error,
+            headerIconColor: isCheckStateActive ? null : colorScheme.error,
+            iconOnPressed: isCheckStateActive
+                ? () => setState(() => isCheckStateActive = false)
+                : null,
             child: Column(
               children: [
                 isRenderAsCheckList == true
                     ? renderCheckList(tiles, checkBoxStates: checkBoxStates)
                     : renderNonCheckList(tiles,
-                    checkBoxStates: checkBoxStates,
-                    switchTapFunction: switchTapFunction),
+                        checkBoxStates: checkBoxStates,
+                        switchTapFunction: switchTapFunction),
                 // Sizedbox for spacing
                 checkBoxStates.where((value) => value == true).length >= 1
                     ? SizedBox(
-                  height: 20,
-                )
+                        height: 20,
+                      )
                     : SizedBox.shrink(),
                 // Display currently selected tiles
                 checkBoxStates.where((value) => value == true).length >= 1 &&
-                    this.isCheckStateActive
-                    ?_unscheduledCompleteRow(checkBoxStates: checkBoxStates,height: height)
+                        this.isCheckStateActive
+                    ? _unscheduledCompleteRow(
+                        checkBoxStates: checkBoxStates, height: height)
                     : SizedBox.shrink(),
               ],
-            )
-        )
-    );
+            )));
   }
 
   // Late section
   Widget renderTardyTiles(double height, List<SubCalendarEvent> tiles) {
     if (tiles.isEmpty) {
       return _mainContainer(
-              headerTitle: AppLocalizations.of(context)!.late,
-              child:_emptyBody(
-                lottieName: 'assets/lottie/abstract-waves-circles.json',
-                title: AppLocalizations.of(context)!.onTime,
-              )
-          );
+          headerTitle: AppLocalizations.of(context)!.late,
+          child: _emptyBody(
+            lottieName: 'assets/lottie/abstract-waves-circles.json',
+            title: AppLocalizations.of(context)!.onTime,
+          ));
     }
     return _mainContainer(
         headerTitle: AppLocalizations.of(context)!.late,
-        child:_mainBody(
+        child: _mainBody(
             tileCount: tiles.length,
-            headerIcon:  Icons.warning,
-            headerIconColor:  TileColors.warning,
-            child:  renderListOfTiles(
+            headerIcon: Icons.warning,
+            headerIconColor: TileColors.warning,
+            child: renderListOfTiles(
               height,
               tiles,
-            )
-        )
-    );
+            )));
   }
 
   // Widget renderSleepData() {
@@ -1123,9 +1086,9 @@ Widget _emptyBody({required String lottieName, required String title}){
           height: double.infinity,
           color: colorScheme.primaryContainer,
           child: (isLoadingTimelineSummary)
-              ?  PendingWidget()
+              ? PendingWidget()
               : SingleChildScrollView(
-                child: Column(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -1173,7 +1136,7 @@ Widget _emptyBody({required String lottieName, required String title}){
                             ]),
                     ],
                   ),
-              ),
+                ),
         ),
       ),
     );

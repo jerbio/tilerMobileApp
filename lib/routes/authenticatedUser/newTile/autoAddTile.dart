@@ -8,11 +8,12 @@ import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tileinput_styles.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 import 'package:tiler_app/components/tileUI/configUpdateButton.dart';
 import '../../../constants.dart' as Constants;
+
 //ey: not used
 class AutoAddTile extends StatefulWidget {
   @override
@@ -72,17 +73,16 @@ class AutoAddTileState extends State<AutoAddTile> {
 
   @override
   Widget build(BuildContext context) {
-    final theme= Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     bool showAutoContextContainer = false;
     InputDecoration inputFieldDecoration =
-    TileInputStyles.generateTextInputDecoration(
-      inputHint:  AppLocalizations.of(context)!.tileName,
-      fillColor:colorScheme.surfaceContainerLowest,
-      borderColor: colorScheme.onInverseSurface,
-      hintTextColor: tileThemeExtension.onSurfaceHint
-    );
+        TileInputStyles.generateTextInputDecoration(
+            inputHint: AppLocalizations.of(context)!.tileName,
+            fillColor: colorScheme.surfaceContainerLowest,
+            borderColor: colorScheme.onInverseSurface,
+            hintTextColor: tileThemeExtension.onSurfaceHint);
 
     Widget inputField = Container(
         padding: EdgeInsets.fromLTRB(0, 0, 0, 30),
@@ -122,7 +122,8 @@ class AutoAddTileState extends State<AutoAddTile> {
           Icons.timelapse_outlined,
           color: colorScheme.onInverseSurface,
         ),
-        decoration: TileDecorations.populatedDecoration(colorScheme.surfaceContainerLowest),
+        decoration: TileDecorations.populatedDecoration(
+            colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
         onPress: () {
           Map<String, dynamic> durationParams = {'duration': _duration};
@@ -152,7 +153,8 @@ class AutoAddTileState extends State<AutoAddTile> {
           Icons.location_pin,
           color: colorScheme.onInverseSurface,
         ),
-        decoration:  TileDecorations.populatedDecoration(colorScheme.surfaceContainerLowest),
+        decoration: TileDecorations.populatedDecoration(
+            colorScheme.surfaceContainerLowest),
         textColor: colorScheme.onInverseSurface,
         onPress: () {
           Location locationHolder = _location!;

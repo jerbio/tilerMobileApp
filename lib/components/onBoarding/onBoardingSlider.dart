@@ -4,7 +4,8 @@ import 'package:tiler_app/components/onBoarding/videoPlayer.dart';
 import 'package:tiler_app/routes/authentication/AuthorizedRoute.dart';
 import 'package:tiler_app/services/onBoardingHelper.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+
 enum SlideType {
   toggleButton,
   image,
@@ -18,25 +19,24 @@ class IntroSlideData {
   final String? imagePath;
   final String? videoPath;
 
-  IntroSlideData({
-    required this.title,
-    required this.slideType,
-    required this.description,
-    this.imagePath,
-    this.videoPath
-  });
+  IntroSlideData(
+      {required this.title,
+      required this.slideType,
+      required this.description,
+      this.imagePath,
+      this.videoPath});
 }
 
-
 class OnBoardingDescriptionSlider extends StatefulWidget {
-
   const OnBoardingDescriptionSlider({Key? key}) : super(key: key);
 
   @override
-  _OnBoardingDescriptionSliderState createState() => _OnBoardingDescriptionSliderState();
+  _OnBoardingDescriptionSliderState createState() =>
+      _OnBoardingDescriptionSliderState();
 }
 
-class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlider> {
+class _OnBoardingDescriptionSliderState
+    extends State<OnBoardingDescriptionSlider> {
   PageController _pageController = PageController();
   int _currentPage = 0;
   late String _selectedOption;
@@ -44,20 +44,22 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
   late List<IntroSlideData> _slides;
   @override
   void didChangeDependencies() {
-    localizations=  AppLocalizations.of(context)!;
-    _slides= [
+    localizations = AppLocalizations.of(context)!;
+    _slides = [
       IntroSlideData(
         title: localizations.tilesVsBlocks,
         slideType: SlideType.toggleButton,
         videoPath: "assets/videos/tiles_vs_blocks.mov",
-        description: [localizations.vsTilesDescription,localizations.vsBlocksDescription],
+        description: [
+          localizations.vsTilesDescription,
+          localizations.vsBlocksDescription
+        ],
       ),
       IntroSlideData(
-          title:localizations.swipeRight,
+          title: localizations.swipeRight,
           slideType: SlideType.image,
           imagePath: "assets/images/tilerAd.png",
-          description:[localizations.swipeRightDescription]
-      ),
+          description: [localizations.swipeRightDescription]),
       IntroSlideData(
         title: localizations.googleCalendarAndMore,
         slideType: SlideType.textWithIcon,
@@ -67,8 +69,6 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
     _selectedOption = "Tile";
     super.didChangeDependencies();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -129,7 +129,6 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
     );
   }
 
-
   Widget _buildSlide(IntroSlideData slide, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.all(30.0),
@@ -166,8 +165,6 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
               ),
               textAlign: TextAlign.center,
             )
-
-
           else
             Text(
               slide.title,
@@ -178,13 +175,18 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
               ),
               textAlign: TextAlign.center,
             ),
-
-          SizedBox(height: 20,),
+          SizedBox(
+            height: 20,
+          ),
           _buildSlideBody(slide, colorScheme),
-          SizedBox(height: 20,),
+          SizedBox(
+            height: 20,
+          ),
           Text(
             slide.slideType == SlideType.toggleButton
-                ? (_selectedOption == "Tile" ? slide.description[0] : slide.description[1])
+                ? (_selectedOption == "Tile"
+                    ? slide.description[0]
+                    : slide.description[1])
                 : slide.description[0],
             style: TextStyle(
               fontSize: 16,
@@ -204,7 +206,7 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
   Widget _buildSlideBody(IntroSlideData slide, ColorScheme colorScheme) {
     switch (slide.slideType) {
       case SlideType.toggleButton:
-        return _buildToggleButton(colorScheme,slide);
+        return _buildToggleButton(colorScheme, slide);
       case SlideType.image:
         return _buildImageContent(slide.imagePath!);
       case SlideType.textWithIcon:
@@ -240,13 +242,13 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: _selectedOption == "Tile"
                       ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ]
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ]
                       : [],
                 ),
                 child: Center(
@@ -281,18 +283,18 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
                   borderRadius: BorderRadius.circular(10),
                   boxShadow: _selectedOption == "Block"
                       ? [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ]
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ]
                       : [],
                 ),
                 child: Center(
                   child: Text(
-                   localizations.appointment,
+                    localizations.appointment,
                     style: TextStyle(
                       color: _selectedOption == "Block"
                           ? colorScheme.onPrimary
@@ -317,8 +319,7 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
         child: Image.asset(
           imagePath,
           fit: BoxFit.contain,
-        )
-    );
+        ));
   }
 
   Widget _buildBottomNavigation(ColorScheme colorScheme) {
@@ -358,9 +359,7 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
             ),
           ),
         ),
-
         SizedBox(height: 20),
-
         GestureDetector(
           onTap: () async {
             await OnBoardingSharedPreferencesHelper.setSkipOnboarding(true);
@@ -386,4 +385,3 @@ class _OnBoardingDescriptionSliderState extends State<OnBoardingDescriptionSlide
     super.dispose();
   }
 }
-

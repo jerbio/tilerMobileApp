@@ -8,7 +8,7 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
 
 class LocationSearchWidget extends SearchWidget {
@@ -17,21 +17,21 @@ class LocationSearchWidget extends SearchWidget {
   final bool? includeDeviceLocation;
   LocationSearchWidget(
       {onChanged,
-        textField,
-        onInputCompletion,
-        listView,
-        this.includeDeviceLocation = true,
-        renderBelowTextfield = true,
-        resultBoxDecoration,
-        this.onLocationSelection,
-        Key? key})
+      textField,
+      onInputCompletion,
+      listView,
+      this.includeDeviceLocation = true,
+      renderBelowTextfield = true,
+      resultBoxDecoration,
+      this.onLocationSelection,
+      Key? key})
       : super(
-      onChanged: onChanged,
-      textField: textField,
-      onInputCompletion: onInputCompletion,
-      renderBelowTextfield: renderBelowTextfield,
-      resultBoxDecoration: resultBoxDecoration,
-      key: key);
+            onChanged: onChanged,
+            textField: textField,
+            onInputCompletion: onInputCompletion,
+            renderBelowTextfield: renderBelowTextfield,
+            resultBoxDecoration: resultBoxDecoration,
+            key: key);
 
   Location? otherLocation;
   @override
@@ -47,7 +47,7 @@ class LocationSearchState extends SearchWidgetState {
   bool isRequestEnabled = true;
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -62,14 +62,14 @@ class LocationSearchState extends SearchWidgetState {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
+
   onLocationTap(collapseResultContainer,
       {Location? location, bool onlyAddress = false}) {
     return () {
       LocationSearchWidget locationSearchWidget =
-      (this.widget as LocationSearchWidget);
+          (this.widget as LocationSearchWidget);
       setState(() {
         selectedLocation = location;
         isRequestEnabled = false;
@@ -119,14 +119,14 @@ class LocationSearchState extends SearchWidgetState {
                       children: [
                         Expanded(
                             child: Text(
-                              location.address.toString(),
-                              maxLines: 1,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontFamily: TileTextStyles.rubikFontName,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ))
+                          location.address.toString(),
+                          maxLines: 1,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: TileTextStyles.rubikFontName,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ))
                       ])))
         ];
         if (location.address != location.description) {
@@ -136,64 +136,61 @@ class LocationSearchState extends SearchWidgetState {
                   margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                   alignment: Alignment.topLeft,
-                  child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            location.description.toString(),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.left,
-                            style:TextStyle(
-                              fontSize: 15,
-                              fontFamily: TileTextStyles.rubikFontName,
-                              fontWeight: FontWeight.w700
-                              ,)
-                            ,)
-                          ,)
-                      ]
-                  )
-              )
-          )
-          );
+                  child: Row(children: [
+                    Expanded(
+                      child: Text(
+                        location.description.toString(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontFamily: TileTextStyles.rubikFontName,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  ]))));
         }
-        addressChildren.add(Stack(
-        children: [
-          Container(
-            width: (MediaQuery.of(context).size.width *
-                TileDimensions.inputWidthFactor) - 95,
-            alignment: Alignment.centerLeft,
-            margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
-            child: Column(
-              children: locationText,
-            ),
-        ),
-          Positioned(
-            top: 36,
-            right: 0,
-            child: Row(
-              children: [
-                Icon(
-                  location.source == null ||
-                      location.source!.isEmpty ||
-                      location.source! == 'none'
-                      ? Icons.save_outlined
-                      : Icons.cloud_outlined,
-                  color: TileColors.activeLocation,
+        addressChildren.add(
+          Stack(
+            children: [
+              Container(
+                width: (MediaQuery.of(context).size.width *
+                        TileDimensions.inputWidthFactor) -
+                    95,
+                alignment: Alignment.centerLeft,
+                margin: EdgeInsets.fromLTRB(20, 20, 0, 0),
+                child: Column(
+                  children: locationText,
                 ),
-                IconButton(
-                    onPressed: onLocationTap(collapseResultContainer,
-                        location: location, onlyAddress: true),
-                    icon: Icon(
-                      Icons.business,
+              ),
+              Positioned(
+                top: 36,
+                right: 0,
+                child: Row(
+                  children: [
+                    Icon(
+                      location.source == null ||
+                              location.source!.isEmpty ||
+                              location.source! == 'none'
+                          ? Icons.save_outlined
+                          : Icons.cloud_outlined,
                       color: TileColors.activeLocation,
                     ),
-                )
-              ],
-            ),
-          )
-        ],
-        ),
+                    IconButton(
+                      onPressed: onLocationTap(collapseResultContainer,
+                          location: location, onlyAddress: true),
+                      icon: Icon(
+                        Icons.business,
+                        color: TileColors.activeLocation,
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         );
       }
       retValue = FractionallySizedBox(
@@ -201,7 +198,8 @@ class LocationSearchState extends SearchWidgetState {
           child: Container(
               margin: EdgeInsets.fromLTRB(5, 10, 5, 10),
               child: GestureDetector(
-                onTap: onLocationTap(collapseResultContainer, location: location),
+                onTap:
+                    onLocationTap(collapseResultContainer, location: location),
                 child: Container(
                   height: 100,
                   decoration: BoxDecoration(
@@ -209,7 +207,8 @@ class LocationSearchState extends SearchWidgetState {
                     borderRadius: BorderRadius.all(Radius.circular(10)),
                     boxShadow: [
                       BoxShadow(
-                        color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
+                        color: tileThemeExtension.shadowSearch
+                            .withValues(alpha: 0.2),
                         spreadRadius: 5,
                         blurRadius: 5,
                         offset: Offset(0, 1),
@@ -223,17 +222,16 @@ class LocationSearchState extends SearchWidgetState {
               ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.2),
-                        spreadRadius: 5,
-                        blurRadius: 5,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-              )
-          )
-      );
+                boxShadow: [
+                  BoxShadow(
+                    color: tileThemeExtension.shadowSecondary
+                        .withValues(alpha: 0.2),
+                    spreadRadius: 5,
+                    blurRadius: 5,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              )));
     }
     return retValue;
   }
@@ -258,14 +256,14 @@ class LocationSearchState extends SearchWidgetState {
         bool includeLocationParams = false;
         if (this.widget is LocationSearchWidget) {
           includeLocationParams =
-          (this.widget as LocationSearchWidget).includeDeviceLocation!;
+              (this.widget as LocationSearchWidget).includeDeviceLocation!;
         }
         List<Location> locations = await locationNameApi.getLocationsByName(
             name,
             includeLocationParams: includeLocationParams);
         retValue = locations
             .map((location) =>
-            locationNameWidget(location, collapseResultContainer))
+                locationNameWidget(location, collapseResultContainer))
             .toList();
         if (retValue.length == 0) {
           retValue = [

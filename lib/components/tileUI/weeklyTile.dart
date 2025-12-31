@@ -2,7 +2,7 @@ import 'package:emoji_regex/emoji_regex.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/timeFrame.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -25,9 +25,9 @@ class WeeklyTileWidget extends StatefulWidget {
 class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     double screenWidth = MediaQuery.of(context).size.width;
     double calculatedWidth = (screenWidth - 16) / 7 - 6;
@@ -42,8 +42,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
             fontFamily: TileTextStyles.rubikFontName,
             fontSize: 22,
             fontWeight: FontWeight.bold,
-          )
-    );
+          ));
     }
 
     String? addressString = widget.subEvent.searchdDescription != null
@@ -82,14 +81,10 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
             if (emojiField != null) emojiField,
             Padding(
               padding: const EdgeInsets.only(top: 5.0, bottom: 10),
-              child: Text(
-                tileName,
-                maxLines: 3,
-                style: TextStyle(
-                  fontSize: 8,
-                  fontFamily: TileTextStyles.rubikFontName
-                )
-              ),
+              child: Text(tileName,
+                  maxLines: 3,
+                  style: TextStyle(
+                      fontSize: 8, fontFamily: TileTextStyles.rubikFontName)),
             ),
             if (addressString != null && addressString.isNotEmpty)
               Padding(
@@ -97,7 +92,7 @@ class WeeklyTileWidgetState extends State<WeeklyTileWidget> {
                 child: Text(
                   addressString,
                   maxLines: 1,
-                  style:TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
                     color: colorScheme.onSurface.withValues(alpha: 0.5),
                     fontFamily: TileTextStyles.rubikFontName,

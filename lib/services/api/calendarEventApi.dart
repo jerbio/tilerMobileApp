@@ -1,9 +1,9 @@
-import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/util.dart';
 import 'dart:convert';
@@ -59,8 +59,17 @@ class CalendarEventApi extends AppApi {
         'ThirdPartyEventID': thirdPartyId,
         'MobileApp': true.toString()
       };
-      var response = await http.delete(uri,
-          headers: header, body: json.encode(deleteCalendarEventParameters));
+      var response = await httpClient
+          .delete(uri,
+              headers: header, body: json.encode(deleteCalendarEventParameters))
+          .timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {
@@ -176,7 +185,14 @@ class CalendarEventApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -216,7 +232,14 @@ class CalendarEventApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -251,7 +274,14 @@ class CalendarEventApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {

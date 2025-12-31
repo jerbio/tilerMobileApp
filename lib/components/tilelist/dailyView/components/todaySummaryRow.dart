@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/completionIndicator.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/todayStats.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -20,7 +20,7 @@ class TodaySummaryRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,

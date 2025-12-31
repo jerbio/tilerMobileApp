@@ -7,7 +7,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClus
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareDetailWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareSimpleWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -156,7 +156,8 @@ class _TileShareListWidgetState extends State<TileShareListWidget>
                     getTileShareCluster();
                   });
                 },
-                style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
+                style:
+                    TileButtonStyles.enabled(borderColor: colorScheme.primary),
                 icon: Icon(Icons.add),
                 label: Text(AppLocalizations.of(context)!.tileShare))),
       );

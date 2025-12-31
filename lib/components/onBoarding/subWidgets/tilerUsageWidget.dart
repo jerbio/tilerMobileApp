@@ -3,14 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingSubWidget.dart';
 import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TilerUsageWidget extends StatelessWidget {
-
-
   @override
   Widget build(BuildContext context) {
-    final localizations=  AppLocalizations.of(context)!;
+    final localizations = AppLocalizations.of(context)!;
     final List<String> usageOptions = [
       localizations.personalScheduling,
       localizations.workPlanning,

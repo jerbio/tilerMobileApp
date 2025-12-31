@@ -5,13 +5,13 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class WeeklyPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
       builder: (context, state) {
         return Dialog(
@@ -32,7 +32,7 @@ class WeeklyPickerDialog extends StatelessWidget {
                   style: TextStyle(fontSize: 16),
                 ),
               ),
-              _buildMonthYearPicker(context, state,colorScheme),
+              _buildMonthYearPicker(context, state, colorScheme),
               TableCalendar(
                 firstDay: Utility.getFirstDate(),
                 lastDay: Utility.getLastDate(),
@@ -72,17 +72,14 @@ class WeeklyPickerDialog extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border(
                           left: isFirstDay
-                              ? BorderSide(
-                                  color: colorScheme.primary, width: 2)
+                              ? BorderSide(color: colorScheme.primary, width: 2)
                               : BorderSide.none,
                           right: isLastDay
-                              ? BorderSide(
-                                  color: colorScheme.primary, width: 2)
+                              ? BorderSide(color: colorScheme.primary, width: 2)
                               : BorderSide.none,
-                          top: BorderSide(
-                              color: colorScheme.primary, width: 2),
-                          bottom: BorderSide(
-                              color: colorScheme.primary, width: 2),
+                          top: BorderSide(color: colorScheme.primary, width: 2),
+                          bottom:
+                              BorderSide(color: colorScheme.primary, width: 2),
                         ),
                         borderRadius: isFirstDay
                             ? BorderRadius.horizontal(left: Radius.circular(25))
@@ -113,10 +110,8 @@ class WeeklyPickerDialog extends StatelessWidget {
                         Navigator.of(context).pop();
                       }
                     },
-                    child: Text(
-                        AppLocalizations.of(context)!.save,
-                        style: TileTextStyles.datePickersSaveStyle
-                    ),
+                    child: Text(AppLocalizations.of(context)!.save,
+                        style: TileTextStyles.datePickersSaveStyle),
                   ),
                 ),
               ),
@@ -127,8 +122,8 @@ class WeeklyPickerDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMonthYearPicker(
-      BuildContext context, WeeklyUiDateManagerState state, ColorScheme colorScheme) {
+  Widget _buildMonthYearPicker(BuildContext context,
+      WeeklyUiDateManagerState state, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       child: Row(
@@ -136,8 +131,8 @@ class WeeklyPickerDialog extends StatelessWidget {
         children: [
           IconButton(
               icon: Icon(
-                  Icons.arrow_back,
-                  color: colorScheme.onSurface,
+                Icons.arrow_back,
+                color: colorScheme.onSurface,
               ),
               onPressed: () => context.read<WeeklyUiDateManagerBloc>().add(
                   UpdateTempDate(
@@ -145,18 +140,17 @@ class WeeklyPickerDialog extends StatelessWidget {
                               state.tempDate.year, state.tempDate.month - 1)
                           .dayDate))),
           TextButton(
-            onPressed: () => _selectYear(context,colorScheme),
+            onPressed: () => _selectYear(context, colorScheme),
             child: Text(
                 '${DateFormat.MMMM().format(state.tempDate)} ${state.tempDate.year}',
                 style: TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.bold,
-                )
-            ),
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                )),
           ),
           IconButton(
               icon: Icon(
-                  Icons.arrow_forward,
+                Icons.arrow_forward,
                 color: colorScheme.onSurface,
               ),
               onPressed: () => context.read<WeeklyUiDateManagerBloc>().add(
@@ -169,7 +163,8 @@ class WeeklyPickerDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _selectYear(BuildContext context,ColorScheme colorScheme) async {
+  Future<void> _selectYear(
+      BuildContext context, ColorScheme colorScheme) async {
     final bloc = context.read<WeeklyUiDateManagerBloc>();
     final state = bloc.state;
     final int? selectedYear = await showDialog<int>(

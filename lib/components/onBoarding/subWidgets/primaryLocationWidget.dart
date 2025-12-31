@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/components/locationSearchWidget.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/data/location.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'onBoardingSubWidget.dart';
@@ -41,9 +41,9 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     return BlocBuilder<OnboardingBloc, OnboardingState>(
       builder: (context, state) {
         if (state.addressText != null &&
@@ -55,7 +55,7 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
             fontSize: 20.0,
             fontWeight: FontWeight.w400,
           ),
-          decoration:TileDecorations.onboardingInputDecoration(
+          decoration: TileDecorations.onboardingInputDecoration(
             tileThemeExtension.onSurfaceVariantSecondary,
             colorScheme.tertiary,
             AppLocalizations.of(context)!.enterAddress,

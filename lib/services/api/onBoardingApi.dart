@@ -24,7 +24,14 @@ class OnBoardingApi extends AppApi {
                   .instance.translations.authenticationIssues);
         }
         print('Request headers: $headers');
-        var response = await http.get(uri, headers: headers);
+        var response = await httpClient.get(uri, headers: headers).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         print('Response from fetchOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
@@ -56,8 +63,16 @@ class OnBoardingApi extends AppApi {
               Message: LocalizationService
                   .instance.translations.authenticationIssues);
         }
-        http.Response response = await http.post(uri,
-            headers: headers, body: jsonEncode(requestParams));
+        http.Response response = await httpClient
+            .post(uri, headers: headers, body: jsonEncode(requestParams))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    LocalizationService.instance.translations.requestTimeout);
+          },
+        );
         print('Response from sendOnboardingData: ${response.body}');
         return handleResponse(response);
       } else {
@@ -108,67 +123,64 @@ class OnBoardingApi extends AppApi {
   }
 
   Future<List<TileSuggestion>> generateSuggestionTiles(
-      {
-        required String profession,
-        String description = ""
-      }
-      ) async {
-        try {
-          var isAuthenticated = await this.authentication.isUserAuthenticated();
-          if (isAuthenticated.item1) {
-            await checkAndReplaceCredentialCache();
+      {required String profession, String description = ""}) async {
+    try {
+      var isAuthenticated = await this.authentication.isUserAuthenticated();
+      if (isAuthenticated.item1) {
+        await checkAndReplaceCredentialCache();
 
-            Uri uri = Uri.https(Constants.tilerDomain, 'api/Persona/GenerateTiles');
-            var headers = this.getHeaders();
+        Uri uri = Uri.https(Constants.tilerDomain, 'api/Persona/GenerateTiles');
+        var headers = this.getHeaders();
 
-            if (headers == null) {
-              throw TilerError(
-                  Message: LocalizationService.instance.translations.authenticationIssues);
-            }
-
-            Map<String, dynamic> requestBody = {
-              'PersonaName': profession,
-              'Description': description,
-            };
-
-            http.Response response = await http.post(
-                uri,
-                headers: headers,
-                body: jsonEncode(requestBody)
-            ).timeout(
-              Duration(seconds: 30),
-              onTimeout: () {
-                throw TilerError(Message: 'Request timed out');
-              },
-            );
-
-
-            print('Response from generateTiles: ${response.body}');
-
-            if (response.statusCode == 200) {
-              var jsonResult = jsonDecode(response.body);
-              if (jsonResult.containsKey('Content') &&
-                  jsonResult['Content']['result'] != null &&
-                  jsonResult['Content']['result']['persona'] != null) {
-                List<
-                    dynamic> tilePrefs = jsonResult['Content']['result']['persona']['TilePreferences'];
-                return tilePrefs.map((e) => TileSuggestion.fromJson(e)).toList();
-              }
-              return [];
-            } else {
-              throw TilerError(
-                  Message: LocalizationService.instance.translations.responseHandlingError);
-            }
-          } else {
-            throw TilerError(
-                Message: LocalizationService.instance.translations.userIsNotAuthenticated);
-          }
-        } catch (e) {
-          print('Exception in generateTiles: ${e is TilerError ? e.Message : "Unknown error"}');
+        if (headers == null) {
           throw TilerError(
-              Message: e is TilerError
-                  ? e.Message
-                  : LocalizationService.instance.translations.errorOccurred);
+              Message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
+
+        Map<String, dynamic> requestBody = {
+          'PersonaName': profession,
+          'Description': description,
+        };
+
+        http.Response response = await http
+            .post(uri, headers: headers, body: jsonEncode(requestBody))
+            .timeout(
+          Duration(seconds: 30),
+          onTimeout: () {
+            throw TilerError(Message: 'Request timed out');
+          },
+        );
+
+        print('Response from generateTiles: ${response.body}');
+
+        if (response.statusCode == 200) {
+          var jsonResult = jsonDecode(response.body);
+          if (jsonResult.containsKey('Content') &&
+              jsonResult['Content']['result'] != null &&
+              jsonResult['Content']['result']['persona'] != null) {
+            List<dynamic> tilePrefs =
+                jsonResult['Content']['result']['persona']['TilePreferences'];
+            return tilePrefs.map((e) => TileSuggestion.fromJson(e)).toList();
+          }
+          return [];
+        } else {
+          throw TilerError(
+              Message: LocalizationService
+                  .instance.translations.responseHandlingError);
+        }
+      } else {
+        throw TilerError(
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
+      }
+    } catch (e) {
+      print(
+          'Exception in generateTiles: ${e is TilerError ? e.Message : "Unknown error"}');
+      throw TilerError(
+          Message: e is TilerError
+              ? e.Message
+              : LocalizationService.instance.translations.errorOccurred);
+    }
   }
 }

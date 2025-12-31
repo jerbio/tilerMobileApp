@@ -1,16 +1,18 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
 
 /// A stop in the day's route with its associated tile
 class RouteStop {
@@ -20,8 +22,8 @@ class RouteStop {
   final String label;
   final Duration? travelTimeFromPrevious;
   final TravelMedium travelMode;
-  final bool hasValidLocation; // Has valid lat/lng coordinates
   final bool hasAddress; // Has address that can be used for navigation
+  final LocationType locationType;
 
   RouteStop({
     required this.order,
@@ -30,12 +32,13 @@ class RouteStop {
     required this.label,
     this.travelTimeFromPrevious,
     this.travelMode = TravelMedium.driving,
-    this.hasValidLocation = false,
     this.hasAddress = false,
+    this.locationType = LocationType.none,
   });
 
   /// Whether this stop can be navigated to (has coordinates or address)
-  bool get isNavigable => hasValidLocation || hasAddress;
+  bool get isNavigable => ((locationType != LocationType.videoConference &&
+      locationType != LocationType.onlineUrl));
 
   /// Get the address string for navigation
   String? get navigationAddress {
@@ -74,14 +77,57 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
   Set<Polyline> _polylines = {};
   bool _isLoading = true;
   bool _isInitialized = false;
-  int? _selectedStopIndex;
-  LatLng? _initialPosition;
+  int _selectedStopIndex = 0;
+  LatLng _initialPosition = const LatLng(
+      37.7749, -122.4194); // Default to SF, will be updated to user's location
   double _initialZoom = 13.0;
-  LatLngBounds? _routeBounds;
+  late LocationApi _locationApi;
 
   @override
   void initState() {
     super.initState();
+    _locationApi = LocationApi(getContextCallBack: () => context);
+    _initializeDefaultLocation();
+  }
+
+  /// Initialize default location to user's current position, fallback to San Francisco
+  Future<void> _initializeDefaultLocation() async {
+    try {
+      final hasLocationPermission = await _checkAndRequestLocationPermission();
+      if (hasLocationPermission) {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.medium,
+            timeLimit: Duration(seconds: 5),
+          ),
+        );
+        if (mounted) {
+          setState(() {
+            _initialPosition = LatLng(position.latitude, position.longitude);
+          });
+        }
+      }
+    } catch (e) {
+      // Silently fail and use San Francisco default
+      print('Failed to get current location: $e');
+    }
+  }
+
+  /// Check and request location permission if needed
+  Future<bool> _checkAndRequestLocationPermission() async {
+    try {
+      final permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        final result = await Geolocator.requestPermission();
+        return result == LocationPermission.whileInUse ||
+            result == LocationPermission.always;
+      } else if (permission == LocationPermission.deniedForever) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override
@@ -105,9 +151,23 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     _routeStops = [];
     for (int i = 0; i < tilesWithLocationsOrAddresses.length; i++) {
       final tile = tilesWithLocationsOrAddresses[i];
-      final latLng = _getLatLngFromTile(tile);
-      final hasValidLocation = latLng != null;
-      final hasAddress = _hasValidAddress(tile);
+
+      String? address = tile.address;
+      if (address == null || address.isEmpty) {
+        address = tile.addressDescription;
+      }
+      if (address == null || address.isEmpty) {
+        address = tile.searchdDescription;
+      }
+
+      final locationType = Utility.getLocationType(address);
+      var hasAddress = _hasValidAddress(tile);
+      var latLng = _getLatLngFromTile(tile);
+      if (locationType == LocationType.onlineUrl ||
+          locationType == LocationType.videoConference) {
+        hasAddress = false;
+        latLng = null;
+      }
 
       Duration? travelTime;
       TravelMedium travelMode = TravelMedium.driving;
@@ -135,7 +195,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         travelTime = Duration(milliseconds: tile.travelTimeBefore!.toInt());
       }
 
-      _routeStops.add(RouteStop(
+      final routeStop = RouteStop(
         order: i + 1,
         tile: tile,
         location: latLng,
@@ -143,9 +203,20 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
             tile.name ?? AppLocalizations.of(context)?.untitledTile ?? 'Tile',
         travelTimeFromPrevious: travelTime,
         travelMode: travelMode,
-        hasValidLocation: hasValidLocation,
         hasAddress: hasAddress,
-      ));
+        locationType: locationType,
+      );
+
+      _routeStops.add(routeStop);
+
+      // Check if physical location has (0,0) coordinates and has an address
+      if (locationType == LocationType.physical &&
+          latLng != null &&
+          latLng.latitude == 0.0 &&
+          latLng.longitude == 0.0 &&
+          hasAddress) {
+        _geocodeAddressInBackground(i, tile);
+      }
     }
 
     // Set initial position and calculate bounds
@@ -157,6 +228,60 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     setState(() {
       _isLoading = false;
     });
+  }
+
+  /// Geocode address in the background and update the route stop location
+  Future<void> _geocodeAddressInBackground(
+      int stopIndex, SubCalendarEvent tile) async {
+    try {
+      final address = tile.addressDescription ?? tile.address;
+      if (address == null || address.isEmpty) return;
+
+      final locations = await _locationApi.getLocationsByName(
+        address,
+        includeMapSearch: true,
+        includeLocationParams: true,
+      );
+
+      if (locations.isNotEmpty && mounted) {
+        final location = locations.first;
+        if (location.latitude != null &&
+            location.longitude != null &&
+            location.latitude! != 0.0 &&
+            location.longitude! != 0.0) {
+          final newLatLng = LatLng(location.latitude!, location.longitude!);
+
+          // Update the route stop with the new coordinates
+          if (stopIndex < _routeStops.length) {
+            final oldStop = _routeStops[stopIndex];
+            _routeStops[stopIndex] = RouteStop(
+              order: oldStop.order,
+              tile: oldStop.tile,
+              location: newLatLng,
+              label: oldStop.label,
+              travelTimeFromPrevious: oldStop.travelTimeFromPrevious,
+              travelMode: oldStop.travelMode,
+              hasAddress: oldStop.hasAddress,
+              locationType: oldStop.locationType,
+            );
+
+            // Rebuild markers and polylines with updated location
+            setState(() {
+              _buildMarkersAndPolylines();
+              _calculateInitialCameraPosition();
+            });
+
+            // If this is the first update, refit the map
+            if (_mapController != null) {
+              Future.delayed(const Duration(milliseconds: 300), _fitMapToRoute);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently fail - this is a background operation
+      print('Background geocoding failed for tile ${tile.id}: $e');
+    }
   }
 
   /// Check if tile has either valid coordinates or an address
@@ -179,7 +304,10 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         .toList();
 
     if (locations.isEmpty) {
-      _initialPosition = const LatLng(37.7749, -122.4194); // Default SF
+      // Keep existing _initialPosition (set to user's location or SF as fallback)
+      if (_initialPosition == null) {
+        _initialPosition = const LatLng(37.7749, -122.4194); // Fallback to SF
+      }
       _initialZoom = 13.0;
       return;
     }
@@ -202,12 +330,6 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
       if (loc.longitude < minLng) minLng = loc.longitude;
       if (loc.longitude > maxLng) maxLng = loc.longitude;
     }
-
-    // Store bounds for later use
-    _routeBounds = LatLngBounds(
-      southwest: LatLng(minLat, minLng),
-      northeast: LatLng(maxLat, maxLng),
-    );
 
     // Calculate center point
     _initialPosition = LatLng(
@@ -254,6 +376,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
 
   LatLng? _getLatLngFromTile(SubCalendarEvent tile) {
     // Try to get location from tile's location object
+    print('Checking tile for location: ${tile.location}');
     if (tile.location != null) {
       final loc = tile.location!;
       if (loc.latitude != null &&
@@ -309,9 +432,11 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
           _colorToHue(tileColor),
         ),
         onTap: () {
-          setState(() {
-            _selectedStopIndex = i;
-          });
+          if (i != _selectedStopIndex) {
+            setState(() {
+              _selectedStopIndex = i;
+            });
+          }
         },
       ));
     }
@@ -348,21 +473,30 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     return '${start.format(context)} - ${end.format(context)}';
   }
 
-  /// Check if the selected stop has a valid navigable location
-  bool _hasValidNavigableLocation(RouteStop? stop) {
-    return stop?.isNavigable ?? false;
+  /// Check if the selected stop has a valid navigable location or actionable link
+  bool _isStopActionable(RouteStop? stop) {
+    if (stop == null) return false;
+    return stop.locationType != LocationType.none;
   }
 
   Future<void> _startNavigation() async {
-    if (_selectedStopIndex == null || _routeStops.isEmpty) return;
+    if (_routeStops.isEmpty) return;
 
-    final stop = _routeStops[_selectedStopIndex!];
+    final stop = _routeStops[_selectedStopIndex];
     final googleTravelMode = stop.travelMode.googleMapsMode;
 
     Uri? url;
-
-    // Try coordinates first if available
-    if (stop.hasValidLocation && stop.location != null) {
+    if (stop.locationType == LocationType.videoConference ||
+        stop.locationType == LocationType.onlineUrl) {
+      String? address = stop.tile.address ??
+          stop.tile.addressDescription ??
+          stop.tile.searchdDescription;
+      String? link = Utility.getLinkFromLocation(address);
+      if (link != null) {
+        url = Uri.parse(link);
+      }
+    } else if (stop.location != null) {
+      // Try coordinates first if available
       final lat = stop.location!.latitude;
       final lng = stop.location!.longitude;
       url = Uri.parse(
@@ -389,17 +523,21 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
       }
       return;
     }
-
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        print('Could not launch navigation URL: $url');
+      }
     }
   }
 
   void _fitMapToRoute() {
     if (_mapController == null || _routeStops.isEmpty) return;
 
-    final locations =
-        _routeStops.where((s) => s.location != null).map((s) => s.location!);
+    final locations = _routeStops.where((s) {
+      return s.location != null && s.isNavigable;
+    }).map((s) => s.location!);
     if (locations.isEmpty) return;
 
     double minLat = locations.first.latitude;
@@ -489,7 +627,7 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         GoogleMap(
           style: Theme.of(context).extension<TileThemeExtension>()?.mapStyle,
           initialCameraPosition: CameraPosition(
-            target: _initialPosition ?? const LatLng(37.7749, -122.4194),
+            target: _initialPosition,
             zoom: _initialZoom,
           ),
           markers: _markers,
@@ -513,12 +651,16 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
         SafeArea(
           child: _buildHeader(colorScheme, l10n),
         ),
-        // Bottom card showing selected stop or next stop
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: _buildBottomCard(colorScheme, l10n),
+        // Bottom draggable sheet showing selected stop or next stop
+        DraggableScrollableSheet(
+          initialChildSize: 0.35,
+          minChildSize: 0.12,
+          maxChildSize: 0.95,
+          snap: true,
+          snapSizes: const [0.12, 0.35],
+          builder: (context, scrollController) {
+            return _buildBottomCard(colorScheme, l10n, scrollController);
+          },
         ),
 
         // Fit to route button
@@ -659,12 +801,10 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     );
   }
 
-  Widget _buildBottomCard(ColorScheme colorScheme, AppLocalizations l10n) {
-    final selectedStop = _selectedStopIndex != null
-        ? _routeStops[_selectedStopIndex!]
-        : _routeStops.isNotEmpty
-            ? _routeStops.first
-            : null;
+  Widget _buildBottomCard(ColorScheme colorScheme, AppLocalizations l10n,
+      ScrollController scrollController) {
+    final selectedStop =
+        _routeStops.isNotEmpty ? _routeStops[_selectedStopIndex] : null;
 
     if (selectedStop == null) return const SizedBox.shrink();
 
@@ -677,319 +817,343 @@ class _TodaysRoutePageState extends State<TodaysRoutePage> {
     );
 
     return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 20,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.onSurface.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 20,
+              offset: const Offset(0, -5),
             ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          controller: scrollController,
+          padding: EdgeInsets.zero,
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.onSurface.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
 
-            // Stop indicator row
-            if (_routeStops.length > 1)
-              Container(
-                height: 60,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _routeStops.length,
-                  itemBuilder: (context, index) {
-                    final stop = _routeStops[index];
-                    final isSelected = index == (_selectedStopIndex ?? 0);
-                    final stopTileColor = Color.fromRGBO(
-                      stop.tile.colorRed ?? 127,
-                      stop.tile.colorGreen ?? 127,
-                      stop.tile.colorBlue ?? 127,
-                      1,
-                    );
-                    final startTime =
-                        TimeOfDay.fromDateTime(stop.tile.startTime);
-                    final timeStr = startTime.format(context);
+                // Stop indicator row
+                if (_routeStops.length > 1)
+                  Container(
+                    height: 60,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _routeStops.length,
+                      itemBuilder: (context, index) {
+                        final stop = _routeStops[index];
+                        final isSelected = index == _selectedStopIndex;
+                        final stopTileColor = Color.fromRGBO(
+                          stop.tile.colorRed ?? 127,
+                          stop.tile.colorGreen ?? 127,
+                          stop.tile.colorBlue ?? 127,
+                          1,
+                        );
+                        final startTime =
+                            TimeOfDay.fromDateTime(stop.tile.startTime);
+                        final timeStr = startTime.format(context);
 
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedStopIndex = index;
-                        });
-                        if (stop.location != null) {
-                          _mapController?.animateCamera(
-                            CameraUpdate.newLatLngZoom(stop.location!, 15),
-                          );
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? stopTileColor
-                              : stopTileColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: stopTileColor,
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedStopIndex = index;
+                            });
+                            if (stop.location != null) {
+                              _mapController?.animateCamera(
+                                CameraUpdate.newLatLngZoom(stop.location!, 15),
+                              );
+                            }
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? stopTileColor
+                                  : stopTileColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: stopTileColor,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      '${stop.order}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: isSelected
+                                            ? _getContrastColor(stopTileColor)
+                                            : stopTileColor,
+                                      ),
+                                    ),
+                                    if (index < _routeStops.length - 1) ...[
+                                      const SizedBox(width: 6),
+                                      Icon(
+                                        Icons.arrow_forward,
+                                        size: 12,
+                                        color: isSelected
+                                            ? _getContrastColor(stopTileColor)
+                                            : stopTileColor.withOpacity(0.5),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 2),
                                 Text(
-                                  '${stop.order}',
+                                  timeStr,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
                                     color: isSelected
                                         ? _getContrastColor(stopTileColor)
-                                        : stopTileColor,
+                                            .withOpacity(0.8)
+                                        : stopTileColor.withOpacity(0.7),
                                   ),
                                 ),
-                                if (index < _routeStops.length - 1) ...[
-                                  const SizedBox(width: 6),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 12,
-                                    color: isSelected
-                                        ? _getContrastColor(stopTileColor)
-                                        : stopTileColor.withOpacity(0.5),
-                                  ),
-                                ],
                               ],
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              timeStr,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                                color: isSelected
-                                    ? _getContrastColor(stopTileColor)
-                                        .withOpacity(0.8)
-                                    : stopTileColor.withOpacity(0.7),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                // Selected stop details
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Next label
+                      Text(
+                        _selectedStopIndex == 0
+                            ? l10n.firstStop
+                            : '${l10n.stop} ${selectedStop.order}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurface.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Stop name
+                      Text(
+                        '${selectedStop.order}. ${selectedStop.label}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // Address
+                      if (tile.addressDescription != null ||
+                          tile.address != null) ...[
+                        Row(
+                          children: [
+                            Icon(
+                              selectedStop.locationType ==
+                                      LocationType.videoConference
+                                  ? Icons.videocam_outlined
+                                  : selectedStop.locationType ==
+                                          LocationType.onlineUrl
+                                      ? Icons.link_outlined
+                                      : Icons.location_on_outlined,
+                              size: 16,
+                              color: colorScheme.onSurface.withOpacity(0.5),
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                tile.addressDescription ?? tile.address ?? '',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
+                        const SizedBox(height: 4),
+                      ],
 
-            // Selected stop details
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Next label
-                  Text(
-                    _selectedStopIndex == 0
-                        ? l10n.firstStop
-                        : '${l10n.stop} ${selectedStop.order}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: colorScheme.onSurface.withOpacity(0.5),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Stop name
-                  Text(
-                    '${selectedStop.order}. ${selectedStop.label}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
-                  // Address
-                  if (tile.addressDescription != null ||
-                      tile.address != null) ...[
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on_outlined,
-                          size: 16,
-                          color: colorScheme.onSurface.withOpacity(0.5),
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            tile.addressDescription ?? tile.address ?? '',
+                      // Arrival time
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time_rounded,
+                            size: 16,
+                            color: colorScheme.onSurface.withOpacity(0.5),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.arriveBy(TimeOfDay.fromDateTime(tile.startTime)
+                                .format(context)),
                             style: TextStyle(
                               fontSize: 14,
                               color: colorScheme.onSurface.withOpacity(0.7),
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-
-                  // Arrival time
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.access_time_rounded,
-                        size: 16,
-                        color: colorScheme.onSurface.withOpacity(0.5),
+                        ],
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        l10n.arriveBy(TimeOfDay.fromDateTime(tile.startTime)
-                            .format(context)),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: colorScheme.onSurface.withOpacity(0.7),
-                        ),
-                      ),
-                    ],
-                  ),
 
-                  // Travel time from previous
-                  if (selectedStop.travelTimeFromPrevious != null &&
-                      _selectedStopIndex != 0) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          selectedStop.travelMode.icon,
-                          size: 16,
-                          color: Colors.teal,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          selectedStop.travelTimeFromPrevious!
-                              .toHumanLocalized(context),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.teal,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          ' ${l10n.fromPreviousStop}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: colorScheme.onSurface.withOpacity(0.5),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      // Edit/View tile button
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => EditTile(
-                                  tileId: (tile.isFromTiler
-                                          ? tile.id
-                                          : tile.thirdpartyId) ??
-                                      "",
-                                  tileSource: tile.thirdpartyType,
-                                  thirdPartyUserId: tile.thirdPartyUserId,
-                                ),
+                      // Travel time from previous
+                      if (selectedStop.travelTimeFromPrevious != null &&
+                          _selectedStopIndex != 0) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              selectedStop.travelMode.icon,
+                              size: 16,
+                              color: Colors.teal,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              selectedStop.travelTimeFromPrevious!
+                                  .toHumanLocalized(context),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.teal,
+                                fontWeight: FontWeight.w500,
                               ),
-                            );
-                          },
-                          icon: Icon(
-                            (tile.isReadOnly ?? true)
-                                ? Icons.visibility_outlined
-                                : Icons.edit_outlined,
-                            size: 18,
-                          ),
-                          label: Text(
-                            (tile.isReadOnly ?? true)
-                                ? l10n.viewTile
-                                : l10n.editTile,
-                          ),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: tileColor,
-                            side: BorderSide(color: tileColor),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                          ),
+                            ),
+                            Text(
+                              ' ${l10n.fromPreviousStop}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: colorScheme.onSurface.withOpacity(0.5),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Start navigation button
-                      Expanded(
-                        flex: 2,
-                        child: Builder(
-                          builder: (context) {
-                            final canNavigate =
-                                _hasValidNavigableLocation(selectedStop);
-                            return ElevatedButton.icon(
-                              onPressed: canNavigate ? _startNavigation : null,
+                      ],
+
+                      const SizedBox(height: 16),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          // Edit/View tile button
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditTile(
+                                      tileId: (tile.isFromTiler
+                                              ? tile.id
+                                              : tile.thirdpartyId) ??
+                                          "",
+                                      tileSource: tile.thirdpartyType,
+                                      thirdPartyUserId: tile.thirdPartyUserId,
+                                    ),
+                                  ),
+                                );
+                              },
                               icon: Icon(
-                                canNavigate
-                                    ? Icons.navigation_rounded
-                                    : Icons.location_off_rounded,
+                                (tile.isReadOnly ?? true)
+                                    ? Icons.visibility_outlined
+                                    : Icons.edit_outlined,
                                 size: 18,
                               ),
                               label: Text(
-                                canNavigate
-                                    ? l10n.startNavigation
-                                    : l10n.noLocationAvailable,
+                                (tile.isReadOnly ?? true)
+                                    ? l10n.viewTile
+                                    : l10n.editTile,
                               ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: canNavigate
-                                    ? Colors.teal
-                                    : Colors.grey.shade400,
-                                foregroundColor: Colors.white,
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: tileColor,
+                                side: BorderSide(color: tileColor),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Start navigation button
+                          Expanded(
+                            flex: 2,
+                            child: Builder(
+                              builder: (context) {
+                                final canAction =
+                                    _isStopActionable(selectedStop);
+                                IconData navIcon = Icons.navigation_rounded;
+                                String navLabel = l10n.startNavigation;
+
+                                if (selectedStop.locationType ==
+                                    LocationType.videoConference) {
+                                  navIcon = Icons.videocam;
+                                  navLabel = l10n.joinMeeting;
+                                } else if (selectedStop.locationType ==
+                                    LocationType.onlineUrl) {
+                                  navIcon = Icons.link;
+                                  navLabel = l10n.openLink;
+                                }
+
+                                return ElevatedButton.icon(
+                                  onPressed:
+                                      canAction ? _startNavigation : null,
+                                  icon: Icon(
+                                    canAction
+                                        ? navIcon
+                                        : Icons.location_off_rounded,
+                                    size: 18,
+                                  ),
+                                  label: Text(
+                                    canAction
+                                        ? navLabel
+                                        : l10n.noLocationAvailable,
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: canAction
+                                        ? Colors.teal
+                                        : Colors.grey.shade400,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   Color _getContrastColor(Color color) {

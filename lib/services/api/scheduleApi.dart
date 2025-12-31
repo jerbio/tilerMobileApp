@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'package:tuple/tuple.dart';
 
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -55,6 +56,8 @@ class ScheduleApi extends AppApi {
           'TimeZoneOffset': dateTime.timeZoneOffset.inHours.toString(),
           'MobileApp': true.toString()
         };
+        // print("Get sub events with params: $queryParameters");
+        print("Get sub events for timeline ${timeLine.toString()} |||||||");
         Uri uri =
             Uri.https(url, 'api/Schedule/getScheduleAlexa', queryParameters);
 
@@ -63,7 +66,14 @@ class ScheduleApi extends AppApi {
           throw TilerError(Message: 'Issues with authentication');
         }
 
-        var response = await http.get(uri, headers: header);
+        var response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+          },
+        );
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult) &&
@@ -71,7 +81,8 @@ class ScheduleApi extends AppApi {
             var contentData = jsonResult['Content'];
             List subEventJson = contentData['subCalendarEvents'];
             List sleepTimelinesJson = [];
-
+            print(
+                "Done fetching sub events from server ${timeLine.toString()} |||||||");
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
                 .toList();
@@ -137,7 +148,14 @@ class ScheduleApi extends AppApi {
         throw TilerError(Message: 'Issues with authentication');
       }
       DateTime startOfRequest = Utility.currentTime();
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+        },
+      );
       if (response.statusCode == HttpStatus.ok) {
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
@@ -195,7 +213,14 @@ class ScheduleApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -227,7 +252,14 @@ class ScheduleApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.get(uri, headers: header);
+        var response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+          },
+        );
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
@@ -357,8 +389,16 @@ class ScheduleApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.post(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .post(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+          },
+        );
 
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
@@ -406,8 +446,16 @@ class ScheduleApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.post(uri,
-            headers: header, body: jsonEncode(injectedParameters));
+        var response = await httpClient
+            .post(uri, headers: header, body: jsonEncode(injectedParameters))
+            .timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+          },
+        );
         var jsonResult = jsonDecode(response.body);
         error.Message = "Issues with reaching Tiler servers";
         if (isJsonResponseOk(jsonResult)) {
@@ -428,7 +476,7 @@ class ScheduleApi extends AppApi {
   Future reviseSchedule() async {
     // return buzzSchedule();
     TilerError error = new TilerError();
-    error.Message = "Failed to revise schedule";
+    error.Message = LocalizationService.instance.translations.failedToReviseScheduleRequest;
 
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -449,7 +497,7 @@ class ScheduleApi extends AppApi {
 
   Future buzzSchedule() async {
     TilerError error = new TilerError();
-    error.Message = "Failed to Buzz schedule";
+    error.Message = LocalizationService.instance.translations.failedToBuzzSchedule;
 
     return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -470,7 +518,7 @@ class ScheduleApi extends AppApi {
 
   Future shuffleSchedule() async {
     TilerError error = new TilerError();
-    error.Message = "Failed to shuffle schedule";
+    error.Message = LocalizationService.instance.translations.failedToShuffleSchedule;
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
       error.Message = "Issues with reaching Tiler servers";
       if (response.statusCode == HttpStatus.accepted) {
@@ -511,7 +559,14 @@ class ScheduleApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -545,7 +600,14 @@ class ScheduleApi extends AppApi {
             throw TilerError(Message: 'Issues with authentication');
           }
 
-          final response = await http.get(uri, headers: header);
+          final response = await httpClient.get(uri, headers: header).timeout(
+            AppApi.requestTimeout,
+            onTimeout: () {
+              throw TilerError(
+                  Message:
+                      'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+            },
+          );
 
           if (response.statusCode == 200 || response.statusCode == 201) {
             final json = jsonDecode(response.body);
@@ -641,5 +703,6 @@ class ScheduleApi extends AppApi {
     } catch (ex) {
       return null;
     }
+    return null;
   }
 }

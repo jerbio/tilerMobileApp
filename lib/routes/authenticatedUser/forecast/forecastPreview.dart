@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/components/forecastTemplate/analysisCheckState.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
@@ -35,8 +35,8 @@ class ForecastView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme =Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return CancelAndProceedTemplateWidget(
@@ -60,13 +60,13 @@ class ForecastView extends StatelessWidget {
                 fontFamily: TileTextStyles.rubikFontName,
                 fontSize: height / (height / 15),
                 fontWeight: FontWeight.w500,
-                color:colorScheme.onPrimary,
+                color: colorScheme.onPrimary,
               ),
             ),
           ),
         ),
       ),
-     appBar: AppBar(
+      appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.forecast),
         automaticallyImplyLeading: false,
       ),

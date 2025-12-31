@@ -10,6 +10,9 @@ import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
+import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -57,7 +60,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   Map<String, TilerEvent>? pendingRenderedTiles;
   Map<String, TilerEvent> latestBuildTiles = {};
   Map<String, Tuple3<TilerEvent, int?, int?>>? orderedTiles;
-  List<TileConflict> _detectedConflicts = [];
+  List<ConflictGroup> _detectedConflicts = [];
   List<Widget> childrenColumnWidgets = [];
   double _emptyDayOpacity = 0;
   final double daySummaryToHeightBuffer = 245;
@@ -214,13 +217,22 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     final now = DateTime.now();
     Set<int> displayedHours = {};
 
-    // First, detect conflict groups
+    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
+    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+    final regularTiles = orderedTiles.where((tile) {
+      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
+        final duration = tile.end! - tile.start!;
+        return duration < minDurationMs;
+      }
+      return true;
+    }).toList();
+
+    // First, detect conflict groups (only from regular tiles)
     final subCalendarEvents =
-        orderedTiles.whereType<SubCalendarEvent>().toList();
-    final conflicts = widget.showConflictAlerts
-        ? TileConflict.detectAll(subCalendarEvents)
-        : <TileConflict>[];
-    final conflictGroups = ConflictGroup.groupConflicts(conflicts);
+        regularTiles.whereType<SubCalendarEvent>().toList();
+    final conflictGroups = widget.showConflictAlerts
+        ? ConflictGroup.detectGroups(subCalendarEvents)
+        : <ConflictGroup>[];
 
     // Create a set of tile IDs that are in conflict groups
     Set<String> tilesInConflictGroups = {};
@@ -233,8 +245,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     // Track which conflict groups have been rendered
     Set<int> renderedConflictGroups = {};
 
-    for (int i = 0; i < orderedTiles.length; i++) {
-      final tile = orderedTiles[i];
+    for (int i = 0; i < regularTiles.length; i++) {
+      final tile = regularTiles[i];
       final tileHour = tile.startTime.hour;
       final isCurrentHour = tile.startTime.day == now.day &&
           tile.startTime.month == now.month &&
@@ -319,11 +331,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
 
       // Add travel connector to next non-conflicting tile
-      if (i < orderedTiles.length - 1 && widget.showTravelConnectors) {
+      if (i < regularTiles.length - 1 && widget.showTravelConnectors) {
         // Find the next non-conflicting tile
         TilerEvent? nextTile;
-        for (int j = i + 1; j < orderedTiles.length; j++) {
-          final candidate = orderedTiles[j];
+        for (int j = i + 1; j < regularTiles.length; j++) {
+          final candidate = regularTiles[j];
           if (candidate is SubCalendarEvent &&
               tilesInConflictGroups.contains(candidate.uniqueId)) {
             continue; // Skip tiles in conflict groups
@@ -421,14 +433,51 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     const double heightMargin = 262;
     renderedTiles = {};
 
+    // Track tiles with pending RSVP and declined separately
+    List<SubCalendarEvent> pendingRsvpTiles = [];
+    List<SubCalendarEvent> declinedTiles = [];
+    final now = Utility.currentTime().millisecondsSinceEpoch;
+
     if (widget.tiles != null) {
       widget.tiles!.forEach((eachTile) {
-        if (eachTile.id != null &&
-            (((eachTile) as SubCalendarEvent?)?.isViable ?? true)) {
-          renderedTiles[eachTile.uniqueId] = eachTile;
+        if (eachTile.id != null) {
+          final subEvent = eachTile as SubCalendarEvent?;
+          final isViable = subEvent?.isViable ?? true;
+          final isFromTiler = eachTile.isFromTiler;
+          final rsvpStatus = subEvent?.rsvp;
+
+          // Check if this is a pending RSVP tile (needs action or tentative)
+          final isPendingRsvp = !isFromTiler &&
+              (rsvpStatus == RsvpStatus.needsAction ||
+                  rsvpStatus == RsvpStatus.tentative);
+
+          // Check if this is a declined tile
+          final isDeclined = !isFromTiler && rsvpStatus == RsvpStatus.declined;
+
+          // Track pending RSVP tiles separately (exclude past events)
+          if (isPendingRsvp && subEvent != null) {
+            // Only include tiles that haven't ended yet
+            pendingRsvpTiles.add(subEvent);
+          }
+
+          // Track declined tiles separately (exclude old events)
+          if (isDeclined && subEvent != null) {
+            declinedTiles.add(subEvent);
+          }
+
+          // Show tile in main list if not pending RSVP and not declined
+          final shouldShowInMainList = !isPendingRsvp && !isDeclined;
+
+          if (shouldShowInMainList && isViable) {
+            renderedTiles[eachTile.uniqueId] = eachTile;
+          }
         }
       });
     }
+
+    // Sort pending RSVP and declined tiles by start time
+    pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+    declinedTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
 
     childrenColumnWidgets = [];
 
@@ -446,12 +495,89 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       );
     }
 
-    // Proactive alert banner (only for today)
+    // Detect alerts data
+    SubCalendarEvent? nextDepartureTile;
+    List<ConflictGroup> conflictGroups = [];
+    List<SubCalendarEvent> extendedTiles = [];
+
+    // Get travel alert data (only for today)
     if (widget.showProactiveAlerts && _isToday && widget.tiles != null) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
-      final nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesList);
+      nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesList);
+    }
 
+    // Detect conflicts (excluding extended tiles and declined events)
+    if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
+      const int minDurationMs = 16 * 60 * 60 * 1000;
+      final regularTiles = renderedTiles.values.where((tile) {
+        if (tile is SubCalendarEvent &&
+            tile.start != null &&
+            tile.end != null) {
+          final duration = tile.end! - tile.start!;
+          return duration < minDurationMs;
+        }
+        return true;
+      }).toList();
+
+      // Exclude declined events from conflict detection
+      final subCalendarEvents = regularTiles
+          .whereType<SubCalendarEvent>()
+          .where((tile) => tile.rsvp != RsvpStatus.declined)
+          .toList();
+      conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
+      _detectedConflicts = conflictGroups;
+    }
+
+    // Detect extended tiles
+    if (renderedTiles.isNotEmpty) {
+      extendedTiles = ExtendedTilesBanner.detectExtendedTiles(
+          renderedTiles.values.toList());
+    }
+
+    // Count active alerts to decide between combined or individual banners
+    int activeAlertCount = 0;
+    if (nextDepartureTile != null) activeAlertCount++;
+    if (conflictGroups.isNotEmpty) activeAlertCount++;
+    if (extendedTiles.isNotEmpty) activeAlertCount++;
+    if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty)
+      activeAlertCount++;
+
+    // Use combined banner if more than 1 alert, otherwise show individual banners
+    if (activeAlertCount > 1) {
+      childrenColumnWidgets.add(
+        CombinedAlertsBanner(
+          nextTileWithTravel: nextDepartureTile,
+          onTravelTap: () {
+            // Navigate to the tile or show details
+          },
+          onTravelDismiss: () {
+            // Handle dismiss if needed
+          },
+          conflictGroups: conflictGroups,
+          onConflictTap: () {
+            // Could show a modal with all conflicts
+          },
+          extendedTiles: extendedTiles,
+          onExtendedTap: () {
+            CombinedAlertsBannerHelpers.showExtendedTilesModal(
+                context, extendedTiles);
+          },
+          pendingRsvpTiles: pendingRsvpTiles,
+          declinedTiles: declinedTiles,
+          onRsvpTap: () {
+            CombinedAlertsBannerHelpers.showPendingRsvpModal(
+              context,
+              pendingRsvpTiles,
+              declinedTiles: declinedTiles,
+              onRsvpUpdated: () => refreshScheduleSummary(),
+            );
+          },
+          onRsvpUpdated: () => refreshScheduleSummary(),
+        ),
+      );
+    } else {
+      // Show individual banners when only 0 or 1 alert is active
       if (nextDepartureTile != null) {
         childrenColumnWidgets.add(
           ProactiveAlertBanner(
@@ -462,20 +588,33 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           ),
         );
       }
-    }
 
-    // Detect and show conflicts
-    if (widget.showConflictAlerts && renderedTiles.isNotEmpty) {
-      final subCalendarEvents =
-          renderedTiles.values.whereType<SubCalendarEvent>().toList();
-      _detectedConflicts = TileConflict.detectAll(subCalendarEvents);
-
-      if (_detectedConflicts.isNotEmpty) {
+      if (conflictGroups.isNotEmpty) {
         childrenColumnWidgets.add(
           ConflictSummaryBanner(
-            conflicts: _detectedConflicts,
+            conflictGroups: conflictGroups,
             onTap: () {
               // Could show a modal with all conflicts
+            },
+          ),
+        );
+      }
+
+      if (extendedTiles.isNotEmpty) {
+        childrenColumnWidgets.add(
+          ExtendedTilesBanner(
+            extendedTiles: extendedTiles,
+          ),
+        );
+      }
+
+      if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
+        childrenColumnWidgets.add(
+          PendingRsvpBanner(
+            pendingTiles: pendingRsvpTiles,
+            declinedTiles: declinedTiles,
+            onRsvpUpdated: () {
+              refreshScheduleSummary();
             },
           ),
         );

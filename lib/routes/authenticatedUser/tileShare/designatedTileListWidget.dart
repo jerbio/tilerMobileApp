@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/designatedTileWidget.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
@@ -40,10 +40,11 @@ class _DesignatedTileListState extends State<DesignatedTileList> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
+
   void getTiles() {
     tileClusterApi
         .getDesignatedTiles(index: index, pageSize: pageSize)

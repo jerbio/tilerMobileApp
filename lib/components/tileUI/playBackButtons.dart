@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -18,7 +18,8 @@ class PlayBack extends StatefulWidget {
   List<PlaybackOptions>? forcedOption;
   Function? callBack;
   bool isWeeklyView;
-  PlayBack(this.subEvent, {this.forcedOption, this.callBack,this.isWeeklyView=false});
+  PlayBack(this.subEvent,
+      {this.forcedOption, this.callBack, this.isWeeklyView = false});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -33,7 +34,7 @@ class PlayBackState extends State<PlayBack> {
   void initState() {
     super.initState();
     _subCalendarEventApi =
-    new SubCalendarEventApi(getContextCallBack: () => context);
+        new SubCalendarEventApi(getContextCallBack: () => context);
   }
 
   @override
@@ -43,8 +44,6 @@ class PlayBackState extends State<PlayBack> {
     colorScheme = theme.colorScheme;
   }
 
-
-
   void showMessage(String message) {
     Fluttertoast.showToast(
         msg: message,
@@ -52,11 +51,9 @@ class PlayBackState extends State<PlayBack> {
         gravity: ToastGravity.SNACKBAR,
         timeInSecForIosWeb: 1,
         backgroundColor: colorScheme.inverseSurface,
-        textColor:  colorScheme.onInverseSurface,
-        fontSize: 16.0
-    );
+        textColor: colorScheme.onInverseSurface,
+        fontSize: 16.0);
   }
-
 
   pauseTile() async {
     showMessage(AppLocalizations.of(context)!.pausing);
@@ -94,7 +91,7 @@ class PlayBackState extends State<PlayBack> {
       scheduleStatus = scheduleState.scheduleStatus;
     }
     var request =
-    _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
+        _subCalendarEventApi.pauseTile((_subEvent ?? this.widget.subEvent).id!);
 
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.PlayPause, request);
@@ -106,7 +103,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: request));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   resumeTile() async {
@@ -146,7 +143,7 @@ class PlayBackState extends State<PlayBack> {
     }
 
     var request =
-    _subCalendarEventApi.resumeTile((_subEvent ?? this.widget.subEvent));
+        _subCalendarEventApi.resumeTile((_subEvent ?? this.widget.subEvent));
 
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.PlayPause, request);
@@ -159,7 +156,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: request));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   setAsNowTile() async {
@@ -212,7 +209,7 @@ class PlayBackState extends State<PlayBack> {
         isAlreadyLoaded: true,
         scheduleStatus: scheduleStatus,
         callBack: requestFuture));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   completeTile() async {
@@ -264,7 +261,7 @@ class PlayBackState extends State<PlayBack> {
         scheduleStatus: scheduleStatus,
         isAlreadyLoaded: true,
         callBack: requestFuture));
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   deleteTile() async {
@@ -320,20 +317,18 @@ class PlayBackState extends State<PlayBack> {
     if (this.widget.callBack != null) {
       this.widget.callBack!(PlaybackOptions.Delete, requestFuture);
     }
-    if(widget.isWeeklyView) Navigator.pop(context);
+    if (widget.isWeeklyView) Navigator.pop(context);
   }
 
   procrastinate() async {
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     if (subTile.id != null && subTile.id!.isNotEmpty) {
-      if(widget.isWeeklyView) Navigator.pop(context);
-      Navigator.of(context).push(
-          MaterialPageRoute(
-              builder: (context) =>
-                  TileProcrastinateRoute(
-                    tileId: subTile.id!,
-                    callBack: this.widget.callBack,
-                  )));
+      if (widget.isWeeklyView) Navigator.pop(context);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => TileProcrastinateRoute(
+                tileId: subTile.id!,
+                callBack: this.widget.callBack,
+              )));
     }
   }
 
@@ -381,12 +376,24 @@ class PlayBackState extends State<PlayBack> {
     Widget? completeButton;
     var playBackElements = <Widget>[];
     if ((widget.subEvent.isFromTiler)) {
-      completeButton=_buildActionButton(onTap:completeTile,icon: Icons.check,label:AppLocalizations.of(context)!.complete);
+      completeButton = _buildActionButton(
+          onTap: completeTile,
+          icon: Icons.check,
+          label: AppLocalizations.of(context)!.complete);
       playBackElements.add(completeButton);
     }
     alreadyAddedButton.add(PlaybackOptions.Complete);
-    deleteButton=_buildActionButton(onTap:deleteTile,icon: Icons.close,iconSize: 35,label:AppLocalizations.of(context)!.delete);
-    setAsNowButton=_buildActionButton(onTap:setAsNowTile,icon: Icons.chevron_right,iconSize: 35,rotationAngle: -pi / 2,label:AppLocalizations.of(context)!.now);
+    deleteButton = _buildActionButton(
+        onTap: deleteTile,
+        icon: Icons.close,
+        iconSize: 35,
+        label: AppLocalizations.of(context)!.delete);
+    setAsNowButton = _buildActionButton(
+        onTap: setAsNowTile,
+        icon: Icons.chevron_right,
+        iconSize: 35,
+        rotationAngle: -pi / 2,
+        label: AppLocalizations.of(context)!.now);
     if (((widget.subEvent.isFromTiler)) &&
         (!(widget.subEvent.isProcrastinate ?? false)) &&
         (!(widget.subEvent.isCurrent ||
@@ -394,7 +401,11 @@ class PlayBackState extends State<PlayBack> {
       playBackElements.add(setAsNowButton);
       alreadyAddedButton.add(PlaybackOptions.Now);
     }
-    procrastinateButton=_buildActionButton(onTap:procrastinate,icon: Icons.chevron_right,iconSize: 35,label:AppLocalizations.of(context)!.defer);
+    procrastinateButton = _buildActionButton(
+        onTap: procrastinate,
+        icon: Icons.chevron_right,
+        iconSize: 35,
+        label: AppLocalizations.of(context)!.defer);
 
     if (widget.subEvent.isRigid == null ||
         (widget.subEvent.isRigid != null && !widget.subEvent.isRigid!)) {
@@ -405,10 +416,16 @@ class PlayBackState extends State<PlayBack> {
     if ((widget.subEvent.isRigid != null && !widget.subEvent.isRigid!) &&
         (widget.subEvent.isCurrent ||
             (widget.subEvent.isPaused != null && widget.subEvent.isPaused!))) {
-      playPauseButton=_buildActionButton(onTap:pauseTile,icon: Icons.pause_rounded,label:AppLocalizations.of(context)!.pause);
+      playPauseButton = _buildActionButton(
+          onTap: pauseTile,
+          icon: Icons.pause_rounded,
+          label: AppLocalizations.of(context)!.pause);
 
       if (widget.subEvent.isPaused != null && widget.subEvent.isPaused!) {
-        playPauseButton=_buildActionButton(onTap:resumeTile,icon: Icons.play_arrow_rounded,label:AppLocalizations.of(context)!.resume);
+        playPauseButton = _buildActionButton(
+            onTap: resumeTile,
+            icon: Icons.play_arrow_rounded,
+            label: AppLocalizations.of(context)!.resume);
       }
       if (playBackElements.isNotEmpty) {
         playBackElements.insert(1, playPauseButton);
@@ -459,8 +476,8 @@ class PlayBackState extends State<PlayBack> {
     for (int i = 0; i < playBackElements.length;) {
       List<Widget> rowElements = <Widget>[];
       for (int j = 0;
-      j < maxButtonPerRow && i < playBackElements.length;
-      j++, i++) {
+          j < maxButtonPerRow && i < playBackElements.length;
+          j++, i++) {
         rowElements.add(playBackElements[i]);
       }
       if (rowElements.isNotEmpty) {

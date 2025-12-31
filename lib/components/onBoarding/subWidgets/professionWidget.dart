@@ -4,17 +4,16 @@ import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/tileUI/tilerCheckBox.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 import 'onBoardingSubWidget.dart';
-class ProfessionWidget extends StatefulWidget {
 
+class ProfessionWidget extends StatefulWidget {
   const ProfessionWidget({Key? key}) : super(key: key);
 
   @override
   State<ProfessionWidget> createState() => _ProfessionWidgetState();
 }
-
 
 class _ProfessionWidgetState extends State<ProfessionWidget> {
   late TextEditingController customController;
@@ -36,8 +35,8 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tileThemeExtension = theme.extension<TileThemeExtension>()!;
-    final localizations=AppLocalizations.of(context)!;
-    final List<String> professions =  [
+    final localizations = AppLocalizations.of(context)!;
+    final List<String> professions = [
       localizations.medicalProfessional,
       localizations.softwareDeveloper,
       localizations.student,
@@ -66,8 +65,6 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
             (state.profession == 'Other' ||
                 !predefinedProfessions.contains(state.profession));
 
-
-
         return OnboardingSubWidget(
           title: localizations.yourProfession,
           questionText: localizations.yourProfessionQuestion,
@@ -81,16 +78,12 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
                   isChecked: isChecked,
                   text: profession,
                   onChange: (checkboxState) {
-                    context.read<OnboardingBloc>().add(
-                        SelectProfessionEvent(
-                            profession: profession,
-                            isCustom: profession == 'Other'
-                        )
-                    );
+                    context.read<OnboardingBloc>().add(SelectProfessionEvent(
+                        profession: profession,
+                        isCustom: profession == 'Other'));
                   },
                 );
               }).toList(),
-
               if (isOtherSelected)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
@@ -101,10 +94,7 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
                       if (value.isNotEmpty) {
                         context.read<OnboardingBloc>().add(
                             SelectProfessionEvent(
-                                profession: value,
-                                isCustom: true
-                            )
-                        );
+                                profession: value, isCustom: true));
                       }
                     },
                     style: const TextStyle(fontSize: 16),

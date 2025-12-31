@@ -18,7 +18,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
 
 enum NotificationIdTypes { none, nextTile, userSetReminder, depatureTime }
@@ -105,10 +105,9 @@ class LocalNotificationService {
         fontSize: 16.0);
   }
 
-
   completeTile(BuildContext context, SubCalendarEvent subTile) async {
-    final colorScheme=Theme.of(context).colorScheme;
-    showMessage(AppLocalizations.of(context)!.completing,colorScheme);
+    final colorScheme = Theme.of(context).colorScheme;
+    showMessage(AppLocalizations.of(context)!.completing, colorScheme);
     final scheduleState = context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
       DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);

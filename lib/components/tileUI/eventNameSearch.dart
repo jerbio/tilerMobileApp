@@ -20,7 +20,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_spacing.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
@@ -50,7 +50,7 @@ enum LookupStatus { NotStarted, Pending, Finished, Failed }
 class EventNameSearchState extends SearchWidgetState {
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
   late TileNameApi tileNameApi;
   late CalendarEventApi calendarEventApi;
   TextEditingController textController = TextEditingController();
@@ -63,14 +63,15 @@ class EventNameSearchState extends SearchWidgetState {
     calendarEventApi = new CalendarEventApi(getContextCallBack: () => context);
     tileNameApi = new TileNameApi(getContextCallBack: () => context);
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
+
   Tuple4<List<SubCalendarEvent>, List<Timeline>, Timeline, ScheduleStatus>
       getPriorStateVariables() {
     List<SubCalendarEvent> renderedSubEvents = [];
@@ -268,7 +269,8 @@ class EventNameSearchState extends SearchWidgetState {
         padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
         height: 70,
         decoration: BoxDecoration(
-          color: tileThemeExtension.surfaceContainerUltimate.withValues(alpha: 0.1),
+          color: tileThemeExtension.surfaceContainerUltimate
+              .withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(5),
           boxShadow: [
             BoxShadow(
@@ -284,12 +286,7 @@ class EventNameSearchState extends SearchWidgetState {
           children: [
             Icon(icon, size: 20, color: iconColor),
             SizedBox.square(dimension: 5),
-            Text(
-                text,
-                style: TextStyle(
-                  fontSize: 15
-                )
-            ),
+            Text(text, style: TextStyle(fontSize: 15)),
           ],
         ),
       ),
@@ -301,7 +298,7 @@ class EventNameSearchState extends SearchWidgetState {
       icon: Icons.clear_rounded,
       iconColor: colorScheme.onError,
       text: AppLocalizations.of(context)!.delete,
-      onTap: () => createDeletionCallBack(tile.id!, tile.thirdpartyId ?? "")!,
+      onTap: () => createDeletionCallBack(tile.id!, tile.thirdpartyId ?? "")!(),
     );
   }
 
@@ -310,24 +307,22 @@ class EventNameSearchState extends SearchWidgetState {
       icon: Icons.check,
       iconColor: TileColors.completedGreen,
       text: AppLocalizations.of(context)!.done,
-      onTap: () => createCompletionCallBack(tile.id!)!,
+      onTap: () => createCompletionCallBack(tile.id!)!(),
     );
   }
 
   Widget createSetAsNowButton(TilerEvent tile) {
     return _createActionButton(
-      icon:   FontAwesomeIcons.chevronUp,
+      icon: FontAwesomeIcons.chevronUp,
       iconColor: colorScheme.onSurface,
       text: AppLocalizations.of(context)!.now,
-      onTap: () =>createSetAsNowCallBack(tile.id!)!,
+      onTap: () => createSetAsNowCallBack(tile.id!)!(),
     );
   }
 
   Widget tileToEventNameWidget(TilerEvent tile) {
-      final textStyle= TextStyle(
-          fontSize: 12,
-          fontFamily: TileTextStyles.rubikFontName
-      );
+    final textStyle =
+        TextStyle(fontSize: 12, fontFamily: TileTextStyles.rubikFontName);
     List<Widget> childWidgets = [];
     Widget textContainer;
     if (tile.name != null) {
@@ -341,22 +336,15 @@ class EventNameSearchState extends SearchWidgetState {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(AppLocalizations.of(context)!.deadline,
-                  style: textStyle),
-              Text(': ',
-                  style: textStyle
+              Text(AppLocalizations.of(context)!.deadline, style: textStyle),
+              Text(': ', style: textStyle),
+              Text(monthString, style: textStyle),
+              Text(
+                ' ',
+                style: TextStyle(
+                    fontSize: 25, fontFamily: TileTextStyles.rubikFontName),
               ),
-              Text(monthString,
-                  style: textStyle
-                ),
-              Text(' ',
-                  style: TextStyle(
-                      fontSize: 25,
-                      fontFamily: TileTextStyles.rubikFontName),
-              ),
-              Text(end.day.toString(),
-                  style: textStyle
-              ),
+              Text(end.day.toString(), style: textStyle),
             ],
           ),
         );
@@ -368,19 +356,15 @@ class EventNameSearchState extends SearchWidgetState {
         margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           Expanded(
-              child: Text(tile.name!,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      fontFamily: TileTextStyles.rubikFontName
-                  )
-
-              ),
+            child: Text(tile.name!,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: TileTextStyles.rubikFontName)),
           ),
-        ]
-        ),
+        ]),
       );
       detailWidgets.add(textContainer);
 
@@ -471,7 +455,8 @@ class EventNameSearchState extends SearchWidgetState {
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20)),
           border: Border.all(
-            color: tileThemeExtension.surfaceContainerUltimate.withValues(alpha: 0.1),
+            color: tileThemeExtension.surfaceContainerUltimate
+                .withValues(alpha: 0.1),
             width: 2,
           ),
         ),
@@ -552,8 +537,7 @@ class EventNameSearchState extends SearchWidgetState {
                       color: tileThemeExtension.onSurfaceHint,
                       fontSize: TileDimensions.textFontSize,
                       fontFamily: TileTextStyles.rubikFontName,
-                      fontWeight: FontWeight.w500
-                     ),
+                      fontWeight: FontWeight.w500),
                   contentPadding: TileSpacing.inputFieldPadding,
                   fillColor: colorScheme.surfaceContainerLowest,
                   border: OutlineInputBorder(
@@ -561,7 +545,8 @@ class EventNameSearchState extends SearchWidgetState {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,
-                    borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
+                    borderSide: BorderSide(
+                        color: colorScheme.onInverseSurface, width: 2),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,
@@ -590,27 +575,27 @@ class EventNameSearchState extends SearchWidgetState {
             return Scaffold(
               resizeToAvoidBottomInset: false,
               body: Container(
-                  margin: TileSpacing.topMargin,
-                  alignment: Alignment.topCenter,
-                  child:
-                      Stack(alignment: Alignment.topCenter, children: <Widget>[
-                    FractionallySizedBox(
-                      widthFactor: 0.825,
-                      child: super.build(context),
-                    ),
-                    Align(
-                      alignment: Alignment.topLeft,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                        child: BackButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                        ),
+                margin: TileSpacing.topMargin,
+                alignment: Alignment.topCenter,
+                child: Stack(alignment: Alignment.topCenter, children: <Widget>[
+                  FractionallySizedBox(
+                    widthFactor: 0.825,
+                    child: super.build(context),
+                  ),
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
+                      child: BackButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
                       ),
-                    )
-                  ]),
-                  decoration: TileDecorations.defaultBackground,),
+                    ),
+                  )
+                ]),
+                decoration: TileDecorations.defaultBackground,
+              ),
             );
           }),
         );
