@@ -1,16 +1,12 @@
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/services/api/chat.dart';
-import 'dart:developer' as developer;
-
+import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/audiRecordingService.dart';
+
 part 'vibe_chat_event.dart';
 part 'vibe_chat_state.dart';
 

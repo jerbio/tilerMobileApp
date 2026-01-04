@@ -34,7 +34,7 @@ import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/api/chat.dart';
+import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -428,42 +428,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildChatFloatingActionButton() {
-    return Padding(
-      padding: EdgeInsets.only(left: 30),
-      child: FloatingActionButton(
-        backgroundColor: colorScheme.surface,
-        onPressed: () {
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (context) => BlocProvider(
-              create: (context) => VibeChatBloc(
-                chatApi: ChatApi(getContextCallBack: () => context),
-              )..add(LoadVibeChatSessionEvent()),
-              child: VibeChat(),
-            ),
-          );
-        },
-        child: Icon(
-          Icons.chat_outlined,
-          color: colorScheme.primary,
-        ),
-      ),
-    );
-  }
 
-  Widget _buildFloatingActionButtons(){
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildChatFloatingActionButton(),
-        _buildPreviewFloatingActionButton(),
-      ],
-    );
 
-}
+
   Widget renderAuthorizedUserPageView() {
     //ey: dayStatusWidget not used
     //ey: never added to widget tree
@@ -520,7 +487,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton:_buildFloatingActionButtons(),
+      floatingActionButton: _buildPreviewFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

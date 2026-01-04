@@ -1989,4 +1989,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToProcrastinateTile => 'Failed to procrastinate tile';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get transcribing => 'Transcribing';
 }

@@ -3520,6 +3520,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to procrastinate tile'**
   String get failedToProcrastinateTile;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @transcribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing'**
+  String get transcribing;
 }
 
 class _AppLocalizationsDelegate

@@ -1463,5 +1463,7 @@
         "failedToProcrastinateTile": "Failed to procrastinate tile",
         "@failedToProcrastinateTile": {
           "description": "Error when procrastinating a tile fails"
-        }
+        },
+        "chat":"Chat",
+        "transcribing":"Transcribing"
 }

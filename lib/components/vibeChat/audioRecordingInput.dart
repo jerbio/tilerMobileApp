@@ -98,7 +98,7 @@ class _AudioRecordingInputState extends State<AudioRecordingInput> {
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           child: IconButton(
-            onPressed: () => context.read<VibeChatBloc>().add(StopRecordingAndTranscribeEvent('')),
+            onPressed: () => context.read<VibeChatBloc>().add(StopRecordingAndTranscribeEvent()),
             icon: Icon(Icons.stop),
             iconSize: 20,
             style: IconButton.styleFrom(

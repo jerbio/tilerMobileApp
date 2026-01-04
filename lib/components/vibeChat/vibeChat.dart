@@ -4,7 +4,6 @@ import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/vibeChat/MessageList.dart';
 import 'package:tiler_app/components/vibeChat/messageInput.dart';
-import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 class VibeChat extends StatefulWidget {
   @override
@@ -14,6 +13,8 @@ class VibeChat extends StatefulWidget {
 class _VibeChatState extends State<VibeChat> {
   late final ScrollController _scrollController;
   late final TextEditingController _messageController;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
 
   @override
   void initState() {
@@ -21,6 +22,13 @@ class _VibeChatState extends State<VibeChat> {
     _scrollController = ScrollController();
     _messageController = TextEditingController();
     _setupScrollListener();
+  }
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    super.didChangeDependencies();
   }
 
   void _setupScrollListener() {
@@ -64,25 +72,35 @@ class _VibeChatState extends State<VibeChat> {
     }
   }
 
+  PreferredSizeWidget _buildAppBar(){
+    return AppBar(
+      backgroundColor: colorScheme.surface,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back),
+        onPressed: () => Navigator.pop(context),
+        color: colorScheme.onSurface,
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.menu),
+          color: colorScheme.onSurface,
+          onPressed: () {
+            // TODO: Implement chat history
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final mediaQuery = MediaQuery.of(context);
-    final screenHeight = mediaQuery.size.height;
-    final screenWidth = mediaQuery.size.width;
-    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     return BlocConsumer<VibeChatBloc, VibeChatState>(
       listener: _handleBlocStateChanges,
       builder: (context, state) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: mediaQuery.viewInsets.bottom,
-          ),
-          child: Container(
-            height: screenHeight ,
-            width: screenWidth,
+        return Scaffold(
+          appBar: _buildAppBar(),
+          body: Container(
             decoration: BoxDecoration(
               color: colorScheme.surface,
               borderRadius: BorderRadius.only(
@@ -92,7 +110,6 @@ class _VibeChatState extends State<VibeChat> {
             ),
             child: Column(
               children: [
-                _buildHandle(screenWidth, tileThemeExtension),
                 Expanded(
                   child: MessageList(
                     state: state,
@@ -110,15 +127,4 @@ class _VibeChatState extends State<VibeChat> {
     );
   }
 
-  Widget _buildHandle(double screenWidth, TileThemeExtension tileThemeExtension) {
-    return Container(
-      margin: EdgeInsets.only(top: 12, bottom: 8),
-      width: screenWidth * 0.3,
-      height: 5,
-      decoration: BoxDecoration(
-        color: tileThemeExtension.vibeChatModalBottomSheetHandle,
-        borderRadius: BorderRadius.circular(2),
-      ),
-    );
-  }
 }

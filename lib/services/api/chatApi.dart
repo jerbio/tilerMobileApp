@@ -9,7 +9,6 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/appApi.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 import 'package:tiler_app/services/localizationService.dart';
-import 'dart:developer' as developer;
 import 'package:http_parser/http_parser.dart';
 import 'dart:async';
 

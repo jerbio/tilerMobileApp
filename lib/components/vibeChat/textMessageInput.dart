@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
@@ -19,13 +18,26 @@ class TextMessageInput extends StatefulWidget {
 }
 
 class _TextMessageInputState extends State<TextMessageInput> {
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
   Timer? _dotTimer;
   int _dotCount = 0;
+
+  @override
+  void didChangeDependencies() {
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    super.didChangeDependencies();
+  }
+
   @override
   void dispose() {
     _dotTimer?.cancel();
     super.dispose();
   }
+
   void _startDotAnimation() {
     _dotTimer?.cancel();
     _dotCount = 0;
@@ -41,12 +53,10 @@ class _TextMessageInputState extends State<TextMessageInput> {
   void _stopDotAnimation() {
     _dotTimer?.cancel();
   }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
-    final localization = AppLocalizations.of(context)!;
-
+    final localization= AppLocalizations.of(context)!;
     return BlocBuilder<VibeChatBloc, VibeChatState>(
       builder: (context, state) {
         final isSending = state.step == VibeChatStep.sending;
@@ -68,7 +78,7 @@ class _TextMessageInputState extends State<TextMessageInput> {
                 controller: widget.controller,
                 enabled: state.step == VibeChatStep.loaded,
                 decoration: InputDecoration(
-                  hintText: isTranscribing ? 'Transcribing${'.' * _dotCount}' : localization.describeATask,
+                  hintText: isTranscribing ? '${localization.transcribing}${'.' * _dotCount}' : localization.describeATask,
                   hintStyle: TextStyle(
                     color: colorScheme.onSurfaceVariant.withOpacity(0.5),
                     fontSize: 16,
@@ -92,8 +102,6 @@ class _TextMessageInputState extends State<TextMessageInput> {
               ),
             ),
             _buildActionButton(
-              colorScheme,
-              tileThemeExtension,
               state,
               isSending,
               isTranscribing,
@@ -106,8 +114,6 @@ class _TextMessageInputState extends State<TextMessageInput> {
   }
 
   Widget _buildActionButton(
-      ColorScheme colorScheme,
-      TileThemeExtension tileThemeExtension,
       VibeChatState state,
       bool isSending,
       bool isTranscribing,

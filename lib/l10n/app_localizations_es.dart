@@ -1992,4 +1992,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get failedToProcrastinateTile => 'Error al posponer el tile';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get transcribing => 'Transcribing';
 }

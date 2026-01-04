@@ -20,14 +20,7 @@ class StartRecordingEvent extends VibeChatEvent {
   List<Object?> get props => [];
 }
 
-class StopRecordingAndTranscribeEvent extends VibeChatEvent {
-  final String audioPath;
-
-   StopRecordingAndTranscribeEvent(this.audioPath);
-
-  @override
-  List<Object?> get props => [audioPath];
-}
+class StopRecordingAndTranscribeEvent extends VibeChatEvent {}
 
 class CancelRecordingEvent extends VibeChatEvent {}
 
