@@ -1762,6 +1762,39 @@ class AppLocalizationsEn extends AppLocalizations {
   String get seeTodaysRoute => 'See Today\'s Route';
 
   @override
+  String get whatWouldYouLikeToDo => 'What would you like to do?';
+
+  @override
+  String get describeATask => 'Describe a task, we\'ll handle the tiling.';
+
+  @override
+  String get microphonePermissionDenied => 'Microphone permission denied.';
+
+  @override
+  String failedToStartRecording(String error) {
+    return 'Failed to start recording: $error';
+  }
+
+  @override
+  String failedToStopRecording(String error) {
+    return 'Failed to stop recording: $error';
+  }
+
+  @override
+  String audioConversionError(String error) {
+    return 'Audio conversion error: $error';
+  }
+
+  @override
+  String get audioConversionFailed => 'Audio conversion failed';
+
+  @override
+  String get recordingPathIsEmpty => 'Recording path is empty';
+
+  @override
+  String get noActiveRecording => 'No active recording';
+
+  @override
   String get joinMeeting => 'Join Meeting';
 
   @override
@@ -1956,4 +1989,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get failedToProcrastinateTile => 'Failed to procrastinate tile';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get transcribing => 'Transcribing';
 }

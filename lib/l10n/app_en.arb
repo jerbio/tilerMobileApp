@@ -1257,6 +1257,40 @@
         "startNavigation": "Start Navigation",
         "noLocationAvailable": "No location",
         "seeTodaysRoute": "See Today's Route",
+        "whatWouldYouLikeToDo":"What would you like to do?",
+        "describeATask": "Describe a task, we'll handle the tiling.",
+        "microphonePermissionDenied":"Microphone permission denied.",
+        "failedToStartRecording": "Failed to start recording: {error}",
+        "@failedToStartRecording": {
+          "placeholders": {
+            "error": {
+              "type": "String",
+              "description": "Error message when recording fails to start"
+            }
+          }
+        },
+        "failedToStopRecording": "Failed to stop recording: {error}",
+        "@failedToStopRecording": {
+            "placeholders": {
+                "error": {
+                "type": "String",
+                "description": "Error message when recording fails to stop"
+               }
+           }
+        },
+        "audioConversionError": "Audio conversion error: {error}",
+         "@audioConversionError": {
+            "placeholders": {
+                "error": {
+                "type": "String",
+                "description": "Error details from audio conversion failure"
+                }
+            }
+        },
+        "audioConversionFailed":"Audio conversion failed",
+        "recordingPathIsEmpty":"Recording path is empty",
+        "noActiveRecording":"No active recording",
+        "seeTodaysRoute": "See Today's Route",
         "joinMeeting": "Join Meeting",
         "openLink": "Open Link",
         "actions": "Actions",
@@ -1429,5 +1463,7 @@
         "failedToProcrastinateTile": "Failed to procrastinate tile",
         "@failedToProcrastinateTile": {
           "description": "Error when procrastinating a tile fails"
-        }
+        },
+        "chat":"Chat",
+        "transcribing":"Transcribing"
 }

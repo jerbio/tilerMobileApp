@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\Users\jerom\Documents\flutter
-FLUTTER_APPLICATION_PATH=C:\Users\jerom\Documents\Visual Studio 2015\Projects\WagTapDir\dev\tilerApp\tiler_app
+FLUTTER_ROOT=/Users/mhdeyadalhafi/Developer/flutter
+FLUTTER_APPLICATION_PATH=/Users/mhdeyadalhafi/Developer/Flutter projects/tilerMobileApp-forkedd
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_BUILD_DIR=build
 FLUTTER_BUILD_NAME=1.0.910
