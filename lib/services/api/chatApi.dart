@@ -16,7 +16,7 @@ class ChatApi extends AppApi {
   ChatApi({Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
 
-  Future<List<VibeSession>> getVibeSessions() async {
+  Future<List<VibeSession>> getVibeSessions({String? sessionId}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -24,6 +24,9 @@ class ChatApi extends AppApi {
 
         String tilerDomain = Constants.tilerDomain;
         Map<String, String> queryParams = {'mobileApp': 'true'};
+        if (sessionId != null && sessionId.isNotEmpty) {
+          queryParams['sessionId'] = sessionId;
+        }
         Uri uri = Uri.https(tilerDomain, 'api/Vibe/Session', queryParams);
 
         var headers = this.getHeaders();
@@ -37,6 +40,11 @@ class ChatApi extends AppApi {
 
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
+
+          if (jsonResult['Content'] != null && jsonResult['Content']['vibeSession'] != null) {
+            return [VibeSession.fromJson(jsonResult['Content']['vibeSession'])];
+          }
+
           if (jsonResult['Content'] != null && jsonResult['Content']['vibeSessions'] != null) {
             return (jsonResult['Content']['vibeSessions'] as List)
                 .map((session) => VibeSession.fromJson(session))

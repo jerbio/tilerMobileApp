@@ -43,9 +43,6 @@ import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
-import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
-import '../../bloc/vibeChat/vibe_chat_bloc.dart' show LoadVibeChatSessionEvent, VibeChatBloc;
-
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
 class AuthorizedRoute extends StatefulWidget {

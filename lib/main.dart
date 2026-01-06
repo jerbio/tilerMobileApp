@@ -173,7 +173,7 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(
               create: (context) => VibeChatBloc(
                 chatApi: ChatApi(getContextCallBack: () => context),
-              )..add(LoadVibeChatSessionEvent())
+              )
           ),
         ],
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(

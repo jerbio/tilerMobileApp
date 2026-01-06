@@ -3,9 +3,11 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
+import 'package:tiler_app/data/VibeChat/VibeSession.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/audiRecordingService.dart';
+import 'package:tiler_app/services/localizationService.dart';
 
 part 'vibe_chat_event.dart';
 part 'vibe_chat_state.dart';
@@ -16,38 +18,45 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   AudioRecordingService? _audioService;
 
   VibeChatBloc({required this.chatApi}) : super(VibeChatState()) {
-    on<LoadVibeChatSessionEvent>(_onLoadVibeChatSession);
     on<LoadMoreMessagesEvent>(_onLoadMoreMessages);
     on<SendAMessageEvent>(_onSendAMessage);
     on<StartRecordingEvent>(_onStartRecording);
     on<StopRecordingAndTranscribeEvent>(_onStopRecordingAndTranscribe);
     on<CancelRecordingEvent>(_onCancelRecording);
     on<ClearTranscribedTextEvent>(_onClearTranscribedText);
+    on<LoadSessionsEvent>(_onLoadSessions);
+    on<SelectSessionEvent>(_onSelectSession);
+    on<CreateNewChatEvent>(_onCreateNewChat);
   }
 
   Stream<double> get amplitudeStream => _audioService?.amplitudeStream ?? Stream.empty();
 
-  Future<void> _onLoadVibeChatSession(LoadVibeChatSessionEvent event, Emitter<VibeChatState> emit,) async {
-    try {
-      emit(state.copyWith(step: VibeChatStep.loading));
-      final sessionId = await _getLatestSession();
+  Future<void> _onLoadSessions (LoadSessionsEvent event, Emitter<VibeChatState> emit) async{
+    try{
+      emit(state.copyWith(step: VibeChatStep.loadingSessions));
+      final sessions = await chatApi.getVibeSessions();
 
-      if (sessionId.isEmpty) {
-        emit(state.copyWith(
-          step: VibeChatStep.loaded,
-          sessionId: '',
-          messages: [],
-          hasMoreMessages: false,
-          currentIndex: 0,
-        ));
+      sessions.sort((a, b) => b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
+
+      emit(state.copyWith(step: VibeChatStep.loaded, sessions: sessions));
+    }
+    catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: (e as TilerError).Message,
+      ));
+    }
+  }
+
+  Future<void> _onSelectSession(SelectSessionEvent event, Emitter<VibeChatState> emit)async{
+    try{
+      if (state.currentSession != null && event.session.id == state.currentSession?.id) {
         return;
       }
-
-      final messages = await _getMessagesWithActions(sessionId, emit);
-
+      emit(state.copyWith(step: VibeChatStep.loading,currentSession: event.session));
+      final messages = await _getMessagesWithActions(event.session.id!, emit);
       emit(state.copyWith(
         step: VibeChatStep.loaded,
-        sessionId: sessionId,
         messages: messages,
         hasMoreMessages: messages.length == 5,
         currentIndex: 5,
@@ -60,18 +69,14 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     }
   }
 
-  Future<String> _getLatestSession() async {
-    final sessions = await chatApi.getVibeSessions();
-
-    if (sessions.isEmpty) {
-      return '';
-    }
-
-    sessions.sort((a, b) =>
-        b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
-
-    return sessions.first.id!;
-  }
+void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
+  emit(VibeChatState(
+    step: VibeChatStep.loaded,
+    messages: [],
+    currentIndex: 0,
+    sessions: state.sessions,
+  ));
+ }
 
   Future<List<VibeMessage>> _getMessagesWithActions(String sessionId, Emitter<VibeChatState> emit, {int? batchSize, int? index})  async {
     final messages = await chatApi.getMessages(sessionId: sessionId,  batchSize: batchSize ?? 5,
@@ -209,7 +214,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       ));
 
       final newMessages = await _getMessagesWithActions(
-        state.sessionId,
+        state.currentSession?.id ?? '',
         emit,
         batchSize: 5,
         index: state.currentIndex,
@@ -250,16 +255,16 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     try {
       emit(state.copyWith(step: VibeChatStep.sending));
 
+      final sessionId = state.currentSession?.id ?? '';
       final response = await chatApi.sendChatMessage(
         event.message,
-        state.sessionId.isEmpty ? null : state.sessionId,
+        sessionId.isEmpty ? null : sessionId,
       );
 
       if (response == null ||  response.prompts ==null || response.prompts!.isEmpty) {
         emit(state.copyWith(step: VibeChatStep.loaded));
         return;
       }
-
       final existingIds = state.messages.map((m) => m.id).toSet();
       final newMessages = response.prompts!.where((m) => !existingIds.contains(m.id)).toList();
       final combinedMessages = [...state.messages, ...newMessages];
@@ -270,14 +275,26 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         return timestampA.compareTo(timestampB);
       });
 
-      final newSessionId = state.sessionId.isEmpty && newMessages.isNotEmpty
-          ? newMessages.first.sessionId ?? state.sessionId
-          : state.sessionId;
+      final newSessionId = sessionId.isEmpty && newMessages.isNotEmpty
+          ? newMessages.first.sessionId ?? sessionId
+          :sessionId;
+      List<VibeSession>? updatedSessions;
+      VibeSession? updatedCurrentSession = state.currentSession;
+      if(sessionId!=newSessionId)
+        {
+          final sessions = await chatApi.getVibeSessions(sessionId: newSessionId);
+          if(sessions.length==1) {
+            final newSession = sessions.first;
+            updatedSessions = [newSession, ...state.sessions];
+            updatedCurrentSession = newSession;
+          }
+        }
       emit(state.copyWith(
-        sessionId: newSessionId,
+        currentSession: updatedCurrentSession,
         step: VibeChatStep.loaded,
         messages: combinedMessages,
-        currentIndex: combinedMessages.length
+        currentIndex: combinedMessages.length,
+        sessions: updatedSessions,
       ));
 
     } catch (e) {
@@ -329,7 +346,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       _audioService = null;
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: e is TilerError ? e.Message : 'Transcription failed',
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.transcriptionFailed,
       ));
     }
   }
@@ -352,5 +369,6 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   void _onClearTranscribedText(ClearTranscribedTextEvent event, Emitter<VibeChatState> emit) {
     emit(state.copyWith(transcribedText: ''));
   }
+
 
  }

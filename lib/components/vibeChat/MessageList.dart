@@ -24,12 +24,7 @@ class MessageList extends StatelessWidget {
       return PendingWidget();
     }
 
-    if (state.step == VibeChatStep.loaded ||
-        state.step == VibeChatStep.loadingMore ||
-        state.step == VibeChatStep.sending ||
-        state.step == VibeChatStep.recording ||
-        state.step == VibeChatStep.transcribing ||
-        state.step == VibeChatStep.error) {
+    if (state.step != VibeChatStep.loading) {
       if (state.messages.isEmpty) {
         return _buildEmptyChat(context);
       }

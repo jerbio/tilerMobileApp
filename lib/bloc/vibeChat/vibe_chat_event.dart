@@ -3,7 +3,7 @@ part of 'vibe_chat_bloc.dart';
 
 abstract class VibeChatEvent {}
 
-class LoadVibeChatSessionEvent extends VibeChatEvent {}
+
 
 class LoadMoreMessagesEvent extends VibeChatEvent {}
 
@@ -25,3 +25,14 @@ class StopRecordingAndTranscribeEvent extends VibeChatEvent {}
 class CancelRecordingEvent extends VibeChatEvent {}
 
 class ClearTranscribedTextEvent extends VibeChatEvent {}
+
+class LoadSessionsEvent extends VibeChatEvent {}
+
+class SelectSessionEvent extends VibeChatEvent {
+  VibeSession session;
+  SelectSessionEvent(this.session);
+  List<Object?> get props => [session];
+}
+
+
+class CreateNewChatEvent extends VibeChatEvent {}

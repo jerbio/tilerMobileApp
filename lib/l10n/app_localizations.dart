@@ -3532,6 +3532,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transcribing'**
   String get transcribing;
+
+  /// No description provided for @newChat.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get newChat;
+
+  /// No description provided for @noChatHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No chat history'**
+  String get noChatHistory;
+
+  /// No description provided for @unknownChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown chat'**
+  String get unknownChat;
+
+  /// No description provided for @transcriptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription failed'**
+  String get transcriptionFailed;
 }
 
 class _AppLocalizationsDelegate

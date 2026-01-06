@@ -1998,4 +1998,16 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get transcribing => 'Transcribing';
+
+  @override
+  String get newChat => 'New chat';
+
+  @override
+  String get noChatHistory => 'No chat history';
+
+  @override
+  String get unknownChat => 'Unknown chat';
+
+  @override
+  String get transcriptionFailed => 'Transcription failed';
 }

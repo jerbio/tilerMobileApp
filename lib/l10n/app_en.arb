@@ -1465,5 +1465,9 @@
           "description": "Error when procrastinating a tile fails"
         },
         "chat":"Chat",
-        "transcribing":"Transcribing"
+        "transcribing":"Transcribing",
+        "newChat":"New chat",
+        "noChatHistory":"No chat history",
+        "unknownChat":"Unknown chat",
+        "transcriptionFailed":"Transcription failed"
 }
