@@ -17,6 +17,7 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 // import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dart';
@@ -39,12 +40,14 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'bloc/vibeChat/vibe_chat_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
@@ -166,7 +169,12 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {
                     return this.context;
-                  }))
+                  })),
+          BlocProvider(
+              create: (context) => VibeChatBloc(
+                chatApi: ChatApi(getContextCallBack: () => context),
+              )
+          ),
         ],
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
             buildWhen: (previous, current) =>
@@ -214,7 +222,8 @@ class _TilerAppState extends State<TilerApp> {
                       NotificationPreferences(),
                   '/Connections': (ctx) => Connections(),
                   '/tilePreferences': (ctx) => TilePreferencesScreen(),
-                  '/onBoardingWorkProfile': (ctx) => WorkProfileWidget()
+                  '/onBoardingWorkProfile': (ctx) => WorkProfileWidget(),
+                  '/vibeChat': (ctx) => VibeChat()
                 },
                 localizationsDelegates: [
                   AppLocalizations.delegate,

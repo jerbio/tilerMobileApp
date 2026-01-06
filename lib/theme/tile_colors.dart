@@ -130,6 +130,14 @@ class TileColors{
   static final Color disabledOnboardingPillDark = Color(0xFF4A5159);
   static final Color onDisabledOnboardingPillLight = Colors.grey.shade600;
   static final Color onDisabledOnboardingPillDark = Color(0xFFB0B8C0);
+  static final Color vibeChatModalBottomSheetHandleLight=Colors.grey[400]!;
+  static final  Color vibeChatModalBottomSheetHandleDark=Colors.grey[300]!;
+  static final Color vibeChatExitedActionLight=Colors.grey;
+  static final Color vibeChatExitedActionDark=Color(0x99FFFFFF);
+  static  final Color vibeChatDisposedActionLight=Colors.grey.shade600;
+  static  final Color vibeChatDisposedActionDark= Color(0xFFB0B8C0);
+  static final Color vibeChatDefaultActionLight=Colors.grey.shade300;
+  static final Color vibeChatDefaultActionDark=Color(0xFF4A5159);
   static final Color suggestionLoadingOnboardingSurfaceLight =Color(0xFFECD4A9);
   static final Color suggestionLoadingOnboardingSurfaceDark = Color(0xFFE295A8);
   static final Color integrationApprovalLight =  Color.fromRGBO(9, 203, 156, 1);
@@ -179,6 +187,15 @@ class TileColors{
   static const Color notificationWarningBorder=Color(0xFFFFA000);
   static const Color notificationErrorBorder=Color(0xFFD32F2F);
   static const Color notificationInfoBorder=Color(0xFF0288D1);
+  static const Color vibeChatParsedAction=Colors.teal;
+  static const Color vibeChatClarificationAction=Colors.yellow;
+  static const Color vibeChatPendingAction=Colors.blue;
+  static const Color vibeChatExecutedAction=Colors.green;
+  static const Color vibeChatFailedAction=Colors.red;
+
+
+
+
 
   static const String darkMapStyle = '''[{"elementType":"geometry","stylers":[{"color":"#212121"}]},{"elementType":"labels.text.fill","stylers":[{"color":"#757575"}]},{"elementType":"labels.text.stroke","stylers":[{"color":"#212121"}]},{"featureType":"road","elementType":"geometry","stylers":[{"color":"#2c2c2c"}]},{"featureType":"water","elementType":"geometry","stylers":[{"color":"#000000"}]}]''';
 }
