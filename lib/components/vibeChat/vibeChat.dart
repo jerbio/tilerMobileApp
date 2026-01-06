@@ -15,6 +15,7 @@ class _VibeChatState extends State<VibeChat> {
   late final TextEditingController _messageController;
   late ThemeData theme;
   late ColorScheme colorScheme;
+  VibeChatStep? _previousStep;
 
   @override
   void initState() {
@@ -50,9 +51,10 @@ class _VibeChatState extends State<VibeChat> {
   }
 
    void _handleBlocStateChanges(BuildContext context, VibeChatState state) {
-    if (state.step == VibeChatStep.sending && state.messages.isNotEmpty) {
+    if (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded) {
       _messageController.clear();
     }
+    _previousStep = state.step;
 
     if (state.step == VibeChatStep.loaded &&
         state.transcribedText != null &&
