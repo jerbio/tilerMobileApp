@@ -1,5 +1,6 @@
 import 'package:tiler_app/data/repetition.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/uiConfig.dart';
 
 class EditTilerEvent {
@@ -13,6 +14,7 @@ class EditTilerEvent {
   String? thirdPartyType;
   String? thirdPartyId;
   String? thirdPartyUserId;
+  RsvpStatus? rsvpStatusUpdate;
   String? note;
   String? addressDescription;
   String? address;
@@ -38,5 +40,19 @@ class EditTilerEvent {
     }
 
     return retValue;
+  }
+
+  String? getRsvpStatusUpdateString() {
+    if (rsvpStatusUpdate == null) return null;
+
+    if (rsvpStatusUpdate == RsvpStatus.accepted) {
+      return 'Accepted';
+    } else if (rsvpStatusUpdate == RsvpStatus.declined) {
+      return 'Declined';
+    } else if (rsvpStatusUpdate == RsvpStatus.tentative) {
+      return 'Tentative';
+    }
+
+    return null;
   }
 }

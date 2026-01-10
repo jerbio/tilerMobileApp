@@ -9,7 +9,7 @@ const prodDomain = 'tiler.app';
 const stagingDomain = 'tiler-stage.conveyor.cloud';
 const devDomain = 'tiler-dev.conveyor.cloud';
 const String tilerDomain =
-isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
+    isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;

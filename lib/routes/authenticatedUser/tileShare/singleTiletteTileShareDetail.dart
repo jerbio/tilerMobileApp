@@ -8,7 +8,7 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -145,7 +145,6 @@ class _SingleTiletteTileShareDetailWidget
     return Text("Resource not found");
   }
 
-
   Widget renderTileShareCluster() {
     if (this.tileShareCluster == null) {
       this.tilerError = TilerError(
@@ -193,8 +192,7 @@ class _SingleTiletteTileShareDetailWidget
                   rowSpacer,
                   Text(
                       (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style: TileTextStyles.defaultText
-                  )
+                      style: TileTextStyles.defaultText)
                 ],
               ),
             verticalSpacer,
@@ -368,9 +366,7 @@ class _SingleTiletteTileShareDetailWidget
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor:colorScheme.onPrimary
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
@@ -380,7 +376,7 @@ class _SingleTiletteTileShareDetailWidget
               ? Text(
                   this.tileShareCluster.name ??
                       AppLocalizations.of(context)!.tileShare,
-          )
+                )
               : Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

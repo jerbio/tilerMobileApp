@@ -9,7 +9,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class ForecastDaySimpleWidget extends StatefulWidget {
   final PeekDay peekDay;
@@ -36,11 +36,12 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
     super.initState();
     peekDay = this.widget.peekDay;
   }
+
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -145,7 +146,7 @@ class _ForecastDayState extends State<ForecastDaySimpleWidget> {
                 fontSize: 15,
                 fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
-                color:TileColors.tardyForecast),
+                color: TileColors.tardyForecast),
           ),
         )
       ],

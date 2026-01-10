@@ -2,9 +2,8 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/nextTileSuggestionWidget.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
-
 
 class NextTileSuggestionCarouselWidget extends StatefulWidget {
   List<NextTileSuggestion> nextTileSuggestions;
@@ -26,7 +25,7 @@ class _NextTileSuggestionCarouselState
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
+    final theme = Theme.of(context);
     Widget retValue = SizedBox.shrink();
     if (this.nextTileSuggestions != null &&
         this.nextTileSuggestions!.length > 0) {
@@ -59,9 +58,8 @@ class _NextTileSuggestionCarouselState
                 AppLocalizations.of(context)!.tapToCreateNewTile,
                 style: TextStyle(
                     fontFamily: TileTextStyles.rubikFontName,
-                    fontSize:10,
-                    fontWeight: FontWeight.w500
-                ),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500),
               ),
             )
           ],

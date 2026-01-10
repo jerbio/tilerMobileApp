@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/constants.dart' as Constants;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 class TileName extends StatefulWidget {
@@ -18,7 +18,7 @@ class TileName extends StatefulWidget {
 class TileNameState extends State<TileName> {
   @override
   Widget build(BuildContext context) {
-    TextStyle textStyle =TextStyle(
+    TextStyle textStyle = TextStyle(
       fontFamily: TileTextStyles.rubikFontName,
       fontSize: 20,
       fontWeight: FontWeight.w500,
@@ -47,11 +47,10 @@ class TileNameState extends State<TileName> {
       }
       emojiField = Text(emojiString,
           style: TextStyle(
-              fontSize: fontSize,
-              fontFamily: TileTextStyles.rubikFontName,
-              fontWeight: FontWeight.bold,
-             )
-      );
+            fontSize: fontSize,
+            fontFamily: TileTextStyles.rubikFontName,
+            fontWeight: FontWeight.bold,
+          ));
     }
 
     if (subEvent.emojis == null || subEvent.emojis!.isEmpty) {
@@ -84,15 +83,15 @@ class TileNameState extends State<TileName> {
             ]),
           ),
           Flexible(
-              child: new Container(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
-                  child: Text(
-                    name,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: textStyle,
-                  ),
+            child: new Container(
+              padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
+              child: Text(
+                name,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: textStyle,
               ),
+            ),
           )
         ],
       ),

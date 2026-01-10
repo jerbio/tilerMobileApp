@@ -15,7 +15,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/constants.dart';
@@ -85,19 +85,18 @@ class WithinNowBatchState extends TileBatchState {
         snapToUpComingTiles();
       }
     });
-
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    dayHeaderTextStyle= TextStyle(
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    dayHeaderTextStyle = TextStyle(
         fontSize: 40,
         fontFamily: TileTextStyles.rubikFontName,
         color: colorScheme.primary,
-        fontWeight: FontWeight.w700
-    );
+        fontWeight: FontWeight.w700);
   }
 
   void snapToUpComingTiles() {
@@ -158,8 +157,10 @@ class WithinNowBatchState extends TileBatchState {
             child: Container(
               margin: EdgeInsets.fromLTRB(30, 20, 0, 40),
               alignment: Alignment.centerLeft,
-              child: Text(AppLocalizations.of(context)!.upcoming,
-                  style: dayHeaderTextStyle,),
+              child: Text(
+                AppLocalizations.of(context)!.upcoming,
+                style: dayHeaderTextStyle,
+              ),
             )),
       );
     }
@@ -182,8 +183,10 @@ class WithinNowBatchState extends TileBatchState {
             child: Container(
               margin: EdgeInsets.fromLTRB(30, 20, 0, 20),
               alignment: Alignment.centerLeft,
-              child: Text(AppLocalizations.of(context)!.upcoming,
-                  style: dayHeaderTextStyle,),
+              child: Text(
+                AppLocalizations.of(context)!.upcoming,
+                style: dayHeaderTextStyle,
+              ),
             )),
       );
     }
@@ -363,7 +366,6 @@ class WithinNowBatchState extends TileBatchState {
             DaySummary(dayTimelineSummary: this.dayData ?? TimelineSummary())));
     List<TilerEvent> precedingTiles = [];
     List<Widget> precedingTileWidgets = [];
-
 
     if (this.widget.sleepTimeline != null) {
       Timeline sleepTimeline = this.widget.sleepTimeline!;

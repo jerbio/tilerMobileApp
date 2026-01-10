@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/calendarEvent.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 
@@ -20,7 +20,6 @@ class Indicator extends StatelessWidget {
   final double size;
   final Color? textColor;
 
-
   @override
   Widget build(BuildContext context) {
     return Wrap(
@@ -38,11 +37,11 @@ class Indicator extends StatelessWidget {
         ),
         Text(
           text,
-          style:TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
             color: textColor,
-            ),
+          ),
         )
       ],
     );
@@ -64,7 +63,7 @@ class _TileProgressState extends State<TileProgress> {
   int deletedCount = 0;
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
   @override
   void initState() {
     // TODO: implement initState
@@ -74,13 +73,13 @@ class _TileProgressState extends State<TileProgress> {
     tiledCount =
         this.widget.calendarEvent.split! - (completeCount) - (deletedCount);
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   int touchedIndex = -1;
@@ -104,8 +103,8 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ?  BorderSide(color: TileColors.success, width: 6)
-                  : BorderSide(color:TileColors.success.withValues(alpha: 0)),
+                  ? BorderSide(color: TileColors.success, width: 6)
+                  : BorderSide(color: TileColors.success.withValues(alpha: 0)),
             );
           case 1:
             return PieChartSectionData(
@@ -126,7 +125,7 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ?  BorderSide(color:  TileColors.deletion, width: 6)
+                  ? BorderSide(color: TileColors.deletion, width: 6)
                   : BorderSide(color: TileColors.deletion.withValues(alpha: 0)),
             );
           default:

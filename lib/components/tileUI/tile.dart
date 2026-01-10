@@ -27,7 +27,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../constants.dart' as Constants;
 import 'timeScrub.dart';
 
@@ -66,7 +66,7 @@ class TileWidgetState extends State<TileWidget>
   late ThemeData theme;
   late ColorScheme colorScheme;
 
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
   final ExpansionTileController expansionTravelController =
       ExpansionTileController();
 
@@ -104,7 +104,7 @@ class TileWidgetState extends State<TileWidget>
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   void updateSubEvent(SubCalendarEvent subEvent) async {
@@ -178,13 +178,11 @@ class TileWidgetState extends State<TileWidget>
         Flexible(
           child: Container(
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
-            child: Text(
-              travelLeg.description ?? "",
-              style: TextStyle(
-              fontSize: 15,
-              fontFamily: TileTextStyles.rubikFontName,
-              )
-            ),
+            child: Text(travelLeg.description ?? "",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: TileTextStyles.rubikFontName,
+                )),
           ),
         ),
         Padding(
@@ -194,9 +192,8 @@ class TileWidgetState extends State<TileWidget>
             style: TextStyle(
               fontSize: 15,
               fontFamily: TileTextStyles.rubikFontName,
-
+            ),
           ),
-        ),
         )
       ],
     );
@@ -233,22 +230,20 @@ class TileWidgetState extends State<TileWidget>
           ),
         ),
         Container(
-            height: mapHeight,
-            width: MediaQuery.sizeOf(context).width,
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
+          height: mapHeight,
+          width: MediaQuery.sizeOf(context).width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                colorScheme.surface
-                    .withAlpha(0)
-                    .withLightness(0.5),
+                colorScheme.surface.withAlpha(0).withLightness(0.5),
                 colorScheme.surface,
                 colorScheme.surface,
                 colorScheme.surface,
               ],
             ),
-            ),
+          ),
         )
       ],
     );
@@ -258,16 +253,18 @@ class TileWidgetState extends State<TileWidget>
     double fontSize = 20;
     double iconSize = 20;
     double lottieHeight = 85;
-    String lottieAsset =
-        isTardy ? 'assets/lottie/redCars.json' :theme.brightness==Brightness.dark? 'assets/lottie/whiteCars.json': 'assets/lottie/blackCars.json';
+    String lottieAsset = isTardy
+        ? 'assets/lottie/redCars.json'
+        : theme.brightness == Brightness.dark
+            ? 'assets/lottie/whiteCars.json'
+            : 'assets/lottie/blackCars.json';
 
-    Color? textColor =
-        isTardy ? TileColors.late : colorScheme.onSurface;
+    Color? textColor = isTardy ? TileColors.late : colorScheme.onSurface;
 
     List<LatitudeAndLongitude> latLongList = [];
     Widget transitUIWidget = Lottie.asset(
-        lottieAsset,
-        height: lottieHeight,
+      lottieAsset,
+      height: lottieHeight,
     );
     if (this.widget.subEvent.travelDetail != null) {
       TravelDetail travelDetail = this.widget.subEvent.travelDetail!;
@@ -329,17 +326,14 @@ class TileWidgetState extends State<TileWidget>
               padding: trainsitUIPadding,
               child: Row(
                 children: [
-                  Icon(
-                      Icons.directions_walk,
-                      color: colorScheme.onPrimary, size: iconSize
-                  ),
+                  Icon(Icons.directions_walk,
+                      color: colorScheme.onPrimary, size: iconSize),
                   Text(
                     walkCount.toString(),
-                      style: TextStyle(
-                          fontSize: fontSize,
-                          fontFamily: TileTextStyles.rubikFontName,
-                          color: colorScheme.onPrimary
-                      ),
+                    style: TextStyle(
+                        fontSize: fontSize,
+                        fontFamily: TileTextStyles.rubikFontName,
+                        color: colorScheme.onPrimary),
                   )
                 ],
               ),
@@ -354,12 +348,12 @@ class TileWidgetState extends State<TileWidget>
                 children: [
                   Icon(Icons.directions_transit,
                       color: colorScheme.onPrimary, size: iconSize),
-                  Text(stopCount.toString(),
-                      style: TextStyle(
-                          fontFamily: TileTextStyles.rubikFontName,
-                          fontSize: fontSize,
-                          color: colorScheme.onPrimary
-                      ),
+                  Text(
+                    stopCount.toString(),
+                    style: TextStyle(
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: fontSize,
+                        color: colorScheme.onPrimary),
                   )
                 ],
               ),
@@ -421,57 +415,46 @@ class TileWidgetState extends State<TileWidget>
       child: Stack(
         children: [
           renderGoogleMaps(latLongList),
-          Column(
+          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Container(
+                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                height: 50,
+                width: 5,
+                child: AnimatedLine(
+                  Duration(milliseconds: 0),
+                  textColor,
+                  reverse: true,
+                )),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                    height: 50,
-                    width: 5,
-                    child: AnimatedLine(
-                      Duration(milliseconds: 0),
-                      textColor,
-                      reverse: true,
-                    )),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                        margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                        child: Text(
-                            startString,
-                            style: TextStyle(
-                                fontFamily: TileTextStyles.rubikFontName,
-                                fontSize: fontSize,
-                                color: textColor
-                            )
-                        )
-                    ),
-                    transitUIWidget,
-                    Container(
-                        margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
-                        child: Text(
-                            endString,
-                            style: TextStyle(
-                                fontFamily: TileTextStyles.rubikFontName,
-                                fontSize: fontSize,
-                                color: textColor)
-                        )
-                    )
-                  ],
-                ),
+                    margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                    child: Text(startString,
+                        style: TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontSize: fontSize,
+                            color: textColor))),
+                transitUIWidget,
                 Container(
-                    padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
-                    height: 50,
-                    width: 5,
-                    child: AnimatedLine(
-                      Duration(milliseconds: 0),
-                      textColor,
-                      reverse: true,
-                    )
-                )
-          ]
-          )
+                    margin: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                    child: Text(endString,
+                        style: TextStyle(
+                            fontFamily: TileTextStyles.rubikFontName,
+                            fontSize: fontSize,
+                            color: textColor)))
+              ],
+            ),
+            Container(
+                padding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                height: 50,
+                width: 5,
+                child: AnimatedLine(
+                  Duration(milliseconds: 0),
+                  textColor,
+                  reverse: true,
+                ))
+          ])
         ],
       ),
     );
@@ -560,8 +543,7 @@ class TileWidgetState extends State<TileWidget>
     Widget timeFrameWidget = TimeFrameWidget(
       timeRange: widget.subEvent,
       fontSize: textFontSize,
-      textColor:
-          isTardy ? TileColors.late : colorScheme.onSurface,
+      textColor: isTardy ? TileColors.late : colorScheme.onSurface,
     );
 
     Widget tileTimeFrame = Container(
@@ -573,14 +555,13 @@ class TileWidgetState extends State<TileWidget>
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration:  TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
+            decoration: TileDecorations.tileIconContainerBoxDecoration(
+                colorScheme.onSurface),
             child: Icon(
               (this.widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline
                   : Icons.access_time_sharp,
-              color: isTardy
-                  ? TileColors.late
-                  : colorScheme.onSurface,
+              color: isTardy ? TileColors.late : colorScheme.onSurface,
               size: TileDimensions.tileIconSize,
             ),
           ),
@@ -669,10 +650,11 @@ class TileWidgetState extends State<TileWidget>
               isMoreDetailEnabled = false;
             });
           },
-         icon: Icon(Icons.arrow_drop_up,),
+          icon: Icon(
+            Icons.arrow_drop_up,
+          ),
           color: colorScheme.onSurface,
           iconSize: 30,
-
         ));
       } else {
         allElements.add(
@@ -681,8 +663,8 @@ class TileWidgetState extends State<TileWidget>
               setState(() {
                 isMoreDetailEnabled = true;
               });
-            } ,
-            icon:Icon(Icons.arrow_drop_down),
+            },
+            icon: Icon(Icons.arrow_drop_down),
             color: colorScheme.onSurface,
             iconSize: 30,
           ),
@@ -711,7 +693,8 @@ class TileWidgetState extends State<TileWidget>
                       : colorScheme.onSurface,
                   width: this.widget.subEvent.isViable! ? 0 : 5,
                 ),
-                borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                borderRadius:
+                    BorderRadius.circular(TileDimensions.borderRadius),
                 boxShadow: [
                   BoxShadow(
                     color: tileBackGroundColor.withValues(alpha: 0.1),
@@ -741,7 +724,8 @@ class TileWidgetState extends State<TileWidget>
                     color: colorScheme.onInverseSurface,
                     width: 0.5,
                   ),
-                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                  borderRadius:
+                      BorderRadius.circular(TileDimensions.borderRadius),
                 ),
                 child: Column(
                   mainAxisAlignment: allElements.length < 4

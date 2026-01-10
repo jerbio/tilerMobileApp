@@ -9,7 +9,7 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
@@ -60,8 +60,8 @@ class TileGridWidgetState extends GridPositionableState {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -81,7 +81,7 @@ class TileGridWidgetState extends GridPositionableState {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor:  colorScheme.surfaceContainerLowest,
+      backgroundColor: colorScheme.surfaceContainerLowest,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(TileDimensions.borderRadius)),
@@ -92,8 +92,7 @@ class TileGridWidgetState extends GridPositionableState {
           child: SingleChildScrollView(
             child: Padding(
               padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom
-              ),
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               child: PreviewDetailsTileWidget(tile),
             ),
           ),
@@ -143,9 +142,9 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     EdgeInsets gridPadding = EdgeInsets.all(10);
     if (this.tilerEvent.duration.inMilliseconds <=
@@ -161,7 +160,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           borderRadius: BorderRadius.all(Radius.circular(10)),
           boxShadow: [
             BoxShadow(
-              color: tileThemeExtension.shadowSecondary.withValues(alpha:0.1),
+              color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.1),
               spreadRadius: 0.5,
               blurRadius: 1,
               offset: Offset(0, 1),
@@ -191,7 +190,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           style: new TextStyle(
             fontSize: 13.0,
             fontFamily: TileTextStyles.rubikFontName,
-            color:  colorScheme.onSurface,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
           ),
         ));

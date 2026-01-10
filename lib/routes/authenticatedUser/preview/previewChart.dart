@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/previewGroup.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -30,11 +30,12 @@ class _PreviewChartState extends State<PreviewChart> {
   late TileThemeExtension tileThemeExtension;
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
+
   List<PreviewSection>? get previewGrouping {
     return this.widget.previewGrouping;
   }
@@ -51,19 +52,17 @@ class _PreviewChartState extends State<PreviewChart> {
     return Container(
       width: 120,
       height: 120,
-      decoration: BoxDecoration(
-        boxShadow: [
-         BoxShadow(
-          color: tileThemeExtension.shadowPreviewChartIconographyOuter.withValues(alpha: 0.5),
+      decoration: BoxDecoration(boxShadow: [
+        BoxShadow(
+          color: tileThemeExtension.shadowPreviewChartIconographyOuter
+              .withValues(alpha: 0.5),
         ),
         BoxShadow(
-          color:  tileThemeExtension.shadowPreviewChartIconographyInner,
+          color: tileThemeExtension.shadowPreviewChartIconographyInner,
           spreadRadius: -4.0,
           blurRadius: 12.0,
         ),
-       ],
-        borderRadius: BorderRadius.circular(110)
-      ),
+      ], borderRadius: BorderRadius.circular(110)),
       child: Container(
           margin: EdgeInsets.fromLTRB(0, 70, 0, 0),
           child: this.icon ?? SizedBox.shrink()),
@@ -126,8 +125,7 @@ class _PreviewChartState extends State<PreviewChart> {
                     .previewRatioTimeMinutes(ratioText),
             // textScaler: TextScaler.linear(0.75),
             textAlign: TextAlign.center,
-            style:
-                TextStyle(color: colorScheme.onSurface, fontSize: 20),
+            style: TextStyle(color: colorScheme.onSurface, fontSize: 20),
           ),
         ),
       );
@@ -138,10 +136,7 @@ class _PreviewChartState extends State<PreviewChart> {
 
   Widget getCenterWidget() {
     return Stack(
-      children: [
-        renderMiddleIconography(),
-        ratioImagery()
-      ],
+      children: [renderMiddleIconography(), ratioImagery()],
     );
   }
 
@@ -180,8 +175,8 @@ class _PreviewChartState extends State<PreviewChart> {
                 color: otherColor,
                 radius: radius,
                 borderSide: borderSide,
-                titleStyle: TextStyle(
-                    fontSize: 12, color: colorScheme.onSurface),
+                titleStyle:
+                    TextStyle(fontSize: 12, color: colorScheme.onSurface),
                 value: otherTiles.inMinutes.toDouble()));
           }
           if (blockedOutTiles.inMinutes > 0) {
@@ -191,7 +186,8 @@ class _PreviewChartState extends State<PreviewChart> {
                 radius: radius,
                 borderSide: borderSide,
                 titleStyle: TextStyle(
-                    fontSize: 12, ),
+                  fontSize: 12,
+                ),
                 value: blockedOutTiles.inMinutes.toDouble()));
           }
         } else {
@@ -218,8 +214,7 @@ class _PreviewChartState extends State<PreviewChart> {
               radius: radius,
               borderSide: borderSide,
               badgePositionPercentageOffset: 10,
-              titleStyle: TextStyle(
-                  fontSize: 12),
+              titleStyle: TextStyle(fontSize: 12),
               value: durationSum.inMinutes.toDouble()));
         }
       }

@@ -11,7 +11,7 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/executionConstants.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/helperClass.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/util.dart';
@@ -98,13 +98,15 @@ class _WidgetGoogleMapState extends State<DayCast> {
       sendRequest();
     });
   }
+
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme= theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
+
   updateZoomLevel(List<LatitudeAndLongitude> LatitudeAndLongitudes) {
     const double y = 14.0 + (13 / 12799);
     const double x = (-13 / 6400.0);
@@ -133,7 +135,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
   Widget renderMap() {
     return GoogleMap(
-      style:tileThemeExtension.mapStyle,
+      style: tileThemeExtension.mapStyle,
       polylines: Set<Polyline>.of(polyLines.values),
       markers: markers,
       mapToolbarEnabled: true,
@@ -239,27 +241,23 @@ class _WidgetGoogleMapState extends State<DayCast> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: TextButton(
-          style: TextButton.styleFrom(
-              foregroundColor:colorScheme.onPrimary
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: TextButton(
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Icon(
+              Icons.close,
+            ),
           ),
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Icon(
-            Icons.close,
+          title: Text(
+            AppLocalizations.of(context)!.dayCast,
           ),
         ),
-        title: Text(
-          AppLocalizations.of(context)!.dayCast,
-        ),
-      ),
         body: source == null
-            ?  Center(
-                child: CircularProgressIndicator(color:colorScheme.tertiary),
+            ? Center(
+                child: CircularProgressIndicator(color: colorScheme.tertiary),
               )
             : MediaQuery.of(context).orientation == Orientation.portrait
                 ? renderPortrait()
@@ -289,8 +287,8 @@ class _WidgetGoogleMapState extends State<DayCast> {
                 ))).then((value) {
       polyLines.forEach((key, value) {
         if (value.color == Colors.blue) {
-          Polyline newPolyline =
-              polyLines[value.polylineId]!.copyWith(colorParam:  TileColors.redPolyline);
+          Polyline newPolyline = polyLines[value.polylineId]!
+              .copyWith(colorParam: TileColors.redPolyline);
 
           polyLines[polylineId] = newPolyline;
         }
@@ -321,7 +319,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
       await _getRoutePolyline(
         start: source!,
         finish: elem,
-        color:  TileColors.greenPolyline,
+        color: TileColors.greenPolyline,
         id: 'firstPolyline $elem',
         width: 4,
       );

@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -56,9 +56,9 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
@@ -123,11 +123,10 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
 
   Widget renderButtons() {
     const double iconSize = 14;
-    const buttonTextStyle =
-        TextStyle(
-          fontSize: 12,
-          fontFamily: TileTextStyles.rubikFontName,
-        );
+    const buttonTextStyle = TextStyle(
+      fontSize: 12,
+      fontFamily: TileTextStyles.rubikFontName,
+    );
     if (_isLoading)
       return CircularProgressIndicator(color: colorScheme.tertiary);
     else
@@ -195,7 +194,6 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     return SizedBox.shrink();
   }
 
-
   Widget bottomPanel() {
     if (this.showNotes) {
       return bottomNotes();
@@ -213,10 +211,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
     const double iconSize = 14;
     const spaceDivider = SizedBox(height: 5);
     const supplementalTextStyle =
-        TextStyle(
-            fontSize: 11.6,
-            fontFamily: TileTextStyles.rubikFontName
-        );
+        TextStyle(fontSize: 11.6, fontFamily: TileTextStyles.rubikFontName);
     String? designatedUsename = designatedTile.user?.username;
     print(designatedTile.invitationStatus.toString());
     return Expanded(
@@ -229,8 +224,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
             style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.w500,
-                fontFamily: TileTextStyles.rubikFontName
-            ),
+                fontFamily: TileTextStyles.rubikFontName),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -292,8 +286,7 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
               style: TextStyle(
                   color: TileColors.responseTileShare,
                   fontWeight: FontWeight.bold,
-                  fontFamily: TileTextStyles.rubikFontName
-              ),
+                  fontFamily: TileTextStyles.rubikFontName),
             ),
           spaceDivider,
           Row(
@@ -301,20 +294,20 @@ class _DesignatedWidgetState extends State<DesignatedTileWidget> {
               Padding(
                 padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
                 child: ElevatedButton(
-                    child: FaIcon(
-                      FontAwesomeIcons.noteSticky,
-                      color: colorScheme.primary,
-                      size: iconSize,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        showNotes = !showNotes;
-                      });
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.all(0),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
+                  child: FaIcon(
+                    FontAwesomeIcons.noteSticky,
+                    color: colorScheme.primary,
+                    size: iconSize,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      showNotes = !showNotes;
+                    });
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.all(0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
                 ),
               ),
               if (designatedTile.invitationStatus !=

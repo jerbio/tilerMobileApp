@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/createTileShareClusterWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareListWidget.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -15,17 +15,15 @@ class _TileShareState extends State<TileShareRoute> {
   ValueKey outBoxKey = ValueKey(Utility.getUuid);
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor:colorScheme.onPrimary
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,
@@ -33,7 +31,8 @@ class _TileShareState extends State<TileShareRoute> {
           ),
           actions: [
             ElevatedButton.icon(
-                style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
+                style:
+                    TileButtonStyles.enabled(borderColor: colorScheme.primary),
                 onPressed: () {
                   Navigator.push(
                       context,
@@ -50,8 +49,7 @@ class _TileShareState extends State<TileShareRoute> {
                   Icons.add,
                   color: colorScheme.onPrimary,
                 ),
-                label: SizedBox.shrink()
-            )
+                label: SizedBox.shrink())
           ],
           title: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -66,8 +64,7 @@ class _TileShareState extends State<TileShareRoute> {
               Text(
                 AppLocalizations.of(context)!.tileShare,
                 style: TextStyle(
-                 color: colorScheme.onPrimary,
-
+                  color: colorScheme.onPrimary,
                 ),
               )
             ],
@@ -93,14 +90,14 @@ class _TileShareState extends State<TileShareRoute> {
               Tab(
                   icon: Column(
                 children: [
-                  Icon(Icons.inbox_outlined,
-                    color: colorScheme.onPrimary,),
-                  Text(
-                    AppLocalizations.of(context)!.inBound,
+                  Icon(
+                    Icons.inbox_outlined,
+                    color: colorScheme.onPrimary,
+                  ),
+                  Text(AppLocalizations.of(context)!.inBound,
                       style: TextStyle(
                         color: colorScheme.onPrimary,
-                      )
-                  )
+                      ))
                 ],
               )),
             ],

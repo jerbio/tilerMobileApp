@@ -5,7 +5,7 @@ import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TileShareSimpleWidget extends StatefulWidget {
   final TileShareClusterData? tileShareCluster;
@@ -50,14 +50,15 @@ class _TileShareState extends State<TileShareSimpleWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme= theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     const double iconSize = 12;
     const double fontSize = 12;
     const TextStyle textStyle = TextStyle(
-        fontFamily: TileTextStyles.rubikFontName,
-        fontSize: fontSize,
-        overflow: TextOverflow.ellipsis,);
+      fontFamily: TileTextStyles.rubikFontName,
+      fontSize: fontSize,
+      overflow: TextOverflow.ellipsis,
+    );
 
     return Card(
       surfaceTintColor: Colors.transparent,
@@ -72,10 +73,9 @@ class _TileShareState extends State<TileShareSimpleWidget> {
                 children: [
                   Text('${widget.tileShareCluster?.name ?? ""}',
                       style: TextStyle(
-                          fontFamily: TileTextStyles.rubikFontName,
-                          fontSize: 12,
-                      )
-                  ),
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: 12,
+                      )),
                   SizedBox(height: 8),
                   if (widget.tileShareCluster?.endTimeInMs != null)
                     Row(

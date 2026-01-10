@@ -45,11 +45,10 @@ import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'bloc/onBoarding/on_boarding_bloc.dart';
 import 'components/notification_overlay.dart';
 import 'routes/authenticatedUser/settings/settingsWidget.dart';
 import 'routes/authentication/authorizedRoute.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 import '../../constants.dart' as Constants;
@@ -72,7 +71,6 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 Future main() async {
-
   if (!Constants.isProduction) {
     HttpOverrides.global = MyHttpOverrides();
   }
@@ -103,7 +101,7 @@ class _TilerAppState extends State<TilerApp> {
   }
 
   @override
-  void initState(){
+  void initState() {
     onBoardingApi = OnBoardingApi();
     _loadTheme();
     notificationOverlayMessage = NotificationOverlayMessage();
@@ -149,11 +147,11 @@ class _TilerAppState extends State<TilerApp> {
           BlocProvider(create: (context) => TileListCarouselBloc()),
           BlocProvider(
               create: (context) => DeviceSettingBloc(
-                getContextCallBack: () {
-                  return this.context;
-                },
-                initialIsDarkMode: isDarkMode,
-              )),
+                    getContextCallBack: () {
+                      return this.context;
+                    },
+                    initialIsDarkMode: isDarkMode,
+                  )),
           //BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!, SettingsApi(getContextCallBack: () => context))),
           BlocProvider(
               create: (context) => ForecastBloc(getContextCallBack: () {
@@ -170,7 +168,6 @@ class _TilerAppState extends State<TilerApp> {
                     return this.context;
                   }))
         ],
-
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
             buildWhen: (previous, current) =>
                 previous.isDarkMode != current.isDarkMode,
@@ -180,7 +177,8 @@ class _TilerAppState extends State<TilerApp> {
                 debugShowCheckedModeBanner: false,
                 theme: TileThemeData.lightTheme,
                 darkTheme: TileThemeData.darkTheme,
-                themeMode: settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                themeMode:
+                    settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
                 routes: <String, WidgetBuilder>{
                   '/AuthorizedUser': (BuildContext context) =>
                       new AuthorizedRoute(),
@@ -216,7 +214,7 @@ class _TilerAppState extends State<TilerApp> {
                       NotificationPreferences(),
                   '/Connections': (ctx) => Connections(),
                   '/tilePreferences': (ctx) => TilePreferencesScreen(),
-                  '/onBoardingWorkProfile':(ctx)=>WorkProfileWidget()
+                  '/onBoardingWorkProfile': (ctx) => WorkProfileWidget()
                 },
                 localizationsDelegates: [
                   AppLocalizations.delegate,
@@ -305,9 +303,7 @@ class _TilerAppState extends State<TilerApp> {
                         return retValue;
                       }
                     }),
-
               );
             }));
-
   }
 }

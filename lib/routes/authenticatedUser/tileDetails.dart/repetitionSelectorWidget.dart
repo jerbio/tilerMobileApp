@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/repetition.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -31,14 +31,14 @@ class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
+    theme = Theme.of(context);
     super.didChangeDependencies();
   }
-  Widget renderRepetitionDisabled() {
 
+  Widget renderRepetitionDisabled() {
     return TextButton(
       style: TextButton.styleFrom(
-        textStyle:const TextStyle(
+        textStyle: const TextStyle(
           fontSize: 20,
         ),
       ),
@@ -73,9 +73,9 @@ class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
     RepetitionData? _repetitionData = repetition.toRepetitionData();
     return TextButton(
       style: TextButton.styleFrom(
-          textStyle:const TextStyle(
-            fontSize: 20,
-          ),
+        textStyle: const TextStyle(
+          fontSize: 20,
+        ),
       ),
       onPressed: () {
         onRepetitionTap(repetition, _repetitionData);

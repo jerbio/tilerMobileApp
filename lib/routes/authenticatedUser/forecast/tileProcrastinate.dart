@@ -6,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/tileUI/playBackButtons.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -44,8 +44,8 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 
@@ -62,8 +62,6 @@ class TileProcrastinateRouteState extends State<TileProcrastinateRoute> {
         textColor: colorScheme.onInverseSurface,
         fontSize: 16.0);
   }
-
-
 
   Future onProceedTap() {
     if (this.widget._params != null) {

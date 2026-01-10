@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/contact.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDate.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
@@ -44,8 +44,9 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
+
   void onNameChange(String? name) {
     setState(() {
       tileName = name;
@@ -63,8 +64,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
       return EditTileDate(
         time: endTime!,
         onInputChange: onTimeUpdate,
-        textStyle: const TextStyle(
-            fontFamily: TileTextStyles.rubikFontName),
+        textStyle: const TextStyle(fontFamily: TileTextStyles.rubikFontName),
       );
     } else {
       return Row(
@@ -79,8 +79,8 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
             child: TextButton(
               style: TextButton.styleFrom(
                 textStyle: const TextStyle(
-                    fontSize: 20,
-                    fontFamily: TileTextStyles.rubikFontName,
+                  fontSize: 20,
+                  fontFamily: TileTextStyles.rubikFontName,
                 ),
               ),
               onPressed: () async {
@@ -120,7 +120,7 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
   Widget build(BuildContext context) {
     final Container heightSpacer = Container(
       color: colorScheme.surfaceContainerLowest,
-      child:  ColoredBox(
+      child: ColoredBox(
         color: colorScheme.surfaceContainerLowest,
       ),
     );
@@ -136,24 +136,26 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
         children: [
           this.widget.appBar ?? SizedBox.shrink(),
           Container(
-            color:colorScheme.surfaceContainerLowest,
+            color: colorScheme.surfaceContainerLowest,
             child: EditTileName(
               tileName: tileName ?? "",
               onInputChange: onNameChange,
               width: MediaQuery.sizeOf(context).width,
               textStyle: TextStyle(
-                  fontSize: 15,
-                  fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 15,
+                fontFamily: TileTextStyles.rubikFontName,
               ),
             ),
           ),
           heightSpacer,
-          Container(color: colorScheme.surfaceContainerLowest, child: renderEndtime()),
+          Container(
+              color: colorScheme.surfaceContainerLowest,
+              child: renderEndtime()),
           heightSpacer,
           tileName != this.widget.name || endTime != this.widget.endTime
               ? Container(
                   width: MediaQuery.sizeOf(context).width,
-                  color:colorScheme.surfaceContainerLowest,
+                  color: colorScheme.surfaceContainerLowest,
                   child: ElevatedButton.icon(
                       onPressed: () {
                         if ((tileName.isNot_NullEmptyOrWhiteSpace() &&
@@ -168,7 +170,8 @@ class TileShareClusterSheetState extends State<NameAndDateSheetWidget> {
                           }
                         }
                       },
-                      style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
+                      style: TileButtonStyles.enabled(
+                          borderColor: colorScheme.primary),
                       icon: Icon(Icons.check),
                       label: Text(AppLocalizations.of(context)!.update)),
                 )

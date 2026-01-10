@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart' hide Preview;
-import 'package:http/http.dart' as http;
 import 'package:tiler_app/bloc/forecast/forecast_state.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/editTileEvent.dart';
@@ -10,6 +8,7 @@ import 'package:tiler_app/data/prediction.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import '../../constants.dart' as Constants;
@@ -113,7 +112,14 @@ class WhatIfApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {

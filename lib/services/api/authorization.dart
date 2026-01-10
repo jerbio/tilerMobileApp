@@ -57,6 +57,8 @@ class AuthorizationApi extends AppApi {
       retValue.isValid = false;
       return retValue;
     } else {
+      print('Error during registration: ${response.statusCode}');
+      print('Response body: ${response.body}');
       var jsonResult = jsonDecode(response.body);
       if (jsonResult.containsKey('error') &&
           jsonResult.containsKey('error_description') &&
@@ -108,6 +110,8 @@ class AuthorizationApi extends AppApi {
                 accessToken, refreshToken, email, providerName, providerId);
         return retValue;
       }
+      print('Error during third-party authentication: ${response.statusCode}');
+      print('Response body: ${response.body}');
       String tilerErrorMessage = errorMessage(jsonResult);
       TilerError tilerError = TilerError(Message: tilerErrorMessage);
       throw tilerError;

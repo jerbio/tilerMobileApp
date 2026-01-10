@@ -7,6 +7,7 @@ import 'package:tiler_app/data/editTileEvent.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/services/api/appApi.dart';
+import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,7 +36,14 @@ class SubCalendarEventApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       if (isJsonResponseOk(jsonResult)) {
         if (isContentInResponse(jsonResult)) {
@@ -70,7 +78,14 @@ class SubCalendarEventApi extends AppApi {
         if (header == null) {
           throw TilerError(Message: 'Issues with authentication');
         }
-        var response = await http.get(uri, headers: header);
+        var response = await httpClient.get(uri, headers: header).timeout(
+          AppApi.requestTimeout,
+          onTimeout: () {
+            throw TilerError(
+                Message:
+                    'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+          },
+        );
         var jsonResult = jsonDecode(response.body);
         if (isJsonResponseOk(jsonResult)) {
           if (isContentInResponse(jsonResult)) {
@@ -110,7 +125,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> pauseTile(String id) async {
     TilerError error = new TilerError();
-    error.Message = "Failed to pause tile";
+    error.Message = LocalizationService.instance.translations.failedToPauseTile;
     return sendPostRequest('api/Schedule/Event/Pause', {'EventID': id},
             analyze: false)
         .then((response) {
@@ -129,7 +144,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Failed to resume tile";
+    error.Message = LocalizationService.instance.translations.failedToResumeTile;
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -149,7 +164,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Did not move up task";
+    error.Message = LocalizationService.instance.translations.failedToMoveUpTask;
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -169,7 +184,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Did not update tile";
+    error.Message = LocalizationService.instance.translations.failedToUpdateTile;
     var queryParameters = {
       'EventID': subEvent.id,
       'EventName': subEvent.name,
@@ -184,6 +199,12 @@ class SubCalendarEventApi extends AppApi {
       'ThirdPartyType': subEvent.thirdPartyType.toString(),
       'Notes': subEvent.note.toString(),
     };
+
+    String? rsvpUpdateValue = subEvent.getRsvpStatusUpdateString();
+    if (rsvpUpdateValue != null) {
+      queryParameters['RsvpStatusUpdate'] = rsvpUpdateValue;
+    }
+
     return sendPostRequest('api/SubCalendarEvent/Update', queryParameters)
         .then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -201,7 +222,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send complete request";
+    error.Message = LocalizationService.instance.translations.failedToSendRequest;
     print(subEvent);
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
@@ -227,7 +248,7 @@ class SubCalendarEventApi extends AppApi {
 
   Future completeTiles(String id, String type, String userId) async {
     TilerError error = new TilerError();
-    error.Message = "Did not send complete request";
+    error.Message = LocalizationService.instance.translations.failedToSendRequest;
     return sendPostRequest('api/Schedule/Events/Complete', {
       'EventID': id,
       'ThirdPartyType': type,
@@ -271,8 +292,18 @@ class SubCalendarEventApi extends AppApi {
 
       var injectedDeleteSubEventParameters =
           await injectRequestParams(deleteSubEventParameters);
-      var response = await http.delete(uri,
-          headers: header, body: json.encode(injectedDeleteSubEventParameters));
+      var response = await httpClient
+          .delete(uri,
+              headers: header,
+              body: json.encode(injectedDeleteSubEventParameters))
+          .timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  'Request timed out after ${AppApi.requestTimeout.inSeconds} seconds');
+        },
+      );
       var jsonResult = jsonDecode(response.body);
       error.Message = "Issues with reaching Tiler servers";
       if (isJsonResponseOk(jsonResult)) {

@@ -11,7 +11,7 @@ import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc/tile_preferences_bloc.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
@@ -22,7 +22,8 @@ class TilePreferencesScreen extends StatelessWidget {
   static const String routeName = '/tilePreferences';
   static final String tilePreferencesCancelAndProceedRouteName =
       "tilePreferencesCancelAndProceedRouteName";
-  Widget _buildSectionContainer({required Widget child,required ColorScheme colorScheme}) {
+  Widget _buildSectionContainer(
+      {required Widget child, required ColorScheme colorScheme}) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20),
@@ -42,7 +43,8 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTransportOptions(BuildContext context, PreferencesLoaded state,ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
+  Widget _buildTransportOptions(BuildContext context, PreferencesLoaded state,
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return _buildSectionContainer(
       colorScheme: colorScheme,
       child: Column(
@@ -63,8 +65,7 @@ class TilePreferencesScreen extends StatelessWidget {
                     TravelMedium.bicycling,
                     state,
                     colorScheme,
-                    tileThemeExtension
-                ),
+                    tileThemeExtension),
                 _transportOption(
                     context,
                     AppLocalizations.of(context)!.travelMediumTransit,
@@ -72,8 +73,7 @@ class TilePreferencesScreen extends StatelessWidget {
                     TravelMedium.transit,
                     state,
                     colorScheme,
-                    tileThemeExtension
-                ),
+                    tileThemeExtension),
                 _transportOption(
                     context,
                     AppLocalizations.of(context)!.travelMediumDriving,
@@ -81,8 +81,7 @@ class TilePreferencesScreen extends StatelessWidget {
                     TravelMedium.driving,
                     state,
                     colorScheme,
-                    tileThemeExtension
-                ),
+                    tileThemeExtension),
               ],
             ),
           ),
@@ -91,9 +90,16 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _transportOption(BuildContext context, String label, String svgPath,
-      TravelMedium medium, PreferencesLoaded state,ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
-    final isSelected = state.userSettings?.scheduleProfile?.travelMedium == medium;
+  Widget _transportOption(
+      BuildContext context,
+      String label,
+      String svgPath,
+      TravelMedium medium,
+      PreferencesLoaded state,
+      ColorScheme colorScheme,
+      TileThemeExtension tileThemeExtension) {
+    final isSelected =
+        state.userSettings?.scheduleProfile?.travelMedium == medium;
     final bloc = context.read<TilePreferencesBloc>();
 
     return Column(
@@ -109,9 +115,13 @@ class TilePreferencesScreen extends StatelessWidget {
             margin: EdgeInsets.symmetric(horizontal: 15),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ?  colorScheme.primary : colorScheme.surfaceContainer,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.surfaceContainer,
               border: Border.all(
-                color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceSecondary,
+                color: isSelected
+                    ? colorScheme.primary
+                    : tileThemeExtension.onSurfaceSecondary,
               ),
             ),
             child: SvgPicture.asset(
@@ -119,7 +129,9 @@ class TilePreferencesScreen extends StatelessWidget {
               width: 20,
               height: 20,
               colorFilter: ColorFilter.mode(
-                isSelected ? colorScheme.onPrimary : tileThemeExtension.onSurfaceSecondary,
+                isSelected
+                    ? colorScheme.onPrimary
+                    : tileThemeExtension.onSurfaceSecondary,
                 BlendMode.srcIn,
               ),
             ),
@@ -129,7 +141,9 @@ class TilePreferencesScreen extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isSelected ? colorScheme.primary : tileThemeExtension.onSurfaceSecondary,
+            color: isSelected
+                ? colorScheme.primary
+                : tileThemeExtension.onSurfaceSecondary,
           ),
         ),
       ],
@@ -182,21 +196,20 @@ class TilePreferencesScreen extends StatelessWidget {
     String label, {
     required bool isWorkProfile,
   }) {
-
     return TextButton(
       onPressed: () => _handleProfileUpdate(context, profile, isWorkProfile),
       child: Text(
         label,
         style: TextStyle(
             fontSize: 18,
-            color:colorScheme.onSurface,
-            fontWeight: FontWeight.w300)
-        ,
+            color: colorScheme.onSurface,
+            fontWeight: FontWeight.w300),
       ),
     );
   }
 
-  Widget timeRestrictionWidget(BuildContext context, PreferencesLoaded state, ColorScheme colorScheme) {
+  Widget timeRestrictionWidget(
+      BuildContext context, PreferencesLoaded state, ColorScheme colorScheme) {
     return _buildSectionContainer(
       colorScheme: colorScheme,
       child: Column(
@@ -217,7 +230,6 @@ class TilePreferencesScreen extends StatelessWidget {
           ),
         ],
       ),
-
     );
   }
 
@@ -250,8 +262,8 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  TableRow _buildSleepDurationWidget(
-      BuildContext context, PreferencesLoaded state,TileThemeExtension tileThemeExtension) {
+  TableRow _buildSleepDurationWidget(BuildContext context,
+      PreferencesLoaded state, TileThemeExtension tileThemeExtension) {
     final sleepDuration = Duration(
         milliseconds:
             state.userSettings?.scheduleProfile?.sleepDuration?.toInt() ?? 0);
@@ -291,23 +303,21 @@ class TilePreferencesScreen extends StatelessWidget {
           child: Row(
             children: [
               Container(
-                  margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                  child: SvgPicture.asset(
-                    "assets/icons/settings/sleep_time_icon.svg",
-                    width: 14,
-                    height: 14,
-                    colorFilter: ColorFilter.mode(tileThemeExtension.onSurfaceSecondary, BlendMode.srcIn),
-                  ),
+                margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
+                child: SvgPicture.asset(
+                  "assets/icons/settings/sleep_time_icon.svg",
+                  width: 14,
+                  height: 14,
+                  colorFilter: ColorFilter.mode(
+                      tileThemeExtension.onSurfaceSecondary, BlendMode.srcIn),
+                ),
               ),
-              Text(
-                  displayText,
+              Text(displayText,
                   style: TileTextStyles.editTimeOrDateTime.copyWith(
-                    color: tileThemeExtension.onSurfaceSecondary,
-                    decoration: TextDecoration.underline,
-                    decorationColor: tileThemeExtension.onSurfaceSecondary,
-                    fontWeight: FontWeight.normal
-                  )
-              ),
+                      color: tileThemeExtension.onSurfaceSecondary,
+                      decoration: TextDecoration.underline,
+                      decorationColor: tileThemeExtension.onSurfaceSecondary,
+                      fontWeight: FontWeight.normal)),
             ],
           ),
         ),
@@ -315,8 +325,8 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBlockOutHourWidget(
-      BuildContext context, PreferencesLoaded state, ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
+  Widget _buildBlockOutHourWidget(BuildContext context, PreferencesLoaded state,
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return _buildSectionContainer(
       colorScheme: colorScheme,
       child: Center(
@@ -329,7 +339,7 @@ class TilePreferencesScreen extends StatelessWidget {
             },
             children: [
               _buildBedTimeWidget(context, state),
-              _buildSleepDurationWidget(context, state,tileThemeExtension),
+              _buildSleepDurationWidget(context, state, tileThemeExtension),
             ],
           ),
         ),
@@ -361,9 +371,9 @@ class TilePreferencesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
     return BlocProvider(
@@ -397,13 +407,16 @@ class TilePreferencesScreen extends StatelessWidget {
             routeName:
                 TilePreferencesScreen.tilePreferencesCancelAndProceedRouteName,
             appBar: AppBar(
-              title: Text(AppLocalizations.of(context)!.tilePreferences,),
+              title: Text(
+                AppLocalizations.of(context)!.tilePreferences,
+              ),
               automaticallyImplyLeading: false,
             ),
             child: SafeArea(
               child: Align(
                 alignment: Alignment.topCenter,
-                child: _buildContent(context, state,colorScheme,tileThemeExtension!),
+                child: _buildContent(
+                    context, state, colorScheme, tileThemeExtension!),
               ),
             ),
           );
@@ -412,7 +425,8 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, TilePreferencesState state,ColorScheme colorScheme,TileThemeExtension tileThemeExtension) {
+  Widget _buildContent(BuildContext context, TilePreferencesState state,
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     if (state is! PreferencesLoaded) {
       return PendingWidget();
     }
@@ -425,23 +439,29 @@ class TilePreferencesScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildTransportOptions(context, loadedState,colorScheme,tileThemeExtension),
+          _buildTransportOptions(
+              context, loadedState, colorScheme, tileThemeExtension),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: Text(
               AppLocalizations.of(context)!.defineYourTimeRestrictions,
-              style: TextStyle(fontSize: 16, color: tileThemeExtension.onSurfaceVariantSecondary),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: tileThemeExtension.onSurfaceVariantSecondary),
             ),
           ),
-          timeRestrictionWidget(context, loadedState,colorScheme),
+          timeRestrictionWidget(context, loadedState, colorScheme),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 10.0),
             child: Text(
               AppLocalizations.of(context)!.setYourBlockOutHours,
-              style: TextStyle(fontSize: 16, color: tileThemeExtension.onSurfaceVariantSecondary),
+              style: TextStyle(
+                  fontSize: 16,
+                  color: tileThemeExtension.onSurfaceVariantSecondary),
             ),
           ),
-          _buildBlockOutHourWidget(context, loadedState,colorScheme,tileThemeExtension)
+          _buildBlockOutHourWidget(
+              context, loadedState, colorScheme, tileThemeExtension)
         ],
       ),
     );

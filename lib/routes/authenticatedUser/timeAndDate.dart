@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TimeAndDate extends StatefulWidget {
   DateTime time = Utility.currentTime();

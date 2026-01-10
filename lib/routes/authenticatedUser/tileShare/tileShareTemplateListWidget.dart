@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/components/nameAndDateSheetWidget.dart';
 import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
@@ -270,7 +270,7 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                           onPressed:
                               generateEditTileShareCallBack(tileShareTemplate),
                           backgroundColor: colorScheme.tertiaryContainer,
-                          foregroundColor:  colorScheme.onTertiary,
+                          foregroundColor: colorScheme.onTertiary,
                           icon: Icons.edit,
                           label: AppLocalizations.of(context)!.edit,
                         ),
@@ -283,7 +283,7 @@ class _TileShareTemplateListState extends State<TileShareTemplateListWidget> {
                             ;
                           },
                           backgroundColor: colorScheme.onError,
-                          foregroundColor:colorScheme.onTertiary,
+                          foregroundColor: colorScheme.onTertiary,
                           icon: Icons.delete,
                           label: AppLocalizations.of(context)!.tileShareDelete,
                         ),

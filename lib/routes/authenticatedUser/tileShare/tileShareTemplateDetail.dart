@@ -11,7 +11,7 @@ import 'package:tiler_app/data/request/clusterTemplateTileModel.dart';
 import 'package:tiler_app/data/tileShareClusterData.dart';
 import 'package:tiler_app/data/tileShareTemplate.dart';
 import 'package:tiler_app/routes/authenticatedUser/contactListView.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/designatedTileApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
@@ -80,6 +80,7 @@ class _TileShareTemplateDetailState
       onNoteFieldOutOfFocus();
     });
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -308,8 +309,8 @@ class _TileShareTemplateDetailState
                   ),
                   rowSpacer,
                   Text(
-                      (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
-                      style:TileTextStyles.defaultText,
+                    (creatorInfo.contains('@') ? '' : '@') + '${creatorInfo}',
+                    style: TileTextStyles.defaultText,
                   )
                 ],
               ),
@@ -476,7 +477,6 @@ class _TileShareTemplateDetailState
     );
   }
 
-
   Widget addNotes() {
     return TextFormField(
       minLines: 5,
@@ -511,9 +511,7 @@ class _TileShareTemplateDetailState
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: TextButton(
-            style: TextButton.styleFrom(
-                foregroundColor:colorScheme.onPrimary
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.onPrimary),
             onPressed: () => Navigator.of(context).pop(false),
             child: Icon(
               Icons.close,

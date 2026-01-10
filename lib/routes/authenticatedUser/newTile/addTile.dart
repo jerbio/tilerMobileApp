@@ -34,7 +34,7 @@ import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/util.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
@@ -63,7 +63,7 @@ class AddTileState extends State<AddTile> {
   late AutoTile? autoTile;
   bool isAppointment = false;
   late Color unPopulatedOnSurfaceColor;
-  late Color populatedOnSurfaceColor ;
+  late Color populatedOnSurfaceColor;
   late Color inputFieldIconColor;
   final CarouselSliderController tilerCarouselController =
       CarouselSliderController();
@@ -241,12 +241,13 @@ class AddTileState extends State<AddTile> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    boxDecoration= TileDecorations.configUpdate_notSelected(colorScheme.primary);
-    populatedDecoration= TileDecorations.configUpdate_Selected(colorScheme.primary);
-    populatedOnSurfaceColor=colorScheme.onPrimary;
-    unPopulatedOnSurfaceColor=colorScheme.primary;
-    inputFieldIconColor=colorScheme.primary;
-
+    boxDecoration =
+        TileDecorations.configUpdate_notSelected(colorScheme.primary);
+    populatedDecoration =
+        TileDecorations.configUpdate_Selected(colorScheme.primary);
+    populatedOnSurfaceColor = colorScheme.onPrimary;
+    unPopulatedOnSurfaceColor = colorScheme.primary;
+    inputFieldIconColor = colorScheme.primary;
   }
 
   void _onProceedTap() {
@@ -486,41 +487,41 @@ class AddTileState extends State<AddTile> {
 
   Widget getTileNameWidget() {
     Widget tileNameContainer = FractionallySizedBox(
-        widthFactor: TileDimensions.widthRatio,
-        child: Container(
-            width: 380,
-            margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            child: TextField(
-              controller: tileNameController,
-              style:TextStyle(
-                fontFamily: TileTextStyles.rubikFontName,
-                fontSize: 20,
-              ),
-              decoration: InputDecoration(
-                hintText: AppLocalizations.of(context)!.tileNameStar,
-                hintStyle: TextStyle(color: colorScheme.inversePrimary
-                    ),
-                filled: true,
-                isDense: true,
-                contentPadding: TileSpacing.inputFieldPadding,
-                fillColor: colorScheme.surfaceContainerLowest,
-                border: OutlineInputBorder(
-                  borderRadius: TileDimensions.inputFieldBorderRadius,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: TileDimensions.inputFieldBorderRadius,
-                  borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 2),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: TileDimensions.inputFieldBorderRadius,
-                  borderSide: BorderSide(
-                    color: colorScheme.onInverseSurface,
-                    width: 1.5,
-                  ),
-                ),
+      widthFactor: TileDimensions.widthRatio,
+      child: Container(
+        width: 380,
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        child: TextField(
+          controller: tileNameController,
+          style: TextStyle(
+            fontFamily: TileTextStyles.rubikFontName,
+            fontSize: 20,
+          ),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.tileNameStar,
+            hintStyle: TextStyle(color: colorScheme.inversePrimary),
+            filled: true,
+            isDense: true,
+            contentPadding: TileSpacing.inputFieldPadding,
+            fillColor: colorScheme.surfaceContainerLowest,
+            border: OutlineInputBorder(
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+              borderSide:
+                  BorderSide(color: colorScheme.onInverseSurface, width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+              borderSide: BorderSide(
+                color: colorScheme.onInverseSurface,
+                width: 1.5,
               ),
             ),
+          ),
         ),
+      ),
     );
     return tileNameContainer;
   }
@@ -534,11 +535,8 @@ class AddTileState extends State<AddTile> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-                AppLocalizations.of(context)!.howManyTimes,
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700
-                ),
+              AppLocalizations.of(context)!.howManyTimes,
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             SizedBox(
                 width: 60,
@@ -565,12 +563,13 @@ class AddTileState extends State<AddTile> {
                       borderRadius: BorderRadius.all(
                         inputBorderRadius,
                       ),
-                      borderSide: BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
+                      borderSide: BorderSide(
+                          color: colorScheme.onInverseSurface, width: 0.5),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.all(inputBorderRadius),
-                      borderSide:
-                          BorderSide(color: colorScheme.onInverseSurface, width: 0.5),
+                      borderSide: BorderSide(
+                          color: colorScheme.onInverseSurface, width: 0.5),
                     ),
                   ),
                 ))
@@ -709,10 +708,14 @@ class AddTileState extends State<AddTile> {
       padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
-        color: isLocationConfigSet ? populatedOnSurfaceColor :unPopulatedOnSurfaceColor,
+        color: isLocationConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+      textColor: isLocationConfigSet
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       onPress: () {
         Location locationHolder = _location ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
@@ -753,14 +756,18 @@ class AddTileState extends State<AddTile> {
         padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.repeat_outlined,
-          color: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+          color: isRepetitionSet
+              ? populatedOnSurfaceColor
+              : unPopulatedOnSurfaceColor,
         ),
         decoration: isRepetitionSet
             ? (isRepetitionValid()
                 ? populatedDecoration
                 : TileDecorations.invalidBoxDecoration)
             : boxDecoration,
-        textColor: isRepetitionSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+        textColor: isRepetitionSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
         onPress: () {
           Timeline tileTimeline = Utility.todayTimeline();
           RepetitionData? repetitionData = _repetitionData?.clone();
@@ -841,11 +848,15 @@ class AddTileState extends State<AddTile> {
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
       prefixIcon: Icon(
         Icons.switch_left,
-        color: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+        color: isTimeRestrictionConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       decoration:
           isTimeRestrictionConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isTimeRestrictionConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+      textColor: isTimeRestrictionConfigSet
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       onPress: () {
         Map<String, dynamic> restrictionParams = {
           'routeRestrictionProfile': _restrictionProfile,
@@ -887,8 +898,9 @@ class AddTileState extends State<AddTile> {
     );
 
     BoxDecoration colorConfigUpdateDecoration = boxDecoration;
-    Color selectedColor =
-        (isColorConfigSet ? (_color ?? populatedOnSurfaceColor) :unPopulatedOnSurfaceColor);
+    Color selectedColor = (isColorConfigSet
+        ? (_color ?? populatedOnSurfaceColor)
+        : unPopulatedOnSurfaceColor);
     Color inverseColor = Color.fromRGBO(255 - selectedColor.red,
         255 - selectedColor.green, 255 - selectedColor.blue, 1);
     if (isColorConfigSet) {
@@ -916,7 +928,9 @@ class AddTileState extends State<AddTile> {
         color: isColorConfigSet ? (inverseColor) : unPopulatedOnSurfaceColor,
       ),
       decoration: colorConfigUpdateDecoration,
-      textColor: isColorConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+      textColor: isColorConfigSet
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       onPress: () {
         Color? colorHolder = _color;
         Map<String, dynamic> colorParams = {'color': colorHolder};
@@ -939,10 +953,14 @@ class AddTileState extends State<AddTile> {
       iconPadding: configUpdateIconPadding,
       padding: configUpdatePadding,
       decoration: _isAutoRevisable ? populatedDecoration : boxDecoration,
-      textColor: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+      textColor: _isAutoRevisable
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       prefixIcon: Icon(
         Icons.check,
-        color: _isAutoRevisable ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+        color: _isAutoRevisable
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       text: AppLocalizations.of(context)!.softDeadline,
       onPress: () {
@@ -1275,7 +1293,7 @@ class AddTileState extends State<AddTile> {
                 child: TextButton(
                   style: TextButton.styleFrom(
                     textStyle: const TextStyle(
-                        fontSize: 20,
+                      fontSize: 20,
                     ),
                   ),
                   onPressed: onEndDateTap,
@@ -1457,7 +1475,7 @@ class AddTileState extends State<AddTile> {
         child: Stack(
           children: [
             isPendingAutoResult
-                ? TileThemeNew.getShimmerPending(context,colorScheme.primary)
+                ? TileThemeNew.getShimmerPending(context, colorScheme.primary)
                 : SizedBox.shrink(),
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -1473,7 +1491,8 @@ class AddTileState extends State<AddTile> {
               margin: EdgeInsets.fromLTRB(0, 0, 0, 0),
               child: Text(
                 AppLocalizations.of(context)!.starAreRequired,
-                style: TextStyle(color: colorScheme.onInverseSurface.withLightness(0.7)),
+                style: TextStyle(
+                    color: colorScheme.onInverseSurface.withLightness(0.7)),
               ),
             )
           : null,

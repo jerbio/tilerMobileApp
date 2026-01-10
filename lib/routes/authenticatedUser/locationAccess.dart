@@ -7,7 +7,7 @@ import 'package:lottie/lottie.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/services/accessManager.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -43,38 +43,38 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
 
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 
   VoidCallback generateCallBack(
       {bool forceDeviceCheck = false,
-        bool statusCheck = false,
-        bool? denyAccess,
-        bool doNotCallAgain = false,
-        bool enableCallBack = true}) {
+      bool statusCheck = false,
+      bool? denyAccess,
+      bool doNotCallAgain = false,
+      bool enableCallBack = true}) {
     VoidCallback retValue = () async {
       setState(() {
         isLocationRequestTriggered = true;
       });
       await accessManager
           .locationAccess(
-          forceDeviceCheck: forceDeviceCheck,
-          statusCheck: statusCheck,
-          denyAccess: denyAccess ?? false)
+              forceDeviceCheck: forceDeviceCheck,
+              statusCheck: statusCheck,
+              denyAccess: denyAccess ?? false)
           .then((value) {
         print('LocationAccessWidgetState.generateCallBack: value: $value');
         String loadedId = Utility.getUuid;
         if (BlocProvider.of<DeviceSettingBloc>(context)
-        is DeviceLocationSettingLoading &&
+                is DeviceLocationSettingLoading &&
             (BlocProvider.of<DeviceSettingBloc>(context)
-            as DeviceLocationSettingLoading)
-                .id !=
+                        as DeviceLocationSettingLoading)
+                    .id !=
                 null) {
           loadedId = (BlocProvider.of<DeviceSettingBloc>(context)
-          as DeviceLocationSettingLoading)
+                  as DeviceLocationSettingLoading)
               .id!;
         } else {
           print('Not DeviceLocationSettingLoading');
@@ -118,7 +118,8 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
           width: buttonWidth,
           child: ElevatedButton(
             onPressed: generateCallBack(forceDeviceCheck: true),
-            child: Text(AppLocalizations.of(context)!.allow,
+            child: Text(
+              AppLocalizations.of(context)!.allow,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 25,
@@ -134,10 +135,11 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         child: SizedBox(
           width: buttonWidth,
           child: ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: tileThemeExtension.surfaceContainerSuperior
-            ),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: tileThemeExtension.surfaceContainerSuperior),
             onPressed: generateCallBack(denyAccess: true),
-            child: Text(AppLocalizations.of(context)!.deny,
+            child: Text(
+              AppLocalizations.of(context)!.deny,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 25,
@@ -153,13 +155,15 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
       acceptDenyButtons = [
         Container(
             margin: EdgeInsets.fromLTRB(0, 300, 0, 0),
-            child: CircularProgressIndicator(color: colorScheme.tertiary,))
+            child: CircularProgressIndicator(
+              color: colorScheme.tertiary,
+            ))
       ];
     }
 
     if (Platform.isIOS) {
       var iosCallBackButtonPress =
-      generateCallBack(denyAccess: false, forceDeviceCheck: true);
+          generateCallBack(denyAccess: false, forceDeviceCheck: true);
       acceptDenyButtons = [
         Container(
           margin: EdgeInsets.fromLTRB(0, 430, 0, 0),
@@ -167,10 +171,10 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
             width: buttonWidth,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: tileThemeExtension.surfaceContainerSuperior
-              ),
+                  backgroundColor: tileThemeExtension.surfaceContainerSuperior),
               onPressed: iosCallBackButtonPress,
-              child: Text(AppLocalizations.of(context)!.dismiss,
+              child: Text(
+                AppLocalizations.of(context)!.dismiss,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25,
@@ -196,9 +200,10 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         child: Container(
           color: colorScheme.primaryContainer,
           alignment: Alignment.center,
-          width: MediaQuery.of(context).size.width * TileDimensions.tileWidthRatio,
-          height:
-          MediaQuery.of(context).size.height * TileDimensions.tileWidthRatio,
+          width:
+              MediaQuery.of(context).size.width * TileDimensions.tileWidthRatio,
+          height: MediaQuery.of(context).size.height *
+              TileDimensions.tileWidthRatio,
           child: Stack(
             alignment: Alignment.center,
             children: [
@@ -214,7 +219,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
                         fontSize: 20,
                         fontFamily: TileTextStyles.rubikFontName,
                         fontWeight: FontWeight.w400,
-                        color:colorScheme.onPrimaryContainer)),
+                        color: colorScheme.onPrimaryContainer)),
               ),
               Container(
                 child: Lottie.asset(lottieAsset, height: 150),

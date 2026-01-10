@@ -90,6 +90,14 @@
     "revise":"Revise",
     "revisingSchedule":"Revising Schedule",
     "procrastinateBlockOut":"Tile Break",
+    "lunchBreak":"Lunch Break",
+    "coffeeBreak":"Coffee Break",
+    "morningBreak":"Morning Break",
+    "afternoonBreak":"Afternoon Break",
+    "freeTime":"Free Time",
+    "quickBreak":"Quick Break",
+    "shortBreak":"Short Break",
+    "blockedTime":"Blocked Time",
     "start":"Start",
     "end":"End",
     "deadline": "Deadline",
@@ -161,6 +169,11 @@
     "logout": "Logout",
     "noteEllipsis": "Note...",
     "tapToCreateNewTile": "Tap to create a new tile",
+    "emptyDayHeaderLine1": "No plans yet.",
+    "emptyDayFooterLine1": "Get started in seconds—",
+    "emptyDayFooterLine2": "import calendars or create tiles.",
+    "emptyDayOr": "or",
+    "emptyDayImportGoogleCalendarButton": "Import Google Calendar",
     "suggestions": "Suggestions",
     "progress": "Progress",
     "youNeedToLeaveIn": "You need to leave in",
@@ -659,6 +672,7 @@
       "darkMode":"Dark Mode",
       "setLocation":"Set location",
       "connectCalendars": "Connect your calendars",
+      "configure": "Configure",
       "comingSoon": "Coming soon",
       "googleCalendar":"Google Calendar",
       "appleCalendar":"Apple Calendar",
@@ -1197,7 +1211,22 @@
         },
         "autoResolve": "Auto-resolve",
         "untitledTile": "Untitled Tile",
-        "tile": "Tile",
+        "untitledEvent": "Untitled",
+        "extendedEventSingular": "1 Extended Event",
+        "extendedEventsPlural": "{count} Extended Events",
+        "@extendedEventsPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "extendedEventsTapToView": "Tap to view all-day and long events",
+        "extendedEventsTitle": "Extended Events",
+        "extendedEventsSubtitle": "{count, plural, =1{1 event over 16 hours} other{{count} events over 16 hours}}",
+        "@extendedEventsSubtitle": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
         "todaysRoute": "Today's Route",
         "noLocationsToday": "No locations today",
         "addLocationsToSeeTodaysRoute": "Add locations to your tiles to see your daily route",
@@ -1229,5 +1258,178 @@
         "noLocationAvailable": "No location",
         "seeTodaysRoute": "See Today's Route",
         "whatWouldYouLikeToDo":"What would you like to do?",
-        "describeATask": "Describe a task, we'll handle the tiling."
+        "describeATask": "Describe a task, we'll handle the tiling.",
+        "joinMeeting": "Join Meeting",
+        "openLink": "Open Link",
+        "actions": "Actions",
+        "hideActions": "Hide actions",
+        "pendingRsvpSingular": "1 Event Needs Response",
+        "pendingRsvpPlural": "{count} Events Need Response",
+        "@pendingRsvpPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "pendingRsvpHappeningNow": "Happening now - respond to join",
+        "pendingRsvpStartingSoon": "Starting soon - respond now",
+        "pendingRsvpWithinHour": "Starting within an hour",
+        "pendingRsvpUpcoming": "Upcoming - tap to respond",
+        "pendingRsvpTapToReview": "Tap to review and respond",
+        "pendingRsvpTitle": "Pending Responses",
+        "pendingRsvpSubtitle": "{count, plural, =1{1 event awaiting your response} other{{count} events awaiting your response}}",
+        "@pendingRsvpSubtitle": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "pendingRsvpUrgent": "Starting Soon",
+        "pendingRsvpLater": "Later Today & Upcoming",
+        "declinedRsvpSingular": "1 Declined Event",
+        "declinedRsvpPlural": "{count} Declined Events",
+        "@declinedRsvpPlural": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "declinedRsvp": "Declined Events",
+        "rsvpMixedOnePending": "1 Pending, {declinedCount} Declined",
+        "@rsvpMixedOnePending": {
+          "placeholders": {
+            "declinedCount": {"type": "int"}
+          }
+        },
+        "rsvpMixedOneDeclined": "{pendingCount} Pending, 1 Declined",
+        "@rsvpMixedOneDeclined": {
+          "placeholders": {
+            "pendingCount": {"type": "int"}
+          }
+        },
+        "rsvpMixed": "{pendingCount} Pending, {declinedCount} Declined",
+        "@rsvpMixed": {
+          "placeholders": {
+            "pendingCount": {"type": "int"},
+            "declinedCount": {"type": "int"}
+          }
+        },
+        "rsvpNeedsAction": "Needs Response",
+        "rsvpTentative": "Tentative",
+        "rsvpAccepted": "Accepted",
+        "rsvpDeclined": "Declined",
+        "unableToOpenLinkError": "Unable to open link: {link}",
+        "@unableToOpenLinkError": {
+          "placeholders": {
+            "link": {"type": "String"}
+          }
+        },
+        "leaveNow": "Leave now!",
+        "leaveInMinutes": "Leave in {minutes} min",
+        "@leaveInMinutes": {
+          "description": "Short label for departure alert",
+          "placeholders": {
+            "minutes": {"type": "int"}
+          }
+        },
+        "multipleAlertsTitle": "{count} alerts",
+        "@multipleAlertsTitle": {
+          "description": "Title when multiple alerts are active",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipLeaveNow": "Leave Now",
+        "alertChipLeaveIn": "Leave {minutes}m",
+        "@alertChipLeaveIn": {
+          "description": "Chip label for travel alert with minutes",
+          "placeholders": {
+            "minutes": {"type": "int"}
+          }
+        },
+        "alertChipConflicts": "{count, plural, =1{1 Conflict} other{{count} Conflicts}}",
+        "@alertChipConflicts": {
+          "description": "Chip label for schedule conflicts",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipAllDay": "{count, plural, =1{1 All-Day} other{{count} All-Day}}",
+        "@alertChipAllDay": {
+          "description": "Chip label for extended/all-day events",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "alertChipRsvp": "{count, plural, =1{1 RSVP} other{{count} RSVPs}}",
+        "@alertChipRsvp": {
+          "description": "Chip label for pending RSVP responses",
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "accept": "Accept",
+        "@accept": {
+          "description": "Accept button label for RSVP"
+        },
+        "accepted": "Accepted",
+        "@accepted": {
+          "description": "Status when event is accepted"
+        },
+        "decline": "Decline",
+        "@decline": {
+          "description": "Decline button label for RSVP"
+        },
+        "declined": "Declined",
+        "@declined": {
+          "description": "Status when event is declined"
+        },
+        "respondToCalendar": "Respond to {calendarSource}",
+        "@respondToCalendar": {
+          "description": "Prompt to respond to calendar event",
+          "placeholders": {
+            "calendarSource": {"type": "String"}
+          }
+        },
+        "unknown": "Calendar invite",
+        "@unknown": {
+          "description": "Default label for unknown calendar source"
+        },
+        "loadingPreviousDays": "Loading previous days...",
+        "@loadingPreviousDays": {
+          "description": "Message shown when loading schedule for previous days"
+        },
+        "loadingUpcomingDays": "Loading upcoming days...",
+        "@loadingUpcomingDays": {
+          "description": "Message shown when loading schedule for upcoming days"
+        },
+        "requestTimeout": "Request timeout - please check your connection",
+        "@requestTimeout": {
+          "description": "Error message shown when an HTTP request times out"
+        },
+        "failedToPauseTile": "Failed to pause tile",
+        "@failedToPauseTile": {
+          "description": "Error when pausing a tile fails"
+        },
+        "failedToResumeTile": "Failed to resume tile",
+        "@failedToResumeTile": {
+          "description": "Error when resuming a tile fails"
+        },
+        "failedToMoveUpTask": "Failed to move up task",
+        "@failedToMoveUpTask": {
+          "description": "Error when moving a task to now fails"
+        },
+        "failedToUpdateTile": "Failed to update tile",
+        "@failedToUpdateTile": {
+          "description": "Error when updating a tile fails"
+        },
+        "failedToBuzzSchedule": "Failed to buzz schedule",
+        "@failedToBuzzSchedule": {
+          "description": "Error when buzzing the schedule fails"
+        },
+        "failedToShuffleSchedule": "Failed to shuffle schedule",
+        "@failedToShuffleSchedule": {
+          "description": "Error when shuffling the schedule fails"
+        },
+        "failedToProcrastinateTile": "Failed to procrastinate tile",
+        "@failedToProcrastinateTile": {
+          "description": "Error when procrastinating a tile fails"
+        }
 }

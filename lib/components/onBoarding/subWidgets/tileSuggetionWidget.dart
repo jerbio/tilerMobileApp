@@ -8,16 +8,17 @@ import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TileSuggestionsWidget extends StatefulWidget {
   @override
   _TileSuggestionsState createState() => _TileSuggestionsState();
 }
 
-class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTickerProviderStateMixin {
+class _TileSuggestionsState extends State<TileSuggestionsWidget>
+    with SingleTickerProviderStateMixin {
   TextEditingController customTileController = TextEditingController();
-  late  AppLocalizations localizations;
+  late AppLocalizations localizations;
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
@@ -44,11 +45,11 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
 
   @override
   void didChangeDependencies() {
-    localizations=  AppLocalizations.of(context)!;
+    localizations = AppLocalizations.of(context)!;
     theme = Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    screenHeight= MediaQuery.of(context).size.height ;
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    screenHeight = MediaQuery.of(context).size.height;
     super.didChangeDependencies();
   }
 
@@ -72,7 +73,7 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
           SizedBox(width: 12),
           Text(
             localizations.tileProfiling,
-            style: TextStyle(fontSize: 12,color: TileColors.darkContent),
+            style: TextStyle(fontSize: 12, color: TileColors.darkContent),
           ),
         ],
       ),
@@ -97,7 +98,8 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (state.step == OnboardingStep.suggestionLoading || state.step == OnboardingStep.suggestionRefreshing) ...[
+              if (state.step == OnboardingStep.suggestionLoading ||
+                  state.step == OnboardingStep.suggestionRefreshing) ...[
                 _buildLoadingIndicator(),
                 SizedBox(height: 16),
               ],
@@ -107,12 +109,12 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
                   Expanded(
                     child: TextField(
                       controller: customTileController,
-                      style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.w400),
+                      style: TextStyle(
+                          fontSize: 20.0, fontWeight: FontWeight.w400),
                       decoration: TileDecorations.onboardingInputDecoration(
-                        tileThemeExtension.onSurfaceVariantSecondary,
-                        colorScheme.tertiary,
-                        localizations.typeSomething
-                      ),
+                          tileThemeExtension.onSurfaceVariantSecondary,
+                          colorScheme.tertiary,
+                          localizations.typeSomething),
                     ),
                   ),
                   SizedBox(width: 8),
@@ -120,46 +122,54 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
                     onPressed: customTileController.text.trim().isEmpty
                         ? null
                         : () {
-                      final customTile = TileSuggestion(
-                        tileName: customTileController.text.trim(),
-                        durationInMs: 1800000,
-                      );
-                      context.read<OnboardingBloc>().add(AddTileSuggestionEvent(tile: customTile));
-                      customTileController.clear();
-                    },
+                            final customTile = TileSuggestion(
+                              tileName: customTileController.text.trim(),
+                              durationInMs: 1800000,
+                            );
+                            context
+                                .read<OnboardingBloc>()
+                                .add(AddTileSuggestionEvent(tile: customTile));
+                            customTileController.clear();
+                          },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:  customTileController.text.trim().isEmpty
-                          ? tileThemeExtension.disabledOnboardingPill : colorScheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      backgroundColor: customTileController.text.trim().isEmpty
+                          ? tileThemeExtension.disabledOnboardingPill
+                          : colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     ),
-                    child: Text(localizations.addPlus, style: TextStyle(color: customTileController.text.trim().isEmpty
-                        ? tileThemeExtension.onDisabledOnboardingPill :colorScheme.onPrimary, fontSize: 16)),
+                    child: Text(localizations.addPlus,
+                        style: TextStyle(
+                            color: customTileController.text.trim().isEmpty
+                                ? tileThemeExtension.onDisabledOnboardingPill
+                                : colorScheme.onPrimary,
+                            fontSize: 16)),
                   ),
                 ],
               ),
-
               SizedBox(height: 0),
               Row(
                 children: [
                   Text(
                     localizations.selectSuggestions,
-                    style: TextStyle(
-                        color: colorScheme.onSurfaceVariant
-                    ),
+                    style: TextStyle(color: colorScheme.onSurfaceVariant),
                   ),
                   IconButton(
-                    onPressed: state.step == OnboardingStep.suggestionRefreshing ? null : () {
-                      context.read<OnboardingBloc>().add(FetchTileSuggestionsEvent(isRefresh:true));
-                    },
+                    onPressed: state.step == OnboardingStep.suggestionRefreshing
+                        ? null
+                        : () {
+                            context.read<OnboardingBloc>().add(
+                                FetchTileSuggestionsEvent(isRefresh: true));
+                          },
                     icon: RotationTransition(
                       turns: _rotationController,
-                      child: Icon(
-                          Icons.refresh,
-                          color: state.step == OnboardingStep.suggestionRefreshing
+                      child: Icon(Icons.refresh,
+                          color: state.step ==
+                                  OnboardingStep.suggestionRefreshing
                               ? colorScheme.tertiary
-                              : tileThemeExtension.onDisabledOnboardingPill
-                      ),
+                              : tileThemeExtension.onDisabledOnboardingPill),
                     ),
                     iconSize: 20,
                   ),
@@ -167,14 +177,17 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
               ),
               SizedBox(height: 16),
               ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: screenHeight*0.3),
+                constraints: BoxConstraints(maxHeight: screenHeight * 0.3),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-
-                      if (state.selectedSuggestionTiles != null && state.selectedSuggestionTiles!.isNotEmpty)
-                        ...state.selectedSuggestionTiles!.asMap().entries.map((entry) {
+                      if (state.selectedSuggestionTiles != null &&
+                          state.selectedSuggestionTiles!.isNotEmpty)
+                        ...state.selectedSuggestionTiles!
+                            .asMap()
+                            .entries
+                            .map((entry) {
                           int index = entry.key;
                           var tile = entry.value;
                           return Padding(
@@ -182,22 +195,29 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget> with SingleTick
                             child: OnboardingPillTag(
                               text: tile.tileName ?? "",
                               onDelete: () {
-                                context.read<OnboardingBloc>().add(RemoveTileSuggestionEvent(index));
+                                context
+                                    .read<OnboardingBloc>()
+                                    .add(RemoveTileSuggestionEvent(index));
                               },
                             ),
                           );
                         }).toList(),
-
-                      if (state.suggestedTiles != null && state.suggestedTiles!.isNotEmpty)
-                        ...state.suggestedTiles!.where((tile) => tile != null).map((tile) {
+                      if (state.suggestedTiles != null &&
+                          state.suggestedTiles!.isNotEmpty)
+                        ...state.suggestedTiles!
+                            .where((tile) => tile != null)
+                            .map((tile) {
                           return Padding(
                             padding: EdgeInsets.only(bottom: 8),
                             child: OnboardingPillTag(
                               text: tile!.tileName ?? "",
                               isEnabled: false,
                               onTap: () {
-                                if(state.step != OnboardingStep.suggestionLoading)
-                                  context.read<OnboardingBloc>().add(AddTileSuggestionEvent(tile: tile, isAddedByPill: true));
+                                if (state.step !=
+                                    OnboardingStep.suggestionLoading)
+                                  context.read<OnboardingBloc>().add(
+                                      AddTileSuggestionEvent(
+                                          tile: tile, isAddedByPill: true));
                               },
                             ),
                           );

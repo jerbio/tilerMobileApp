@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart'; // Add this import
+import 'package:tiler_app/l10n/app_localizations.dart'; // Add this import
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
@@ -53,7 +53,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
   late TileThemeExtension tileThemeExtension;
   late BoxDecoration boxDecoration;
   late Color unPopulatedOnSurfaceColor;
-  late Color populatedOnSurfaceColor ;
+  late Color populatedOnSurfaceColor;
   late BoxDecoration populatedDecoration;
 
   Location? _homeLocation;
@@ -89,10 +89,11 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-    boxDecoration= TileDecorations.configUpdate_notSelected(colorScheme.primary);
-    populatedOnSurfaceColor=colorScheme.onPrimary;
-    unPopulatedOnSurfaceColor=colorScheme.primary;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    boxDecoration =
+        TileDecorations.configUpdate_notSelected(colorScheme.primary);
+    populatedOnSurfaceColor = colorScheme.onPrimary;
+    unPopulatedOnSurfaceColor = colorScheme.primary;
     populatedDecoration = BoxDecoration(
         borderRadius: BorderRadius.all(
           const Radius.circular(10.0),
@@ -282,17 +283,13 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
           children: [
             FaIcon(
               FontAwesomeIcons.binoculars,
-              color: isLoaded
-                  ? colorScheme.onPrimary
-                  : colorScheme.primary,
+              color: isLoaded ? colorScheme.onPrimary : colorScheme.primary,
               size: 16,
             ),
             Text(AppLocalizations.of(context)!.previewTileForecast,
                 style: TextStyle(
                   fontSize: 8,
-                  color: isLoaded
-                      ?colorScheme.onPrimary
-                      : colorScheme.primary,
+                  color: isLoaded ? colorScheme.onPrimary : colorScheme.primary,
                 ))
           ],
         ),
@@ -334,7 +331,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
                 width: width,
                 height: height,
                 decoration: BoxDecoration(
-                    color:colorScheme.onSurface.withValues(alpha:  0.8),
+                    color: colorScheme.onSurface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(30)),
               )),
         ],
@@ -407,15 +404,21 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
       prefixIcon: Icon(
         Icons.location_pin,
         size: 15,
-        color: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+        color: isLocationConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       textStyle: TextStyle(
         fontSize: 15,
         fontFamily: TileTextStyles.rubikFontName,
-        color: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+        color: isLocationConfigSet
+            ? populatedOnSurfaceColor
+            : unPopulatedOnSurfaceColor,
       ),
       decoration: isLocationConfigSet ? populatedDecoration : boxDecoration,
-      textColor: isLocationConfigSet ? populatedOnSurfaceColor : unPopulatedOnSurfaceColor,
+      textColor: isLocationConfigSet
+          ? populatedOnSurfaceColor
+          : unPopulatedOnSurfaceColor,
       onPress: () {
         Location locationHolder = _locationResponse ?? Location.fromDefault();
         Map<String, dynamic> locationParams = {
@@ -479,7 +482,7 @@ class NewTileSheetState extends State<NewTileSheetWidget> {
         child: Stack(
           children: [
             isPendingAutoResult
-                ? TileThemeNew.getShimmerPending(context,colorScheme.primary)
+                ? TileThemeNew.getShimmerPending(context, colorScheme.primary)
                 : SizedBox.shrink(),
             Container(
               decoration: BoxDecoration(

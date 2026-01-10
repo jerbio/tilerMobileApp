@@ -32,8 +32,10 @@ import 'data/timeRangeMix.dart';
 import 'data/timeline.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:logger/logger.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import '../../../constants.dart' as Constants;
+
+enum LocationType { videoConference, onlineUrl, physical, none }
 
 class Utility {
   final List<String> months = [
@@ -328,6 +330,75 @@ class Utility {
     return false;
   }
 
+  static LocationType getLocationType(String? address) {
+    if (address == null || address.isEmpty) {
+      return LocationType.none;
+    }
+    final lowerAddress = address.toLowerCase();
+
+    // Check if it's a video meeting link
+    if (lowerAddress.contains('zoom') ||
+        lowerAddress.contains('meet.google') ||
+        lowerAddress.contains('teams.microsoft') ||
+        lowerAddress.contains('webex') ||
+        lowerAddress.contains('skype') ||
+        lowerAddress.contains('hangout')) {
+      return LocationType.videoConference;
+    }
+
+    // Check if it's a URL
+    if (lowerAddress.startsWith('http://') ||
+        lowerAddress.startsWith('https://') ||
+        lowerAddress.startsWith('www.')) {
+      return LocationType.onlineUrl;
+    }
+
+    try {
+      if (Uri.parse(address).isAbsolute) {
+        return LocationType.onlineUrl;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Check for embedded URLs
+    List<String> eachUrlComponent = address.split(" ");
+    if (eachUrlComponent.length > 1) {
+      for (var element in eachUrlComponent) {
+        if (getLocationType(element) == LocationType.onlineUrl) {
+          return LocationType.onlineUrl;
+        }
+      }
+    }
+
+    return LocationType.physical;
+  }
+
+  static String? getLinkFromLocation(String? address) {
+    if (address == null || address.isEmpty) {
+      return null;
+    }
+
+    try {
+      if (Uri.parse(address).isAbsolute) {
+        return address;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    List<String> eachUrlComponent = address.split(" ");
+    if (eachUrlComponent.length > 1) {
+      for (var element in eachUrlComponent) {
+        String? link = getLinkFromLocation(element);
+        if (link != null) {
+          return link;
+        }
+      }
+    }
+    return null;
+  }
+
   static bool isKeyboardVisible(BuildContext context) {
     return MediaQuery.of(context).viewInsets.bottom != 0;
   }
@@ -592,7 +663,7 @@ class Utility {
           : false;
       List<String> descriptions = autoTileParam['descriptions'];
       List<Duration> durations = autoTileParam['durations'];
-      List<String> imageAsset = autoTileParam['assets'];
+      List<String> imageAsset = autoTileParam['assets'] ?? [];
 
       for (int descriptionIndex = 0;
           descriptionIndex < descriptions.length;
@@ -779,9 +850,6 @@ class Utility {
     orderedByStart.sort((eachTileBatchA, eachTileBatchB) =>
         eachTileBatchA.start!.compareTo(eachTileBatchB.start!));
     List<TilerEvent> AllSubEvents_List = orderedByStart.toList();
-
-    Map<TimeRange, List<TimeRange>> subEventToConflicting =
-        new Map<TimeRange, List<TimeRange>>();
 
     for (int i = 0; i < AllSubEvents_List.length && i >= 0; i++) {
       TilerEvent refSubCalendarEvent = AllSubEvents_List[i];

@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/userProfile.dart';
 import 'package:tiler_app/services/api/notificationData.dart';
@@ -36,7 +34,14 @@ class UserApi extends AppApi {
                 LocalizationService.instance.translations.authenticationIssues);
       }
 
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       NotificationData retValue = NotificationData.noCredentials();
 
       if (response.statusCode == 200) {
@@ -83,7 +88,14 @@ class UserApi extends AppApi {
                 LocalizationService.instance.translations.authenticationIssues);
       }
 
-      var response = await http.get(uri, headers: header);
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
       if (response.statusCode == 200) {
         var jsonResult = jsonDecode(response.body);
         try {
@@ -113,7 +125,8 @@ class UserApi extends AppApi {
   Future<UserProfile?> updateUserProfile(UserProfile userProfile) async {
     Map<String, dynamic> userProfileMap = userProfile.toJsonRequest();
     Utility.debugPrint("SENT TO API: ${userProfileMap}");
-    return sendPostRequest('api/User', userProfileMap, analyze: false, usePutRequest: true)
+    return sendPostRequest('api/User', userProfileMap,
+            analyze: false, usePutRequest: true)
         .then((response) {
       if (response.statusCode == 200) {
         var jsonResult = jsonDecode(response.body);

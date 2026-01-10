@@ -13,6 +13,9 @@ import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
+import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -62,7 +65,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   // State
   double _emptyDayOpacity = 0;
   bool _isEmptyDay = false;
-  List<TileConflict> _detectedConflicts = [];
+  List<ConflictGroup> _detectedConflicts = [];
 
   // Theming
   late ThemeData theme;
@@ -170,11 +173,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   /// Build the appropriate tile widget with expandable playback controls
   Widget _buildTileWidget(TilerEvent tile) {
     if (tile is SubCalendarEvent) {
-      // Check for procrastinate/break tiles using the isProcrastinate flag
-      if (tile.isProcrastinate == true) {
-        return LunchTileCard(subEvent: tile);
-      }
-      // Use EnhancedTileCard which now includes expandable playback controls
+      // EnhancedTileCard handles all tile types including procrastinate/break tiles
       return EnhancedTileCard(subEvent: tile);
     }
     return TileWidget(tile);
@@ -186,11 +185,23 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     final now = DateTime.now();
     Set<int> displayedHours = {};
 
-    // Detect conflicts
-    final subCalendarEvents =
-        orderedTiles.whereType<SubCalendarEvent>().toList();
-    _detectedConflicts = TileConflict.detectAll(subCalendarEvents);
-    final conflictGroups = ConflictGroup.groupConflicts(_detectedConflicts);
+    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
+    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
+    final regularTiles = orderedTiles.where((tile) {
+      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
+        final duration = tile.end! - tile.start!;
+        return duration < minDurationMs;
+      }
+      return true;
+    }).toList();
+
+    // Detect conflicts (only from regular tiles, excluding declined events)
+    final subCalendarEvents = regularTiles
+        .whereType<SubCalendarEvent>()
+        .where((tile) => tile.rsvp != RsvpStatus.declined)
+        .toList();
+    final conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
+    _detectedConflicts = conflictGroups;
 
     // Track tiles in conflict groups
     Set<String> tilesInConflictGroups = {};
@@ -202,8 +213,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
     Set<int> renderedConflictGroups = {};
 
-    for (int i = 0; i < orderedTiles.length; i++) {
-      final tile = orderedTiles[i];
+    for (int i = 0; i < regularTiles.length; i++) {
+      final tile = regularTiles[i];
       final tileHour = tile.startTime.hour;
       final isCurrentHour = tile.startTime.day == now.day &&
           tile.startTime.month == now.month &&
@@ -255,10 +266,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       );
 
       // Add travel connector
-      if (i < orderedTiles.length - 1) {
+      if (i < regularTiles.length - 1) {
         TilerEvent? nextTile;
-        for (int j = i + 1; j < orderedTiles.length; j++) {
-          final candidate = orderedTiles[j];
+        for (int j = i + 1; j < regularTiles.length; j++) {
+          final candidate = regularTiles[j];
           if (candidate is SubCalendarEvent &&
               tilesInConflictGroups.contains(candidate.uniqueId)) {
             continue;
@@ -390,18 +401,59 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   Widget build(BuildContext context) {
     // Process tiles
     Map<String, TilerEvent> viableTiles = {};
+    List<SubCalendarEvent> pendingRsvpTiles = [];
+    List<SubCalendarEvent> declinedTiles = [];
+    final now = Utility.currentTime().millisecondsSinceEpoch;
 
     if (widget.tiles != null) {
       for (var tile in widget.tiles!) {
-        if (tile.id != null &&
-            (((tile) as SubCalendarEvent?)?.isViable ?? true)) {
-          viableTiles[tile.uniqueId] = tile;
+        if (tile.id != null) {
+          final subEvent = tile as SubCalendarEvent?;
+          final isViable = subEvent?.isViable ?? true;
+          final isFromTiler = tile.isFromTiler;
+          final rsvpStatus = subEvent?.rsvp;
+
+          // Check if this is a pending RSVP tile (needs action or tentative)
+          final isPendingRsvp = !isFromTiler &&
+              (rsvpStatus == RsvpStatus.needsAction ||
+                  rsvpStatus == RsvpStatus.tentative);
+
+          // Check if this is a declined tile
+          final isDeclined = !isFromTiler && rsvpStatus == RsvpStatus.declined;
+
+          // Track pending RSVP tiles separately (exclude past events)
+          if (isPendingRsvp && subEvent != null) {
+            pendingRsvpTiles.add(subEvent);
+          }
+
+          // Track declined tiles separately (exclude old events)
+          if (isDeclined && subEvent != null) {
+            declinedTiles.add(subEvent);
+          }
+
+          // Show tile if it's not pending RSVP and not declined
+          final shouldShowInMainList = !isPendingRsvp && !isDeclined;
+
+          if (shouldShowInMainList && isViable) {
+            viableTiles[tile.uniqueId] = tile;
+          }
         }
       }
     }
 
+    // Sort pending RSVP and declined tiles by start time
+    pendingRsvpTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+    declinedTiles.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+
     // Calculate stats
     final stats = TodayStats.fromTiles(viableTiles.values.toList());
+
+    // Update dayData with non-viable tiles for display in header
+    if (dayData != null && widget.tiles != null) {
+      dayData!.nonViable = widget.tiles!
+          .where((tile) => !((tile as SubCalendarEvent).isViable ?? true))
+          .toList();
+    }
 
     // Build scrollable content widgets (below the sticky header)
     List<Widget> scrollableContent = [];
@@ -409,16 +461,87 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     // 1. Today summary row
     scrollableContent.add(TodaySummaryRow(stats: stats));
 
-    // 2. Proactive alert banner
+    // Detect all alert data
+    SubCalendarEvent? nextDepartureTile;
+    List<SubCalendarEvent> extendedTiles = [];
+
+    // 2. Get travel alert data
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
-      final nextDepartureTile = _getNextDepartureRequiredTile(orderedTiles);
+      nextDepartureTile = _getNextDepartureRequiredTile(orderedTiles);
+    }
 
+    // Get extended tiles
+    if (viableTiles.isNotEmpty) {
+      extendedTiles =
+          ExtendedTilesBanner.detectExtendedTiles(viableTiles.values.toList());
+    }
+
+    // Count active alerts to decide between combined or individual banners
+    int activeAlertCount = 0;
+    if (nextDepartureTile != null) activeAlertCount++;
+    if (_detectedConflicts.isNotEmpty) activeAlertCount++;
+    if (extendedTiles.isNotEmpty) activeAlertCount++;
+    if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty)
+      activeAlertCount++;
+    // Use combined banner if more than 1 alert, otherwise show individual banners
+    if (activeAlertCount > 1) {
+      scrollableContent.add(
+        CombinedAlertsBanner(
+          nextTileWithTravel: nextDepartureTile,
+          onTravelTap: () {
+            // Navigate to the tile or show details
+          },
+          onTravelDismiss: () {},
+          conflictGroups: _detectedConflicts,
+          onConflictTap: () {
+            // Could show a modal with all conflicts
+          },
+          extendedTiles: extendedTiles,
+          onExtendedTap: () {
+            CombinedAlertsBannerHelpers.showExtendedTilesModal(
+                context, extendedTiles);
+          },
+          pendingRsvpTiles: pendingRsvpTiles,
+          declinedTiles: declinedTiles,
+          onRsvpTap: () {
+            CombinedAlertsBannerHelpers.showPendingRsvpModal(
+              context,
+              pendingRsvpTiles,
+              declinedTiles: declinedTiles,
+              onRsvpUpdated: () => _triggerRefresh(),
+            );
+          },
+          onRsvpUpdated: () => _triggerRefresh(),
+        ),
+      );
+    } else {
+      // Show individual banners when only 0 or 1 alert is active
       if (nextDepartureTile != null) {
         scrollableContent.add(
           ProactiveAlertBanner(
             nextTileWithTravel: nextDepartureTile,
             onDismiss: () {},
+          ),
+        );
+      }
+
+      if (extendedTiles.isNotEmpty) {
+        scrollableContent.add(
+          ExtendedTilesBanner(
+            extendedTiles: extendedTiles,
+          ),
+        );
+      }
+
+      if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
+        scrollableContent.add(
+          PendingRsvpBanner(
+            pendingTiles: pendingRsvpTiles,
+            declinedTiles: declinedTiles,
+            onRsvpUpdated: () {
+              _triggerRefresh();
+            },
           ),
         );
       }
@@ -455,6 +578,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       },
       child: CustomScrollView(
         controller: _scrollController,
+        shrinkWrap: true,
         physics: _isEmptyDay
             ? const NeverScrollableScrollPhysics()
             : const AlwaysScrollableScrollPhysics(),
@@ -463,6 +587,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           SliverPersistentHeader(
             pinned: true,
             delegate: StickyDayHeaderDelegate(
+              dayData: dayData,
               onShowRoute: _navigateToTodaysRoute,
               onReOptimize: _triggerRevise,
             ),
@@ -471,6 +596,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           // Rest of the content
           SliverToBoxAdapter(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 ...scrollableContent,
                 const SizedBox(height: 8),
