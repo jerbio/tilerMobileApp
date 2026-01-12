@@ -69,7 +69,7 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<List<VibeMessage>> getMessages({required String sessionId,int batchSize = 5, int index = 0}) async {
+  Future<List<VibeMessage>> getMessages({required String sessionId,int batchSize = 10, int index = 0}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
