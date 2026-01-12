@@ -64,8 +64,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       emit(state.copyWith(
           step: VibeChatStep.loaded,
           messages: messages,
-          hasMoreMessages: messages.length == 5,
-          currentIndex: 5,
+          hasMoreMessages: messages.length == 10,
+          currentIndex: 10,
           shouldShowAcceptButton: shouldShowAccept
       ));
     } catch (e) {
@@ -86,7 +86,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   }
 
   Future<List<VibeMessage>> _getMessagesWithActions(String sessionId, Emitter<VibeChatState> emit, {int? batchSize, int? index})  async {
-    final messages = await chatApi.getMessages(sessionId: sessionId,  batchSize: batchSize ?? 5,
+    final messages = await chatApi.getMessages(sessionId: sessionId,  batchSize: batchSize ?? 10,
       index: index ?? 0,);
 
     if (messages.isEmpty) {
@@ -222,7 +222,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       final newMessages = await _getMessagesWithActions(
         state.currentSession?.id ?? '',
         emit,
-        batchSize: 5,
+        batchSize: 10,
         index: state.currentIndex,
       );
 
@@ -245,8 +245,8 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       emit(state.copyWith(
         step: VibeChatStep.loaded,
         messages: combinedMessages,
-        hasMoreMessages: newMessages.length == 5,
-        currentIndex: state.currentIndex + 5,
+        hasMoreMessages: newMessages.length == 10,
+        currentIndex: state.currentIndex + 10,
       ));
 
     } catch (e) {
