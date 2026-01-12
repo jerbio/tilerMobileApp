@@ -28,6 +28,8 @@ class ClearTranscribedTextEvent extends VibeChatEvent {}
 
 class LoadSessionsEvent extends VibeChatEvent {}
 
+class LoadMoreSessionsEvent extends VibeChatEvent {}
+
 class SelectSessionEvent extends VibeChatEvent {
   VibeSession session;
   SelectSessionEvent(this.session);

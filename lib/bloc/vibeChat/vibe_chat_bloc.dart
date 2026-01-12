@@ -25,6 +25,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<CancelRecordingEvent>(_onCancelRecording);
     on<ClearTranscribedTextEvent>(_onClearTranscribedText);
     on<LoadSessionsEvent>(_onLoadSessions);
+    on<LoadMoreSessionsEvent>(_onLoadMoreSessions);
     on<SelectSessionEvent>(_onSelectSession);
     on<CreateNewChatEvent>(_onCreateNewChat);
     on<AcceptChangesEvent>(_onAcceptChanges);
@@ -39,9 +40,50 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
       sessions.sort((a, b) => b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
 
-      emit(state.copyWith(step: VibeChatStep.loaded, sessions: sessions));
+      emit(state.copyWith(
+          step: VibeChatStep.loaded,
+          sessions: sessions,
+          hasMoreSessions: sessions.length == 15,
+          currentSessionIndex: 15,
+      ));
     }
     catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
+      ));
+    }
+  }
+
+  Future<void> _onLoadMoreSessions(LoadMoreSessionsEvent event, Emitter<VibeChatState> emit) async {
+    if (state.step == VibeChatStep.loadingSessions || !state.hasMoreSessions) return;
+
+    try {
+      emit(state.copyWith(step: VibeChatStep.loadingMoreSessions));
+
+      final newSessions = await chatApi.getVibeSessions(
+        batchSize: 15,
+        index: state.currentSessionIndex,
+      );
+
+      if (newSessions.isEmpty) {
+        emit(state.copyWith(
+          step: VibeChatStep.loaded,
+          hasMoreSessions: false,
+        ));
+        return;
+      }
+
+      final combinedSessions = [...state.sessions, ...newSessions];
+      combinedSessions.sort((a, b) => b.creationTimeInMs!.compareTo(a.creationTimeInMs!));
+
+      emit(state.copyWith(
+        step: VibeChatStep.loaded,
+        sessions: combinedSessions,
+        hasMoreSessions: newSessions.length == 15,
+        currentSessionIndex: state.currentSessionIndex + 15,
+      ));
+    } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
         error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
@@ -82,6 +124,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       messages: [],
       currentIndex: 0,
       sessions: state.sessions,
+      hasMoreMessages: false
     ));
   }
 
@@ -212,11 +255,11 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   }
 
   Future<void> _onLoadMoreMessages(LoadMoreMessagesEvent event, Emitter<VibeChatState> emit,) async {
-    if (state.step == VibeChatStep.loadingMore || !state.hasMoreMessages) return;
+    if (state.step == VibeChatStep.loadingMoreMessages || !state.hasMoreMessages) return;
 
     try {
       emit(state.copyWith(
-        step: VibeChatStep.loadingMore,
+        step: VibeChatStep.loadingMoreMessages,
       ));
 
       final newMessages = await _getMessagesWithActions(

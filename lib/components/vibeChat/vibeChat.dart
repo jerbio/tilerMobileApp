@@ -82,6 +82,14 @@ class _VibeChatState extends State<VibeChat> {
   }
 
   Widget _buildDrawer(BuildContext context, VibeChatState state) {
+    final sessionsScrollController = ScrollController();
+    sessionsScrollController.addListener(() {
+      if (sessionsScrollController.position.extentAfter < 100) {
+        if (state.step == VibeChatStep.loaded && state.hasMoreSessions) {
+          context.read<VibeChatBloc>().add(LoadMoreSessionsEvent());
+        }
+      }
+    });
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -105,8 +113,12 @@ class _VibeChatState extends State<VibeChat> {
                   : state.sessions.isEmpty
                   ? Center(child: Text(localization.noChatHistory))
                   : ListView.builder(
-                itemCount: state.sessions.length,
+                controller: sessionsScrollController,
+                itemCount: state.sessions.length + (state.hasMoreSessions ? 1 : 0),
                 itemBuilder: (context, index) {
+                  if (index == state.sessions.length) {
+                    return  Center(child: CircularProgressIndicator());
+                  }
                   final session = state.sessions[index];
                   final isSelected = session.id == state.currentSession?.id;
                   return ListTile(

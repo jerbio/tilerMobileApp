@@ -16,14 +16,18 @@ class ChatApi extends AppApi {
   ChatApi({Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
 
-  Future<List<VibeSession>> getVibeSessions({String? sessionId}) async {
+  Future<List<VibeSession>> getVibeSessions({String? sessionId, int batchSize = 15, int index = 0}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
         await checkAndReplaceCredentialCache();
 
         String tilerDomain = Constants.tilerDomain;
-        Map<String, String> queryParams = {'mobileApp': 'true'};
+        Map<String, String> queryParams = {
+          'mobileApp': 'true',
+          'batchSize': batchSize.toString(),
+          'index': index.toString(),
+        };
         if (sessionId != null && sessionId.isNotEmpty) {
           queryParams['sessionId'] = sessionId;
         }

@@ -37,7 +37,7 @@ class MessageList extends StatelessWidget {
   Widget _buildMessageList(BuildContext context) {
     return Column(
       children: [
-        if (state.step == VibeChatStep.loadingMore)
+        if (state.step == VibeChatStep.loadingMoreMessages)
           Padding(
             padding: EdgeInsets.all(8.0),
             child: CircularProgressIndicator(),

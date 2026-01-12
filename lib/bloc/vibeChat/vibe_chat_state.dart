@@ -3,8 +3,9 @@ part of 'vibe_chat_bloc.dart';
 enum VibeChatStep {
   initial,
   loading,
-  loadingMore,
+  loadingMoreMessages,
   loadingSessions,
+  loadingMoreSessions,
   loaded,
   sending,
   recording,
@@ -22,17 +23,21 @@ class VibeChatState extends Equatable {
   final String? transcribedText;
   final List<VibeSession> sessions;
   final bool shouldShowAcceptButton;
+  final bool hasMoreSessions;
+  final int currentSessionIndex;
 
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession ,
     this.messages = const [],
-    this.hasMoreMessages = true,
+    this.hasMoreMessages = false,
     this.currentIndex = 0,
     this.error,
     this.transcribedText,
     this.sessions= const[],
-    this.shouldShowAcceptButton=false
+    this.shouldShowAcceptButton=false,
+    this.hasMoreSessions = false,
+    this.currentSessionIndex = 0,
   });
 
   VibeChatState copyWith({
@@ -44,7 +49,9 @@ class VibeChatState extends Equatable {
     String? error,
     String? transcribedText,
     List<VibeSession>? sessions,
-    bool? shouldShowAcceptButton
+    bool? shouldShowAcceptButton,
+    bool? hasMoreSessions,
+    int? currentSessionIndex,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -55,7 +62,9 @@ class VibeChatState extends Equatable {
       error: error ?? this.error,
       transcribedText: transcribedText ?? this.transcribedText,
       sessions: sessions ?? this.sessions,
-      shouldShowAcceptButton: shouldShowAcceptButton ?? this.shouldShowAcceptButton
+      shouldShowAcceptButton: shouldShowAcceptButton ?? this.shouldShowAcceptButton,
+      hasMoreSessions: hasMoreSessions ?? this.hasMoreSessions,
+      currentSessionIndex: currentSessionIndex ?? this.currentSessionIndex,
     );
   }
 
@@ -69,7 +78,9 @@ class VibeChatState extends Equatable {
     error,
     transcribedText,
     sessions,
-    shouldShowAcceptButton
+    shouldShowAcceptButton,
+    hasMoreMessages,
+    currentSessionIndex
   ];
 }
 
