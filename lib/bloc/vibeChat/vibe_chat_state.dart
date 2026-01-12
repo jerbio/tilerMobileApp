@@ -21,6 +21,7 @@ class VibeChatState extends Equatable {
   final String? error;
   final String? transcribedText;
   final List<VibeSession> sessions;
+  final bool shouldShowAcceptButton;
 
   const VibeChatState({
     this.step = VibeChatStep.initial,
@@ -30,7 +31,8 @@ class VibeChatState extends Equatable {
     this.currentIndex = 0,
     this.error,
     this.transcribedText,
-     this.sessions= const[]
+    this.sessions= const[],
+    this.shouldShowAcceptButton=false
   });
 
   VibeChatState copyWith({
@@ -41,7 +43,8 @@ class VibeChatState extends Equatable {
     int? currentIndex,
     String? error,
     String? transcribedText,
-     List<VibeSession>? sessions
+    List<VibeSession>? sessions,
+    bool? shouldShowAcceptButton
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -51,8 +54,8 @@ class VibeChatState extends Equatable {
       currentIndex: currentIndex ?? this.currentIndex,
       error: error ?? this.error,
       transcribedText: transcribedText ?? this.transcribedText,
-      sessions: sessions ?? this.sessions
-
+      sessions: sessions ?? this.sessions,
+      shouldShowAcceptButton: shouldShowAcceptButton ?? this.shouldShowAcceptButton
     );
   }
 
@@ -65,7 +68,8 @@ class VibeChatState extends Equatable {
     currentIndex,
     error,
     transcribedText,
-    sessions
+    sessions,
+    shouldShowAcceptButton
   ];
 }
 

@@ -3556,6 +3556,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transcription failed'**
   String get transcriptionFailed;
+
+  /// No description provided for @acceptChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Changes'**
+  String get acceptChanges;
+
+  /// No description provided for @noRequestToExecute.
+  ///
+  /// In en, this message translates to:
+  /// **'No request to execute'**
+  String get noRequestToExecute;
 }
 
 class _AppLocalizationsDelegate

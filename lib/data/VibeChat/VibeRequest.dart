@@ -3,7 +3,7 @@ import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 class VibeRequest {
   final String? id;
   final int? creationTimeInMs;
-  final String? activeAction;
+  final VibeAction? activeAction;
   final bool? isClosed;
   final String? beforeScheduleId;
   final String? afterScheduleId;
@@ -23,7 +23,9 @@ class VibeRequest {
     return VibeRequest(
       id: json['id'] as String?,
       creationTimeInMs: json['creationTimeInMs'] as int?,
-      activeAction: json['activeAction'] as String?,
+      activeAction: json['activeAction'] != null
+          ? VibeAction.fromJson(json['activeAction'])
+          : null,
       isClosed: json['isClosed'] as bool?,
       beforeScheduleId: json['beforeScheduleId'] as String?,
       afterScheduleId: json['afterScheduleId'] as String?,
@@ -39,7 +41,7 @@ class VibeRequest {
     return {
       'id': id,
       'creationTimeInMs': creationTimeInMs,
-      'activeAction': activeAction,
+      'activeAction': activeAction?.toJson(),
       'isClosed': isClosed,
       'beforeScheduleId': beforeScheduleId,
       'afterScheduleId': afterScheduleId,

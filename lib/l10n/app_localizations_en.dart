@@ -2007,4 +2007,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transcriptionFailed => 'Transcription failed';
+
+  @override
+  String get acceptChanges => 'Accept Changes';
+
+  @override
+  String get noRequestToExecute => 'No request to execute';
 }

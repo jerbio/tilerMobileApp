@@ -55,14 +55,14 @@ class _VibeChatState extends State<VibeChat> {
     super.dispose();
   }
 
-   void _handleBlocStateChanges(BuildContext context, VibeChatState state) {
+  void _handleBlocStateChanges(BuildContext context, VibeChatState state) {
 
 
 
-     if (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded) {
-       _messageController.clear();
-     }
-     _previousStep = state.step;
+    if (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded) {
+      _messageController.clear();
+    }
+    _previousStep = state.step;
 
     if (state.step == VibeChatStep.loaded &&
         state.transcribedText != null &&
@@ -109,7 +109,7 @@ class _VibeChatState extends State<VibeChat> {
                 itemBuilder: (context, index) {
                   final session = state.sessions[index];
                   final isSelected = session.id == state.currentSession?.id;
-                        return ListTile(
+                  return ListTile(
                     selected: isSelected,
                     selectedTileColor: colorScheme.surfaceContainerHighest,
                     title: Text(
@@ -127,7 +127,7 @@ class _VibeChatState extends State<VibeChat> {
                         : null,
                     onTap: () {
                       if(state.currentSession?.id != session.id)
-                       context.read<VibeChatBloc>().add(SelectSessionEvent(session),);
+                        context.read<VibeChatBloc>().add(SelectSessionEvent(session),);
                       Navigator.pop(context);
                     },
                   );
@@ -198,6 +198,23 @@ class _VibeChatState extends State<VibeChat> {
                     scrollController: _scrollController,
                   ),
                 ),
+                if (state.shouldShowAcceptButton && state.step == VibeChatStep.loaded)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<VibeChatBloc>().add(AcceptChangesEvent());
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                        ),
+                        child: Text(localization.acceptChanges),
+                      ),
+                    ),
+                  ),
                 MessageInput(
                   controller: _messageController,
                 ),

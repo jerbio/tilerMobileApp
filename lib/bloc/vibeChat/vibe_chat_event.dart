@@ -36,3 +36,8 @@ class SelectSessionEvent extends VibeChatEvent {
 
 
 class CreateNewChatEvent extends VibeChatEvent {}
+
+class AcceptChangesEvent extends VibeChatEvent {
+  @override
+  List<Object?> get props => [];
+}

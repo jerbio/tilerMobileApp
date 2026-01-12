@@ -78,4 +78,24 @@ class VibeAction {
       'afterScheduleId': afterScheduleId,
     };
   }
+
+  VibeAction copyWith({
+    String? id,
+    String? descriptions,
+    String? type,
+    int? creationTimeInMs,
+    ActionStatus? status,
+    String? beforeScheduleId,
+    String? afterScheduleId,
+  }) {
+    return VibeAction(
+      id: id ?? this.id,
+      descriptions: descriptions ?? this.descriptions,
+      type: type ?? this.type,
+      creationTimeInMs: creationTimeInMs ?? this.creationTimeInMs,
+      status: status ?? this.status,
+      beforeScheduleId: beforeScheduleId ?? this.beforeScheduleId,
+      afterScheduleId: afterScheduleId ?? this.afterScheduleId,
+    );
+  }
 }

@@ -27,6 +27,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<LoadSessionsEvent>(_onLoadSessions);
     on<SelectSessionEvent>(_onSelectSession);
     on<CreateNewChatEvent>(_onCreateNewChat);
+    on<AcceptChangesEvent>(_onAcceptChanges);
   }
 
   Stream<double> get amplitudeStream => _audioService?.amplitudeStream ?? Stream.empty();
@@ -43,7 +44,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: (e as TilerError).Message,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
       ));
     }
   }
@@ -55,28 +56,34 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       }
       emit(state.copyWith(step: VibeChatStep.loading,currentSession: event.session));
       final messages = await _getMessagesWithActions(event.session.id!, emit);
+      bool shouldShowAccept = false;
+      final lastRequestId = messages.isNotEmpty ? messages.last.requestId : null;
+      if (lastRequestId != null) {
+        shouldShowAccept = await _shouldShowAcceptButton(lastRequestId);
+      }
       emit(state.copyWith(
-        step: VibeChatStep.loaded,
-        messages: messages,
-        hasMoreMessages: messages.length == 5,
-        currentIndex: 5,
+          step: VibeChatStep.loaded,
+          messages: messages,
+          hasMoreMessages: messages.length == 5,
+          currentIndex: 5,
+          shouldShowAcceptButton: shouldShowAccept
       ));
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: (e as TilerError).Message,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
       ));
     }
   }
 
-void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
-  emit(VibeChatState(
-    step: VibeChatStep.loaded,
-    messages: [],
-    currentIndex: 0,
-    sessions: state.sessions,
-  ));
- }
+  void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
+    emit(VibeChatState(
+      step: VibeChatStep.loaded,
+      messages: [],
+      currentIndex: 0,
+      sessions: state.sessions,
+    ));
+  }
 
   Future<List<VibeMessage>> _getMessagesWithActions(String sessionId, Emitter<VibeChatState> emit, {int? batchSize, int? index})  async {
     final messages = await chatApi.getMessages(sessionId: sessionId,  batchSize: batchSize ?? 5,
@@ -90,7 +97,6 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
       final timestampB = _extractTimestamp(b.id!);
       return timestampB.compareTo(timestampA);
     });
-
 
     final uniqueActionIds = <String>{};
     for (var msg in messages) {
@@ -246,7 +252,7 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: (e as TilerError).Message,
+        error:  e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
       ));
     }
   }
@@ -274,33 +280,39 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
         final timestampB = _extractTimestamp(b.id ?? '');
         return timestampA.compareTo(timestampB);
       });
+      final newRequestId = newMessages.isNotEmpty ? newMessages.last.requestId : null;
 
       final newSessionId = sessionId.isEmpty && newMessages.isNotEmpty
           ? newMessages.first.sessionId ?? sessionId
           :sessionId;
       List<VibeSession>? updatedSessions;
       VibeSession? updatedCurrentSession = state.currentSession;
+      bool shouldShowAccept = false;
       if(sessionId!=newSessionId)
-        {
-          final sessions = await chatApi.getVibeSessions(sessionId: newSessionId);
-          if(sessions.length==1) {
-            final newSession = sessions.first;
-            updatedSessions = [newSession, ...state.sessions];
-            updatedCurrentSession = newSession;
-          }
+      {
+        final sessions = await chatApi.getVibeSessions(sessionId: newSessionId);
+        if(sessions.length==1) {
+          final newSession = sessions.first;
+          updatedSessions = [newSession, ...state.sessions];
+          updatedCurrentSession = newSession;
         }
+      }
+      if (newRequestId != null) {
+        shouldShowAccept = await _shouldShowAcceptButton(newRequestId);
+      }
       emit(state.copyWith(
         currentSession: updatedCurrentSession,
         step: VibeChatStep.loaded,
         messages: combinedMessages,
         currentIndex: combinedMessages.length,
         sessions: updatedSessions,
+        shouldShowAcceptButton: shouldShowAccept,
       ));
 
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: (e as TilerError).Message,
+        error:  e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
       ));
     }
   }
@@ -319,7 +331,7 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
       _audioService = null;
       emit(state.copyWith(
         step: VibeChatStep.error,
-        error: (e as TilerError).Message,
+        error:  e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
       ));
     }
   }
@@ -351,10 +363,7 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
     }
   }
 
-  Future<void> _onCancelRecording(
-      CancelRecordingEvent event,
-      Emitter<VibeChatState> emit,
-      ) async {
+  Future<void> _onCancelRecording(CancelRecordingEvent event, Emitter<VibeChatState> emit,) async {
     if (_audioService != null) {
       await _audioService!.cancelRecording();
       _audioService = null;
@@ -370,5 +379,111 @@ void _onCreateNewChat (CreateNewChatEvent event, Emitter<VibeChatState> emit) {
     emit(state.copyWith(transcribedText: ''));
   }
 
+  Future<bool> _shouldShowAcceptButton(String requestId) async {
+    try {
+      final request = await chatApi.getVibeRequest(requestId);
+      return request?.isClosed != true;
+    } catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
+      ));
+      return false;
+    }
+  }
 
- }
+  Future<void> _onAcceptChanges(AcceptChangesEvent event, Emitter<VibeChatState> emit) async {
+    try {
+      //In Web version on pressing accept button we were re loading all message
+      // but on our mobile app we followed different way
+      // started with fetching only recent 5 msgs instead of fetching all msgs
+      // and add only new msgs( not already existed)
+      // and then we went through our conversation and update actions
+      emit(state.copyWith(step: VibeChatStep.sending));
+
+      final lastRequestId = state.messages.isNotEmpty ? state.messages.last.requestId : null;
+
+      if (lastRequestId == null) {
+        throw TilerError(Message: LocalizationService.instance.translations.noRequestToExecute);
+      }
+
+      //Updating Messages
+      await chatApi.executeVibeRequest(requestId: lastRequestId);
+      List<VibeMessage> updatedMsgs = state.messages;
+
+      List<VibeMessage> newMessages = [];
+      final sessionId = state.currentSession?.id ?? '';
+      if (sessionId.isNotEmpty) {
+        final recentMessages = await _getMessagesWithActions(
+          sessionId,
+          emit,
+          batchSize: 5,
+          index: 0,
+        );
+
+        final existingIds = updatedMsgs.map((m) => m.id).toSet();
+         newMessages = recentMessages.where((m) => !existingIds.contains(m.id)).toList();
+
+        updatedMsgs = [...updatedMsgs, ...newMessages];
+
+      }
+
+      //Updating actions
+      final uniqueActionIds = <String>{};
+      for (var msg in newMessages) {
+        if (msg.actionIds != null) {
+          uniqueActionIds.addAll(msg.actionIds!);
+        }
+      }
+
+      if (uniqueActionIds.isNotEmpty) {
+       final updatedActions = await chatApi.getActions(uniqueActionIds.toList());
+
+        // Rebuilding actions
+        final updatedActionsMap = {for (var a in updatedActions) a.id: a};
+
+        updatedMsgs = updatedMsgs.map((msg) {
+          // Case 1: No actions in message,  returning  msg as it's
+          if (msg.actions == null || msg.actions!.isEmpty) {
+            return msg;
+          }
+
+          final newActions = msg.actions!.map((action) {
+            // Case 2: Action ID matches updated(new) actions, replacing with new action
+            if (updatedActionsMap.containsKey(action.id)) {
+              return updatedActionsMap[action.id]!;
+            }
+            // Case 3: Action ID doesn't match AND status is executed, keep action as it's
+            if (action.status == ActionStatus.executed) {
+              return action;
+            }
+            // Case 4: Action ID doesn't match AND status is not executed, changing status to  dispose
+            return action.copyWith(status: ActionStatus.disposed);
+          }).toList();
+
+          return msg.copyWith(actions: newActions);
+        }).toList();
+
+
+        emit(state.copyWith(
+          step: VibeChatStep.loaded,
+          messages: updatedMsgs,
+          shouldShowAcceptButton: false,
+        ));
+      } else {
+        emit(state.copyWith(
+          step: VibeChatStep.loaded,
+          shouldShowAcceptButton: false,
+        ));
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.transcriptionFailed,
+      ));
+    }
+  }
+
+
+
+}

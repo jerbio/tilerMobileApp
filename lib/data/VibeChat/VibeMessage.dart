@@ -71,4 +71,24 @@ class VibeMessage {
       'actions': actions?.map((action) => action.toJson()).toList(),
     };
   }
+
+  VibeMessage copyWith({
+    String? id,
+    MessageOrigin? origin,
+    String? content,
+    String? requestId,
+    String? sessionId,
+    List<String>? actionIds,
+    List<VibeAction>? actions,
+  }) {
+    return VibeMessage(
+      id: id ?? this.id,
+      origin: origin ?? this.origin,
+      content: content ?? this.content,
+      requestId: requestId ?? this.requestId,
+      sessionId: sessionId ?? this.sessionId,
+      actionIds: actionIds ?? this.actionIds,
+      actions: actions ?? this.actions,
+    );
+  }
 }

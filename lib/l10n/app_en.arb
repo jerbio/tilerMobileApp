@@ -1469,5 +1469,7 @@
         "newChat":"New chat",
         "noChatHistory":"No chat history",
         "unknownChat":"Unknown chat",
-        "transcriptionFailed":"Transcription failed"
+        "transcriptionFailed":"Transcription failed",
+        "acceptChanges":"Accept Changes",
+        "noRequestToExecute":"No request to execute"
 }
