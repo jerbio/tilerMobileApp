@@ -1468,6 +1468,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  signalr_flutter:
+    dependency: "direct main"
+    description:
+      name: signalr_flutter
+      sha256: "713688b1a9190bb587fe31e887837269f19602bf42f1da6bbd728db452a12324"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   simple_circular_progress_bar:
     dependency: "direct main"
     description:
@@ -1810,13 +1818,13 @@ packages:
     source: hosted
     version: "0.1.6"
   web_socket_channel:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web_socket_channel
-      sha256: "0b8e2457400d8a859b7b2030786835a28a8e80836ef64402abef392ff4f1d0e5"
+      sha256: d645757fb0f4773d602444000a8131ff5d48c9e47adfe9772652dd1a4f2d45c8
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.2"
+    version: "3.0.3"
   webview_flutter:
     dependency: "direct main"
     description:

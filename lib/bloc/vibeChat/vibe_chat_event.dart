@@ -3,7 +3,8 @@ part of 'vibe_chat_bloc.dart';
 
 abstract class VibeChatEvent {}
 
-
+class OpenChatEvent extends VibeChatEvent {}
+class CloseChatEvent extends VibeChatEvent {}
 
 class LoadMoreMessagesEvent extends VibeChatEvent {}
 
@@ -43,3 +44,5 @@ class AcceptChangesEvent extends VibeChatEvent {
   @override
   List<Object?> get props => [];
 }
+
+

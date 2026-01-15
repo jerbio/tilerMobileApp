@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -8,6 +9,8 @@ import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/audiRecordingService.dart';
 import 'package:tiler_app/services/localizationService.dart';
+import 'package:tiler_app/services/signalRSocketService.dart';
+import 'package:tiler_app/util.dart';
 
 part 'vibe_chat_event.dart';
 part 'vibe_chat_state.dart';
@@ -16,8 +19,12 @@ part 'vibe_chat_state.dart';
 class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   final ChatApi chatApi;
   AudioRecordingService? _audioService;
+  SignalRSocketService? _signalRService;
+  StreamSubscription<String>? _statusSubscription;
 
   VibeChatBloc({required this.chatApi}) : super(VibeChatState()) {
+    on<OpenChatEvent>(_onOpenChat);
+    on<CloseChatEvent>(_onCloseChat);
     on<LoadMoreMessagesEvent>(_onLoadMoreMessages);
     on<SendAMessageEvent>(_onSendAMessage);
     on<StartRecordingEvent>(_onStartRecording);
@@ -32,6 +39,29 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   }
 
   Stream<double> get amplitudeStream => _audioService?.amplitudeStream ?? Stream.empty();
+  Stream<String> get signalRStatusStream => _signalRService?.statusStream ?? Stream.empty();
+
+  Future<void> _onOpenChat(OpenChatEvent event, Emitter<VibeChatState> emit) async {
+    try{
+      _signalRService ??= SignalRSocketService(getContextCallBack: chatApi.getContextCallBack);
+      await _signalRService!.createVibeConnection();
+    }  catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
+      ));
+    }
+  }
+
+  Future<void> _onCloseChat(CloseChatEvent event, Emitter<VibeChatState> emit) async {
+   try{
+       await _signalRService?.dispose();
+     } catch (e) {
+       Utility.debugPrint('Error disposing SignalR: $e');
+     } finally {
+       _signalRService = null;
+     }
+  }
 
   Future<void> _onLoadSessions (LoadSessionsEvent event, Emitter<VibeChatState> emit) async{
     try{
@@ -527,6 +557,12 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     }
   }
 
-
+  @override
+  Future<void> close() {
+    _statusSubscription?.cancel();
+    _signalRService?.dispose();
+    _audioService?.dispose();
+    return super.close();
+  }
 
 }

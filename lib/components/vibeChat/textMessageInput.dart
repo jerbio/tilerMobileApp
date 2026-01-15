@@ -21,8 +21,7 @@ class _TextMessageInputState extends State<TextMessageInput> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
-  Timer? _dotTimer;
-  int _dotCount = 0;
+
 
   @override
   void didChangeDependencies() {
@@ -30,28 +29,6 @@ class _TextMessageInputState extends State<TextMessageInput> {
     colorScheme = theme.colorScheme;
     tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
-  }
-
-  @override
-  void dispose() {
-    _dotTimer?.cancel();
-    super.dispose();
-  }
-
-  void _startDotAnimation() {
-    _dotTimer?.cancel();
-    _dotCount = 0;
-    _dotTimer = Timer.periodic(Duration(milliseconds: 500), (timer) {
-      if (mounted) {
-        setState(() {
-          _dotCount = (_dotCount + 1) % 4;
-        });
-      }
-    });
-  }
-
-  void _stopDotAnimation() {
-    _dotTimer?.cancel();
   }
 
   @override
@@ -63,11 +40,6 @@ class _TextMessageInputState extends State<TextMessageInput> {
         final isTranscribing = state.step == VibeChatStep.transcribing;
         final hasText = widget.controller.text.trim().isNotEmpty;
 
-        if (isTranscribing && _dotTimer == null) {
-          _startDotAnimation();
-        } else if (!isTranscribing && _dotTimer != null) {
-          _stopDotAnimation();
-        }
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -78,7 +50,7 @@ class _TextMessageInputState extends State<TextMessageInput> {
                 controller: widget.controller,
                 enabled: state.step == VibeChatStep.loaded,
                 decoration: InputDecoration(
-                  hintText: isTranscribing ? '${localization.transcribing}${'.' * _dotCount}' : localization.describeATask,
+                  hintText: localization.describeATask,
                   hintStyle: TextStyle(
                     color: colorScheme.onSurfaceVariant.withOpacity(0.5),
                     fontSize: 16,
