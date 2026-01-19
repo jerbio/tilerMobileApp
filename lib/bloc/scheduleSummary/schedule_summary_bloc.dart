@@ -98,6 +98,10 @@ class ScheduleSummaryBloc
           dayData: value.values.toList(),
           requestId: event.requestId,
           elapsedTiles: elapsedTasks));
+    }).catchError((error) {
+      print('Error fetching day summary: $error');
+      emit(ScheduleSummaryErrorState(
+          error: error.toString(), message: 'Failed to load schedule summary'));
     });
   }
 

@@ -11,6 +11,7 @@ import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/api/retryHttpClient.dart';
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -29,16 +30,22 @@ abstract class AppApi {
   late Authentication authentication;
   late AccessManager accessManager;
   Function? getContextCallBack;
-  late http.Client httpClient;
+  late RetryHttpClient httpClient;
 
   AppApi({required this.getContextCallBack}) {
     authentication = new Authentication();
     accessManager = AccessManager();
-    httpClient = http.Client();
+    httpClient = RetryHttpClient();
   }
 
   void dispose() {
     httpClient.close();
+  }
+
+  /// Refreshes the HTTP client by closing the old one and creating a new instance.
+  /// This helps resolve stale connection issues when the app resumes from background.
+  void refreshHttpClient() {
+    httpClient.refreshClient();
   }
 
   bool isJsonResponseOk(Map jsonResult) {
