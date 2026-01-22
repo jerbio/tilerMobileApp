@@ -228,8 +228,10 @@ class ChatApi extends AppApi {
         Map<String, dynamic> requestBody = {
           'ChatMessage': message,
           'SessionId': sessionId??'',
-          'MobileApp': true,
         };
+
+        final queryParameters =
+        await injectRequestParams(requestBody, includeLocationParams: true);
 
         Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Chat');
         var headers = this.getHeaders();
@@ -243,7 +245,7 @@ class ChatApi extends AppApi {
         http.Response response = await http.post(
           uri,
           headers: headers,
-          body: jsonEncode(requestBody),
+          body: jsonEncode(queryParameters),
         );
 
         if (response.statusCode == 200 || response.statusCode==60000001) {
@@ -271,7 +273,7 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<VibeRequest?> executeVibeRequest({ required String requestId, String? userLongitude, String? userLatitude, String? userLocationVerified}) async {
+  Future<VibeRequest?> executeVibeRequest({ required String requestId}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -279,12 +281,11 @@ class ChatApi extends AppApi {
 
         Map<String, dynamic> requestBody = {
           'requestId': requestId,
-          'MobileApp': true,
         };
 
-        if (userLongitude != null) requestBody['userLongitude'] = userLongitude;
-        if (userLatitude != null) requestBody['userLatitude'] = userLatitude;
-        if (userLocationVerified != null) requestBody['userLocationVerified'] = userLocationVerified;
+        final queryParameters =
+        await injectRequestParams(requestBody, includeLocationParams: true);
+
 
         Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Request/Execute');
         var headers = this.getHeaders();
@@ -298,7 +299,7 @@ class ChatApi extends AppApi {
         http.Response response = await http.post(
           uri,
           headers: headers,
-          body: jsonEncode(requestBody),
+          body: jsonEncode(queryParameters),
         );
 
 
