@@ -22,6 +22,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   late ColorScheme colorScheme;
   late AppLocalizations localization ;
   VibeChatStep? _previousStep;
+  String? _previousSession;
   late AnimationController _lineAnimationController;
   late AnimationController _dotAnimationController;
 
@@ -75,9 +76,14 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
 
 
 
-    if (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded) {
+    if (
+        (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded)
+        ||
+        _previousSession != state.currentSession?.id
+    ) {
       _messageController.clear();
     }
+    _previousSession = state.currentSession?.id;
     _previousStep = state.step;
 
     if (state.step == VibeChatStep.loaded &&

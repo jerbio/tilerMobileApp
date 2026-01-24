@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
+import 'package:tiler_app/components/vibeChat/recordingAudioWavePainter.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'dart:async';
 
@@ -12,43 +13,39 @@ class AudioRecordingInput extends StatefulWidget {
   State<AudioRecordingInput> createState() => _AudioRecordingInputState();
 }
 
-class _AudioRecordingInputState extends State<AudioRecordingInput> {
-  List<double> _waveformHeights = List.generate(30, (_) => 0.2);
+class _AudioRecordingInputState extends State<AudioRecordingInput>  with TickerProviderStateMixin {
+
+  late AnimationController _animationController;
   StreamSubscription<double>? _amplitudeSubscription;
-  Timer? _scrollTimer;
-  double _latestAmplitude = 0.2;
+  double _currentAmplitude = 0.2;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 3000),
+    )..repeat();
+
     _subscribeToAmplitude();
   }
-
   void _subscribeToAmplitude() {
-    _scrollTimer = Timer.periodic(Duration(milliseconds: 100), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() {
-        final displayHeight = _latestAmplitude == 0.2
-            ? 0.15 + (DateTime.now().millisecond % 10) * 0.01
-            : _latestAmplitude;
-        _waveformHeights = [..._waveformHeights.sublist(1), displayHeight];
-      });
-    });
-
-    _amplitudeSubscription = context.read<VibeChatBloc>()
+    _amplitudeSubscription = context
+        .read<VibeChatBloc>()
         .amplitudeStream
         .listen((amplitude) {
-      _latestAmplitude = amplitude;
+      if (mounted) {
+        setState(() {
+          _currentAmplitude = amplitude.clamp(0.1, 1.0);
+        });
+      }
     });
   }
 
   @override
   void dispose() {
     _amplitudeSubscription?.cancel();
-    _scrollTimer?.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -74,23 +71,23 @@ class _AudioRecordingInputState extends State<AudioRecordingInput> {
           ),
         ),
         SizedBox(width: 4),
+
         Expanded(
           child: Container(
-            height: 50,
+            height: 60,
             padding: EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: _waveformHeights.map((height) {
-                return Container(
-                  width: 3,
-                  height: height * 50,
-                  decoration: BoxDecoration(
-                    color: colorScheme.error,
-                    borderRadius: BorderRadius.circular(2),
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: recordingAudioWavePainter(
+                    animation: _animationController,
+                    amplitude: _currentAmplitude,
+                    color: colorScheme.primary,
                   ),
+                  size: Size.infinite,
                 );
-              }).toList(),
+              },
             ),
           ),
         ),

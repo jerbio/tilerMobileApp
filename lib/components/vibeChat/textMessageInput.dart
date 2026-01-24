@@ -110,7 +110,7 @@ class _TextMessageInputState extends State<TextMessageInput> {
         ),
       )
           : IconButton(
-        onPressed: (isSending || isTranscribing || state.step == VibeChatStep.loading)
+        onPressed: state.step != VibeChatStep.loaded
           ? null
           : (hasText ? _handleSendMessage : () => context.read<VibeChatBloc>().add(StartRecordingEvent())),
         icon: Icon(

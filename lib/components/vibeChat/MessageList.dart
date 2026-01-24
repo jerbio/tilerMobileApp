@@ -7,6 +7,7 @@ import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:gpt_markdown/gpt_markdown.dart';
 
 class MessageList extends StatelessWidget {
   final VibeChatState state;
@@ -144,7 +145,7 @@ class MessageList extends StatelessWidget {
             bottomRight: Radius.circular(16),
           ),
         ),
-        child: Text(
+        child: GptMarkdown(
           text,
           style: TextStyle(
             color: isUser ? colorScheme.onSurface : colorScheme.onPrimary,
@@ -153,6 +154,7 @@ class MessageList extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildActionTile(BuildContext context, {required VibeAction action}) {
     final colorScheme = Theme.of(context).colorScheme;
