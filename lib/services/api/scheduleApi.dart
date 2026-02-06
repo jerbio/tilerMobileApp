@@ -132,6 +132,9 @@ class ScheduleApi extends AppApi {
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
 
+      print(timeline.start!.toInt().toString() +
+          " - " +
+          timeline.end!.toInt().toString());
       DateTime dateTime = Utility.currentTime();
       final queryParameters = {
         'StartRange': timeline.start!.toInt().toString(),
@@ -147,7 +150,8 @@ class ScheduleApi extends AppApi {
       if (header == null) {
         throw TilerError(Message: 'Issues with authentication');
       }
-      DateTime startOfRequest = Utility.currentTime();
+      DateTime startOfRequest = Utility.currentTime(minuteLimitAccuracy: false);
+      // GET requests are automatically retried by RetryHttpClient on network failures
       var response = await httpClient.get(uri, headers: header).timeout(
         AppApi.requestTimeout,
         onTimeout: () {
@@ -173,12 +177,21 @@ class ScheduleApi extends AppApi {
               timelineSummary.dayIndex = dateOfFirst.universalDayIndex;
               retValue[dateOfFirst.universalDayIndex] = timelineSummary;
             }
+            DateTime successEndOfRequest =
+                Utility.currentTime(minuteLimitAccuracy: false);
+            Duration awaitedDuration = Duration(
+                milliseconds: successEndOfRequest.millisecondsSinceEpoch -
+                    startOfRequest.millisecondsSinceEpoch);
+
+            print("getDaySummary Response code is " +
+                response.statusCode.toString());
+            print("awaitedDuration " + awaitedDuration.toString());
 
             return retValue;
           }
         }
       }
-      DateTime endOfRequest = Utility.currentTime();
+      DateTime endOfRequest = Utility.currentTime(minuteLimitAccuracy: false);
       Duration awaitedDuration = Duration(
           milliseconds: endOfRequest.millisecondsSinceEpoch -
               startOfRequest.millisecondsSinceEpoch);
@@ -476,7 +489,8 @@ class ScheduleApi extends AppApi {
   Future reviseSchedule() async {
     // return buzzSchedule();
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToReviseScheduleRequest;
+    error.Message =
+        LocalizationService.instance.translations.failedToReviseScheduleRequest;
 
     return sendPostRequest('api/Schedule/Revise', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -497,7 +511,8 @@ class ScheduleApi extends AppApi {
 
   Future buzzSchedule() async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToBuzzSchedule;
+    error.Message =
+        LocalizationService.instance.translations.failedToBuzzSchedule;
 
     return sendPostRequest('api/Schedule/Buzz', {}).then((response) {
       var jsonResult = jsonDecode(response.body);
@@ -518,7 +533,8 @@ class ScheduleApi extends AppApi {
 
   Future shuffleSchedule() async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToShuffleSchedule;
+    error.Message =
+        LocalizationService.instance.translations.failedToShuffleSchedule;
     return sendPostRequest('api/Schedule/Shuffle', {}).then((response) {
       error.Message = "Issues with reaching Tiler servers";
       if (response.statusCode == HttpStatus.accepted) {
