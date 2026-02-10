@@ -190,7 +190,7 @@ class CustomTimeRestrictionRouteState
               colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             )
           : SvgPicture.asset(
-              'assets/icons/settings//copy-icon.svg',
+              'assets/icons/settings/copy-icon.svg',
               colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
     );
