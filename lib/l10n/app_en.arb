@@ -1257,6 +1257,40 @@
         "startNavigation": "Start Navigation",
         "noLocationAvailable": "No location",
         "seeTodaysRoute": "See Today's Route",
+        "whatWouldYouLikeToDo":"What would you like to do?",
+        "describeATask": "Describe a task, we'll handle the tiling.",
+        "microphonePermissionDenied":"Microphone permission denied.",
+        "failedToStartRecording": "Failed to start recording: {error}",
+        "@failedToStartRecording": {
+          "placeholders": {
+            "error": {
+              "type": "String",
+              "description": "Error message when recording fails to start"
+            }
+          }
+        },
+        "failedToStopRecording": "Failed to stop recording: {error}",
+        "@failedToStopRecording": {
+            "placeholders": {
+                "error": {
+                "type": "String",
+                "description": "Error message when recording fails to stop"
+               }
+           }
+        },
+        "audioConversionError": "Audio conversion error: {error}",
+         "@audioConversionError": {
+            "placeholders": {
+                "error": {
+                "type": "String",
+                "description": "Error details from audio conversion failure"
+                }
+            }
+        },
+        "audioConversionFailed":"Audio conversion failed",
+        "recordingPathIsEmpty":"Recording path is empty",
+        "noActiveRecording":"No active recording",
+        "seeTodaysRoute": "See Today's Route",
         "joinMeeting": "Join Meeting",
         "openLink": "Open Link",
         "actions": "Actions",
@@ -1429,5 +1463,53 @@
         "failedToProcrastinateTile": "Failed to procrastinate tile",
         "@failedToProcrastinateTile": {
           "description": "Error when procrastinating a tile fails"
-        }
+        },
+        "chat":"Chat",
+        "transcribing":"Transcribing",
+        "newChat":"New chat",
+        "noChatHistory":"No chat history",
+        "unknownChat":"Unknown chat",
+        "transcriptionFailed":"Transcription failed",
+        "acceptChanges":"Accept Changes",
+        "noRequestToExecute":"No request to execute",
+        "initializingAction": "Initializing action generation",
+            "settingThingsUp": "Setting things up",
+            "preparingRequest": "Preparing your request",
+            "gettingReady": "Getting ready",
+            "processingAction": "Processing action",
+            "workingOnIt": "Working on it",
+            "analyzingRequest": "Analyzing your request",
+            "thinking": "Thinking",
+            "actionComplete": "Action processing complete",
+            "processingDone": "Processing done",
+            "allSet": "All set",
+            "finishedProcessing": "Finished processing",
+            "generatingSummary": "Generating summary",
+            "summarizingResults": "Summarizing results",
+            "creatingOverview": "Creating overview",
+            "preparingSummary": "Preparing summary",
+            "summaryComplete": "Summary generation complete",
+            "summaryReady": "Summary ready",
+            "overviewComplete": "Overview complete",
+            "doneSummarizing": "Done summarizing",
+            "loadingSchedule": "Loading schedule data",
+            "fetchingSchedule": "Fetching your schedule",
+            "retrievingCalendar": "Retrieving calendar",
+            "loadingTimeline": "Loading timeline",
+            "optimizingSchedule": "Optimizing schedule",
+            "reorganizingDay": "Reorganizing your day",
+            "findingBestFit": "Finding the best fit",
+            "adjustingTimeline": "Adjusting timeline",
+            "scheduleComplete": "Schedule optimization complete",
+            "scheduleUpdated": "Schedule updated",
+            "timelineOptimized": "Timeline optimized",
+            "allDone": "All done",
+            "connectionLost": "Connection lost. Please refresh",
+            "sendingRequest": "Sending request",
+            "webSocketConnectionLostAfter5Attempts":"WebSocket connection lost after 5 attempts",
+           "webSocketMessageHandlingError": "Error while handling message",
+           "jsonParseError":"JSON parse error",
+           "processError":"Process error",
+           "socketConnectionError":"Socket Connection Error",
+           "keepAliveFailed":"Keeping connection alive failed"
 }

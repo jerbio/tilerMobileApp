@@ -3179,6 +3179,60 @@ abstract class AppLocalizations {
   /// **'See Today\'s Route'**
   String get seeTodaysRoute;
 
+  /// No description provided for @whatWouldYouLikeToDo.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do?'**
+  String get whatWouldYouLikeToDo;
+
+  /// No description provided for @describeATask.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe a task, we\'ll handle the tiling.'**
+  String get describeATask;
+
+  /// No description provided for @microphonePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission denied.'**
+  String get microphonePermissionDenied;
+
+  /// No description provided for @failedToStartRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start recording: {error}'**
+  String failedToStartRecording(String error);
+
+  /// No description provided for @failedToStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to stop recording: {error}'**
+  String failedToStopRecording(String error);
+
+  /// No description provided for @audioConversionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio conversion error: {error}'**
+  String audioConversionError(String error);
+
+  /// No description provided for @audioConversionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio conversion failed'**
+  String get audioConversionFailed;
+
+  /// No description provided for @recordingPathIsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording path is empty'**
+  String get recordingPathIsEmpty;
+
+  /// No description provided for @noActiveRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'No active recording'**
+  String get noActiveRecording;
+
   /// No description provided for @joinMeeting.
   ///
   /// In en, this message translates to:
@@ -3466,6 +3520,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to procrastinate tile'**
   String get failedToProcrastinateTile;
+
+  /// No description provided for @chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get chat;
+
+  /// No description provided for @transcribing.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribing'**
+  String get transcribing;
+
+  /// No description provided for @newChat.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get newChat;
+
+  /// No description provided for @noChatHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'No chat history'**
+  String get noChatHistory;
+
+  /// No description provided for @unknownChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown chat'**
+  String get unknownChat;
+
+  /// No description provided for @transcriptionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcription failed'**
+  String get transcriptionFailed;
+
+  /// No description provided for @acceptChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept Changes'**
+  String get acceptChanges;
+
+  /// No description provided for @noRequestToExecute.
+  ///
+  /// In en, this message translates to:
+  /// **'No request to execute'**
+  String get noRequestToExecute;
+
+  /// No description provided for @initializingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Initializing action generation'**
+  String get initializingAction;
+
+  /// No description provided for @settingThingsUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting things up'**
+  String get settingThingsUp;
+
+  /// No description provided for @preparingRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your request'**
+  String get preparingRequest;
+
+  /// No description provided for @gettingReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready'**
+  String get gettingReady;
+
+  /// No description provided for @processingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing action'**
+  String get processingAction;
+
+  /// No description provided for @workingOnIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Working on it'**
+  String get workingOnIt;
+
+  /// No description provided for @analyzingRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing your request'**
+  String get analyzingRequest;
+
+  /// No description provided for @thinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get thinking;
+
+  /// No description provided for @actionComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Action processing complete'**
+  String get actionComplete;
+
+  /// No description provided for @processingDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing done'**
+  String get processingDone;
+
+  /// No description provided for @allSet.
+  ///
+  /// In en, this message translates to:
+  /// **'All set'**
+  String get allSet;
+
+  /// No description provided for @finishedProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished processing'**
+  String get finishedProcessing;
+
+  /// No description provided for @generatingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating summary'**
+  String get generatingSummary;
+
+  /// No description provided for @summarizingResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarizing results'**
+  String get summarizingResults;
+
+  /// No description provided for @creatingOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating overview'**
+  String get creatingOverview;
+
+  /// No description provided for @preparingSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing summary'**
+  String get preparingSummary;
+
+  /// No description provided for @summaryComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary generation complete'**
+  String get summaryComplete;
+
+  /// No description provided for @summaryReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary ready'**
+  String get summaryReady;
+
+  /// No description provided for @overviewComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview complete'**
+  String get overviewComplete;
+
+  /// No description provided for @doneSummarizing.
+  ///
+  /// In en, this message translates to:
+  /// **'Done summarizing'**
+  String get doneSummarizing;
+
+  /// No description provided for @loadingSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading schedule data'**
+  String get loadingSchedule;
+
+  /// No description provided for @fetchingSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching your schedule'**
+  String get fetchingSchedule;
+
+  /// No description provided for @retrievingCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Retrieving calendar'**
+  String get retrievingCalendar;
+
+  /// No description provided for @loadingTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading timeline'**
+  String get loadingTimeline;
+
+  /// No description provided for @optimizingSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimizing schedule'**
+  String get optimizingSchedule;
+
+  /// No description provided for @reorganizingDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorganizing your day'**
+  String get reorganizingDay;
+
+  /// No description provided for @findingBestFit.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding the best fit'**
+  String get findingBestFit;
+
+  /// No description provided for @adjustingTimeline.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjusting timeline'**
+  String get adjustingTimeline;
+
+  /// No description provided for @scheduleComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule optimization complete'**
+  String get scheduleComplete;
+
+  /// No description provided for @scheduleUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule updated'**
+  String get scheduleUpdated;
+
+  /// No description provided for @timelineOptimized.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline optimized'**
+  String get timelineOptimized;
+
+  /// No description provided for @allDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All done'**
+  String get allDone;
+
+  /// No description provided for @connectionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection lost. Please refresh'**
+  String get connectionLost;
+
+  /// No description provided for @sendingRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending request'**
+  String get sendingRequest;
+
+  /// No description provided for @webSocketConnectionLostAfter5Attempts.
+  ///
+  /// In en, this message translates to:
+  /// **'WebSocket connection lost after 5 attempts'**
+  String get webSocketConnectionLostAfter5Attempts;
+
+  /// No description provided for @webSocketMessageHandlingError.
+  ///
+  /// In en, this message translates to:
+  /// **'Error while handling message'**
+  String get webSocketMessageHandlingError;
+
+  /// No description provided for @jsonParseError.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON parse error'**
+  String get jsonParseError;
+
+  /// No description provided for @processError.
+  ///
+  /// In en, this message translates to:
+  /// **'Process error'**
+  String get processError;
+
+  /// No description provided for @socketConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Socket Connection Error'**
+  String get socketConnectionError;
+
+  /// No description provided for @keepAliveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Keeping connection alive failed'**
+  String get keepAliveFailed;
 }
 
 class _AppLocalizationsDelegate

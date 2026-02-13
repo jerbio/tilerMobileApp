@@ -9,6 +9,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tileUI/newTileSheet.dart';
+import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/previewSummary.dart';
@@ -332,17 +333,15 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     );
   }
 
-  Widget renderRefresh() {
+  Widget renderChat() {
     return _buildActionButton(
-      icon: Icon(Icons.refresh, color: colorScheme.primary, size: 20),
-      text: AppLocalizations.of(context)!.previewTileRevise,
+      icon: Icon(Icons.chat_outlined, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.chat,
       onPressed: () {
-        AnalysticsSignal.send('REVISE_BUTTON');
-        this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        this.context.read<ForecastBloc>().add(ResetEvent());
+        Navigator.pushNamed(context, '/vibeChat');
       },
     );
   }
@@ -363,7 +362,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  renderRefresh(),
+                  renderChat(),
                   renderShuffleButton(),
                   renderProcrastinateAllButton(),
                   renderMoreSettingsButton(),

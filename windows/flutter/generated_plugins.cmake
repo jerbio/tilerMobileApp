@@ -10,6 +10,8 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_timezone
   geolocator_windows
   maps_launcher
+  permission_handler_windows
+  record_windows
   rive_common
   url_launcher_windows
 )

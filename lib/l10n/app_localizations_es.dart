@@ -1763,6 +1763,39 @@ class AppLocalizationsEs extends AppLocalizations {
   String get seeTodaysRoute => 'Ver ruta de hoy';
 
   @override
+  String get whatWouldYouLikeToDo => 'What would you like to do?';
+
+  @override
+  String get describeATask => 'Describe a task, we\'ll handle the tiling.';
+
+  @override
+  String get microphonePermissionDenied => 'Microphone permission denied.';
+
+  @override
+  String failedToStartRecording(String error) {
+    return 'Failed to start recording: $error';
+  }
+
+  @override
+  String failedToStopRecording(String error) {
+    return 'Failed to stop recording: $error';
+  }
+
+  @override
+  String audioConversionError(String error) {
+    return 'Audio conversion error: $error';
+  }
+
+  @override
+  String get audioConversionFailed => 'Audio conversion failed';
+
+  @override
+  String get recordingPathIsEmpty => 'Recording path is empty';
+
+  @override
+  String get noActiveRecording => 'No active recording';
+
+  @override
   String get joinMeeting => 'Unirse a la reunión';
 
   @override
@@ -1959,4 +1992,149 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get failedToProcrastinateTile => 'Error al posponer el tile';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get transcribing => 'Transcribing';
+
+  @override
+  String get newChat => 'New chat';
+
+  @override
+  String get noChatHistory => 'No chat history';
+
+  @override
+  String get unknownChat => 'Unknown chat';
+
+  @override
+  String get transcriptionFailed => 'Transcription failed';
+
+  @override
+  String get acceptChanges => 'Accept Changes';
+
+  @override
+  String get noRequestToExecute => 'No request to execute';
+
+  @override
+  String get initializingAction => 'Initializing action generation';
+
+  @override
+  String get settingThingsUp => 'Setting things up';
+
+  @override
+  String get preparingRequest => 'Preparing your request';
+
+  @override
+  String get gettingReady => 'Getting ready';
+
+  @override
+  String get processingAction => 'Processing action';
+
+  @override
+  String get workingOnIt => 'Working on it';
+
+  @override
+  String get analyzingRequest => 'Analyzing your request';
+
+  @override
+  String get thinking => 'Thinking';
+
+  @override
+  String get actionComplete => 'Action processing complete';
+
+  @override
+  String get processingDone => 'Processing done';
+
+  @override
+  String get allSet => 'All set';
+
+  @override
+  String get finishedProcessing => 'Finished processing';
+
+  @override
+  String get generatingSummary => 'Generating summary';
+
+  @override
+  String get summarizingResults => 'Summarizing results';
+
+  @override
+  String get creatingOverview => 'Creating overview';
+
+  @override
+  String get preparingSummary => 'Preparing summary';
+
+  @override
+  String get summaryComplete => 'Summary generation complete';
+
+  @override
+  String get summaryReady => 'Summary ready';
+
+  @override
+  String get overviewComplete => 'Overview complete';
+
+  @override
+  String get doneSummarizing => 'Done summarizing';
+
+  @override
+  String get loadingSchedule => 'Loading schedule data';
+
+  @override
+  String get fetchingSchedule => 'Fetching your schedule';
+
+  @override
+  String get retrievingCalendar => 'Retrieving calendar';
+
+  @override
+  String get loadingTimeline => 'Loading timeline';
+
+  @override
+  String get optimizingSchedule => 'Optimizing schedule';
+
+  @override
+  String get reorganizingDay => 'Reorganizing your day';
+
+  @override
+  String get findingBestFit => 'Finding the best fit';
+
+  @override
+  String get adjustingTimeline => 'Adjusting timeline';
+
+  @override
+  String get scheduleComplete => 'Schedule optimization complete';
+
+  @override
+  String get scheduleUpdated => 'Schedule updated';
+
+  @override
+  String get timelineOptimized => 'Timeline optimized';
+
+  @override
+  String get allDone => 'All done';
+
+  @override
+  String get connectionLost => 'Connection lost. Please refresh';
+
+  @override
+  String get sendingRequest => 'Sending request';
+
+  @override
+  String get webSocketConnectionLostAfter5Attempts =>
+      'WebSocket connection lost after 5 attempts';
+
+  @override
+  String get webSocketMessageHandlingError => 'Error while handling message';
+
+  @override
+  String get jsonParseError => 'JSON parse error';
+
+  @override
+  String get processError => 'Process error';
+
+  @override
+  String get socketConnectionError => 'Socket Connection Error';
+
+  @override
+  String get keepAliveFailed => 'Keeping connection alive failed';
 }
