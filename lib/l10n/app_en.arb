@@ -1257,6 +1257,8 @@
         "startNavigation": "Start Navigation",
         "noLocationAvailable": "No location",
         "seeTodaysRoute": "See Today's Route",
+        "whatWouldYouLikeToDo":"What would you like to do?",
+        "describeATask": "Describe a task, we'll handle the tiling.",
         "joinMeeting": "Join Meeting",
         "openLink": "Open Link",
         "actions": "Actions",
