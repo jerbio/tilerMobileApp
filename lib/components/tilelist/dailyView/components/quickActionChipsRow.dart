@@ -6,11 +6,13 @@ import 'package:tiler_app/components/tilelist/dailyView/components/actionChip.da
 class QuickActionChipsRow extends StatelessWidget {
   final VoidCallback? onShowRoute;
   final VoidCallback? onReOptimize;
+  final bool preview;
 
   const QuickActionChipsRow({
     Key? key,
     this.onShowRoute,
     this.onReOptimize,
+    this.preview = false
   }) : super(key: key);
 
   @override
@@ -25,6 +27,7 @@ class QuickActionChipsRow extends StatelessWidget {
         children: [
           if (onShowRoute != null)
             TilerActionChip(
+              preview: preview,
               icon: Icons.route,
               label: l10n.showRouteChip,
               onTap: onShowRoute!,
@@ -33,6 +36,7 @@ class QuickActionChipsRow extends StatelessWidget {
             const SizedBox(width: 8),
           if (onReOptimize != null)
             TilerActionChip(
+              preview: preview,
               icon: Icons.refresh,
               label: l10n.reOptimizeChip,
               onTap: onReOptimize!,

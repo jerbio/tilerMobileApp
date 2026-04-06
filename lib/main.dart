@@ -172,7 +172,10 @@ class _TilerAppState extends State<TilerApp> {
                   })),
           BlocProvider(
               create: (context) => VibeChatBloc(
-                chatApi: ChatApi(getContextCallBack: () => context),
+                getContextCallBack: () => context,
+                scheduleBloc: context.read<ScheduleBloc>(),
+                scheduleSummaryBloc: context.read<ScheduleSummaryBloc>(),
+
               )
           ),
         ],

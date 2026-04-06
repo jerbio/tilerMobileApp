@@ -10,6 +10,8 @@ enum VibeChatStep {
   sending,
   recording,
   transcribing,
+  loadingPreview,
+  previewLoaded,
   error,
 }
 
@@ -25,7 +27,8 @@ class VibeChatState extends Equatable {
   final bool shouldShowAcceptButton;
   final bool hasMoreSessions;
   final int currentSessionIndex;
-
+  final List<SubCalendarEvent>? previewTiles;
+  final String? selectedActionEntityId;
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession ,
@@ -38,6 +41,8 @@ class VibeChatState extends Equatable {
     this.shouldShowAcceptButton=false,
     this.hasMoreSessions = false,
     this.currentSessionIndex = 0,
+    this.previewTiles,
+    this.selectedActionEntityId
   });
 
   VibeChatState copyWith({
@@ -52,6 +57,8 @@ class VibeChatState extends Equatable {
     bool? shouldShowAcceptButton,
     bool? hasMoreSessions,
     int? currentSessionIndex,
+    List<SubCalendarEvent>? previewTiles,
+    String? selectedActionEntityId,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -65,6 +72,8 @@ class VibeChatState extends Equatable {
       shouldShowAcceptButton: shouldShowAcceptButton ?? this.shouldShowAcceptButton,
       hasMoreSessions: hasMoreSessions ?? this.hasMoreSessions,
       currentSessionIndex: currentSessionIndex ?? this.currentSessionIndex,
+      previewTiles: previewTiles ?? this.previewTiles,
+      selectedActionEntityId: selectedActionEntityId ?? this.selectedActionEntityId,
     );
   }
 
@@ -80,7 +89,9 @@ class VibeChatState extends Equatable {
     sessions,
     shouldShowAcceptButton,
     hasMoreMessages,
-    currentSessionIndex
+    currentSessionIndex,
+    previewTiles,
+    selectedActionEntityId
   ];
 }
 

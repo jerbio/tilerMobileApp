@@ -33,11 +33,14 @@ import 'package:tiler_app/util.dart';
 /// - Proactive departure alerts
 class EnhancedWithinNowBatch extends TileBatch {
   EnhancedWithinNowBatchState? _state;
-
+  final String? selectedActionEntityId;
+  final bool preview;
   EnhancedWithinNowBatch({
     List<TilerEvent>? tiles,
     TimelineSummary? dayData,
     Timeline? sleepTimeline,
+    this.preview = false,
+    this.selectedActionEntityId,
     Key? key,
   }) : super(
           key: key,
@@ -174,9 +177,13 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   Widget _buildTileWidget(TilerEvent tile) {
     if (tile is SubCalendarEvent) {
       // EnhancedTileCard handles all tile types including procrastinate/break tiles
-      return EnhancedTileCard(subEvent: tile);
+      return EnhancedTileCard(
+        subEvent: tile,
+        preview: (widget as EnhancedWithinNowBatch).preview,
+          hasDottedBorder: (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
+              tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true,);
     }
-    return TileWidget(tile);
+    return TileWidget(tile,preview: (widget as EnhancedWithinNowBatch).preview);
   }
 
   /// Build tiles list with travel connectors and conflict handling
@@ -244,6 +251,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
               hourMarkerWidth: _hourMarkerWidth,
               child: StackedConflictCards(
                 conflictGroup: group,
+                preview: (widget as EnhancedWithinNowBatch).preview,
                 onTileTap: (tile) {
                   // Handle tile tap
                 },
@@ -390,6 +398,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           child: EmptyDayTile(
             deadline: Utility.getTimeFromIndex(widget.dayIndex!).endOfDay,
             dayIndex: widget.dayIndex!,
+            preview: (widget as EnhancedWithinNowBatch).preview,
           ),
         ),
       );
@@ -500,12 +509,14 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           extendedTiles: extendedTiles,
           onExtendedTap: () {
             CombinedAlertsBannerHelpers.showExtendedTilesModal(
+                preview: (widget as EnhancedWithinNowBatch).preview,
                 context, extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
           declinedTiles: declinedTiles,
           onRsvpTap: () {
             CombinedAlertsBannerHelpers.showPendingRsvpModal(
+              preview: (widget as EnhancedWithinNowBatch).preview,
               context,
               pendingRsvpTiles,
               declinedTiles: declinedTiles,
@@ -522,6 +533,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           ProactiveAlertBanner(
             nextTileWithTravel: nextDepartureTile,
             onDismiss: () {},
+            preview: (widget as EnhancedWithinNowBatch).preview,
           ),
         );
       }
@@ -530,6 +542,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         scrollableContent.add(
           ExtendedTilesBanner(
             extendedTiles: extendedTiles,
+            preview: (widget as EnhancedWithinNowBatch).preview,
           ),
         );
       }
@@ -542,6 +555,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
             onRsvpUpdated: () {
               _triggerRefresh();
             },
+            preview: (widget as EnhancedWithinNowBatch).preview,
           ),
         );
       }
@@ -587,6 +601,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           SliverPersistentHeader(
             pinned: true,
             delegate: StickyDayHeaderDelegate(
+              preview: (widget as EnhancedWithinNowBatch).preview,
               dayData: dayData,
               onShowRoute: _navigateToTodaysRoute,
               onReOptimize: _triggerRevise,

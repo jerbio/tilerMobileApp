@@ -42,6 +42,8 @@ class VibeAction {
   final ActionStatus? status;
   final String? beforeScheduleId;
   final String? afterScheduleId;
+  final String? entityId;
+  final String? entityType;
 
   VibeAction({
     this.id,
@@ -51,6 +53,8 @@ class VibeAction {
     this.status,
     this.beforeScheduleId,
     this.afterScheduleId,
+    this.entityId,
+    this.entityType,
   });
 
   factory VibeAction.fromJson(Map<String, dynamic> json) {
@@ -64,6 +68,8 @@ class VibeAction {
           : null,
       beforeScheduleId: json['beforeScheduleId'] as String?,
       afterScheduleId: json['afterScheduleId'] as String?,
+      entityId: json['entityId'] as String?,
+      entityType: json['entityType'] as String?,
     );
   }
 
@@ -76,6 +82,8 @@ class VibeAction {
       'status': status?.toJson(),
       'beforeScheduleId': beforeScheduleId,
       'afterScheduleId': afterScheduleId,
+      'entityId': entityId,
+      'entityType': entityType,
     };
   }
 
@@ -87,6 +95,8 @@ class VibeAction {
     ActionStatus? status,
     String? beforeScheduleId,
     String? afterScheduleId,
+    String? entityId,
+    String? entityType,
   }) {
     return VibeAction(
       id: id ?? this.id,
@@ -96,6 +106,8 @@ class VibeAction {
       status: status ?? this.status,
       beforeScheduleId: beforeScheduleId ?? this.beforeScheduleId,
       afterScheduleId: afterScheduleId ?? this.afterScheduleId,
+      entityId: entityId ?? this.entityId,
+      entityType: entityType ?? this.entityType,
     );
   }
 }

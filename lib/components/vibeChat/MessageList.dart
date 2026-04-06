@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
@@ -8,10 +9,13 @@ import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class MessageList extends StatelessWidget {
+class MessageList extends StatefulWidget {
   final VibeChatState state;
   final ScrollController scrollController;
+
 
   const MessageList({
     Key? key,
@@ -20,76 +24,110 @@ class MessageList extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<MessageList> createState() => _MessageListState();
+}
+
+class _MessageListState extends State<MessageList> {
+  bool _isAtBottom = true;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.scrollController.addListener(() {
+      final atBottom = widget.scrollController.position.pixels <= 50;
+      if (atBottom != _isAtBottom) setState(() => _isAtBottom = atBottom);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (state.step == VibeChatStep.loading) {
+    final localization = AppLocalizations.of(context)!;
+    if (widget.state.step == VibeChatStep.loading) {
       return PendingWidget();
     }
 
-    if (state.step != VibeChatStep.loading) {
-      if (state.messages.isEmpty) {
-        return _buildEmptyChat(context);
+    if (widget.state.step != VibeChatStep.loading) {
+      if (widget.state.messages.isEmpty) {
+        return _buildEmptyChat(context,localization);
       }
-      return _buildMessageList(context);
+      return _buildMessageList(context,localization);
     }
 
     return SizedBox.shrink();
   }
 
-  Widget _buildMessageList(BuildContext context) {
-    return Column(
+  Widget _buildMessageList(BuildContext context,AppLocalizations localization) {
+    return Stack(
       children: [
-        if (state.step == VibeChatStep.loadingMoreMessages)
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: CircularProgressIndicator(),
-          ),
-        Expanded(
-          child: SingleChildScrollView(
-            reverse: true,
-            controller: scrollController,
-            child: ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.all(16),
-              itemCount: state.messages.length,
-              itemBuilder: (context, index) {
-                final message = state.messages[index];
-                final isUser = message.origin == MessageOrigin.user;
+        Column(
+          children: [
+            if (widget.state.step == VibeChatStep.loadingMoreMessages)
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: CircularProgressIndicator(),
+              ),
+            Expanded(
+              child: SingleChildScrollView(
+                reverse: true,
+                controller: widget.scrollController,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.all(16),
+                  itemCount: widget.state.messages.length,
+                  itemBuilder: (context, index) {
+                    final message = widget.state.messages[index];
+                    final isUser = message.origin == MessageOrigin.user;
 
-                return TweenAnimationBuilder<double>(
-                  duration: Duration(milliseconds: 400),
-                  tween: Tween(begin: 0.0, end: 1.0),
-                  builder: (context, value, child) {
-                    return Opacity(
-                      opacity: value,
-                      child: Transform.translate(
-                        offset: Offset(0, 20 * (1 - value)),
-                        child: child,
+                    return TweenAnimationBuilder<double>(
+                      duration: Duration(milliseconds: 400),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, 20 * (1 - value)),
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          _buildMessage(context, message.content ?? '', isUser,localization),
+                          if (message.actions != null && message.actions!.isNotEmpty)
+                            ...message.actions!
+                                .where((action) =>
+                            action.type != 'conversational_and_not_supported')
+                                .map((action) => _buildActionTile(context,requestId: message.requestId, action: action)),
+                        ],
                       ),
                     );
                   },
-                  child: Column(
-                    children: [
-                      _buildMessage(context, message.content ?? '', isUser),
-                      if (message.actions != null && message.actions!.isNotEmpty)
-                        ...message.actions!
-                            .where((action) =>
-                        action.type != 'conversational_and_not_supported')
-                            .map((action) => _buildActionTile(context, action: action)),
-                    ],
-                  ),
-                );
-              },
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (!_isAtBottom)
+          Positioned(
+            bottom: 12, right: 12,
+            child:ElevatedButton(
+              onPressed: () => widget.scrollController.animateTo(
+                0, duration: Duration(milliseconds: 100), curve: Curves.easeOut,
+              ),
+              style: ElevatedButton.styleFrom(
+                shape: CircleBorder(),
+                padding: EdgeInsets.all(12),
+              ),
+              child: Icon(Icons.arrow_downward_rounded),
             ),
           ),
-        ),
       ],
     );
   }
 
-  Widget _buildEmptyChat(BuildContext context) {
+  Widget _buildEmptyChat(BuildContext context,AppLocalizations localization) {
     final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
-    final localization = AppLocalizations.of(context)!;
 
     return Center(
       child: Column(
@@ -124,79 +162,157 @@ class MessageList extends StatelessWidget {
     );
   }
 
-  Widget _buildMessage(BuildContext context, String text, bool isUser) {
+  String _linkifyText(String text) {
+    final urlRegex = RegExp(r'(?<!\[)(?<!\()https?://[^\s\)\]]+', caseSensitive: false);
+    return text.replaceAllMapped(urlRegex, (match) {
+      final url = match.group(0)!;
+      return '[$url]($url)';
+    });
+  }
+
+  Widget _buildMessage(BuildContext context, String text, bool isUser,AppLocalizations localization) {
     final colorScheme = Theme.of(context).colorScheme;
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12),
-        padding: EdgeInsets.all(12),
-        constraints: BoxConstraints(maxWidth: screenWidth * 0.65),
-        decoration: BoxDecoration(
-          color: isUser
-              ? colorScheme.surfaceContainerHighest
-              : colorScheme.primary,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(isUser ? 16 : 4),
-            topRight: Radius.circular(isUser ? 4 : 16),
-            bottomLeft: Radius.circular(16),
-            bottomRight: Radius.circular(16),
+      child: Builder(
+        builder: (innerContext) => GestureDetector(
+          onLongPress: () {
+            final RenderBox renderBox = innerContext.findRenderObject() as RenderBox;
+            final offset = renderBox.localToGlobal(Offset.zero);
+            showMenu(
+              context: innerContext,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              position: RelativeRect.fromLTRB(offset.dx, offset.dy - 50, offset.dx + 100, offset.dy),
+              items: [
+                PopupMenuItem(
+                  height: 36,
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.copy, size: 16),
+                      SizedBox(width: 6),
+                      Text(localization.copy, style: TextStyle(fontSize: 13)),
+                    ],
+                  ),
+                  onTap: () => Clipboard.setData(ClipboardData(text: text)),
+                ),
+              ],
+            );
+          },
+        child: Container(
+          margin: EdgeInsets.only(bottom: 12),
+          padding: EdgeInsets.all(12),
+          constraints: BoxConstraints(maxWidth: screenWidth * 0.65),
+          decoration: BoxDecoration(
+            color: isUser
+                ? colorScheme.surfaceContainerHighest
+                : colorScheme.primary,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(isUser ? 16 : 4),
+              topRight: Radius.circular(isUser ? 4 : 16),
+              bottomLeft: Radius.circular(16),
+              bottomRight: Radius.circular(16),
+            ),
+          ),
+
+
+            child: GptMarkdown(
+            _linkifyText(text),
+            style: TextStyle(
+              color: isUser ? colorScheme.onSurface : colorScheme.onPrimary,
+            ),
+            linkBuilder: (context, text, url, style) => GestureDetector(
+              onTap: () async {
+                final uri = Uri.tryParse(url);
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text(
+                url,
+                style: const TextStyle(
+                  color: TileColors.vibeChatLinkColor,
+                  decoration: TextDecoration.underline,
+                  decorationColor: TileColors.vibeChatLinkColor,
+                ),
+              ),
+            ),
+                      ),
           ),
         ),
-        child: GptMarkdown(
-          text,
-          style: TextStyle(
-            color: isUser ? colorScheme.onSurface : colorScheme.onPrimary,
-          ),
-        ),
-      ),
+       ),
+      // )
     );
   }
 
-
-  Widget _buildActionTile(BuildContext context, {required VibeAction action}) {
+  Widget _buildActionTile(BuildContext context, {required VibeAction action, String? requestId}) {
     final colorScheme = Theme.of(context).colorScheme;
     final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
     final statusColor = _getActionStatusColor(action.status, tileThemeExtension);
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: EdgeInsets.all(5),
-        padding: EdgeInsets.all(5),
-        constraints: BoxConstraints(maxWidth: 250),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: statusColor,
-            width: 2,
+    return GestureDetector(
+      onTap: () {
+        if (widget.state.step != VibeChatStep.loaded) return;
+        const nonClickableTypes = {
+          'remove_existing_task',
+          'whatif_removedtask',
+          'conversational_and_not_supported',
+          'none',
+        };
+        const nonClickableStatuses = {
+          ActionStatus.executed,
+          ActionStatus.failed,
+          ActionStatus.exited,
+          ActionStatus.disposed,
+        };
+
+        if (nonClickableTypes.contains(action.type)) return;
+        if (nonClickableStatuses.contains(action.status)) return;
+
+        if (requestId != null) {
+          context.read<VibeChatBloc>().add(PreviewActionEvent(requestId, action.id ?? ''));
+        }
+      },
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          margin: EdgeInsets.all(5),
+          padding: EdgeInsets.all(5),
+          constraints: BoxConstraints(maxWidth: 250),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: statusColor,
+              width: 2,
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildActionIcon(action),
-            SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                action.descriptions ?? '',
-                overflow: TextOverflow.ellipsis,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildActionIcon(action),
+              SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  action.descriptions ?? '',
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            SizedBox(width: 4),
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: statusColor,
+              SizedBox(width: 4),
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: statusColor,
+                ),
               ),
-            ),
-            SizedBox(width: 4),
-          ],
+              SizedBox(width: 4),
+            ],
+          ),
         ),
       ),
     );

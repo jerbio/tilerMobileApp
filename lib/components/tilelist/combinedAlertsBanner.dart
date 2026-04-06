@@ -61,7 +61,6 @@ class CombinedAlertsBanner extends StatefulWidget {
   final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpTap;
   final VoidCallback? onRsvpUpdated;
-
   const CombinedAlertsBanner({
     Key? key,
     this.nextTileWithTravel,
@@ -587,27 +586,30 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
 extension CombinedAlertsBannerHelpers on CombinedAlertsBanner {
   /// Show the extended tiles modal
   static void showExtendedTilesModal(
-      BuildContext context, List<SubCalendarEvent> extendedTiles) {
+      BuildContext context, List<SubCalendarEvent> extendedTiles, {required bool preview}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles),
+      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles,preview: preview , ),
     );
   }
 
   /// Show the pending RSVP modal
   static void showPendingRsvpModal(
     BuildContext context,
-    List<SubCalendarEvent> pendingTiles, {
-    List<SubCalendarEvent> declinedTiles = const [],
-    VoidCallback? onRsvpUpdated,
+    List<SubCalendarEvent> pendingTiles,
+      {
+        required bool preview,
+        List<SubCalendarEvent> declinedTiles = const [],
+        VoidCallback? onRsvpUpdated,
   }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => PendingRsvpModal(
+        preview: preview ,
         pendingTiles: pendingTiles,
         declinedTiles: declinedTiles,
         onRsvpUpdated: onRsvpUpdated,

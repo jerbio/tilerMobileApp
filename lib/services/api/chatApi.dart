@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
+import 'package:tiler_app/data/VibeChat/VibePreviewSummary.dart';
 import 'package:tiler_app/data/VibeChat/VibeRequest.dart';
 import 'package:tiler_app/data/VibeChat/VibeResponse.dart';
 import 'package:tiler_app/data/VibeChat/VibeSession.dart';
@@ -11,6 +12,8 @@ import 'package:tiler_app/constants.dart' as Constants;
 import 'package:tiler_app/services/localizationService.dart';
 import 'package:http_parser/http_parser.dart';
 import 'dart:async';
+
+import '../../data/VibeChat/VibeRequestPreview.dart' show VibeRequestPreview;
 
 class ChatApi extends AppApi {
   ChatApi({Function? getContextCallBack})
@@ -375,6 +378,83 @@ class ChatApi extends AppApi {
               ? e.Message
               : LocalizationService.instance.translations.errorOccurred
       );
+    }
+  }
+
+  Future<List<VibeRequestPreview>> getVibeRequestPreviews(String vibeRequestId) async {
+    try {
+      var isAuthenticated = await this.authentication.isUserAuthenticated();
+      if (isAuthenticated.item1) {
+        await checkAndReplaceCredentialCache();
+
+        Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Request/$vibeRequestId/Preview');
+
+        var headers = this.getHeaders();
+        if (headers == null) {
+          throw TilerError(
+              Message: LocalizationService.instance.translations.authenticationIssues);
+        }
+
+        http.Response response = await http.get(uri, headers: headers);
+        if (response.statusCode == 200) {
+          var jsonResult = jsonDecode(response.body);
+          if (jsonResult['Content'] != null && jsonResult['Content']['previews'] != null) {
+            return (jsonResult['Content']['previews'] as List)
+                .map((e) => VibeRequestPreview.fromJson(e))
+                .toList();
+          }
+          return [];
+        } else {
+          throw TilerError(
+              Message: LocalizationService.instance.translations.responseHandlingError);
+        }
+      } else {
+        throw TilerError(
+            Message: LocalizationService.instance.translations.userIsNotAuthenticated);
+      }
+    } catch (e) {
+      throw TilerError(
+          Message: e is TilerError
+              ? e.Message
+              : LocalizationService.instance.translations.errorOccurred);
+    }
+  }
+
+  Future<VibePreviewSummary?> getVibePreviewSummary(String previewId) async {
+    try {
+      var isAuthenticated = await this.authentication.isUserAuthenticated();
+      if (isAuthenticated.item1) {
+        await checkAndReplaceCredentialCache();
+
+        Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Preview/$previewId');
+
+        var headers = this.getHeaders();
+        if (headers == null) {
+          throw TilerError(
+              Message: LocalizationService.instance.translations.authenticationIssues);
+        }
+
+        http.Response response = await http.get(uri, headers: headers);
+
+        if (response.statusCode == 200) {
+          var jsonResult = jsonDecode(response.body);
+          if (jsonResult['Content'] != null && jsonResult['Content']['preview'] != null) {
+            return VibePreviewSummary.fromJson(jsonResult['Content']['preview']);
+          }
+          return null;
+        } else {
+          throw TilerError(
+              Message: LocalizationService.instance.translations.responseHandlingError);
+        }
+      } else {
+        throw TilerError(
+            Message: LocalizationService.instance.translations.userIsNotAuthenticated);
+      }
+    } catch (e) {
+      throw TilerError(
+          Message: e is TilerError
+              ? e.Message
+              : LocalizationService.instance.translations.errorOccurred);
     }
   }
 }

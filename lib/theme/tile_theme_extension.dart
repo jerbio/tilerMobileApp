@@ -38,6 +38,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color vibeChatExitedAction;
   final Color vibeChatDisposedAction;
   final Color vibeChatDefaultAction;
+  final Color vibeChatPreviewDisableColor;
   final String? mapStyle;
   const TileThemeExtension._(
       {
@@ -77,6 +78,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.vibeChatExitedAction,
         required this.vibeChatDisposedAction,
         required this.vibeChatDefaultAction,
+        required this.vibeChatPreviewDisableColor,
         required this.mapStyle
       });
 
@@ -117,6 +119,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       vibeChatExitedAction: TileColors.vibeChatExitedActionLight,
       vibeChatDisposedAction: TileColors.vibeChatDisposedActionLight,
       vibeChatDefaultAction: TileColors.vibeChatDefaultActionLight,
+      vibeChatPreviewDisableColor:TileColors.vibeChatPreviewDisableColorLight,
       mapStyle: null,
 
   );
@@ -158,6 +161,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       vibeChatExitedAction: TileColors.vibeChatExitedActionDark,
       vibeChatDisposedAction: TileColors.vibeChatDisposedActionDark,
       vibeChatDefaultAction: TileColors.vibeChatDefaultActionDark,
+      vibeChatPreviewDisableColor:TileColors.vibeChatPreviewDisableColorDark,
       mapStyle:TileColors.darkMapStyle,
   );
 
@@ -199,6 +203,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? vibeChatExitedAction,
     Color? vibeChatDisposedAction,
     Color? vibeChatDefaultAction,
+    Color? vibeChatPreviewDisableColor,
     String? mapStyle
 
   }) {
@@ -239,6 +244,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         vibeChatExitedAction: vibeChatExitedAction ?? this.vibeChatExitedAction,
         vibeChatDisposedAction: vibeChatDisposedAction ?? this.vibeChatDisposedAction,
         vibeChatDefaultAction: vibeChatDefaultAction ?? this.vibeChatDefaultAction,
+        vibeChatPreviewDisableColor:vibeChatPreviewDisableColor ?? this.vibeChatPreviewDisableColor,
         mapStyle: mapStyle ?? this.mapStyle
     );
   }
@@ -285,6 +291,7 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         vibeChatExitedAction: Color.lerp(vibeChatExitedAction,other.vibeChatExitedAction,t)!,
         vibeChatDisposedAction: Color.lerp(vibeChatDisposedAction,other.vibeChatDisposedAction,t)!,
         vibeChatDefaultAction: Color.lerp(vibeChatDefaultAction,other.vibeChatDefaultAction,t)!,
+        vibeChatPreviewDisableColor: Color.lerp(vibeChatPreviewDisableColor,other.vibeChatPreviewDisableColor,t)!,
         mapStyle: other.mapStyle,
       );
     }

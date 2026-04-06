@@ -1,6 +1,4 @@
-
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -17,6 +15,7 @@ class VibeChat extends StatefulWidget {
 
 class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   late final ScrollController _scrollController;
+  late final ScrollController _sessionsScrollController;
   late final TextEditingController _messageController;
   late ThemeData theme;
   late ColorScheme colorScheme;
@@ -29,7 +28,19 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   @override
   void initState() {
     super.initState();
+    print("first step is");
+    print(context.read<VibeChatBloc>().state.step);
+    print(context.read<VibeChatBloc>().state.sessions.length);
     _scrollController = ScrollController();
+    _sessionsScrollController = ScrollController();
+    _sessionsScrollController.addListener(() {
+      if (_sessionsScrollController.position.extentAfter < 100) {
+        final state = context.read<VibeChatBloc>().state;
+        if (state.step == VibeChatStep.loaded && state.hasMoreSessions) {
+          context.read<VibeChatBloc>().add(LoadMoreSessionsEvent());
+        }
+      }
+    });
     _messageController = TextEditingController();
     context.read<VibeChatBloc>().add(OpenChatEvent());
     context.read<VibeChatBloc>().add(LoadSessionsEvent());
@@ -67,15 +78,16 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   void dispose() {
     _dotAnimationController.dispose();
     _scrollController.dispose();
+    _sessionsScrollController.dispose();
     _messageController.dispose();
     _lineAnimationController.dispose();
     super.dispose();
   }
 
   void _handleBlocStateChanges(BuildContext context, VibeChatState state) {
-
-
-
+    if (state.step == VibeChatStep.loadingPreview) {
+      Navigator.pop(context);
+    }
     if (
         (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded)
         ||
@@ -104,14 +116,6 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   }
 
   Widget _buildDrawer(BuildContext context, VibeChatState state) {
-    final sessionsScrollController = ScrollController();
-    sessionsScrollController.addListener(() {
-      if (sessionsScrollController.position.extentAfter < 100) {
-        if (state.step == VibeChatStep.loaded && state.hasMoreSessions) {
-          context.read<VibeChatBloc>().add(LoadMoreSessionsEvent());
-        }
-      }
-    });
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -135,7 +139,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                   : state.sessions.isEmpty
                   ? Center(child: Text(localization.noChatHistory))
                   : ListView.builder(
-                controller: sessionsScrollController,
+                controller: _sessionsScrollController,
                 itemCount: state.sessions.length + (state.hasMoreSessions ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == state.sessions.length) {
@@ -302,6 +306,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
 
@@ -327,7 +332,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                     scrollController: _scrollController,
                   ),
                 ),
-                if (state.shouldShowAcceptButton && state.step == VibeChatStep.loaded)
+                if (state.shouldShowAcceptButton && (state.step == VibeChatStep.loaded || state.step == VibeChatStep.loadingPreview || state.step == VibeChatStep.previewLoaded))
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     child: Align(
@@ -335,6 +340,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                       child: ElevatedButton(
                         onPressed: () {
                           context.read<VibeChatBloc>().add(AcceptChangesEvent());
+
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: colorScheme.primary,

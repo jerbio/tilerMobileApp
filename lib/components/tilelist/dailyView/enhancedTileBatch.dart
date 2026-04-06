@@ -35,7 +35,8 @@ class EnhancedTileBatch extends StatefulWidget {
   final bool showProactiveAlerts;
   final bool showTimelineMarkers;
   final bool showConflictAlerts;
-
+  final bool preview;
+  final String? selectedActionEntityId;
   const EnhancedTileBatch({
     this.dayIndex,
     this.tiles,
@@ -47,6 +48,8 @@ class EnhancedTileBatch extends StatefulWidget {
     this.showProactiveAlerts = true,
     this.showTimelineMarkers = false,
     this.showConflictAlerts = true,
+    this.preview=false,
+    this.selectedActionEntityId,
     Key? key,
   }) : super(key: key);
 
@@ -125,9 +128,13 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   /// Build the appropriate tile widget based on settings
   Widget _buildTileWidget(TilerEvent tile) {
     if (widget.showEnhancedCards && tile is SubCalendarEvent) {
-      return EnhancedTileCard(subEvent: tile);
+      return EnhancedTileCard(
+        subEvent: tile,preview: widget.preview,
+        hasDottedBorder: widget.selectedActionEntityId != null &&
+            tile.id?.contains(widget.selectedActionEntityId!) == true,
+      );
     }
-    return TileWidget(tile);
+    return TileWidget(tile,preview: widget.preview);
   }
 
   /// Format hour for display (e.g., "7 AM", "12 PM")
@@ -296,6 +303,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
                   Expanded(
                     child: StackedConflictCards(
                       conflictGroup: group,
+                      preview: widget.preview,
                       onResolve: () {
                         // TODO: Implement auto-resolve
                       },
@@ -490,8 +498,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       childrenColumnWidgets.add(
         Container(
           margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayTimelineSummary: _dayData!),
-        ),
+          child: DaySummary(dayTimelineSummary: _dayData!,preview: widget.preview),
+        )
       );
     }
 
@@ -561,12 +569,14 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           extendedTiles: extendedTiles,
           onExtendedTap: () {
             CombinedAlertsBannerHelpers.showExtendedTilesModal(
+                preview: widget.preview,
                 context, extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
           declinedTiles: declinedTiles,
           onRsvpTap: () {
             CombinedAlertsBannerHelpers.showPendingRsvpModal(
+              preview: widget.preview,
               context,
               pendingRsvpTiles,
               declinedTiles: declinedTiles,
@@ -582,6 +592,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         childrenColumnWidgets.add(
           ProactiveAlertBanner(
             nextTileWithTravel: nextDepartureTile,
+            preview: widget.preview,
             onDismiss: () {
               // Handle dismiss if needed
             },
@@ -592,6 +603,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       if (conflictGroups.isNotEmpty) {
         childrenColumnWidgets.add(
           ConflictSummaryBanner(
+            preview: widget.preview,
             conflictGroups: conflictGroups,
             onTap: () {
               // Could show a modal with all conflicts
@@ -603,6 +615,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       if (extendedTiles.isNotEmpty) {
         childrenColumnWidgets.add(
           ExtendedTilesBanner(
+            preview: widget.preview,
             extendedTiles: extendedTiles,
           ),
         );
@@ -611,6 +624,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
         childrenColumnWidgets.add(
           PendingRsvpBanner(
+            preview: widget.preview,
             pendingTiles: pendingRsvpTiles,
             declinedTiles: declinedTiles,
             onRsvpUpdated: () {
@@ -674,6 +688,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
               child: Container(
                 height: MediaQuery.of(context).size.height - heightMargin,
                 child: EmptyDayTile(
+                  preview: widget.preview,
                   deadline: endOfDayTime,
                   dayIndex: widget.dayIndex!,
                 ),

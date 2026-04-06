@@ -15,12 +15,14 @@ class PendingRsvpBanner extends StatefulWidget {
   final List<SubCalendarEvent> pendingTiles;
   final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpUpdated;
+  final bool preview;
 
   const PendingRsvpBanner({
     Key? key,
     required this.pendingTiles,
     this.declinedTiles = const [],
     this.onRsvpUpdated,
+    this.preview = false
   }) : super(key: key);
 
   /// Detect tiles with pending RSVP status (needsAction or tentative)
@@ -155,6 +157,7 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
         pendingTiles: widget.pendingTiles,
         declinedTiles: widget.declinedTiles,
         onRsvpUpdated: widget.onRsvpUpdated,
+        preview:  widget.preview
       ),
     );
   }
@@ -299,12 +302,14 @@ class PendingRsvpModal extends StatelessWidget {
   final List<SubCalendarEvent> pendingTiles;
   final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpUpdated;
+  final bool preview;
 
   const PendingRsvpModal({
     Key? key,
     required this.pendingTiles,
     this.declinedTiles = const [],
     this.onRsvpUpdated,
+    this.preview=false,
   }) : super(key: key);
 
   void _navigateToEditTile(BuildContext context, SubCalendarEvent tile) {
@@ -612,7 +617,7 @@ class PendingRsvpModal extends StatelessWidget {
     return Opacity(
       opacity: isDeclined ? 0.5 : 1.0,
       child: InkWell(
-        onTap: () => _navigateToEditTile(context, tile),
+        onTap: preview?null:() => _navigateToEditTile(context, tile),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: isUrgent
@@ -739,7 +744,7 @@ class PendingRsvpModal extends StatelessWidget {
                         icon: Icons.edit_outlined,
                         label: l10n.editTile,
                         color: colorScheme.primary,
-                        onTap: () => _navigateToEditTile(context, tile),
+                        onTap: preview?null:() => _navigateToEditTile(context, tile),
                       ),
                     ],
                   ),
@@ -756,7 +761,7 @@ class PendingRsvpModal extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
   }) {
     return Material(
       color: Colors.transparent,

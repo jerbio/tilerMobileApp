@@ -145,6 +145,8 @@ class TileColors{
   HSLColor.fromColor(integrationApprovalLight)
       .withLightness(0.35)
       .toColor();
+  static const Color vibeChatPreviewDisableColorLight = Color(0xFFE1E1E1);
+  static const Color vibeChatPreviewDisableColorDark = Color(0xFF4D4D4D);
 
   static const Color completedGreen=Colors.green;
   static  Color activeNotification=Colors.green[300]!;
@@ -192,6 +194,7 @@ class TileColors{
   static const Color vibeChatPendingAction=Colors.blue;
   static const Color vibeChatExecutedAction=Colors.green;
   static const Color vibeChatFailedAction=Colors.red;
+  static const Color vibeChatLinkColor=Colors.blue;
 
 
 

@@ -45,4 +45,15 @@ class AcceptChangesEvent extends VibeChatEvent {
   List<Object?> get props => [];
 }
 
+class LogOutVibeChatEvent extends VibeChatEvent {
+  Function getContextCallBack;
+  LogOutVibeChatEvent(this.getContextCallBack);
+}
 
+
+class PreviewActionEvent extends VibeChatEvent {
+  final String vibeRequestId;
+  final String actionId;
+  PreviewActionEvent(this.vibeRequestId, this.actionId);
+  List<Object?> get props => [vibeRequestId, actionId];
+}

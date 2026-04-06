@@ -2134,4 +2134,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keepAliveFailed => 'Keeping connection alive failed';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get entityIdNotFound => 'No preview entity id  found';
 }

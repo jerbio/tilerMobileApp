@@ -17,9 +17,11 @@ class DayRibbonCarousel extends StatefulWidget {
   bool autoUpdateAnchorDate = false;
   DateTime _initialDate = Utility.currentTime().dayDate;
   Function? onDateChange;
+  final bool preview;
   DayRibbonCarousel(DateTime? initialDate,
       {this.onDateChange,
       this.autoUpdateAnchorDate = false,
+      this.preview=false,
       this.numberOfDays = 5}) {
     if (initialDate == null) {
       initialDate = Utility.currentTime().dayDate;
@@ -373,38 +375,49 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           if (initialCarouselIndex < 0) {
             initialCarouselIndex = 0;
           }
-          return Container(
-            margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLowest,
-              boxShadow: [
-                BoxShadow(
-                  color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.08),
-                  blurRadius: 7,
-                  offset: const Offset(0, 7),
+          return  IgnorePointer(
+            ignoring: widget.preview,
+            child: ColorFiltered(
+                colorFilter: ColorFilter.mode(
+                  widget.preview
+                      ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                      : Colors.transparent,
+                  BlendMode.srcATop,
                 ),
-              ],
-            ),
-            width: MediaQuery.of(context).size.width,
-            height: 130,
-            child: Stack(
-              children: [
-                Container(
-                  width: MediaQuery.of(context).size.width,
-                  child: CarouselSlider(
-                    carouselController: dayRibbonCarouselController,
-                    items: carouselDayRibbonBatch,
-                    options: CarouselOptions(
-                      viewportFraction: 1,
-                      initialPage: initialCarouselIndex,
-                      enableInfiniteScroll: false,
-                      reverse: false,
-                      scrollDirection: Axis.horizontal,
+              child: Container(
+                margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                  boxShadow: [
+                    BoxShadow(
+                      color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.08),
+                      blurRadius: 7,
+                      offset: const Offset(0, 7),
                     ),
-                  ),
+                  ],
                 ),
-                renderHorizontalLoader()
-              ],
+                width: MediaQuery.of(context).size.width,
+                height: 130,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      child: CarouselSlider(
+                        carouselController: dayRibbonCarouselController,
+                        items: carouselDayRibbonBatch,
+                        options: CarouselOptions(
+                          viewportFraction: 1,
+                          initialPage: initialCarouselIndex,
+                          enableInfiniteScroll: false,
+                          reverse: false,
+                          scrollDirection: Axis.horizontal,
+                        ),
+                      ),
+                    ),
+                    renderHorizontalLoader()
+                  ],
+                ),
+              ),
             ),
           );
         }),
