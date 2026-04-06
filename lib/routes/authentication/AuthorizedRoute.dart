@@ -364,6 +364,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         } else {
           // Step 4: Tiler Works for You
           return _TutorialWorksForYouDialog(
+            tutorialBloc: tutorialBloc,
             onNext: () {
               Navigator.pop(dialogContext);
               tutorialBloc?.add(NextTutorialStepEvent());
@@ -699,6 +700,8 @@ class _TutorialSheetDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final currentStep = (tutorialBloc?.state.currentStepIndex ?? 2) + 1;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? 7;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
@@ -753,7 +756,7 @@ class _TutorialSheetDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        l10n.tutorialStepCounter(3, 7),
+                        l10n.tutorialStepCounter(currentStep, totalSteps),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: colorScheme.onPrimary,
                           fontWeight: FontWeight.w600,
@@ -883,10 +886,12 @@ class _TutorialSheetDialog extends StatelessWidget {
 class _TutorialWorksForYouDialog extends StatelessWidget {
   final VoidCallback onNext;
   final VoidCallback onBack;
+  final TutorialBloc? tutorialBloc;
 
   const _TutorialWorksForYouDialog({
     required this.onNext,
     required this.onBack,
+    this.tutorialBloc,
   });
 
   @override
@@ -894,6 +899,8 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final currentStep = (tutorialBloc?.state.currentStepIndex ?? 3) + 1;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? 7;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
@@ -949,7 +956,7 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        l10n.tutorialStepCounter(4, 7),
+                        l10n.tutorialStepCounter(currentStep, totalSteps),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: colorScheme.onPrimary,
                           fontWeight: FontWeight.w600,
