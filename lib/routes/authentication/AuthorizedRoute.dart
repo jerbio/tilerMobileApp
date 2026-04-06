@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,8 +22,11 @@ import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+// import 'package:tiler_app/components/vibeChat/vibeChat.dart';
+// import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
@@ -30,6 +34,7 @@ import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+// import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -37,8 +42,12 @@ import 'package:tiler_app/services/api/whatIfApi.dart';
 import 'package:tiler_app/services/notifications/localNotificationService.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
-
-import '../../bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/bloc/tutorial/tutorial_bloc.dart';
+import 'package:tiler_app/bloc/tutorial/tutorial_event.dart';
+import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
+import 'package:tiler_app/components/tutorial/tutorialOverlay.dart';
+import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -61,6 +70,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   late final LocalNotificationService localNotificationService;
   bool isAddButtonClicked = false;
   ActivePage selecedBottomMenu = ActivePage.tilelist;
+  bool _isAddTileSheetOpen = false;
   bool isLocationRequestTriggered = false;
   late AppLinks _appLinks;
   late ThemeData theme;
@@ -78,6 +88,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     previewApi = PreviewApi(getContextCallBack: () {
       return this.context;
     });
+
     initDeepLinks();
     localNotificationService = LocalNotificationService();
     localNotificationService.initializeRemoteNotification().then((value) {
@@ -280,29 +291,107 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     }
   }
 
-  void displayDialog(Size screenSize) {
+  Future<void> displayDialog(Size screenSize,
+      {bool isTutorial = false, TutorialBloc? tutorialBloc}) async {
+    if (_isAddTileSheetOpen) return;
+    _isAddTileSheetOpen = true;
     final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
     print("DeviceSettingBloc: ${deviceSettingBloc.state} - display dialog");
-    showModalBottomSheet(
+
+    // If in tutorial mode, show the tutorial dialog on top after the sheet opens
+    if (isTutorial) {
+      // Use a post-frame callback so the sheet is rendered before the dialog
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Determine which dialog to show based on current tutorial step.
+        // Bloc step index 2 = quick_add (dialog 3), index 3 = smart_scheduling (dialog 4).
+        final currentIndex = tutorialBloc?.state.currentStepIndex ?? 2;
+        final dialogStep = currentIndex >= 3 ? 4 : 3;
+        _showTutorialStepDialog(step: dialogStep, tutorialBloc: tutorialBloc);
+      });
+    }
+
+    await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      isDismissible: !isTutorial,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(TileDimensions.borderRadius)),
       ),
-      builder: (BuildContext context) {
+      builder: (BuildContext sheetContext) {
         return Container(
-          width: MediaQuery.of(context).size.width,
+          width: MediaQuery.of(sheetContext).size.width,
           child: PreviewAddWidget(
-              previewSummary: previewSummary,
-              onSubmit: (_) {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              }),
+            previewSummary: previewSummary,
+            onSubmit: (_) {
+              if (Navigator.canPop(sheetContext)) {
+                Navigator.pop(sheetContext);
+              }
+            },
+          ),
         );
       },
     );
+    _isAddTileSheetOpen = false;
+  }
+
+  /// Shows the appropriate tutorial dialog on top of the add-tile sheet.
+  /// [step] 3 = Quick Create, [step] 4 = Tiler Works for You.
+  void _showTutorialStepDialog({
+    required int step,
+    TutorialBloc? tutorialBloc,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black26,
+      builder: (dialogContext) {
+        if (step == 3) {
+          return _TutorialSheetDialog(
+            tutorialBloc: tutorialBloc,
+            onNext: () {
+              Navigator.pop(dialogContext);
+              tutorialBloc?.add(NextTutorialStepEvent());
+              // Show step 4 dialog after a brief delay
+              Future.delayed(Duration(milliseconds: 200), () {
+                if (mounted) {
+                  _showTutorialStepDialog(step: 4, tutorialBloc: tutorialBloc);
+                }
+              });
+            },
+          );
+        } else {
+          // Step 4: Tiler Works for You
+          return _TutorialWorksForYouDialog(
+            onNext: () {
+              Navigator.pop(dialogContext);
+              tutorialBloc?.add(NextTutorialStepEvent());
+              // Sheet will be dismissed by the overlay's _handleStepTransition
+              // since step 5 is NOT in _sheetSteps.
+              _dismissAddTileSheet();
+            },
+            onBack: () {
+              Navigator.pop(dialogContext);
+              tutorialBloc?.add(PreviousTutorialStepEvent());
+              // Go back to step 3 dialog
+              Future.delayed(Duration(milliseconds: 200), () {
+                if (mounted) {
+                  _showTutorialStepDialog(step: 3, tutorialBloc: tutorialBloc);
+                }
+              });
+            },
+          );
+        }
+      },
+    );
+  }
+
+  void _dismissAddTileSheet() {
+    if (_isAddTileSheetOpen && Navigator.canPop(context)) {
+      Navigator.pop(context);
+      _isAddTileSheetOpen = false;
+    }
   }
 
   void locationUpdate(LocationProfile locationProfile) {
@@ -367,6 +456,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget _buildBottomNavBar() {
     return ClipRRect(
+      key: TutorialKeys.bottomNavKey,
       borderRadius: BorderRadius.only(
         topRight: Radius.circular(30),
         topLeft: Radius.circular(30),
@@ -394,8 +484,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-  Widget _buildFloatingActionButton() {
+  Widget _buildPreviewFloatingActionButton() {
     return FloatingActionButton(
+      key: TutorialKeys.fabKey,
       backgroundColor: colorScheme.surface,
       onPressed: () {
         AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
@@ -471,64 +562,521 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       body: SafeArea(
         bottom: false,
         child: Container(
+          key: TutorialKeys.scheduleViewKey,
           child: Stack(
             children: widgetChildren,
           ),
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButton: _buildPreviewFloatingActionButton(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-        listeners: [
-          BlocListener<DeviceSettingBloc, DeviceSettingState>(
-            listener: (context, state) {
-              if (state is DeviceLocationSettingUIPending) {
-                if (state.renderLoadingUI == true) {
+    return BlocProvider(
+      create: (_) => TutorialBloc(stepCount: 7),
+      child: MultiBlocListener(
+          listeners: [
+            BlocListener<DeviceSettingBloc, DeviceSettingState>(
+              listener: (context, state) {
+                if (state is DeviceLocationSettingUIPending) {
+                  if (state.renderLoadingUI == true) {
+                    setState(() {
+                      renderLocationPermissionOverLay = true;
+                    });
+                  }
+                }
+
+                if (state is DeviceSettingLoaded) {
                   setState(() {
-                    renderLocationPermissionOverLay = true;
+                    renderLocationPermissionOverLay = false;
                   });
                 }
-              }
-
-              if (state is DeviceSettingLoaded) {
-                setState(() {
-                  renderLocationPermissionOverLay = false;
-                });
-              }
-            },
-          ),
-          BlocListener<ScheduleBloc, ScheduleState>(
-            listener: (context, state) {
-              if (state is ScheduleLoadingState ||
-                  state is ScheduleLoadedState) {
-                final previewSummaryBloc =
-                    BlocProvider.of<PreviewSummaryBloc>(context);
-                if (!(previewSummaryBloc.state is PreviewSummaryLoading)) {
-                  previewSummaryBloc.add(GetPreviewSummaryEvent(
-                      timeline: Utility.todayTimeline()));
+              },
+            ),
+            BlocListener<ScheduleBloc, ScheduleState>(
+              listener: (context, state) {
+                if (state is ScheduleLoadingState ||
+                    state is ScheduleLoadedState) {
+                  final previewSummaryBloc =
+                      BlocProvider.of<PreviewSummaryBloc>(context);
+                  if (!(previewSummaryBloc.state is PreviewSummaryLoading)) {
+                    previewSummaryBloc.add(GetPreviewSummaryEvent(
+                        timeline: Utility.todayTimeline()));
+                  }
                 }
-              }
-            },
+              },
+            ),
+            BlocListener<PreviewSummaryBloc, PreviewSummaryState>(
+              listener: (context, state) {
+                if (state is PreviewSummaryLoaded) {
+                  setState(() {
+                    previewSummary = state.previewSummary;
+                  });
+                }
+              },
+            )
+          ],
+          child: _TutorialWrapper(
+            onShowAddTileSheet: (tutorialBloc) => displayDialog(
+              MediaQuery.of(context).size,
+              isTutorial: true,
+              tutorialBloc: tutorialBloc,
+            ),
+            onDismissAddTileSheet: _dismissAddTileSheet,
+            child: BlocBuilder<ScheduleBloc, ScheduleState>(
+                builder: (context, state) {
+              return renderAuthorizedUserPageView();
+            }),
+          )),
+    );
+  }
+}
+
+/// Auto-triggers the tutorial on first visit when the user
+/// hasn't completed it yet. Also re-triggers after a reset
+/// from Settings → "How to use Tiler".
+class _TutorialWrapper extends StatefulWidget {
+  final Widget child;
+  final Future<void> Function(TutorialBloc bloc)? onShowAddTileSheet;
+  final VoidCallback? onDismissAddTileSheet;
+  const _TutorialWrapper({
+    required this.child,
+    this.onShowAddTileSheet,
+    this.onDismissAddTileSheet,
+  });
+
+  @override
+  State<_TutorialWrapper> createState() => _TutorialWrapperState();
+}
+
+class _TutorialWrapperState extends State<_TutorialWrapper> {
+  bool _tutorialChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAndStartTutorial();
+  }
+
+  void _checkAndStartTutorial() {
+    TutorialPreferencesHelper.hasCompletedTutorial().then((completed) {
+      if (!completed && mounted && !_tutorialChecked) {
+        _tutorialChecked = true;
+        // Delay to let the schedule render first
+        Future.delayed(Duration(milliseconds: 1200), () {
+          if (mounted) {
+            context.read<TutorialBloc>().add(StartTutorialEvent());
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TutorialOverlay(
+      onShowAddTileSheet: widget.onShowAddTileSheet,
+      onDismissAddTileSheet: widget.onDismissAddTileSheet,
+      child: widget.child,
+    );
+  }
+}
+
+/// A floating tutorial dialog shown centered on top of the add-tile sheet
+/// during Step 3 of the tutorial walkthrough.
+class _TutorialSheetDialog extends StatelessWidget {
+  final VoidCallback onNext;
+  final TutorialBloc? tutorialBloc;
+
+  const _TutorialSheetDialog({required this.onNext, this.tutorialBloc});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Align(
+      alignment: Alignment(0.0, -0.75),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 24),
+        constraints: BoxConstraints(maxWidth: 340),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                padding: EdgeInsets.fromLTRB(20, 16, 16, 10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.bolt, color: colorScheme.onPrimary, size: 22),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.tutorialStepQuickCreateTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        l10n.tutorialStepCounter(3, 7),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Body text
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 14, 20, 8),
+                child: Text(
+                  l10n.tutorialStepQuickCreateSheetBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+
+              // Callout items
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Column(
+                  children: [
+                    _calloutRow(
+                        Icons.edit,
+                        l10n.tutorialCalloutNameYourTile,
+                        l10n.tutorialCalloutNameYourTileDesc,
+                        theme,
+                        colorScheme),
+                    SizedBox(height: 8),
+                    _calloutRow(Icons.timer, l10n.tutorialCalloutSetDuration,
+                        l10n.tutorialCalloutSetDurationDesc, theme, colorScheme),
+                    SizedBox(height: 8),
+                    _calloutRow(
+                        Icons.tune,
+                        l10n.tutorialCalloutMoreOptions,
+                        l10n.tutorialCalloutMoreOptionsSheetDesc,
+                        theme,
+                        colorScheme),
+                  ],
+                ),
+              ),
+
+              // Next button
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 4, 16, 16),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: onNext,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                    ),
+                    child: Text(
+                      l10n.tutorialNavNextArrow,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          BlocListener<PreviewSummaryBloc, PreviewSummaryState>(
-            listener: (context, state) {
-              if (state is PreviewSummaryLoaded) {
-                setState(() {
-                  previewSummary = state.previewSummary;
-                });
-              }
-            },
-          )
-        ],
-        child:
-            BlocBuilder<ScheduleBloc, ScheduleState>(builder: (context, state) {
-          return renderAuthorizedUserPageView();
-        }));
+        ),
+      ),
+    );
+  }
+
+  Widget _calloutRow(IconData icon, String label, String description,
+      ThemeData theme, ColorScheme colorScheme) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: colorScheme.primary),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// A floating tutorial dialog for Step 4: "Tiler Works for You"
+/// shown on top of the still-open add-tile sheet.
+class _TutorialWorksForYouDialog extends StatelessWidget {
+  final VoidCallback onNext;
+  final VoidCallback onBack;
+
+  const _TutorialWorksForYouDialog({
+    required this.onNext,
+    required this.onBack,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Align(
+      alignment: Alignment(0.0, -0.75),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 24),
+        constraints: BoxConstraints(maxWidth: 340),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 24,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Container(
+                padding: EdgeInsets.fromLTRB(20, 16, 16, 10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.auto_awesome,
+                        color: colorScheme.onPrimary, size: 22),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        l10n.tutorialStepTilerWorksTitle,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        l10n.tutorialStepCounter(4, 7),
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Body text
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 14, 20, 8),
+                child: Text(
+                  l10n.tutorialStepTilerWorksBody,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+
+              // Callout items
+              Padding(
+                padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
+                child: Column(
+                  children: [
+                    _calloutRow(
+                        Icons.preview,
+                        l10n.tutorialCalloutForecast,
+                        l10n.tutorialCalloutForecastDesc,
+                        theme,
+                        colorScheme),
+                    SizedBox(height: 8),
+                    _calloutRow(
+                        Icons.shuffle,
+                        l10n.tutorialCalloutShuffle,
+                        l10n.tutorialCalloutShuffleDesc,
+                        theme,
+                        colorScheme),
+                    SizedBox(height: 8),
+                    _calloutRow(
+                        Icons.fast_forward,
+                        l10n.tutorialCalloutDeferAll,
+                        l10n.tutorialCalloutDeferAllDesc,
+                        theme,
+                        colorScheme),
+                  ],
+                ),
+              ),
+
+              // Navigation buttons
+              Padding(
+                padding: EdgeInsets.fromLTRB(12, 4, 12, 16),
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: onBack,
+                      child: Text(
+                        l10n.tutorialNavBackArrow,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: onNext,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+                      ),
+                      child: Text(
+                        l10n.tutorialNavNextArrow,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _calloutRow(IconData icon, String label, String description,
+      ThemeData theme, ColorScheme colorScheme) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: colorScheme.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 18, color: colorScheme.primary),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                description,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -160,6 +160,7 @@ class EnhancedTileCard extends StatefulWidget {
   final bool showWeatherIcon;
   final IconData? weatherIcon;
   final VoidCallback? onTap;
+  final bool initiallyExpanded;
 
   const EnhancedTileCard({
     Key? key,
@@ -167,6 +168,7 @@ class EnhancedTileCard extends StatefulWidget {
     this.showWeatherIcon = false,
     this.weatherIcon,
     this.onTap,
+    this.initiallyExpanded = false,
   }) : super(key: key);
 
   @override
@@ -174,7 +176,13 @@ class EnhancedTileCard extends StatefulWidget {
 }
 
 class _EnhancedTileCardState extends State<EnhancedTileCard> {
-  bool _isExpanded = false;
+  late bool _isExpanded;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExpanded = widget.initiallyExpanded;
+  }
 
   /// Check if the tile is a procrastinate/break tile
   bool get _isProcrastinate => widget.subEvent.isProcrastinate == true;

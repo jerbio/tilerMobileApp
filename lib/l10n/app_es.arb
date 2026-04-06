@@ -449,5 +449,85 @@
     "failedToProcrastinateTile": "Error al posponer el tile",
     "@failedToProcrastinateTile": {
       "description": "Error when procrastinating a tile fails"
+    },
+
+    "tutorialStepYourScheduleTitle": "Tu Horario",
+    "tutorialStepYourScheduleBody": "Tu día está organizado en Tiles — bloques de tiempo inteligentes que Tiler organiza por ti. Desplázate hacia arriba y abajo para ver tu día completo.",
+
+    "tutorialStepCreateOptimizeTitle": "Crear y Optimizar",
+    "tutorialStepCreateOptimizeBody": "Toca aquí para crear una nueva tarea. Dile a Tiler qué necesitas hacer y cuánto tiempo tomará — Tiler decide el cuándo.",
+    "tutorialCalloutReOptimize": "Re-optimizar",
+    "tutorialCalloutReOptimizeDesc": "¿Se descarriló tu día? Recalcula desde ahora manteniendo tu plan aproximadamente estable",
+    "tutorialCalloutTravelTime": "Tiempo de Viaje",
+    "tutorialCalloutTravelTimeDesc": "Tiler tiene en cuenta el tiempo de traslado entre ubicaciones",
+
+    "tutorialStepQuickCreateTitle": "Creación Rápida",
+    "tutorialStepQuickCreateBody": "Esta es la hoja de creación rápida. Nombra tu tile y establece una duración para agregarlo rápidamente.",
+    "tutorialStepQuickCreateSheetBody": "¡Esta es la hoja de creación rápida detrás de mí! Nombra tu tile, establece una duración y toca Agregar — Tiler se encarga del resto.",
+    "tutorialCalloutNameYourTile": "Nombra Tu Tile",
+    "tutorialCalloutNameYourTileDesc": "Describe la tarea que quieres realizar",
+    "tutorialCalloutSetDuration": "Establecer Duración",
+    "tutorialCalloutSetDurationDesc": "¿Cuánto tiempo tomará esta tarea?",
+    "tutorialCalloutMoreOptions": "Más Opciones",
+    "tutorialCalloutMoreOptionsDesc": "Agrega ubicación, fecha límite o repetición a través del editor completo",
+    "tutorialCalloutMoreOptionsSheetDesc": "Agrega ubicación, fecha límite o repetición",
+
+    "tutorialStepTilerWorksTitle": "Tiler Trabaja por Ti",
+    "tutorialStepTilerWorksBody": "Tiler organiza automáticamente tus tiles según tus niveles de energía, tiempo de viaje y fechas límite. Solo agrega lo que necesitas hacer — Tiler se encarga del cuándo.",
+    "tutorialCalloutForecast": "Pronóstico",
+    "tutorialCalloutForecastDesc": "Ve cuándo se insertará un tile antes de seleccionarlo",
+    "tutorialCalloutShuffle": "Mezclar",
+    "tutorialCalloutShuffleDesc": "Mezcla las cosas y sugiere qué deberías hacer a continuación",
+    "tutorialCalloutDeferAll": "Posponer Todo",
+    "tutorialCalloutDeferAllDesc": "¿Día difícil? Empuja todo hacia adelante",
+
+    "tutorialStepControlTilesTitle": "Controla Tus Tiles",
+    "tutorialStepControlTilesBody": "Cada tile tiene controles para gestionar tus tareas en tiempo real:",
+    "tutorialCalloutPlay": "Reproducir",
+    "tutorialCalloutPlayDesc": "Comienza a trabajar en este tile",
+    "tutorialCalloutPause": "Pausar",
+    "tutorialCalloutPauseDesc": "Toma un descanso — Tiler reprogramará el resto",
+    "tutorialCalloutComplete": "Completar",
+    "tutorialCalloutCompleteDesc": "¡Listo! Márcalo como terminado",
+    "tutorialCalloutProcrastinate": "Procrastinar",
+    "tutorialCalloutProcrastinateDesc": "Ahora no — empújalo para después",
+
+    "tutorialStepBigPictureTitle": "Ve el Panorama General",
+    "tutorialStepBigPictureBody": "Toca el ícono del calendario para alternar entre tres vistas:",
+    "tutorialCalloutDaily": "Diario",
+    "tutorialCalloutDailyDesc": "Hora por hora — tu agenda detallada",
+    "tutorialCalloutWeekly": "Semanal",
+    "tutorialCalloutWeeklyDesc": "Ve toda la semana de un vistazo",
+    "tutorialCalloutMonthly": "Mensual",
+    "tutorialCalloutMonthlyDesc": "Planifica con una vista mensual",
+
+    "tutorialStepToolkitTitle": "Tu Kit de Herramientas",
+    "tutorialStepToolkitBody": "La barra inferior te da acceso rápido a funciones clave:",
+    "tutorialCalloutShare": "Compartir",
+    "tutorialCalloutShareDesc": "Colabora — comparte tiles con otros",
+    "tutorialCalloutSearch": "Buscar",
+    "tutorialCalloutSearchDesc": "Encuentra cualquier tile por nombre",
+    "tutorialCalloutSettings": "Configuración",
+    "tutorialCalloutSettingsDesc": "Personaliza tu experiencia, conecta calendarios, establece preferencias",
+
+    "tutorialNavNext": "Siguiente",
+    "tutorialNavNextArrow": "Siguiente →",
+    "tutorialNavBack": "Atrás",
+    "tutorialNavBackArrow": "← Atrás",
+    "tutorialNavSkip": "Omitir",
+    "tutorialNavLetsGo": "¡Vamos!",
+    "tutorialStepCounter": "{current}/{total}",
+    "@tutorialStepCounter": {
+      "description": "Step counter like 3/7",
+      "placeholders": {
+        "current": {
+          "type": "int",
+          "example": "3"
+        },
+        "total": {
+          "type": "int",
+          "example": "7"
+        }
+      }
     }
 }

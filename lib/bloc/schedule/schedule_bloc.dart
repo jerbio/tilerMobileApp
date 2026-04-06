@@ -11,7 +11,6 @@ import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/util.dart';
 
 import '../../services/api/subCalendarEventApi.dart';
@@ -23,6 +22,10 @@ enum AuthorizedRouteTileListPage { Daily, Weekly, Monthly }
 
 class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final Duration _retryScheduleLoadingDuration = Duration(minutes: 5);
+
+  /// When true, `GetScheduleEvent` is a no-op so the tutorial's dummy tiles
+  /// are not overwritten by real API data.
+  bool tutorialMode = false;
 
   late ScheduleApi scheduleApi;
   late SubCalendarEventApi subCalendarEventApi;
@@ -175,6 +178,9 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   Future<void> _onGetSchedule(
       GetScheduleEvent event, Emitter<ScheduleState> emit) async {
+    // Skip real schedule fetches while the tutorial is showing dummy tiles.
+    if (tutorialMode) return;
+
     final state = this.state;
     String? eventId = event.eventId;
     bool isAlreadyLoaded = false;
