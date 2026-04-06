@@ -23,8 +23,10 @@ class TutorialDummyData {
   /// Builds a list of dummy [SubCalendarEvent] tiles spread across today.
   static List<SubCalendarEvent> buildDummyTiles() {
     final now = DateTime.now();
-    // Start tiles from 2 hours ago so some feel "current"
-    var cursor = DateTime(now.year, now.month, now.day, now.hour - 2);
+    // Start tiles from 2 hours ago so some feel "current", but keep them on
+    // the current day when the tutorial runs near midnight.
+    final startHour = (now.hour - 2).clamp(0, 23).toInt();
+    var cursor = DateTime(now.year, now.month, now.day, startHour);
 
     final List<SubCalendarEvent> tiles = [];
     for (int i = 0; i < _sampleTiles.length; i++) {

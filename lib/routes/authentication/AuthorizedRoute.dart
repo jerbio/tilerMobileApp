@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,7 +25,6 @@ import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 // import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
