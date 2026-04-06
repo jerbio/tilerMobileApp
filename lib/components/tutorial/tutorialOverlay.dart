@@ -189,11 +189,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
             description: l10n.tutorialCalloutPlayDesc,
           ),
           TutorialCallout(
-            icon: Icons.pause,
-            label: l10n.tutorialCalloutPause,
-            description: l10n.tutorialCalloutPauseDesc,
-          ),
-          TutorialCallout(
             icon: Icons.check_circle,
             label: l10n.tutorialCalloutComplete,
             description: l10n.tutorialCalloutCompleteDesc,
@@ -409,8 +404,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
           // Fire onExit for whatever step was active when tutorial ended
           if (_previousStepIndex < _steps.length) {
             _steps[_previousStepIndex].onExit?.call(context);
-            // Dismiss the sheet if it's showing
-            if (_steps[_previousStepIndex].id == 'quick_add') {
+            // Dismiss the sheet if it's showing (could be on any sheet step)
+            if (_sheetSteps.contains(_steps[_previousStepIndex].id)) {
               _dismissAddTileSheet();
             }
           }

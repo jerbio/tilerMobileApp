@@ -120,6 +120,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       {String? eventId = null,
       Timeline? previousTimeLine}) async {
     await this.getSubTiles(updateTimeline).then((value) {
+      // Guard against overwriting tutorial dummy tiles.
+      // The API call may have started before tutorialMode was set,
+      // so we re-check here when the response arrives.
+      if (tutorialMode) return;
+
       List<SubCalendarEvent> updatedSubEvents = value.item2;
       if (state is ScheduleLoadedState &&
           !(state is LocalScheduleLoadedState)) {

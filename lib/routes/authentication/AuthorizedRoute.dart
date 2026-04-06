@@ -788,8 +788,12 @@ class _TutorialSheetDialog extends StatelessWidget {
                         theme,
                         colorScheme),
                     SizedBox(height: 8),
-                    _calloutRow(Icons.timer, l10n.tutorialCalloutSetDuration,
-                        l10n.tutorialCalloutSetDurationDesc, theme, colorScheme),
+                    _calloutRow(
+                        Icons.timer,
+                        l10n.tutorialCalloutSetDuration,
+                        l10n.tutorialCalloutSetDurationDesc,
+                        theme,
+                        colorScheme),
                     SizedBox(height: 8),
                     _calloutRow(
                         Icons.tune,
@@ -973,19 +977,11 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
                 child: Column(
                   children: [
-                    _calloutRow(
-                        Icons.preview,
-                        l10n.tutorialCalloutForecast,
-                        l10n.tutorialCalloutForecastDesc,
-                        theme,
-                        colorScheme),
+                    _calloutRow(Icons.preview, l10n.tutorialCalloutForecast,
+                        l10n.tutorialCalloutForecastDesc, theme, colorScheme),
                     SizedBox(height: 8),
-                    _calloutRow(
-                        Icons.shuffle,
-                        l10n.tutorialCalloutShuffle,
-                        l10n.tutorialCalloutShuffleDesc,
-                        theme,
-                        colorScheme),
+                    _calloutRow(Icons.shuffle, l10n.tutorialCalloutShuffle,
+                        l10n.tutorialCalloutShuffleDesc, theme, colorScheme),
                     SizedBox(height: 8),
                     _calloutRow(
                         Icons.fast_forward,
