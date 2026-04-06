@@ -26,7 +26,6 @@ import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 // import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
-import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
