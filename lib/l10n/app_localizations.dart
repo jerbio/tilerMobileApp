@@ -3820,6 +3820,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No preview entity id  found'**
   String get entityIdNotFound;
+
+  /// No description provided for @tutorialStepYourScheduleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Schedule'**
+  String get tutorialStepYourScheduleTitle;
+
+  /// No description provided for @tutorialStepYourScheduleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is organized into Tiles — smart time blocks that Tiler arranges for you. Scroll up and down to see your full day.'**
+  String get tutorialStepYourScheduleBody;
+
+  /// No description provided for @tutorialStepCreateOptimizeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create & Optimize'**
+  String get tutorialStepCreateOptimizeTitle;
+
+  /// No description provided for @tutorialStepCreateOptimizeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap here to create a new task. Tell Tiler what you need to do and how long it will take — Tiler figures out the when.'**
+  String get tutorialStepCreateOptimizeBody;
+
+  /// No description provided for @tutorialCalloutReOptimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-optimize'**
+  String get tutorialCalloutReOptimize;
+
+  /// No description provided for @tutorialCalloutReOptimizeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Day got derailed? Recalculate from now while keeping your upcoming plan roughly stable'**
+  String get tutorialCalloutReOptimizeDesc;
+
+  /// No description provided for @tutorialCalloutTravelTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel Time'**
+  String get tutorialCalloutTravelTime;
+
+  /// No description provided for @tutorialCalloutTravelTimeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler accounts for commute between locations'**
+  String get tutorialCalloutTravelTimeDesc;
+
+  /// No description provided for @tutorialStepQuickCreateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Create'**
+  String get tutorialStepQuickCreateTitle;
+
+  /// No description provided for @tutorialStepQuickCreateBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the quick-add sheet. Name your tile and set a duration for a fast add.'**
+  String get tutorialStepQuickCreateBody;
+
+  /// No description provided for @tutorialStepQuickCreateSheetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the quick-add sheet behind me! Name your tile, set a duration, and tap Add — Tiler handles the rest.'**
+  String get tutorialStepQuickCreateSheetBody;
+
+  /// No description provided for @tutorialCalloutNameYourTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Name Your Tile'**
+  String get tutorialCalloutNameYourTile;
+
+  /// No description provided for @tutorialCalloutNameYourTileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the task you want to accomplish'**
+  String get tutorialCalloutNameYourTileDesc;
+
+  /// No description provided for @tutorialCalloutSetDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Set Duration'**
+  String get tutorialCalloutSetDuration;
+
+  /// No description provided for @tutorialCalloutSetDurationDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'How long will this task take?'**
+  String get tutorialCalloutSetDurationDesc;
+
+  /// No description provided for @tutorialCalloutMoreOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'More Options'**
+  String get tutorialCalloutMoreOptions;
+
+  /// No description provided for @tutorialCalloutMoreOptionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add location, deadline, or repetition via the full editor'**
+  String get tutorialCalloutMoreOptionsDesc;
+
+  /// No description provided for @tutorialCalloutMoreOptionsSheetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add location, deadline, or repetition'**
+  String get tutorialCalloutMoreOptionsSheetDesc;
+
+  /// No description provided for @tutorialStepTilerWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler Works for You'**
+  String get tutorialStepTilerWorksTitle;
+
+  /// No description provided for @tutorialStepTilerWorksBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler automatically arranges your tiles based on your energy levels, travel time, and deadlines. Just add what you need to do — Tiler handles the when.'**
+  String get tutorialStepTilerWorksBody;
+
+  /// No description provided for @tutorialCalloutForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast'**
+  String get tutorialCalloutForecast;
+
+  /// No description provided for @tutorialCalloutForecastDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'See when a tile will be inserted before you select it'**
+  String get tutorialCalloutForecastDesc;
+
+  /// No description provided for @tutorialCalloutShuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get tutorialCalloutShuffle;
+
+  /// No description provided for @tutorialCalloutShuffleDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle things around and suggest what you should do next'**
+  String get tutorialCalloutShuffleDesc;
+
+  /// No description provided for @tutorialCalloutDeferAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Defer All'**
+  String get tutorialCalloutDeferAll;
+
+  /// No description provided for @tutorialCalloutDeferAllDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Having a rough day? Push everything forward'**
+  String get tutorialCalloutDeferAllDesc;
+
+  /// No description provided for @tutorialStepControlTilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Control Your Tiles'**
+  String get tutorialStepControlTilesTitle;
+
+  /// No description provided for @tutorialStepControlTilesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each tile has controls to manage your tasks in real time:'**
+  String get tutorialStepControlTilesBody;
+
+  /// No description provided for @tutorialCalloutPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get tutorialCalloutPlay;
+
+  /// No description provided for @tutorialCalloutPlayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Start working on this tile'**
+  String get tutorialCalloutPlayDesc;
+
+  /// No description provided for @tutorialCalloutPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get tutorialCalloutPause;
+
+  /// No description provided for @tutorialCalloutPauseDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a break — Tiler will reschedule the rest'**
+  String get tutorialCalloutPauseDesc;
+
+  /// No description provided for @tutorialCalloutComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get tutorialCalloutComplete;
+
+  /// No description provided for @tutorialCalloutCompleteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Done! Mark it finished'**
+  String get tutorialCalloutCompleteDesc;
+
+  /// No description provided for @tutorialCalloutProcrastinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Procrastinate'**
+  String get tutorialCalloutProcrastinate;
+
+  /// No description provided for @tutorialCalloutProcrastinateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now — push it to later'**
+  String get tutorialCalloutProcrastinateDesc;
+
+  /// No description provided for @tutorialStepBigPictureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'See the Big Picture'**
+  String get tutorialStepBigPictureTitle;
+
+  /// No description provided for @tutorialStepBigPictureBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the calendar icon to switch between three views:'**
+  String get tutorialStepBigPictureBody;
+
+  /// No description provided for @tutorialCalloutDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get tutorialCalloutDaily;
+
+  /// No description provided for @tutorialCalloutDailyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Hour-by-hour — your detailed agenda'**
+  String get tutorialCalloutDailyDesc;
+
+  /// No description provided for @tutorialCalloutWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get tutorialCalloutWeekly;
+
+  /// No description provided for @tutorialCalloutWeeklyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'See the whole week at a glance'**
+  String get tutorialCalloutWeeklyDesc;
+
+  /// No description provided for @tutorialCalloutMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get tutorialCalloutMonthly;
+
+  /// No description provided for @tutorialCalloutMonthlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan ahead with a monthly overview'**
+  String get tutorialCalloutMonthlyDesc;
+
+  /// No description provided for @tutorialStepToolkitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Toolkit'**
+  String get tutorialStepToolkitTitle;
+
+  /// No description provided for @tutorialStepToolkitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The bottom bar gives you quick access to key features:'**
+  String get tutorialStepToolkitBody;
+
+  /// No description provided for @tutorialCalloutShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get tutorialCalloutShare;
+
+  /// No description provided for @tutorialCalloutShareDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Collaborate — share tiles with others'**
+  String get tutorialCalloutShareDesc;
+
+  /// No description provided for @tutorialCalloutSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get tutorialCalloutSearch;
+
+  /// No description provided for @tutorialCalloutSearchDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Find any tile by name'**
+  String get tutorialCalloutSearchDesc;
+
+  /// No description provided for @tutorialCalloutSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get tutorialCalloutSettings;
+
+  /// No description provided for @tutorialCalloutSettingsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize your experience, connect calendars, set preferences'**
+  String get tutorialCalloutSettingsDesc;
+
+  /// No description provided for @tutorialNavNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get tutorialNavNext;
+
+  /// No description provided for @tutorialNavNextArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Next →'**
+  String get tutorialNavNextArrow;
+
+  /// No description provided for @tutorialNavBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get tutorialNavBack;
+
+  /// No description provided for @tutorialNavBackArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'← Back'**
+  String get tutorialNavBackArrow;
+
+  /// No description provided for @tutorialNavSkip.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get tutorialNavSkip;
+
+  /// No description provided for @tutorialNavLetsGo.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s Go!'**
+  String get tutorialNavLetsGo;
+
+  /// Step counter like 3/7
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total}'**
+  String tutorialStepCounter(int current, int total);
 }
 
 class _AppLocalizationsDelegate

@@ -1991,6 +1991,204 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToProcrastinateTile => 'Failed to procrastinate tile';
 
   @override
+  String get tutorialStepYourScheduleTitle => 'Your Schedule';
+
+  @override
+  String get tutorialStepYourScheduleBody =>
+      'Your day is organized into Tiles — smart time blocks that Tiler arranges for you. Scroll up and down to see your full day.';
+
+  @override
+  String get tutorialStepCreateOptimizeTitle => 'Create & Optimize';
+
+  @override
+  String get tutorialStepCreateOptimizeBody =>
+      'Tap here to create a new task. Tell Tiler what you need to do and how long it will take — Tiler figures out the when.';
+
+  @override
+  String get tutorialCalloutReOptimize => 'Re-optimize';
+
+  @override
+  String get tutorialCalloutReOptimizeDesc =>
+      'Day got derailed? Recalculate from now while keeping your upcoming plan roughly stable';
+
+  @override
+  String get tutorialCalloutTravelTime => 'Travel Time';
+
+  @override
+  String get tutorialCalloutTravelTimeDesc =>
+      'Tiler accounts for commute between locations';
+
+  @override
+  String get tutorialStepQuickCreateTitle => 'Quick Create';
+
+  @override
+  String get tutorialStepQuickCreateBody =>
+      'This is the quick-add sheet. Name your tile and set a duration for a fast add.';
+
+  @override
+  String get tutorialStepQuickCreateSheetBody =>
+      'This is the quick-add sheet behind me! Name your tile, set a duration, and tap Add — Tiler handles the rest.';
+
+  @override
+  String get tutorialCalloutNameYourTile => 'Name Your Tile';
+
+  @override
+  String get tutorialCalloutNameYourTileDesc =>
+      'Describe the task you want to accomplish';
+
+  @override
+  String get tutorialCalloutSetDuration => 'Set Duration';
+
+  @override
+  String get tutorialCalloutSetDurationDesc => 'How long will this task take?';
+
+  @override
+  String get tutorialCalloutMoreOptions => 'More Options';
+
+  @override
+  String get tutorialCalloutMoreOptionsDesc =>
+      'Add location, deadline, or repetition via the full editor';
+
+  @override
+  String get tutorialCalloutMoreOptionsSheetDesc =>
+      'Add location, deadline, or repetition';
+
+  @override
+  String get tutorialStepTilerWorksTitle => 'Tiler Works for You';
+
+  @override
+  String get tutorialStepTilerWorksBody =>
+      'Tiler automatically arranges your tiles based on your energy levels, travel time, and deadlines. Just add what you need to do — Tiler handles the when.';
+
+  @override
+  String get tutorialCalloutForecast => 'Forecast';
+
+  @override
+  String get tutorialCalloutForecastDesc =>
+      'See when a tile will be inserted before you select it';
+
+  @override
+  String get tutorialCalloutShuffle => 'Shuffle';
+
+  @override
+  String get tutorialCalloutShuffleDesc =>
+      'Shuffle things around and suggest what you should do next';
+
+  @override
+  String get tutorialCalloutDeferAll => 'Defer All';
+
+  @override
+  String get tutorialCalloutDeferAllDesc =>
+      'Having a rough day? Push everything forward';
+
+  @override
+  String get tutorialStepControlTilesTitle => 'Control Your Tiles';
+
+  @override
+  String get tutorialStepControlTilesBody =>
+      'Each tile has controls to manage your tasks in real time:';
+
+  @override
+  String get tutorialCalloutPlay => 'Play';
+
+  @override
+  String get tutorialCalloutPlayDesc => 'Start working on this tile';
+
+  @override
+  String get tutorialCalloutPause => 'Pause';
+
+  @override
+  String get tutorialCalloutPauseDesc =>
+      'Take a break — Tiler will reschedule the rest';
+
+  @override
+  String get tutorialCalloutComplete => 'Complete';
+
+  @override
+  String get tutorialCalloutCompleteDesc => 'Done! Mark it finished';
+
+  @override
+  String get tutorialCalloutProcrastinate => 'Procrastinate';
+
+  @override
+  String get tutorialCalloutProcrastinateDesc => 'Not now — push it to later';
+
+  @override
+  String get tutorialStepBigPictureTitle => 'See the Big Picture';
+
+  @override
+  String get tutorialStepBigPictureBody =>
+      'Tap the calendar icon to switch between three views:';
+
+  @override
+  String get tutorialCalloutDaily => 'Daily';
+
+  @override
+  String get tutorialCalloutDailyDesc => 'Hour-by-hour — your detailed agenda';
+
+  @override
+  String get tutorialCalloutWeekly => 'Weekly';
+
+  @override
+  String get tutorialCalloutWeeklyDesc => 'See the whole week at a glance';
+
+  @override
+  String get tutorialCalloutMonthly => 'Monthly';
+
+  @override
+  String get tutorialCalloutMonthlyDesc => 'Plan ahead with a monthly overview';
+
+  @override
+  String get tutorialStepToolkitTitle => 'Your Toolkit';
+
+  @override
+  String get tutorialStepToolkitBody =>
+      'The bottom bar gives you quick access to key features:';
+
+  @override
+  String get tutorialCalloutShare => 'Share';
+
+  @override
+  String get tutorialCalloutShareDesc =>
+      'Collaborate — share tiles with others';
+
+  @override
+  String get tutorialCalloutSearch => 'Search';
+
+  @override
+  String get tutorialCalloutSearchDesc => 'Find any tile by name';
+
+  @override
+  String get tutorialCalloutSettings => 'Settings';
+
+  @override
+  String get tutorialCalloutSettingsDesc =>
+      'Customize your experience, connect calendars, set preferences';
+
+  @override
+  String get tutorialNavNext => 'Next';
+
+  @override
+  String get tutorialNavNextArrow => 'Next →';
+
+  @override
+  String get tutorialNavBack => 'Back';
+
+  @override
+  String get tutorialNavBackArrow => '← Back';
+
+  @override
+  String get tutorialNavSkip => 'Skip';
+
+  @override
+  String get tutorialNavLetsGo => 'Let\'s Go!';
+
+  @override
+  String tutorialStepCounter(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
   String get chat => 'Chat';
 
   @override

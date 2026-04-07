@@ -1994,6 +1994,205 @@ class AppLocalizationsEs extends AppLocalizations {
   String get failedToProcrastinateTile => 'Error al posponer el tile';
 
   @override
+  String get tutorialStepYourScheduleTitle => 'Tu Horario';
+
+  @override
+  String get tutorialStepYourScheduleBody =>
+      'Tu día está organizado en Tiles — bloques de tiempo inteligentes que Tiler organiza por ti. Desplázate hacia arriba y abajo para ver tu día completo.';
+
+  @override
+  String get tutorialStepCreateOptimizeTitle => 'Crear y Optimizar';
+
+  @override
+  String get tutorialStepCreateOptimizeBody =>
+      'Toca aquí para crear una nueva tarea. Dile a Tiler qué necesitas hacer y cuánto tiempo tomará — Tiler decide el cuándo.';
+
+  @override
+  String get tutorialCalloutReOptimize => 'Re-optimizar';
+
+  @override
+  String get tutorialCalloutReOptimizeDesc =>
+      '¿Se descarriló tu día? Recalcula desde ahora manteniendo tu plan aproximadamente estable';
+
+  @override
+  String get tutorialCalloutTravelTime => 'Tiempo de Viaje';
+
+  @override
+  String get tutorialCalloutTravelTimeDesc =>
+      'Tiler tiene en cuenta el tiempo de traslado entre ubicaciones';
+
+  @override
+  String get tutorialStepQuickCreateTitle => 'Creación Rápida';
+
+  @override
+  String get tutorialStepQuickCreateBody =>
+      'Esta es la hoja de creación rápida. Nombra tu tile y establece una duración para agregarlo rápidamente.';
+
+  @override
+  String get tutorialStepQuickCreateSheetBody =>
+      '¡Esta es la hoja de creación rápida detrás de mí! Nombra tu tile, establece una duración y toca Agregar — Tiler se encarga del resto.';
+
+  @override
+  String get tutorialCalloutNameYourTile => 'Nombra Tu Tile';
+
+  @override
+  String get tutorialCalloutNameYourTileDesc =>
+      'Describe la tarea que quieres realizar';
+
+  @override
+  String get tutorialCalloutSetDuration => 'Establecer Duración';
+
+  @override
+  String get tutorialCalloutSetDurationDesc =>
+      '¿Cuánto tiempo tomará esta tarea?';
+
+  @override
+  String get tutorialCalloutMoreOptions => 'Más Opciones';
+
+  @override
+  String get tutorialCalloutMoreOptionsDesc =>
+      'Agrega ubicación, fecha límite o repetición a través del editor completo';
+
+  @override
+  String get tutorialCalloutMoreOptionsSheetDesc =>
+      'Agrega ubicación, fecha límite o repetición';
+
+  @override
+  String get tutorialStepTilerWorksTitle => 'Tiler Trabaja por Ti';
+
+  @override
+  String get tutorialStepTilerWorksBody =>
+      'Tiler organiza automáticamente tus tiles según tus niveles de energía, tiempo de viaje y fechas límite. Solo agrega lo que necesitas hacer — Tiler se encarga del cuándo.';
+
+  @override
+  String get tutorialCalloutForecast => 'Pronóstico';
+
+  @override
+  String get tutorialCalloutForecastDesc =>
+      'Ve cuándo se insertará un tile antes de seleccionarlo';
+
+  @override
+  String get tutorialCalloutShuffle => 'Mezclar';
+
+  @override
+  String get tutorialCalloutShuffleDesc =>
+      'Mezcla las cosas y sugiere qué deberías hacer a continuación';
+
+  @override
+  String get tutorialCalloutDeferAll => 'Posponer Todo';
+
+  @override
+  String get tutorialCalloutDeferAllDesc =>
+      '¿Día difícil? Empuja todo hacia adelante';
+
+  @override
+  String get tutorialStepControlTilesTitle => 'Controla Tus Tiles';
+
+  @override
+  String get tutorialStepControlTilesBody =>
+      'Cada tile tiene controles para gestionar tus tareas en tiempo real:';
+
+  @override
+  String get tutorialCalloutPlay => 'Reproducir';
+
+  @override
+  String get tutorialCalloutPlayDesc => 'Comienza a trabajar en este tile';
+
+  @override
+  String get tutorialCalloutPause => 'Pausar';
+
+  @override
+  String get tutorialCalloutPauseDesc =>
+      'Toma un descanso — Tiler reprogramará el resto';
+
+  @override
+  String get tutorialCalloutComplete => 'Completar';
+
+  @override
+  String get tutorialCalloutCompleteDesc => '¡Listo! Márcalo como terminado';
+
+  @override
+  String get tutorialCalloutProcrastinate => 'Procrastinar';
+
+  @override
+  String get tutorialCalloutProcrastinateDesc =>
+      'Ahora no — empújalo para después';
+
+  @override
+  String get tutorialStepBigPictureTitle => 'Ve el Panorama General';
+
+  @override
+  String get tutorialStepBigPictureBody =>
+      'Toca el ícono del calendario para alternar entre tres vistas:';
+
+  @override
+  String get tutorialCalloutDaily => 'Diario';
+
+  @override
+  String get tutorialCalloutDailyDesc => 'Hora por hora — tu agenda detallada';
+
+  @override
+  String get tutorialCalloutWeekly => 'Semanal';
+
+  @override
+  String get tutorialCalloutWeeklyDesc => 'Ve toda la semana de un vistazo';
+
+  @override
+  String get tutorialCalloutMonthly => 'Mensual';
+
+  @override
+  String get tutorialCalloutMonthlyDesc => 'Planifica con una vista mensual';
+
+  @override
+  String get tutorialStepToolkitTitle => 'Tu Kit de Herramientas';
+
+  @override
+  String get tutorialStepToolkitBody =>
+      'La barra inferior te da acceso rápido a funciones clave:';
+
+  @override
+  String get tutorialCalloutShare => 'Compartir';
+
+  @override
+  String get tutorialCalloutShareDesc => 'Colabora — comparte tiles con otros';
+
+  @override
+  String get tutorialCalloutSearch => 'Buscar';
+
+  @override
+  String get tutorialCalloutSearchDesc => 'Encuentra cualquier tile por nombre';
+
+  @override
+  String get tutorialCalloutSettings => 'Configuración';
+
+  @override
+  String get tutorialCalloutSettingsDesc =>
+      'Personaliza tu experiencia, conecta calendarios, establece preferencias';
+
+  @override
+  String get tutorialNavNext => 'Siguiente';
+
+  @override
+  String get tutorialNavNextArrow => 'Siguiente →';
+
+  @override
+  String get tutorialNavBack => 'Atrás';
+
+  @override
+  String get tutorialNavBackArrow => '← Atrás';
+
+  @override
+  String get tutorialNavSkip => 'Omitir';
+
+  @override
+  String get tutorialNavLetsGo => '¡Vamos!';
+
+  @override
+  String tutorialStepCounter(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
   String get chat => 'Chat';
 
   @override

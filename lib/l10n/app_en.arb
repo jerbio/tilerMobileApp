@@ -1464,6 +1464,87 @@
         "@failedToProcrastinateTile": {
           "description": "Error when procrastinating a tile fails"
         },
+
+        "tutorialStepYourScheduleTitle": "Your Schedule",
+        "tutorialStepYourScheduleBody": "Your day is organized into Tiles — smart time blocks that Tiler arranges for you. Scroll up and down to see your full day.",
+
+        "tutorialStepCreateOptimizeTitle": "Create & Optimize",
+        "tutorialStepCreateOptimizeBody": "Tap here to create a new task. Tell Tiler what you need to do and how long it will take — Tiler figures out the when.",
+        "tutorialCalloutReOptimize": "Re-optimize",
+        "tutorialCalloutReOptimizeDesc": "Day got derailed? Recalculate from now while keeping your upcoming plan roughly stable",
+        "tutorialCalloutTravelTime": "Travel Time",
+        "tutorialCalloutTravelTimeDesc": "Tiler accounts for commute between locations",
+
+        "tutorialStepQuickCreateTitle": "Quick Create",
+        "tutorialStepQuickCreateBody": "This is the quick-add sheet. Name your tile and set a duration for a fast add.",
+        "tutorialStepQuickCreateSheetBody": "This is the quick-add sheet behind me! Name your tile, set a duration, and tap Add — Tiler handles the rest.",
+        "tutorialCalloutNameYourTile": "Name Your Tile",
+        "tutorialCalloutNameYourTileDesc": "Describe the task you want to accomplish",
+        "tutorialCalloutSetDuration": "Set Duration",
+        "tutorialCalloutSetDurationDesc": "How long will this task take?",
+        "tutorialCalloutMoreOptions": "More Options",
+        "tutorialCalloutMoreOptionsDesc": "Add location, deadline, or repetition via the full editor",
+        "tutorialCalloutMoreOptionsSheetDesc": "Add location, deadline, or repetition",
+
+        "tutorialStepTilerWorksTitle": "Tiler Works for You",
+        "tutorialStepTilerWorksBody": "Tiler automatically arranges your tiles based on your energy levels, travel time, and deadlines. Just add what you need to do — Tiler handles the when.",
+        "tutorialCalloutForecast": "Forecast",
+        "tutorialCalloutForecastDesc": "See when a tile will be inserted before you select it",
+        "tutorialCalloutShuffle": "Shuffle",
+        "tutorialCalloutShuffleDesc": "Shuffle things around and suggest what you should do next",
+        "tutorialCalloutDeferAll": "Defer All",
+        "tutorialCalloutDeferAllDesc": "Having a rough day? Push everything forward",
+
+        "tutorialStepControlTilesTitle": "Control Your Tiles",
+        "tutorialStepControlTilesBody": "Each tile has controls to manage your tasks in real time:",
+        "tutorialCalloutPlay": "Play",
+        "tutorialCalloutPlayDesc": "Start working on this tile",
+        "tutorialCalloutPause": "Pause",
+        "tutorialCalloutPauseDesc": "Take a break — Tiler will reschedule the rest",
+        "tutorialCalloutComplete": "Complete",
+        "tutorialCalloutCompleteDesc": "Done! Mark it finished",
+        "tutorialCalloutProcrastinate": "Procrastinate",
+        "tutorialCalloutProcrastinateDesc": "Not now — push it to later",
+
+        "tutorialStepBigPictureTitle": "See the Big Picture",
+        "tutorialStepBigPictureBody": "Tap the calendar icon to switch between three views:",
+        "tutorialCalloutDaily": "Daily",
+        "tutorialCalloutDailyDesc": "Hour-by-hour — your detailed agenda",
+        "tutorialCalloutWeekly": "Weekly",
+        "tutorialCalloutWeeklyDesc": "See the whole week at a glance",
+        "tutorialCalloutMonthly": "Monthly",
+        "tutorialCalloutMonthlyDesc": "Plan ahead with a monthly overview",
+
+        "tutorialStepToolkitTitle": "Your Toolkit",
+        "tutorialStepToolkitBody": "The bottom bar gives you quick access to key features:",
+        "tutorialCalloutShare": "Share",
+        "tutorialCalloutShareDesc": "Collaborate — share tiles with others",
+        "tutorialCalloutSearch": "Search",
+        "tutorialCalloutSearchDesc": "Find any tile by name",
+        "tutorialCalloutSettings": "Settings",
+        "tutorialCalloutSettingsDesc": "Customize your experience, connect calendars, set preferences",
+
+        "tutorialNavNext": "Next",
+        "tutorialNavNextArrow": "Next →",
+        "tutorialNavBack": "Back",
+        "tutorialNavBackArrow": "← Back",
+        "tutorialNavSkip": "Skip",
+        "tutorialNavLetsGo": "Let's Go!",
+        "tutorialStepCounter": "{current}/{total}",
+        "@tutorialStepCounter": {
+          "description": "Step counter like 3/7",
+          "placeholders": {
+            "current": {
+              "type": "int",
+              "example": "3"
+            },
+            "total": {
+              "type": "int",
+              "example": "7"
+            }
+          }
+        }
+        },
         "chat":"Chat",
         "transcribing":"Transcribing",
         "newChat":"New chat",

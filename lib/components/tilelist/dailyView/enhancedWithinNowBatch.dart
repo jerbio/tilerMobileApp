@@ -5,6 +5,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
+import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
@@ -176,12 +177,23 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   /// Build the appropriate tile widget with expandable playback controls
   Widget _buildTileWidget(TilerEvent tile) {
     if (tile is SubCalendarEvent) {
-      // EnhancedTileCard handles all tile types including procrastinate/break tiles
-      return EnhancedTileCard(
+      final isTutorialCurrent = tile.id != null &&
+          tile.id!.startsWith('tutorial-tile-') &&
+          tile.isCurrent;
+      final card = EnhancedTileCard(
         subEvent: tile,
+        initiallyExpanded: isTutorialCurrent,
         preview: (widget as EnhancedWithinNowBatch).preview,
-          hasDottedBorder: (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
-              tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true,);
+        hasDottedBorder: (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
+            tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true,
+      );
+      if (isTutorialCurrent) {
+        return Container(
+          key: TutorialKeys.currentTileKey,
+          child: card,
+        );
+      }
+      return card;
     }
     return TileWidget(tile,preview: (widget as EnhancedWithinNowBatch).preview);
   }

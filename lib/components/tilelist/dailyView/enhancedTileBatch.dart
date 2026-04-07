@@ -7,6 +7,7 @@ import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
 import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
+import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
@@ -128,11 +129,22 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   /// Build the appropriate tile widget based on settings
   Widget _buildTileWidget(TilerEvent tile) {
     if (widget.showEnhancedCards && tile is SubCalendarEvent) {
-      return EnhancedTileCard(
-        subEvent: tile,preview: widget.preview,
-        hasDottedBorder: widget.selectedActionEntityId != null &&
-            tile.id?.contains(widget.selectedActionEntityId!) == true,
-      );
+      final isTutorialCurrent = tile.id != null &&
+          tile.id!.startsWith('tutorial-tile-') &&
+          tile.isCurrent;
+      final card = EnhancedTileCard(
+        subEvent: tile,
+        initiallyExpanded: isTutorialCurrent,,preview: widget.preview,
+      hasDottedBorder: widget.selectedActionEntityId != null &&
+      tile.id?.contains(widget.selectedActionEntityId!) == true,
+    );
+      if (isTutorialCurrent) {
+        return Container(
+          key: TutorialKeys.currentTileKey,
+          child: card,
+        );
+      }
+      return card;
     }
     return TileWidget(tile,preview: widget.preview);
   }
