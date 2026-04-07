@@ -134,9 +134,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           tile.isCurrent;
       final card = EnhancedTileCard(
         subEvent: tile,
-        initiallyExpanded: isTutorialCurrent,,preview: widget.preview,
-      hasDottedBorder: widget.selectedActionEntityId != null &&
-      tile.id?.contains(widget.selectedActionEntityId!) == true,
+        initiallyExpanded: isTutorialCurrent,
+        preview: widget.preview,
+        hasDottedBorder: widget.selectedActionEntityId != null &&
+            tile.id?.contains(widget.selectedActionEntityId!) == true,
     );
       if (isTutorialCurrent) {
         return Container(
