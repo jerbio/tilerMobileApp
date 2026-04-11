@@ -110,23 +110,34 @@ class _OnboardingViewState extends State<OnboardingView> {
                               context.read<OnboardingBloc>().add(PreviousPageEvent());
                             }
                           },
-                          child: Center(
-                            child: AnimatedSwitcher(
-                              duration: Duration(milliseconds: 300),
-                              transitionBuilder:
-                                  (Widget child, Animation<double> animation) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                              child: Padding(
-                                key: ValueKey<int>(state.pageNumber ?? 0),
-                                padding:
-                                const EdgeInsets.symmetric(horizontal: 30.0),
-                                child: pages[state.pageNumber ?? 0],
-                              ),
-                            ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return SingleChildScrollView(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight,
+                                  ),
+                                  child: Center(
+                                    child: AnimatedSwitcher(
+                                      duration: Duration(milliseconds: 300),
+                                      transitionBuilder:
+                                          (Widget child, Animation<double> animation) {
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        );
+                                      },
+                                      child: Padding(
+                                        key: ValueKey<int>(state.pageNumber ?? 0),
+                                        padding:
+                                        const EdgeInsets.symmetric(horizontal: 30.0),
+                                        child: pages[state.pageNumber ?? 0],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

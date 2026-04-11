@@ -17,6 +17,7 @@ class ProfessionWidget extends StatefulWidget {
 
 class _ProfessionWidgetState extends State<ProfessionWidget> {
   late TextEditingController customController;
+  final GlobalKey _otherFieldKey = GlobalKey();
 
   @override
   void initState() {
@@ -28,6 +29,19 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
   void dispose() {
     customController.dispose();
     super.dispose();
+  }
+
+  void _scrollToOtherField() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final keyContext = _otherFieldKey.currentContext;
+      if (keyContext != null) {
+        Scrollable.ensureVisible(
+          keyContext,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -81,11 +95,15 @@ class _ProfessionWidgetState extends State<ProfessionWidget> {
                     context.read<OnboardingBloc>().add(SelectProfessionEvent(
                         profession: profession,
                         isCustom: profession == 'Other'));
+                    if (profession == 'Other') {
+                      _scrollToOtherField();
+                    }
                   },
                 );
               }).toList(),
               if (isOtherSelected)
                 Padding(
+                  key: _otherFieldKey,
                   padding: const EdgeInsets.only(top: 8),
                   child: TextField(
                     controller: customController,
