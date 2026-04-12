@@ -1205,6 +1205,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneNumber => 'Phone Number';
 
   @override
+  String get countryCode => 'Country Code';
+
+  @override
   String get dateOfBirth => 'Date Of Birth';
 
   @override

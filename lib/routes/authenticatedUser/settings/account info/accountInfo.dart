@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
+import 'package:country_picker/country_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -21,6 +23,8 @@ class AccountInfo extends StatelessWidget {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _phoneNumberController = TextEditingController();
+  final ValueNotifier<Country?> _selectedCountryNotifier =
+      ValueNotifier<Country?>(null);
   final TextEditingController _dateOfBirthController = TextEditingController();
   final ValueNotifier<bool> _hasChangesNotifier = ValueNotifier<bool>(false);
   UserProfile? _originalProfile;
@@ -142,6 +146,10 @@ class AccountInfo extends StatelessWidget {
     }
     userProfile.username = _usernameController.text;
     userProfile.phoneNumber = _phoneNumberController.text;
+    final selectedCountry = _selectedCountryNotifier.value;
+    userProfile.countryCode = selectedCountry != null
+        ? int.tryParse(selectedCountry.phoneCode)
+        : null;
     final completer = Completer<bool>();
     final subscription =
         context.read<DeviceSettingBloc>().stream.listen((state) {
@@ -192,10 +200,7 @@ class AccountInfo extends StatelessWidget {
             filled: true,
             colorScheme: colorScheme,
             tileThemeExtension: tileThemeExtension),
-        _buildTextField(AppLocalizations.of(context)!.phoneNumber,
-            controller: _phoneNumberController,
-            colorScheme: colorScheme,
-            tileThemeExtension: tileThemeExtension),
+        _buildPhoneNumberRow(context, colorScheme, tileThemeExtension),
         _buildTextField(
           AppLocalizations.of(context)!.dateOfBirth,
           controller: _dateOfBirthController,
@@ -226,6 +231,8 @@ class AccountInfo extends StatelessWidget {
             (_originalProfile?.fullName ?? '') ||
         _usernameController.text != (_originalProfile?.username ?? '') ||
         _phoneNumberController.text != (_originalProfile?.phoneNumber ?? '') ||
+        _selectedCountryNotifier.value?.phoneCode !=
+            (_originalProfile?.countryCode?.toString() ?? '') ||
         _dateOfBirthController.text !=
             _displayRawDate(_originalProfile?.dateOfBirth);
 
@@ -237,17 +244,20 @@ class AccountInfo extends StatelessWidget {
       ..fullName = userProfile.fullName
       ..username = userProfile.username
       ..phoneNumber = userProfile.phoneNumber
+      ..countryCode = userProfile.countryCode
       ..dateOfBirth = userProfile.dateOfBirth
       ..email = userProfile.email;
 
     _fullNameController.removeListener(_checkForChanges);
     _usernameController.removeListener(_checkForChanges);
     _phoneNumberController.removeListener(_checkForChanges);
+    _selectedCountryNotifier.removeListener(_checkForChanges);
     _dateOfBirthController.removeListener(_checkForChanges);
 
     _fullNameController.addListener(_checkForChanges);
     _usernameController.addListener(_checkForChanges);
     _phoneNumberController.addListener(_checkForChanges);
+    _selectedCountryNotifier.addListener(_checkForChanges);
     _dateOfBirthController.addListener(_checkForChanges);
 
     _checkForChanges();
@@ -274,6 +284,8 @@ class AccountInfo extends StatelessWidget {
             _fullNameController.text = userProfile.fullName ?? '';
             _usernameController.text = userProfile.username ?? '';
             _phoneNumberController.text = userProfile.phoneNumber ?? '';
+            _selectedCountryNotifier.value =
+                _resolveCountry(userProfile.countryCode);
             _dateOfBirthController.text =
                 _displayRawDate(userProfile.dateOfBirth);
             _setupControllerListeners(userProfile);
@@ -323,10 +335,108 @@ class AccountInfo extends StatelessWidget {
     );
   }
 
+  Country? _resolveCountry(int? countryCode) {
+    if (countryCode != null && countryCode > 0) {
+      final phoneCode = countryCode.toString();
+      try {
+        return CountryParser.parsePhoneCode(phoneCode);
+      } catch (_) {}
+    }
+    // Auto-detect from device locale
+    final deviceLocale = ui.PlatformDispatcher.instance.locale;
+    final localeCountryCode = deviceLocale.countryCode;
+    if (localeCountryCode != null && localeCountryCode.isNotEmpty) {
+      try {
+        return CountryParser.parseCountryCode(localeCountryCode);
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  void _showCountryPicker(BuildContext context) {
+    showCountryPicker(
+      context: context,
+      showPhoneCode: true,
+      onSelect: (Country country) {
+        _selectedCountryNotifier.value = country;
+      },
+    );
+  }
+
+  Widget _buildPhoneNumberRow(BuildContext context, ColorScheme colorScheme,
+      TileThemeExtension tileThemeExtension) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16, right: 20, left: 20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.1),
+            blurRadius: 6,
+            spreadRadius: 0,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          ValueListenableBuilder<Country?>(
+            valueListenable: _selectedCountryNotifier,
+            builder: (context, selectedCountry, _) {
+              final displayText = selectedCountry != null
+                  ? '${selectedCountry.flagEmoji} +${selectedCountry.phoneCode}'
+                  : '+?';
+              return InkWell(
+                onTap: () => _showCountryPicker(context),
+                borderRadius: BorderRadius.horizontal(
+                    left: Radius.circular(10)),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(displayText,
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: colorScheme.onSurface)),
+                      const SizedBox(width: 4),
+                      Icon(Icons.arrow_drop_down,
+                          size: 20, color: colorScheme.onSurfaceVariant),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+          Container(
+            width: 1,
+            height: 30,
+            color: colorScheme.outlineVariant,
+          ),
+          Expanded(
+            child: TextField(
+              controller: _phoneNumberController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context)!.phoneNumber,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTextField(String label,
       {bool enabled = true,
       bool filled = false,
       VoidCallback? onTap,
+      TextInputType? keyboardType,
       required TextEditingController? controller,
       required ColorScheme colorScheme,
       required TileThemeExtension tileThemeExtension}) {
@@ -351,6 +461,7 @@ class AccountInfo extends StatelessWidget {
         onTap: onTap,
         controller: controller,
         enabled: enabled,
+        keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
           border: InputBorder.none,

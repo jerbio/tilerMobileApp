@@ -2285,6 +2285,12 @@ abstract class AppLocalizations {
   /// **'Phone Number'**
   String get phoneNumber;
 
+  /// No description provided for @countryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Country Code'**
+  String get countryCode;
+
   /// No description provided for @dateOfBirth.
   ///
   /// In en, this message translates to:
