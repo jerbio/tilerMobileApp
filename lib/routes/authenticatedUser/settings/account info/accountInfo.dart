@@ -389,8 +389,8 @@ class AccountInfo extends StatelessWidget {
                   : '+?';
               return InkWell(
                 onTap: () => _showCountryPicker(context),
-                borderRadius: BorderRadius.horizontal(
-                    left: Radius.circular(10)),
+                borderRadius:
+                    BorderRadius.horizontal(left: Radius.circular(10)),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -399,8 +399,7 @@ class AccountInfo extends StatelessWidget {
                     children: [
                       Text(displayText,
                           style: TextStyle(
-                              fontSize: 16,
-                              color: colorScheme.onSurface)),
+                              fontSize: 16, color: colorScheme.onSurface)),
                       const SizedBox(width: 4),
                       Icon(Icons.arrow_drop_down,
                           size: 20, color: colorScheme.onSurfaceVariant),
@@ -422,8 +421,8 @@ class AccountInfo extends StatelessWidget {
               decoration: InputDecoration(
                 labelText: AppLocalizations.of(context)!.phoneNumber,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 14),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
             ),
           ),
