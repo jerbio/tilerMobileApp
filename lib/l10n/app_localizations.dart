@@ -3826,6 +3826,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{current}/{total}'**
   String tutorialStepCounter(int current, int total);
+
+  /// No description provided for @feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback'**
+  String get feedback;
+
+  /// No description provided for @feedbackCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get feedbackCategory;
+
+  /// No description provided for @feedbackCategoryBug.
+  ///
+  /// In en, this message translates to:
+  /// **'Bug'**
+  String get feedbackCategoryBug;
+
+  /// No description provided for @feedbackCategoryFeature.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature'**
+  String get feedbackCategoryFeature;
+
+  /// No description provided for @feedbackCategoryEnhancement.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhancement'**
+  String get feedbackCategoryEnhancement;
+
+  /// No description provided for @feedbackCategoryGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'General'**
+  String get feedbackCategoryGeneral;
+
+  /// No description provided for @feedbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get feedbackTitle;
+
+  /// No description provided for @feedbackTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Brief summary of your feedback'**
+  String get feedbackTitleHint;
+
+  /// No description provided for @feedbackDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get feedbackDescription;
+
+  /// No description provided for @feedbackDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Provide details about your feedback'**
+  String get feedbackDescriptionHint;
+
+  /// No description provided for @feedbackSubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Feedback submitted successfully'**
+  String get feedbackSubmitted;
+
+  /// No description provided for @feedbackError.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit feedback'**
+  String get feedbackError;
 }
 
 class _AppLocalizationsDelegate

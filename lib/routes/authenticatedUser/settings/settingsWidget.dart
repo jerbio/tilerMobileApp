@@ -117,6 +117,12 @@ class Settings extends StatelessWidget {
             //   onTap: () => Navigator.pushNamed(context, '/myLocations'),
             // ),
             _buildDivider(tileThemeExtension),
+            _buildListTile(
+              icon: 'assets/icons/settings/Feedback.svg',
+              title: AppLocalizations.of(context)!.feedback,
+              color: textColor,
+              onTap: () => Navigator.pushNamed(context, '/Feedback'),
+            ),
             // _buildListTile(
             //   icon: 'assets/icons/settings/AboutTiler.svg',
             //   title: AppLocalizations.of(context)!.aboutTiler,
