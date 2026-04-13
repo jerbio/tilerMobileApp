@@ -202,4 +202,25 @@ class SettingsApi extends AppApi {
               LocalizationService.instance.translations.reachingServerIssues);
     });
   }
+
+  Future<bool> sendFeedback(
+      {required String category,
+      required String title,
+      required String description}) async {
+    Map<String, dynamic> feedbackParams = {
+      'Category': category,
+      'Title': title,
+      'Description': description,
+    };
+    return sendPostRequest('api/User/Feedback', feedbackParams,
+            analyze: false, injectLocation: false)
+        .then((response) {
+      if (response.statusCode == 200) {
+        return true;
+      }
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.reachingServerIssues);
+    });
+  }
 }

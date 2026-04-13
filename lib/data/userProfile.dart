@@ -10,7 +10,7 @@ class UserProfile {
   String? firstName;
   String? phoneNumber;
   String? dateOfBirth;
-  String? countryCode;
+  int? countryCode;
 
   UserProfile();
 
@@ -60,7 +60,9 @@ class UserProfile {
       dateOfBirth = json['dateOfBirth'];
     }
     if (json.containsKey('countryCode') && json['countryCode'] != null) {
-      countryCode = json['countryCode'];
+      countryCode = json['countryCode'] is int
+          ? json['countryCode']
+          : int.tryParse(json['countryCode'].toString());
     }
   }
 
@@ -82,9 +84,11 @@ class UserProfile {
     int? dateOfBirthEpoch;
     try {
       if (this.dateOfBirth != null) {
-        dateOfBirthEpoch =
-            DateTime.parse(this.dateOfBirth!.replaceAll(r'/', '-'))
-                .millisecondsSinceEpoch;
+        var requestTime =
+            DateTime.parse(this.dateOfBirth!.replaceAll(r'/', '-'));
+        var utcDate =
+            DateTime.utc(requestTime.year, requestTime.month, requestTime.day);
+        dateOfBirthEpoch = utcDate.millisecondsSinceEpoch;
       }
     } catch (e) {
       dateOfBirthEpoch = null;
@@ -92,7 +96,7 @@ class UserProfile {
 
     return <String, dynamic>{
       'UpdatedUserName': this.username,
-      'CountryCode': this.timezone,
+      'CountryCode': this.countryCode,
       'EndOfDay': this.endOfDay,
       'LastName': this.lastName,
       'FirstName': this.firstName,

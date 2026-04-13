@@ -1205,6 +1205,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get phoneNumber => 'Phone Number';
 
   @override
+  String get countryCode => 'Country Code';
+
+  @override
   String get dateOfBirth => 'Date Of Birth';
 
   @override
@@ -2338,4 +2341,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get entityIdNotFound => 'No preview entity id  found';
+
+  @override
+  String get feedback => 'Feedback';
+
+  @override
+  String get feedbackCategory => 'Category';
+
+  @override
+  String get feedbackCategoryBug => 'Bug';
+
+  @override
+  String get feedbackCategoryFeature => 'Feature';
+
+  @override
+  String get feedbackCategoryEnhancement => 'Enhancement';
+
+  @override
+  String get feedbackCategoryGeneral => 'General';
+
+  @override
+  String get feedbackTitle => 'Title';
+
+  @override
+  String get feedbackTitleHint => 'Brief summary of your feedback';
+
+  @override
+  String get feedbackDescription => 'Description';
+
+  @override
+  String get feedbackDescriptionHint => 'Provide details about your feedback';
+
+  @override
+  String get feedbackSubmitted => 'Feedback submitted successfully';
+
+  @override
+  String get feedbackError => 'Failed to submit feedback';
 }

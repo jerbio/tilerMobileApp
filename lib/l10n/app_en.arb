@@ -718,6 +718,7 @@
       "emailNotifications": "Email notifications",
       "fullName":"Full Name",
       "phoneNumber":"Phone Number",
+      "countryCode":"Country Code",
       "dateOfBirth":"Date Of Birth",
       "accountInfoUpdatedSuccessfully": "Account Information have been updated successfully.",
       "reachingServerIssues":"Issues with reaching Tiler servers",
@@ -1593,5 +1594,18 @@
            "socketConnectionError":"Socket Connection Error",
            "keepAliveFailed":"Keeping connection alive failed",
            "copy":"Copy",
-           "entityIdNotFound":"No preview entity id  found"
+           "entityIdNotFound":"No preview entity id  found",
+        },
+        "feedback": "Feedback",
+        "feedbackCategory": "Category",
+        "feedbackCategoryBug": "Bug",
+        "feedbackCategoryFeature": "Feature",
+        "feedbackCategoryEnhancement": "Enhancement",
+        "feedbackCategoryGeneral": "General",
+        "feedbackTitle": "Title",
+        "feedbackTitleHint": "Brief summary of your feedback",
+        "feedbackDescription": "Description",
+        "feedbackDescriptionHint": "Provide details about your feedback",
+        "feedbackSubmitted": "Feedback submitted successfully",
+        "feedbackError": "Failed to submit feedback"
 }
