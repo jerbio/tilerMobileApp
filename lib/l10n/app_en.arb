@@ -1510,5 +1510,17 @@
               "example": "7"
             }
           }
-        }
+        },
+        "feedback": "Feedback",
+        "feedbackCategory": "Category",
+        "feedbackCategoryBug": "Bug",
+        "feedbackCategoryFeature": "Feature",
+        "feedbackCategoryEnhancement": "Enhancement",
+        "feedbackCategoryGeneral": "General",
+        "feedbackTitle": "Title",
+        "feedbackTitleHint": "Brief summary of your feedback",
+        "feedbackDescription": "Description",
+        "feedbackDescriptionHint": "Provide details about your feedback",
+        "feedbackSubmitted": "Feedback submitted successfully",
+        "feedbackError": "Failed to submit feedback"
 }
