@@ -22,8 +22,6 @@ import 'package:tiler_app/services/api/onBoardingApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 
-
-
 class OnboardingView extends StatefulWidget {
   static final String routeName = '/OnBoarding';
 
@@ -31,9 +29,7 @@ class OnboardingView extends StatefulWidget {
   _OnboardingViewState createState() => _OnboardingViewState();
 }
 
-
 class _OnboardingViewState extends State<OnboardingView> {
-
   final List<Widget> pages = [
     WakeUpTimeWidget(),
     EnergyLevelDescriptionWidget(),
@@ -57,24 +53,28 @@ class _OnboardingViewState extends State<OnboardingView> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     // final localizationService = LocalizationService(AppLocalizations.of(context)!);
     NotificationOverlayMessage notificationOverlayMessage =
-    NotificationOverlayMessage();
+        NotificationOverlayMessage();
     return BlocProvider(
-      create: (context) => OnboardingBloc(onBoardingApi: OnBoardingApi(), settingsApi: SettingsApi(getContextCallBack: () => context))..add(FetchOnboardingDataEvent()),
+      create: (context) => OnboardingBloc(
+          onBoardingApi: OnBoardingApi(),
+          settingsApi: SettingsApi(getContextCallBack: () => context))
+        ..add(FetchOnboardingDataEvent()),
       child: BlocConsumer<OnboardingBloc, OnboardingState>(
         listener: (context, state) {
-          if (state.step == OnboardingStep.skipped ) {
+          if (state.step == OnboardingStep.skipped) {
             Navigator.pushReplacement(context,
                 MaterialPageRoute(builder: (context) => AuthorizedRoute()));
           }
           if (state.step == OnboardingStep.submitted) {
             scheduleApi.buzzSchedule();
-            Navigator.pushReplacement(context,
-                MaterialPageRoute(builder: (context) => OnBoardingDescriptionSlider()));
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => OnBoardingDescriptionSlider()));
           }
           if (state.step == OnboardingStep.error && state.error != null) {
             notificationOverlayMessage.showToast(
@@ -84,7 +84,6 @@ class _OnboardingViewState extends State<OnboardingView> {
             );
           }
         },
-
         builder: (context, state) {
           return Scaffold(
             body: Stack(
@@ -97,17 +96,20 @@ class _OnboardingViewState extends State<OnboardingView> {
                             vertical: 16.0, horizontal: 30.0),
                         child: OnBoardingProgressIndicator(
                             currentPage: state.pageNumber ?? 0,
-                            totalPages: pages.length
-                        ),
+                            totalPages: pages.length),
                       ),
                       Expanded(
                         child: GestureDetector(
                           behavior: HitTestBehavior.opaque,
                           onHorizontalDragEnd: (details) {
                             if (details.primaryVelocity! < 0) {
-                              context.read<OnboardingBloc>().add(NextPageEvent());
+                              context
+                                  .read<OnboardingBloc>()
+                                  .add(NextPageEvent());
                             } else if (details.primaryVelocity! > 0) {
-                              context.read<OnboardingBloc>().add(PreviousPageEvent());
+                              context
+                                  .read<OnboardingBloc>()
+                                  .add(PreviousPageEvent());
                             }
                           },
                           child: LayoutBuilder(
@@ -120,17 +122,18 @@ class _OnboardingViewState extends State<OnboardingView> {
                                   child: Center(
                                     child: AnimatedSwitcher(
                                       duration: Duration(milliseconds: 300),
-                                      transitionBuilder:
-                                          (Widget child, Animation<double> animation) {
+                                      transitionBuilder: (Widget child,
+                                          Animation<double> animation) {
                                         return FadeTransition(
                                           opacity: animation,
                                           child: child,
                                         );
                                       },
                                       child: Padding(
-                                        key: ValueKey<int>(state.pageNumber ?? 0),
-                                        padding:
-                                        const EdgeInsets.symmetric(horizontal: 30.0),
+                                        key: ValueKey<int>(
+                                            state.pageNumber ?? 0),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 30.0),
                                         child: pages[state.pageNumber ?? 0],
                                       ),
                                     ),
@@ -148,8 +151,10 @@ class _OnboardingViewState extends State<OnboardingView> {
                     ],
                   ),
                 ),
-                if (state.step == OnboardingStep.loading) PendingWidget(
-                  blurSigma: 10,),
+                if (state.step == OnboardingStep.loading)
+                  PendingWidget(
+                    blurSigma: 10,
+                  ),
               ],
             ),
           );
