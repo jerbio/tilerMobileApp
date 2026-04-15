@@ -7,8 +7,6 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
-import 'package:tiler_app/components/tilelist/dailyView/tileBatchWithinNow.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
