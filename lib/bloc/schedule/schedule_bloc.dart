@@ -27,6 +27,43 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   /// are not overwritten by real API data.
   bool tutorialMode = false;
 
+  /// Real schedule data fetched in the background during tutorial mode.
+  /// Used to immediately restore the schedule when the tutorial ends,
+  /// avoiding the empty-day flash.
+  Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>?
+      _cachedRealSchedule;
+
+  /// Fetches the real schedule in the background while the tutorial is active.
+  /// The result is stored in [_cachedRealSchedule] so it can be emitted
+  /// instantly when [restoreCachedSchedule] is called.
+  void prefetchRealSchedule() {
+    final timeline = Utility.initialScheduleTimeline;
+    getSubTiles(timeline).then((value) {
+      _cachedRealSchedule = value;
+    }).catchError((_) {
+      // Silently ignore — the normal GetScheduleEvent path will retry.
+    });
+  }
+
+  /// Emits the pre-fetched schedule immediately. Returns `true` if cached data
+  /// was available, `false` otherwise (caller should fall back to a normal
+  /// GetScheduleEvent).
+  bool restoreCachedSchedule() {
+    final cached = _cachedRealSchedule;
+    _cachedRealSchedule = null;
+    if (cached != null) {
+      add(ReloadLocalScheduleEvent(
+        subEvents: cached.item2,
+        timelines: cached.item1,
+        lookupTimeline: Utility.initialScheduleTimeline,
+        previousLookupTimeline: Utility.initialScheduleTimeline,
+        scheduleStatus: cached.item3,
+      ));
+      return true;
+    }
+    return false;
+  }
+
   late ScheduleApi scheduleApi;
   late SubCalendarEventApi subCalendarEventApi;
   Function getContextCallBack;
