@@ -1339,7 +1339,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldSalesProfessional => 'Field Sales Professional';
 
   @override
-  String get remoteWorker => 'emote Worker & Digital Nomad';
+  String get remoteWorker => 'Remote Worker & Digital Nomad';
 
   @override
   String get stayAtHomeParent => 'Stay At Home Parent';
