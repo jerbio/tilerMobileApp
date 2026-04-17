@@ -76,6 +76,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
   Future<void> _onLoadSessions (LoadSessionsEvent event, Emitter<VibeChatState> emit) async{
     try{
+      if (state.sessions.isNotEmpty) return;
       emit(state.copyWith(step: VibeChatStep.loadingSessions));
       final sessions = await chatApi.getVibeSessions();
 
