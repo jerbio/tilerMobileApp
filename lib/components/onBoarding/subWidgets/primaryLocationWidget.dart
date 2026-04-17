@@ -62,16 +62,15 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
           ),
           controller: locationAddressController,
         );
-        Widget locationSearchWidget = Flexible(
-          child: Material(
-            child: LocationSearchWidget(
-              includeDeviceLocation: false,
-              onChanged: (address) {
-                context.read<OnboardingBloc>().add(AddressTextChanged(address));
-              },
-              textField: addressTextField,
-              onLocationSelection: onAutoSuggestedLocationTap,
-            ),
+        Widget locationSearchWidget = ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.35),
+          child: LocationSearchWidget(
+            includeDeviceLocation: false,
+            onChanged: (address) {
+              context.read<OnboardingBloc>().add(AddressTextChanged(address));
+            },
+            textField: addressTextField,
+            onLocationSelection: onAutoSuggestedLocationTap,
           ),
         );
 
