@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
@@ -65,6 +66,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
   // Controllers
   final ScrollController _scrollController = ScrollController();
+  final ListController _listController = ListController();
 
   // State
   double _emptyDayOpacity = 0;
@@ -95,6 +97,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   @override
   void dispose() {
     _scrollController.dispose();
+    _listController.dispose();
     super.dispose();
   }
 
@@ -199,8 +202,9 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   }
 
   /// Build tiles list with travel connectors and conflict handling
-  List<Widget> _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
+ ( List<Widget>, int?) _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
     List<Widget> widgets = [];
+    int? foundIndex;
     final now = DateTime.now();
     Set<int> displayedHours = {};
 
@@ -274,6 +278,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         continue;
       }
 
+      if ((widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
+          tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true) {
+        foundIndex = widgets.length;
+      }
+
       // Regular tile
       widgets.add(
         TileRowWithHourMarker(
@@ -332,7 +341,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       }
     }
 
-    return widgets;
+    return  (widgets, foundIndex);
   }
 
   /// Trigger schedule revise (re-optimize)
@@ -582,18 +591,31 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     Widget tilesContent;
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
-      final tilesWithConnectors = _buildTilesWithConnectors(orderedTiles);
+      final (tilesWithConnectors, targetScrollIndex)= _buildTilesWithConnectors(orderedTiles);
+      if ((widget as EnhancedWithinNowBatch).preview && targetScrollIndex != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _listController.jumpToItem(
+            index: targetScrollIndex!,
+            scrollController: _scrollController,
+            alignment: 0.15,
+          );
+        });
+      }
 
-      tilesContent = Column(
-        children: [
-          ...tilesWithConnectors,
-          MediaQuery.of(context).orientation == Orientation.landscape
-              ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-              : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
-        ],
+      tilesContent = SuperSliverList(
+        listController: _listController,
+        delegate: SliverChildBuilderDelegate(
+              (context, index) {
+            if (index == tilesWithConnectors.length) return MediaQuery.of(context).orientation == Orientation.landscape
+                ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
+            return tilesWithConnectors[index];
+          },
+          childCount: tilesWithConnectors.length + 1,
+        ),
       );
     } else {
-      tilesContent = _renderEmptyDayTile();
+      tilesContent = SliverToBoxAdapter(child: _renderEmptyDayTile());
     }
 
     // Use CustomScrollView with SliverAppBar for sticky action chips
@@ -641,10 +663,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
               children: [
                 ...scrollableContent,
                 const SizedBox(height: 8),
-                tilesContent,
               ],
             ),
           ),
+          tilesContent,
         ],
       ),
     );
