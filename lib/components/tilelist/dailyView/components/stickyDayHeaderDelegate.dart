@@ -9,6 +9,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
   final TimelineSummary? dayData;
   final VoidCallback? onShowRoute;
   final VoidCallback? onReOptimize;
+  final bool isLoading;
   final double minHeight;
   final double maxHeight;
   final bool preview;
@@ -18,6 +19,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
     this.dayData,
     this.onShowRoute,
     this.onReOptimize,
+    this.isLoading = false,
     this.minHeight = 160,
     this.maxHeight = 160,
     this.preview = false
@@ -26,6 +28,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox.expand(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -35,6 +38,20 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
             preview: preview,
             onShowRoute: onShowRoute,
             onReOptimize: onReOptimize,
+          ),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: isLoading
+                ? LinearProgressIndicator(
+                    key: const ValueKey('schedule-loading-indicator'),
+                    minHeight: 3,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    color: colorScheme.tertiary,
+                  )
+                : const SizedBox(
+                    key: ValueKey('schedule-loading-hidden'),
+                    height: 3,
+                  ),
           ),
         ],
       ),
@@ -53,6 +70,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
         minHeight != oldDelegate.minHeight ||
         date != oldDelegate.date ||
         dayData != oldDelegate.dayData ||
+        isLoading != oldDelegate.isLoading ||
         onShowRoute != oldDelegate.onShowRoute ||
         onReOptimize != oldDelegate.onReOptimize;
   }

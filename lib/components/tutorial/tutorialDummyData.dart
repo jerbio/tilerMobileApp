@@ -67,6 +67,10 @@ class TutorialDummyData {
     // Prevent real API fetches from overwriting our dummy tiles.
     scheduleBloc.tutorialMode = true;
 
+    // Start fetching the real schedule in the background so it's ready
+    // the moment the tutorial ends — avoids the empty-day flash.
+    scheduleBloc.prefetchRealSchedule();
+
     final todayTimeline = Utility.todayTimeline();
     scheduleBloc.add(
       ReloadLocalScheduleEvent(
@@ -79,13 +83,20 @@ class TutorialDummyData {
     );
   }
 
-  /// Restores the real schedule by re-fetching from the API.
+  /// Restores the real schedule after the tutorial ends.
+  /// Uses the pre-fetched data when available so the user never sees
+  /// an empty day widget.
   static void restoreRealSchedule(BuildContext context) {
     final scheduleBloc = context.read<ScheduleBloc>();
     // Re-enable real schedule fetches.
     scheduleBloc.tutorialMode = false;
-    scheduleBloc.add(
-      GetScheduleEvent(forceRefresh: true),
-    );
+
+    // Try to restore from the background-fetched cache first.
+    if (!scheduleBloc.restoreCachedSchedule()) {
+      // Cache wasn't ready — fall back to a normal refresh.
+      scheduleBloc.add(
+        GetScheduleEvent(forceRefresh: true),
+      );
+    }
   }
 }

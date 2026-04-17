@@ -2528,7 +2528,7 @@ abstract class AppLocalizations {
   /// No description provided for @remoteWorker.
   ///
   /// In en, this message translates to:
-  /// **'emote Worker & Digital Nomad'**
+  /// **'Remote Worker & Digital Nomad'**
   String get remoteWorker;
 
   /// No description provided for @stayAtHomeParent.

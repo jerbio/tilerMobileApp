@@ -609,15 +609,28 @@ class EnhancedWithinNowBatchState extends TileBatchState {
             ? const NeverScrollableScrollPhysics()
             : const AlwaysScrollableScrollPhysics(),
         slivers: [
-          // Sticky header with date and action chips
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: StickyDayHeaderDelegate(
-              preview: (widget as EnhancedWithinNowBatch).preview,
-              dayData: dayData,
-              onShowRoute: _navigateToTodaysRoute,
-              onReOptimize: _triggerRevise,
-            ),
+          // Sticky header with date, action chips, and loading indicator
+          BlocBuilder<ScheduleBloc, ScheduleState>(
+            buildWhen: (previous, current) {
+              final wasLoading = previous is ScheduleLoadingState ||
+                  previous is ScheduleEvaluationState;
+              final isLoading = current is ScheduleLoadingState ||
+                  current is ScheduleEvaluationState;
+              return wasLoading != isLoading;
+            },
+            builder: (context, state) {
+              final isLoading = state is ScheduleLoadingState ||
+                  state is ScheduleEvaluationState;
+              return SliverPersistentHeader(
+                pinned: true,
+                delegate: StickyDayHeaderDelegate(
+                  dayData: dayData,
+                  onShowRoute: _navigateToTodaysRoute,
+                  onReOptimize: _triggerRevise,
+                  isLoading: isLoading,
+                ),
+              );
+            },
           ),
 
           // Rest of the content
