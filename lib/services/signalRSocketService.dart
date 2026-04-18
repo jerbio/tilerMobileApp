@@ -102,7 +102,13 @@ class SignalRSocketService extends AppApi {
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
       _channel!.stream.listen(
-            (message) => _handleMessage(message),
+            (message) {
+          try {
+            _handleMessage(message);
+          } catch (e) {
+            _statusController.addError(e);
+          }
+        },
         onError: (error) {
           if (error is WebSocketChannelException && error.inner != null) {
             final inner = error.inner!;
