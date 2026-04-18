@@ -29,6 +29,10 @@ class MessageList extends StatefulWidget {
 
 class _MessageListState extends State<MessageList> {
   bool _isAtBottom = true;
+  late ThemeData theme;
+  late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
+  late AppLocalizations localization;
 
   @override
   void initState() {
@@ -40,23 +44,31 @@ class _MessageListState extends State<MessageList> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension=Theme.of(context).extension<TileThemeExtension>()!;
+    localization = AppLocalizations.of(context)!;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final localization = AppLocalizations.of(context)!;
     if (widget.state.step == VibeChatStep.loading) {
       return PendingWidget();
     }
 
     if (widget.state.step != VibeChatStep.loading) {
       if (widget.state.messages.isEmpty) {
-        return _buildEmptyChat(context,localization);
+        return _buildEmptyChat(context);
       }
-      return _buildMessageList(context,localization);
+      return _buildMessageList(context);
     }
 
     return SizedBox.shrink();
   }
 
-  Widget _buildMessageList(BuildContext context,AppLocalizations localization) {
+  Widget _buildMessageList(BuildContext context) {
     return Stack(
       children: [
         Column(
@@ -93,13 +105,10 @@ class _MessageListState extends State<MessageList> {
                       },
                       child: Column(
                         children: [
-                          _buildMessage(context, message.content ?? '', isUser,localization),
+                          _buildMessage(context, message.content ?? '', isUser),
                           if (message.actions != null && message.actions!.isNotEmpty)
-                            ...message.actions!
-                                .where((action) =>
-                            action.type != 'conversational_and_not_supported')
-                                .map((action) => _buildActionTile(context,requestId: message.requestId, action: action)),
-                        ],
+                            _buildActionsSection(context, message.actions!, message.requestId),
+                  ]
                       ),
                     );
                   },
@@ -126,9 +135,7 @@ class _MessageListState extends State<MessageList> {
     );
   }
 
-  Widget _buildEmptyChat(BuildContext context,AppLocalizations localization) {
-    final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
-
+  Widget _buildEmptyChat(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -170,8 +177,7 @@ class _MessageListState extends State<MessageList> {
     });
   }
 
-  Widget _buildMessage(BuildContext context, String text, bool isUser,AppLocalizations localization) {
-    final colorScheme = Theme.of(context).colorScheme;
+  Widget _buildMessage(BuildContext context, String text, bool isUser) {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Align(
@@ -248,9 +254,28 @@ class _MessageListState extends State<MessageList> {
     );
   }
 
+  Widget _buildActionsSection(BuildContext context, List<VibeAction> actions, String? requestId) {
+    final validActions = actions
+        .where((a) => a.type != 'conversational_and_not_supported')
+        .toList();
+
+    if (validActions.isEmpty) return SizedBox.shrink();
+
+    if (validActions.length <= 5) {
+      return Column(
+        children: validActions
+            .map((action) => _buildActionTile(context, action: action, requestId: requestId))
+            .toList(),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: _buildPillGroupActions(context, actions: validActions, requestId: requestId),
+    );
+  }
+
   Widget _buildActionTile(BuildContext context, {required VibeAction action, String? requestId}) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
     final statusColor = _getActionStatusColor(action.status, tileThemeExtension);
 
     return GestureDetector(
@@ -315,6 +340,96 @@ class _MessageListState extends State<MessageList> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPillGroupActions(
+      BuildContext context, {
+        required List<VibeAction> actions,
+        String? requestId,
+      }) {
+    bool _expanded = false;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 8),
+          child: IntrinsicWidth(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => _expanded = !_expanded),
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: _expanded
+                          ? colorScheme.primary
+                          : colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _expanded
+                            ? colorScheme.primary
+                            : colorScheme.outline.withOpacity(0.3),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.auto_awesome,
+                          size: 13,
+                          color: _expanded ? colorScheme.onPrimary : colorScheme.primary,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          _expanded ? localization.hideActions : localization.actionsCount(actions.length),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: _expanded ? colorScheme.onPrimary : colorScheme.onSurface,
+                          ),
+                        ),
+                        Spacer(),
+                        AnimatedRotation(
+                          turns: _expanded ? 0.5 : 0,
+                          duration: Duration(milliseconds: 220),
+                          child: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 16,
+                            color: _expanded ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                AnimatedSize(
+                  duration: Duration(milliseconds: 280),
+                  curve: Curves.easeInOut,
+                  child: SizedBox(height: _expanded ? 5 : 0),
+                ),
+                ...actions.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final action = entry.value;
+                  return AnimatedAlign(
+                    duration: Duration(milliseconds: 260),
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.topCenter,
+                    heightFactor: _expanded ? 1.0 : 0.0,
+                    child: AnimatedOpacity(
+                      duration: Duration(milliseconds: 200 + i * 40),
+                      opacity: _expanded ? 1.0 : 0.0,
+                      child: _buildActionTile(context, action: action, requestId: requestId),
+                    ),
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
