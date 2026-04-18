@@ -34,6 +34,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
   final Color onDisabledOnboardingPill;
   final Color suggestionLoadingOnboardingSurface;
   final Color integrationApproval;
+  final Color vibeChatModalBottomSheetHandle;
+  final Color vibeChatExitedAction;
+  final Color vibeChatDisposedAction;
+  final Color vibeChatDefaultAction;
+  final Color vibeChatPreviewDisableColor;
   final String? mapStyle;
   const TileThemeExtension._(
       {
@@ -69,6 +74,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         required this.onDisabledOnboardingPill,
         required this.suggestionLoadingOnboardingSurface,
         required this.integrationApproval,
+        required this.vibeChatModalBottomSheetHandle,
+        required this.vibeChatExitedAction,
+        required this.vibeChatDisposedAction,
+        required this.vibeChatDefaultAction,
+        required this.vibeChatPreviewDisableColor,
         required this.mapStyle
       });
 
@@ -105,6 +115,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       onDisabledOnboardingPill: TileColors.onDisabledOnboardingPillLight,
       suggestionLoadingOnboardingSurface: TileColors.suggestionLoadingOnboardingSurfaceLight,
       integrationApproval: TileColors.integrationApprovalLight,
+      vibeChatModalBottomSheetHandle: TileColors.vibeChatModalBottomSheetHandleLight,
+      vibeChatExitedAction: TileColors.vibeChatExitedActionLight,
+      vibeChatDisposedAction: TileColors.vibeChatDisposedActionLight,
+      vibeChatDefaultAction: TileColors.vibeChatDefaultActionLight,
+      vibeChatPreviewDisableColor:TileColors.vibeChatPreviewDisableColorLight,
       mapStyle: null,
 
   );
@@ -142,6 +157,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
       onDisabledOnboardingPill: TileColors.onDisabledOnboardingPillDark,
       suggestionLoadingOnboardingSurface: TileColors.suggestionLoadingOnboardingSurfaceDark,
       integrationApproval: TileColors.integrationApprovalDark,
+      vibeChatModalBottomSheetHandle: TileColors.vibeChatModalBottomSheetHandleDark,
+      vibeChatExitedAction: TileColors.vibeChatExitedActionDark,
+      vibeChatDisposedAction: TileColors.vibeChatDisposedActionDark,
+      vibeChatDefaultAction: TileColors.vibeChatDefaultActionDark,
+      vibeChatPreviewDisableColor:TileColors.vibeChatPreviewDisableColorDark,
       mapStyle:TileColors.darkMapStyle,
   );
 
@@ -179,6 +199,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
     Color? onDisabledOnboardingPill,
     Color? suggestionLoadingOnboardingSurface,
     Color? integrationApproval,
+    Color? vibeChatModalBottomSheetHandle,
+    Color? vibeChatExitedAction,
+    Color? vibeChatDisposedAction,
+    Color? vibeChatDefaultAction,
+    Color? vibeChatPreviewDisableColor,
     String? mapStyle
 
   }) {
@@ -215,6 +240,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         onDisabledOnboardingPill: onDisabledOnboardingPill ?? this.onDisabledOnboardingPill,
         suggestionLoadingOnboardingSurface: suggestionLoadingOnboardingSurface ?? this.suggestionLoadingOnboardingSurface,
         integrationApproval: integrationApproval ?? this.integrationApproval,
+        vibeChatModalBottomSheetHandle: vibeChatModalBottomSheetHandle ?? this.vibeChatModalBottomSheetHandle,
+        vibeChatExitedAction: vibeChatExitedAction ?? this.vibeChatExitedAction,
+        vibeChatDisposedAction: vibeChatDisposedAction ?? this.vibeChatDisposedAction,
+        vibeChatDefaultAction: vibeChatDefaultAction ?? this.vibeChatDefaultAction,
+        vibeChatPreviewDisableColor:vibeChatPreviewDisableColor ?? this.vibeChatPreviewDisableColor,
         mapStyle: mapStyle ?? this.mapStyle
     );
   }
@@ -257,6 +287,11 @@ class TileThemeExtension extends ThemeExtension<TileThemeExtension>{
         onDisabledOnboardingPill: Color.lerp(onDisabledOnboardingPill, other.onDisabledOnboardingPill, t)!,
         suggestionLoadingOnboardingSurface: Color.lerp(suggestionLoadingOnboardingSurface, other.suggestionLoadingOnboardingSurface, t)!,
         integrationApproval: Color.lerp(integrationApproval, other.integrationApproval, t)!,
+        vibeChatModalBottomSheetHandle: Color.lerp(vibeChatModalBottomSheetHandle,other.vibeChatModalBottomSheetHandle,t)!,
+        vibeChatExitedAction: Color.lerp(vibeChatExitedAction,other.vibeChatExitedAction,t)!,
+        vibeChatDisposedAction: Color.lerp(vibeChatDisposedAction,other.vibeChatDisposedAction,t)!,
+        vibeChatDefaultAction: Color.lerp(vibeChatDefaultAction,other.vibeChatDefaultAction,t)!,
+        vibeChatPreviewDisableColor: Color.lerp(vibeChatPreviewDisableColor,other.vibeChatPreviewDisableColor,t)!,
         mapStyle: other.mapStyle,
       );
     }

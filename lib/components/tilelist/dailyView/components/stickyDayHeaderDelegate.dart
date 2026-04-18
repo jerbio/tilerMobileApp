@@ -12,6 +12,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
   final bool isLoading;
   final double minHeight;
   final double maxHeight;
+  final bool preview;
 
   StickyDayHeaderDelegate({
     this.date,
@@ -21,6 +22,7 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
     this.isLoading = false,
     this.minHeight = 160,
     this.maxHeight = 160,
+    this.preview = false
   });
 
   @override
@@ -31,8 +33,9 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DaySummaryHeader(date: date, dayData: dayData),
+          DaySummaryHeader(date: date, dayData: dayData,preview: preview,),
           QuickActionChipsRow(
+            preview: preview,
             onShowRoute: onShowRoute,
             onReOptimize: onReOptimize,
           ),

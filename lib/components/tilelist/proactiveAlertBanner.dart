@@ -12,12 +12,14 @@ class ProactiveAlertBanner extends StatefulWidget {
   final SubCalendarEvent? nextTileWithTravel;
   final VoidCallback? onTap;
   final VoidCallback? onDismiss;
+  final bool preview;
 
   const ProactiveAlertBanner({
     Key? key,
     this.nextTileWithTravel,
     this.onTap,
     this.onDismiss,
+    this.preview = false,
   }) : super(key: key);
 
   @override
@@ -156,7 +158,7 @@ class _ProactiveAlertBannerState extends State<ProactiveAlertBanner>
         );
       },
       child: GestureDetector(
-        onTap: widget.onTap,
+        onTap: widget.preview?null:widget.onTap,
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

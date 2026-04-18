@@ -4,15 +4,17 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 /// Summary banner showing extended/all-day tiles (tiles with over 16 hours duration)
 class ExtendedTilesBanner extends StatelessWidget {
   final List<SubCalendarEvent> extendedTiles;
-
+  final bool preview;
   const ExtendedTilesBanner({
     Key? key,
     required this.extendedTiles,
+    this.preview=false,
   }) : super(key: key);
 
   /// Detect all-day or extended tiles (over 16 hours duration)
@@ -31,7 +33,7 @@ class ExtendedTilesBanner extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles),
+      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles,preview: preview,),
     );
   }
 
@@ -118,10 +120,11 @@ class ExtendedTilesBanner extends StatelessWidget {
 /// Modal showing list of extended tiles
 class ExtendedTilesModal extends StatelessWidget {
   final List<SubCalendarEvent> extendedTiles;
-
+  final bool preview;
   const ExtendedTilesModal({
     Key? key,
     required this.extendedTiles,
+    this.preview = false,
   }) : super(key: key);
 
   String _formatDuration(BuildContext context, Duration duration) {
@@ -147,6 +150,7 @@ class ExtendedTilesModal extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
 
     return Container(
       decoration: BoxDecoration(
@@ -232,7 +236,7 @@ class ExtendedTilesModal extends StatelessWidget {
                 final endTime = tile.endTime;
 
                 return InkWell(
-                  onTap: () => _navigateToEditTile(context, tile),
+                  onTap: preview?null:() => _navigateToEditTile(context, tile),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -300,10 +304,18 @@ class ExtendedTilesModal extends StatelessWidget {
                         const SizedBox(width: 8),
 
                         // Chevron
-                        Icon(
-                          Icons.chevron_right,
-                          color: colorScheme.onSurface.withAlpha(102),
-                          size: 20,
+                        ColorFiltered(
+                          colorFilter: ColorFilter.mode(
+                            preview
+                                ? tileThemeExtension!.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                                : Colors.transparent,
+                            BlendMode.srcATop,
+                          ),
+                          child: Icon(
+                            Icons.chevron_right,
+                            color: colorScheme.onSurface.withAlpha(102),
+                            size: 20,
+                          ),
                         ),
                       ],
                     ),

@@ -39,7 +39,8 @@ import 'timeScrub.dart';
 class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
-  TileWidget(subEvent) : super(key: Key(subEvent.id)) {
+  bool preview;
+  TileWidget(subEvent,{this.preview = false}) : super(key: Key(subEvent.id)) {
     assert(subEvent != null);
     this.subEvent = subEvent;
   }
@@ -477,7 +478,7 @@ class TileWidgetState extends State<TileWidget>
           color: colorScheme.onSurface!,
           size: 20.0,
         ),
-        onPressed: () {
+        onPressed:widget.preview?null: () {
           if (isEditable) {
             AnalysticsSignal.send('SUB_TILE_EDIT');
             Navigator.push(
@@ -595,7 +596,7 @@ class TileWidgetState extends State<TileWidget>
     if (widget.subEvent.tileShareDesignatedId.isNot_NullEmptyOrWhiteSpace()) {
       allElements.add(
         GestureDetector(
-          onTap: () {
+          onTap: widget.preview?null: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -637,6 +638,7 @@ class TileWidgetState extends State<TileWidget>
             margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
             child: PlayBack(
               widget.subEvent,
+              preview: widget.preview,
               forcedOption: (widget.subEvent.isRigid == true
                   ? [PlaybackOptions.Delete]
                   : null),

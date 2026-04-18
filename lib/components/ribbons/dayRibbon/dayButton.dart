@@ -10,11 +10,13 @@ class DayButton extends StatefulWidget {
   bool isSelected;
   DateTime dateTime;
   Function? onTapped;
+  final bool preview;
   DayButton({
     required this.dateTime,
     this.onTapped,
     this.showMonth = false,
     this.isSelected = false,
+    this.preview=false,
   }) : super(
             key: ValueKey(
                 dateTime.toString() + Utility.currentTime().day.toString()));
@@ -78,7 +80,7 @@ class _DayButtonState extends State<DayButton> {
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: widget.preview?null:() {
         if (this.widget.onTapped != null) {
           this.widget.onTapped!(this.dateTime);
         }

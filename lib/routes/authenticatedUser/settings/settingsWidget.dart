@@ -4,6 +4,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
@@ -54,6 +55,7 @@ class Settings extends StatelessWidget {
           context
               .read<ScheduleSummaryBloc>()
               .add(LogOutScheduleDaySummaryEvent());
+          context.read<VibeChatBloc>().add(LogOutVibeChatEvent(()=>context));
           Navigator.pushNamedAndRemoveUntil(
               context, '/LoggedOut', (route) => false);
         }
