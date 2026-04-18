@@ -2381,4 +2381,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get feedbackError => 'Failed to submit feedback';
+
+  @override
+  String actionsCount(int count) {
+    return '$count actions';
+  }
 }

@@ -1606,5 +1606,7 @@
             "feedbackDescription": "Description",
             "feedbackDescriptionHint": "Provide details about your feedback",
             "feedbackSubmitted": "Feedback submitted successfully",
-            "feedbackError": "Failed to submit feedback"
+            "feedbackError": "Failed to submit feedback",
+            "hideActions": "Hide actions",
+            "actionsCount": "{count} actions", "@actionsCount": { "placeholders": { "count": { "type": "int" } } }
 }
