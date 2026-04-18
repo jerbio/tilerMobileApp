@@ -13,11 +13,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ConflictSummaryBanner extends StatelessWidget {
   final List<ConflictGroup> conflictGroups;
   final VoidCallback? onTap;
+  final bool preview;
 
   const ConflictSummaryBanner({
     Key? key,
     required this.conflictGroups,
     this.onTap,
+    this.preview=false,
   }) : super(key: key);
 
   @override
@@ -30,7 +32,7 @@ class ConflictSummaryBanner extends StatelessWidget {
         conflictGroups.fold(0, (sum, group) => sum + (group.tiles.length));
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: preview?null:onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -137,12 +139,14 @@ class StackedConflictCards extends StatefulWidget {
   final ConflictGroup conflictGroup;
   final Function(SubCalendarEvent)? onTileTap;
   final VoidCallback? onResolve;
+  final bool preview;
 
   const StackedConflictCards({
     Key? key,
     required this.conflictGroup,
     this.onTileTap,
     this.onResolve,
+    this.preview=false
   }) : super(key: key);
 
   @override
@@ -467,7 +471,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
     }
 
     return GestureDetector(
-      onTap: () {
+      onTap: widget.preview ? null:() {
         if (widget.onTileTap != null) {
           widget.onTileTap!(tile);
         } else {
@@ -656,7 +660,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
     return Column(
       children: [
         GestureDetector(
-          onTap: () {
+          onTap: widget.preview ? null: () {
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -914,7 +918,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: PlayBack(tile),
+                    child: PlayBack(tile,preview: widget.preview),
                   )
                 : const SizedBox.shrink(),
           ),

@@ -39,6 +39,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   late ThemeData theme;
   late ColorScheme colorScheme;
 
+
   @override
   void initState() {
     super.initState();
@@ -58,14 +59,16 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     if (previewHeight < 200) {
       return SizedBox.shrink();
     }
-    return Container(
-        height: previewHeight,
-        color: colorScheme.surfaceContainerLowest,
-        width: MediaQuery.sizeOf(context).width,
-        child: PreviewWidget(
-          subEvents: this.widget.previewSummary?.tiles ?? [],
-          previewSummary: this.widget.previewSummary,
-        ));
+    return
+      Container(
+          height: previewHeight,
+          color: colorScheme.surfaceContainerLowest,
+          width: MediaQuery.sizeOf(context).width,
+          child: PreviewWidget(
+            subEvents: this.widget.previewSummary?.tiles ?? [],
+            previewSummary: this.widget.previewSummary,
+          )
+        );
   }
 
   onSubmit(NewTile newTile) {
@@ -186,7 +189,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   Widget _buildActionButton({
     required Widget icon,
     required String text,
-    required VoidCallback onPressed,
+    required VoidCallback? onPressed,
   }) {
     return ElevatedButton(
       child: Column(
@@ -321,7 +324,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
       icon: FaIcon(FontAwesomeIcons.shuffle,
           color: colorScheme.primary, size: 20),
       text: AppLocalizations.of(context)!.previewTileShuffle,
-      onPressed: () {
+      onPressed:() {
         AnalysticsSignal.send('SHUFFLE_BUTTON');
         this.context.read<ScheduleBloc>().add(ShuffleScheduleEvent());
         if (Navigator.canPop(context)) {
@@ -332,17 +335,15 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
     );
   }
 
-  Widget renderRefresh() {
+  Widget renderChat() {
     return _buildActionButton(
-      icon: Icon(Icons.refresh, color: colorScheme.primary, size: 20),
-      text: AppLocalizations.of(context)!.previewTileRevise,
+      icon: Icon(Icons.chat_outlined, color: colorScheme.primary, size: 20),
+      text: AppLocalizations.of(context)!.chat,
       onPressed: () {
-        AnalysticsSignal.send('REVISE_BUTTON');
-        this.context.read<ScheduleBloc>().add(ReviseScheduleEvent());
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        this.context.read<ForecastBloc>().add(ResetEvent());
+        Navigator.pushNamed(context, '/vibeChat');
       },
     );
   }
@@ -363,7 +364,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  renderRefresh(),
+                  renderChat(),
                   renderShuffleButton(),
                   renderProcrastinateAllButton(),
                   renderMoreSettingsButton(),
@@ -372,10 +373,10 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
             ),
             Stack(
               children: [
-                NewTileSheetWidget(
-                  onAddTile: onSubmit,
-                  onTileUpdate: onTileUpdate,
-                ),
+            NewTileSheetWidget(
+                onAddTile: onSubmit,
+                onTileUpdate: onTileUpdate,
+              ),
                 isPendingAdd ? renderPending() : SizedBox.shrink()
               ],
             ),

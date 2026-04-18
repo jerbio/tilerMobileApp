@@ -9,6 +9,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 enum PlaybackOptions { PlayPause, Now, Procrastinate, Delete, Complete }
@@ -18,8 +19,9 @@ class PlayBack extends StatefulWidget {
   List<PlaybackOptions>? forcedOption;
   Function? callBack;
   bool isWeeklyView;
+  bool preview;
   PlayBack(this.subEvent,
-      {this.forcedOption, this.callBack, this.isWeeklyView = false});
+      {this.forcedOption, this.callBack, this.isWeeklyView = false,this.preview = false});
   @override
   PlayBackState createState() => PlayBackState();
 }
@@ -29,6 +31,7 @@ class PlayBackState extends State<PlayBack> {
   SubCalendarEvent? _subEvent;
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class PlayBackState extends State<PlayBack> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   void showMessage(String message) {
@@ -339,8 +343,15 @@ class PlayBackState extends State<PlayBack> {
     double iconSize = 24,
     double rotationAngle = 0.0,
   }) {
-    return GestureDetector(
-      onTap: onTap,
+    return ColorFiltered(
+        colorFilter: ColorFilter.mode(
+        widget.preview
+        ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+            : Colors.transparent,
+        BlendMode.srcATop,
+    ),
+    child: GestureDetector(
+      onTap: widget.preview? null: onTap,
       child: Column(
         children: [
           Container(
@@ -363,6 +374,7 @@ class PlayBackState extends State<PlayBack> {
           Text(label, style: TextStyle(fontSize: 12))
         ],
       ),
+      )
     );
   }
 

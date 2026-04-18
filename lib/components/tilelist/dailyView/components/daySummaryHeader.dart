@@ -9,6 +9,7 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 /// Day summary header that displays "Today" with day of week badge, date,
@@ -16,11 +17,12 @@ import 'package:tiler_app/util.dart';
 class DaySummaryHeader extends StatefulWidget {
   final DateTime? date;
   final TimelineSummary? dayData;
-
+  final bool preview;
   const DaySummaryHeader({
     Key? key,
     this.date,
     this.dayData,
+    this.preview=false
   }) : super(key: key);
 
   @override
@@ -30,11 +32,20 @@ class DaySummaryHeader extends StatefulWidget {
 class _DaySummaryHeaderState extends State<DaySummaryHeader> {
   TimelineSummary? _dayData;
   bool _isPending = false;
+  late ThemeData theme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
     super.initState();
     _dayData = widget.dayData;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    theme = Theme.of(context);
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   @override
@@ -151,102 +162,110 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
           final completeCount = _dayData?.complete?.length ?? 0;
           final tardyCount = _dayData?.tardy?.length ?? 0;
 
-          return GestureDetector(
-            onTap: () => _navigateToSummary(context),
-            child: Container(
-              margin: EdgeInsets.zero,
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerLowest,
+          return  ColorFiltered(
+              colorFilter: ColorFilter.mode(
+                widget.preview
+                    ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                    : Colors.transparent,
+                BlendMode.srcATop,
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Left side - Date information
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            l10n.today,
-                            style: TextStyle(
-                              fontFamily: TileTextStyles.rubikFontName,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w700,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Day metrics inline with "Today"
-                          if (nonViableCount > 0 || _isPending) ...[
-                            _buildMetricChip(
-                              icon: Icons.error,
-                              iconColor: colorScheme.error,
-                              count: nonViableCount,
-                              colorScheme: colorScheme,
-                              isPending: _isPending,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          if (completeCount > 0 || _isPending) ...[
-                            _buildMetricChip(
-                              icon: Icons.check_circle,
-                              iconColor: TileColors.completedTeal,
-                              count: completeCount,
-                              colorScheme: colorScheme,
-                              isPending: _isPending,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                          if (tardyCount > 0 || _isPending) ...[
-                            _buildMetricChip(
-                              icon: Icons.car_crash_outlined,
-                              iconColor: TileColors.warning,
-                              count: tardyCount,
-                              colorScheme: colorScheme,
-                              isPending: _isPending,
-                            ),
-                            const SizedBox(width: 6),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            monthDay,
-                            style: TextStyle(
-                              fontFamily: TileTextStyles.rubikFontName,
-                              fontSize: 15,
-                              color:
-                                  colorScheme.onSurface.withValues(alpha: 0.6),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              dayOfWeek,
+            child: GestureDetector(
+              onTap: widget.preview?null:() => _navigateToSummary(context),
+              child: Container(
+                margin: EdgeInsets.zero,
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerLowest,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Left side - Date information
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              l10n.today,
                               style: TextStyle(
                                 fontFamily: TileTextStyles.rubikFontName,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onPrimaryContainer,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.onSurface,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                            const SizedBox(width: 8),
+                            // Day metrics inline with "Today"
+                            if (nonViableCount > 0 || _isPending) ...[
+                              _buildMetricChip(
+                                icon: Icons.error,
+                                iconColor: colorScheme.error,
+                                count: nonViableCount,
+                                colorScheme: colorScheme,
+                                isPending: _isPending,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            if (completeCount > 0 || _isPending) ...[
+                              _buildMetricChip(
+                                icon: Icons.check_circle,
+                                iconColor: TileColors.completedTeal,
+                                count: completeCount,
+                                colorScheme: colorScheme,
+                                isPending: _isPending,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                            if (tardyCount > 0 || _isPending) ...[
+                              _buildMetricChip(
+                                icon: Icons.car_crash_outlined,
+                                iconColor: TileColors.warning,
+                                count: tardyCount,
+                                colorScheme: colorScheme,
+                                isPending: _isPending,
+                              ),
+                              const SizedBox(width: 6),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              monthDay,
+                              style: TextStyle(
+                                fontFamily: TileTextStyles.rubikFontName,
+                                fontSize: 15,
+                                color:
+                                    colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                dayOfWeek,
+                                style: TextStyle(
+                                  fontFamily: TileTextStyles.rubikFontName,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );

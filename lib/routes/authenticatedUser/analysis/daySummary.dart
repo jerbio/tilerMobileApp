@@ -7,11 +7,13 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
-  DaySummary({required this.dayTimelineSummary});
+  final bool preview ;
+  DaySummary({required this.dayTimelineSummary,this.preview=false});
   @override
   State createState() => _DaySummaryState();
 }
@@ -21,6 +23,7 @@ class _DaySummaryState extends State<DaySummary> {
   bool pendingFlag = false;
   late ThemeData theme;
   late ColorScheme colorScheme;
+  late TileThemeExtension tileThemeExtension;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _DaySummaryState extends State<DaySummary> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
+    tileThemeExtension= theme.extension<TileThemeExtension>()!;
   }
 
   bool get isPending {
@@ -197,7 +201,7 @@ class _DaySummaryState extends State<DaySummary> {
           );
 
           Widget buttonPress = GestureDetector(
-            onTap: () {
+            onTap:widget.preview?null: () {
               DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
               DateTime end =
                   Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
@@ -224,9 +228,17 @@ class _DaySummaryState extends State<DaySummary> {
           Container retContainer = Container(
               padding: EdgeInsets.fromLTRB(10, 10, 20, 0),
               height: 120,
+              color: colorScheme.surface,
               child: buttonPress);
 
-          return retContainer;
+          return    ColorFiltered(
+              colorFilter: ColorFilter.mode(
+              widget.preview
+              ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                  : Colors.transparent,
+              BlendMode.srcATop,
+          ),
+          child: retContainer);
         },
       ),
     );
