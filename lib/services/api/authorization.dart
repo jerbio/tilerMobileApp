@@ -4,7 +4,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
-import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/emailCodeAuthenticationData.dart';
 import 'package:tiler_app/services/api/googleSignInApi.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
@@ -17,6 +17,8 @@ import '../../data/forgot_password_response.dart';
 import 'thirdPartyAuthResult.dart';
 
 class AuthorizationApi extends AppApi {
+  static const String emailCodeGrantType = 'EmailCodeAuthentication';
+
   AuthorizationApi({required Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
   Future<UserPasswordAuthenticationData> registerUser(
@@ -72,6 +74,70 @@ class AuthorizationApi extends AppApi {
 
   Future<AuthResult?> signInToGoogle() async {
     return await processAndroidGoogleLogin();
+  }
+
+  Future<void> requestEmailAuthenticationCode(String email) async {
+    String tilerDomain = Constants.tilerDomain;
+    Uri uri = Uri.https(tilerDomain, 'Account/emailauthentication');
+    final requestBody = await injectRequestParams({'Email': email});
+    http.Response response = await http.post(uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(requestBody),
+        encoding: Encoding.getByName('utf-8'));
+
+    Map<String, dynamic> jsonResult = jsonDecode(response.body);
+    if (response.statusCode == 200 && isJsonResponseOk(jsonResult)) {
+      return;
+    }
+
+    final tilerErrorMessage = isTilerRequestError(jsonResult)
+        ? errorMessage(jsonResult)
+        : 'Failed to send verification code';
+    throw TilerError(Message: tilerErrorMessage);
+  }
+
+  Future<EmailCodeAuthenticationData> verifyEmailCode(
+      String email, String code) async {
+    String tilerDomain = Constants.tilerDomain;
+    Uri uri = Uri.https(tilerDomain, 'account/token');
+    String timeZone = await FlutterTimezone.getLocalTimezone();
+
+    Map<String, String> parameters = {
+      'Email': email,
+      'Code': code,
+      'TimeZone': timeZone,
+      'TimeZoneOffset': Utility.getTimeZoneOffset().toString(),
+      'grant_type': emailCodeGrantType,
+    };
+
+    http.Response response = await http.post(uri,
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: parameters,
+        encoding: Encoding.getByName('utf-8'));
+
+    EmailCodeAuthenticationData retValue =
+        EmailCodeAuthenticationData.noCredentials();
+    if (response.statusCode == 200) {
+      var jsonResult = jsonDecode(response.body);
+      Constants.userName = email;
+      return EmailCodeAuthenticationData.initializedWithRestData(
+        jsonResult['access_token'],
+        jsonResult['token_type'],
+        jsonResult['expires_in'],
+        email,
+      );
+    }
+
+    try {
+      var jsonResult = jsonDecode(response.body);
+      if (jsonResult.containsKey('error_description') &&
+          jsonResult['error_description'] != null &&
+          jsonResult['error_description'].toString().isNotEmpty) {
+        retValue.errorMessage = jsonResult['error_description'];
+      }
+    } catch (_) {}
+
+    return retValue;
   }
 
   Future<ThirdPartyAuthenticationData> getBearerToken(
@@ -159,16 +225,14 @@ class AuthorizationApi extends AppApi {
         .catchError((onError) {
       print("ERROR GoogleSignInApi.login" + onError.toString());
       print(onError);
+      return null;
     });
     if (googleUser != null) {
       var googleAuthentication = await googleUser.authentication;
 
-      String? refreshToken;
-      String? accessToken = googleAuthentication.accessToken;
       String? serverAuthCode =
           googleUser.serverAuthCode ?? googleAuthentication.idToken;
       if (serverAuthCode != null) {
-        refreshToken = googleAuthentication.idToken!;
         Map<String, dynamic> serverResponse = await _getRefreshToken(
             clientId, clientSecret, serverAuthCode, requestedScopes);
         serverResponse["googleUser"] = googleUser;
@@ -201,7 +265,6 @@ class AuthorizationApi extends AppApi {
 
     if (refreshToken != null && accessToken != null && googleUser != null) {
       String providerName = 'Google';
-      String timeZone = await FlutterTimezone.getLocalTimezone();
 
       Map<String, String?> thirdpartyCredentialPostData = {
         'ThirdPartyId': googleUser.id,
@@ -223,6 +286,8 @@ class AuthorizationApi extends AppApi {
         return null;
       });
     }
+
+    return null;
   }
 
   Future<AuthResult?> processAndroidGoogleLogin() async {
@@ -266,6 +331,8 @@ class AuthorizationApi extends AppApi {
     } catch (e) {
       print(e);
     }
+
+    return null;
   }
 
   Future<bool> deleteTilerAccount() async {

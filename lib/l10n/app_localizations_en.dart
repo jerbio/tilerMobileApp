@@ -139,10 +139,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get username => 'Username';
 
   @override
+  String get usernameOrEmail => 'Username or Email';
+
+  @override
   String get password => 'Password';
 
   @override
   String get email => 'Email';
+
+  @override
+  String get back => 'Back';
 
   @override
   String get confirmPassword => 'Confirm Password';
@@ -160,7 +166,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signingIn => 'Signing In';
 
   @override
+  String get signInWithEmailCode => 'Sign in with email code';
+
+  @override
+  String get sendAccessCode => 'Send access code';
+
+  @override
+  String get usePasswordInstead => 'Use password';
+
+  @override
   String get registeringUser => 'Registering User';
+
+  @override
+  String get sendVerificationCode => 'Send verification code';
+
+  @override
+  String get verificationCodeSent => 'Verification code sent to your email.';
+
+  @override
+  String get verificationCode => 'Verification Code';
+
+  @override
+  String get verifyCode => 'Verify Code';
+
+  @override
+  String get resendCode => 'Resend Code';
+
+  @override
+  String get verifyingCode => 'Verifying Code';
+
+  @override
+  String get invalidVerificationCode => 'Invalid or expired verification code.';
+
+  @override
+  String get accessCodeRequiresEmail =>
+      'Access code sign-in requires an email address.';
+
+  @override
+  String get emailCodeInstructions =>
+      'Enter your email and we\'ll send you a verification code.';
+
+  @override
+  String verificationCodeInstructions(String email) {
+    return 'Enter the verification code sent to $email.';
+  }
 
   @override
   String get confirmPasswordRequired => 'Confirmation password is required';
