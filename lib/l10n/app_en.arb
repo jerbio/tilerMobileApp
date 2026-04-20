@@ -42,14 +42,38 @@
     "reminder": "Reminder",
     "restriction": "Restriction",
     "username": "Username",
+    "usernameOrEmail": "Username or Email",
     "password": "Password",
     "email": "Email",
+    "back": "Back",
     "confirmPassword": "Confirm Password",
     "passwordIsRequired": "Password is required",
     "emailIsRequired": "Email is required",
     "fieldIsRequired": "Field is required",
     "signingIn": "Signing In",
+    "signInWithEmailCode": "Sign in with email code",
+    "sendAccessCode": "Send access code",
+    "usePasswordInstead": "Use password",
     "registeringUser": "Registering User",
+    "sendVerificationCode": "Send verification code",
+    "verificationCodeSent": "Verification code sent to your email.",
+    "verificationCode": "Verification Code",
+    "verifyCode": "Verify Code",
+    "resendCode": "Resend Code",
+    "verifyingCode": "Verifying Code",
+    "invalidVerificationCode": "Invalid or expired verification code.",
+    "accessCodeRequiresEmail": "Access code sign-in requires an email address.",
+    "emailCodeInstructions": "Enter your email and we'll send you a verification code.",
+    "verificationCodeInstructions": "Enter the verification code sent to {email}.",
+    "@verificationCodeInstructions": {
+      "description": "Instructions shown when the user is entering an emailed verification code.",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "you@example.com"
+        }
+      }
+    },
     "confirmPasswordRequired": "Confirmation password is required",
     "passwordsDontMatch": "Password and confirmation password don't match",
     "passwordNeedToBeAtLeastSevenCharacters": "Password needs to be at least 7 characters",
