@@ -53,7 +53,7 @@ class AccessManager {
       //If we need to force the hardware check on gps then we need to set the time check as earlier than now. This might be a hack.
       accessStatus = Tuple2(false,
           DateTime.fromMillisecondsSinceEpoch(currentTime).add(-thirtyMins));
-      locationData[isAccessPermitedKey] = false;
+      locationData[isAccessPermitedKey] = true;
       locationData[timeOfLastAccessKey] = DateTime(0).millisecondsSinceEpoch;
       await _secureStorageManager.writeLocationAccess(locationData);
     }
@@ -69,6 +69,12 @@ class AccessManager {
               : PermissionProfile.deny();
       lastLookup =
           loadedLocationInfo == null ? DateTime(0) : Utility.currentTime();
+      if (locationProfile.lastTimeLoaded == null ||
+          locationProfile.lastTimeLoaded!
+              .isBefore(DateTime.fromMicrosecondsSinceEpoch((0)))) {
+        locationProfile.permission = PermissionProfile.unknown();
+      }
+
       return locationProfile;
     }
 
@@ -99,7 +105,7 @@ class AccessManager {
         return value;
       }).catchError((onError) {
         if (onError is PermissionRequestInProgressException) {
-          lastLookup = Utility.currentTime();
+          lastLookup = DateTime(0);
           return Utility.getDefaultPosition();
         }
         lastLookup = Utility.currentTime();
@@ -117,6 +123,11 @@ class AccessManager {
       locationData[isAccessPermitedKey] = isLocationVerified;
       locationData[timeOfLastAccessKey] =
           timeOfNextCheck.millisecondsSinceEpoch;
+    }
+    if (lastLookup.isBefore(Utility.unixTime())) {
+      locationData[isAccessPermitedKey] = true;
+      locationData[timeOfLastAccessKey] = DateTime(0).millisecondsSinceEpoch;
+      return LocationProfile.empty();
     }
 
     await _secureStorageManager.writeLocationAccess(locationData);

@@ -40,7 +40,7 @@ class _OnboardingViewState extends State<OnboardingView> {
     PersonalProfileWidget(),
     ProfessionWidget(),
     TileSuggestionsWidget(),
-    RecurringTasksWidget(),
+    // RecurringTasksWidget(),
     TilerUsageWidget(),
   ];
   late ScheduleApi scheduleApi;

@@ -187,7 +187,7 @@ class LocationAccessWidgetState extends State<LocationAccessWidget> {
         )
       ];
       Utility.setTimeOut(
-          duration: Duration(seconds: 5),
+          duration: Duration(seconds: 300),
           callBack: () {
             if (mounted) {
               iosCallBackButtonPress();

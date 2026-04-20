@@ -15,7 +15,8 @@ import 'package:tiler_app/services/localizationService.dart';
 class SignalRSocketService extends AppApi {
   WebSocketChannel? _channel;
   UserApi? _userApi;
-  final StreamController<String> _statusController = StreamController<String>.broadcast();
+  final StreamController<String> _statusController =
+      StreamController<String>.broadcast();
 
   Stream<String> get statusStream => _statusController.stream;
 
@@ -31,10 +32,10 @@ class SignalRSocketService extends AppApi {
   SignalRSocketService({Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
 
-
   Future<Map<String, dynamic>?> _negotiate() async {
     try {
-      final negotiateUrl = 'https://${Constants.tilerDomain}/signalr/negotiate?clientProtocol=1.5&connectionData=%5B%7B%22name"%3A"vibeUpdateHub"%7D%5D';
+      final negotiateUrl =
+          'https://${Constants.tilerDomain}/signalr/negotiate?clientProtocol=1.5&connectionData=%5B%7B%22name"%3A"vibeUpdateHub"%7D%5D';
 
       final response = await http.get(Uri.parse(negotiateUrl));
 
@@ -49,14 +50,14 @@ class SignalRSocketService extends AppApi {
     }
   }
 
-
   Future<void> createVibeConnection() async {
     if (!_shouldStayConnected) return;
 
     var isAuthenticated = await this.authentication.isUserAuthenticated();
     if (!isAuthenticated.item1) {
       throw TilerError(
-          Message: LocalizationService.instance.translations.userIsNotAuthenticated);
+          Message:
+              LocalizationService.instance.translations.userIsNotAuthenticated);
     }
 
     await checkAndReplaceCredentialCache();
@@ -74,7 +75,8 @@ class SignalRSocketService extends AppApi {
         _userApi ??= UserApi(getContextCallBack: this.getContextCallBack!);
         final userProfile = await _userApi!.getUserProfile();
 
-        if (userProfile != null && userProfile.id != null &&
+        if (userProfile != null &&
+            userProfile.id != null &&
             userProfile.id!.isNotEmpty) {
           _currentUserId = userProfile.id;
         } else {
@@ -97,12 +99,13 @@ class SignalRSocketService extends AppApi {
 
       final encodedToken = Uri.encodeComponent(_connectionToken!);
       final connectionData = Uri.encodeComponent('[{"name":"vibeUpdateHub"}]');
-      final wsUrl = 'wss://${Constants.tilerDomain}/signalr/connect?transport=webSockets&clientProtocol=1.5&connectionToken=$encodedToken&connectionData=$connectionData';
+      final wsUrl =
+          'wss://${Constants.tilerDomain}/signalr/connect?transport=webSockets&clientProtocol=1.5&connectionToken=$encodedToken&connectionData=$connectionData';
 
       _channel = WebSocketChannel.connect(Uri.parse(wsUrl));
 
       _channel!.stream.listen(
-            (message) {
+        (message) {
           try {
             _handleMessage(message);
           } catch (e) {
@@ -138,26 +141,25 @@ class SignalRSocketService extends AppApi {
       _startKeepAliveTimer();
 
       await joinUserGroup(_currentUserId!);
-
     } catch (e) {
       String errorMsg;
       if (e is WebSocketChannelException && e.inner != null) {
         final inner = e.inner!;
         try {
           final msg = (inner as dynamic).message;
-          errorMsg=msg;
+          errorMsg = msg;
         } catch (ex) {
-          errorMsg=inner.runtimeType.toString();
+          errorMsg = inner.runtimeType.toString();
         }
       } else {
-        errorMsg=e.toString();
+        errorMsg = e.toString();
       }
+      Utility.debugPrint(errorMsg);
       _isConnected = false;
       _attemptReconnect();
       throw TilerError(
-          Message: '${LocalizationService.instance.translations.socketConnectionError}: $errorMsg'
-      );
-
+          Message:
+              '${LocalizationService.instance.translations.socketConnectionError}: $errorMsg');
     }
   }
 
@@ -165,7 +167,9 @@ class SignalRSocketService extends AppApi {
     if (!_shouldStayConnected) return;
 
     if (_reconnectAttempts >= _maxReconnectAttempts) {
-      throw TilerError(Message: LocalizationService.instance.translations.webSocketConnectionLostAfter5Attempts);
+      throw TilerError(
+          Message: LocalizationService
+              .instance.translations.webSocketConnectionLostAfter5Attempts);
     }
 
     _reconnectTimer?.cancel();
@@ -177,7 +181,6 @@ class SignalRSocketService extends AppApi {
       createVibeConnection();
     });
   }
-
 
   Future<void> joinUserGroup(String userId) async {
     if (_isConnected && _channel != null) {
@@ -220,8 +223,8 @@ class SignalRSocketService extends AppApi {
                     payload = jsonDecode(payload);
                   } catch (e) {
                     throw TilerError(
-                        Message: '${LocalizationService.instance.translations.jsonParseError}: $e'
-                    );
+                        Message:
+                            '${LocalizationService.instance.translations.jsonParseError}: $e');
                   }
                 }
 
@@ -233,8 +236,8 @@ class SignalRSocketService extends AppApi {
       }
     } catch (e) {
       throw TilerError(
-          Message: '${LocalizationService.instance.translations.webSocketMessageHandlingError}: $e'
-      );
+          Message:
+              '${LocalizationService.instance.translations.webSocketMessageHandlingError}: $e');
     }
   }
 
@@ -249,8 +252,8 @@ class SignalRSocketService extends AppApi {
       }
     } catch (e) {
       throw TilerError(
-          Message: '${LocalizationService.instance.translations.processError}: $e'
-      );
+          Message:
+              '${LocalizationService.instance.translations.processError}: $e');
     }
   }
 
@@ -264,8 +267,8 @@ class SignalRSocketService extends AppApi {
           _isConnected = false;
           _attemptReconnect();
           throw TilerError(
-              Message: '${LocalizationService.instance.translations.keepAliveFailed}: $e'
-          );
+              Message:
+                  '${LocalizationService.instance.translations.keepAliveFailed}: $e');
         }
       }
     });

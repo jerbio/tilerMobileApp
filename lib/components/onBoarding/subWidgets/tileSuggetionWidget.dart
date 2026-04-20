@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/onBoarding/on_boarding_bloc.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingPillTag.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/onBoardingSubWidget.dart';
-import 'package:tiler_app/data/tileColor.dart';
+import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/tileSuggestion.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
@@ -51,6 +51,95 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget>
     tileThemeExtension = theme.extension<TileThemeExtension>()!;
     screenHeight = MediaQuery.of(context).size.height;
     super.didChangeDependencies();
+  }
+
+  String _recurrenceLabel(RepetitionFrequency frequency) {
+    switch (frequency) {
+      case RepetitionFrequency.daily:
+        return localizations.daily;
+      case RepetitionFrequency.weekly:
+        return localizations.weekly;
+      case RepetitionFrequency.monthly:
+        return localizations.monthly;
+      case RepetitionFrequency.yearly:
+        return localizations.yearly;
+      case RepetitionFrequency.none:
+        return localizations.none;
+    }
+  }
+
+  static const _recurrenceOptions = [
+    RepetitionFrequency.none,
+    RepetitionFrequency.daily,
+    RepetitionFrequency.weekly,
+    RepetitionFrequency.monthly,
+    RepetitionFrequency.yearly,
+  ];
+
+  Widget _buildRecurrenceSelector(
+      RepetitionFrequency? current, int index, Color color) {
+    final effective = current ?? RepetitionFrequency.none;
+    final isNone = effective == RepetitionFrequency.none;
+    final displayColor =
+        isNone ? tileThemeExtension.onDisabledOnboardingPill : color;
+    final bgColor = isNone
+        ? tileThemeExtension.disabledOnboardingPill
+        : color.withOpacity(0.12);
+
+    return PopupMenuButton<RepetitionFrequency>(
+      onSelected: (value) {
+        context
+            .read<OnboardingBloc>()
+            .add(UpdateTileSuggestionRecurrenceEvent(index, value));
+      },
+      itemBuilder: (context) => _recurrenceOptions.map((freq) {
+        final isSelected = freq == effective;
+        return PopupMenuItem<RepetitionFrequency>(
+          value: freq,
+          child: Row(
+            children: [
+              if (isSelected)
+                Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child:
+                      Icon(Icons.check, size: 16, color: colorScheme.primary),
+                ),
+              Text(
+                _recurrenceLabel(freq),
+                style: TextStyle(
+                  color: isSelected ? colorScheme.primary : null,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.repeat_outlined, size: 14, color: displayColor),
+            SizedBox(width: 4),
+            Text(
+              _recurrenceLabel(effective),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: displayColor,
+              ),
+            ),
+            SizedBox(width: 2),
+            Icon(Icons.arrow_drop_down, size: 14, color: displayColor),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildLoadingIndicator() {
@@ -192,13 +281,26 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget>
                           var tile = entry.value;
                           return Padding(
                             padding: EdgeInsets.only(bottom: 8),
-                            child: OnboardingPillTag(
-                              text: tile.tileName ?? "",
-                              onDelete: () {
-                                context
-                                    .read<OnboardingBloc>()
-                                    .add(RemoveTileSuggestionEvent(index));
-                              },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: OnboardingPillTag(
+                                    text: tile.tileName ?? "",
+                                    truncateText: true,
+                                    onDelete: () {
+                                      context.read<OnboardingBloc>().add(
+                                          RemoveTileSuggestionEvent(index));
+                                    },
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                _buildRecurrenceSelector(
+                                  tile.recurrencePattern,
+                                  index,
+                                  colorScheme.primary,
+                                ),
+                              ],
                             ),
                           );
                         }).toList(),
@@ -209,16 +311,61 @@ class _TileSuggestionsState extends State<TileSuggestionsWidget>
                             .map((tile) {
                           return Padding(
                             padding: EdgeInsets.only(bottom: 8),
-                            child: OnboardingPillTag(
-                              text: tile!.tileName ?? "",
-                              isEnabled: false,
-                              onTap: () {
-                                if (state.step !=
-                                    OnboardingStep.suggestionLoading)
-                                  context.read<OnboardingBloc>().add(
-                                      AddTileSuggestionEvent(
-                                          tile: tile, isAddedByPill: true));
-                              },
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: OnboardingPillTag(
+                                    text: tile!.tileName ?? "",
+                                    isEnabled: false,
+                                    truncateText: true,
+                                    onTap: () {
+                                      if (state.step !=
+                                          OnboardingStep.suggestionLoading)
+                                        context.read<OnboardingBloc>().add(
+                                            AddTileSuggestionEvent(
+                                                tile: tile,
+                                                isAddedByPill: true));
+                                    },
+                                  ),
+                                ),
+                                if (tile.recurrencePattern != null &&
+                                    tile.recurrencePattern !=
+                                        RepetitionFrequency.none)
+                                  Padding(
+                                    padding: EdgeInsets.only(left: 6),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: tileThemeExtension
+                                            .onDisabledOnboardingPill
+                                            .withOpacity(0.12),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.repeat_outlined,
+                                              size: 14,
+                                              color: tileThemeExtension
+                                                  .onDisabledOnboardingPill),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            _recurrenceLabel(
+                                                tile.recurrencePattern!),
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w500,
+                                              color: tileThemeExtension
+                                                  .onDisabledOnboardingPill,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           );
                         }).toList(),

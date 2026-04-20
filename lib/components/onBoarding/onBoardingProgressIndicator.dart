@@ -1,7 +1,6 @@
 import 'package:dotted_line/dotted_line.dart';
 import 'package:flutter/material.dart';
 
-
 class OnBoardingProgressIndicator extends StatelessWidget {
   final int totalPages;
   final int currentPage;
@@ -13,21 +12,21 @@ class OnBoardingProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate( 7, (index) {
+      children: List.generate(7, (index) {
         if (index % 2 == 0) {
           int stepIndex = index ~/ 2;
-           if( totalPages-currentPage>4) {
-            stepIndex =currentPage+stepIndex ;
-            }else{
-               int backOffset = 4 - stepIndex;
-               int adjustment = totalPages - currentPage - backOffset;
-               stepIndex= currentPage + adjustment;
-             }
+          if (totalPages - currentPage > 4) {
+            stepIndex = currentPage + stepIndex;
+          } else {
+            int backOffset = 4 - stepIndex;
+            int adjustment = totalPages - currentPage - backOffset;
+            stepIndex = currentPage + adjustment;
+          }
           return Container(
             width: 40,
             height: 40,

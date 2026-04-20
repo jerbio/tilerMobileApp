@@ -1,6 +1,5 @@
 part of 'on_boarding_bloc.dart';
 
-
 abstract class OnboardingEvent extends Equatable {
   const OnboardingEvent();
 
@@ -13,7 +12,6 @@ class FetchOnboardingDataEvent extends OnboardingEvent {}
 class NextPageEvent extends OnboardingEvent {}
 
 class PreviousPageEvent extends OnboardingEvent {}
-
 
 class WakeUpTimeUpdated extends OnboardingEvent {
   final TimeOfDay? wakeUpTime;
@@ -50,17 +48,17 @@ class LocationSelected extends OnboardingEvent {
   List<Object?> get props => [location];
 }
 
-class GetTimeAndLocationEvent extends OnboardingEvent{
+class GetTimeAndLocationEvent extends OnboardingEvent {
   final bool approved;
-  GetTimeAndLocationEvent( this.approved);
+  GetTimeAndLocationEvent(this.approved);
 
   @override
   List<Object> get props => [approved];
 }
 
-class SetWorkProfileEvent extends OnboardingEvent{
+class SetWorkProfileEvent extends OnboardingEvent {
   final Map workMap;
-  SetWorkProfileEvent( this.workMap);
+  SetWorkProfileEvent(this.workMap);
 
   @override
   List<Object?> get props => [workMap];
@@ -80,9 +78,17 @@ class RemoveRecurringTaskEvent extends OnboardingEvent {
   List<Object?> get props => [index];
 }
 
-class SetPersonalProfileEvent extends OnboardingEvent{
+class UpdateRecurringTaskFrequencyEvent extends OnboardingEvent {
+  final int index;
+  final String frequency;
+  UpdateRecurringTaskFrequencyEvent(this.index, this.frequency);
+  @override
+  List<Object?> get props => [index, frequency];
+}
+
+class SetPersonalProfileEvent extends OnboardingEvent {
   final Map personalMap;
-  SetPersonalProfileEvent( this.personalMap);
+  SetPersonalProfileEvent(this.personalMap);
 
   @override
   List<Object?> get props => [personalMap];
@@ -98,14 +104,15 @@ class SelectUsageEvent extends OnboardingEvent {
 class SelectProfessionEvent extends OnboardingEvent {
   final String profession;
   final bool isCustom;
-  SelectProfessionEvent( {required this.profession,this.isCustom = false});
+  SelectProfessionEvent({required this.profession, this.isCustom = false});
   @override
   List<Object?> get props => [profession];
 }
+
 class AddTileSuggestionEvent extends OnboardingEvent {
   final TileSuggestion tile;
   final bool isAddedByPill;
-  AddTileSuggestionEvent({required this.tile,this.isAddedByPill=false});
+  AddTileSuggestionEvent({required this.tile, this.isAddedByPill = false});
   @override
   List<Object?> get props => [tile];
 }
@@ -116,6 +123,15 @@ class RemoveTileSuggestionEvent extends OnboardingEvent {
   @override
   List<Object?> get props => [index];
 }
+
+class UpdateTileSuggestionRecurrenceEvent extends OnboardingEvent {
+  final int index;
+  final RepetitionFrequency recurrence;
+  UpdateTileSuggestionRecurrenceEvent(this.index, this.recurrence);
+  @override
+  List<Object?> get props => [index, recurrence];
+}
+
 class FetchTileSuggestionsEvent extends OnboardingEvent {
   final bool isRefresh;
   FetchTileSuggestionsEvent({this.isRefresh = false});
@@ -123,4 +139,4 @@ class FetchTileSuggestionsEvent extends OnboardingEvent {
 
 class SkipOnboardingEvent extends OnboardingEvent {}
 
-class OnboardingRequestedEvent extends OnboardingEvent{}
+class OnboardingRequestedEvent extends OnboardingEvent {}

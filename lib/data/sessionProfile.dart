@@ -41,5 +41,4 @@ class SessionProfile {
   Future<UserProfile?> updateUserProfile(UserProfile userProfile) async {
     return await userApi.updateUserProfile(userProfile);
   }
-
 }
