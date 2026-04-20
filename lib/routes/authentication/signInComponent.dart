@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -13,10 +12,10 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
+import 'package:tiler_app/services/api/emailCodeAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/localAuthentication.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../services/api/authorization.dart';
@@ -42,6 +41,7 @@ class SignInComponentState extends State<SignInComponent>
   final passwordEditingController = TextEditingController();
   final emailEditingController = TextEditingController();
   final confirmPasswordEditingController = TextEditingController();
+  final verificationCodeEditingController = TextEditingController();
 
   final FocusNode _passwordFocusNode = FocusNode();
   bool isPassWordFieldFocused = false;
@@ -53,13 +53,20 @@ class SignInComponentState extends State<SignInComponent>
 
   bool isRegistrationScreen = false;
   bool isForgetPasswordScreen = false;
+  bool isEmailCodeRequestScreen = false;
+  bool isEmailCodeVerificationScreen = false;
+  bool isPasswordSignInMode = false;
   final double registrationContainerHeight = 550;
   final double signInContainerHeight = 400;
   final double forgotPasswordContainerHeight = 300;
+  final double emailCodeRequestContainerHeight = 280;
+  final double emailCodeVerificationContainerHeight = 320;
 
   final double registrationContainerButtonHeight = 300;
   final double signInContainerButtonHeight = 175;
   final double forgotPasswordContainerButtonHeight = 100;
+  final double emailCodeRequestButtonHeight = 120;
+  final double emailCodeVerificationButtonHeight = 175;
 
   late double credentialManagerHeight = 400;
   double credentialButtonHeight = 175;
@@ -68,9 +75,12 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingRegistration = false;
   bool isSuccessfulRegistration = false;
   bool isPendingResetPassword = false;
+  bool isPendingEmailCodeRequest = false;
+  bool isPendingCodeVerification = false;
   bool isGoogleSignInEnabled = false;
   bool _isPasswordVisible = false;
   bool shouldHideButtons = false;
+  String emailCodeTarget = '';
 
   // Registration Password Validator Rules
   bool isMinLength = false;
@@ -103,6 +113,10 @@ class SignInComponentState extends State<SignInComponent>
 
   bool passwordsMatch(String password, String confirmPassword) {
     return password == confirmPassword;
+  }
+
+  bool isValidEmailAddress(String value) {
+    return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value.trim());
   }
 
   bool checkIfPasswordValid() {
@@ -262,7 +276,7 @@ class SignInComponentState extends State<SignInComponent>
         context.read<ScheduleBloc>().add(LogInScheduleEvent(
               getContextCallBack: () => context,
             ));
-        bool nextPage = await Utility.checkOnboardingStatus();
+        await Utility.checkOnboardingStatus();
 
         context.read<ScheduleBloc>().add(GetScheduleEvent(
             scheduleTimeline: Utility.initialScheduleTimeline,
@@ -307,8 +321,149 @@ class SignInComponentState extends State<SignInComponent>
     }
   }
 
-  bool _keyboardIsVisible() {
-    return MediaQuery.of(context).viewInsets.bottom != 0;
+  void requestEmailCode() async {
+    if (_formKey.currentState!.validate()) {
+      final email = userNameEditingController.text.trim();
+      if (email.isEmpty) {
+        return;
+      }
+
+      if (!isValidEmailAddress(email)) {
+        hideButtonsTemporarily();
+        notificationOverlayMessage.showToast(
+          context,
+          AppLocalizations.of(context)!.accessCodeRequiresEmail,
+          NotificationOverlayMessageType.error,
+        );
+        return;
+      }
+
+      setState(() {
+        isPendingEmailCodeRequest = true;
+      });
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
+
+      try {
+        await authApi.requestEmailAuthenticationCode(email);
+        if (!mounted) {
+          return;
+        }
+
+        hideButtonsTemporarily();
+        notificationOverlayMessage.showToast(
+          context,
+          AppLocalizations.of(context)!.verificationCodeSent,
+          NotificationOverlayMessageType.success,
+        );
+        setAsEmailCodeVerificationScreen(email);
+      } catch (e) {
+        if (!mounted) {
+          return;
+        }
+
+        final errorMessage =
+            e is TilerError && e.Message != null && e.Message!.isNotEmpty
+                ? e.Message!
+                : AppLocalizations.of(context)!.issuesConnectingToTiler;
+        hideButtonsTemporarily();
+        notificationOverlayMessage.showToast(
+          context,
+          errorMessage,
+          NotificationOverlayMessageType.error,
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            isPendingEmailCodeRequest = false;
+          });
+        }
+      }
+    }
+  }
+
+  void verifyEmailCode() async {
+    if (_formKey.currentState!.validate()) {
+      final email = emailCodeTarget.trim().isNotEmpty
+          ? emailCodeTarget.trim()
+          : emailEditingController.text.trim();
+      final code = verificationCodeEditingController.text.trim();
+
+      if (email.isEmpty || code.isEmpty) {
+        return;
+      }
+
+      setState(() {
+        isPendingCodeVerification = true;
+      });
+      SystemChannels.textInput.invokeMethod('TextInput.hide');
+
+      try {
+        EmailCodeAuthenticationData authenticationData =
+            await authApi.verifyEmailCode(email, code);
+
+        if (!authenticationData.isValid) {
+          hideButtonsTemporarily();
+          notificationOverlayMessage.showToast(
+            context,
+            authenticationData.errorMessage ??
+                AppLocalizations.of(context)!.invalidVerificationCode,
+            NotificationOverlayMessageType.error,
+          );
+          return;
+        }
+
+        TextInput.finishAutofillContext();
+        Authentication localAuthentication = Authentication();
+        await localAuthentication.saveCredentials(authenticationData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        context.read<ScheduleBloc>().add(LogInScheduleEvent(
+              getContextCallBack: () => context,
+            ));
+        await Utility.checkOnboardingStatus();
+
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
+        context.read<ScheduleSummaryBloc>().add(
+              GetScheduleDaySummaryEvent(
+                  timeline: Utility.initialScheduleTimeline),
+            );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WelcomeScreen(
+              welcomeType: WelcomeType.login,
+              firstName: email,
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!mounted) {
+          return;
+        }
+
+        final errorMessage =
+            e is TilerError && e.Message != null && e.Message!.isNotEmpty
+                ? e.Message!
+                : AppLocalizations.of(context)!.invalidVerificationCode;
+        hideButtonsTemporarily();
+        notificationOverlayMessage.showToast(
+          context,
+          errorMessage,
+          NotificationOverlayMessageType.error,
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            isPendingCodeVerification = false;
+          });
+        }
+      }
+    }
   }
 
   void registerUser() async {
@@ -351,7 +506,7 @@ class SignInComponentState extends State<SignInComponent>
         while (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
-        bool nextPage = await Utility.checkOnboardingStatus();
+        await Utility.checkOnboardingStatus();
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -448,11 +603,61 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
+    verificationCodeEditingController.clear();
     setState(() {
       isForgetPasswordScreen = true;
       isRegistrationScreen = false;
+      isEmailCodeRequestScreen = false;
+      isEmailCodeVerificationScreen = false;
+      isPasswordSignInMode = false;
+      emailCodeTarget = '';
       credentialManagerHeight = forgotPasswordContainerHeight;
       credentialButtonHeight = forgotPasswordContainerButtonHeight;
+    });
+  }
+
+  void enablePasswordSignInMode() {
+    passwordEditingController.clear();
+    setState(() {
+      isRegistrationScreen = false;
+      isForgetPasswordScreen = false;
+      isEmailCodeRequestScreen = false;
+      isEmailCodeVerificationScreen = false;
+      isPasswordSignInMode = true;
+      credentialManagerHeight = signInContainerHeight;
+      credentialButtonHeight = signInContainerButtonHeight;
+    });
+  }
+
+  void setAsEmailCodeRequestScreen() {
+    userNameEditingController.clear();
+    passwordEditingController.clear();
+    confirmPasswordEditingController.clear();
+    verificationCodeEditingController.clear();
+    setState(() {
+      isRegistrationScreen = false;
+      isForgetPasswordScreen = false;
+      isEmailCodeRequestScreen = true;
+      isEmailCodeVerificationScreen = false;
+      isPasswordSignInMode = false;
+      emailCodeTarget = '';
+      credentialManagerHeight = emailCodeRequestContainerHeight;
+      credentialButtonHeight = emailCodeRequestButtonHeight;
+    });
+  }
+
+  void setAsEmailCodeVerificationScreen(String email) {
+    emailEditingController.text = email;
+    verificationCodeEditingController.clear();
+    setState(() {
+      isRegistrationScreen = false;
+      isForgetPasswordScreen = false;
+      isEmailCodeRequestScreen = false;
+      isEmailCodeVerificationScreen = true;
+      isPasswordSignInMode = false;
+      emailCodeTarget = email;
+      credentialManagerHeight = emailCodeVerificationContainerHeight;
+      credentialButtonHeight = emailCodeVerificationButtonHeight;
     });
   }
 
@@ -461,8 +666,14 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
+    verificationCodeEditingController.clear();
     setState(() {
       isRegistrationScreen = true;
+      isForgetPasswordScreen = false;
+      isEmailCodeRequestScreen = false;
+      isEmailCodeVerificationScreen = false;
+      isPasswordSignInMode = false;
+      emailCodeTarget = '';
       credentialManagerHeight = registrationContainerHeight;
       credentialButtonHeight = registrationContainerButtonHeight;
       isMinLength = false;
@@ -478,35 +689,66 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
+    verificationCodeEditingController.clear();
     setState(() {
       isRegistrationScreen = false;
       isForgetPasswordScreen = false;
+      isEmailCodeRequestScreen = false;
+      isEmailCodeVerificationScreen = false;
+      isPasswordSignInMode = false;
+      emailCodeTarget = '';
       credentialManagerHeight = signInContainerHeight;
       credentialButtonHeight = signInContainerButtonHeight;
     });
   }
 
   Widget createSignInPendingComponent(String message) {
-    return Container(
-        child: Center(
-            child: FadeTransition(
-      opacity: CurvedAnimation(
-        parent: signinInAnimationController,
-        curve: Curves.easeIn,
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: colorScheme.surface.withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: colorScheme.shadow.withValues(alpha: 0.12),
+              blurRadius: 18,
+              offset: Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FadeTransition(
+          opacity: CurvedAnimation(
+            parent: signinInAnimationController,
+            curve: Curves.easeIn,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 3,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colorScheme.primary,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                message,
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      child: Row(children: [
-        CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(
-                colorScheme.surfaceContainerLowest)),
-        Container(
-            padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: Text(
-              message,
-              style: TextStyle(
-                  color: colorScheme.surfaceContainerLowest, fontSize: 20),
-            ))
-      ]),
-    )));
+    );
   }
 
   String validatorCondition(String condition, bool value) {
@@ -560,7 +802,7 @@ class SignInComponentState extends State<SignInComponent>
         context.read<ScheduleBloc>().add(LogInScheduleEvent(
               getContextCallBack: () => context,
             ));
-        bool nextPage = await Utility.checkOnboardingStatus();
+        await Utility.checkOnboardingStatus();
         if (Navigator.canPop(context)) {
           Navigator.pop(context);
         }
@@ -569,8 +811,7 @@ class SignInComponentState extends State<SignInComponent>
           MaterialPageRoute(
             builder: (context) => WelcomeScreen(
               welcomeType: WelcomeType.login,
-              firstName: (authenticationData.displayName != null &&
-                      authenticationData.displayName.isNotEmpty)
+              firstName: authenticationData.displayName.isNotEmpty
                   ? authenticationData.displayName
                   : "",
             ),
@@ -593,6 +834,7 @@ class SignInComponentState extends State<SignInComponent>
     passwordEditingController.dispose();
     emailEditingController.dispose();
     confirmPasswordEditingController.dispose();
+    verificationCodeEditingController.dispose();
     signinInAnimationController.dispose();
     notificationOverlayMessage.dispose();
     _passwordFocusNode.dispose();
@@ -604,6 +846,13 @@ class SignInComponentState extends State<SignInComponent>
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    final isEmailCodeActionPending =
+      isPendingEmailCodeRequest || isPendingCodeVerification;
+    final emailCodePendingMessage = isPendingEmailCodeRequest
+      ? AppLocalizations.of(context)!.sendVerificationCode
+      : AppLocalizations.of(context)!.verifyingCode;
+    final linkTextColor = colorScheme.primary;
+    final validationTextColor = colorScheme.error;
 
     // Function to dynamically calculate height according to screen size
     double calculateSizeByHeight(double value) {
@@ -690,10 +939,13 @@ class SignInComponentState extends State<SignInComponent>
       autofillHints: [
         this.isRegistrationScreen
             ? AutofillHints.newUsername
-            : AutofillHints.username
+            : AutofillHints.username,
+        if (!isRegistrationScreen) AutofillHints.email,
       ],
       decoration: InputDecoration(
-        hintText: AppLocalizations.of(context)!.username,
+        hintText: isRegistrationScreen
+            ? AppLocalizations.of(context)!.username
+            : AppLocalizations.of(context)!.email,
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.person),
@@ -810,7 +1062,7 @@ class SignInComponentState extends State<SignInComponent>
         child: Text(
           AppLocalizations.of(context)!.forgotPasswordBtn,
           style: TextStyle(
-              color: TileColors.forgetPassword,
+              color: linkTextColor,
               decoration: TextDecoration.underline),
         ),
       ),
@@ -826,7 +1078,7 @@ class SignInComponentState extends State<SignInComponent>
                   fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w300,
                   fontSize: calculateSizeByHeight(12),
-                  color: colorScheme.onError),
+                  color: validationTextColor),
             )
           : SizedBox.shrink(),
     );
@@ -841,7 +1093,7 @@ class SignInComponentState extends State<SignInComponent>
                 fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
                 fontSize: calculateSizeByHeight(12),
-                color: colorScheme.onError,
+                color: validationTextColor,
               ),
             )
           : SizedBox.shrink(),
@@ -850,10 +1102,6 @@ class SignInComponentState extends State<SignInComponent>
     List<Widget> textFields = [
       spacer(20),
       usernameTextField,
-      spacer(20),
-      passwordTextField,
-      spacer(10),
-      forgetPasswordTextButton,
       spacer(40),
     ];
 
@@ -877,25 +1125,42 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
+    var signInWithEmailCodeButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
+        icon: Icon(Icons.mark_email_read_outlined),
+        label: Text(AppLocalizations.of(context)!.sendAccessCode),
+        onPressed: requestEmailCode,
+      ),
+    );
+
+    var passwordModeButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
+        icon: Icon(Icons.password_outlined),
+        label: Text(AppLocalizations.of(context)!.usePasswordInstead),
+        onPressed: enablePasswordSignInMode,
+      ),
+    );
+
     var googleSignInButton = isGoogleSignInEnabled
         ? SizedBox(
             width: 200,
             child: ElevatedButton.icon(
                 style: elevatedButtonStyle,
                 onPressed: signInToGoogle,
-                icon: FaIcon(
-                  FontAwesomeIcons.google,
-                  color: TileColors.lightContent,
-                ),
+                icon: FaIcon(FontAwesomeIcons.google),
                 label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
           )
         : SizedBox.shrink();
 
     var backToSignInButton = SizedBox(
-      width: isForgetPasswordScreen ? 200 : null,
+      width: isForgetPasswordScreen || isPasswordSignInMode ? 200 : null,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
-        label: Text(AppLocalizations.of(context)!.signIn),
+        label: Text(AppLocalizations.of(context)!.back),
         icon: Icon(Icons.arrow_back),
         onPressed: setAsSignInScreen,
       ),
@@ -911,6 +1176,26 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
+    var verifyCodeButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
+        icon: Icon(Icons.verified_outlined),
+        label: Text(AppLocalizations.of(context)!.verifyCode),
+        onPressed: verifyEmailCode,
+      ),
+    );
+
+    var resendCodeButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
+        icon: Icon(Icons.refresh),
+        label: Text(AppLocalizations.of(context)!.resendCode),
+        onPressed: requestEmailCode,
+      ),
+    );
+
     var registerUserButton = ElevatedButton.icon(
       style: elevatedButtonStyle,
       label: Text(AppLocalizations.of(context)!.signUp),
@@ -919,9 +1204,10 @@ class SignInComponentState extends State<SignInComponent>
     );
 
     List<Widget> buttons = [
-      signInButton,
-      signUpButton,
+      signInWithEmailCodeButton,
       googleSignInButton,
+      passwordModeButton,
+      signUpButton,
     ];
 
     if (isForgetPasswordScreen) {
@@ -929,6 +1215,42 @@ class SignInComponentState extends State<SignInComponent>
         emailTextField,
       ];
       buttons = [forgetPasswordButton, backToSignInButton];
+    }
+
+    if (isEmailCodeVerificationScreen) {
+      var verificationCodeTextField = TextFormField(
+        keyboardType: TextInputType.number,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return AppLocalizations.of(context)!.fieldIsRequired;
+          }
+          return null;
+        },
+        controller: verificationCodeEditingController,
+        autofillHints: [AutofillHints.oneTimeCode],
+        decoration: InputDecoration(
+          hintText: AppLocalizations.of(context)!.verificationCode,
+          filled: true,
+          isDense: true,
+          prefixIcon: Icon(Icons.password_outlined),
+          contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          fillColor: inputFieldFillColor,
+          border: OutlineInputBorder(
+              borderRadius: TileDimensions.inputFieldBorderRadius,
+              borderSide: BorderSide.none),
+        ),
+      );
+
+      textFields = [
+        Text(
+          AppLocalizations.of(context)!
+              .verificationCodeInstructions(emailCodeTarget),
+          textAlign: TextAlign.center,
+        ),
+        spacer(20),
+        verificationCodeTextField,
+      ];
+      buttons = [verifyCodeButton, resendCodeButton, backToSignInButton];
     }
 
     if (isRegistrationScreen) {
@@ -989,6 +1311,19 @@ class SignInComponentState extends State<SignInComponent>
       buttons = [registerUserButton, backToSignInButton];
     }
 
+    if (isPasswordSignInMode) {
+      textFields = [
+        spacer(20),
+        usernameTextField,
+        spacer(20),
+        passwordTextField,
+        spacer(10),
+        forgetPasswordTextButton,
+        spacer(24),
+      ];
+      buttons = [signInButton, signInWithEmailCodeButton, backToSignInButton];
+    }
+
     if (this.isPendingSigning || this.isSuccessfulSignin) {
       buttons = [
         Spacer(),
@@ -1013,67 +1348,85 @@ class SignInComponentState extends State<SignInComponent>
     }
     return Form(
       key: _formKey,
-      child: SingleChildScrollView(
-        child: Container(
-          alignment: Alignment.topCenter,
-          height: credentialManagerHeight,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(40.0),
-                topRight: Radius.circular(40.0)),
-            color: colorScheme.surface.withValues(alpha: 0.2),
-            boxShadow: [
-              BoxShadow(
-                  color: tileThemeExtension.shadowSignInContainer
-                      .withValues(alpha: 0.25),
-                  spreadRadius: 5),
-            ],
-          ),
-          padding: EdgeInsets.symmetric(
-              vertical: isRegistrationScreen ? calculateSizeByHeight(10) : 0.0,
-              horizontal: calculateSizeByHeight(10)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Container(
-                  // height: isRegistrationScreen
-                  //     ? height / (height / 200)
-                  //     : credentialButtonHeight,
-                  padding: EdgeInsets.symmetric(
-                      vertical: calculateSizeByHeight(5),
-                      horizontal: calculateSizeByHeight(20)),
-                  child: AutofillGroup(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: isRegistrationScreen
-                          ? MainAxisAlignment.start
-                          : MainAxisAlignment.spaceAround,
-                      children: textFields,
-                    ),
-                  ),
+      child: Stack(
+        children: [
+          AbsorbPointer(
+            absorbing: isEmailCodeActionPending,
+            child: SingleChildScrollView(
+              child: Container(
+                alignment: Alignment.topCenter,
+                height: credentialManagerHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40.0),
+                      topRight: Radius.circular(40.0)),
+                  color: colorScheme.surface.withValues(alpha: 0.2),
+                  boxShadow: [
+                    BoxShadow(
+                        color: tileThemeExtension.shadowSignInContainer
+                            .withValues(alpha: 0.25),
+                        spreadRadius: 5),
+                  ],
                 ),
-                Container(
-                  padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                padding: EdgeInsets.symmetric(
+                    vertical:
+                        isRegistrationScreen ? calculateSizeByHeight(10) : 0.0,
+                    horizontal: calculateSizeByHeight(10)),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: !shouldHideButtons
-                        ? buttons
-                        : [
-                            SizedBox(
-                              width: width,
-                              height: calculateSizeByHeight(120),
-                            )
-                          ],
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            vertical: calculateSizeByHeight(5),
+                            horizontal: calculateSizeByHeight(20)),
+                        child: AutofillGroup(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: isRegistrationScreen
+                                ? MainAxisAlignment.start
+                                : MainAxisAlignment.spaceAround,
+                            children: textFields,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(0, 5, 0, 10),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: !shouldHideButtons
+                              ? buttons
+                              : [
+                                  SizedBox(
+                                    width: width,
+                                    height: calculateSizeByHeight(120),
+                                  )
+                                ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
-        ),
+          if (isEmailCodeActionPending)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(40.0),
+                    topRight: Radius.circular(40.0),
+                  ),
+                  color: colorScheme.surface.withValues(alpha: 0.45),
+                ),
+                child: createSignInPendingComponent(emailCodePendingMessage),
+              ),
+            ),
+        ],
       ),
     );
   }

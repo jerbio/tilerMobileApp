@@ -356,6 +356,12 @@ abstract class AppLocalizations {
   /// **'Username'**
   String get username;
 
+  /// No description provided for @usernameOrEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Username or Email'**
+  String get usernameOrEmail;
+
   /// No description provided for @password.
   ///
   /// In en, this message translates to:
@@ -367,6 +373,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Email'**
   String get email;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
 
   /// No description provided for @confirmPassword.
   ///
@@ -398,11 +410,89 @@ abstract class AppLocalizations {
   /// **'Signing In'**
   String get signingIn;
 
+  /// No description provided for @signInWithEmailCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with email code'**
+  String get signInWithEmailCode;
+
+  /// No description provided for @sendAccessCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send access code'**
+  String get sendAccessCode;
+
+  /// No description provided for @usePasswordInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use password'**
+  String get usePasswordInstead;
+
   /// No description provided for @registeringUser.
   ///
   /// In en, this message translates to:
   /// **'Registering User'**
   String get registeringUser;
+
+  /// No description provided for @sendVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send verification code'**
+  String get sendVerificationCode;
+
+  /// No description provided for @verificationCodeSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code sent to your email.'**
+  String get verificationCodeSent;
+
+  /// No description provided for @verificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification Code'**
+  String get verificationCode;
+
+  /// No description provided for @verifyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Code'**
+  String get verifyCode;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Resend Code'**
+  String get resendCode;
+
+  /// No description provided for @verifyingCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying Code'**
+  String get verifyingCode;
+
+  /// No description provided for @invalidVerificationCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid or expired verification code.'**
+  String get invalidVerificationCode;
+
+  /// No description provided for @accessCodeRequiresEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Access code sign-in requires an email address.'**
+  String get accessCodeRequiresEmail;
+
+  /// No description provided for @emailCodeInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email and we\'ll send you a verification code.'**
+  String get emailCodeInstructions;
+
+  /// Instructions shown when the user is entering an emailed verification code.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the verification code sent to {email}.'**
+  String verificationCodeInstructions(String email);
 
   /// No description provided for @confirmPasswordRequired.
   ///

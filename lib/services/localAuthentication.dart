@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:tiler_app/services/api/authenticationData.dart';
+import 'package:tiler_app/services/api/emailCodeAuthenticationData.dart';
 import 'package:tiler_app/services/api/thirdPartyAuthenticationData.dart';
 import 'package:tiler_app/services/api/userPasswordAuthenticationData.dart';
 import 'package:tiler_app/services/storageManager.dart';
@@ -43,6 +44,10 @@ class Authentication {
     if (credentialJsonString != null && credentialJsonString.length > 0) {
       Map jsonData = jsonDecode(credentialJsonString);
       if (jsonData.containsKey('provider') &&
+          jsonData['provider'] == EmailCodeAuthenticationData.providerName) {
+        retValue = EmailCodeAuthenticationData.fromLocalStorage(
+            jsonDecode(credentialJsonString));
+      } else if (jsonData.containsKey('provider') &&
           jsonData['provider']!.toLowerCase() != 'tiler') {
         retValue = ThirdPartyAuthenticationData.fromLocalStorage(
             jsonDecode(credentialJsonString));

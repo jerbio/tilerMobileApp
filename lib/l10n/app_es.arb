@@ -56,6 +56,29 @@
     },
     "travelModeDriving": "conducir",
     "travelModeWalking": "caminar",
+    "signInWithEmailCode": "Iniciar con codigo por correo",
+    "usernameOrEmail": "Usuario o correo",
+    "sendAccessCode": "Enviar codigo de acceso",
+    "usePasswordInstead": "Usar contrasena",
+    "sendVerificationCode": "Enviar codigo de verificacion",
+    "verificationCodeSent": "Se envio un codigo de verificacion a tu correo.",
+    "verificationCode": "Codigo de verificacion",
+    "verifyCode": "Verificar codigo",
+    "resendCode": "Reenviar codigo",
+    "verifyingCode": "Verificando codigo",
+    "invalidVerificationCode": "El codigo de verificacion no es valido o vencio.",
+    "accessCodeRequiresEmail": "El acceso con codigo requiere una direccion de correo.",
+    "emailCodeInstructions": "Ingresa tu correo y te enviaremos un codigo de verificacion.",
+    "verificationCodeInstructions": "Ingresa el codigo enviado a {email}.",
+    "@verificationCodeInstructions": {
+      "description": "Instructions shown when the user is entering an emailed verification code.",
+      "placeholders": {
+        "email": {
+          "type": "String",
+          "example": "you@example.com"
+        }
+      }
+    },
     "travelModeBicycling": "bicicleta",
     "travelModeTransitLower": "transporte",
     "leaveByTime": "Salir a las {time}",
