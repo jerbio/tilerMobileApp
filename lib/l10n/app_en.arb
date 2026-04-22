@@ -1633,7 +1633,7 @@
             "feedbackError": "Failed to submit feedback",
             "noPreviewsAvailable":"No previews available for this request",
             "previewUnavailable":"The selected preview is unavailable",
-            "previewSummaryUnavailable":"Preview summary could not be loaded"
+            "previewSummaryUnavailable":"Preview summary could not be loaded",
             "feedbackError": "Failed to submit feedback",
             "hideActions": "Hide actions",
             "actionsCount": "{count} actions", "@actionsCount": { "placeholders": { "count": { "type": "int" } } }
