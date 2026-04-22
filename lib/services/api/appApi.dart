@@ -125,7 +125,7 @@ abstract class AppApi {
           BuildContext? buildContext = this.getContextCallBack!();
           if (buildContext != null && buildContext.mounted) {
             var awaitableUiChanges = CancelableOperation.fromFuture(
-                Future.delayed(const Duration(seconds: 50)));
+                Future.delayed(const Duration(seconds: 600)));
 
             BlocProvider.of<DeviceSettingBloc>(buildContext).add(
                 GetLocationProfileDeviceSettingEvent(
@@ -141,7 +141,8 @@ abstract class AppApi {
                   }
                 ]));
 
-            await awaitableUiChanges.valueOrCancellation();
+            var cancelledOrValue =
+                await awaitableUiChanges.valueOrCancellation();
             if (buildContext.mounted) {
               var deviceSettingState =
                   BlocProvider.of<DeviceSettingBloc>(buildContext).state;

@@ -6,6 +6,7 @@ class OnboardingPillTag extends StatelessWidget {
   final bool isEnabled;
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
+  final bool truncateText;
 
   const OnboardingPillTag({
     Key? key,
@@ -13,13 +14,14 @@ class OnboardingPillTag extends StatelessWidget {
     this.isEnabled = true,
     this.onTap,
     this.onDelete,
+    this.truncateText = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
     final bool hasDelete = onDelete != null;
     final Color backgroundColor = isEnabled
@@ -32,15 +34,13 @@ class OnboardingPillTag extends StatelessWidget {
     return GestureDetector(
       onTap: hasDelete ? null : onTap,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: truncateText ? MainAxisSize.max : MainAxisSize.min,
         children: [
           if (hasDelete) ...[
             GestureDetector(
               onTap: onDelete,
               child: Container(
-                padding: EdgeInsets.all(
-                 9
-                ),
+                padding: EdgeInsets.all(9),
                 decoration: BoxDecoration(
                   color: backgroundColor,
                   shape: BoxShape.circle,
@@ -54,8 +54,8 @@ class OnboardingPillTag extends StatelessWidget {
             ),
             SizedBox(width: 8),
           ],
-          Container(
-
+          Flexible(
+            child: Container(
             padding: EdgeInsets.symmetric(
               horizontal: 20,
               vertical: 10,
@@ -64,12 +64,15 @@ class OnboardingPillTag extends StatelessWidget {
               color: backgroundColor,
               borderRadius: BorderRadius.circular(200),
             ),
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+              child: Text(
+                text,
+                maxLines: truncateText ? 1 : null,
+                overflow: truncateText ? TextOverflow.ellipsis : null,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),

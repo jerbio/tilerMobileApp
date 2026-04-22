@@ -18,7 +18,7 @@ class EmptyDayTile extends StatefulWidget {
   final DateTime? deadline;
   final int dayIndex;
   final bool preview;
-  EmptyDayTile({this.deadline, required this.dayIndex,this.preview = false});
+  EmptyDayTile({this.deadline, required this.dayIndex, this.preview = false});
   @override
   EmptyDayTileState createState() => EmptyDayTileState();
 }
@@ -55,7 +55,6 @@ class EmptyDayTileState extends State<EmptyDayTile> {
       }
     }
     super.initState();
-    this.disableTileListCarousel();
   }
 
   @override
@@ -66,27 +65,10 @@ class EmptyDayTileState extends State<EmptyDayTile> {
     tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
-  void disableTileListCarousel() {
-    if (this.mounted) {
-      context
-          .read<TileListCarouselBloc>()
-          .add(DisableCarouselScrollEvent(dayIndex: this.widget.dayIndex));
-    }
-  }
-
-  void enableTileListCarousel() {
-    if (this.mounted) {
-      context
-          .read<TileListCarouselBloc>()
-          .add(EnableCarouselScrollEvent(isImmediate: true));
-    }
-  }
-
   void dateTap(int dayIndex) {
     int updatedDayIndex = dayIndex;
     DateTime newDate = Utility.getTimeFromIndex(updatedDayIndex).dayDate;
     DateTime currentDate = Utility.getTimeFromIndex(this.emptyDayIndex).dayDate;
-    this.enableTileListCarousel();
     if (currentDate.millisecondsSinceEpoch != newDate.millisecondsSinceEpoch) {
       this.context.read<UiDateManagerBloc>().add(DateChangeEvent(
           previousSelectedDate: currentDate, selectedDate: newDate));
@@ -94,13 +76,14 @@ class EmptyDayTileState extends State<EmptyDayTile> {
   }
 
   Widget buttonClickButton(int dayIndex) {
-    return  ColorFiltered(
-        colorFilter: ColorFilter.mode(
+    return ColorFiltered(
+      colorFilter: ColorFilter.mode(
         widget.preview
-        ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+            ? tileThemeExtension.vibeChatPreviewDisableColor
+                .withValues(alpha: 0.6)
             : Colors.transparent,
         BlendMode.srcATop,
-    ),
+      ),
       child: GestureDetector(
           onHorizontalDragEnd: (details) {
             if (this.emptyDayIndex != 0) {
@@ -127,9 +110,11 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                         Icons.arrow_right_outlined,
                         color: colorScheme.primary,
                       )
-                    : Icon(Icons.arrow_left_outlined, color: colorScheme.primary),
+                    : Icon(Icons.arrow_left_outlined,
+                        color: colorScheme.primary),
                 Text(
-                  DateFormat('d MMM').format(Utility.getTimeFromIndex(dayIndex)),
+                  DateFormat('d MMM')
+                      .format(Utility.getTimeFromIndex(dayIndex)),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       fontFamily: TileTextStyles.rubikFontName,
@@ -159,12 +144,13 @@ class EmptyDayTileState extends State<EmptyDayTile> {
             child: Stack(
               children: [
                 Center(
-                    child: ColorFiltered(
+                  child: ColorFiltered(
                     colorFilter: ColorFilter.mode(
-                    widget.preview
-                    ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-                        : Colors.transparent,
-                    BlendMode.srcATop,
+                      widget.preview
+                          ? tileThemeExtension.vibeChatPreviewDisableColor
+                              .withValues(alpha: 0.6)
+                          : Colors.transparent,
+                      BlendMode.srcATop,
                     ),
                     child: Container(
                       decoration: BoxDecoration(
@@ -189,7 +175,9 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                       width: (MediaQuery.of(context).size.width) * 0.90,
                       child: GestureDetector(
                           onTap: () {
-                            Map<String, dynamic> newTileParams = {'newTile': null};
+                            Map<String, dynamic> newTileParams = {
+                              'newTile': null
+                            };
                             Navigator.pushNamed(context, '/AddTile',
                                 arguments: newTileParams);
                           },
@@ -200,7 +188,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  AppLocalizations.of(context)!.emptyDayHeaderLine1,
+                                  AppLocalizations.of(context)!
+                                      .emptyDayHeaderLine1,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: colorScheme.onPrimary,
@@ -211,7 +200,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                     letterSpacing: -0.3,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.black.withValues(alpha: 0.15),
+                                        color: Colors.black
+                                            .withValues(alpha: 0.15),
                                         offset: const Offset(0, 2),
                                         blurRadius: 4,
                                       ),
@@ -261,7 +251,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 22, vertical: 10),
                                   ),
-                                  icon: const Icon(Icons.calendar_today_outlined),
+                                  icon:
+                                      const Icon(Icons.calendar_today_outlined),
                                   label: Text(
                                     AppLocalizations.of(context)!
                                         .emptyDayImportGoogleCalendarButton,
@@ -276,8 +267,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                 ),
                                 const SizedBox(height: 20),
                                 Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(horizontal: 32),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 32),
                                   child: Column(
                                     children: [
                                       Text(
@@ -289,7 +280,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               .withValues(alpha: 0.65),
                                           fontSize: 13,
                                           height: 1.3,
-                                          fontFamily: TileTextStyles.rubikFontName,
+                                          fontFamily:
+                                              TileTextStyles.rubikFontName,
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
@@ -302,7 +294,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                               .withValues(alpha: 0.65),
                                           fontSize: 13,
                                           height: 1.3,
-                                          fontFamily: TileTextStyles.rubikFontName,
+                                          fontFamily:
+                                              TileTextStyles.rubikFontName,
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
@@ -339,14 +332,16 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                     additionalInfo: {
                                       'description': autoTile.description,
                                       'duration':
-                                          autoTile.duration?.inMilliseconds ?? -1
+                                          autoTile.duration?.inMilliseconds ??
+                                              -1
                                     });
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => AddTile(
                                             preTile: autoTile,
-                                            autoDeadline: this.widget.deadline)));
+                                            autoDeadline:
+                                                this.widget.deadline)));
                               }
 
                               break;
@@ -358,7 +353,8 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                               break;
                           }
                         },
-                        swipeOptions: SwipeOptions.only(left: true, right: true),
+                        swipeOptions:
+                            SwipeOptions.only(left: true, right: true),
                         cardBuilder: (BuildContext context, int index) {
                           AutoTile autoTile = autoTiles[index];
 

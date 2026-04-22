@@ -4360,6 +4360,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Preview summary could not be loaded'**
   String get previewSummaryUnavailable;
+
+  /// No description provided for @actionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} actions'**
+  String actionsCount(int count);
 }
 
 class _AppLocalizationsDelegate

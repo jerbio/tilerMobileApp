@@ -1,3 +1,5 @@
+import 'package:tiler_app/data/repetitionFrequency.dart';
+
 class TileSuggestion {
   String? id;
   String? tileName;
@@ -7,7 +9,7 @@ class TileSuggestion {
   String? repetitionFrequency;
   int? priority;
   int? estimatedDurationMinutes;
-  String? recurrencePattern;
+  RepetitionFrequency? recurrencePattern;
   List<String>? tags;
   String? locationAddress;
   String? locationDescription;
@@ -39,7 +41,13 @@ class TileSuggestion {
       repetitionFrequency: json['RepetitionFrequency'],
       priority: json['Priority'],
       estimatedDurationMinutes: json['EstimatedDurationMinutes'],
-      recurrencePattern: json['RecurrencePattern'],
+      recurrencePattern: json['RecurrencePattern'] != null
+          ? RepetitionFrequency.values.firstWhere(
+              (e) =>
+                  e.name == (json['RecurrencePattern'] as String).toLowerCase(),
+              orElse: () => RepetitionFrequency.none,
+            )
+          : null,
       tags: json['Tags'] != null ? List<String>.from(json['Tags']) : [],
       locationAddress: json['LocationAddress'],
       locationDescription: json['LocationDescription'],
@@ -57,7 +65,7 @@ class TileSuggestion {
       'RepetitionFrequency': repetitionFrequency,
       'Priority': priority,
       'EstimatedDurationMinutes': estimatedDurationMinutes,
-      'RecurrencePattern': recurrencePattern,
+      'RecurrencePattern': recurrencePattern?.name,
       'Tags': tags,
       'LocationAddress': locationAddress,
       'LocationDescription': locationDescription,

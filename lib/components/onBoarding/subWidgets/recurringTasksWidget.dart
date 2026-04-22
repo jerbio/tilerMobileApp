@@ -42,6 +42,105 @@ class _RecurringTasksWidgetState extends State<RecurringTasksWidget> {
     super.dispose();
   }
 
+  String _frequencyLabel(String frequency) {
+    switch (frequency.toLowerCase()) {
+      case 'daily':
+        return localizations.daily;
+      case 'weekly':
+        return localizations.weekly;
+      case 'monthly':
+        return localizations.monthly;
+      case 'yearly':
+        return localizations.yearly;
+      default:
+        return localizations.none;
+    }
+  }
+
+  static const _frequencyOptions = [
+    'none',
+    'daily',
+    'weekly',
+    'monthly',
+    'yearly',
+  ];
+
+  Widget _buildFrequencySelector(
+      String currentFrequency, int index, OnboardingState state) {
+    final isNone =
+        currentFrequency.isEmpty || currentFrequency.toLowerCase() == 'none';
+    final displayColor = isNone
+        ? tileThemeExtension.onDisabledOnboardingPill
+        : colorScheme.primary;
+    final bgColor = isNone
+        ? tileThemeExtension.disabledOnboardingPill
+        : colorScheme.primary.withOpacity(0.12);
+
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        final originalIndex = state.recurringTasks!.indexOf(
+          (state.recurringTasks!.toList()
+                ..sort((a, b) =>
+                    (a.name?.length ?? 0).compareTo(b.name?.length ?? 0)))
+              .asMap()
+              .entries
+              .elementAt(index)
+              .value,
+        );
+        context
+            .read<OnboardingBloc>()
+            .add(UpdateRecurringTaskFrequencyEvent(originalIndex, value));
+      },
+      itemBuilder: (context) => _frequencyOptions.map((freq) {
+        final isSelected = freq == currentFrequency.toLowerCase();
+        return PopupMenuItem<String>(
+          value: freq,
+          child: Row(
+            children: [
+              if (isSelected)
+                Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child:
+                      Icon(Icons.check, size: 16, color: colorScheme.primary),
+                ),
+              Text(
+                _frequencyLabel(freq),
+                style: TextStyle(
+                  color: isSelected ? colorScheme.primary : null,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.repeat_outlined, size: 14, color: displayColor),
+            SizedBox(width: 4),
+            Text(
+              _frequencyLabel(currentFrequency),
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: displayColor,
+              ),
+            ),
+            SizedBox(width: 2),
+            Icon(Icons.arrow_drop_down, size: 14, color: displayColor),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<OnboardingBloc, OnboardingState>(
@@ -109,13 +208,26 @@ class _RecurringTasksWidgetState extends State<RecurringTasksWidget> {
                             state.recurringTasks!.indexOf(entry.value);
                         return Padding(
                           padding: EdgeInsets.only(bottom: 10),
-                          child: OnboardingPillTag(
-                            text: entry.value.name ?? "",
-                            onDelete: () {
-                              context
-                                  .read<OnboardingBloc>()
-                                  .add(RemoveRecurringTaskEvent(originalIndex));
-                            },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: OnboardingPillTag(
+                                  text: entry.value.name ?? "",
+                                  onDelete: () {
+                                    context.read<OnboardingBloc>().add(
+                                        RemoveRecurringTaskEvent(
+                                            originalIndex));
+                                  },
+                                ),
+                              ),
+                              SizedBox(width: 6),
+                              _buildFrequencySelector(
+                                entry.value.frequency ?? 'none',
+                                entry.key,
+                                state,
+                              ),
+                            ],
                           ),
                         );
                       }).toList(),

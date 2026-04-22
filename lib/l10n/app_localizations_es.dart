@@ -2441,4 +2441,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get previewSummaryUnavailable => 'Preview summary could not be loaded';
+
+  @override
+  String actionsCount(int count) {
+    return '$count actions';
+  }
 }
