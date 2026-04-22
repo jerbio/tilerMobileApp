@@ -624,7 +624,11 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
       final previews = await chatApi.getVibeRequestPreviews(event.vibeRequestId);
       if (previews.isEmpty) {
-        emit(state.copyWith(step: VibeChatStep.loaded));
+        emit(state.copyWith(
+          step: VibeChatStep.error,
+          error: LocalizationService.instance.translations.noPreviewsAvailable,
+        )
+        );
         return;
       }
 
@@ -643,13 +647,21 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
       final previewId = matchingPreviewAction?.vibePreviewId;
       if (previewId == null) {
-        emit(state.copyWith(step: VibeChatStep.loaded));
+        emit(state.copyWith(
+          step: VibeChatStep.error,
+          error: LocalizationService.instance.translations.previewUnavailable,
+        )
+        );
         return;
       }
 
       final summary = await chatApi.getVibePreviewSummary(previewId);
       if (summary == null) {
-        emit(state.copyWith(step: VibeChatStep.loaded));
+        emit(state.copyWith(
+          step: VibeChatStep.error,
+          error: LocalizationService.instance.translations.previewSummaryUnavailable,
+        )
+        );
         return;
       }
 

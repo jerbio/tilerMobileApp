@@ -4342,6 +4342,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to submit feedback'**
   String get feedbackError;
+
+  /// No description provided for @noPreviewsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No previews available for this request'**
+  String get noPreviewsAvailable;
+
+  /// No description provided for @previewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The selected preview is unavailable'**
+  String get previewUnavailable;
+
+  /// No description provided for @previewSummaryUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview summary could not be loaded'**
+  String get previewSummaryUnavailable;
 }
 
 class _AppLocalizationsDelegate

@@ -1630,5 +1630,8 @@
             "feedbackDescription": "Description",
             "feedbackDescriptionHint": "Provide details about your feedback",
             "feedbackSubmitted": "Feedback submitted successfully",
-            "feedbackError": "Failed to submit feedback"
+            "feedbackError": "Failed to submit feedback",
+            "noPreviewsAvailable":"No previews available for this request",
+            "previewUnavailable":"The selected preview is unavailable",
+            "previewSummaryUnavailable":"Preview summary could not be loaded"
 }

@@ -2432,4 +2432,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get feedbackError => 'Failed to submit feedback';
+
+  @override
+  String get noPreviewsAvailable => 'No previews available for this request';
+
+  @override
+  String get previewUnavailable => 'The selected preview is unavailable';
+
+  @override
+  String get previewSummaryUnavailable => 'Preview summary could not be loaded';
 }

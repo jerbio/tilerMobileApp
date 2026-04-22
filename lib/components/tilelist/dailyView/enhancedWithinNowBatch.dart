@@ -628,6 +628,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
                   onShowRoute: _navigateToTodaysRoute,
                   onReOptimize: _triggerRevise,
                   isLoading: isLoading,
+                  preview: (widget as EnhancedWithinNowBatch).preview,
                 ),
               );
             },
