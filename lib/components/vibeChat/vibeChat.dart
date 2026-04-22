@@ -28,9 +28,6 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   @override
   void initState() {
     super.initState();
-    print("first step is");
-    print(context.read<VibeChatBloc>().state.step);
-    print(context.read<VibeChatBloc>().state.sessions.length);
     _scrollController = ScrollController();
     _sessionsScrollController = ScrollController();
     _sessionsScrollController.addListener(() {

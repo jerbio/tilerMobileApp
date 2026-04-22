@@ -52,6 +52,11 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   Stream<String> get signalRStatusStream => _signalRService?.statusStream ?? Stream.empty();
 
   Future<void> _onOpenChat(OpenChatEvent event, Emitter<VibeChatState> emit) async {
+    emit(state.copyWith(
+      step: VibeChatStep.loaded,
+      previewTiles: [],
+      selectedActionEntityId: null,
+    ));
     try{
       _signalRService ??= SignalRSocketService(getContextCallBack: chatApi.getContextCallBack);
       await _signalRService!.createVibeConnection();

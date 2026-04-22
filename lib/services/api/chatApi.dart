@@ -398,11 +398,10 @@ class ChatApi extends AppApi {
         http.Response response = await http.get(uri, headers: headers);
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['previews'] != null) {
-            return (jsonResult['Content']['previews'] as List)
-                .map((e) => VibeRequestPreview.fromJson(e))
-                .toList();
+          if (jsonResult['Content'] != null && jsonResult['Content']['preview'] != null) {
+            return [VibeRequestPreview.fromJson(jsonResult['Content']['preview'])];
           }
+
           return [];
         } else {
           throw TilerError(
