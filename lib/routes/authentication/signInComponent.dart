@@ -847,10 +847,10 @@ class SignInComponentState extends State<SignInComponent>
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     final isEmailCodeActionPending =
-      isPendingEmailCodeRequest || isPendingCodeVerification;
+        isPendingEmailCodeRequest || isPendingCodeVerification;
     final emailCodePendingMessage = isPendingEmailCodeRequest
-      ? AppLocalizations.of(context)!.sendVerificationCode
-      : AppLocalizations.of(context)!.verifyingCode;
+        ? AppLocalizations.of(context)!.sendVerificationCode
+        : AppLocalizations.of(context)!.verifyingCode;
     final linkTextColor = colorScheme.primary;
     final validationTextColor = colorScheme.error;
 
@@ -1062,8 +1062,7 @@ class SignInComponentState extends State<SignInComponent>
         child: Text(
           AppLocalizations.of(context)!.forgotPasswordBtn,
           style: TextStyle(
-              color: linkTextColor,
-              decoration: TextDecoration.underline),
+              color: linkTextColor, decoration: TextDecoration.underline),
         ),
       ),
     );
