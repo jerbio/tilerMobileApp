@@ -78,6 +78,10 @@ class Utility {
     return time;
   }
 
+  static DateTime unixTime() {
+    return _jsBeginningOfTime;
+  }
+
   static final TimeOfDay defaultEndOfDay = TimeOfDay(hour: 22, minute: 00);
 
   static final Position _defaultPosition = new Position(

@@ -22,6 +22,7 @@ import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 /// Enhanced tile batch that shows travel time connectors between tiles
 /// and proactive departure alerts for today's view.
@@ -73,7 +74,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
-  ScrollController _scrollController = ScrollController();
+  final ItemScrollController _itemScrollController = ItemScrollController();
+  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
 
   @override
   void initState() {
@@ -96,7 +98,6 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
     super.dispose();
   }
 
@@ -232,7 +233,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   /// Build a list of widgets with travel connectors between tiles
   /// Groups conflicting tiles into stacked cards
-  List<Widget> _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
+  (List<Widget>,int?) _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
+    int? foundIndex;
     List<Widget> widgets = [];
     final now = DateTime.now();
     Set<int> displayedHours = {};
@@ -340,6 +342,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         continue;
       }
 
+      if (widget.selectedActionEntityId != null &&
+          tile.id?.contains(widget.selectedActionEntityId!) == true) {
+        foundIndex = widgets.length;
+      }
+
       // Regular tile (not in conflict group)
       if (widget.showTimelineMarkers) {
         widgets.add(_buildTileRowWithHourMarker(
@@ -398,7 +405,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
     }
 
-    return widgets;
+    return (widgets,foundIndex);
   }
 
   void evaluateTileDelta(Iterable<TilerEvent>? tiles) {
@@ -662,21 +669,36 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
 
-      // Build tiles with travel connectors
-      final tilesWithConnectors = _buildTilesWithConnectors(orderedTilesList);
+      final (tilesWithConnectors, targetScrollIndex) = _buildTilesWithConnectors(
+        orderedTilesList,
+      );
+
+      if (widget.preview && targetScrollIndex != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_itemScrollController.isAttached) {
+            _itemScrollController.jumpTo(
+              index: targetScrollIndex!,
+              alignment: 0.15,
+            );
+          }
+        });
+      }
 
       dayContent = Container(
         height: MediaQuery.sizeOf(context).height - daySummaryToHeightBuffer,
         width: MediaQuery.sizeOf(context).width,
-        child: ListView(
-          controller: _scrollController,
-          shrinkWrap: true,
-          children: [
-            ...tilesWithConnectors,
-            MediaQuery.of(context).orientation == Orientation.landscape
-                ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles,
-          ],
+        child: ScrollablePositionedList.builder(
+          itemScrollController: _itemScrollController,
+          itemPositionsListener: _itemPositionsListener,
+          itemCount: tilesWithConnectors.length + 1,
+          itemBuilder: (context, index) {
+            if (index == tilesWithConnectors.length) {
+              return MediaQuery.of(context).orientation == Orientation.landscape
+                  ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                  : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
+            }
+            return tilesWithConnectors[index];
+          },
         ),
       );
     } else {

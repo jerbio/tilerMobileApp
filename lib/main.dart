@@ -41,8 +41,6 @@ import 'package:tiler_app/routes/authenticatedUser/tileShare/tileShareRoute.dart
 import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/api/chatApi.dart';
-import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/services/themerHelper.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
@@ -93,6 +91,7 @@ class TilerApp extends StatefulWidget {
 }
 
 class _TilerAppState extends State<TilerApp> {
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   bool isAuthenticated = false;
   Authentication? authentication;
   NotificationOverlayMessage? notificationOverlayMessage;
@@ -133,191 +132,193 @@ class _TilerAppState extends State<TilerApp> {
         providers: [
           BlocProvider(
               create: (context) => SubCalendarTileBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(
               create: (context) => CalendarTileBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(create: (context) => UiDateManagerBloc()),
           BlocProvider(
               create: (context) => ScheduleSummaryBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(
               create: (context) => LocationBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(create: (context) => TileListCarouselBloc()),
           BlocProvider(
               create: (context) => DeviceSettingBloc(
                     getContextCallBack: () {
-                      return this.context;
+                      return _navigatorKey.currentState?.overlay?.context ?? this.context;
                     },
                     initialIsDarkMode: isDarkMode,
                   )),
           //BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!, SettingsApi(getContextCallBack: () => context))),
           BlocProvider(
               create: (context) => ForecastBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(
               create: (context) => ScheduleBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {
-                    return this.context;
+                    return _navigatorKey.currentState?.overlay?.context ?? this.context;
                   })),
           BlocProvider(
               create: (context) => VibeChatBloc(
-                getContextCallBack: () => context,
-                scheduleBloc: context.read<ScheduleBloc>(),
-                scheduleSummaryBloc: context.read<ScheduleSummaryBloc>(),
-
-              )
-          ),
+                    getContextCallBack: () {
+                      return _navigatorKey.currentState?.overlay?.context ?? this.context;
+                    },
+                    scheduleBloc: context.read<ScheduleBloc>(),
+                    scheduleSummaryBloc: context.read<ScheduleSummaryBloc>(),
+                  )),
         ],
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
-            buildWhen: (previous, current) =>
-                previous.isDarkMode != current.isDarkMode,
-            builder: (context, settingsState) {
-              return MaterialApp(
-                title: 'Tiler',
-                debugShowCheckedModeBanner: false,
-                theme: TileThemeData.lightTheme,
-                darkTheme: TileThemeData.darkTheme,
-                themeMode:
-                    settingsState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                routes: <String, WidgetBuilder>{
-                  '/AuthorizedUser': (BuildContext context) =>
-                      new AuthorizedRoute(),
-                  '/LoggedOut': (BuildContext context) => new SignInRoute(),
-                  '/AddTile': (BuildContext context) => new AddTile(),
-                  '/SearchTile': (BuildContext context) =>
-                      new EventNameSearchWidget(context: context),
-                  '/LocationRoute': (BuildContext context) =>
-                      new LocationRoute(),
-                  '/CustomRestrictionsRoute': (BuildContext context) =>
-                      new CustomTimeRestrictionRoute(),
-                  '/TimeRestrictionRoute': (BuildContext context) =>
-                      new TimeRestrictionRoute(),
-                  '/ForecastPreview': (ctx) => ForecastPreview(),
-                  '/ForecastDuration': (ctx) => ForecastDuration(),
-                  '/Procrastinate': (ctx) => ProcrastinateAll(),
-                  '/DurationDial': (ctx) => DurationDial(
-                        presetDurations: [
-                          Duration(minutes: 30),
-                          Duration(hours: 1),
-                        ],
-                      ),
-                  '/RepetitionRoute': (ctx) => RepetitionRoute(),
-                  '/PickColor': (ctx) => PickColor(),
-                  '/Setting': (ctx) => Settings(),
-                  '/Integrations': (ctx) => IntegrationWidgetRoute(),
-                  '/OnBoarding': (ctx) => OnboardingView(),
-                  '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
-                  '/DesignatedTileList': (ctx) => DesignatedTileList(),
-                  '/TileShare': (ctx) => TileShareRoute(),
-                  '/accountInfo': (ctx) => AccountInfo(),
-                  '/notificationsPreferences': (ctx) =>
-                      NotificationPreferences(),
-                  '/Connections': (ctx) => Connections(),
-                  '/Feedback': (ctx) => FeedbackPage(),
-                  '/tilePreferences': (ctx) => TilePreferencesScreen(),
-                  '/onBoardingWorkProfile': (ctx) => WorkProfileWidget(),
-                  '/vibeChat': (ctx) => VibeChat()
-                },
-                localizationsDelegates: [
-                  AppLocalizations.delegate,
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
-                ],
-                supportedLocales: [
-                  Locale('en', ''), // English, no country code
-                  Locale('es', ''), // Spanish, no country code
-                ],
-                home: FutureBuilder<Tuple2<bool, String>>(
-                    future: authenticateUser(context),
-                    builder: (context,
-                        AsyncSnapshot<Tuple2<bool, String>> snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        // While waiting for the future to complete, show the splash screen
-                        return splashScreen();
-                      } else {
-                        // // Check if AppLocalizations is available
-                        // if (AppLocalizations.of(context) != null) {
-                        //   localizationService =
-                        //       LocalizationService(AppLocalizations.of(context)!);
-                        // } else {
-                        //   // If localization data isn't available yet, show the splash screen
-                        //   return renderPending();
-                        // }
-
-                        Widget retValue;
-
-                        if (snapshot.hasError) {
-                          // If there was an error during authentication, handle it here
-                          notificationOverlayMessage!.showToast(
-                            context,
-                            "Error during authentication: ${snapshot.error}",
-                            NotificationOverlayMessageType.error,
-                          );
-                          return SignInRoute();
-                        } else if (snapshot.hasData) {
-                          if (!snapshot.data!.item1) {
-                            if (snapshot.data!.item2 ==
-                                Constants.cannotVerifyError) {
-                              notificationOverlayMessage!.showToast(
-                                context,
-                                AppLocalizations.of(context)!
-                                    .issuesConnectingToTiler,
-                                NotificationOverlayMessageType.error,
-                              );
-                              return splashScreen();
-                            }
-                            authentication?.deauthenticateCredentials();
-                            retValue = SignInRoute();
-                          } else {
-                            context
-                                .read<ScheduleBloc>()
-                                .add(LogInScheduleEvent(getContextCallBack: () {
-                              return context;
-                            }));
-                            AnalysticsSignal.send('LOGIN-VERIFIED');
-                            retValue = FutureBuilder<bool>(
-                              future: Utility.checkOnboardingStatus(),
-                              builder: (context,
-                                  AsyncSnapshot<bool> onboardingSnapshot) {
-                                if (onboardingSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return splashScreen();
-                                } else if (onboardingSnapshot.hasError) {
-                                  notificationOverlayMessage!.showToast(
-                                    context,
-                                    "Error checking onboarding status.",
-                                    NotificationOverlayMessageType.error,
-                                  );
-                                  return SignInRoute();
-                                } else {
-                                  return onboardingSnapshot.data!
-                                      ? AuthorizedRoute()
-                                      : OnboardingView();
-                                }
-                              },
-                            );
-                          }
+              buildWhen: (previous, current) =>
+                  previous.isDarkMode != current.isDarkMode,
+              builder: (context, settingsState) {
+                return MaterialApp(
+                  title: 'Tiler',
+                  debugShowCheckedModeBanner: false,
+                  theme: TileThemeData.lightTheme,
+                  darkTheme: TileThemeData.darkTheme,
+                  themeMode: settingsState.isDarkMode
+                      ? ThemeMode.dark
+                      : ThemeMode.light,
+                  navigatorKey: _navigatorKey,
+                  routes: <String, WidgetBuilder>{
+                    '/AuthorizedUser': (BuildContext context) =>
+                        new AuthorizedRoute(),
+                    '/LoggedOut': (BuildContext context) => new SignInRoute(),
+                    '/AddTile': (BuildContext context) => new AddTile(),
+                    '/SearchTile': (BuildContext context) =>
+                        new EventNameSearchWidget(context: context),
+                    '/LocationRoute': (BuildContext context) =>
+                        new LocationRoute(),
+                    '/CustomRestrictionsRoute': (BuildContext context) =>
+                        new CustomTimeRestrictionRoute(),
+                    '/TimeRestrictionRoute': (BuildContext context) =>
+                        new TimeRestrictionRoute(),
+                    '/ForecastPreview': (ctx) => ForecastPreview(),
+                    '/ForecastDuration': (ctx) => ForecastDuration(),
+                    '/Procrastinate': (ctx) => ProcrastinateAll(),
+                    '/DurationDial': (ctx) => DurationDial(
+                          presetDurations: [
+                            Duration(minutes: 30),
+                            Duration(hours: 1),
+                          ],
+                        ),
+                    '/RepetitionRoute': (ctx) => RepetitionRoute(),
+                    '/PickColor': (ctx) => PickColor(),
+                    '/Setting': (ctx) => Settings(),
+                    '/Integrations': (ctx) => IntegrationWidgetRoute(),
+                    '/OnBoarding': (ctx) => OnboardingView(),
+                    '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
+                    '/DesignatedTileList': (ctx) => DesignatedTileList(),
+                    '/TileShare': (ctx) => TileShareRoute(),
+                    '/accountInfo': (ctx) => AccountInfo(),
+                    '/notificationsPreferences': (ctx) =>
+                        NotificationPreferences(),
+                    '/Connections': (ctx) => Connections(),
+                    '/Feedback': (ctx) => FeedbackPage(),
+                    '/tilePreferences': (ctx) => TilePreferencesScreen(),
+                    '/onBoardingWorkProfile': (ctx) => WorkProfileWidget(),
+                    '/vibeChat': (ctx) => VibeChat()
+                  },
+                  localizationsDelegates: [
+                    AppLocalizations.delegate,
+                    GlobalMaterialLocalizations.delegate,
+                    GlobalWidgetsLocalizations.delegate,
+                    GlobalCupertinoLocalizations.delegate,
+                  ],
+                  supportedLocales: [
+                    Locale('en', ''), // English, no country code
+                    Locale('es', ''), // Spanish, no country code
+                  ],
+                  home: FutureBuilder<Tuple2<bool, String>>(
+                      future: authenticateUser(context),
+                      builder: (context,
+                          AsyncSnapshot<Tuple2<bool, String>> snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          // While waiting for the future to complete, show the splash screen
+                          return splashScreen();
                         } else {
-                          // If there's no data and no error, continue showing the splash screen
-                          retValue = splashScreen();
+                          // // Check if AppLocalizations is available
+                          // if (AppLocalizations.of(context) != null) {
+                          //   localizationService =
+                          //       LocalizationService(AppLocalizations.of(context)!);
+                          // } else {
+                          //   // If localization data isn't available yet, show the splash screen
+                          //   return renderPending();
+                          // }
+
+                          Widget retValue;
+
+                          if (snapshot.hasError) {
+                            // If there was an error during authentication, handle it here
+                            notificationOverlayMessage!.showToast(
+                              context,
+                              "Error during authentication: ${snapshot.error}",
+                              NotificationOverlayMessageType.error,
+                            );
+                            return SignInRoute();
+                          } else if (snapshot.hasData) {
+                            if (!snapshot.data!.item1) {
+                              if (snapshot.data!.item2 ==
+                                  Constants.cannotVerifyError) {
+                                notificationOverlayMessage!.showToast(
+                                  context,
+                                  AppLocalizations.of(context)!
+                                      .issuesConnectingToTiler,
+                                  NotificationOverlayMessageType.error,
+                                );
+                                return splashScreen();
+                              }
+                              authentication?.deauthenticateCredentials();
+                              retValue = SignInRoute();
+                            } else {
+                              context.read<ScheduleBloc>().add(
+                                  LogInScheduleEvent(getContextCallBack: () {
+                                return context;
+                              }));
+                              AnalysticsSignal.send('LOGIN-VERIFIED');
+                              retValue = FutureBuilder<bool>(
+                                future: Utility.checkOnboardingStatus(),
+                                builder: (context,
+                                    AsyncSnapshot<bool> onboardingSnapshot) {
+                                  if (onboardingSnapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return splashScreen();
+                                  } else if (onboardingSnapshot.hasError) {
+                                    notificationOverlayMessage!.showToast(
+                                      context,
+                                      "Error checking onboarding status.",
+                                      NotificationOverlayMessageType.error,
+                                    );
+                                    return SignInRoute();
+                                  } else {
+                                    return onboardingSnapshot.data!
+                                        ? AuthorizedRoute()
+                                        : OnboardingView();
+                                  }
+                                },
+                              );
+                            }
+                          } else {
+                            // If there's no data and no error, continue showing the splash screen
+                            retValue = splashScreen();
+                          }
+                          return retValue;
                         }
-                        return retValue;
-                      }
-                    }),
-              );
-            }));
+                      }),
+                );
+              }));
   }
 }

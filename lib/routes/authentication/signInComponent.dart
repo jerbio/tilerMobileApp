@@ -322,61 +322,64 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   void requestEmailCode() async {
-    if (_formKey.currentState!.validate()) {
-      final email = userNameEditingController.text.trim();
-      if (email.isEmpty) {
+    final shouldValidateForm = !isEmailCodeVerificationScreen;
+    if (shouldValidateForm && !_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final email = userNameEditingController.text.trim();
+    if (email.isEmpty) {
+      return;
+    }
+
+    if (!isValidEmailAddress(email)) {
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        AppLocalizations.of(context)!.accessCodeRequiresEmail,
+        NotificationOverlayMessageType.error,
+      );
+      return;
+    }
+
+    setState(() {
+      isPendingEmailCodeRequest = true;
+    });
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+
+    try {
+      await authApi.requestEmailAuthenticationCode(email);
+      if (!mounted) {
         return;
       }
 
-      if (!isValidEmailAddress(email)) {
-        hideButtonsTemporarily();
-        notificationOverlayMessage.showToast(
-          context,
-          AppLocalizations.of(context)!.accessCodeRequiresEmail,
-          NotificationOverlayMessageType.error,
-        );
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        AppLocalizations.of(context)!.verificationCodeSent,
+        NotificationOverlayMessageType.success,
+      );
+      setAsEmailCodeVerificationScreen(email);
+    } catch (e) {
+      if (!mounted) {
         return;
       }
 
-      setState(() {
-        isPendingEmailCodeRequest = true;
-      });
-      SystemChannels.textInput.invokeMethod('TextInput.hide');
-
-      try {
-        await authApi.requestEmailAuthenticationCode(email);
-        if (!mounted) {
-          return;
-        }
-
-        hideButtonsTemporarily();
-        notificationOverlayMessage.showToast(
-          context,
-          AppLocalizations.of(context)!.verificationCodeSent,
-          NotificationOverlayMessageType.success,
-        );
-        setAsEmailCodeVerificationScreen(email);
-      } catch (e) {
-        if (!mounted) {
-          return;
-        }
-
-        final errorMessage =
-            e is TilerError && e.Message != null && e.Message!.isNotEmpty
-                ? e.Message!
-                : AppLocalizations.of(context)!.issuesConnectingToTiler;
-        hideButtonsTemporarily();
-        notificationOverlayMessage.showToast(
-          context,
-          errorMessage,
-          NotificationOverlayMessageType.error,
-        );
-      } finally {
-        if (mounted) {
-          setState(() {
-            isPendingEmailCodeRequest = false;
-          });
-        }
+      final errorMessage =
+          e is TilerError && e.Message != null && e.Message!.isNotEmpty
+              ? e.Message!
+              : AppLocalizations.of(context)!.issuesConnectingToTiler;
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        errorMessage,
+        NotificationOverlayMessageType.error,
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isPendingEmailCodeRequest = false;
+        });
       }
     }
   }
@@ -1320,7 +1323,7 @@ class SignInComponentState extends State<SignInComponent>
         forgetPasswordTextButton,
         spacer(24),
       ];
-      buttons = [signInButton, signInWithEmailCodeButton, backToSignInButton];
+      buttons = [signInButton, backToSignInButton];
     }
 
     if (this.isPendingSigning || this.isSuccessfulSignin) {

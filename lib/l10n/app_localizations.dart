@@ -4342,6 +4342,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to submit feedback'**
   String get feedbackError;
+
+  /// No description provided for @actionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} actions'**
+  String actionsCount(int count);
 }
 
 class _AppLocalizationsDelegate

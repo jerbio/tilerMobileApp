@@ -55,6 +55,15 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     try{
       _signalRService ??= SignalRSocketService(getContextCallBack: chatApi.getContextCallBack);
       await _signalRService!.createVibeConnection();
+      _statusSubscription = _signalRService!.statusStream.listen(
+        null,
+        onError: (e) {
+          emit(state.copyWith(
+            step: VibeChatStep.error,
+            error: e is TilerError ? e.Message : LocalizationService.instance.translations.errorOccurred,
+          ));
+        },
+      );
     }  catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
@@ -76,6 +85,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
 
   Future<void> _onLoadSessions (LoadSessionsEvent event, Emitter<VibeChatState> emit) async{
     try{
+      if (state.sessions.isNotEmpty) return;
       emit(state.copyWith(step: VibeChatStep.loadingSessions));
       final sessions = await chatApi.getVibeSessions();
 

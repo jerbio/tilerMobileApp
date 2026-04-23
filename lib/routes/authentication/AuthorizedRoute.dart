@@ -123,7 +123,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=Theme.of(context).extension<TileThemeExtension>()!;
+    tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
   }
 
   void openAppLink(Uri uri) {
@@ -205,7 +205,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   Widget _ribbonCarousel(AuthorizedRouteTileListPage selectedListPage) {
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
-      // Wrap in BlocBuilder to respond to date changes
+        // Wrap in BlocBuilder to respond to date changes
         return BlocBuilder<UiDateManagerBloc, UiDateManagerState>(
           builder: (context, uiDateState) {
             DateTime dayRibbonDate = Utility.currentTime().dayDate;
@@ -289,8 +289,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         currentScheduleSummaryState is ScheduleDaySummaryLoaded ||
         currentScheduleSummaryState is ScheduleDaySummaryLoading) {
       this.context.read<ScheduleSummaryBloc>().add(
-        GetScheduleDaySummaryEvent(timeline: lookupTimeline),
-      );
+            GetScheduleDaySummaryEvent(timeline: lookupTimeline),
+          );
     }
   }
 
@@ -460,78 +460,83 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
 
   Widget _buildBottomNavBar(VibeChatStep vibeChatStep) {
     return IgnorePointer(
-        ignoring: vibeChatStep == VibeChatStep.previewLoaded || vibeChatStep == VibeChatStep.loadingPreview || vibeChatStep == VibeChatStep.error,
+        ignoring: vibeChatStep == VibeChatStep.previewLoaded ||
+            vibeChatStep == VibeChatStep.loadingPreview ||
+            vibeChatStep == VibeChatStep.error,
         child: ColorFiltered(
-        colorFilter: ColorFilter.mode(
-        vibeChatStep == VibeChatStep.previewLoaded || vibeChatStep == VibeChatStep.loadingPreview || vibeChatStep == VibeChatStep.error
-    ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-        : Colors.transparent,
-    BlendMode.srcATop,
-    ),
-    child: ClipRRect(
-      key: TutorialKeys.bottomNavKey,
-      borderRadius: BorderRadius.only(
-        topRight: Radius.circular(30),
-        topLeft: Radius.circular(30),
-      ),
-      child: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.share,
+            colorFilter: ColorFilter.mode(
+              vibeChatStep == VibeChatStep.previewLoaded ||
+                      vibeChatStep == VibeChatStep.loadingPreview ||
+                      vibeChatStep == VibeChatStep.error
+                  ? tileThemeExtension.vibeChatPreviewDisableColor
+                      .withValues(alpha: 0.6)
+                  : Colors.transparent,
+              BlendMode.srcATop,
+            ),
+            child: ClipRRect(
+              key: TutorialKeys.bottomNavKey,
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(30),
+                topLeft: Radius.circular(30),
               ),
-              label: ''),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: '',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.calendar_month,
+              child: BottomNavigationBar(
+                items: [
+                  BottomNavigationBarItem(
+                      icon: Icon(
+                        Icons.share,
+                      ),
+                      label: ''),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.search),
+                    label: '',
+                  ),
+                  BottomNavigationBarItem(
+                      icon: Icon(Icons.settings), label: ''),
+                  BottomNavigationBarItem(
+                      icon: Icon(
+                        Icons.calendar_month,
+                      ),
+                      label: ''),
+                ],
+                onTap: _onBottomNavigationTap,
               ),
-              label: ''),
-        ],
-        onTap: _onBottomNavigationTap,
-      ),
-    )
-        )
-    );
+            )));
   }
 
   Widget _buildPreviewFloatingActionButton(VibeChatStep vibeChatStep) {
     final isPreview = vibeChatStep == VibeChatStep.previewLoaded ||
-        vibeChatStep == VibeChatStep.loadingPreview ||  vibeChatStep == VibeChatStep.error;
+        vibeChatStep == VibeChatStep.loadingPreview ||
+        vibeChatStep == VibeChatStep.error;
     return FloatingActionButton(
       key: TutorialKeys.fabKey,
       backgroundColor: colorScheme.surface,
-        onPressed: () {
-          if (isPreview) {
-            Navigator.pushNamed(context, '/vibeChat');
-          } else {
-            AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
-            displayDialog(MediaQuery.of(context).size);
-          }
-        },
-        child: isPreview
-            ? Icon(Icons.chat_outlined, color: colorScheme.primary)
-            : AutoSwitchingWidget(
-        duration: Duration(milliseconds: 1000),
-        children: [
-          Transform.scale(
-            scale: 0.618,
-            child: Image.asset(
-              'assets/images/wire_tilerLogo_BlueBottom.png',
+      onPressed: () {
+        if (isPreview) {
+          Navigator.pushNamed(context, '/vibeChat');
+        } else {
+          AnalysticsSignal.send('GLOBAL_PLUS_BUTTON');
+          displayDialog(MediaQuery.of(context).size);
+        }
+      },
+      child: isPreview
+          ? Icon(Icons.chat_outlined, color: colorScheme.primary)
+          : AutoSwitchingWidget(
+              duration: Duration(milliseconds: 1000),
+              children: [
+                Transform.scale(
+                  scale: 0.618,
+                  child: Image.asset(
+                    'assets/images/wire_tilerLogo_BlueBottom.png',
+                  ),
+                ),
+                Transform.scale(
+                  scale: 0.618,
+                  child: Image.asset(
+                    'assets/images/wire_tilerLogo_RedBottom.png',
+                  ),
+                ),
+              ],
             ),
-          ),
-          Transform.scale(
-            scale: 0.618,
-            child: Image.asset(
-              'assets/images/wire_tilerLogo_RedBottom.png',
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -539,12 +544,15 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     final tiles = vibeChatState.previewTiles;
     final selectedTile = (tiles != null && tiles.isNotEmpty)
         ? tiles.firstWhereOrNull(
-          (tile) => tile.id != null &&
-          vibeChatState.selectedActionEntityId != null &&
-          tile.id!.contains(vibeChatState.selectedActionEntityId!),
-    ) : null;
+            (tile) =>
+                tile.id != null &&
+                vibeChatState.selectedActionEntityId != null &&
+                tile.id!.contains(vibeChatState.selectedActionEntityId!),
+          )
+        : null;
 
-    if (selectedTile == null && vibeChatState.step==VibeChatStep.previewLoaded) {
+    if (selectedTile == null &&
+        vibeChatState.step == VibeChatStep.previewLoaded) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         NotificationOverlayMessage().showToast(
           context,
@@ -568,7 +576,6 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     );
   }
 
-
   Widget renderAuthorizedUserPageView() {
     //ey: dayStatusWidget not used
     //ey: never added to widget tree
@@ -588,7 +595,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 _buildTileList(scheduleState.currentView),
                 _ribbonCarousel(scheduleState.currentView),
                 if (scheduleState.currentView ==
-                    AuthorizedRouteTileListPage.Daily &&
+                        AuthorizedRouteTileListPage.Daily &&
                     !isViewingToday)
                   _buildDailyCurrentDayButton()
               ]);
@@ -599,7 +606,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       BlocBuilder<VibeChatBloc, VibeChatState>(
         builder: (context, vibeChatState) {
           final isPreview = vibeChatState.step == VibeChatStep.previewLoaded ||
-              vibeChatState.step == VibeChatStep.loadingPreview||
+              vibeChatState.step == VibeChatStep.loadingPreview ||
               vibeChatState.step == VibeChatStep.error;
           if (!isPreview) return const SizedBox.shrink();
           return _buildPreviewOverlay(vibeChatState);
@@ -622,9 +629,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = BlocBuilder<VibeChatBloc, VibeChatState>(
-        builder: (context, vibeChatState) => _buildBottomNavBar(vibeChatState.step),
-      );
+      bottomNavigator = _buildBottomNavBar(
+          BlocProvider.of<VibeChatBloc>(context).state.step);
     }
     return Scaffold(
       extendBody: true,
@@ -638,9 +644,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: BlocBuilder<VibeChatBloc, VibeChatState>(
-        builder: (context, vibeChatState) => _buildPreviewFloatingActionButton(vibeChatState.step),
-      ),
+      floatingActionButton: _buildPreviewFloatingActionButton(
+          BlocProvider.of<VibeChatBloc>(context).state.step),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -651,17 +656,17 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       create: (_) => TutorialBloc(stepCount: 7),
       child: MultiBlocListener(
           listeners: [
-          BlocListener<VibeChatBloc, VibeChatState>(
-          listener: (context, state) {
-            if (state.step == VibeChatStep.error && state.error != null) {
-            NotificationOverlayMessage().showToast(
-            context,
-            state.error!,
-            NotificationOverlayMessageType.error,
-            );
-            }
-            },
-          ),
+            BlocListener<VibeChatBloc, VibeChatState>(
+              listener: (context, state) {
+                if (state.step == VibeChatStep.error && state.error != null) {
+                  NotificationOverlayMessage().showToast(
+                    context,
+                    state.error!,
+                    NotificationOverlayMessageType.error,
+                  );
+                }
+              },
+            ),
             BlocListener<DeviceSettingBloc, DeviceSettingState>(
               listener: (context, state) {
                 if (state is DeviceLocationSettingUIPending) {
