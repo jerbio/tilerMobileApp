@@ -4,6 +4,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/bloc/calendarTiles/calendar_tile_bloc.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
+import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -37,6 +38,8 @@ class Settings extends StatelessWidget {
             NotificationOverlayMessage();
         if (state is DeviceSettingInitial && state.shouldLogout) {
           print("reset started");
+          //when you log out you need to reset all the blocs that have user specific data and then navigate to the logged out screen.
+          //In the initstate of AuthorizedRouteState we reinitialized all the necessary apis with the appropriate context callback so we just need to reset the blocs here.
           context.read<ScheduleBloc>().add(LogOutScheduleEvent(() => context));
           context
               .read<SubCalendarTileBloc>()
@@ -55,7 +58,8 @@ class Settings extends StatelessWidget {
           context
               .read<ScheduleSummaryBloc>()
               .add(LogOutScheduleDaySummaryEvent());
-          context.read<VibeChatBloc>().add(LogOutVibeChatEvent(()=>context));
+          context.read<PreviewSummaryBloc>().add(LogOutPreviewSummaryEvent());
+          context.read<VibeChatBloc>().add(LogOutVibeChatEvent(() => context));
           Navigator.pushNamedAndRemoveUntil(
               context, '/LoggedOut', (route) => false);
         }

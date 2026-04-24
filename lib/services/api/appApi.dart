@@ -178,6 +178,7 @@ abstract class AppApi {
         print("location is set");
       }
     }
+    print("Longitude and latitude sent: ${position.longitude}, ${position.latitude}");
     if (!requestParams.containsKey('TimeZoneOffset')) {
       requestParams['TimeZoneOffset'] = Utility.getTimeZoneOffset().toString();
     }
