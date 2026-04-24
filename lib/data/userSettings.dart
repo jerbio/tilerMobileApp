@@ -16,8 +16,8 @@ class UserPreference {
   factory UserPreference.fromJson(Map<String, dynamic> json) {
     try {
       return UserPreference(
-        notificationEnabled: json['notiifcationEnabled'] ?? false,
-        notificationEnabledMs: json['notiifcationEnabledMs'] ?? 0,
+        notificationEnabled: json['notifcationEnabled'] ?? false,
+        notificationEnabledMs: json['notifcationEnabledMs'] ?? 0,
         emailNotificationEnabled: json['emailNotificationEnabled'] ?? false,
         textNotificationEnabled: json['textNotificationEnabled'] ?? false,
       );
@@ -28,8 +28,8 @@ class UserPreference {
 
   Map<String, dynamic> toJson() {
     return {
-      'notiifcationEnabled': notificationEnabled,
-      'notiifcationEnabledMs': notificationEnabledMs,
+      'notifcationEnabled': notificationEnabled,
+      'notifcationEnabledMs': notificationEnabledMs,
       'emailNotificationEnabled': emailNotificationEnabled,
       'textNotificationEnabled': textNotificationEnabled,
     };
