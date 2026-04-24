@@ -11,12 +11,12 @@ class SessionProfile {
   UserApi userApi = UserApi(
     getContextCallBack: () => null,
   );
-  bool isInitialized = false;
+  // bool isInitialized = false;
 
   Future initialize({
     Function? getContextCallBack,
   }) async {
-    isInitialized = true;
+    // isInitialized = true;
     var locationAccessResponse = await accessManager.locationAccess(
         statusCheck: true, forceDeviceCheck: true);
     locationProfile = locationAccessResponse;

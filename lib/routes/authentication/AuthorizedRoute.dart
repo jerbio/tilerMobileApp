@@ -25,6 +25,7 @@ import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/dailyView/previewDailyTileList.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
+import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -35,6 +36,7 @@ import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
@@ -103,6 +105,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     final scheduleBloc = BlocProvider.of<ScheduleBloc>(context);
     final deviceSettingBloc = BlocProvider.of<DeviceSettingBloc>(context);
     final forecastBloc = BlocProvider.of<ForecastBloc>(context);
+    final vibeChatBloc = BlocProvider.of<VibeChatBloc>(context);
+    final previewSummaryBloc = BlocProvider.of<PreviewSummaryBloc>(context);
+    final scheduleSummaryBloc = BlocProvider.of<ScheduleSummaryBloc>(context);
+
     forecastBloc.whatIfApi = WhatIfApi(getContextCallBack: () {
       return this.context;
     });
@@ -114,6 +120,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           return this.context;
         }));
     scheduleBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    vibeChatBloc.chatApi = ChatApi(getContextCallBack: () {
+      return this.context;
+    });
+    previewSummaryBloc.previewApi = PreviewApi(getContextCallBack: () {
+      return this.context;
+    });
+    scheduleSummaryBloc.scheduleApi = ScheduleApi(getContextCallBack: () {
+      return this.context;
+    });
+    scheduleSummaryBloc.subCalendarEventApi =
+        SubCalendarEventApi(getContextCallBack: () {
       return this.context;
     });
   }
@@ -629,8 +648,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = _buildBottomNavBar(
-          BlocProvider.of<VibeChatBloc>(context).state.step);
+      bottomNavigator =
+          _buildBottomNavBar(BlocProvider.of<VibeChatBloc>(context).state.step);
     }
     return Scaffold(
       extendBody: true,
