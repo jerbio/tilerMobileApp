@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'Loading'**
   String get loading;
 
+  /// No description provided for @loadingPrediction.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading prediction'**
+  String get loadingPrediction;
+
   /// No description provided for @address.
   ///
   /// In en, this message translates to:

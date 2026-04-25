@@ -24,6 +24,7 @@
     "forecast": "Forecast",
     "whenQ": "When?",
     "loading": "Loading",
+    "loadingPrediction": "Loading prediction",
     "address": "Address",
     "settings": "Settings",
     "nickName":"Nick Name",

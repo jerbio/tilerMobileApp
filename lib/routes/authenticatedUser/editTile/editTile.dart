@@ -487,11 +487,52 @@ class _EditTileState extends State<EditTile> {
     });
   }
 
+  Widget _buildPendingPredictionWidget() {
+    return Container(
+      height: 48,
+      padding: EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colorScheme.onSurface.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            height: 26,
+            width: 26,
+            child: Lottie.asset(
+              TileThemeNew.evaluatingScheduleAsset,
+              height: 26,
+              width: 26,
+              fit: BoxFit.contain,
+            ),
+          ),
+          SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              AppLocalizations.of(context)!.loadingPrediction,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontWeight: FontWeight.w500,
+                color: colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   showPendingPreview() {
     setState(() {
-      bottomWidget = PendingWidget(
-        imageAsset: TileThemeNew.evaluatingScheduleAsset,
-      );
+      bottomWidget = _buildPendingPredictionWidget();
     });
   }
 

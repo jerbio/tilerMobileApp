@@ -19,13 +19,13 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
 
   CancelAndProceedTemplateWidget(
       {required this.routeName,
-        this.onCancel,
-        this.onProceed,
-        this.child,
-        this.isProceedAllowed,
-        this.appBar,
-        this.bottomWidget,
-        this.hideButtons = false});
+      this.onCancel,
+      this.onProceed,
+      this.child,
+      this.isProceedAllowed,
+      this.appBar,
+      this.bottomWidget,
+      this.hideButtons = false});
 
   @override
   CancelAndProceedTemplateWidgetState createState() =>
@@ -33,7 +33,6 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
 }
 
 enum CancelAndProceedPathRoute { cancel, proceed }
-
 
 class CancelAndProceedTemplateWidgetState
     extends State<CancelAndProceedTemplateWidget> {
@@ -58,17 +57,17 @@ class CancelAndProceedTemplateWidgetState
           borderRadius: borderRadius,
           color: colorScheme.primary,
         ),
-          child: Center(
-            child: Transform.rotate(
-              angle: iconRotation,
-              child: Icon(
-                icon,
-                color: colorScheme.onPrimary,
-                size: 25,
-              ),
+        child: Center(
+          child: Transform.rotate(
+            angle: iconRotation,
+            child: Icon(
+              icon,
+              color: colorScheme.onPrimary,
+              size: 25,
             ),
           ),
         ),
+      ),
     );
   }
 
@@ -91,7 +90,7 @@ class CancelAndProceedTemplateWidgetState
         routeParams[cancelAndProceedMapKey] = <String, dynamic>{};
       }
       Map<String, dynamic> cancelAndProceedData =
-      routeParams[cancelAndProceedMapKey];
+          routeParams[cancelAndProceedMapKey];
       if (routeParams[cancelAndProceedMapKey] == null) {
         cancelAndProceedData = {};
         cancelAndProceedData[historyKey] = [];
@@ -131,30 +130,30 @@ class CancelAndProceedTemplateWidgetState
   }
 
   Widget build(BuildContext context) {
-    double iconSize = 25;
     bool isKeyboardShown = _keyboardIsVisible();
+    final double bottomBarPadding = MediaQuery.of(context).padding.bottom + 5;
     Widget? proceedButton;
     Widget cancelButton = _buildActionButton(
       borderRadius: BorderRadius.only(
         topRight: Radius.circular(10),
         bottomRight: Radius.circular(10),
       ),
-      icon:Icons.add,
+      icon: Icons.add,
       iconRotation: math.pi / 4,
       onPressed: () async {
-            _setRouteAsCancelled();
-            if (this.widget.onCancel != null) {
-              Navigator.pop(context);
-              this.widget.onCancel!();
-            } else {
-              Navigator.pop(context);
-            }
-          },
+        _setRouteAsCancelled();
+        if (this.widget.onCancel != null) {
+          Navigator.pop(context);
+          this.widget.onCancel!();
+        } else {
+          Navigator.pop(context);
+        }
+      },
     );
     List<Widget> bottomButtons = [];
 
     if ((this.widget.isProceedAllowed != null &&
-        this.widget.isProceedAllowed!()) ||
+            this.widget.isProceedAllowed!()) ||
         this.widget.onProceed != null) {
       proceedButton = _buildActionButton(
         icon: Icons.check,
@@ -163,33 +162,33 @@ class CancelAndProceedTemplateWidgetState
           bottomLeft: Radius.circular(10),
         ),
         onPressed: () async {
-            _setRouteAsProceed();
-            if (this.widget.onProceed != null) {
-              var proceedResult = this.widget.onProceed!();
-              if (proceedResult is Future) {
-                setState(() {
-                  showLoading = true;
-                });
-                return proceedResult.then((value) {
-                  if (mounted) {
-                    setState(() {
-                      showLoading = false;
-                    });
-                  }
-                  if (value != false) {
-                    Navigator.pop(context);
-                  }
-                }).whenComplete(() {
+          _setRouteAsProceed();
+          if (this.widget.onProceed != null) {
+            var proceedResult = this.widget.onProceed!();
+            if (proceedResult is Future) {
+              setState(() {
+                showLoading = true;
+              });
+              return proceedResult.then((value) {
+                if (mounted) {
                   setState(() {
                     showLoading = false;
                   });
+                }
+                if (value != false) {
+                  Navigator.pop(context);
+                }
+              }).whenComplete(() {
+                setState(() {
+                  showLoading = false;
                 });
-              }
-              Navigator.pop(context, proceedResult);
-            } else {
-              Navigator.pop(context);
+              });
             }
-          },
+            Navigator.pop(context, proceedResult);
+          } else {
+            Navigator.pop(context);
+          }
+        },
       );
     }
 
@@ -225,22 +224,22 @@ class CancelAndProceedTemplateWidgetState
 
     if (showLoading) {
       Widget blurWidget = Container(
-          width: (MediaQuery.of(context).size.width),
-          height: (MediaQuery.of(context).size.height),
-          child: new Center(
-              child: new ClipRect(
-                  child: new BackdropFilter(
-                    filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
-                    child: new Container(
-                      width: (MediaQuery.of(context).size.width),
-                      height: (MediaQuery.of(context).size.height),
-                      decoration: new BoxDecoration(
-                          color: colorScheme.scrim,
-                      ),
-                    ),
-                  ),
+        width: (MediaQuery.of(context).size.width),
+        height: (MediaQuery.of(context).size.height),
+        child: new Center(
+          child: new ClipRect(
+            child: new BackdropFilter(
+              filter: new ImageFilter.blur(sigmaX: 2.0, sigmaY: 2.0),
+              child: new Container(
+                width: (MediaQuery.of(context).size.width),
+                height: (MediaQuery.of(context).size.height),
+                decoration: new BoxDecoration(
+                  color: colorScheme.scrim,
+                ),
               ),
+            ),
           ),
+        ),
       );
       stackWidgets.add(blurWidget);
       stackWidgets.add(this.widget.pendingWidget ??
@@ -249,15 +248,20 @@ class CancelAndProceedTemplateWidgetState
           ));
     }
 
-    stackWidgets.add(Align(
-        alignment: AlignmentDirectional.bottomCenter,
-        child: Container(
-            height: 80,
-            padding: EdgeInsets.fromLTRB(0, 0, 0, 20),
-            child: Row(
-              children: bottomButtons,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            ))));
+    if (bottomButtons.isNotEmpty) {
+      stackWidgets.add(Align(
+          alignment: AlignmentDirectional.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(0, 0, 0, bottomBarPadding),
+            child: SizedBox(
+              height: TileDimensions.proceedAndCancelButtonWidth,
+              child: Row(
+                children: bottomButtons,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              ),
+            ),
+          )));
+    }
 
     Widget contentAndButton = Stack(
       children: stackWidgets,

@@ -15,6 +15,7 @@ class AccessManager {
       {bool forceDeviceCheck = false,
       bool statusCheck = false,
       bool denyAccess = false}) async {
+    // return LocationProfile.empty();
     const isAccessPermitedKey = 'accessAllowed';
     const timeOfLastAccessKey = 'lastLocationAccessRequest';
     Position retValue = Utility.getDefaultPosition();
@@ -113,6 +114,9 @@ class AccessManager {
         referenceTimeForNextCheck = timeOfNextCheck.millisecondsSinceEpoch;
         return retValue;
       });
+      print(
+          'AccessManager.locationAccess: isLocationVerified: $isLocationVerified, referenceTimeForNextCheck: ${DateTime.fromMillisecondsSinceEpoch(referenceTimeForNextCheck)}');
+      print(retValue);
       locationData[isAccessPermitedKey] = isLocationVerified;
       locationData[timeOfLastAccessKey] = referenceTimeForNextCheck;
     } else {

@@ -85,6 +85,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loading => 'Loading';
 
   @override
+  String get loadingPrediction => 'Cargando prediccion';
+
+  @override
   String get address => 'Address';
 
   @override

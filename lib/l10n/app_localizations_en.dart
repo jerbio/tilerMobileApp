@@ -85,6 +85,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loading => 'Loading';
 
   @override
+  String get loadingPrediction => 'Loading prediction';
+
+  @override
   String get address => 'Address';
 
   @override

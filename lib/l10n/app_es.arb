@@ -58,6 +58,7 @@
     "travelModeWalking": "caminar",
     "signInWithEmailCode": "Iniciar con codigo por correo",
     "usernameOrEmail": "Usuario o correo",
+    "loadingPrediction": "Cargando prediccion",
     "sendAccessCode": "Enviar codigo de acceso",
     "usePasswordInstead": "Usar contrasena",
     "sendVerificationCode": "Enviar codigo de verificacion",

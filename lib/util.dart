@@ -812,7 +812,17 @@ class Utility {
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+    } catch (e) {
+      print("Error getting location: $e");
+      return Utility.getDefaultPosition();
+    }
   }
 
   // static Future<bool> checkOnboardingStatus(LocalizationService localizationService) async {
