@@ -648,10 +648,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-      bottomNavigator = BlocBuilder<VibeChatBloc, VibeChatState>(
-        builder: (context, vibeChatState) =>
-            _buildBottomNavBar(vibeChatState.step),
-      );
+     bottomNavigator = _buildBottomNavBar(
+          BlocProvider.of<VibeChatBloc>(context).state.step);
     }
     return Scaffold(
       extendBody: true,
@@ -665,9 +663,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
         ),
       ),
       bottomNavigationBar: bottomNavigator,
-      floatingActionButton: BlocBuilder<VibeChatBloc, VibeChatState>(
-        builder: (context, vibeChatState) =>
-            _buildPreviewFloatingActionButton(vibeChatState.step),
+      floatingActionButton: _buildPreviewFloatingActionButton(
+          BlocProvider.of<VibeChatBloc>(context).state.step
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
@@ -681,6 +678,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           listeners: [
             BlocListener<VibeChatBloc, VibeChatState>(
               listener: (context, state) {
+                setState(() {});
                 if (state.step == VibeChatStep.error && state.error != null) {
                   NotificationOverlayMessage().showToast(
                     context,
