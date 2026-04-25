@@ -12,10 +12,22 @@ class WelcomeScreen extends StatefulWidget {
   final WelcomeType welcomeType;
   final String firstName;
 
+  /// Override the onboarding status check — used in tests.
+  final Future<bool> Function()? onboardingStatusChecker;
+
+  /// Override the destination widget builder when onboarding is complete — used in tests.
+  final WidgetBuilder? authorizedRouteBuilder;
+
+  /// Override the destination widget builder when onboarding is NOT complete — used in tests.
+  final WidgetBuilder? onboardingRouteBuilder;
+
   const WelcomeScreen({
     super.key,
     required this.welcomeType,
     required this.firstName,
+    this.onboardingStatusChecker,
+    this.authorizedRouteBuilder,
+    this.onboardingRouteBuilder,
   });
 
   @override
@@ -41,14 +53,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Future<void> checkOnboarding() async {
     await Future.delayed(Duration(seconds: 3));
-    bool nextPage = await Utility.checkOnboardingStatus();
+    final checker = widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
+    bool nextPage = await checker();
     if (mounted) {
-      Navigator.pop(context);
-      Navigator.push(
+      final authorizedBuilder = widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
+      final onboardingBuilder = widget.onboardingRouteBuilder ?? (_) => OnboardingView();
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-          builder: (context) => nextPage ? AuthorizedRoute() : OnboardingView(),
+          builder: nextPage ? authorizedBuilder : onboardingBuilder,
         ),
+        (route) => false,
       );
     }
   }
