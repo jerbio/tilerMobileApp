@@ -50,7 +50,7 @@ class EnhancedTileBatch extends StatefulWidget {
     this.showProactiveAlerts = true,
     this.showTimelineMarkers = false,
     this.showConflictAlerts = true,
-    this.preview=false,
+    this.preview = false,
     this.selectedActionEntityId,
     Key? key,
   }) : super(key: key);
@@ -75,7 +75,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   Timeline? sleepTimeline;
   TimelineSummary? _dayData;
   final ItemScrollController _itemScrollController = ItemScrollController();
-  final ItemPositionsListener _itemPositionsListener = ItemPositionsListener.create();
+  final ItemPositionsListener _itemPositionsListener =
+      ItemPositionsListener.create();
 
   @override
   void initState() {
@@ -139,7 +140,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         preview: widget.preview,
         hasDottedBorder: widget.selectedActionEntityId != null &&
             tile.id?.contains(widget.selectedActionEntityId!) == true,
-    );
+      );
       if (isTutorialCurrent) {
         return Container(
           key: TutorialKeys.currentTileKey,
@@ -148,7 +149,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
       return card;
     }
-    return TileWidget(tile,preview: widget.preview);
+    return TileWidget(tile, preview: widget.preview);
   }
 
   /// Format hour for display (e.g., "7 AM", "12 PM")
@@ -233,7 +234,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   /// Build a list of widgets with travel connectors between tiles
   /// Groups conflicting tiles into stacked cards
-  (List<Widget>,int?) _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
+  (List<Widget>, int?) _buildTilesWithConnectors(
+      List<TilerEvent> orderedTiles) {
     int? foundIndex;
     List<Widget> widgets = [];
     final now = DateTime.now();
@@ -267,6 +269,46 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     // Track which conflict groups have been rendered
     Set<int> renderedConflictGroups = {};
 
+    // Track the previously rendered tile to use as the source for travel
+    // connectors. The connector for an upcoming destination tile is emitted
+    // immediately before that destination so its "Leave by" time appears in
+    // the correct position relative to surrounding tiles (especially when a
+    // conflict group sits between the source and destination).
+    SubCalendarEvent? prevRenderedTile;
+
+    void emitTravelConnectorTo(SubCalendarEvent destinationTile) {
+      if (!widget.showTravelConnectors) return;
+      final source = prevRenderedTile;
+      if (source == null) return;
+      final travelTime = destinationTile.travelTimeBefore;
+      final hasTravel = travelTime != null && travelTime > 0;
+
+      Widget? connector;
+      if (hasTravel) {
+        connector = TravelConnector(
+          fromTile: source,
+          toTile: destinationTile,
+        );
+      } else if (destinationTile.address != null &&
+          destinationTile.address!.isNotEmpty) {
+        connector = CompactTravelIndicator(
+          travelTimeMs: destinationTile.travelTimeBefore?.toDouble(),
+          travelMode: destinationTile.travelDetail?.before?.travelMedium,
+          startLocation: destinationTile.travelDetail?.before?.startLocation,
+          endLocation: destinationTile.travelDetail?.before?.endLocation,
+          destinationAddress: destinationTile.address,
+        );
+      }
+
+      if (connector != null) {
+        if (widget.showTimelineMarkers) {
+          widgets.add(_buildConnectorRowWithHourMarker(connector));
+        } else {
+          widgets.add(connector);
+        }
+      }
+    }
+
     for (int i = 0; i < regularTiles.length; i++) {
       final tile = regularTiles[i];
       final tileHour = tile.startTime.hour;
@@ -292,6 +334,14 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         if (groupIndex >= 0 && !renderedConflictGroups.contains(groupIndex)) {
           renderedConflictGroups.add(groupIndex);
           final group = conflictGroups[groupIndex];
+
+          // Emit travel connector right before the conflict group, using the
+          // earliest tile in the group as the destination for travel info.
+          final groupTilesByStart = [...group.tiles]
+            ..sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+          if (groupTilesByStart.isNotEmpty) {
+            emitTravelConnectorTo(groupTilesByStart.first);
+          }
 
           // Add hour marker before stacked cards
           if (widget.showTimelineMarkers && showHourMarker) {
@@ -337,6 +387,14 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
               ),
             );
           }
+
+          // Update prevRenderedTile to the latest-ending tile in the group so
+          // future travel connectors originate from the correct source.
+          final groupTilesByEnd = [...group.tiles]
+            ..sort((a, b) => (a.end ?? 0).compareTo(b.end ?? 0));
+          if (groupTilesByEnd.isNotEmpty) {
+            prevRenderedTile = groupTilesByEnd.last;
+          }
         }
         // Skip individual tile rendering if it's in a conflict group
         continue;
@@ -345,6 +403,12 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       if (widget.selectedActionEntityId != null &&
           tile.id?.contains(widget.selectedActionEntityId!) == true) {
         foundIndex = widgets.length;
+      }
+
+      // Emit travel connector right before this destination tile, so the
+      // "Leave by" time appears adjacent to the tile it pertains to.
+      if (tile is SubCalendarEvent) {
+        emitTravelConnectorTo(tile);
       }
 
       // Regular tile (not in conflict group)
@@ -358,54 +422,12 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         widgets.add(_buildTileWidget(tile));
       }
 
-      // Add travel connector to next non-conflicting tile
-      if (i < regularTiles.length - 1 && widget.showTravelConnectors) {
-        // Find the next non-conflicting tile
-        TilerEvent? nextTile;
-        for (int j = i + 1; j < regularTiles.length; j++) {
-          final candidate = regularTiles[j];
-          if (candidate is SubCalendarEvent &&
-              tilesInConflictGroups.contains(candidate.uniqueId)) {
-            continue; // Skip tiles in conflict groups
-          }
-          nextTile = candidate;
-          break;
-        }
-
-        if (nextTile != null &&
-            tile is SubCalendarEvent &&
-            nextTile is SubCalendarEvent) {
-          final travelTime = nextTile.travelTimeBefore;
-          final hasTravel = travelTime != null && travelTime > 0;
-
-          Widget? connector;
-          if (hasTravel) {
-            connector = TravelConnector(
-              fromTile: tile,
-              toTile: nextTile,
-            );
-          } else if (nextTile.address != null && nextTile.address!.isNotEmpty) {
-            connector = CompactTravelIndicator(
-              travelTimeMs: nextTile.travelTimeBefore?.toDouble(),
-              travelMode: nextTile.travelDetail?.before?.travelMedium,
-              startLocation: nextTile.travelDetail?.before?.startLocation,
-              endLocation: nextTile.travelDetail?.before?.endLocation,
-              destinationAddress: nextTile.address,
-            );
-          }
-
-          if (connector != null) {
-            if (widget.showTimelineMarkers) {
-              widgets.add(_buildConnectorRowWithHourMarker(connector));
-            } else {
-              widgets.add(connector);
-            }
-          }
-        }
+      if (tile is SubCalendarEvent) {
+        prevRenderedTile = tile;
       }
     }
 
-    return (widgets,foundIndex);
+    return (widgets, foundIndex);
   }
 
   void evaluateTileDelta(Iterable<TilerEvent>? tiles) {
@@ -515,12 +537,11 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           .where(
               (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
           .toList();
-      childrenColumnWidgets.add(
-        Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
-          child: DaySummary(dayTimelineSummary: _dayData!,preview: widget.preview),
-        )
-      );
+      childrenColumnWidgets.add(Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 61),
+        child:
+            DaySummary(dayTimelineSummary: _dayData!, preview: widget.preview),
+      ));
     }
 
     // Detect alerts data
@@ -589,8 +610,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           extendedTiles: extendedTiles,
           onExtendedTap: () {
             CombinedAlertsBannerHelpers.showExtendedTilesModal(
-                preview: widget.preview,
-                context, extendedTiles);
+                preview: widget.preview, context, extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
           declinedTiles: declinedTiles,
@@ -669,7 +689,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
 
-      final (tilesWithConnectors, targetScrollIndex) = _buildTilesWithConnectors(
+      final (tilesWithConnectors, targetScrollIndex) =
+          _buildTilesWithConnectors(
         orderedTilesList,
       );
 
