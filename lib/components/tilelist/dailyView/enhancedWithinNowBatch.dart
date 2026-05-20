@@ -12,8 +12,8 @@ import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/components.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
-import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
@@ -203,145 +203,46 @@ class EnhancedWithinNowBatchState extends TileBatchState {
 
   /// Build tiles list with travel connectors and conflict handling
  ( List<Widget>, int?) _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
-    List<Widget> widgets = [];
-    int? foundIndex;
-    final now = DateTime.now();
-    Set<int> displayedHours = {};
-
-    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
-    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
-    final regularTiles = orderedTiles.where((tile) {
-      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
-        final duration = tile.end! - tile.start!;
-        return duration < minDurationMs;
-      }
-      return true;
-    }).toList();
-
-    // Detect conflicts (only from regular tiles, excluding declined events)
-    final subCalendarEvents = regularTiles
-        .whereType<SubCalendarEvent>()
-        .where((tile) => tile.rsvp != RsvpStatus.declined)
-        .toList();
-    final conflictGroups = ConflictGroup.detectGroups(subCalendarEvents);
-    _detectedConflicts = conflictGroups;
-
-    // Track tiles in conflict groups
-    Set<String> tilesInConflictGroups = {};
-    for (var group in conflictGroups) {
-      for (var tile in group.tiles) {
-        tilesInConflictGroups.add(tile.uniqueId);
-      }
-    }
-
-    Set<int> renderedConflictGroups = {};
-
-    for (int i = 0; i < regularTiles.length; i++) {
-      final tile = regularTiles[i];
-      final tileHour = tile.startTime.hour;
-      final isCurrentHour = tile.startTime.day == now.day &&
-          tile.startTime.month == now.month &&
-          tile.startTime.year == now.year &&
-          tileHour == now.hour;
-
-      final showHourMarker = !displayedHours.contains(tileHour);
-      if (showHourMarker) {
-        displayedHours.add(tileHour);
-      }
-
-      // Handle conflict groups
-      if (tile is SubCalendarEvent &&
-          tilesInConflictGroups.contains(tile.uniqueId)) {
-        int groupIndex = conflictGroups.indexWhere(
-            (group) => group.tiles.any((t) => t.uniqueId == tile.uniqueId));
-
-        if (groupIndex >= 0 && !renderedConflictGroups.contains(groupIndex)) {
-          renderedConflictGroups.add(groupIndex);
-          final group = conflictGroups[groupIndex];
-
-          widgets.add(
-            TileRowWithHourMarker(
-              hour: tileHour,
-              showHourMarker: showHourMarker,
-              isCurrentHour: isCurrentHour,
-              hourMarkerWidth: _hourMarkerWidth,
-              child: StackedConflictCards(
-                conflictGroup: group,
-                preview: (widget as EnhancedWithinNowBatch).preview,
-                onTileTap: (tile) {
-                  // Handle tile tap
-                },
-              ),
-            ),
-          );
-        }
-        continue;
-      }
-
-      if ((widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
-          tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true) {
-        foundIndex = widgets.length;
-      }
-
-      // Regular tile
-      widgets.add(
-        TileRowWithHourMarker(
-          hour: tileHour,
+    final withinNow = widget as EnhancedWithinNowBatch;
+    final result = buildTileListWithConnectors(
+      orderedTiles: orderedTiles,
+      showTravelConnectors: true,
+      showConflictAlerts: true,
+      excludeDeclinedFromConflicts: true,
+      now: DateTime.now(),
+      selectedActionEntityId: withinNow.selectedActionEntityId,
+      buildTile: (tile, {required hour, required showHourMarker, required isCurrentHour}) {
+        return TileRowWithHourMarker(
+          hour: hour,
           showHourMarker: showHourMarker,
           isCurrentHour: isCurrentHour,
           hourMarkerWidth: _hourMarkerWidth,
           child: _buildTileWidget(tile),
-        ),
-      );
+        );
+      },
+      buildConflictGroup: (group, {required hour, required showHourMarker, required isCurrentHour}) {
+        return TileRowWithHourMarker(
+          hour: hour,
+          showHourMarker: showHourMarker,
+          isCurrentHour: isCurrentHour,
+          hourMarkerWidth: _hourMarkerWidth,
+          child: StackedConflictCards(
+            conflictGroup: group,
+            preview: withinNow.preview,
+            onTileTap: (tile) {
+              // Handle tile tap
+            },
+          ),
+        );
+      },
+      wrapConnector: (connector) => ConnectorRowWithHourMarker(
+        connector: connector,
+        hourMarkerWidth: _hourMarkerWidth,
+      ),
+    );
 
-      // Add travel connector
-      if (i < regularTiles.length - 1) {
-        TilerEvent? nextTile;
-        for (int j = i + 1; j < regularTiles.length; j++) {
-          final candidate = regularTiles[j];
-          if (candidate is SubCalendarEvent &&
-              tilesInConflictGroups.contains(candidate.uniqueId)) {
-            continue;
-          }
-          nextTile = candidate;
-          break;
-        }
-
-        if (nextTile != null &&
-            tile is SubCalendarEvent &&
-            nextTile is SubCalendarEvent) {
-          final travelTime = nextTile.travelTimeBefore;
-          final hasTravel = travelTime != null && travelTime > 0;
-
-          Widget? connector;
-          if (hasTravel) {
-            connector = TravelConnector(
-              fromTile: tile,
-              toTile: nextTile,
-            );
-          } else if (nextTile.address?.isNotEmpty == true) {
-            connector = CompactTravelIndicator(
-              travelTimeMs: nextTile.travelTimeBefore?.toDouble(),
-              travelMode: nextTile.travelDetail?.before?.travelMedium,
-              startLocation: nextTile.travelDetail?.before?.startLocation,
-              endLocation: nextTile.travelDetail?.before?.endLocation,
-              destinationAddress: nextTile.address,
-            );
-          }
-
-          if (connector != null) {
-            widgets.add(
-              ConnectorRowWithHourMarker(
-                connector: connector,
-                hourMarkerWidth: _hourMarkerWidth,
-              ),
-            );
-          }
-        }
-      }
-    }
-
-    return  (widgets, foundIndex);
+    _detectedConflicts = result.conflictGroups;
+    return (result.widgets, result.selectedTileIndex);
   }
 
   /// Trigger schedule revise (re-optimize)

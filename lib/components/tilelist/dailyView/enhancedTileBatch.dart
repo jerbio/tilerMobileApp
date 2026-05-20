@@ -9,8 +9,8 @@ import 'package:tiler_app/components/tileUI/tile.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
-import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
@@ -236,198 +236,74 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   /// Groups conflicting tiles into stacked cards
   (List<Widget>, int?) _buildTilesWithConnectors(
       List<TilerEvent> orderedTiles) {
-    int? foundIndex;
-    List<Widget> widgets = [];
-    final now = DateTime.now();
-    Set<int> displayedHours = {};
-
-    // Filter out extended tiles (they're shown in the ExtendedTilesBanner)
-    const int minDurationMs = 16 * 60 * 60 * 1000; // 16 hours in milliseconds
-    final regularTiles = orderedTiles.where((tile) {
-      if (tile is SubCalendarEvent && tile.start != null && tile.end != null) {
-        final duration = tile.end! - tile.start!;
-        return duration < minDurationMs;
-      }
-      return true;
-    }).toList();
-
-    // First, detect conflict groups (only from regular tiles)
-    final subCalendarEvents =
-        regularTiles.whereType<SubCalendarEvent>().toList();
-    final conflictGroups = widget.showConflictAlerts
-        ? ConflictGroup.detectGroups(subCalendarEvents)
-        : <ConflictGroup>[];
-
-    // Create a set of tile IDs that are in conflict groups
-    Set<String> tilesInConflictGroups = {};
-    for (var group in conflictGroups) {
-      for (var tile in group.tiles) {
-        tilesInConflictGroups.add(tile.uniqueId);
-      }
-    }
-
-    // Track which conflict groups have been rendered
-    Set<int> renderedConflictGroups = {};
-
-    // Track the previously rendered tile to use as the source for travel
-    // connectors. The connector for an upcoming destination tile is emitted
-    // immediately before that destination so its "Leave by" time appears in
-    // the correct position relative to surrounding tiles (especially when a
-    // conflict group sits between the source and destination).
-    SubCalendarEvent? prevRenderedTile;
-
-    void emitTravelConnectorTo(SubCalendarEvent destinationTile) {
-      if (!widget.showTravelConnectors) return;
-      final source = prevRenderedTile;
-      if (source == null) return;
-      final travelTime = destinationTile.travelTimeBefore;
-      final hasTravel = travelTime != null && travelTime > 0;
-
-      Widget? connector;
-      if (hasTravel) {
-        connector = TravelConnector(
-          fromTile: source,
-          toTile: destinationTile,
-        );
-      } else if (destinationTile.address != null &&
-          destinationTile.address!.isNotEmpty) {
-        connector = CompactTravelIndicator(
-          travelTimeMs: destinationTile.travelTimeBefore?.toDouble(),
-          travelMode: destinationTile.travelDetail?.before?.travelMedium,
-          startLocation: destinationTile.travelDetail?.before?.startLocation,
-          endLocation: destinationTile.travelDetail?.before?.endLocation,
-          destinationAddress: destinationTile.address,
-        );
-      }
-
-      if (connector != null) {
+    final result = buildTileListWithConnectors(
+      orderedTiles: orderedTiles,
+      showTravelConnectors: widget.showTravelConnectors,
+      showConflictAlerts: widget.showConflictAlerts,
+      excludeDeclinedFromConflicts: false,
+      now: DateTime.now(),
+      selectedActionEntityId: widget.selectedActionEntityId,
+      buildTile: (tile,
+          {required hour, required showHourMarker, required isCurrentHour}) {
         if (widget.showTimelineMarkers) {
-          widgets.add(_buildConnectorRowWithHourMarker(connector));
-        } else {
-          widgets.add(connector);
+          return _buildTileRowWithHourMarker(
+            tile,
+            showHourMarker: showHourMarker,
+            isCurrentHour: isCurrentHour,
+          );
         }
-      }
-    }
-
-    for (int i = 0; i < regularTiles.length; i++) {
-      final tile = regularTiles[i];
-      final tileHour = tile.startTime.hour;
-      final isCurrentHour = tile.startTime.day == now.day &&
-          tile.startTime.month == now.month &&
-          tile.startTime.year == now.year &&
-          tileHour == now.hour;
-
-      // Only show hour marker if we haven't shown this hour yet
-      final showHourMarker = !displayedHours.contains(tileHour);
-      if (showHourMarker) {
-        displayedHours.add(tileHour);
-      }
-
-      // Check if this tile is part of a conflict group
-      if (tile is SubCalendarEvent &&
-          tilesInConflictGroups.contains(tile.uniqueId)) {
-        // Find the conflict group this tile belongs to
-        int groupIndex = conflictGroups.indexWhere(
-            (group) => group.tiles.any((t) => t.uniqueId == tile.uniqueId));
-
-        // Only render the stacked cards once per group (when we hit the first tile)
-        if (groupIndex >= 0 && !renderedConflictGroups.contains(groupIndex)) {
-          renderedConflictGroups.add(groupIndex);
-          final group = conflictGroups[groupIndex];
-
-          // Emit travel connector right before the conflict group, using the
-          // earliest tile in the group as the destination for travel info.
-          final groupTilesByStart = [...group.tiles]
-            ..sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
-          if (groupTilesByStart.isNotEmpty) {
-            emitTravelConnectorTo(groupTilesByStart.first);
-          }
-
-          // Add hour marker before stacked cards
-          if (widget.showTimelineMarkers && showHourMarker) {
-            widgets.add(
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 55,
-                    padding: const EdgeInsets.only(top: 8, right: 8),
-                    child: Text(
-                      _formatHour(tileHour),
-                      textAlign: TextAlign.end,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            isCurrentHour ? FontWeight.w700 : FontWeight.w400,
-                        color: isCurrentHour
-                            ? colorScheme.primary
-                            : colorScheme.onSurface.withAlpha(153),
-                      ),
-                    ),
+        return _buildTileWidget(tile);
+      },
+      buildConflictGroup: (group,
+          {required hour, required showHourMarker, required isCurrentHour}) {
+        if (widget.showTimelineMarkers && showHourMarker) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 55,
+                padding: const EdgeInsets.only(top: 8, right: 8),
+                child: Text(
+                  _formatHour(hour),
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight:
+                        isCurrentHour ? FontWeight.w700 : FontWeight.w400,
+                    color: isCurrentHour
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withAlpha(153),
                   ),
-                  Expanded(
-                    child: StackedConflictCards(
-                      conflictGroup: group,
-                      preview: widget.preview,
-                      onResolve: () {
-                        // TODO: Implement auto-resolve
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            );
-          } else {
-            widgets.add(
-              StackedConflictCards(
-                conflictGroup: group,
-                onResolve: () {
-                  // TODO: Implement auto-resolve
-                },
+              Expanded(
+                child: StackedConflictCards(
+                  conflictGroup: group,
+                  preview: widget.preview,
+                  onResolve: () {
+                    // TODO: Implement auto-resolve
+                  },
+                ),
               ),
-            );
-          }
-
-          // Update prevRenderedTile to the latest-ending tile in the group so
-          // future travel connectors originate from the correct source.
-          final groupTilesByEnd = [...group.tiles]
-            ..sort((a, b) => (a.end ?? 0).compareTo(b.end ?? 0));
-          if (groupTilesByEnd.isNotEmpty) {
-            prevRenderedTile = groupTilesByEnd.last;
-          }
+            ],
+          );
         }
-        // Skip individual tile rendering if it's in a conflict group
-        continue;
-      }
+        return StackedConflictCards(
+          conflictGroup: group,
+          onResolve: () {
+            // TODO: Implement auto-resolve
+          },
+        );
+      },
+      wrapConnector: (connector) {
+        if (widget.showTimelineMarkers) {
+          return _buildConnectorRowWithHourMarker(connector);
+        }
+        return connector;
+      },
+    );
 
-      if (widget.selectedActionEntityId != null &&
-          tile.id?.contains(widget.selectedActionEntityId!) == true) {
-        foundIndex = widgets.length;
-      }
-
-      // Emit travel connector right before this destination tile, so the
-      // "Leave by" time appears adjacent to the tile it pertains to.
-      if (tile is SubCalendarEvent) {
-        emitTravelConnectorTo(tile);
-      }
-
-      // Regular tile (not in conflict group)
-      if (widget.showTimelineMarkers) {
-        widgets.add(_buildTileRowWithHourMarker(
-          tile,
-          showHourMarker: showHourMarker,
-          isCurrentHour: isCurrentHour,
-        ));
-      } else {
-        widgets.add(_buildTileWidget(tile));
-      }
-
-      if (tile is SubCalendarEvent) {
-        prevRenderedTile = tile;
-      }
-    }
-
-    return (widgets, foundIndex);
+    return (result.widgets, result.selectedTileIndex);
   }
 
   void evaluateTileDelta(Iterable<TilerEvent>? tiles) {

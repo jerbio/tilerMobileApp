@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -118,6 +119,115 @@ void main() {
           connectorY,
           lessThan(destinationY),
           reason: 'The travel connector must render immediately before the destination tile it describes.',
+        );
+      },
+    );
+  });
+
+  group('EnhancedWithinNowBatch travel connector ordering', () {
+    testWidgets(
+      'today view renders the connector after intervening conflict groups and before its destination tile',
+      (tester) async {
+        tester.view.physicalSize = const Size(1080, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        final today = DateTime.now();
+        DateTime at(int hour, [int minute = 0]) =>
+            DateTime(today.year, today.month, today.day, hour, minute);
+
+        final tiles = <SubCalendarEvent>[
+          _buildTile(
+            id: 'source',
+            name: 'TilerWeb Sync',
+            start: at(10),
+            end: at(10, 45),
+          ),
+          _buildTile(
+            id: 'conflict-1',
+            name: 'Engr fix dev',
+            start: at(11),
+            end: at(11, 30),
+          ),
+          _buildTile(
+            id: 'conflict-2',
+            name: 'will be deleted',
+            start: at(11),
+            end: at(12),
+          ),
+          _buildTile(
+            id: 'destination',
+            name: 'Hiking Trail',
+            address: 'Trailhead Parking',
+            addressDescription: 'hiking trail',
+            start: at(12, 15),
+            end: at(13, 45),
+            travelTimeBeforeMs:
+                const Duration(minutes: 25).inMilliseconds.toDouble(),
+            travelDetail: TravelDetail(
+              before: TravelData(
+                travelMedium: 'driving',
+                startLocation:
+                    _location('123 Office St', 37.33, -122.03),
+                endLocation:
+                    _location('456 Trail Rd', 37.44, -122.15),
+                travelLegs: const [
+                  TravelLeg(description: 'Head west on Highway 9'),
+                ],
+              ),
+            ),
+          ),
+        ];
+
+        await tester.pumpWidget(
+          _buildTestApp(
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) =>
+                      ScheduleBloc(getContextCallBack: () => null),
+                ),
+                BlocProvider(
+                  create: (_) =>
+                      ScheduleSummaryBloc(getContextCallBack: () => null),
+                ),
+              ],
+              child: Scaffold(
+                body: EnhancedWithinNowBatch(
+                  tiles: tiles,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final connectorFinder = find.byType(TravelConnector);
+        final conflictFinder = find.text('2 conflicts');
+        final destinationFinder = find.text('Hiking Trail');
+
+        expect(connectorFinder, findsOneWidget);
+        expect(conflictFinder, findsOneWidget);
+        expect(destinationFinder, findsOneWidget);
+
+        final conflictY = tester.getTopLeft(conflictFinder).dy;
+        final connectorY = tester.getTopLeft(connectorFinder).dy;
+        final destinationY = tester.getTopLeft(destinationFinder).dy;
+
+        expect(
+          connectorY,
+          greaterThan(conflictY),
+          reason:
+              'Today view: connector must render after the conflict group preceding the destination.',
+        );
+        expect(
+          connectorY,
+          lessThan(destinationY),
+          reason:
+              'Today view: connector must render immediately before the destination tile.',
         );
       },
     );
