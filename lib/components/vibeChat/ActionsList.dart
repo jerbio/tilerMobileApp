@@ -65,7 +65,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     );
   }
 
-  Widget _buildPillGroup(List<VibeAction> actions //eyad: not passing requestid
+  Widget _buildPillGroup(List<VibeAction> actions
       ) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
