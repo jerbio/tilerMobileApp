@@ -4372,6 +4372,186 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} actions'**
   String actionsCount(int count);
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @notesLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading notes…'**
+  String get notesLoading;
+
+  /// No description provided for @notesSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get notesSaving;
+
+  /// No description provided for @notesSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get notesSaved;
+
+  /// No description provided for @notesUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Editing…'**
+  String get notesUnsaved;
+
+  /// No description provided for @notesSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save'**
+  String get notesSaveError;
+
+  /// No description provided for @notesSaveNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Save now'**
+  String get notesSaveNow;
+
+  /// No description provided for @notesShowPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get notesShowPreview;
+
+  /// No description provided for @notesShowEditor.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get notesShowEditor;
+
+  /// No description provided for @notesPreviewEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to preview yet.'**
+  String get notesPreviewEmpty;
+
+  /// No description provided for @notesLinkPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Insert link'**
+  String get notesLinkPromptTitle;
+
+  /// No description provided for @notesConflictTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone else updated this note.'**
+  String get notesConflictTitle;
+
+  /// No description provided for @notesConflictDiscardMine.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard mine'**
+  String get notesConflictDiscardMine;
+
+  /// No description provided for @notesConflictKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get notesConflictKeepEditing;
+
+  /// No description provided for @notesToolBold.
+  ///
+  /// In en, this message translates to:
+  /// **'Bold'**
+  String get notesToolBold;
+
+  /// No description provided for @notesToolItalic.
+  ///
+  /// In en, this message translates to:
+  /// **'Italic'**
+  String get notesToolItalic;
+
+  /// No description provided for @notesToolStrikethrough.
+  ///
+  /// In en, this message translates to:
+  /// **'Strikethrough'**
+  String get notesToolStrikethrough;
+
+  /// No description provided for @notesToolInlineCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Inline code'**
+  String get notesToolInlineCode;
+
+  /// No description provided for @notesToolHeading1.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 1'**
+  String get notesToolHeading1;
+
+  /// No description provided for @notesToolHeading2.
+  ///
+  /// In en, this message translates to:
+  /// **'Heading 2'**
+  String get notesToolHeading2;
+
+  /// No description provided for @notesToolBulletList.
+  ///
+  /// In en, this message translates to:
+  /// **'Bullet list'**
+  String get notesToolBulletList;
+
+  /// No description provided for @notesToolNumberedList.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbered list'**
+  String get notesToolNumberedList;
+
+  /// No description provided for @notesToolTaskList.
+  ///
+  /// In en, this message translates to:
+  /// **'Task list'**
+  String get notesToolTaskList;
+
+  /// No description provided for @notesToolQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'Quote'**
+  String get notesToolQuote;
+
+  /// No description provided for @notesToolLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get notesToolLink;
+
+  /// No description provided for @notesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notesTitle;
+
+  /// No description provided for @notesViewerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get notesViewerTitle;
+
+  /// No description provided for @notesTapToAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to add a note'**
+  String get notesTapToAdd;
+
+  /// No description provided for @notesTapToEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to edit · long press to read'**
+  String get notesTapToEdit;
+
+  /// No description provided for @notesDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get notesDone;
 }
 
 class _AppLocalizationsDelegate

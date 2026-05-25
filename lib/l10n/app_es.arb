@@ -553,5 +553,35 @@
           "example": "7"
         }
       }
-    }
+    },
+    "ok": "OK",
+    "notesLoading": "Cargando notas…",
+    "notesSaving": "Guardando…",
+    "notesSaved": "Guardado",
+    "notesUnsaved": "Editando…",
+    "notesSaveError": "No se pudo guardar",
+    "notesSaveNow": "Guardar ahora",
+    "notesShowPreview": "Vista previa",
+    "notesShowEditor": "Editar",
+    "notesPreviewEmpty": "Nada para previsualizar todavía.",
+    "notesLinkPromptTitle": "Insertar enlace",
+    "notesConflictTitle": "Alguien más actualizó esta nota.",
+    "notesConflictDiscardMine": "Descartar la mía",
+    "notesConflictKeepEditing": "Seguir editando",
+    "notesToolBold": "Negrita",
+    "notesToolItalic": "Cursiva",
+    "notesToolStrikethrough": "Tachado",
+    "notesToolInlineCode": "Código en línea",
+    "notesToolHeading1": "Título 1",
+    "notesToolHeading2": "Título 2",
+    "notesToolBulletList": "Lista con viñetas",
+    "notesToolNumberedList": "Lista numerada",
+    "notesToolTaskList": "Lista de tareas",
+    "notesToolQuote": "Cita",
+    "notesToolLink": "Enlace",
+    "notesTitle": "Notas",
+    "notesViewerTitle": "Nota",
+    "notesTapToAdd": "Toca para añadir una nota",
+    "notesTapToEdit": "Toca para editar · mantén presionado para leer",
+    "notesDone": "Listo"
 }

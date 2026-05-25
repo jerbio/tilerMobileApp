@@ -25,7 +25,8 @@ import 'package:tiler_app/routes/authenticatedUser/nextTileSuggestionCarousel.da
 import 'package:tiler_app/routes/authenticatedUser/startEndDurationTimeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/data/notesPayload.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
@@ -63,7 +64,7 @@ class _EditTileState extends State<EditTile> {
   EditTileName? _editTileName;
   Widget? bottomWidget;
 
-  EditTileNote? _editTileNote;
+  Widget? _editTileNote;
   EditDateAndTime? _editStartDateAndTime;
   EditDateAndTime? _editEndDateAndTime;
   EditDateAndTime? _editCalStartDateAndTime;
@@ -626,9 +627,8 @@ class _EditTileState extends State<EditTile> {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
 
-      if (_editTileNote != null) {
-        revisedEditTilerEvent.note = _editTileNote!.tileNote;
-      }
+      // Note text is persisted independently via the Notes API and synced
+      // back through EditTileNote.onNotePersisted; do not push it from here.
       if (_editStartDateAndTime != null &&
           _editStartDateAndTime!.dateAndTime != null) {
         revisedEditTilerEvent.startTime =
@@ -958,10 +958,16 @@ class _EditTileState extends State<EditTile> {
 
               bool isNoteReadOnly = !this.subEvent!.isActive ||
                   (this.subEvent == null ? false : !this.subEvent!.isFromTiler);
-              _editTileNote = EditTileNote(
-                tileNote: tileNote,
-                onInputChange: dataChange,
+              _editTileNote = NotePreviewTile(
+                eventId: this.widget.tileId,
+                scope: NotesScope.auto,
+                initialNote: tileNote,
                 isReadOnly: isNoteReadOnly,
+                onNotePersisted: (note) {
+                  if (editTilerEvent != null) {
+                    editTilerEvent!.note = note;
+                  }
+                },
               );
               DateTime startTime =
                   this.editTilerEvent?.startTime ?? this.subEvent!.startTime;
