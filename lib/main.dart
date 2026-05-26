@@ -58,6 +58,7 @@ import '../../constants.dart' as Constants;
 import 'services/api/onBoardingApi.dart';
 import 'services/localAuthentication.dart';
 import 'package:logging/logging.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -183,7 +184,11 @@ class _TilerAppState extends State<TilerApp> {
               buildWhen: (previous, current) =>
                   previous.isDarkMode != current.isDarkMode,
               builder: (context, settingsState) {
-                return MaterialApp(
+                return ScreenUtilInit(
+                  designSize: const Size(390, 844),
+                  minTextAdapt: true,
+                  splitScreenMode: true,
+                  builder: (context, child) => MaterialApp(
                   title: 'Tiler',
                   debugShowCheckedModeBanner: false,
                   theme: TileThemeData.lightTheme,
@@ -318,6 +323,7 @@ class _TilerAppState extends State<TilerApp> {
                           return retValue;
                         }
                       }),
+                  ),
                 );
               }));
   }
