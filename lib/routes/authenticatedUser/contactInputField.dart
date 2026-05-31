@@ -228,8 +228,13 @@ class _ContactInputFieldWidgetState extends State<ContactInputFieldWidget> {
         style: TileTextStyles.inputTextStyle(colorScheme.onSurface),
         controller: _controller,
         focusNode: _focusNode,
+        cursorColor: colorScheme.primary,
+        cursorWidth: 2.0,
         textInputAction: TextInputAction.done,
         decoration: InputDecoration(
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+            ),
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(vertical: 8),
             hintStyle: TextStyle(
