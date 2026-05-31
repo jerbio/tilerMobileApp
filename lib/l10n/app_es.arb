@@ -583,5 +583,6 @@
     "notesViewerTitle": "Nota",
     "notesTapToAdd": "Toca para añadir una nota",
     "notesTapToEdit": "Toca para editar · mantén presionado para leer",
-    "notesDone": "Listo"
+    "notesDone": "Listo",
+    "invalidContactFormat": "No es un correo electrónico o número de teléfono válido"
 }

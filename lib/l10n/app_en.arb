@@ -476,6 +476,7 @@
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
     "incompleteRequest":"Did not send complete request",
     "addContact": "Add contact",
+    "invalidContactFormat": "Not a valid email or phone number",
     "deadlineTime": "Deadline: {time}",
     "@deadlineTime": {
       "description": "Deadline: time",

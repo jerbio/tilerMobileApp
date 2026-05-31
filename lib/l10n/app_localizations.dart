@@ -1628,6 +1628,12 @@ abstract class AppLocalizations {
   /// **'Add contact'**
   String get addContact;
 
+  /// No description provided for @invalidContactFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a valid email or phone number'**
+  String get invalidContactFormat;
+
   /// Deadline: time
   ///
   /// In en, this message translates to:

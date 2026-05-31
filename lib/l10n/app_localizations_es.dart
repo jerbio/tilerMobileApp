@@ -845,6 +845,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addContact => 'Add contact';
 
   @override
+  String get invalidContactFormat =>
+      'No es un correo electrónico o número de teléfono válido';
+
+  @override
   String deadlineTime(String time) {
     return 'Deadline: $time';
   }
