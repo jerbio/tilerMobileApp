@@ -190,11 +190,21 @@ class _MultiTiletteTileShareDetailWidget
                         }
                       }
                     },
-                    child: Text(
-                      MaterialLocalizations.of(context).formatFullDate(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              cluster.endTimeInMs!)),
-                      style: TileTextStyles.defaultText,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          MaterialLocalizations.of(context).formatFullDate(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  cluster.endTimeInMs!)),
+                          style: TileTextStyles.defaultText.copyWith(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.edit_outlined,
+                            size: 14, color: colorScheme.onSurface),
+                      ],
                     ),
                   )
                 ],

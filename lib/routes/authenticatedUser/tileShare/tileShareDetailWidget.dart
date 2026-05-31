@@ -216,8 +216,13 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
                     MaterialLocalizations.of(context).formatFullDate(
                         DateTime.fromMillisecondsSinceEpoch(
                             cluster.endTimeInMs!)),
-                    style: TileTextStyles.defaultText,
-                  )
+                    style: TileTextStyles.defaultText.copyWith(
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.edit_outlined,
+                      size: 14, color: colorScheme.onSurface),
                 ],
               )
             else
@@ -265,85 +270,12 @@ class _TileShareDetailWidget extends State<TileShareDetailWidget> {
     return CircularProgressIndicator(color: colorScheme.tertiary);
   }
 
-  void renderModal() {
-    showModalBottomSheet<void>(
-      isScrollControlled: true,
-      context: context,
-      builder: (BuildContext context) {
-        return Padding(
-          padding: MediaQuery.of(context).viewInsets,
-          child: Container(
-            height: 515,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                    topRight: Radius.circular(10))),
-            child: Stack(
-              children: <Widget>[
-                NewTileShareSheetWidget(
-                  onAddTile: (NewTile? newTile) {
-                    if (newTile != null && tileShareCluster != null) {
-                      setState(() {
-                        isAddingTiletteLoading = true;
-                      });
-                      ClusterTemplateTileModel clusterTemplate =
-                          newTile.toClusterTemplateTileModel();
-                      clusterTemplate.ClusterId = tileShareCluster?.id;
-                      clusterApi
-                          .createDesignatedTileTemplate(clusterTemplate)
-                          .then((value) {
-                        getTileShareCluster();
-                        setState(() {
-                          isAddingTiletteLoading = false;
-                        });
-                        Navigator.pop(context);
-                      }).catchError((onError) {
-                        setState(() {
-                          isAddingTiletteLoading = false;
-                        });
-                      });
-                      setState(() {
-                        isAddingTiletteLoading = true;
-                      });
-                    }
-                  },
-                  onCancel: () => {Navigator.pop(context)},
-                ),
-                if (isAddingTiletteLoading)
-                  PendingWidget(
-                    backgroundDecoration: BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10))),
-                    imageAsset: TileThemeNew.evaluatingScheduleAsset,
-                  )
-                else
-                  SizedBox.shrink()
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   bool get _isReadOnly {
     return this.widget.isOutBox != true;
   }
 
   bool get _isOutBox {
     return this.widget.isOutBox != false;
-  }
-
-  //ey: not used
-  Widget addTileShare() {
-    return ElevatedButton.icon(
-        style: TileButtonStyles.enabled(borderColor: colorScheme.primary),
-        onPressed: () {
-          renderModal();
-        },
-        icon: Icon(Icons.add),
-        label: Text(AppLocalizations.of(context)!.addTilette));
   }
 
   @override
