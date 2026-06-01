@@ -46,7 +46,7 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
   Widget build(BuildContext context) {
     super.build(context);
     final validActions = widget.actions
-        .where((a) => a.type != 'conversational_and_not_supported')
+        .where((a) => a.type != ActionType.conversationalAndNotSupported)
         .toList();
 
     if (validActions.isEmpty) return SizedBox.shrink();
@@ -159,10 +159,10 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
       onTap: () {
         if (widget.state.step != VibeChatStep.loaded) return;
         const nonClickableTypes = {
-          'remove_existing_task',
-          'whatif_removedtask',
-          'conversational_and_not_supported',
-          'none',
+          ActionType.removeExistingTask,
+          ActionType.whatIfRemovedTask,
+          ActionType.conversationalAndNotSupported,
+          ActionType.none,
         };
         const nonClickableStatuses = {
           ActionStatus.executed,
@@ -238,41 +238,41 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
 
   dynamic _getActionIconPath(VibeAction action) {
     switch (action.type) {
-      case 'add_new_appointment':
+      case ActionType.addNewAppointment:
         return 'assets/icons/vibeChat/add_block.svg';
-      case 'add_new_task':
+      case ActionType.addNewTask:
         return 'assets/icons/vibeChat/add_new_tile.svg';
-      case 'update_existing_task':
+      case ActionType.updateExistingTask:
         return 'assets/icons/vibeChat/update_tile.svg';
-      case 'remove_existing_task':
+      case ActionType.removeExistingTask:
         return 'assets/icons/vibeChat/delete_tile.svg';
-      case 'procrastinate_all_tasks':
+      case ActionType.procrastinateAllTasks:
         return 'assets/icons/vibeChat/clear_all.svg';
-      case 'exit_prompting':
+      case ActionType.exitPrompting:
         return 'assets/icons/vibeChat/exited_action.svg';
-      case 'add_new_project':
+      case ActionType.addNewProject:
         return '📋';
-      case 'decide_if_task_or_project':
+      case ActionType.decideIfTaskOrProject:
         return '🤔';
-      case 'mark_task_as_done':
+      case ActionType.markTaskAsDone:
         return '✓';
-      case 'whatif_addanewappointment':
+      case ActionType.whatIfAddANewAppointment:
         return '📅❓';
-      case 'whatif_addednewtask':
+      case ActionType.whatIfAddedNewTask:
         return '✅❓';
-      case 'whatif_editupdatetask':
+      case ActionType.whatIfEditUpdateTask:
         return '✏️❓';
-      case 'whatif_procrastinatetask':
+      case ActionType.whatIfProcrastinateTask:
         return '⏱️❓';
-      case 'whatif_removedtask':
+      case ActionType.whatIfRemovedTask:
         return '🗑️❓';
-      case 'whatif_markedtaskasdone':
+      case ActionType.whatIfMarkedTaskAsDone:
         return '✓❓';
-      case 'whatif_procrastinateall':
+      case ActionType.whatIfProcrastinateAll:
         return '⏱️❓';
-      case 'conversational_and_not_supported':
+      case ActionType.conversationalAndNotSupported:
         return '💬';
-      case 'none':
+      case ActionType.none:
         return '⚪';
       default:
         return '🔹';
