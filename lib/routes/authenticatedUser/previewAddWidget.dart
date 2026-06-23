@@ -54,6 +54,12 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
   }
 
   Widget renderPreview() {
+    // Read the safe-area inset directly from the platform view so we are
+    // not affected by intermediate routes consuming MediaQuery padding
+    // (e.g. showModalBottomSheet's internal wrapper). This yields the
+    // physical Dynamic Island / notch height in logical pixels.
+    final platformView = View.of(context);
+    final topInset = platformView.padding.top / platformView.devicePixelRatio;
     var previewHeight = MediaQuery.sizeOf(context).height - modalHeight;
     if (previewHeight < 200) {
       return SizedBox.shrink();
@@ -62,6 +68,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
         height: previewHeight,
         color: colorScheme.surfaceContainerLowest,
         width: MediaQuery.sizeOf(context).width,
+        padding: EdgeInsets.only(top: topInset),
         child: PreviewWidget(
           subEvents: this.widget.previewSummary?.tiles ?? [],
           previewSummary: this.widget.previewSummary,

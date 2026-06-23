@@ -648,8 +648,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-     bottomNavigator = _buildBottomNavBar(
-          BlocProvider.of<VibeChatBloc>(context).state.step);
+      bottomNavigator =
+          _buildBottomNavBar(BlocProvider.of<VibeChatBloc>(context).state.step);
     }
     return Scaffold(
       extendBody: true,
@@ -664,8 +664,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       ),
       bottomNavigationBar: bottomNavigator,
       floatingActionButton: _buildPreviewFloatingActionButton(
-          BlocProvider.of<VibeChatBloc>(context).state.step
-      ),
+          BlocProvider.of<VibeChatBloc>(context).state.step),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }

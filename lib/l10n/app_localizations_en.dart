@@ -2536,4 +2536,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notesDone => 'Done';
+
+  @override
+  String get previewSundialGreeting => 'Hello.';
+
+  @override
+  String get previewSundialCountsPrefix => 'Today has';
+
+  @override
+  String get previewSundialCountsSuffix => 'waiting.';
+
+  @override
+  String previewSundialTilesClause(String count) {
+    return '$count tiles';
+  }
+
+  @override
+  String previewSundialBlocksClause(String count) {
+    return '$count blocks';
+  }
+
+  @override
+  String previewSundialTileSharesClause(String count) {
+    return '$count tileshares';
+  }
+
+  @override
+  String previewSundialWorkClause(String hours) {
+    return '$hours hours of work';
+  }
+
+  @override
+  String previewSundialTransitClause(String mins) {
+    return '$mins mins of transit';
+  }
+
+  @override
+  String previewSundialClearsByClause(String time) {
+    return 'your day clears by $time';
+  }
+
+  @override
+  String get previewSundialAndSeparator => 'and';
+
+  @override
+  String previewSundialDistance(String distance, String unit) {
+    return '$distance $unit';
+  }
+
+  @override
+  String previewSundialLocations(String count) {
+    return '$count places';
+  }
+
+  @override
+  String previewSundialSleepHours(String hours) {
+    return '${hours}h sleep';
+  }
+
+  @override
+  String get previewSundialTier0 => 'Open day';
+
+  @override
+  String get previewSundialTier1 => 'Getting started';
+
+  @override
+  String get previewSundialTier2 => 'Underway';
+
+  @override
+  String get previewSundialTier3 => 'Solid progress';
+
+  @override
+  String get previewSundialTier4 => 'Almost there';
+
+  @override
+  String get previewSundialTodayLabel => 'Today';
+
+  @override
+  String previewSundialCompositionA11y(
+      String tiles, String blocks, String nonViable) {
+    return '$tiles tiles, $blocks blocks, $nonViable unscheduled';
+  }
 }
