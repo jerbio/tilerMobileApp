@@ -2536,4 +2536,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notesDone => 'Done';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get openChat => 'Open chat';
+
+  @override
+  String get goToToday => 'Go to today';
+
+  @override
+  String get switchCalendarView => 'Switch calendar view';
 }

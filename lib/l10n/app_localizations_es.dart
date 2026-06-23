@@ -2543,4 +2543,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notesDone => 'Listo';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get share => 'Compartir';
+
+  @override
+  String get openChat => 'Abrir chat';
+
+  @override
+  String get goToToday => 'Ir a hoy';
+
+  @override
+  String get switchCalendarView => 'Cambiar vista de calendario';
 }

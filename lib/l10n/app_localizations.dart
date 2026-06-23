@@ -4558,6 +4558,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get notesDone;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @openChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Open chat'**
+  String get openChat;
+
+  /// No description provided for @goToToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to today'**
+  String get goToToday;
+
+  /// No description provided for @switchCalendarView.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch calendar view'**
+  String get switchCalendarView;
 }
 
 class _AppLocalizationsDelegate
