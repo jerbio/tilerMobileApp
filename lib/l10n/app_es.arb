@@ -584,5 +584,10 @@
     "notesTapToAdd": "Toca para añadir una nota",
     "notesTapToEdit": "Toca para editar · mantén presionado para leer",
     "notesDone": "Listo",
-    "invalidContactFormat": "No es un correo electrónico o número de teléfono válido"
+    "invalidContactFormat": "No es un correo electrónico o número de teléfono válido",
+    "search": "Buscar",
+    "share": "Compartir",
+    "openChat": "Abrir chat",
+    "goToToday": "Ir a hoy",
+    "switchCalendarView": "Cambiar vista de calendario"
 }

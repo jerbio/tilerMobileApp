@@ -361,7 +361,6 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  renderChat(),
                   renderShuffleButton(),
                   renderProcrastinateAllButton(),
                   renderMoreSettingsButton(),

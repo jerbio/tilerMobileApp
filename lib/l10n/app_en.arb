@@ -1668,5 +1668,10 @@
             "notesViewerTitle": "Note",
             "notesTapToAdd": "Tap to add a note",
             "notesTapToEdit": "Tap to edit · long press to read",
-            "notesDone": "Done"
+            "notesDone": "Done",
+            "search": "Search",
+            "share": "Share",
+            "openChat": "Open chat",
+            "goToToday": "Go to today",
+            "switchCalendarView": "Switch calendar view"
 }
