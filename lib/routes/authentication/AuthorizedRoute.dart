@@ -542,8 +542,8 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
       var eventNameSearch = this.generateSearchWidget();
       widgetChildren.add(eventNameSearch);
     } else {
-     bottomNavigator = _buildBottomNavBar(
-          BlocProvider.of<VibeChatBloc>(context).state.step);
+      bottomNavigator =
+          _buildBottomNavBar(BlocProvider.of<VibeChatBloc>(context).state.step);
     }
     return Scaffold(
       extendBody: true,

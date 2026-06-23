@@ -589,5 +589,26 @@
     "share": "Compartir",
     "openChat": "Abrir chat",
     "goToToday": "Ir a hoy",
-    "switchCalendarView": "Cambiar vista de calendario"
+    "switchCalendarView": "Cambiar vista de calendario",
+
+    "previewSundialGreeting": "Hola.",
+    "previewSundialCountsPrefix": "Hoy tienes",
+    "previewSundialCountsSuffix": "por delante.",
+    "previewSundialTilesClause": "{count} tiles",
+    "previewSundialBlocksClause": "{count} bloques",
+    "previewSundialTileSharesClause": "{count} tileshares",
+    "previewSundialWorkClause": "{hours} horas de trabajo",
+    "previewSundialTransitClause": "{mins} min en tránsito",
+    "previewSundialClearsByClause": "tu día termina a las {time}",
+    "previewSundialAndSeparator": "y",
+    "previewSundialDistance": "{distance} {unit}",
+    "previewSundialLocations": "{count} lugares",
+    "previewSundialSleepHours": "{hours} h de sueño",
+    "previewSundialTier0": "Día libre",
+    "previewSundialTier1": "Empezando",
+    "previewSundialTier2": "En curso",
+    "previewSundialTier3": "Buen avance",
+    "previewSundialTier4": "Casi listo",
+    "previewSundialTodayLabel": "Hoy",
+    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar"
 }

@@ -4588,6 +4588,127 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch calendar view'**
   String get switchCalendarView;
+
+  /// No description provided for @previewSundialGreeting.
+  ///
+  /// In en, this message translates to:
+  /// **'Hello.'**
+  String get previewSundialGreeting;
+
+  /// No description provided for @previewSundialCountsPrefix.
+  ///
+  /// In en, this message translates to:
+  /// **'Today has'**
+  String get previewSundialCountsPrefix;
+
+  /// No description provided for @previewSundialCountsSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'waiting.'**
+  String get previewSundialCountsSuffix;
+
+  /// Tiles clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tiles'**
+  String previewSundialTilesClause(String count);
+
+  /// Blocks clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} blocks'**
+  String previewSundialBlocksClause(String count);
+
+  /// Tileshares clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tileshares'**
+  String previewSundialTileSharesClause(String count);
+
+  /// Work-hours clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hours of work'**
+  String previewSundialWorkClause(String hours);
+
+  /// Transit-minutes clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'{mins} mins of transit'**
+  String previewSundialTransitClause(String mins);
+
+  /// Day-clears-by clause in the preview sundial summary sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'your day clears by {time}'**
+  String previewSundialClearsByClause(String time);
+
+  /// No description provided for @previewSundialAndSeparator.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get previewSundialAndSeparator;
+
+  /// Distance chip on the preview sundial card.
+  ///
+  /// In en, this message translates to:
+  /// **'{distance} {unit}'**
+  String previewSundialDistance(String distance, String unit);
+
+  /// Locations chip on the preview sundial card.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} places'**
+  String previewSundialLocations(String count);
+
+  /// Sleep-hours chip on the preview sundial card.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h sleep'**
+  String previewSundialSleepHours(String hours);
+
+  /// No description provided for @previewSundialTier0.
+  ///
+  /// In en, this message translates to:
+  /// **'Open day'**
+  String get previewSundialTier0;
+
+  /// No description provided for @previewSundialTier1.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting started'**
+  String get previewSundialTier1;
+
+  /// No description provided for @previewSundialTier2.
+  ///
+  /// In en, this message translates to:
+  /// **'Underway'**
+  String get previewSundialTier2;
+
+  /// No description provided for @previewSundialTier3.
+  ///
+  /// In en, this message translates to:
+  /// **'Solid progress'**
+  String get previewSundialTier3;
+
+  /// No description provided for @previewSundialTier4.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost there'**
+  String get previewSundialTier4;
+
+  /// No description provided for @previewSundialTodayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get previewSundialTodayLabel;
+
+  /// Accessibility label for the empty-state composition arc.
+  ///
+  /// In en, this message translates to:
+  /// **'{tiles} tiles, {blocks} blocks, {nonViable} unscheduled'**
+  String previewSundialCompositionA11y(
+      String tiles, String blocks, String nonViable);
 }
 
 class _AppLocalizationsDelegate

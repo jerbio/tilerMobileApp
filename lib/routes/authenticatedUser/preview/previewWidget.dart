@@ -4,6 +4,8 @@ import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/preview/previewChart.dart';
+import 'package:tiler_app/routes/authenticatedUser/preview/preview_day_digest.dart';
+import 'package:tiler_app/routes/authenticatedUser/preview/preview_sundial_card.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
@@ -113,8 +115,15 @@ class _PreviewState extends State<PreviewWidget> {
   }
 
   Widget renderCharts() {
+    final List<Widget> carouselDayRibbonBatch = [
+      // Slide 1: always-on sundial summary card.
+      PreviewSundialCard(
+        subEvents: this.widget.subEvents,
+        timeline: this._timeline,
+      ),
+    ];
+
     if (_previewSummary != null) {
-      List<Widget> carouselDayRibbonBatch = [];
       if (_previewSummary!.classification != null &&
           _previewSummary!.classification!.sections != null &&
           _previewSummary!.classification!.sections!.isNotEmpty) {
@@ -125,40 +134,19 @@ class _PreviewState extends State<PreviewWidget> {
               color: colorScheme.onSurface,
             ),
             timeline: this._timeline,
-            description: Padding(
-              padding: EdgeInsets.all(5),
-              child: Text(
-                AppLocalizations.of(context)!.previewClassificationName,
-                style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontWeight: FontWeight.w500),
-              ),
+            header: Text(
+              AppLocalizations.of(context)!.previewClassificationName,
+              style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: TileTextStyles.rubikFontName,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface),
             )));
       }
 
-      if (_previewSummary!.tag != null &&
-          _previewSummary!.tag!.sections != null &&
-          _previewSummary!.tag!.sections!.isNotEmpty) {
-        carouselDayRibbonBatch.add(PreviewChart(
-          previewGrouping: _previewSummary!.tag!.sections!,
-          icon: Icon(
-            Icons.discount_sharp,
-            color: colorScheme.onSurface,
-          ),
-          timeline: this._timeline,
-          description: Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              AppLocalizations.of(context)!.previewTagName,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontFamily: TileTextStyles.rubikFontName,
-                  fontWeight: FontWeight.w500),
-            ),
-          ),
-        ));
-      }
+      // The tag slide is intentionally omitted in v1 of the redesigned
+      // preview carousel; tag grouping data still flows from the server
+      // but is not surfaced here.
 
       if (_previewSummary!.location != null &&
           _previewSummary!.location!.sections != null &&
@@ -167,35 +155,32 @@ class _PreviewState extends State<PreviewWidget> {
           previewGrouping: _previewSummary!.location!.sections!,
           icon: Icon(Icons.location_on_sharp, color: colorScheme.onSurface),
           timeline: this._timeline,
-          description: Padding(
-            padding: EdgeInsets.all(5),
-            child: Text(
-              AppLocalizations.of(context)!.previewLocationName,
-              style: TextStyle(
-                  fontSize: 15,
-                  fontFamily: TileTextStyles.rubikFontName,
-                  fontWeight: FontWeight.w500),
-            ),
+          header: Text(
+            AppLocalizations.of(context)!.previewLocationName,
+            style: TextStyle(
+                fontSize: 18,
+                fontFamily: TileTextStyles.rubikFontName,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface),
           ),
         ));
       }
-
-      if (carouselDayRibbonBatch.isNotEmpty) {
-        return CarouselSlider(
-          items: carouselDayRibbonBatch,
-          options: CarouselOptions(
-              viewportFraction: 1,
-              autoPlayInterval: Duration(seconds: 10),
-              initialPage: 0,
-              enableInfiniteScroll: false,
-              reverse: false,
-              scrollDirection: Axis.horizontal,
-              autoPlay: true),
-        );
-      }
     }
 
-    return SizedBox.shrink();
+    return CarouselSlider(
+      items: carouselDayRibbonBatch,
+      options: CarouselOptions(
+          viewportFraction: 1,
+          autoPlayInterval: Duration(seconds: 10),
+          initialPage: 0,
+          enableInfiniteScroll: false,
+          reverse: false,
+          scrollDirection: Axis.horizontal,
+          // Sized for the tallest slide (PreviewChart): header (~30) +
+          // 20 gap + 220 ring + ~20 vertical padding ≈ 290; +10 buffer.
+          height: 300,
+          autoPlay: carouselDayRibbonBatch.length > 1),
+    );
   }
 
   Widget renderStats() {
@@ -212,32 +197,15 @@ class _PreviewState extends State<PreviewWidget> {
 
   @override
   Widget build(BuildContext context) {
-    Color colorSection = Colors.transparent;
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         renderCharts(),
-        Container(
-            margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-            alignment: Alignment.center,
-            width: MediaQuery.sizeOf(context).width,
-            padding: EdgeInsets.fromLTRB(20, 50, 20, 50),
-            decoration: BoxDecoration(
-              gradient: RadialGradient(
-                radius: 1.5,
-                center: Alignment.bottomRight,
-                colors: <Color>[
-                  colorSection.withLightness(0.65),
-                  colorSection.withLightness(0.675),
-                  colorSection.withLightness(0.70),
-                  colorSection.withLightness(0.75),
-                  colorSection.withLightness(0.75),
-                  colorSection.withLightness(0.75),
-                  colorSection.withLightness(0.75),
-                ],
-              ),
-            ),
-            child: renderMessage()),
+        PreviewDayDigest(
+          subEvents: this.widget.subEvents,
+          timeline: this._timeline,
+        ),
       ],
     );
   }

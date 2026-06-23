@@ -1,4 +1,4 @@
-import 'package:fl_chart/fl_chart.dart';
+﻿import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/previewGroup.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -13,9 +13,20 @@ class PreviewChart extends StatefulWidget {
   final List<PreviewSection>? previewGrouping;
   final Icon? icon;
   final Timeline? timeline;
-  final Widget? description;
-  PreviewChart(
-      {this.previewGrouping, this.icon, this.timeline, this.description});
+
+  /// Header rendered ABOVE the chart (e.g. "Classification", "Location").
+  /// Renamed from `description` to reflect its new position; constructor
+  /// keeps `description` as a deprecated alias for incremental migration.
+  final Widget? header;
+
+  PreviewChart({
+    this.previewGrouping,
+    this.icon,
+    this.timeline,
+    this.header,
+    @Deprecated('Use header; kept for source compatibility') Widget? description,
+  }) : assert(header == null || description == null,
+            'Provide header OR description, not both');
 
   @override
   State<StatefulWidget> createState() => _PreviewChartState();
@@ -40,210 +51,205 @@ class _PreviewChartState extends State<PreviewChart> {
     return this.widget.previewGrouping;
   }
 
-  Icon? get icon {
-    return this.widget.icon;
-  }
-
   Timeline? get _timeline {
     return this.widget.timeline;
   }
 
-  Widget renderMiddleIconography() {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(boxShadow: [
-        BoxShadow(
-          color: tileThemeExtension.shadowPreviewChartIconographyOuter
-              .withValues(alpha: 0.5),
-        ),
-        BoxShadow(
-          color: tileThemeExtension.shadowPreviewChartIconographyInner,
-          spreadRadius: -4.0,
-          blurRadius: 12.0,
-        ),
-      ], borderRadius: BorderRadius.circular(110)),
-      child: Container(
-          margin: EdgeInsets.fromLTRB(0, 70, 0, 0),
-          child: this.icon ?? SizedBox.shrink()),
-    );
-  }
-
-  Widget ratioImagery() {
+  /// Center label showing "consumed / total hrs" (or minutes) for the
+  /// timeline. Replaces the former shadowed iconography stack which
+  /// rendered as a dark void over the ring.
+  Widget _centerRatio() {
     TimeRange? timeLine = this._timeline;
     if (timeLine != null) {
       timeLine = timeLine.interferingTimeRange(Utility.restOfTodayTimeline());
     }
-    if (timeLine != null) {
-      Duration timeLineDuration = timeLine.duration;
-      Duration tileSumDuration = Duration.zero;
-      List<TilerEvent> tiles = [];
-      this.widget.previewGrouping?.forEach((grouping) {
-        if (grouping.tiles != null) {
-          tiles.addAll(grouping.tiles!);
-        }
-      });
-      var conflictResult = Utility.getConflictingEvents(tiles);
-      for (int i = 0; i < conflictResult.item1.length; i++) {
-        var eachTile = tiles[i];
-        if (eachTile.isInterfering(timeLine)) {
-          tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
-        }
-      }
-
-      for (int i = 0; i < conflictResult.item2.length; i++) {
-        var eachTile = tiles[i];
-        if (eachTile.isInterfering(timeLine)) {
-          tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
-        }
-      }
-
-      bool isHours = false;
-      num numerator = tileSumDuration.inMinutes;
-      num denominator = timeLineDuration.inMinutes;
-      if (denominator == 0) {
-        denominator = 1;
-      }
-      if (numerator > Duration.minutesPerHour &&
-          denominator > Duration.minutesPerHour) {
-        isHours = true;
-        numerator = tileSumDuration.inHours;
-        denominator = timeLineDuration.inHours;
-      }
-      String ratioText = "${numerator} / ${denominator}";
-      return Container(
-        width: 120,
-        height: 120,
-        decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(110)),
-        child: Center(
-          child: Text(
-            isHours
-                ? AppLocalizations.of(context)!.previewRatioTimeHours(ratioText)
-                : AppLocalizations.of(context)!
-                    .previewRatioTimeMinutes(ratioText),
-            // textScaler: TextScaler.linear(0.75),
-            textAlign: TextAlign.center,
-            style: TextStyle(color: colorScheme.onSurface, fontSize: 20),
-          ),
-        ),
-      );
-    } else {
-      return SizedBox.shrink();
+    if (timeLine == null) {
+      return const SizedBox.shrink();
     }
-  }
+    Duration timeLineDuration = timeLine.duration;
+    Duration tileSumDuration = Duration.zero;
+    List<TilerEvent> tiles = [];
+    this.widget.previewGrouping?.forEach((grouping) {
+      if (grouping.tiles != null) {
+        tiles.addAll(grouping.tiles!);
+      }
+    });
+    var conflictResult = Utility.getConflictingEvents(tiles);
+    for (int i = 0; i < conflictResult.item1.length; i++) {
+      var eachTile = tiles[i];
+      if (eachTile.isInterfering(timeLine)) {
+        tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
+      }
+    }
+    for (int i = 0; i < conflictResult.item2.length; i++) {
+      var eachTile = tiles[i];
+      if (eachTile.isInterfering(timeLine)) {
+        tileSumDuration += eachTile.interferingTimeRange(timeLine)!.duration;
+      }
+    }
 
-  Widget getCenterWidget() {
-    return Stack(
-      children: [renderMiddleIconography(), ratioImagery()],
+    bool isHours = false;
+    num numerator = tileSumDuration.inMinutes;
+    num denominator = timeLineDuration.inMinutes;
+    if (denominator == 0) {
+      denominator = 1;
+    }
+    if (numerator > Duration.minutesPerHour &&
+        denominator > Duration.minutesPerHour) {
+      isHours = true;
+      numerator = tileSumDuration.inHours;
+      denominator = timeLineDuration.inHours;
+    }
+    String ratioText = "${numerator} / ${denominator}";
+    return Text(
+      isHours
+          ? AppLocalizations.of(context)!.previewRatioTimeHours(ratioText)
+          : AppLocalizations.of(context)!.previewRatioTimeMinutes(ratioText),
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: colorScheme.onSurface,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    double radius = 10;
+    double radius = 18;
     var borderSide = BorderSide(
         color: colorScheme.primary, width: 0.5, style: BorderStyle.solid);
-    if (this._timeline != null && this.previewGrouping != null) {
-      List<PieChartSectionData> pieChartData = [];
-      for (int i = 0; i < previewGrouping!.length; i++) {
-        var eachPreviewGrouping = previewGrouping![i];
-        Color hueColor = TileColors.chartHues[i % TileColors.chartHues.length];
-        if (eachPreviewGrouping.isNullGrouping == true) {
-          Duration otherTiles = Duration.zero;
-          Duration blockedOutTiles = Duration.zero;
-          List<TilerEvent> tiles = eachPreviewGrouping.tiles ?? [];
-          for (int j = 0; j < tiles.length; j++) {
-            var eachTile = tiles[j];
-            if (eachTile.isInterfering(_timeline!)) {
-              if (eachTile.isProcrastinate == true) {
-                blockedOutTiles +=
-                    eachTile.interferingTimeRange(_timeline!)?.duration ??
-                        Duration.zero;
-              } else {
-                otherTiles +=
-                    eachTile.interferingTimeRange(_timeline!)?.duration ??
-                        Duration.zero;
-              }
+    if (this._timeline == null || this.previewGrouping == null) {
+      return const SizedBox.shrink();
+    }
+    List<PieChartSectionData> pieChartData = [];
+    for (int i = 0; i < previewGrouping!.length; i++) {
+      var eachPreviewGrouping = previewGrouping![i];
+      Color hueColor = TileColors.chartHues[i % TileColors.chartHues.length];
+      if (eachPreviewGrouping.isNullGrouping == true) {
+        Duration otherTiles = Duration.zero;
+        Duration blockedOutTiles = Duration.zero;
+        List<TilerEvent> tiles = eachPreviewGrouping.tiles ?? [];
+        for (int j = 0; j < tiles.length; j++) {
+          var eachTile = tiles[j];
+          if (eachTile.isInterfering(_timeline!)) {
+            if (eachTile.isProcrastinate == true) {
+              blockedOutTiles +=
+                  eachTile.interferingTimeRange(_timeline!)?.duration ??
+                      Duration.zero;
+            } else {
+              otherTiles +=
+                  eachTile.interferingTimeRange(_timeline!)?.duration ??
+                      Duration.zero;
             }
           }
+        }
 
-          if (otherTiles.inMinutes > 0) {
-            pieChartData.add(PieChartSectionData(
-                title: AppLocalizations.of(context)!.previewOthers,
-                color: otherColor,
-                radius: radius,
-                borderSide: borderSide,
-                titleStyle:
-                    TextStyle(fontSize: 12, color: colorScheme.onSurface),
-                value: otherTiles.inMinutes.toDouble()));
-          }
-          if (blockedOutTiles.inMinutes > 0) {
-            pieChartData.add(PieChartSectionData(
-                title: AppLocalizations.of(context)!.previewBlockedOut,
-                color: blockedOutColor,
-                radius: radius,
-                borderSide: borderSide,
-                titleStyle: TextStyle(
-                  fontSize: 12,
-                ),
-                value: blockedOutTiles.inMinutes.toDouble()));
-          }
-        } else {
-          List relevalntTiles = (eachPreviewGrouping.tiles ?? [])
-              .where((element) =>
-                  element.isInterfering(_timeline!) && element.duration != null)
-              .toList();
-          Duration durationSum = Duration.zero;
-          if (relevalntTiles.isNotEmpty) {
-            durationSum =
-                relevalntTiles.map((e) => e.duration).reduce((value, element) {
-              return Duration(
-                  milliseconds: value.inMilliseconds + element.inMilliseconds);
-            });
-          }
-          String sectorName = eachPreviewGrouping.name ?? "";
-          if (sectorName.length >= 10) {
-            sectorName = AppLocalizations.of(context)!
-                .previewEllipsisText(sectorName.substring(0, 10));
-          }
+        if (otherTiles.inMinutes > 0) {
           pieChartData.add(PieChartSectionData(
-              color: hueColor,
-              title: sectorName,
+              title: AppLocalizations.of(context)!.previewOthers,
+              color: otherColor,
               radius: radius,
               borderSide: borderSide,
-              badgePositionPercentageOffset: 10,
-              titleStyle: TextStyle(fontSize: 12),
-              value: durationSum.inMinutes.toDouble()));
+              titlePositionPercentageOffset: 1.4,
+              titleStyle: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurface,
+                  fontFamily: 'Rubik'),
+              value: otherTiles.inMinutes.toDouble()));
         }
+        if (blockedOutTiles.inMinutes > 0) {
+          pieChartData.add(PieChartSectionData(
+              title: AppLocalizations.of(context)!.previewBlockedOut,
+              color: blockedOutColor,
+              radius: radius,
+              borderSide: borderSide,
+              titlePositionPercentageOffset: 1.4,
+              titleStyle: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurface,
+                  fontFamily: 'Rubik'),
+              value: blockedOutTiles.inMinutes.toDouble()));
+        }
+      } else {
+        List relevalntTiles = (eachPreviewGrouping.tiles ?? [])
+            .where((element) => element.isInterfering(_timeline!))
+            .toList();
+        Duration durationSum = Duration.zero;
+        if (relevalntTiles.isNotEmpty) {
+          durationSum =
+              relevalntTiles.map((e) => e.duration).reduce((value, element) {
+            return Duration(
+                milliseconds: value.inMilliseconds + element.inMilliseconds);
+          });
+        }
+        String sectorName = eachPreviewGrouping.name ?? "";
+        if (sectorName.length >= 10) {
+          sectorName = AppLocalizations.of(context)!
+              .previewEllipsisText(sectorName.substring(0, 10));
+        }
+        pieChartData.add(PieChartSectionData(
+            color: hueColor,
+            title: sectorName,
+            radius: radius,
+            borderSide: borderSide,
+            titlePositionPercentageOffset: 1.4,
+            titleStyle: TextStyle(
+                fontSize: 12,
+                color: colorScheme.onSurface,
+                fontFamily: 'Rubik'),
+            value: durationSum.inMinutes.toDouble()));
       }
-      return Container(
-        margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
-        width: 200,
-        height: 200,
-        child: Column(
-          children: [
-            Flexible(
-              child: Stack(
-                children: [
-                  Center(
-                    child: AnimatedSwitcher(
-                      duration: Duration(milliseconds: 500),
-                      child: getCenterWidget(),
-                    ),
-                  ),
-                  PieChart(
-                    PieChartData(sections: pieChartData),
-                  )
-                ],
-              ),
-            ),
-            this.widget.description ?? SizedBox.shrink()
-          ],
-        ),
-      );
     }
-    return SizedBox.shrink();
+
+    // Layout mirrors PreviewSundialCard: centred 360pt constrained
+    // column, header above the visual, no inline message text (that
+    // lives in PreviewDayDigest beneath the carousel).
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 360),
+        child: Container(
+          key: const ValueKey('preview-chart'),
+          color: Colors.transparent,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (this.widget.header != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: this.widget.header!,
+                ),
+              // Box must accommodate outside-ring labels: with
+              // centerSpaceRadius 70 + section radius 18 and
+              // titlePositionPercentageOffset 1.4, labels sit ~95 px from
+              // centre. We size for 110 px half-height so top + bottom
+              // labels have ~15 px breathing room before clipping.
+              SizedBox(
+                key: const ValueKey('preview-chart-ring'),
+                width: 260,
+                height: 220,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    PieChart(
+                      PieChartData(
+                        sections: pieChartData,
+                        sectionsSpace: 1,
+                        centerSpaceRadius: 70,
+                        startDegreeOffset: -90,
+                      ),
+                    ),
+                    _centerRatio(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
+
