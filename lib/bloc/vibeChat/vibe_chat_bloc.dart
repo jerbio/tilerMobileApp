@@ -59,6 +59,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<AcceptChangesEvent>(_onAcceptChanges);
     on<LogOutVibeChatEvent>(_onLogOut);
     on<PreviewActionEvent>(_onPreviewAction);
+    on<ExecuteActionPreviewEvent>(_onExecuteActionPreview);
     on<FetchSimulationEvent>(_onFetchSimulation);
     chatApi = ChatApi(getContextCallBack: getContextCallBack);
   }
@@ -893,9 +894,10 @@ Future<void> _onOpenChat(
     return super.close();
   }
 
-  Future<bool> executeActionPreview(String entityId) async {
+  Future<void> _onExecuteActionPreview(ExecuteActionPreviewEvent event, Emitter<VibeChatState> emit) async {
     try {
       emit(state.copyWith(step: VibeChatStep.executedActionPreviewLoading));
+      final entityId = event.entityId;
       final baseId = entityId.contains('_')
           ? entityId.substring(0, entityId.lastIndexOf('_') + 1)
           : entityId;
@@ -931,17 +933,19 @@ Future<void> _onOpenChat(
           dateChangeTrigger: DateChangeTrigger.buttonPress,
         ));
         emit(state.copyWith(selectedActionEntityId: entityId));
-        return true;
+        event.completer.complete(true);
+      } else {
+        emit(state.copyWith(step: VibeChatStep.loaded));
+        event.completer.complete(false);
       }
-      return false;
     } catch (e) {
+      event.completer.complete(false);
       emit(state.copyWith(
         step: VibeChatStep.error,
         error: e is TilerError
             ? e.Message
             : LocalizationService.instance.translations.errorOccurred,
       ));
-      return false;
     }
   }
 

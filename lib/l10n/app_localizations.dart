@@ -4379,60 +4379,6 @@ abstract class AppLocalizations {
   /// **'{count} actions'**
   String actionsCount(int count);
 
-  /// No description provided for @reviewPreview.
-  ///
-  /// In en, this message translates to:
-  /// **'Review preview'**
-  String get reviewPreview;
-
-  /// No description provided for @reviewPreviewWithCount.
-  ///
-  /// In en, this message translates to:
-  /// **'Review preview · {count, plural, =1{1 change} other{{count} changes}}'**
-  String reviewPreviewWithCount(int count);
-
-  /// No description provided for @previewChanges.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview Changes'**
-  String get previewChanges;
-
-  /// No description provided for @changesCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 change} other{{count} changes}}'**
-  String changesCount(int count);
-
-  /// No description provided for @noActionsInPreview.
-  ///
-  /// In en, this message translates to:
-  /// **'No actions in this preview.'**
-  String get noActionsInPreview;
-
-  /// No description provided for @tilecastStarting.
-  ///
-  /// In en, this message translates to:
-  /// **'Tilecast starting…'**
-  String get tilecastStarting;
-
-  /// No description provided for @tilecastQueued.
-  ///
-  /// In en, this message translates to:
-  /// **'Tilecast queued…'**
-  String get tilecastQueued;
-
-  /// No description provided for @generatingTilecast.
-  ///
-  /// In en, this message translates to:
-  /// **'Generating tilecast…'**
-  String get generatingTilecast;
-
-  /// No description provided for @previewGenerationFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Preview generation failed.'**
-  String get previewGenerationFailed;
-
   /// No description provided for @ok.
   ///
   /// In en, this message translates to:
@@ -4612,6 +4558,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get notesDone;
+
+  /// No description provided for @reviewPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review preview'**
+  String get reviewPreview;
+
+  /// No description provided for @reviewPreviewWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Review preview · {count, plural, =1{1 change} other{{count} changes}}'**
+  String reviewPreviewWithCount(int count);
+
+  /// No description provided for @previewChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Changes'**
+  String get previewChanges;
+
+  /// No description provided for @changesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change} other{{count} changes}}'**
+  String changesCount(int count);
+
+  /// No description provided for @noActionsInPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'No actions in this preview.'**
+  String get noActionsInPreview;
+
+  /// No description provided for @tilecastStarting.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilecast starting…'**
+  String get tilecastStarting;
+
+  /// No description provided for @tilecastQueued.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilecast queued…'**
+  String get tilecastQueued;
+
+  /// No description provided for @generatingTilecast.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating tilecast…'**
+  String get generatingTilecast;
+
+  /// No description provided for @previewGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview generation failed.'**
+  String get previewGenerationFailed;
 }
 
 class _AppLocalizationsDelegate
