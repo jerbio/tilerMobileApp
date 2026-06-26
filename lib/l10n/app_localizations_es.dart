@@ -845,6 +845,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addContact => 'Add contact';
 
   @override
+  String get invalidContactFormat =>
+      'No es un correo electrónico o número de teléfono válido';
+
+  @override
   String deadlineTime(String time) {
     return 'Deadline: $time';
   }
@@ -2449,6 +2453,96 @@ class AppLocalizationsEs extends AppLocalizations {
   String actionsCount(int count) {
     return '$count actions';
   }
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get notesLoading => 'Cargando notas…';
+
+  @override
+  String get notesSaving => 'Guardando…';
+
+  @override
+  String get notesSaved => 'Guardado';
+
+  @override
+  String get notesUnsaved => 'Editando…';
+
+  @override
+  String get notesSaveError => 'No se pudo guardar';
+
+  @override
+  String get notesSaveNow => 'Guardar ahora';
+
+  @override
+  String get notesShowPreview => 'Vista previa';
+
+  @override
+  String get notesShowEditor => 'Editar';
+
+  @override
+  String get notesPreviewEmpty => 'Nada para previsualizar todavía.';
+
+  @override
+  String get notesLinkPromptTitle => 'Insertar enlace';
+
+  @override
+  String get notesConflictTitle => 'Alguien más actualizó esta nota.';
+
+  @override
+  String get notesConflictDiscardMine => 'Descartar la mía';
+
+  @override
+  String get notesConflictKeepEditing => 'Seguir editando';
+
+  @override
+  String get notesToolBold => 'Negrita';
+
+  @override
+  String get notesToolItalic => 'Cursiva';
+
+  @override
+  String get notesToolStrikethrough => 'Tachado';
+
+  @override
+  String get notesToolInlineCode => 'Código en línea';
+
+  @override
+  String get notesToolHeading1 => 'Título 1';
+
+  @override
+  String get notesToolHeading2 => 'Título 2';
+
+  @override
+  String get notesToolBulletList => 'Lista con viñetas';
+
+  @override
+  String get notesToolNumberedList => 'Lista numerada';
+
+  @override
+  String get notesToolTaskList => 'Lista de tareas';
+
+  @override
+  String get notesToolQuote => 'Cita';
+
+  @override
+  String get notesToolLink => 'Enlace';
+
+  @override
+  String get notesTitle => 'Notas';
+
+  @override
+  String get notesViewerTitle => 'Nota';
+
+  @override
+  String get notesTapToAdd => 'Toca para añadir una nota';
+
+  @override
+  String get notesTapToEdit => 'Toca para editar · mantén presionado para leer';
+
+  @override
+  String get notesDone => 'Listo';
 
   @override
   String get reviewPreview => 'Review preview';

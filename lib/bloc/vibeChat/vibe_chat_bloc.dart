@@ -253,7 +253,7 @@ Future<void> _onOpenChat(
         currentSession: event.session,
         clearSimulation: true,
       ));
-      final messages = await _getMessagesWithActions(event.session.id!, emit);
+      final messages = await _getMessagesWithActions(event.session.id!);
       bool shouldShowAccept = false;
 
       String? lastRequestId = messages.isNotEmpty ? messages.last.requestId : null;
@@ -294,7 +294,7 @@ Future<void> _onOpenChat(
   }
 
   Future<List<VibeMessage>> _getMessagesWithActions(
-      String sessionId, Emitter<VibeChatState> emit,
+      String sessionId,
       {int? batchSize, int? index}) async {
     final messages = await chatApi.getMessages(
       sessionId: sessionId,
@@ -325,8 +325,7 @@ Future<void> _onOpenChat(
       return messages;
     }
 
-    final actions = await _fetchActionsWithBatching(
-        uniqueActionIds.toList(), emit, sessionId, messages);
+    final actions = await _fetchActionsWithBatching(uniqueActionIds.toList());
 
     final actionsMap = {for (var action in actions) action.id: action};
 
@@ -362,12 +361,9 @@ Future<void> _onOpenChat(
 
   Future<List<VibeAction>> _fetchActionsWithBatching(
       List<String> actionIds,
-      Emitter<VibeChatState> emit,
-      String sessionId,
-      List<VibeMessage> messages) async {
+      ) async {
     const batchSize = 10;
     final allActions = <VibeAction>[];
-    final actionsMap = <String, VibeAction>{};
 
     if (actionIds.length > batchSize) {
       for (int i = 0; i < actionIds.length; i += batchSize) {
@@ -375,41 +371,9 @@ Future<void> _onOpenChat(
             ? i + batchSize
             : actionIds.length;
         final batch = actionIds.sublist(i, end);
-        final isLastBatch = (end >= actionIds.length);
-
         final batchActions = await chatApi.getActions(batch);
         allActions.addAll(batchActions);
 
-        for (var action in batchActions) {
-          actionsMap[action!.id!] = action;
-        }
-
-        final updatedMessages = messages.map((msg) {
-          if (msg.actionIds == null || msg.actionIds!.isEmpty) return msg;
-
-          final resolvedActions = msg.actionIds!
-              .map((id) => actionsMap[id])
-              .where((action) => action != null)
-              .cast<VibeAction>()
-              .toList();
-
-          return VibeMessage(
-            id: msg.id,
-            origin: msg.origin,
-            content: msg.content,
-            requestId: msg.requestId,
-            sessionId: msg.sessionId,
-            actionIds: msg.actionIds,
-            actions: resolvedActions,
-          );
-        }).toList();
-
-        if (!isLastBatch) {
-          emit(state.copyWith(
-            step: VibeChatStep.loaded,
-            messages: updatedMessages,
-          ));
-        }
       }
     } else {
       final actions = await chatApi.getActions(actionIds);
@@ -440,7 +404,6 @@ Future<void> _onOpenChat(
 
       final newMessages = await _getMessagesWithActions(
         state.currentSession?.id ?? '',
-        emit,
         batchSize: 10,
         index: state.currentIndex,
       );
@@ -709,7 +672,6 @@ Future<void> _onOpenChat(
       if (sessionId.isNotEmpty) {
         final recentMessages = await _getMessagesWithActions(
           sessionId,
-          emit,
           batchSize: 5,
           index: 0,
         );

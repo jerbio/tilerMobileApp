@@ -843,6 +843,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addContact => 'Add contact';
 
   @override
+  String get invalidContactFormat => 'Not a valid email or phone number';
+
+  @override
   String deadlineTime(String time) {
     return 'Deadline: $time';
   }
@@ -2443,6 +2446,96 @@ class AppLocalizationsEn extends AppLocalizations {
   String actionsCount(int count) {
     return '$count actions';
   }
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get notesLoading => 'Loading notes…';
+
+  @override
+  String get notesSaving => 'Saving…';
+
+  @override
+  String get notesSaved => 'Saved';
+
+  @override
+  String get notesUnsaved => 'Editing…';
+
+  @override
+  String get notesSaveError => 'Couldn\'t save';
+
+  @override
+  String get notesSaveNow => 'Save now';
+
+  @override
+  String get notesShowPreview => 'Preview';
+
+  @override
+  String get notesShowEditor => 'Edit';
+
+  @override
+  String get notesPreviewEmpty => 'Nothing to preview yet.';
+
+  @override
+  String get notesLinkPromptTitle => 'Insert link';
+
+  @override
+  String get notesConflictTitle => 'Someone else updated this note.';
+
+  @override
+  String get notesConflictDiscardMine => 'Discard mine';
+
+  @override
+  String get notesConflictKeepEditing => 'Keep editing';
+
+  @override
+  String get notesToolBold => 'Bold';
+
+  @override
+  String get notesToolItalic => 'Italic';
+
+  @override
+  String get notesToolStrikethrough => 'Strikethrough';
+
+  @override
+  String get notesToolInlineCode => 'Inline code';
+
+  @override
+  String get notesToolHeading1 => 'Heading 1';
+
+  @override
+  String get notesToolHeading2 => 'Heading 2';
+
+  @override
+  String get notesToolBulletList => 'Bullet list';
+
+  @override
+  String get notesToolNumberedList => 'Numbered list';
+
+  @override
+  String get notesToolTaskList => 'Task list';
+
+  @override
+  String get notesToolQuote => 'Quote';
+
+  @override
+  String get notesToolLink => 'Link';
+
+  @override
+  String get notesTitle => 'Notes';
+
+  @override
+  String get notesViewerTitle => 'Note';
+
+  @override
+  String get notesTapToAdd => 'Tap to add a note';
+
+  @override
+  String get notesTapToEdit => 'Tap to edit · long press to read';
+
+  @override
+  String get notesDone => 'Done';
 
   @override
   String get reviewPreview => 'Review preview';

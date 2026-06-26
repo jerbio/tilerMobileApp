@@ -11,7 +11,7 @@ class GetSubCalendarTileBlocEvent extends SubCalendarTileEvent {
   final String subEventId;
   final String? calendarSource;
   final String? thirdPartyUserId;
-  SubCalendarEvent? subEvent;
+  final SubCalendarEvent? subEvent;
 
   GetSubCalendarTileBlocEvent(
       {required this.subEventId,

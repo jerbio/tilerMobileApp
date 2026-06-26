@@ -1,3 +1,69 @@
+enum ActionType {
+  addNewAppointment,
+  addNewTask,
+  updateExistingTask,
+  removeExistingTask,
+  procrastinateAllTasks,
+  exitPrompting,
+  addNewProject,
+  decideIfTaskOrProject,
+  markTaskAsDone,
+  whatIfAddANewAppointment,
+  whatIfAddedNewTask,
+  whatIfEditUpdateTask,
+  whatIfProcrastinateTask,
+  whatIfRemovedTask,
+  whatIfMarkedTaskAsDone,
+  whatIfProcrastinateAll,
+  conversationalAndNotSupported,
+  none;
+
+  static ActionType? fromString(String type) {
+    switch (type.toLowerCase()) {
+      case 'add_new_appointment':
+        return ActionType.addNewAppointment;
+      case 'add_new_task':
+        return ActionType.addNewTask;
+      case 'update_existing_task':
+        return ActionType.updateExistingTask;
+      case 'remove_existing_task':
+        return ActionType.removeExistingTask;
+      case 'procrastinate_all_tasks':
+        return ActionType.procrastinateAllTasks;
+      case 'exit_prompting':
+        return ActionType.exitPrompting;
+      case 'add_new_project':
+        return ActionType.addNewProject;
+      case 'decide_if_task_or_project':
+        return ActionType.decideIfTaskOrProject;
+      case 'mark_task_as_done':
+        return ActionType.markTaskAsDone;
+      case 'whatif_addanewappointment':
+        return ActionType.whatIfAddANewAppointment;
+      case 'whatif_addednewtask':
+        return ActionType.whatIfAddedNewTask;
+      case 'whatif_editupdatetask':
+        return ActionType.whatIfEditUpdateTask;
+      case 'whatif_procrastinatetask':
+        return ActionType.whatIfProcrastinateTask;
+      case 'whatif_removedtask':
+        return ActionType.whatIfRemovedTask;
+      case 'whatif_markedtaskasdone':
+        return ActionType.whatIfMarkedTaskAsDone;
+      case 'whatif_procrastinateall':
+        return ActionType.whatIfProcrastinateAll;
+      case 'conversational_and_not_supported':
+        return ActionType.conversationalAndNotSupported;
+      case 'none':
+        return ActionType.none;
+      default:
+        return null;
+    }
+  }
+
+  String toJson() => name;
+}
+
 enum ActionStatus {
   parsed,
   clarification,
@@ -37,7 +103,7 @@ enum ActionStatus {
 class VibeAction {
   final String? id;
   final String? descriptions;
-  final String? type;
+  final ActionType? type;
   final int? creationTimeInMs;
   final ActionStatus? status;
   final String? beforeScheduleId;
@@ -61,7 +127,9 @@ class VibeAction {
     return VibeAction(
       id: json['id'] as String?,
       descriptions: json['descriptions'] as String?,
-      type: json['type'] as String?,
+      type: json['type'] != null
+          ? ActionType.fromString(json['type'] as String)
+          : null,
       creationTimeInMs: json['creationTimeInMs'] as int?,
       status: json['status'] != null
           ? ActionStatus.fromString(json['status'] as String)
@@ -77,7 +145,7 @@ class VibeAction {
     return {
       'id': id,
       'descriptions': descriptions,
-      'type': type,
+      'type': type?.toJson(),
       'creationTimeInMs': creationTimeInMs,
       'status': status?.toJson(),
       'beforeScheduleId': beforeScheduleId,
@@ -90,7 +158,7 @@ class VibeAction {
   VibeAction copyWith({
     String? id,
     String? descriptions,
-    String? type,
+    ActionType? type,
     int? creationTimeInMs,
     ActionStatus? status,
     String? beforeScheduleId,
