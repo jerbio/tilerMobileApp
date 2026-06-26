@@ -170,7 +170,10 @@ class _TileShareTemplateDetailState
               updateAllData(value);
             });
           } else {
-            updateAllData(value);
+            // Silent: no loading spinner, but still rebuild with fresh data.
+            setState(() {
+              updateAllData(value);
+            });
           }
         } else {
           setState(() {
@@ -217,10 +220,8 @@ class _TileShareTemplateDetailState
         });
       });
     }
-    isTileListLoading = tileLoadingState;
-    if (silentRefresh) {
-      setToLoading();
-    } else {
+    if (!silentRefresh) {
+      isTileListLoading = tileLoadingState;
       setState(() {
         setToLoading();
       });
@@ -287,11 +288,21 @@ class _TileShareTemplateDetailState
                         }
                       }
                     },
-                    child: Text(
-                      MaterialLocalizations.of(context).formatFullDate(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              tileShareTemplate.end!)),
-                      style: TileTextStyles.defaultText,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          MaterialLocalizations.of(context).formatFullDate(
+                              DateTime.fromMillisecondsSinceEpoch(
+                                  tileShareTemplate.end!)),
+                          style: TileTextStyles.defaultText.copyWith(
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(Icons.edit_outlined,
+                            size: 14, color: colorScheme.onSurface),
+                      ],
                     ),
                   )
                 ],
@@ -447,14 +458,10 @@ class _TileShareTemplateDetailState
         }
 
         if (this.tileShareTemplate.id != null) {
+          final futures = <Future>[];
           for (var newContact in newContacts) {
-            designatedTileApi
-                .addContact(
-                    this.tileShareTemplate.id!, newContact.toContactModel())
-                .then((value) {
-              getTileShareTemplate();
-            });
-            ;
+            futures.add(designatedTileApi.addContact(
+                this.tileShareTemplate.id!, newContact.toContactModel()));
           }
           for (var deletedContact in removedContacts) {
             if (designatedUsersToContact.containsKey(deletedContact) &&
@@ -462,15 +469,17 @@ class _TileShareTemplateDetailState
                 designatedUsersToContact[deletedContact]!
                     .designatedTileTemplateId
                     .isNot_NullEmptyOrWhiteSpace()) {
-              designatedTileApi
-                  .deleteContact(
-                      designatedUsersToContact[deletedContact]!
-                          .designatedTileTemplateId!,
-                      deletedContact.toContactModel())
-                  .then((value) {
-                getTileShareTemplate();
-              });
+              futures.add(designatedTileApi.deleteContact(
+                  designatedUsersToContact[deletedContact]!
+                      .designatedTileTemplateId!,
+                  deletedContact.toContactModel()));
             }
+          }
+          if (futures.isNotEmpty) {
+            // silentRefresh: true — batch all API calls first, then refresh once
+            // without flashing the loading spinner.
+            Future.wait(futures)
+                .then((_) => getTileShareTemplate(silentRefresh: true));
           }
         }
       },

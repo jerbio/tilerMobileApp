@@ -18,7 +18,8 @@ import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/uiConfig.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
-import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotes.dart';
+import 'package:tiler_app/data/notesPayload.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileCarousel.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/colorSelectorWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSelectorWidget.dart';
@@ -56,7 +57,7 @@ class _TileDetailState extends State<TileDetail> {
   late CalendarEventApi calendarEventApi;
   TextEditingController? splitCountController;
   EditTileName? _editTileName;
-  EditTileNote? _editTileNote;
+  Widget? _editTileNote;
   Duration? _tileDuration;
   Location? _location;
   EditDateAndTime? _editStartDateAndTime;
@@ -261,9 +262,8 @@ class _TileDetailState extends State<TileDetail> {
       if (_editTileName != null && !isProcrastinateTile) {
         revisedEditTilerEvent.name = _editTileName!.name;
       }
-      if (_editTileNote != null) {
-        revisedEditTilerEvent.note = _editTileNote!.tileNote;
-      }
+      // Note text is persisted via the dedicated Notes API; do not push it
+      // from the regular update flow.
       if (_editStartDateAndTime != null &&
           _editStartDateAndTime!.dateAndTime != null) {
         revisedEditTilerEvent.startTime =
@@ -660,9 +660,15 @@ class _TileDetailState extends State<TileDetail> {
                   this.calEvent!.noteData?.note ??
                   '';
 
-              _editTileNote = EditTileNote(
-                tileNote: tileNote,
-                onInputChange: dataChange,
+              _editTileNote = NotePreviewTile(
+                eventId: this.calEvent?.id,
+                scope: NotesScope.calendar,
+                initialNote: tileNote,
+                onNotePersisted: (note) {
+                  if (editTilerEvent != null) {
+                    editTilerEvent!.note = note;
+                  }
+                },
               );
 
               Widget durationWidget = FractionallySizedBox(
