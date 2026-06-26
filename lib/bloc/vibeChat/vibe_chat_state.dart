@@ -33,6 +33,7 @@ class VibeChatState extends Equatable {
   final SimulationState? simulationState;
   final VibeRequestPreview? simulation;
   final String? activeRequestId;
+
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession,
@@ -50,7 +51,6 @@ class VibeChatState extends Equatable {
     this.simulationState,
     this.simulation,
     this.activeRequestId,
-    this.navigateToDate,
   });
 
   VibeChatState copyWith({
@@ -71,7 +71,6 @@ class VibeChatState extends Equatable {
     VibeRequestPreview? simulation,
     String? activeRequestId,
     bool clearSimulation = false,
-    DateTime? navigateToDate,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -92,7 +91,6 @@ class VibeChatState extends Equatable {
       simulationState: clearSimulation ? null : (simulationState ?? this.simulationState),
       simulation: clearSimulation ? null : (simulation ?? this.simulation),
       activeRequestId: clearSimulation ? null : (activeRequestId ?? this.activeRequestId),
-      navigateToDate: navigateToDate ?? this.navigateToDate,
     );
   }
 
@@ -114,7 +112,5 @@ class VibeChatState extends Equatable {
         simulationState,
         simulation,
         activeRequestId,
-        navigateToDate,
       ];
 }
-
