@@ -25,6 +25,7 @@ import 'package:tuple/tuple.dart';
 
 import '../../bloc/calendarTiles/calendar_tile_bloc.dart';
 import '../../constants.dart' as Constants;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class EventNameSearchWidget extends SearchWidget {
   EventNameSearchWidget(
@@ -266,12 +267,12 @@ class EventNameSearchState extends SearchWidgetState {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-        height: 70,
+        padding: EdgeInsets.fromLTRB(0, 0, 10.w, 0),
+        height: 70.h,
         decoration: BoxDecoration(
           color: tileThemeExtension.surfaceContainerUltimate
               .withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(5.r),
           boxShadow: [
             BoxShadow(
               color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
@@ -284,9 +285,9 @@ class EventNameSearchState extends SearchWidgetState {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: iconColor),
-            SizedBox.square(dimension: 5),
-            Text(text, style: TextStyle(fontSize: 15)),
+            Icon(icon, size: 20.r, color: iconColor),
+            SizedBox.square(dimension: 5.r),
+            Text(text, style: TextStyle(fontSize: 15.sp)),
           ],
         ),
       ),
@@ -322,7 +323,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget tileToEventNameWidget(TilerEvent tile) {
     final textStyle =
-        TextStyle(fontSize: 12, fontFamily: TileTextStyles.rubikFontName);
+        TextStyle(fontSize: 12.sp, fontFamily: TileTextStyles.rubikFontName);
     List<Widget> childWidgets = [];
     Widget textContainer;
     if (tile.name != null) {
@@ -331,7 +332,7 @@ class EventNameSearchState extends SearchWidgetState {
         String monthString = Utility.returnMonth(end);
         monthString = monthString.substring(0, 3);
         Widget deadlineContainer = Container(
-          margin: EdgeInsets.fromLTRB(20, 45, 20, 30),
+          margin: EdgeInsets.fromLTRB(20.w, 45.h, 20.w, 30.h),
           alignment: Alignment.topRight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
@@ -342,7 +343,7 @@ class EventNameSearchState extends SearchWidgetState {
               Text(
                 ' ',
                 style: TextStyle(
-                    fontSize: 25, fontFamily: TileTextStyles.rubikFontName),
+                    fontSize: 25.sp, fontFamily: TileTextStyles.rubikFontName),
               ),
               Text(end.day.toString(), style: textStyle),
             ],
@@ -353,14 +354,14 @@ class EventNameSearchState extends SearchWidgetState {
 
       List<Widget> detailWidgets = [];
       textContainer = Container(
-        margin: EdgeInsets.fromLTRB(20, 0, 20, 0),
+        margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 0),
         child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           Expanded(
             child: Text(tile.name!,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w500,
                     fontFamily: TileTextStyles.rubikFontName)),
           ),
@@ -371,16 +372,16 @@ class EventNameSearchState extends SearchWidgetState {
       DateTime now = Utility.currentTime();
       Widget completionButton = Expanded(
         child: Padding(
-            padding: const EdgeInsets.all(2.0),
+            padding: EdgeInsets.all(2.r),
             child: createCompletionButton(tile)),
       );
       Widget setAsNowButton = Expanded(
           child: Padding(
-              padding: const EdgeInsets.all(2.0),
+              padding: EdgeInsets.all(2.r),
               child: createSetAsNowButton(tile)));
       Widget deletionButton = Expanded(
           child: Padding(
-              padding: const EdgeInsets.all(2.0),
+              padding: EdgeInsets.all(2.r),
               child: createDeletionButton(tile)));
 
       List<Widget> searchActionButtons = <Widget>[];
@@ -400,7 +401,7 @@ class EventNameSearchState extends SearchWidgetState {
           child: FractionallySizedBox(
               widthFactor: 0.95,
               child: Container(
-                margin: EdgeInsets.fromLTRB(0, 60, 0, 0),
+                margin: EdgeInsets.fromLTRB(0, 60.h, 0, 0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: searchActionButtons,
@@ -410,7 +411,7 @@ class EventNameSearchState extends SearchWidgetState {
       detailWidgets.add(iconContainer);
 
       Widget detailContainer = Container(
-        margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+        margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
         child: Stack(
           children: detailWidgets,
         ),
@@ -430,11 +431,11 @@ class EventNameSearchState extends SearchWidgetState {
       child: Align(
         alignment: Alignment.topRight,
         child: Container(
-          margin: EdgeInsets.fromLTRB(0, 10, 10, 0),
+          margin: EdgeInsets.fromLTRB(0, 10.h, 10.w, 0),
           child: Icon(
             Icons.edit_outlined,
             color: colorScheme.onSurface,
-            size: 20.0,
+            size: 20.r,
           ),
         ),
       ),
@@ -444,16 +445,16 @@ class EventNameSearchState extends SearchWidgetState {
     Widget retValue = GestureDetector(
       onTap: () {},
       child: Container(
-        height: 125,
-        padding: EdgeInsets.fromLTRB(7, 7, 7, 14),
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+        height: 125.h,
+        padding: EdgeInsets.fromLTRB(7.w, 7.h, 7.w, 14.h),
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 5.h),
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLowest,
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20)),
+              topLeft: Radius.circular(20.r),
+              topRight: Radius.circular(20.r),
+              bottomLeft: Radius.circular(20.r),
+              bottomRight: Radius.circular(20.r)),
           border: Border.all(
             color: tileThemeExtension.surfaceContainerUltimate
                 .withValues(alpha: 0.1),
@@ -473,7 +474,7 @@ class EventNameSearchState extends SearchWidgetState {
       String name, Function callBackOnCloseInput) async {
     List<Widget> retValue = [
       Container(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.all(10.r),
         child: Text(
             AppLocalizations.of(this.context)!.atLeastThreeLettersForLookup),
         alignment: Alignment.center,
@@ -516,7 +517,7 @@ class EventNameSearchState extends SearchWidgetState {
                     timeInSecForIosWeb: 1,
                     backgroundColor: colorScheme.inverseSurface,
                     textColor: colorScheme.onInverseSurface,
-                    fontSize: 16.0);
+                    fontSize: 16.sp);
               }
             }
           },
@@ -535,10 +536,10 @@ class EventNameSearchState extends SearchWidgetState {
                   isDense: true,
                   hintStyle: TextStyle(
                       color: tileThemeExtension.onSurfaceHint,
-                      fontSize: TileDimensions.textFontSize,
+                      fontSize: 25.sp,
                       fontFamily: TileTextStyles.rubikFontName,
                       fontWeight: FontWeight.w500),
-                  contentPadding: TileSpacing.inputFieldPadding,
+                  contentPadding: EdgeInsets.fromLTRB(20.w, 12.h, 10.w, 12.h),
                   fillColor: colorScheme.surfaceContainerLowest,
                   border: OutlineInputBorder(
                     borderRadius: TileDimensions.inputFieldBorderRadius,
@@ -574,27 +575,19 @@ class EventNameSearchState extends SearchWidgetState {
 
             return Scaffold(
               resizeToAvoidBottomInset: false,
+              appBar: AppBar(
+                leading: BackButton(onPressed: () => Navigator.pop(context)),
+                automaticallyImplyLeading: false,
+                title: Text(AppLocalizations.of(context)!.tutorialCalloutSearch),
+              ),
               body: Container(
                 margin: TileSpacing.topMargin,
                 alignment: Alignment.topCenter,
-                child: Stack(alignment: Alignment.topCenter, children: <Widget>[
-                  FractionallySizedBox(
-                    widthFactor: 0.825,
-                    child: super.build(context),
-                  ),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(0, 30, 0, 0),
-                      child: BackButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                      ),
-                    ),
-                  )
-                ]),
                 decoration: TileDecorations.defaultBackground,
+                child: FractionallySizedBox(
+                  widthFactor: 0.825,
+                  child: super.build(context),
+                ),
               ),
             );
           }),
