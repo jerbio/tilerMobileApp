@@ -2449,4 +2449,47 @@ class AppLocalizationsEs extends AppLocalizations {
   String actionsCount(int count) {
     return '$count actions';
   }
+
+  @override
+  String get reviewPreview => 'Review preview';
+
+  @override
+  String reviewPreviewWithCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes',
+      one: '1 change',
+    );
+    return 'Review preview · $_temp0';
+  }
+
+  @override
+  String get previewChanges => 'Preview Changes';
+
+  @override
+  String changesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes',
+      one: '1 change',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noActionsInPreview => 'No actions in this preview.';
+
+  @override
+  String get tilecastStarting => 'Tilecast starting…';
+
+  @override
+  String get tilecastQueued => 'Tilecast queued…';
+
+  @override
+  String get generatingTilecast => 'Generating tilecast…';
+
+  @override
+  String get previewGenerationFailed => 'Preview generation failed.';
 }

@@ -211,9 +211,10 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   Widget _buildTileList(AuthorizedRouteTileListPage selectedListPage) {
+    final vibeChatState = context.read<VibeChatBloc>().state;
     switch (selectedListPage) {
       case AuthorizedRouteTileListPage.Daily:
-        return DailyTileList();
+        return DailyTileList(selectedActionEntityId: vibeChatState.selectedActionEntityId);
       case AuthorizedRouteTileListPage.Weekly:
         return WeeklyTileList();
       case AuthorizedRouteTileListPage.Monthly:

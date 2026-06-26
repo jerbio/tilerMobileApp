@@ -23,7 +23,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
-  DailyTileList({Key? key}) : super(key: key);
+  final String? selectedActionEntityId;
+  DailyTileList({Key? key, this.selectedActionEntityId}) : super(key: key);
 
   @override
   _DailyTileListState createState() => _DailyTileListState();
@@ -292,6 +293,7 @@ class _DailyTileListState extends TileListState {
             showEnhancedCards: true,
             showTravelConnectors: true,
             showTimelineMarkers: true,
+            selectedActionEntityId: (widget as DailyTileList).selectedActionEntityId,
           );
           upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
         }
@@ -310,6 +312,7 @@ class _DailyTileListState extends TileListState {
             showEnhancedCards: true,
             showTravelConnectors: true,
             showTimelineMarkers: true,
+            selectedActionEntityId: (widget as DailyTileList).selectedActionEntityId,
           );
           precedingDayTilesDict[dayIndex] = precedingDayTileBatch;
         }
@@ -333,6 +336,7 @@ class _DailyTileListState extends TileListState {
     return EnhancedWithinNowBatch(
       key: ValueKey("_enhanced_within_now_0"),
       tiles: [...elapsedTiles, ...notElapsedTiles],
+      selectedActionEntityId: (widget as DailyTileList).selectedActionEntityId,
     );
   }
 

@@ -177,6 +177,7 @@ class _TilerAppState extends State<TilerApp> {
                     },
                     scheduleBloc: context.read<ScheduleBloc>(),
                     scheduleSummaryBloc: context.read<ScheduleSummaryBloc>(),
+                    uiDateManagerBloc: context.read<UiDateManagerBloc>(),
                   )),
         ],
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(

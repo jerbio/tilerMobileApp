@@ -57,3 +57,12 @@ class PreviewActionEvent extends VibeChatEvent {
   PreviewActionEvent(this.vibeRequestId, this.actionId);
   List<Object?> get props => [vibeRequestId, actionId];
 }
+
+class FetchSimulationEvent extends VibeChatEvent {
+  final String vibeRequestId;
+  FetchSimulationEvent(this.vibeRequestId);
+  List<Object?> get props => [vibeRequestId];
+}
+
+
+

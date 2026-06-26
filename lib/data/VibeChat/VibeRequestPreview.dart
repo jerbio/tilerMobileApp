@@ -1,11 +1,37 @@
 import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
 
+enum SimulationState {
+  queued,
+  processing,
+  ready,
+  failed,
+  invalidated,
+}
+
+SimulationState? parseSimulationState(String? raw) {
+  switch (raw?.toLowerCase()) {
+    case 'queued':
+      return SimulationState.queued;
+    case 'processing':
+      return SimulationState.processing;
+    case 'ready':
+      return SimulationState.ready;
+    case 'failed':
+      return SimulationState.failed;
+    case 'invalidated':
+      return SimulationState.invalidated;
+    default:
+      return null;
+  }
+}
+
 class VibeRequestPreview {
   final String? id;
   final String? vibeRequestId;
   final String? tilerUserId;
   final int? creationTimeInMs;
   final List<VibePreviewAction>? previewActions;
+  final SimulationState? state;
 
   VibeRequestPreview({
     this.id,
@@ -13,6 +39,7 @@ class VibeRequestPreview {
     this.tilerUserId,
     this.creationTimeInMs,
     this.previewActions,
+    this.state,
   });
 
   factory VibeRequestPreview.fromJson(Map<String, dynamic> json) {
@@ -21,11 +48,13 @@ class VibeRequestPreview {
       vibeRequestId: json['vibeRequestId'] as String?,
       tilerUserId: json['tilerUserId'] as String?,
       creationTimeInMs: json['creationTimeInMs'] as int?,
+      state: parseSimulationState(json['state'] as String?),
       previewActions: json['previewActions'] != null &&
-          (json['previewActions'] as List).isNotEmpty
+              (json['previewActions'] as List).isNotEmpty
           ? (json['previewActions'] as List)
-          .map((e) => VibePreviewAction.fromJson(e as Map<String, dynamic>))
-          .toList()
+              .map(
+                  (e) => VibePreviewAction.fromJson(e as Map<String, dynamic>))
+              .toList()
           : null,
     );
   }
@@ -36,6 +65,7 @@ class VibeRequestPreview {
       'vibeRequestId': vibeRequestId,
       'tilerUserId': tilerUserId,
       'creationTimeInMs': creationTimeInMs,
+      'state': state?.name,
       'previewActions': previewActions?.map((e) => e.toJson()).toList(),
     };
   }
@@ -46,6 +76,7 @@ class VibeRequestPreview {
     String? tilerUserId,
     int? creationTimeInMs,
     List<VibePreviewAction>? previewActions,
+    SimulationState? state,
   }) {
     return VibeRequestPreview(
       id: id ?? this.id,
@@ -53,6 +84,7 @@ class VibeRequestPreview {
       tilerUserId: tilerUserId ?? this.tilerUserId,
       creationTimeInMs: creationTimeInMs ?? this.creationTimeInMs,
       previewActions: previewActions ?? this.previewActions,
+      state: state ?? this.state,
     );
   }
 }

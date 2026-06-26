@@ -1637,5 +1637,14 @@
             "previewSummaryUnavailable":"Preview summary could not be loaded",
             "feedbackError": "Failed to submit feedback",
             "hideActions": "Hide actions",
-            "actionsCount": "{count} actions", "@actionsCount": { "placeholders": { "count": { "type": "int" } } }
+            "actionsCount": "{count} actions", "@actionsCount": { "placeholders": { "count": { "type": "int" } } },
+            "reviewPreview": "Review preview",
+            "reviewPreviewWithCount": "Review preview · {count, plural, =1{1 change} other{{count} changes}}", "@reviewPreviewWithCount": { "placeholders": { "count": { "type": "int" } } },
+            "previewChanges": "Preview Changes",
+            "changesCount": "{count, plural, =1{1 change} other{{count} changes}}", "@changesCount": { "placeholders": { "count": { "type": "int" } } },
+            "noActionsInPreview": "No actions in this preview.",
+            "tilecastStarting": "Tilecast starting…",
+            "tilecastQueued": "Tilecast queued…",
+            "generatingTilecast": "Generating tilecast…",
+            "previewGenerationFailed": "Preview generation failed."
 }

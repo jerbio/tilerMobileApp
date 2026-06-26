@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
@@ -10,7 +11,6 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:gpt_markdown/gpt_markdown.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MessageList extends StatefulWidget {
   final VibeChatState state;
@@ -279,66 +279,50 @@ class _MessageListState extends State<MessageList> {
     final statusColor = _getActionStatusColor(action.status, tileThemeExtension);
 
     return GestureDetector(
-      onTap: () {
-        if (widget.state.step != VibeChatStep.loaded) return;
-        const nonClickableTypes = {
-          'remove_existing_task',
-          'whatif_removedtask',
-          'conversational_and_not_supported',
-          'none',
-        };
-        const nonClickableStatuses = {
-          ActionStatus.executed,
-          ActionStatus.failed,
-          ActionStatus.exited,
-          ActionStatus.disposed,
-        };
-
-        if (nonClickableTypes.contains(action.type)) return;
-        if (nonClickableStatuses.contains(action.status)) return;
-
-        if (requestId != null) {
-          context.read<VibeChatBloc>().add(PreviewActionEvent(requestId, action.id ?? ''));
-        }
-      },
+      onTap: action.status == ActionStatus.executed
+          ? () async {
+              final success = await context.read<VibeChatBloc>().executeActionPreview(action.entityId ?? '');
+              if (success && context.mounted) Navigator.pop(context);
+            }
+          : null,
       child: Align(
-        alignment: Alignment.centerLeft,
-        child: Container(
-          margin: EdgeInsets.all(5),
-          padding: EdgeInsets.all(5),
-          constraints: BoxConstraints(maxWidth: 250),
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: statusColor,
-              width: 2,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildActionIcon(action),
-              SizedBox(width: 4),
-              Flexible(
-                child: Text(
-                  action.descriptions ?? '',
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              SizedBox(width: 4),
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: statusColor,
-                ),
-              ),
-              SizedBox(width: 4),
-            ],
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: EdgeInsets.all(5),
+        padding: EdgeInsets.all(5),
+        constraints: BoxConstraints(maxWidth: 250),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: statusColor,
+            width: 2,
           ),
         ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildActionIcon(action),
+            SizedBox(width: 4),
+            Flexible(
+              child: Text(
+                action.descriptions ?? '',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            SizedBox(width: 4),
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: statusColor,
+              ),
+            ),
+            SizedBox(width: 4),
+          ],
+        ),
+      ),
       ),
     );
   }

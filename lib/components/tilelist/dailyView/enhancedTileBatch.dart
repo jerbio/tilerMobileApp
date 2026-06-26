@@ -570,7 +570,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         orderedTilesList,
       );
 
-      if (widget.preview && targetScrollIndex != null) {
+      if ((widget.preview || widget.selectedActionEntityId != null) && targetScrollIndex != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_itemScrollController.isAttached) {
             _itemScrollController.jumpTo(

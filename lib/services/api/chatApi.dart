@@ -313,7 +313,7 @@ class ChatApi extends AppApi {
           }
           return null;
         } else {
-          throw TilerError(Message: 'Server returned ${response.statusCode}');
+          throw TilerError(Message: LocalizationService.instance.translations.responseHandlingError);
         }
       } else {
         throw TilerError(
@@ -398,14 +398,21 @@ class ChatApi extends AppApi {
         http.Response response = await http.get(uri, headers: headers);
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['preview'] != null) {
-            return [VibeRequestPreview.fromJson(jsonResult['Content']['preview'])];
+          final content = jsonResult['Content'];
+          if (content is Map<String, dynamic>) {
+            if (content['id'] != null || content['state'] != null) {
+              return [VibeRequestPreview.fromJson(content)];
+            }
+            if (content['preview'] is Map<String, dynamic>) {
+              return [VibeRequestPreview.fromJson(
+                  content['preview'] as Map<String, dynamic>)];
+            }
           }
-
           return [];
         } else {
           throw TilerError(
-              Message: LocalizationService.instance.translations.responseHandlingError);
+              Message: LocalizationService
+                  .instance.translations.responseHandlingError);
         }
       } else {
         throw TilerError(
