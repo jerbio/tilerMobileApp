@@ -1,18 +1,18 @@
 part of 'device_setting_bloc.dart';
 
 sealed class DeviceSettingState extends Equatable {
-  final bool isDarkMode;
+  final ThemeMode themeMode;
 
-  const DeviceSettingState({this.isDarkMode = false});
+  const DeviceSettingState({this.themeMode = ThemeMode.system});
   @override
-  List<Object> get props => [isDarkMode];
+  List<Object> get props => [themeMode];
 }
 
 final class DeviceSettingInitial extends DeviceSettingState {
   final bool shouldLogout;
   const DeviceSettingInitial(
-      {required bool isDarkMode, this.shouldLogout = false})
-      : super(isDarkMode: isDarkMode);
+      {required ThemeMode themeMode, this.shouldLogout = false})
+      : super(themeMode: themeMode);
 }
 
 final class DeviceLocationSettingLoading extends DeviceSettingState {
@@ -20,8 +20,8 @@ final class DeviceLocationSettingLoading extends DeviceSettingState {
   final bool? renderLoadingUI;
   final List<Function>? callBacks;
   DeviceLocationSettingLoading(
-      {required bool isDarkMode, this.renderLoadingUI, this.callBacks, this.id})
-      : super(isDarkMode: isDarkMode);
+      {required ThemeMode themeMode, this.renderLoadingUI, this.callBacks, this.id})
+      : super(themeMode: themeMode);
 }
 
 final class DeviceLocationSettingUIPending
@@ -31,19 +31,19 @@ final class DeviceLocationSettingUIPending
   DeviceLocationSettingUIPending({
     this.callBacks,
     this.id,
-    required bool isDarkMode,
+    required ThemeMode themeMode,
   }) : super(
             id: id,
             renderLoadingUI: true,
             callBacks: callBacks,
-            isDarkMode: isDarkMode);
+            themeMode: themeMode);
 
   @override
   List<Object> get props => [
         id ?? Utility.getUuid,
         renderLoadingUI ?? false,
         callBacks ?? [],
-        isDarkMode
+        themeMode
       ];
 }
 
@@ -51,33 +51,45 @@ final class DeviceUserProfileSettingLoading extends DeviceSettingState {
   final String? id;
   final SessionProfile? sessionProfile;
   DeviceUserProfileSettingLoading(
-      {required isDarkMode, this.sessionProfile, this.id})
-      : super(isDarkMode: isDarkMode);
+      {required themeMode, this.sessionProfile, this.id})
+      : super(themeMode: themeMode);
 
   @override
   List<Object> get props =>
-      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), isDarkMode];
+      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), themeMode];
+}
+
+final class DeviceThemeUpdatingSetting extends DeviceSettingState {
+  final String? id;
+  final SessionProfile? sessionProfile;
+  DeviceThemeUpdatingSetting(
+      {required themeMode, this.sessionProfile, this.id})
+      : super(themeMode: themeMode);
+
+  @override
+  List<Object> get props =>
+      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), themeMode];
 }
 
 final class DeviceSettingLoaded extends DeviceSettingState {
   final String? id;
   final SessionProfile? sessionProfile;
 
-  DeviceSettingLoaded({this.sessionProfile, this.id, required isDarkMode})
-      : super(isDarkMode: isDarkMode);
+  DeviceSettingLoaded({this.sessionProfile, this.id, required themeMode})
+      : super(themeMode: themeMode);
   @override
   List<Object> get props =>
-      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), isDarkMode];
+      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), themeMode];
 }
 
 final class DeviceSettingSaved extends DeviceSettingState {
   final String? id;
   final SessionProfile? sessionProfile;
-  DeviceSettingSaved({this.sessionProfile, this.id, required isDarkMode})
-      : super(isDarkMode: isDarkMode);
+  DeviceSettingSaved({this.sessionProfile, this.id, required themeMode})
+      : super(themeMode: themeMode);
   @override
   List<Object> get props =>
-      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), isDarkMode];
+      [id ?? Utility.getUuid, sessionProfile ?? SessionProfile(), themeMode];
 }
 
 final class DeviceSettingError extends DeviceSettingState {
@@ -88,13 +100,13 @@ final class DeviceSettingError extends DeviceSettingState {
     required this.error,
     this.sessionProfile,
     this.id,
-    required isDarkMode,
-  }) : super(isDarkMode: isDarkMode);
+    required themeMode,
+  }) : super(themeMode: themeMode);
   @override
   List<Object> get props => [
         id ?? Utility.getUuid,
         sessionProfile ?? SessionProfile(),
         error,
-        isDarkMode
+        themeMode
       ];
 }
