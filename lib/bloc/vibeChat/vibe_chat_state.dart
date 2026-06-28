@@ -12,6 +12,7 @@ enum VibeChatStep {
   transcribing,
   loadingPreview,
   previewLoaded,
+  executedActionPreviewLoading,
   error,
 }
 
@@ -29,20 +30,27 @@ class VibeChatState extends Equatable {
   final int currentSessionIndex;
   final List<SubCalendarEvent>? previewTiles;
   final String? selectedActionEntityId;
+  final SimulationState? simulationState;
+  final VibeRequestPreview? simulation;
+  final String? activeRequestId;
+
   const VibeChatState({
     this.step = VibeChatStep.initial,
-    this.currentSession ,
+    this.currentSession,
     this.messages = const [],
     this.hasMoreMessages = false,
     this.currentIndex = 0,
     this.error,
     this.transcribedText,
-    this.sessions= const[],
-    this.shouldShowAcceptButton=false,
+    this.sessions = const [],
+    this.shouldShowAcceptButton = false,
     this.hasMoreSessions = false,
     this.currentSessionIndex = 0,
     this.previewTiles,
-    this.selectedActionEntityId
+    this.selectedActionEntityId,
+    this.simulationState,
+    this.simulation,
+    this.activeRequestId,
   });
 
   VibeChatState copyWith({
@@ -59,6 +67,10 @@ class VibeChatState extends Equatable {
     int? currentSessionIndex,
     List<SubCalendarEvent>? previewTiles,
     String? selectedActionEntityId,
+    SimulationState? simulationState,
+    VibeRequestPreview? simulation,
+    String? activeRequestId,
+    bool clearSimulation = false,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -69,29 +81,36 @@ class VibeChatState extends Equatable {
       error: error ?? this.error,
       transcribedText: transcribedText ?? this.transcribedText,
       sessions: sessions ?? this.sessions,
-      shouldShowAcceptButton: shouldShowAcceptButton ?? this.shouldShowAcceptButton,
+      shouldShowAcceptButton:
+          shouldShowAcceptButton ?? this.shouldShowAcceptButton,
       hasMoreSessions: hasMoreSessions ?? this.hasMoreSessions,
       currentSessionIndex: currentSessionIndex ?? this.currentSessionIndex,
       previewTiles: previewTiles ?? this.previewTiles,
-      selectedActionEntityId: selectedActionEntityId ?? this.selectedActionEntityId,
+      selectedActionEntityId:
+          selectedActionEntityId ?? this.selectedActionEntityId,
+      simulationState: clearSimulation ? null : (simulationState ?? this.simulationState),
+      simulation: clearSimulation ? null : (simulation ?? this.simulation),
+      activeRequestId: clearSimulation ? null : (activeRequestId ?? this.activeRequestId),
     );
   }
 
   @override
   List<Object?> get props => [
-    step,
-    currentSession,
-    messages,
-    hasMoreMessages,
-    currentIndex,
-    error,
-    transcribedText,
-    sessions,
-    shouldShowAcceptButton,
-    hasMoreMessages,
-    currentSessionIndex,
-    previewTiles,
-    selectedActionEntityId
-  ];
+        step,
+        currentSession,
+        messages,
+        hasMoreMessages,
+        currentIndex,
+        error,
+        transcribedText,
+        sessions,
+        shouldShowAcceptButton,
+        hasMoreMessages,
+        currentSessionIndex,
+        previewTiles,
+        selectedActionEntityId,
+        simulationState,
+        simulation,
+        activeRequestId,
+      ];
 }
-

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -156,28 +157,14 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     final statusColor = _getActionStatusColor(action.status, tileThemeExtension);
 
     return GestureDetector(
-      onTap: () {
-        if (widget.state.step != VibeChatStep.loaded) return;
-        const nonClickableTypes = {
-          ActionType.removeExistingTask,
-          ActionType.whatIfRemovedTask,
-          ActionType.conversationalAndNotSupported,
-          ActionType.none,
-        };
-        const nonClickableStatuses = {
-          ActionStatus.executed,
-          ActionStatus.failed,
-          ActionStatus.exited,
-          ActionStatus.disposed,
-        };
-
-        if (nonClickableTypes.contains(action.type)) return;
-        if (nonClickableStatuses.contains(action.status)) return;
-
-        if (widget.requestId != null) {
-          context.read<VibeChatBloc>().add(PreviewActionEvent(widget.requestId! , action.id ?? ''));
-        }
-      },
+      onTap: action.status == ActionStatus.executed
+          ? () async {
+              final completer = Completer<bool>();
+              context.read<VibeChatBloc>().add(ExecuteActionPreviewEvent(action.entityId ?? '', completer));
+              final success = await completer.future;
+              if (success && context.mounted) Navigator.pop(context);
+            }
+          : null,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Container(

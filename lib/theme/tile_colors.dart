@@ -194,6 +194,7 @@ class TileColors{
   static const Color vibeChatPendingAction=Colors.blue;
   static const Color vibeChatExecutedAction=Colors.green;
   static const Color vibeChatFailedAction=Colors.red;
+  static const Color vibeChatReviewPreview=Color(0xFFF79009);
   static const Color vibeChatLinkColor=Colors.blue;
 
 

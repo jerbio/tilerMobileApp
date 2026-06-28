@@ -6,7 +6,11 @@ import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/vibeChat/MessageList.dart';
 import 'package:tiler_app/components/vibeChat/messageInput.dart';
+import 'package:tiler_app/components/vibeChat/simulationReviewSheet.dart';
+import 'package:tiler_app/data/VibeChat/VibeRequestPreview.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/components/PendingWidget.dart';
+import 'package:tiler_app/theme/tile_colors.dart';
 
 class VibeChat extends StatefulWidget {
   @override
@@ -110,6 +114,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
         NotificationOverlayMessageType.error,
       );
     }
+
   }
 
   Widget _buildDrawer(BuildContext context, VibeChatState state) {
@@ -304,19 +309,144 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
     );
   }
 
+  Widget _buildSimulationStrip(VibeChatState state) {
+    final simState = state.simulationState;
+
+    if (simState == SimulationState.invalidated) {
+      return const SizedBox.shrink();
+    }
+
+    if (simState == null && state.activeRequestId == null) {
+      return const SizedBox.shrink();
+    }
+
+    if (simState == null ||
+        simState == SimulationState.queued ||
+        simState == SimulationState.processing) {
+      final String loadingText = simState == SimulationState.queued
+          ? localization.tilecastQueued
+          : simState == SimulationState.processing
+              ? localization.generatingTilecast
+              : localization.tilecastStarting;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    colorScheme.onSurfaceVariant),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              loadingText,
+              style: TextStyle(
+                fontSize: 13,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (simState == SimulationState.failed) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+        child: Text(
+          localization.previewGenerationFailed,
+          style: TextStyle(fontSize: 13, color: colorScheme.error),
+        ),
+      );
+    }
+
+    if (simState == SimulationState.ready) {
+      final simulation = state.simulation;
+      final actionCount = simulation?.previewActions?.length ?? 0;
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: GestureDetector(
+            onTap: () => _openReviewSheet(context, state),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              decoration: BoxDecoration(
+                color: TileColors.vibeChatReviewPreview,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.auto_awesome,
+                      size: 15, color: colorScheme.onPrimary),
+                  const SizedBox(width: 7),
+                  Text(
+                    localization.reviewPreviewWithCount(actionCount),
+                    style: TextStyle(
+                      color: colorScheme.onPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right_rounded,
+                      size: 16, color: colorScheme.onPrimary),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  void _openReviewSheet(BuildContext context, VibeChatState state) {
+    final simulation = state.simulation;
+    if (simulation == null) return;
+    final bloc = context.read<VibeChatBloc>();
+    final requestId = state.activeRequestId ?? simulation.vibeRequestId;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => SimulationReviewSheet(
+        simulation: simulation,
+        onActionTap: requestId == null
+            ? null
+            : (actionId) {
+                Navigator.of(sheetContext).pop();
+                bloc.add(PreviewActionEvent(requestId, actionId));
+              },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return BlocConsumer<VibeChatBloc, VibeChatState>(
       listener: _handleBlocStateChanges,
       builder: (context, state) {
         return Scaffold(
-          endDrawer: _buildDrawer(context,state),
+          endDrawer: _buildDrawer(context, state),
           appBar: _buildAppBar(state),
-          body: Container(
+          body: Stack(
+            children: [
+            Container(
             decoration: BoxDecoration(
               color: colorScheme.surface,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
@@ -329,15 +459,21 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                     scrollController: _scrollController,
                   ),
                 ),
-                if (state.shouldShowAcceptButton && (state.step == VibeChatStep.loaded || state.step == VibeChatStep.loadingPreview || state.step == VibeChatStep.previewLoaded))
+                _buildSimulationStrip(state),
+                if (state.shouldShowAcceptButton &&
+                    (state.step == VibeChatStep.loaded ||
+                        state.step == VibeChatStep.loadingPreview ||
+                        state.step == VibeChatStep.previewLoaded))
                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 8),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<VibeChatBloc>().add(AcceptChangesEvent());
-
+                          context
+                              .read<VibeChatBloc>()
+                              .add(AcceptChangesEvent());
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: colorScheme.primary,
@@ -346,13 +482,19 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                       ),
                     ),
                   ),
-                if (state.step == VibeChatStep.sending || state.step == VibeChatStep.transcribing)
-                  _buildAnimatedLoadingWidget(state.step==VibeChatStep.transcribing),
+                if (state.step == VibeChatStep.sending ||
+                    state.step == VibeChatStep.transcribing)
+                  _buildAnimatedLoadingWidget(
+                      state.step == VibeChatStep.transcribing),
                 MessageInput(
                   controller: _messageController,
                 ),
               ],
             ),
+          ),
+          if (state.step == VibeChatStep.executedActionPreviewLoading)
+            PendingWidget(blurBackGround: true),
+          ],
           ),
         );
       },

@@ -17,8 +17,12 @@ class SignalRSocketService extends AppApi {
   UserApi? _userApi;
   final StreamController<String> _statusController =
       StreamController<String>.broadcast();
+  final StreamController<Map<String, dynamic>> _previewReadyController =
+      StreamController<Map<String, dynamic>>.broadcast();
 
   Stream<String> get statusStream => _statusController.stream;
+  Stream<Map<String, dynamic>> get previewReadyStream =>
+      _previewReadyController.stream;
 
   Timer? _keepAliveTimer;
   Timer? _reconnectTimer;
@@ -213,6 +217,9 @@ class SignalRSocketService extends AppApi {
           final mList = data['M'] as List;
 
           for (var item in mList) {
+            if (item is Map) {
+              Utility.debugPrint('[previewReady] socket method=${item['M']}');
+            }
             if (item is Map && item['M'] == 'refreshDataFromSockets') {
               final args = item['A'];
               if (args is List && args.isNotEmpty) {
@@ -229,6 +236,29 @@ class SignalRSocketService extends AppApi {
                 }
 
                 _processVibeUpdate(payload);
+              }
+            }
+
+            if (item is Map && item['M'] == 'previewReady') {
+              final args = item['A'];
+              if (args is List && args.isNotEmpty) {
+                dynamic payload = args[0];
+
+                if (payload is String) {
+                  try {
+                    payload = jsonDecode(payload);
+                  } catch (e) {
+                    throw TilerError(
+                        Message:
+                            '${LocalizationService.instance.translations.jsonParseError}: $e');
+                  }
+                }
+
+                if (payload is Map) {
+                  Utility.debugPrint('[previewReady] socket payload=$payload');
+                  _previewReadyController
+                      .add(Map<String, dynamic>.from(payload));
+                }
               }
             }
           }
@@ -281,6 +311,7 @@ class SignalRSocketService extends AppApi {
     _reconnectTimer?.cancel();
     _isConnected = false;
     await _statusController.close();
+    await _previewReadyController.close();
     await _channel?.sink.close();
     super.dispose();
   }

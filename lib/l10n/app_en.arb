@@ -1668,5 +1668,15 @@
             "notesViewerTitle": "Note",
             "notesTapToAdd": "Tap to add a note",
             "notesTapToEdit": "Tap to edit · long press to read",
-            "notesDone": "Done"
+            "notesDone": "Done",
+            "actionsCount": "{count} actions", "@actionsCount": { "placeholders": { "count": { "type": "int" } } },
+            "reviewPreview": "Review preview",
+            "reviewPreviewWithCount": "Review preview · {count, plural, =1{1 change} other{{count} changes}}", "@reviewPreviewWithCount": { "placeholders": { "count": { "type": "int" } } },
+            "previewChanges": "Preview Changes",
+            "changesCount": "{count, plural, =1{1 change} other{{count} changes}}", "@changesCount": { "placeholders": { "count": { "type": "int" } } },
+            "noActionsInPreview": "No actions in this preview.",
+            "tilecastStarting": "Tilecast starting…",
+            "tilecastQueued": "Tilecast queued…",
+            "generatingTilecast": "Generating tilecast…",
+            "previewGenerationFailed": "Preview generation failed."
 }
