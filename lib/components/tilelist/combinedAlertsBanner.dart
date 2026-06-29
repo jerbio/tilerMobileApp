@@ -61,6 +61,11 @@ class CombinedAlertsBanner extends StatefulWidget {
   final List<SubCalendarEvent> declinedTiles;
   final VoidCallback? onRsvpTap;
   final VoidCallback? onRsvpUpdated;
+
+  /// When true, renders only the scrollable chips row with no outer container
+  /// or margins — suitable for embedding inside another widget.
+  final bool inline;
+
   const CombinedAlertsBanner({
     Key? key,
     this.nextTileWithTravel,
@@ -74,6 +79,7 @@ class CombinedAlertsBanner extends StatefulWidget {
     this.declinedTiles = const [],
     this.onRsvpTap,
     this.onRsvpUpdated,
+    this.inline = false,
   }) : super(key: key);
 
   /// Factory method to create from raw tile data
@@ -363,6 +369,11 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
 
     if (alerts.isEmpty) return const SizedBox.shrink();
 
+    // Inline mode: always render just the chips row (no outer container/animation)
+    if (widget.inline) {
+      return _buildInlineChipsRow(context, alerts);
+    }
+
     // Animate in
     if (_animationController.status != AnimationStatus.completed &&
         _animationController.status != AnimationStatus.forward) {
@@ -376,6 +387,29 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
 
     // Multiple alerts: show combined compact row
     return _buildCombinedAlertRow(context, alerts);
+  }
+
+  /// Chips-only row for embedding inside another widget (no outer container).
+  Widget _buildInlineChipsRow(BuildContext context, List<ActiveAlert> alerts) {
+    // Sort by urgency (same as _buildCombinedAlertRow)
+    final sorted = [...alerts]
+      ..sort((a, b) {
+        if (a.isUrgent && !b.isUrgent) return -1;
+        if (!a.isUrgent && b.isUrgent) return 1;
+        return a.type.index.compareTo(b.type.index);
+      });
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: sorted.map((alert) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _buildAlertChip(context, alert),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   /// Build a full-width banner for a single alert (same as original banners)
