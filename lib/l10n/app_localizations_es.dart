@@ -2617,6 +2617,14 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String previewSundialFreeHours(String hours) {
+    return '$hours h libres';
+  }
+
+  @override
+  String get previewSundialFullyBooked => 'Todo reservado';
+
+  @override
   String get previewSundialTier0 => 'Día libre';
 
   @override

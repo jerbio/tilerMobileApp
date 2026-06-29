@@ -2,7 +2,6 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/data/travelDetail.dart';
 
 /// Default distance unit when the backend does not specify one on any
 /// travel detail in the response.
@@ -27,6 +26,11 @@ class DayPreviewMetrics {
   final Duration? sleepDuration;
   final double? completionPct;
 
+  /// Unbooked time left in the day, measured from "now" to midnight at the
+  /// start of the next day. Excludes work, blocks and transit; sleep is
+  /// not subtracted. Clamped to be non-negative.
+  final Duration freeDuration;
+
   const DayPreviewMetrics({
     required this.tilesCount,
     required this.blocksCount,
@@ -40,30 +44,68 @@ class DayPreviewMetrics {
     required this.locationsCount,
     required this.sleepDuration,
     required this.completionPct,
+    required this.freeDuration,
   });
 
   factory DayPreviewMetrics.from({
     required List<TilerEvent> subEvents,
     required Timeline dayTimeline,
     TimelineSummary? timelineSummary,
+    DateTime? now,
   }) {
     int tilesCount = 0;
     int blocksCount = 0;
     int tileSharesCount = 0;
     int nonViableCount = 0;
     int workMs = 0;
+    int blockMs = 0;
     int transitMs = 0;
     int? maxClearMs;
     double? distance;
     String? distanceUnit;
     final locations = <String>{};
 
+    // Everything below is measured for the rest of the day: from now until
+    // midnight at the start of the next day. Booked time before now does
+    // not reduce remaining free time and isn't shown as upcoming transit.
+    final DateTime nowTime = now ?? DateTime.now();
+    final int nowMs = nowTime.millisecondsSinceEpoch;
+
+    // Only viable, interfering events contribute to the summary. Collect
+    // them in time order so we can de-duplicate shared travel: for two
+    // adjacent tiles A and B, A.after == B.before, so summing both before
+    // and after on every tile double counts each gap.
+    final viable = <TilerEvent>[];
     for (final event in subEvents) {
       if (!event.isInterfering(dayTimeline)) continue;
 
+      final sub = event is SubCalendarEvent ? event : null;
+      final isViable = sub?.isViable ?? true;
+      if (!isViable) {
+        nonViableCount++;
+        continue;
+      }
+      viable.add(event);
+    }
+    viable.sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
+
+    for (int i = 0; i < viable.length; i++) {
+      final event = viable[i];
+      final isLast = i == viable.length - 1;
+      final next = isLast ? null : viable[i + 1];
+      final nextSub = next is SubCalendarEvent ? next : null;
+
+      final isComplete = event.isComplete;
       final isBlock = event.isRigid == true;
+      // Remaining duration after now (events fully in the past add 0).
+      final int startMs = event.start ?? nowMs;
+      final int endMs = event.end ?? nowMs;
+      final bool isUpcoming = endMs > nowMs;
+      final int remainingMs =
+          (endMs - (startMs > nowMs ? startMs : nowMs)).clamp(0, endMs);
       if (isBlock) {
         blocksCount++;
+        if (!isComplete) blockMs += remainingMs;
       } else {
         tilesCount++;
       }
@@ -74,48 +116,57 @@ class DayPreviewMetrics {
       }
 
       final sub = event is SubCalendarEvent ? event : null;
-      final isViable = sub?.isViable ?? true;
-      if (!isViable) nonViableCount++;
 
-      final isComplete = event.isComplete;
-
-      // Work duration: non-rigid, viable, not-complete
-      if (!isBlock && isViable && !isComplete) {
-        workMs += event.duration.inMilliseconds;
+      // Work duration: non-rigid, not-complete
+      if (!isBlock && !isComplete) {
+        workMs += remainingMs;
       }
 
-      // Day clears by: viable, not-complete (rigid or not), max end
-      if (isViable && !isComplete && event.end != null) {
+      // Day clears by: not-complete (rigid or not), max end
+      if (!isComplete && event.end != null) {
         if (maxClearMs == null || event.end! > maxClearMs) {
           maxClearMs = event.end!.toInt();
         }
       }
 
-      // Transit + distance
+      // Transit + distance: count each tile's "before" plus its "after",
+      // but skip the "after" when it's the same shared segment as the next
+      // tile's "before" (A.after == B.before) so it isn't double counted.
+      // Past tiles' travel is already done, so only count upcoming tiles.
       final travelDetail = sub?.travelDetail;
-      if (travelDetail != null) {
+      if (isUpcoming && travelDetail != null) {
+        final nextBefore = nextSub?.travelDetail?.before;
+        final after = travelDetail.after;
         final beforeMs = travelDetail.before?.duration;
-        final afterMs = travelDetail.after?.duration;
         if (beforeMs != null) transitMs += beforeMs.round();
-        if (afterMs != null) transitMs += afterMs.round();
+        final shared = after != null &&
+            nextBefore != null &&
+            after.duration == nextBefore.duration &&
+            after.distance == nextBefore.distance;
+        if (!shared && after?.duration != null) {
+          transitMs += after!.duration!.round();
+        }
 
         final beforeDist = travelDetail.before?.distance;
-        final afterDist = travelDetail.after?.distance;
         if (beforeDist != null) {
           distance = (distance ?? 0) + beforeDist;
         }
-        if (afterDist != null) {
-          distance = (distance ?? 0) + afterDist;
+        if (!shared && after?.distance != null) {
+          distance = (distance ?? 0) + after!.distance!;
         }
 
         distanceUnit ??= travelDetail.before?.distanceUnit ??
             travelDetail.after?.distanceUnit;
-      } else if (sub != null) {
+      } else if (isUpcoming && sub != null) {
         // Fallback to raw travel-time fields when no travelDetail is set.
         if (sub.travelTimeBefore != null) {
           transitMs += sub.travelTimeBefore!.round();
         }
-        if (sub.travelTimeAfter != null) {
+        final nextBeforeRaw = nextSub?.travelTimeBefore;
+        final sharedRaw = sub.travelTimeAfter != null &&
+            nextBeforeRaw != null &&
+            sub.travelTimeAfter == nextBeforeRaw;
+        if (!sharedRaw && sub.travelTimeAfter != null) {
           transitMs += sub.travelTimeAfter!.round();
         }
       }
@@ -134,6 +185,15 @@ class DayPreviewMetrics {
       remainingNonCompleteWorkMs: _remainingWorkMs(subEvents, dayTimeline),
     );
 
+    // Free time left in the day: from now until midnight at the start of
+    // the next day, minus booked work, blocks and transit (sleep ignored).
+    final DateTime nextMidnight =
+        DateTime(nowTime.year, nowTime.month, nowTime.day + 1);
+    int restOfDayMs = nextMidnight.difference(nowTime).inMilliseconds;
+    if (restOfDayMs < 0) restOfDayMs = 0;
+    int freeMs = restOfDayMs - workMs - blockMs - transitMs;
+    if (freeMs < 0) freeMs = 0;
+
     return DayPreviewMetrics(
       tilesCount: tilesCount,
       blocksCount: blocksCount,
@@ -147,6 +207,7 @@ class DayPreviewMetrics {
       locationsCount: locations.length,
       sleepDuration: timelineSummary?.sleepDuration,
       completionPct: completionPct,
+      freeDuration: Duration(milliseconds: freeMs),
     );
   }
 

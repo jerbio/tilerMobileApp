@@ -604,6 +604,8 @@
     "previewSundialDistance": "{distance} {unit}",
     "previewSundialLocations": "{count} lugares",
     "previewSundialSleepHours": "{hours} h de sueño",
+    "previewSundialFreeHours": "{hours} h libres",
+    "previewSundialFullyBooked": "Todo reservado",
     "previewSundialTier0": "Día libre",
     "previewSundialTier1": "Empezando",
     "previewSundialTier2": "En curso",

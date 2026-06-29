@@ -1727,6 +1727,15 @@
               "description": "Sleep-hours chip on the preview sundial card.",
               "placeholders": { "hours": { "type": "String", "example": "7.5" } }
             },
+            "previewSundialFreeHours": "{hours}h free",
+            "@previewSundialFreeHours": {
+              "description": "Free-time chip on the preview sundial card showing unbooked hours left in the day.",
+              "placeholders": { "hours": { "type": "String", "example": "4.5" } }
+            },
+            "previewSundialFullyBooked": "All booked up",
+            "@previewSundialFullyBooked": {
+              "description": "Free-time chip text when no unbooked time remains in the day."
+            },
             "previewSundialTier0": "Open day",
             "previewSundialTier1": "Getting started",
             "previewSundialTier2": "Underway",

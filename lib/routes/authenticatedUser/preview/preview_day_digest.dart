@@ -136,10 +136,17 @@ class _PreviewDayDigestState extends State<PreviewDayDigest> {
           color: Colors.transparent,
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildSentence(context, metrics, l10n),
+              // The summary uses all available vertical space and scrolls
+              // only when it is still too tall; the metric chips stay
+              // pinned at the bottom and always visible.
+              Expanded(
+                child: _AutoScrollText(
+                  child: _buildSentence(context, metrics, l10n),
+                ),
+              ),
               const SizedBox(height: 20),
               _buildChips(context, metrics, l10n, colorScheme, isLoading),
             ],
@@ -265,6 +272,7 @@ class _PreviewDayDigestState extends State<PreviewDayDigest> {
     const distanceColor = Color(0xFF3B82F6); // blue
     final locationColor = TileColors.primary; // brand red
     final sleepColor = TileColors.completedTeal; // brand teal
+    final freeColor = TileColors.completedTeal; // brand teal
 
     final chips = <Widget>[];
 
@@ -302,6 +310,17 @@ class _PreviewDayDigestState extends State<PreviewDayDigest> {
       ));
     }
 
+    chips.add(_chip(
+      key: const ValueKey('preview-day-digest-chip-free'),
+      icon: Icons.hourglass_bottom,
+      iconColor: freeColor,
+      text: metrics.freeDuration.inMinutes > 0
+          ? l10n.previewSundialFreeHours(
+              sleepFmt.format(metrics.freeDuration.inMinutes / 60.0))
+          : l10n.previewSundialFullyBooked,
+      colorScheme: colorScheme,
+    ));
+
     if (chips.isEmpty) {
       return const SizedBox.shrink(
           key: ValueKey('preview-day-digest-chip-row-empty'));
@@ -338,6 +357,62 @@ class _PreviewDayDigestState extends State<PreviewDayDigest> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Vertically scrolls [child] like film credits when it is taller than the
+/// available space, looping forever. When the content fits, it stays put
+/// and the user can still scroll manually.
+class _AutoScrollText extends StatefulWidget {
+  const _AutoScrollText({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AutoScrollText> createState() => _AutoScrollTextState();
+}
+
+class _AutoScrollTextState extends State<_AutoScrollText> {
+  final ScrollController _controller = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startScroll());
+  }
+
+  Future<void> _startScroll() async {
+    if (!mounted || !_controller.hasClients) return;
+    final maxExtent = _controller.position.maxScrollExtent;
+    if (maxExtent <= 0) return; // Content fits — no auto-scroll needed.
+
+    // ~30 logical px/sec credits crawl, with brief holds at each end.
+    final duration = Duration(milliseconds: (maxExtent / 30 * 1000).round());
+    while (mounted && _controller.hasClients) {
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!mounted || !_controller.hasClients) return;
+      await _controller.animateTo(_controller.position.maxScrollExtent,
+          duration: duration, curve: Curves.linear);
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (!mounted || !_controller.hasClients) return;
+      await _controller.animateTo(0,
+          duration: duration, curve: Curves.linear);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      controller: _controller,
+      physics: const ClampingScrollPhysics(),
+      child: widget.child,
     );
   }
 }

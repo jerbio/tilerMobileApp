@@ -176,9 +176,13 @@ class _PreviewState extends State<PreviewWidget> {
           enableInfiniteScroll: false,
           reverse: false,
           scrollDirection: Axis.horizontal,
-          // Sized for the tallest slide (PreviewChart): header (~30) +
-          // 20 gap + 220 ring + ~20 vertical padding ≈ 290; +10 buffer.
-          height: 300,
+          // The taller PreviewChart slides (header ~30 + 20 gap + 220 ring
+          // + padding ≈ 290) only exist when classification/location
+          // sections are present. When the sundial is the lone slide it
+          // only needs ~200 (arc 120 + label + chevron), so we avoid
+          // reserving chart-sized dead space that would otherwise squeeze
+          // the day-digest summary below it.
+          height: carouselDayRibbonBatch.length > 1 ? 270 : 200,
           autoPlay: carouselDayRibbonBatch.length > 1),
     );
   }
@@ -199,12 +203,14 @@ class _PreviewState extends State<PreviewWidget> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: MainAxisSize.max,
       children: [
         renderCharts(),
-        PreviewDayDigest(
-          subEvents: this.widget.subEvents,
-          timeline: this._timeline,
+        Expanded(
+          child: PreviewDayDigest(
+            subEvents: this.widget.subEvents,
+            timeline: this._timeline,
+          ),
         ),
       ],
     );

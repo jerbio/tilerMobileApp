@@ -4667,6 +4667,18 @@ abstract class AppLocalizations {
   /// **'{hours}h sleep'**
   String previewSundialSleepHours(String hours);
 
+  /// Free-time chip on the preview sundial card showing unbooked hours left in the day.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h free'**
+  String previewSundialFreeHours(String hours);
+
+  /// Free-time chip text when no unbooked time remains in the day.
+  ///
+  /// In en, this message translates to:
+  /// **'All booked up'**
+  String get previewSundialFullyBooked;
+
   /// No description provided for @previewSundialTier0.
   ///
   /// In en, this message translates to:

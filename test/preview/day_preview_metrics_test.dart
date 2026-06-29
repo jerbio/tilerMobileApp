@@ -142,6 +142,7 @@ void main() {
       final m = DayPreviewMetrics.from(
         subEvents: subs,
         dayTimeline: today,
+        now: DateTime.utc(2026, 6, 21, 6),
       );
 
       expect(m.workDuration, const Duration(minutes: 90));
@@ -167,9 +168,61 @@ void main() {
       final m = DayPreviewMetrics.from(
         subEvents: subs,
         dayTimeline: today,
+        now: DateTime.utc(2026, 6, 21, 6),
       );
 
       expect(m.transitDuration, const Duration(minutes: 12));
+    });
+
+    test('free duration is rest-of-day minus work and blocks, excludes travel',
+        () {
+      final today = Timeline(
+          DateTime(2026, 6, 21).millisecondsSinceEpoch,
+          DateTime(2026, 6, 21, 23, 59, 59, 999).millisecondsSinceEpoch);
+      final now = DateTime(2026, 6, 21, 18, 0); // 6h until midnight (local)
+      final subs = [
+        _buildSub(
+          id: 't1',
+          startMs: DateTime(2026, 6, 21, 19).millisecondsSinceEpoch,
+          endMs: DateTime(2026, 6, 21, 20).millisecondsSinceEpoch, // 1h work
+          travelDetail: _td(beforeMs: 30 * 60 * 1000), // 30m transit
+        ),
+        _buildSub(
+            id: 'b1',
+            startMs: DateTime(2026, 6, 21, 21).millisecondsSinceEpoch,
+            endMs: DateTime(2026, 6, 21, 22).millisecondsSinceEpoch,
+            isRigid: true),
+      ];
+
+      final m = DayPreviewMetrics.from(
+        subEvents: subs,
+        dayTimeline: today,
+        now: now,
+      );
+
+      // 6h window - 1h work - 1h block - 30m transit = 3h30
+      expect(m.freeDuration, const Duration(hours: 3, minutes: 30));
+    });
+
+    test('free duration clamps to zero when fully booked', () {
+      final today = Timeline(
+          DateTime(2026, 6, 21).millisecondsSinceEpoch,
+          DateTime(2026, 6, 21, 23, 59, 59, 999).millisecondsSinceEpoch);
+      final now = DateTime(2026, 6, 21, 22, 0); // 2h until midnight (local)
+      final subs = [
+        _buildSub(
+            id: 't1',
+            startMs: DateTime(2026, 6, 21, 22).millisecondsSinceEpoch,
+            endMs: DateTime(2026, 6, 22, 0).millisecondsSinceEpoch), // 2h
+      ];
+
+      final m = DayPreviewMetrics.from(
+        subEvents: subs,
+        dayTimeline: today,
+        now: now,
+      );
+
+      expect(m.freeDuration, Duration.zero);
     });
 
     test(
@@ -189,6 +242,7 @@ void main() {
       final m = DayPreviewMetrics.from(
         subEvents: subs,
         dayTimeline: today,
+        now: DateTime.utc(2026, 6, 21, 6),
       );
 
       expect(m.transitDuration, const Duration(minutes: 8));
@@ -305,6 +359,7 @@ void main() {
       final m = DayPreviewMetrics.from(
         subEvents: subs,
         dayTimeline: today,
+        now: DateTime.utc(2026, 6, 21, 6),
       );
 
       expect(m.distance, 4000.0);
@@ -350,6 +405,7 @@ void main() {
       final m = DayPreviewMetrics.from(
         subEvents: subs,
         dayTimeline: today,
+        now: DateTime.utc(2026, 6, 21, 6),
       );
 
       expect(m.distanceUnit, 'miles');
