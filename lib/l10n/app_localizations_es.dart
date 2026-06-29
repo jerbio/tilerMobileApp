@@ -2546,4 +2546,108 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get endOfDay => 'Fin del día';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get share => 'Compartir';
+
+  @override
+  String get openChat => 'Abrir chat';
+
+  @override
+  String get goToToday => 'Ir a hoy';
+
+  @override
+  String get switchCalendarView => 'Cambiar vista de calendario';
+
+  @override
+  String get previewSundialGreeting => 'Hola.';
+
+  @override
+  String get previewSundialCountsPrefix => 'Hoy tienes';
+
+  @override
+  String get previewSundialCountsSuffix => 'por delante.';
+
+  @override
+  String previewSundialTilesClause(String count) {
+    return '$count tiles';
+  }
+
+  @override
+  String previewSundialBlocksClause(String count) {
+    return '$count bloques';
+  }
+
+  @override
+  String previewSundialTileSharesClause(String count) {
+    return '$count tileshares';
+  }
+
+  @override
+  String previewSundialWorkClause(String hours) {
+    return '$hours horas de trabajo';
+  }
+
+  @override
+  String previewSundialTransitClause(String mins) {
+    return '$mins min en tránsito';
+  }
+
+  @override
+  String previewSundialClearsByClause(String time) {
+    return 'tu día termina a las $time';
+  }
+
+  @override
+  String get previewSundialAndSeparator => 'y';
+
+  @override
+  String previewSundialDistance(String distance, String unit) {
+    return '$distance $unit';
+  }
+
+  @override
+  String previewSundialLocations(String count) {
+    return '$count lugares';
+  }
+
+  @override
+  String previewSundialSleepHours(String hours) {
+    return '$hours h de sueño';
+  }
+
+  @override
+  String previewSundialFreeHours(String hours) {
+    return '$hours h libres';
+  }
+
+  @override
+  String get previewSundialFullyBooked => 'Todo reservado';
+
+  @override
+  String get previewSundialTier0 => 'Día libre';
+
+  @override
+  String get previewSundialTier1 => 'Empezando';
+
+  @override
+  String get previewSundialTier2 => 'En curso';
+
+  @override
+  String get previewSundialTier3 => 'Buen avance';
+
+  @override
+  String get previewSundialTier4 => 'Casi listo';
+
+  @override
+  String get previewSundialTodayLabel => 'Hoy';
+
+  @override
+  String previewSundialCompositionA11y(
+      String tiles, String blocks, String nonViable) {
+    return '$tiles tiles, $blocks bloques, $nonViable sin programar';
+  }
 }

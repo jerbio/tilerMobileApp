@@ -1669,5 +1669,87 @@
             "notesTapToAdd": "Tap to add a note",
             "notesTapToEdit": "Tap to edit · long press to read",
             "notesDone": "Done",
-            "endOfDay": "End of Day"
+            "endOfDay": "End of Day",
+            "search": "Search",
+            "share": "Share",
+            "openChat": "Open chat",
+            "goToToday": "Go to today",
+            "switchCalendarView": "Switch calendar view",
+
+            "previewSundialGreeting": "Hello.",
+            "previewSundialCountsPrefix": "Today has",
+            "previewSundialCountsSuffix": "waiting.",
+            "previewSundialTilesClause": "{count} tiles",
+            "@previewSundialTilesClause": {
+              "description": "Tiles clause in the preview sundial summary sentence.",
+              "placeholders": { "count": { "type": "String", "example": "5" } }
+            },
+            "previewSundialBlocksClause": "{count} blocks",
+            "@previewSundialBlocksClause": {
+              "description": "Blocks clause in the preview sundial summary sentence.",
+              "placeholders": { "count": { "type": "String", "example": "3" } }
+            },
+            "previewSundialTileSharesClause": "{count} tileshares",
+            "@previewSundialTileSharesClause": {
+              "description": "Tileshares clause in the preview sundial summary sentence.",
+              "placeholders": { "count": { "type": "String", "example": "2" } }
+            },
+            "previewSundialWorkClause": "{hours} hours of work",
+            "@previewSundialWorkClause": {
+              "description": "Work-hours clause in the preview sundial summary sentence.",
+              "placeholders": { "hours": { "type": "String", "example": "4.2" } }
+            },
+            "previewSundialTransitClause": "{mins} mins of transit",
+            "@previewSundialTransitClause": {
+              "description": "Transit-minutes clause in the preview sundial summary sentence.",
+              "placeholders": { "mins": { "type": "String", "example": "22" } }
+            },
+            "previewSundialClearsByClause": "your day clears by {time}",
+            "@previewSundialClearsByClause": {
+              "description": "Day-clears-by clause in the preview sundial summary sentence.",
+              "placeholders": { "time": { "type": "String", "example": "5:30 PM" } }
+            },
+            "previewSundialAndSeparator": "and",
+            "previewSundialDistance": "{distance} {unit}",
+            "@previewSundialDistance": {
+              "description": "Distance chip on the preview sundial card.",
+              "placeholders": {
+                "distance": { "type": "String", "example": "1,200" },
+                "unit": { "type": "String", "example": "meters" }
+              }
+            },
+            "previewSundialLocations": "{count} places",
+            "@previewSundialLocations": {
+              "description": "Locations chip on the preview sundial card.",
+              "placeholders": { "count": { "type": "String", "example": "3" } }
+            },
+            "previewSundialSleepHours": "{hours}h sleep",
+            "@previewSundialSleepHours": {
+              "description": "Sleep-hours chip on the preview sundial card.",
+              "placeholders": { "hours": { "type": "String", "example": "7.5" } }
+            },
+            "previewSundialFreeHours": "{hours}h free",
+            "@previewSundialFreeHours": {
+              "description": "Free-time chip on the preview sundial card showing unbooked hours left in the day.",
+              "placeholders": { "hours": { "type": "String", "example": "4.5" } }
+            },
+            "previewSundialFullyBooked": "All booked up",
+            "@previewSundialFullyBooked": {
+              "description": "Free-time chip text when no unbooked time remains in the day."
+            },
+            "previewSundialTier0": "Open day",
+            "previewSundialTier1": "Getting started",
+            "previewSundialTier2": "Underway",
+            "previewSundialTier3": "Solid progress",
+            "previewSundialTier4": "Almost there",
+            "previewSundialTodayLabel": "Today",
+            "previewSundialCompositionA11y": "{tiles} tiles, {blocks} blocks, {nonViable} unscheduled",
+            "@previewSundialCompositionA11y": {
+              "description": "Accessibility label for the empty-state composition arc.",
+              "placeholders": {
+                "tiles": { "type": "String", "example": "5" },
+                "blocks": { "type": "String", "example": "3" },
+                "nonViable": { "type": "String", "example": "2" }
+              }
+            }
 }
