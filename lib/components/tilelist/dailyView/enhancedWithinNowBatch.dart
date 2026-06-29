@@ -13,11 +13,9 @@ import 'package:tiler_app/components/tilelist/dailyView/tileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/components.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/models.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
-import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
+import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
-import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
-import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -386,102 +384,52 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           .toList();
     }
 
-    // Build scrollable content widgets (below the sticky header)
-    List<Widget> scrollableContent = [];
-
-    // 1. Today summary row
-    scrollableContent.add(TodaySummaryRow(stats: stats));
-
-    // Detect all alert data
+    // Detect all alert data before building content
     SubCalendarEvent? nextDepartureTile;
     List<SubCalendarEvent> extendedTiles = [];
 
-    // 2. Get travel alert data
     if (viableTiles.isNotEmpty) {
-      final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
-      nextDepartureTile = _getNextDepartureRequiredTile(orderedTiles);
-    }
-
-    // Get extended tiles
-    if (viableTiles.isNotEmpty) {
+      final orderedTilesForAlerts = Utility.orderTiles(viableTiles.values.toList());
+      nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesForAlerts);
       extendedTiles =
           ExtendedTilesBanner.detectExtendedTiles(viableTiles.values.toList());
     }
 
-    // Count active alerts to decide between combined or individual banners
-    int activeAlertCount = 0;
-    if (nextDepartureTile != null) activeAlertCount++;
-    if (_detectedConflicts.isNotEmpty) activeAlertCount++;
-    if (extendedTiles.isNotEmpty) activeAlertCount++;
-    if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty)
-      activeAlertCount++;
-    // Use combined banner if more than 1 alert, otherwise show individual banners
-    if (activeAlertCount > 1) {
-      scrollableContent.add(
-        CombinedAlertsBanner(
-          nextTileWithTravel: nextDepartureTile,
-          onTravelTap: () {
-            // Navigate to the tile or show details
-          },
-          onTravelDismiss: () {},
-          conflictGroups: _detectedConflicts,
-          onConflictTap: () {
-            // Could show a modal with all conflicts
-          },
-          extendedTiles: extendedTiles,
-          onExtendedTap: () {
-            CombinedAlertsBannerHelpers.showExtendedTilesModal(
-                preview: (widget as EnhancedWithinNowBatch).preview,
-                context, extendedTiles);
-          },
-          pendingRsvpTiles: pendingRsvpTiles,
-          declinedTiles: declinedTiles,
-          onRsvpTap: () {
-            CombinedAlertsBannerHelpers.showPendingRsvpModal(
-              preview: (widget as EnhancedWithinNowBatch).preview,
-              context,
-              pendingRsvpTiles,
-              declinedTiles: declinedTiles,
-              onRsvpUpdated: () => _triggerRefresh(),
-            );
-          },
-          onRsvpUpdated: () => _triggerRefresh(),
-        ),
-      );
-    } else {
-      // Show individual banners when only 0 or 1 alert is active
-      if (nextDepartureTile != null) {
-        scrollableContent.add(
-          ProactiveAlertBanner(
-            nextTileWithTravel: nextDepartureTile,
-            onDismiss: () {},
-            preview: (widget as EnhancedWithinNowBatch).preview,
-          ),
-        );
-      }
+    final withinNow = widget as EnhancedWithinNowBatch;
 
-      if (extendedTiles.isNotEmpty) {
-        scrollableContent.add(
-          ExtendedTilesBanner(
-            extendedTiles: extendedTiles,
-            preview: (widget as EnhancedWithinNowBatch).preview,
-          ),
-        );
-      }
+    // Build scrollable content widgets (below the sticky header)
+    List<Widget> scrollableContent = [];
 
-      if (pendingRsvpTiles.isNotEmpty || declinedTiles.isNotEmpty) {
-        scrollableContent.add(
-          PendingRsvpBanner(
-            pendingTiles: pendingRsvpTiles,
+    // 1. Merged summary row: travel time + completion on the right;
+    //    alert chips (conflict, RSVP, extended, departure) on the left.
+    scrollableContent.add(TodaySummaryRow(
+      stats: stats,
+      alertsWidget: CombinedAlertsBanner(
+        inline: true,
+        nextTileWithTravel: nextDepartureTile,
+        onTravelTap: () {},
+        onTravelDismiss: () {},
+        conflictGroups: _detectedConflicts,
+        onConflictTap: () {},
+        extendedTiles: extendedTiles,
+        onExtendedTap: () {
+          CombinedAlertsBannerHelpers.showExtendedTilesModal(
+              preview: withinNow.preview, context, extendedTiles);
+        },
+        pendingRsvpTiles: pendingRsvpTiles,
+        declinedTiles: declinedTiles,
+        onRsvpTap: () {
+          CombinedAlertsBannerHelpers.showPendingRsvpModal(
+            preview: withinNow.preview,
+            context,
+            pendingRsvpTiles,
             declinedTiles: declinedTiles,
-            onRsvpUpdated: () {
-              _triggerRefresh();
-            },
-            preview: (widget as EnhancedWithinNowBatch).preview,
-          ),
-        );
-      }
-    }
+            onRsvpUpdated: () => _triggerRefresh(),
+          );
+        },
+        onRsvpUpdated: () => _triggerRefresh(),
+      ),
+    ));
 
     // 3. Sleep tile if present
     if (widget.sleepTimeline != null) {
@@ -493,7 +441,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
       final (tilesWithConnectors, targetScrollIndex)= _buildTilesWithConnectors(orderedTiles);
-      if ((widget as EnhancedWithinNowBatch).preview && targetScrollIndex != null) {
+      if (withinNow.preview && targetScrollIndex != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _listController.jumpToItem(
             index: targetScrollIndex!,
@@ -551,7 +499,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
                   onShowRoute: _navigateToTodaysRoute,
                   onReOptimize: _triggerRevise,
                   isLoading: isLoading,
-                  preview: (widget as EnhancedWithinNowBatch).preview,
+                  preview: withinNow.preview,
                 ),
               );
             },
