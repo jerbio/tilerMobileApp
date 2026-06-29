@@ -1668,5 +1668,6 @@
             "notesViewerTitle": "Note",
             "notesTapToAdd": "Tap to add a note",
             "notesTapToEdit": "Tap to edit · long press to read",
-            "notesDone": "Done"
+            "notesDone": "Done",
+            "endOfDay": "End of Day"
 }

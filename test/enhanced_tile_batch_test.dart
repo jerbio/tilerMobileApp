@@ -13,6 +13,7 @@ import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.d
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/components/tilelist/proactiveAlertBanner.dart';
+import 'package:tiler_app/components/tilelist/returnConnector.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/components/tileUI/emptyDayTile.dart';
 import 'package:tiler_app/components/tileUI/sleepTile.dart';
@@ -64,7 +65,8 @@ void main() {
             addressDescription: 'hiking trail',
             start: DateTime(2026, 5, 15, 12, 15),
             end: DateTime(2026, 5, 15, 13, 45),
-            travelTimeBeforeMs: const Duration(minutes: 25).inMilliseconds.toDouble(),
+            travelTimeBeforeMs:
+                const Duration(minutes: 25).inMilliseconds.toDouble(),
             travelDetail: TravelDetail(
               before: TravelData(
                 travelMedium: 'driving',
@@ -123,12 +125,14 @@ void main() {
         expect(
           connectorY,
           greaterThan(conflictY),
-          reason: 'The travel connector must render after the conflicting block that occurs before the destination tile.',
+          reason:
+              'The travel connector must render after the conflicting block that occurs before the destination tile.',
         );
         expect(
           connectorY,
           lessThan(destinationY),
-          reason: 'The travel connector must render immediately before the destination tile it describes.',
+          reason:
+              'The travel connector must render immediately before the destination tile it describes.',
         );
       },
     );
@@ -180,10 +184,8 @@ void main() {
             travelDetail: TravelDetail(
               before: TravelData(
                 travelMedium: 'driving',
-                startLocation:
-                    _location('123 Office St', 37.33, -122.03),
-                endLocation:
-                    _location('456 Trail Rd', 37.44, -122.15),
+                startLocation: _location('123 Office St', 37.33, -122.03),
+                endLocation: _location('456 Trail Rd', 37.44, -122.15),
                 travelLegs: const [
                   TravelLeg(description: 'Head west on Highway 9'),
                 ],
@@ -197,8 +199,7 @@ void main() {
             child: MultiBlocProvider(
               providers: [
                 BlocProvider(
-                  create: (_) =>
-                      ScheduleBloc(getContextCallBack: () => null),
+                  create: (_) => ScheduleBloc(getContextCallBack: () => null),
                 ),
                 BlocProvider(
                   create: (_) =>
@@ -249,7 +250,8 @@ void main() {
       expect(find.byType(EmptyDayTile), findsOneWidget);
     });
 
-    testWidgets('renders viable tile names in the main tile list', (tester) async {
+    testWidgets('renders viable tile names in the main tile list',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
         _buildTile(
@@ -265,27 +267,44 @@ void main() {
           end: DateTime(2024, 6, 10, 11, 30),
         ),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.text('Morning Standup'), findsOneWidget);
       expect(find.text('Code Review'), findsOneWidget);
     });
 
-    testWidgets('hides non-viable tile from the main tile list', (tester) async {
+    testWidgets('hides non-viable tile from the main tile list',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
-        _buildTile(id: 'a', name: 'Visible Task', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 9, 30)),
-        _buildTile(id: 'b', name: 'Ghost Task', start: DateTime(2024, 6, 10, 10), end: DateTime(2024, 6, 10, 10, 30)),
+        _buildTile(
+            id: 'a',
+            name: 'Visible Task',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 9, 30)),
+        _buildTile(
+            id: 'b',
+            name: 'Ghost Task',
+            start: DateTime(2024, 6, 10, 10),
+            end: DateTime(2024, 6, 10, 10, 30)),
       ];
       tiles[1].isViable = false;
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.text('Visible Task'), findsOneWidget);
       expect(find.text('Ghost Task'), findsNothing);
     });
 
-    testWidgets('routes needsAction RSVP tile to PendingRsvpBanner instead of main list', (tester) async {
+    testWidgets(
+        'routes needsAction RSVP tile to PendingRsvpBanner instead of main list',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
-        _buildTile(id: 'a', name: 'Regular Meeting', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 9, 30)),
+        _buildTile(
+            id: 'a',
+            name: 'Regular Meeting',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 9, 30)),
         _buildRsvpTile(
           id: 'b',
           name: 'Pending Invite',
@@ -294,15 +313,22 @@ void main() {
           rsvp: RsvpStatus.needsAction,
         ),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.byType(PendingRsvpBanner), findsOneWidget);
     });
 
-    testWidgets('routes declined RSVP tile to RSVP banner and excludes it from conflict detection', (tester) async {
+    testWidgets(
+        'routes declined RSVP tile to RSVP banner and excludes it from conflict detection',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       // Two tiles at identical times — if both reached conflict detection they would form a conflict group.
       final tiles = [
-        _buildTile(id: 'a', name: 'Work Session', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10)),
+        _buildTile(
+            id: 'a',
+            name: 'Work Session',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10)),
         _buildRsvpTile(
           id: 'b',
           name: 'Declined Event',
@@ -311,28 +337,50 @@ void main() {
           rsvp: RsvpStatus.declined,
         ),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.byType(PendingRsvpBanner), findsOneWidget);
       expect(find.byType(ConflictSummaryBanner), findsNothing);
       expect(find.byType(CombinedAlertsBanner), findsNothing);
     });
 
-    testWidgets('shows ConflictSummaryBanner for a single overlapping tile pair', (tester) async {
+    testWidgets(
+        'shows ConflictSummaryBanner for a single overlapping tile pair',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
-        _buildTile(id: 'c1', name: 'Task Alpha', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10)),
-        _buildTile(id: 'c2', name: 'Task Beta', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10, 30)),
+        _buildTile(
+            id: 'c1',
+            name: 'Task Alpha',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10)),
+        _buildTile(
+            id: 'c2',
+            name: 'Task Beta',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10, 30)),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.byType(ConflictSummaryBanner), findsOneWidget);
       expect(find.byType(CombinedAlertsBanner), findsNothing);
     });
 
-    testWidgets('shows CombinedAlertsBanner when conflicts and pending RSVP both exist', (tester) async {
+    testWidgets(
+        'shows CombinedAlertsBanner when conflicts and pending RSVP both exist',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
-        _buildTile(id: 'c1', name: 'Task Alpha', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10)),
-        _buildTile(id: 'c2', name: 'Task Beta', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10, 30)),
+        _buildTile(
+            id: 'c1',
+            name: 'Task Alpha',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10)),
+        _buildTile(
+            id: 'c2',
+            name: 'Task Beta',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10, 30)),
         _buildRsvpTile(
           id: 'r1',
           name: 'Pending Invite',
@@ -341,22 +389,30 @@ void main() {
           rsvp: RsvpStatus.needsAction,
         ),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.byType(CombinedAlertsBanner), findsOneWidget);
       expect(find.byType(ConflictSummaryBanner), findsNothing);
     });
 
-    testWidgets('hides all TravelConnector widgets when showTravelConnectors is false', (tester) async {
+    testWidgets(
+        'hides all TravelConnector widgets when showTravelConnectors is false',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
-        _buildTile(id: 'src', name: 'Office Meeting', start: DateTime(2024, 6, 10, 9), end: DateTime(2024, 6, 10, 10)),
+        _buildTile(
+            id: 'src',
+            name: 'Office Meeting',
+            start: DateTime(2024, 6, 10, 9),
+            end: DateTime(2024, 6, 10, 10)),
         _buildTile(
           id: 'dst',
           name: 'Client Visit',
           start: DateTime(2024, 6, 10, 11),
           end: DateTime(2024, 6, 10, 12),
           address: '123 Main St',
-          travelTimeBeforeMs: const Duration(minutes: 20).inMilliseconds.toDouble(),
+          travelTimeBeforeMs:
+              const Duration(minutes: 20).inMilliseconds.toDouble(),
           travelDetail: TravelDetail(
             before: TravelData(
               travelMedium: 'driving',
@@ -376,7 +432,9 @@ void main() {
       expect(find.byType(TravelConnector), findsNothing);
     });
 
-    testWidgets('shows ExtendedTilesBanner for a tile with duration of at least 16 hours', (tester) async {
+    testWidgets(
+        'shows ExtendedTilesBanner for a tile with duration of at least 16 hours',
+        (tester) async {
       final day = DateTime(2024, 6, 10);
       final tiles = [
         // 6:00 → 23:00 = 17 hours
@@ -387,11 +445,14 @@ void main() {
           end: DateTime(2024, 6, 10, 23),
         ),
       ];
-      await _pumpETB(tester, tiles, dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
+      await _pumpETB(tester, tiles,
+          dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays);
       expect(find.byType(ExtendedTilesBanner), findsOneWidget);
     });
 
-    testWidgets('does not show ProactiveAlertBanner for a non-today day even with travel time', (tester) async {
+    testWidgets(
+        'does not show ProactiveAlertBanner for a non-today day even with travel time',
+        (tester) async {
       final day = DateTime(2020, 1, 1);
       final tiles = [
         _buildTile(
@@ -399,7 +460,8 @@ void main() {
           name: 'Past Event',
           start: DateTime(2020, 1, 1, 9),
           end: DateTime(2020, 1, 1, 10),
-          travelTimeBeforeMs: const Duration(minutes: 15).inMilliseconds.toDouble(),
+          travelTimeBeforeMs:
+              const Duration(minutes: 15).inMilliseconds.toDouble(),
         ),
       ];
       await _pumpETB(
@@ -418,7 +480,8 @@ void main() {
       expect(find.byType(EmptyDayTile), findsOneWidget);
     });
 
-    testWidgets('always renders TodaySummaryRow regardless of tile count', (tester) async {
+    testWidgets('always renders TodaySummaryRow regardless of tile count',
+        (tester) async {
       final today = DateTime.now();
       final tiles = [
         _buildTile(
@@ -432,7 +495,8 @@ void main() {
       expect(find.byType(TodaySummaryRow), findsOneWidget);
     });
 
-    testWidgets('wraps each main-list tile in a TileRowWithHourMarker', (tester) async {
+    testWidgets('wraps each main-list tile in a TileRowWithHourMarker',
+        (tester) async {
       final today = DateTime.now();
       final tiles = [
         _buildTile(
@@ -452,7 +516,8 @@ void main() {
       expect(find.byType(TileRowWithHourMarker), findsWidgets);
     });
 
-    testWidgets('renders SleepTileWidget when sleepTimeline is provided', (tester) async {
+    testWidgets('renders SleepTileWidget when sleepTimeline is provided',
+        (tester) async {
       final today = DateTime.now();
       final sleepTimeline = _buildTimeline(
         DateTime(today.year, today.month, today.day, 22),
@@ -462,7 +527,8 @@ void main() {
       expect(find.byType(SleepTileWidget), findsOneWidget);
     });
 
-    testWidgets('routes needsAction RSVP tile to PendingRsvpBanner', (tester) async {
+    testWidgets('routes needsAction RSVP tile to PendingRsvpBanner',
+        (tester) async {
       final today = DateTime.now();
       final tiles = [
         _buildTile(
@@ -483,7 +549,8 @@ void main() {
       expect(find.byType(PendingRsvpBanner), findsOneWidget);
     });
 
-    testWidgets('excludes declined tile from conflict detection', (tester) async {
+    testWidgets('excludes declined tile from conflict detection',
+        (tester) async {
       final today = DateTime.now();
       // Two tiles at the exact same time. The declined one is filtered out before conflict
       // detection runs, so only one tile remains — no conflict group is formed.
@@ -506,7 +573,9 @@ void main() {
       expect(find.text('2 conflicts'), findsNothing);
     });
 
-    testWidgets('shows ProactiveAlertBanner alone for a future tile with travel time', (tester) async {
+    testWidgets(
+        'shows ProactiveAlertBanner alone for a future tile with travel time',
+        (tester) async {
       final futureStart = DateTime.now().add(const Duration(hours: 2));
       final futureEnd = futureStart.add(const Duration(hours: 1));
       final tiles = [
@@ -515,7 +584,8 @@ void main() {
           name: 'Client Drive',
           start: futureStart,
           end: futureEnd,
-          travelTimeBeforeMs: const Duration(minutes: 30).inMilliseconds.toDouble(),
+          travelTimeBeforeMs:
+              const Duration(minutes: 30).inMilliseconds.toDouble(),
         ),
       ];
       await _pumpEWNB(tester, tiles);
@@ -523,7 +593,9 @@ void main() {
       expect(find.byType(CombinedAlertsBanner), findsNothing);
     });
 
-    testWidgets('shows CombinedAlertsBanner when travel alert and pending RSVP both exist', (tester) async {
+    testWidgets(
+        'shows CombinedAlertsBanner when travel alert and pending RSVP both exist',
+        (tester) async {
       final today = DateTime.now();
       final futureStart = today.add(const Duration(hours: 2));
       final futureEnd = futureStart.add(const Duration(hours: 1));
@@ -533,7 +605,8 @@ void main() {
           name: 'Client Drive',
           start: futureStart,
           end: futureEnd,
-          travelTimeBeforeMs: const Duration(minutes: 30).inMilliseconds.toDouble(),
+          travelTimeBeforeMs:
+              const Duration(minutes: 30).inMilliseconds.toDouble(),
         ),
         _buildRsvpTile(
           id: 'rsvp',
@@ -546,6 +619,144 @@ void main() {
       await _pumpEWNB(tester, tiles);
       expect(find.byType(CombinedAlertsBanner), findsOneWidget);
       expect(find.byType(ProactiveAlertBanner), findsNothing);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // endOfDayTime threading — EnhancedWithinNowBatch
+  // ---------------------------------------------------------------------------
+
+  group('EnhancedWithinNowBatch — endOfDayTime is threaded to ReturnConnector',
+      () {
+    testWidgets('renders ReturnConnector when last tile has travelTimeAfter',
+        (tester) async {
+      final today = DateTime.now();
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Task',
+          start: DateTime(today.year, today.month, today.day, 17),
+          end: DateTime(today.year, today.month, today.day, 18),
+          travelTimeAfterMs:
+              const Duration(minutes: 20).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpEWNB(tester, tiles);
+      expect(find.byType(ReturnConnector), findsOneWidget);
+    });
+
+    testWidgets('ReturnConnector receives endOfDayTime when provided',
+        (tester) async {
+      final today = DateTime.now();
+      final endOfDay = DateTime(today.year, today.month, today.day, 22, 0);
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Task',
+          start: DateTime(today.year, today.month, today.day, 17),
+          end: DateTime(today.year, today.month, today.day, 18),
+          travelTimeAfterMs:
+              const Duration(minutes: 20).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpEWNB(tester, tiles, endOfDayTime: endOfDay);
+      final connector =
+          tester.widget<ReturnConnector>(find.byType(ReturnConnector));
+      expect(connector.endOfDayTime, equals(endOfDay));
+    });
+
+    testWidgets('ReturnConnector.endOfDayTime is null when not provided',
+        (tester) async {
+      final today = DateTime.now();
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Task',
+          start: DateTime(today.year, today.month, today.day, 17),
+          end: DateTime(today.year, today.month, today.day, 18),
+          travelTimeAfterMs:
+              const Duration(minutes: 20).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpEWNB(tester, tiles);
+      final connector =
+          tester.widget<ReturnConnector>(find.byType(ReturnConnector));
+      expect(connector.endOfDayTime, isNull);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // endOfDayTime threading — EnhancedTileBatch
+  // ---------------------------------------------------------------------------
+
+  group('EnhancedTileBatch — endOfDayTime is threaded to ReturnConnector', () {
+    testWidgets('renders ReturnConnector when last tile has travelTimeAfter',
+        (tester) async {
+      final day = DateTime(2024, 6, 10);
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Meeting',
+          start: DateTime(2024, 6, 10, 15),
+          end: DateTime(2024, 6, 10, 16),
+          travelTimeAfterMs:
+              const Duration(minutes: 15).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpETB(
+        tester,
+        tiles,
+        dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays,
+      );
+      expect(find.byType(ReturnConnector), findsOneWidget);
+    });
+
+    testWidgets('ReturnConnector receives endOfDayTime when provided',
+        (tester) async {
+      final day = DateTime(2024, 6, 10);
+      final endOfDay = DateTime(2024, 6, 10, 22, 0);
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Meeting',
+          start: DateTime(2024, 6, 10, 15),
+          end: DateTime(2024, 6, 10, 16),
+          travelTimeAfterMs:
+              const Duration(minutes: 15).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpETB(
+        tester,
+        tiles,
+        dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays,
+        endOfDayTime: endOfDay,
+      );
+      final connector =
+          tester.widget<ReturnConnector>(find.byType(ReturnConnector));
+      expect(connector.endOfDayTime, equals(endOfDay));
+    });
+
+    testWidgets('ReturnConnector.endOfDayTime is null when not provided',
+        (tester) async {
+      final day = DateTime(2024, 6, 10);
+      final tiles = [
+        _buildTile(
+          id: 'last',
+          name: 'Last Meeting',
+          start: DateTime(2024, 6, 10, 15),
+          end: DateTime(2024, 6, 10, 16),
+          travelTimeAfterMs:
+              const Duration(minutes: 15).inMilliseconds.toDouble(),
+        ),
+      ];
+      await _pumpETB(
+        tester,
+        tiles,
+        dayIndex: day.difference(DateTime.utc(1970, 1, 1)).inDays,
+      );
+      final connector =
+          tester.widget<ReturnConnector>(find.byType(ReturnConnector));
+      expect(connector.endOfDayTime, isNull);
     });
   });
 }
@@ -572,6 +783,7 @@ SubCalendarEvent _buildTile({
   String? address,
   String? addressDescription,
   double? travelTimeBeforeMs,
+  double? travelTimeAfterMs,
   TravelDetail? travelDetail,
 }) {
   final tile = SubCalendarEvent(
@@ -583,6 +795,7 @@ SubCalendarEvent _buildTile({
     addressDescription: addressDescription,
   );
   tile.travelTimeBefore = travelTimeBeforeMs;
+  tile.travelTimeAfter = travelTimeAfterMs;
   tile.travelDetail = travelDetail;
   return tile;
 }
@@ -628,6 +841,7 @@ Future<void> _pumpETB(
   bool showProactiveAlerts = false,
   bool showTravelConnectors = true,
   bool showConflictAlerts = true,
+  DateTime? endOfDayTime,
 }) async {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 1.0;
@@ -635,14 +849,17 @@ Future<void> _pumpETB(
     tester.view.resetPhysicalSize();
     tester.view.resetDevicePixelRatio();
   });
-  final idx =
-      dayIndex ?? DateTime(2020, 1, 1).difference(DateTime.utc(1970, 1, 1)).inDays;
+  final idx = dayIndex ??
+      DateTime(2020, 1, 1).difference(DateTime.utc(1970, 1, 1)).inDays;
   await tester.pumpWidget(
     _buildTestApp(
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => ScheduleBloc(getContextCallBack: () => null)),
-          BlocProvider(create: (_) => ScheduleSummaryBloc(getContextCallBack: () => null)),
+          BlocProvider(
+              create: (_) => ScheduleBloc(getContextCallBack: () => null)),
+          BlocProvider(
+              create: (_) =>
+                  ScheduleSummaryBloc(getContextCallBack: () => null)),
         ],
         child: Scaffold(
           body: SingleChildScrollView(
@@ -654,6 +871,7 @@ Future<void> _pumpETB(
               showEnhancedCards: true,
               showConflictAlerts: showConflictAlerts,
               showTravelConnectors: showTravelConnectors,
+              endOfDayTime: endOfDayTime,
             ),
           ),
         ),
@@ -675,6 +893,7 @@ Future<void> _pumpEWNB(
   WidgetTester tester,
   List<SubCalendarEvent> tiles, {
   Timeline? sleepTimeline,
+  DateTime? endOfDayTime,
 }) async {
   tester.view.physicalSize = const Size(1080, 2400);
   tester.view.devicePixelRatio = 1.0;
@@ -686,13 +905,17 @@ Future<void> _pumpEWNB(
     _buildTestApp(
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => ScheduleBloc(getContextCallBack: () => null)),
-          BlocProvider(create: (_) => ScheduleSummaryBloc(getContextCallBack: () => null)),
+          BlocProvider(
+              create: (_) => ScheduleBloc(getContextCallBack: () => null)),
+          BlocProvider(
+              create: (_) =>
+                  ScheduleSummaryBloc(getContextCallBack: () => null)),
         ],
         child: Scaffold(
           body: EnhancedWithinNowBatch(
             tiles: tiles,
             sleepTimeline: sleepTimeline,
+            endOfDayTime: endOfDayTime,
           ),
         ),
       ),

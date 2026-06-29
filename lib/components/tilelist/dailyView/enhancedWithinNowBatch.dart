@@ -37,12 +37,16 @@ class EnhancedWithinNowBatch extends TileBatch {
   EnhancedWithinNowBatchState? _state;
   final String? selectedActionEntityId;
   final bool preview;
+  final DateTime? endOfDayTime;
+  final VoidCallback? onEndOfDayUpdated;
   EnhancedWithinNowBatch({
     List<TilerEvent>? tiles,
     TimelineSummary? dayData,
     Timeline? sleepTimeline,
     this.preview = false,
     this.selectedActionEntityId,
+    this.endOfDayTime,
+    this.onEndOfDayUpdated,
     Key? key,
   }) : super(
           key: key,
@@ -187,8 +191,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         subEvent: tile,
         initiallyExpanded: isTutorialCurrent,
         preview: (widget as EnhancedWithinNowBatch).preview,
-        hasDottedBorder: (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
-            tile.id?.contains((widget as EnhancedWithinNowBatch).selectedActionEntityId!) == true,
+        hasDottedBorder:
+            (widget as EnhancedWithinNowBatch).selectedActionEntityId != null &&
+                tile.id?.contains((widget as EnhancedWithinNowBatch)
+                        .selectedActionEntityId!) ==
+                    true,
       );
       if (isTutorialCurrent) {
         return Container(
@@ -198,11 +205,13 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       }
       return card;
     }
-    return TileWidget(tile,preview: (widget as EnhancedWithinNowBatch).preview);
+    return TileWidget(tile,
+        preview: (widget as EnhancedWithinNowBatch).preview);
   }
 
   /// Build tiles list with travel connectors and conflict handling
- ( List<Widget>, int?) _buildTilesWithConnectors(List<TilerEvent> orderedTiles) {
+  (List<Widget>, int?) _buildTilesWithConnectors(
+      List<TilerEvent> orderedTiles) {
     final withinNow = widget as EnhancedWithinNowBatch;
     final result = buildTileListWithConnectors(
       orderedTiles: orderedTiles,
@@ -211,7 +220,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       excludeDeclinedFromConflicts: true,
       now: DateTime.now(),
       selectedActionEntityId: withinNow.selectedActionEntityId,
-      buildTile: (tile, {required hour, required showHourMarker, required isCurrentHour}) {
+      endOfDayTime: withinNow.endOfDayTime,
+      onEndOfDayUpdated: withinNow.onEndOfDayUpdated,
+      buildTile: (tile,
+          {required hour, required showHourMarker, required isCurrentHour}) {
         return TileRowWithHourMarker(
           hour: hour,
           showHourMarker: showHourMarker,
@@ -220,7 +232,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           child: _buildTileWidget(tile),
         );
       },
-      buildConflictGroup: (group, {required hour, required showHourMarker, required isCurrentHour}) {
+      buildConflictGroup: (group,
+          {required hour, required showHourMarker, required isCurrentHour}) {
         return TileRowWithHourMarker(
           hour: hour,
           showHourMarker: showHourMarker,
@@ -432,7 +445,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
           onExtendedTap: () {
             CombinedAlertsBannerHelpers.showExtendedTilesModal(
                 preview: (widget as EnhancedWithinNowBatch).preview,
-                context, extendedTiles);
+                context,
+                extendedTiles);
           },
           pendingRsvpTiles: pendingRsvpTiles,
           declinedTiles: declinedTiles,
@@ -492,8 +506,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     Widget tilesContent;
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
-      final (tilesWithConnectors, targetScrollIndex)= _buildTilesWithConnectors(orderedTiles);
-      if ((widget as EnhancedWithinNowBatch).preview && targetScrollIndex != null) {
+      final (tilesWithConnectors, targetScrollIndex) =
+          _buildTilesWithConnectors(orderedTiles);
+      if ((widget as EnhancedWithinNowBatch).preview &&
+          targetScrollIndex != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _listController.jumpToItem(
             index: targetScrollIndex!,
@@ -506,10 +522,11 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       tilesContent = SuperSliverList(
         listController: _listController,
         delegate: SliverChildBuilderDelegate(
-              (context, index) {
-            if (index == tilesWithConnectors.length) return MediaQuery.of(context).orientation == Orientation.landscape
-                ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
+          (context, index) {
+            if (index == tilesWithConnectors.length)
+              return MediaQuery.of(context).orientation == Orientation.landscape
+                  ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
+                  : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
             return tilesWithConnectors[index];
           },
           childCount: tilesWithConnectors.length + 1,

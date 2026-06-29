@@ -4558,6 +4558,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get notesDone;
+
+  /// No description provided for @endOfDay.
+  ///
+  /// In en, this message translates to:
+  /// **'End of Day'**
+  String get endOfDay;
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/returnConnector.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -47,6 +48,8 @@ TileConnectorLayoutResult buildTileListWithConnectors({
   required bool excludeDeclinedFromConflicts,
   required DateTime now,
   String? selectedActionEntityId,
+  DateTime? endOfDayTime,
+  VoidCallback? onEndOfDayUpdated,
   required TileWidgetBuilder buildTile,
   required ConflictGroupWidgetBuilder buildConflictGroup,
   required ConnectorWrapper wrapConnector,
@@ -177,6 +180,18 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     if (tile is SubCalendarEvent) {
       prevRenderedTile = tile;
     }
+  }
+
+  // Always emit a ReturnConnector after the last tile — it shows end-of-day
+  // even when there is no return-travel data.
+  if (showTravelConnectors && prevRenderedTile != null) {
+    widgets.add(wrapConnector(
+      ReturnConnector(
+        lastTile: prevRenderedTile,
+        endOfDayTime: endOfDayTime,
+        onEndOfDayUpdated: onEndOfDayUpdated,
+      ),
+    ));
   }
 
   return TileConnectorLayoutResult(

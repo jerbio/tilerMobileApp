@@ -2536,4 +2536,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notesDone => 'Done';
+
+  @override
+  String get endOfDay => 'End of Day';
 }

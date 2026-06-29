@@ -15,11 +15,20 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/constants.dart' as Constants;
 import 'package:tiler_app/l10n/app_localizations.dart';
+
+/// Combines a [day] date with a [timeOfDay] to produce a [DateTime] on that
+/// day at the given time. Returns null when [timeOfDay] is null.
+DateTime? endOfDayDateTimeFor(DateTime day, TimeOfDay? timeOfDay) {
+  if (timeOfDay == null) return null;
+  return DateTime(
+      day.year, day.month, day.day, timeOfDay.hour, timeOfDay.minute);
+}
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
@@ -52,6 +61,9 @@ class _DailyTileListState extends TileListState {
   bool _isLoadingPastDays = false;
   bool _isLoadingFutureDays = false;
 
+  /// User's configured end-of-day time, fetched once from settings on init.
+  TimeOfDay? _userEndOfDay;
+
   @override
   void initState() {
     super.initState();
@@ -60,6 +72,30 @@ class _DailyTileListState extends TileListState {
         Duration(days: 7));
     incrementalTilerScrollId = "incremental-get-schedule";
     previousTimeline = this.timeLine;
+    _fetchUserEndOfDay();
+  }
+
+  void _fetchUserEndOfDay() {
+    final api = SettingsApi(getContextCallBack: () => context);
+    api.getUserStartOfDay().then((startOfDay) {
+      if (mounted) {
+        setState(() {
+          _userEndOfDay = startOfDay.timeOfDay ?? Utility.defaultEndOfDay;
+        });
+      }
+    }).catchError((_) {
+      if (mounted) {
+        setState(() {
+          _userEndOfDay = Utility.defaultEndOfDay;
+        });
+      }
+    });
+  }
+
+  /// Returns the end-of-day [DateTime] for the day identified by [dayIndex].
+  DateTime? _endOfDayFor(int dayIndex) {
+    final day = Utility.getTimeFromIndex(dayIndex);
+    return endOfDayDateTimeFor(day, _userEndOfDay);
   }
 
   String _generateIncrementalIdToMapping() {
@@ -292,6 +328,8 @@ class _DailyTileListState extends TileListState {
             showEnhancedCards: true,
             showTravelConnectors: true,
             showTimelineMarkers: true,
+            endOfDayTime: _endOfDayFor(dayIndex),
+            onEndOfDayUpdated: _fetchUserEndOfDay,
           );
           upcomingDayTilesDict[dayIndex] = upcomingTileBatch;
         }
@@ -310,6 +348,8 @@ class _DailyTileListState extends TileListState {
             showEnhancedCards: true,
             showTravelConnectors: true,
             showTimelineMarkers: true,
+            endOfDayTime: _endOfDayFor(dayIndex),
+            onEndOfDayUpdated: _fetchUserEndOfDay,
           );
           precedingDayTilesDict[dayIndex] = precedingDayTileBatch;
         }
@@ -333,6 +373,8 @@ class _DailyTileListState extends TileListState {
     return EnhancedWithinNowBatch(
       key: ValueKey("_enhanced_within_now_0"),
       tiles: [...elapsedTiles, ...notElapsedTiles],
+      endOfDayTime: _endOfDayFor(Utility.currentTime().universalDayIndex),
+      onEndOfDayUpdated: _fetchUserEndOfDay,
     );
   }
 
@@ -385,6 +427,8 @@ class _DailyTileListState extends TileListState {
       EnhancedWithinNowBatch emptyTodayBatch = EnhancedWithinNowBatch(
         key: ValueKey("_enhanced_within_now_empty"),
         tiles: [],
+        endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
+        onEndOfDayUpdated: _fetchUserEndOfDay,
       );
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
