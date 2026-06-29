@@ -5,13 +5,18 @@ import 'package:tiler_app/components/tilelist/dailyView/models/todayStats.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
-/// Today summary row displaying tile/block counts, travel time, and completion
+/// Today summary row displaying travel time, completion, and optional alerts.
+/// When [alertsWidget] is provided it replaces the tile/block count on the left.
 class TodaySummaryRow extends StatelessWidget {
   final TodayStats stats;
+
+  /// When supplied, replaces the "X tiles and Y blocks" left column.
+  final Widget? alertsWidget;
 
   const TodaySummaryRow({
     Key? key,
     required this.stats,
+    this.alertsWidget,
   }) : super(key: key);
 
   @override
@@ -28,30 +33,31 @@ class TodaySummaryRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Today stats
+          // Left: alerts widget OR tiles/block count
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.todayColon,
-                  style: TextStyle(
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 12,
-                    color: colorScheme.onSurface.withOpacity(0.6),
-                  ),
+            child: alertsWidget ??
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.todayColon,
+                      style: TextStyle(
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: 12,
+                        color: colorScheme.onSurface.withOpacity(0.6),
+                      ),
+                    ),
+                    Text(
+                      l10n.tilesBlocksCount(stats.tileCount, stats.blockCount),
+                      style: TextStyle(
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  l10n.tilesBlocksCount(stats.tileCount, stats.blockCount),
-                  style: TextStyle(
-                    fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
           ),
 
           // Travel time
