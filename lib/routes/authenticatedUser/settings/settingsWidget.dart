@@ -17,8 +17,9 @@ import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
-import 'package:tiler_app/services/themerHelper.dart';
+import 'package:tiler_app/data/appThemeMode.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
 
@@ -82,7 +83,8 @@ class Settings extends StatelessWidget {
           ),
           automaticallyImplyLeading: false,
         ),
-        child: Column(
+        child: Stack(children: [
+          Column(
           children: [
             _buildListTile(
               icon: 'assets/icons/settings/AccountInfo.svg',
@@ -166,6 +168,15 @@ class Settings extends StatelessWidget {
                 child: _buildDarkModeSwitch(colorScheme, tileThemeExtension)),
           ],
         ),
+          BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
+            builder: (context, state) {
+              if (state is DeviceThemeUpdatingSetting) {
+                return PendingWidget();
+              }
+              return SizedBox.shrink();
+            },
+          ),
+        ]),
       ),
     );
   }
@@ -205,20 +216,21 @@ class Settings extends StatelessWidget {
                 Text(AppLocalizations.of(context)!.darkMode,
                     style: TextStyle(fontSize: 16)),
                 Switch(
-                  value: state.isDarkMode,
+                  value: state.themeMode == ThemeMode.dark,
                   onChanged: (value) {
-                    ThemeManager.setThemeMode(value).then((_) {
-                      context.read<DeviceSettingBloc>().add(
-                          UpdateDarkModeMainSettingDeviceSettingEvent(
-                              isDarkMode: value, id: _requestId));
-                    });
+                    context.read<DeviceSettingBloc>().add(
+                        UpdateThemeModeDeviceSettingEvent(
+                            themeMode: value
+                                ? AppThemeMode.dark
+                                : AppThemeMode.light,
+                            id: _requestId));
                   },
                   inactiveTrackColor:
                       tileThemeExtension.onSurfaceVariantSecondary,
                   thumbColor: WidgetStateProperty.all(colorScheme.surface),
                   thumbIcon: WidgetStateProperty.resolveWith((states) {
                     return Icon(
-                      state.isDarkMode
+                      state.themeMode == ThemeMode.dark
                           ? Icons.nightlight_round
                           : Icons.wb_sunny,
                       color: tileThemeExtension.onSurfaceVariantSecondary,

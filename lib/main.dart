@@ -96,11 +96,11 @@ class _TilerAppState extends State<TilerApp> {
   Authentication? authentication;
   NotificationOverlayMessage? notificationOverlayMessage;
   OnBoardingApi? onBoardingApi;
-  bool isDarkMode = false;
+  ThemeMode themeMode = ThemeMode.system;
 
   void _loadTheme() async {
-    final savedIsDark = await ThemeManager.getThemeMode();
-    setState(() => isDarkMode = savedIsDark); // Update state after load
+    final savedMode = await ThemeManager.getThemeMode();
+    setState(() => themeMode = ThemeManager.toFlutterThemeMode(savedMode));
   }
 
   @override
@@ -153,7 +153,7 @@ class _TilerAppState extends State<TilerApp> {
                     getContextCallBack: () {
                       return _navigatorKey.currentState?.overlay?.context ?? this.context;
                     },
-                    initialIsDarkMode: isDarkMode,
+                    initialThemeMode: themeMode,
                   )),
           //BlocProvider(create: (context) => OnboardingBloc(onBoardingApi!, SettingsApi(getContextCallBack: () => context))),
           BlocProvider(
@@ -181,16 +181,14 @@ class _TilerAppState extends State<TilerApp> {
         ],
         child: BlocBuilder<DeviceSettingBloc, DeviceSettingState>(
               buildWhen: (previous, current) =>
-                  previous.isDarkMode != current.isDarkMode,
+                  previous.themeMode != current.themeMode,
               builder: (context, settingsState) {
                 return MaterialApp(
                   title: 'Tiler',
                   debugShowCheckedModeBanner: false,
                   theme: TileThemeData.lightTheme,
                   darkTheme: TileThemeData.darkTheme,
-                  themeMode: settingsState.isDarkMode
-                      ? ThemeMode.dark
-                      : ThemeMode.light,
+                  themeMode: settingsState.themeMode,
                   navigatorKey: _navigatorKey,
                   routes: <String, WidgetBuilder>{
                     '/AuthorizedUser': (BuildContext context) =>
