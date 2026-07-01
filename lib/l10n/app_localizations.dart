@@ -722,6 +722,18 @@ abstract class AppLocalizations {
   /// **'Delete Now'**
   String get deleteNow;
 
+  /// No description provided for @deleteGoogleWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ This will also delete from Google Calendar'**
+  String get deleteGoogleWarning;
+
+  /// No description provided for @deleteOutlookWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ This will also delete from Outlook'**
+  String get deleteOutlookWarning;
+
   /// No description provided for @previously.
   ///
   /// In en, this message translates to:

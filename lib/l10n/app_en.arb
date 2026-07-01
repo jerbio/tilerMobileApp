@@ -112,6 +112,8 @@
     "deleteBlockConfirming":"Deleting this block...",
     "deleteTileConfirming":"Deleting this tile...",
     "deleteNow":"Delete Now",
+    "deleteGoogleWarning":"⚠️ This will also delete from Google Calendar",
+    "deleteOutlookWarning":"⚠️ This will also delete from Outlook",
     "previously":"Previously",
     "upcoming":"Upcoming",
     "failedToSendRequest":"Failed to send request",

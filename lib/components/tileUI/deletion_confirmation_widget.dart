@@ -89,9 +89,11 @@ class DeletionConfirmationWidgetState extends State<DeletionConfirmationWidget>
   String get _getThirdPartyWarning {
     switch (widget.tileSource) {
       case TileSource.google:
-        return '⚠️ This will also delete from Google Calendar';
+        return AppLocalizations.of(context)?.deleteGoogleWarning ??
+            '⚠️ This will also delete from Google Calendar';
       case TileSource.outlook:
-        return '⚠️ This will also delete from Outlook';
+        return AppLocalizations.of(context)?.deleteOutlookWarning ??
+            '⚠️ This will also delete from Outlook';
       default:
         return '';
     }

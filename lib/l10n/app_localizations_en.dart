@@ -332,6 +332,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteNow => 'Delete Now';
 
   @override
+  String get deleteGoogleWarning =>
+      '⚠️ This will also delete from Google Calendar';
+
+  @override
+  String get deleteOutlookWarning => '⚠️ This will also delete from Outlook';
+
+  @override
   String get previously => 'Previously';
 
   @override
