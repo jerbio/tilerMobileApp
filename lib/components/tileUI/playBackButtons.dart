@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/tileUI/deletion_confirmation_widget.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileProcrastinate.dart';
@@ -32,6 +34,9 @@ class PlayBackState extends State<PlayBack> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
+  
+  // Deletion confirmation UI state
+  bool _showDeletionConfirmation = false;
 
   @override
   void initState() {
@@ -269,6 +274,12 @@ class PlayBackState extends State<PlayBack> {
   }
 
   deleteTile() async {
+    setState(() {
+      _showDeletionConfirmation = true;
+    });
+  }
+
+  _performDeletion() async {
     showMessage(AppLocalizations.of(context)!.deleting);
     SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
     final scheduleState = this.context.read<ScheduleBloc>().state;
@@ -380,6 +391,37 @@ class PlayBackState extends State<PlayBack> {
 
   @override
   Widget build(BuildContext context) {
+    // If deletion confirmation is showing, display it instead of normal buttons
+    if (_showDeletionConfirmation) {
+      SubCalendarEvent subTile = _subEvent ?? this.widget.subEvent;
+      
+      // Determine TileSource from thirdpartyType
+      TileSource? tileSource;
+      if (subTile.thirdpartyType != null) {
+        final typeStr = subTile.thirdpartyType!.name.toLowerCase();
+        if (typeStr.contains('google')) {
+          tileSource = TileSource.google;
+        } else if (typeStr.contains('outlook')) {
+          tileSource = TileSource.outlook;
+        } else {
+          tileSource = TileSource.tiler;
+        }
+      }
+      
+      return DeletionConfirmationWidget(
+        isRigid: subTile.isRigid ?? false,
+        tileSource: tileSource,
+        onCancel: () {
+          setState(() {
+            _showDeletionConfirmation = false;
+          });
+        },
+        onConfirm: () {
+          _performDeletion();
+        },
+      );
+    }
+    
     Set<PlaybackOptions> alreadyAddedButton = Set<PlaybackOptions>();
     Widget? playPauseButton;
     Widget? deleteButton;
