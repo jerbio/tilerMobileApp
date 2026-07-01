@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/components/tileUI/deletion_confirmation_widget.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -56,6 +57,31 @@ class EventNameSearchState extends SearchWidgetState {
   TextEditingController textController = TextEditingController();
   List<Widget> nameSearchResult = [];
   LookupStatus _lookupStatus = LookupStatus.NotStarted;
+
+  // Deletion confirmation state: tracks which tile ID is showing deletion confirmation
+  String? _tileIdPendingDeletion;
+
+  // Cached tile list so we can rebuild result widgets without a network call
+  List<TilerEvent> _searchTiles = [];
+
+  // Rebuilds resultViewContainer (inherited from SearchWidgetState) from cached tiles.
+  // Called whenever _tileIdPendingDeletion changes so the correct tile shows the
+  // confirmation widget without requiring a fresh network request.
+  void _refreshResultView() {
+    if (_searchTiles.isEmpty) return;
+    final widgets =
+        _searchTiles.map((tile) => tileToEventNameWidget(tile)).toList();
+    setState(() {
+      nameSearchResult = widgets;
+      resultViewContainer = GestureDetector(
+        onTap: () => setState(() => showResponseContainer = false),
+        child: Container(
+          decoration: this.widget.resultBoxDecoration,
+          child: ListView(children: widgets),
+        ),
+      );
+    });
+  }
 
   @override
   void initState() {
@@ -152,49 +178,57 @@ class EventNameSearchState extends SearchWidgetState {
 
   Function? createDeletionCallBack(String tileId, String thirdPartyId) {
     Function retValue = () async {
-      final scheduleState = this.context.read<ScheduleBloc>().state;
-      if (scheduleState is ScheduleEvaluationState) {
-        DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
-        if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
-          return;
-        }
-      }
-
-      String message = AppLocalizations.of(context)!.deleting;
-      Function generateCallBack = () {
-        AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
-        return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
-          this.context.read<ScheduleBloc>().add(GetScheduleEvent());
-          refreshScheduleSummary();
-        }).onError((error, stackTrace) {
-          print("Error in eventname search on delete callback");
-          if (scheduleState is ScheduleEvaluationState) {
-            this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
-                subEvents: scheduleState.subEvents,
-                timelines: scheduleState.timelines,
-                scheduleStatus: scheduleState.scheduleStatus,
-                previousLookupTimeline: scheduleState.previousLookupTimeline,
-                lookupTimeline: scheduleState.lookupTimeline));
-          }
-        });
-      };
-      var priorState = getPriorStateVariables();
-      List<SubCalendarEvent> renderedSubEvents = priorState.item1;
-      List<Timeline> timeLines = priorState.item2;
-      Timeline lookupTimeline = priorState.item3;
-      var scheduleStatus = priorState.item4;
-
-      this.context.read<ScheduleBloc>().add(EvaluateSchedule(
-          renderedSubEvents: renderedSubEvents,
-          renderedTimelines: timeLines,
-          renderedScheduleTimeline: lookupTimeline,
-          isAlreadyLoaded: true,
-          message: message,
-          scheduleStatus: scheduleStatus,
-          callBack: generateCallBack()));
-      Navigator.pop(context);
+      // Show deletion confirmation UI instead of immediate deletion
+      setState(() {
+        _tileIdPendingDeletion = tileId;
+      });
+      _refreshResultView();
     };
     return retValue;
+  }
+  
+  void _performDeletion(String tileId, String thirdPartyId) async {
+    final scheduleState = this.context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      DateTime timeOutTime = Utility.currentTime().subtract(Utility.oneMin);
+      if (scheduleState.evaluationTime.isAfter(timeOutTime)) {
+        return;
+      }
+    }
+
+    String message = AppLocalizations.of(context)!.deleting;
+    Function generateCallBack = () {
+      AnalysticsSignal.send('NAME_SEARCH_DELETION_REQUEST');
+      return this.calendarEventApi.delete(tileId, thirdPartyId).then((value) {
+        this.context.read<ScheduleBloc>().add(GetScheduleEvent());
+        refreshScheduleSummary();
+      }).onError((error, stackTrace) {
+        print("Error in eventname search on delete callback");
+        if (scheduleState is ScheduleEvaluationState) {
+          this.context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+              subEvents: scheduleState.subEvents,
+              timelines: scheduleState.timelines,
+              scheduleStatus: scheduleState.scheduleStatus,
+              previousLookupTimeline: scheduleState.previousLookupTimeline,
+              lookupTimeline: scheduleState.lookupTimeline));
+        }
+      });
+    };
+    var priorState = getPriorStateVariables();
+    List<SubCalendarEvent> renderedSubEvents = priorState.item1;
+    List<Timeline> timeLines = priorState.item2;
+    Timeline lookupTimeline = priorState.item3;
+    var scheduleStatus = priorState.item4;
+
+    this.context.read<ScheduleBloc>().add(EvaluateSchedule(
+        renderedSubEvents: renderedSubEvents,
+        renderedTimelines: timeLines,
+        renderedScheduleTimeline: lookupTimeline,
+        isAlreadyLoaded: true,
+        message: message,
+        scheduleStatus: scheduleStatus,
+        callBack: generateCallBack()));
+    Navigator.pop(context);
   }
 
   Function? createCompletionCallBack(String tileId) {
@@ -258,7 +292,7 @@ class EventNameSearchState extends SearchWidgetState {
   }
 
   Widget _createActionButton({
-    required IconData icon,
+    required Widget icon,
     required Color iconColor,
     required String text,
     required VoidCallback onTap,
@@ -284,7 +318,10 @@ class EventNameSearchState extends SearchWidgetState {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: iconColor),
+            IconTheme(
+              data: IconThemeData(size: 20, color: iconColor),
+              child: icon,
+            ),
             SizedBox.square(dimension: 5),
             Text(text, style: TextStyle(fontSize: 15)),
           ],
@@ -295,7 +332,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget createDeletionButton(TilerEvent tile) {
     return _createActionButton(
-      icon: Icons.clear_rounded,
+      icon: Icon(Icons.clear_rounded),
       iconColor: colorScheme.onError,
       text: AppLocalizations.of(context)!.delete,
       onTap: () => createDeletionCallBack(tile.id!, tile.thirdpartyId ?? "")!(),
@@ -304,7 +341,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget createCompletionButton(TilerEvent tile) {
     return _createActionButton(
-      icon: Icons.check,
+      icon: Icon(Icons.check),
       iconColor: TileColors.completedGreen,
       text: AppLocalizations.of(context)!.done,
       onTap: () => createCompletionCallBack(tile.id!)!(),
@@ -313,7 +350,7 @@ class EventNameSearchState extends SearchWidgetState {
 
   Widget createSetAsNowButton(TilerEvent tile) {
     return _createActionButton(
-      icon: FontAwesomeIcons.chevronUp,
+      icon: FaIcon(FontAwesomeIcons.chevronUp),
       iconColor: colorScheme.onSurface,
       text: AppLocalizations.of(context)!.now,
       onTap: () => createSetAsNowCallBack(tile.id!)!(),
@@ -321,6 +358,38 @@ class EventNameSearchState extends SearchWidgetState {
   }
 
   Widget tileToEventNameWidget(TilerEvent tile) {
+    // If this tile is pending deletion, show deletion confirmation instead
+    if (_tileIdPendingDeletion == tile.id) {
+      return Container(
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 5),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: tileThemeExtension.surfaceContainerUltimate
+                .withValues(alpha: 0.1),
+            width: 2,
+          ),
+        ),
+        child: DeletionConfirmationWidget(
+          isRigid: false,
+          tileSource: null,
+          onCancel: () {
+            setState(() {
+              _tileIdPendingDeletion = null;
+            });
+            _refreshResultView();
+          },
+          onConfirm: () {
+            setState(() {
+              _tileIdPendingDeletion = null;
+            });
+            _performDeletion(tile.id!, tile.thirdpartyId ?? "");
+          },
+        ),
+      );
+    }
+    
     final textStyle =
         TextStyle(fontSize: 12, fontFamily: TileTextStyles.rubikFontName);
     List<Widget> childWidgets = [];
@@ -483,6 +552,7 @@ class EventNameSearchState extends SearchWidgetState {
     if (name.length > Constants.autoCompleteMinCharLength) {
       AnalysticsSignal.send('NAME_SEARCH_REQUEST_RECEIVED');
       List<TilerEvent> tileEvents = await tileNameApi.getTilesByName(name);
+      _searchTiles = tileEvents;
 
       retValue = tileEvents.map((tile) => tileToEventNameWidget(tile)).toList();
       if (retValue.length == 0) {

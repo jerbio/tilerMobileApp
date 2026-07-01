@@ -163,8 +163,8 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
                       color: _getNotificationBorderColor(widget.messageType),
                     ),
                     child: Center(
-                      child: Icon(
-                        _getNotificationIconData(widget.messageType),
+                      child: _getNotificationIcon(
+                        widget.messageType,
                         size: calculateSizeByHeight(10),
                         color: TileColors.lightContent,
                       ),
@@ -293,18 +293,22 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
     }
   }
 
-  IconData _getNotificationIconData(NotificationOverlayMessageType type) {
+  Widget _getNotificationIcon(
+    NotificationOverlayMessageType type, {
+    required double size,
+    required Color color,
+  }) {
     switch (type) {
       case NotificationOverlayMessageType.success:
-        return Icons.check;
+        return Icon(Icons.check, size: size, color: color);
       case NotificationOverlayMessageType.error:
-        return Icons.dangerous;
+        return Icon(Icons.dangerous, size: size, color: color);
       case NotificationOverlayMessageType.warning:
-        return Icons.warning;
+        return Icon(Icons.warning, size: size, color: color);
       case NotificationOverlayMessageType.info:
-        return FontAwesomeIcons.info;
+        return FaIcon(FontAwesomeIcons.info, size: size, color: color);
       default:
-        return FontAwesomeIcons.question;
+        return FaIcon(FontAwesomeIcons.question, size: size, color: color);
     }
   }
 }

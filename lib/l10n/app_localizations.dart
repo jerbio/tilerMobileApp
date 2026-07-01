@@ -704,6 +704,24 @@ abstract class AppLocalizations {
   /// **'Deleting'**
   String get deleting;
 
+  /// No description provided for @deleteBlockConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting this block...'**
+  String get deleteBlockConfirming;
+
+  /// No description provided for @deleteTileConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting this tile...'**
+  String get deleteTileConfirming;
+
+  /// No description provided for @deleteNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Now'**
+  String get deleteNow;
+
   /// No description provided for @previously.
   ///
   /// In en, this message translates to:
