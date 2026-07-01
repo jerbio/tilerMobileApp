@@ -1,6 +1,7 @@
 import 'dart:ffi';
 import 'dart:ui' as dartUI;
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
@@ -60,7 +61,7 @@ class ConfigUpdateButtonState extends State<ConfigUpdateButton> {
         textStyle: this.widget.textStyle ??
             TextStyle(
               overflow: TextOverflow.ellipsis,
-              fontSize: 20,
+              fontSize: 20.sp,
               fontWeight: FontWeight.w500,
             ),
         foregroundColor: this.widget.textColor??colorScheme.onSurface,

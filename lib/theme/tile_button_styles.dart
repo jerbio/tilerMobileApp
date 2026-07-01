@@ -45,6 +45,8 @@ class TileButtonStyles {
     shadowColor: WidgetStateProperty.all(Colors.transparent,),
     backgroundColor: WidgetStateProperty.all(Colors.transparent),
     foregroundColor: WidgetStateProperty.all(Colors.transparent),
+    minimumSize: WidgetStateProperty.all(Size.zero),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
   );
 
   static ButtonStyle onlyIconsContrast({

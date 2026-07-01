@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 
 import 'package:flutter/material.dart';
@@ -121,13 +122,13 @@ class SignInRouteState extends State<SignInRoute> {
               ),
             ),
             Container(
-              padding: EdgeInsets.fromLTRB(0, height / (height / 40), 0, 0),
+              padding: EdgeInsets.fromLTRB(0, 40.h, 0, 0),
               alignment: Alignment.topCenter,
               child: _keyboardIsVisible()
                   ? SizedBox.shrink()
                   : Image.asset(
                       'assets/images/tiler_logo_black.png',
-                      scale: 4,
+                           width: 200.w,
                     ),
             ),
           ],

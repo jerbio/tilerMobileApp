@@ -106,6 +106,7 @@ dependencies:
   dotted_border: ^3.1.0
   country_picker: ^2.0.27
   super_sliver_list: ^0.4.1
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   build_runner: ^2.4.5
