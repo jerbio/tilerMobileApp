@@ -491,7 +491,6 @@ class _DailyTileListState extends TileListState {
       // Default to first actual day (skip past edge loading placeholder)
       initialCarouselIndex = 1;
     }
-    print("expected dayIndex currentDayIndex " + currentDayIndex.toString());
 
     if (carouselSliderIndex != null) {
       int delta = carouselSliderIndex! - initialCarouselIndex;

@@ -87,6 +87,8 @@
     </dict>
 	<key>NSCameraUsageDescription</key>
 	<string>We need camera access to allow users to take photos and videos within the app, which can be used for adding events to their calendar events, or creating content within the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need camera access to allow users to take photos and videos within the app, which can be used for adding events to their calendar events, or creating content within the app.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

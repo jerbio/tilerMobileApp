@@ -1,14 +1,59 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_quill/flutter_quill.dart';
+import 'package:markdown/markdown.dart' as md;
+import 'package:markdown_quill/markdown_quill.dart';
 
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/notesApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+
+/// Markdown parser shared by all note editors. GitHub-flavored so checklists,
+/// strikethrough and fenced code blocks round-trip through the Quill document.
+final md.Document _markdownDocument = md.Document(
+  encodeHtml: false,
+  extensionSet: md.ExtensionSet.gitHubFlavored,
+);
+final MarkdownToDelta _markdownToDelta =
+    MarkdownToDelta(markdownDocument: _markdownDocument);
+// `relaxed` only escapes markdown control characters inside formatted spans,
+// so plain prose like "in-progress + notes" round-trips without backslash
+// noise polluting the stored note.
+final DeltaToMarkdown _deltaToMarkdown = DeltaToMarkdown(
+  customContentHandler: DeltaToMarkdown.escapeSpecialCharactersRelaxed,
+);
+
+/// Builds a Quill [Document] from a markdown string. Empty/whitespace input
+/// yields an empty document (Quill cannot build a document from an empty
+/// delta), and any conversion failure falls back to treating the text as a
+/// plain paragraph so the user never loses their note.
+Document _markdownToQuillDocument(String markdown) {
+  if (markdown.trim().isEmpty) return Document();
+  try {
+    final delta = _markdownToDelta.convert(markdown);
+    if (delta.isEmpty) return Document();
+    return Document.fromDelta(delta);
+  } catch (_) {
+    final doc = Document();
+    doc.insert(0, markdown);
+    return doc;
+  }
+}
+
+/// Serializes a Quill [Document] back to markdown for persistence. The
+/// converter appends a trailing newline; we trim it so the stored value
+/// matches what the user sees.
+String _quillDocumentToMarkdown(Document document) {
+  try {
+    return _deltaToMarkdown.convert(document.toDelta()).trimRight();
+  } catch (_) {
+    return document.toPlainText().trimRight();
+  }
+}
 
 /// Save lifecycle of the auto-saving notes editor. Mirrors the
 /// `SaveStatus` union used by TilerWeb's `EditNotes` panel.
@@ -26,11 +71,14 @@ class EditTileNoteController {
   }
 
   /// Whether the editor currently has unsaved edits.
-  bool get hasUnsavedChanges =>
-      _state?._controller.text != _state?._lastSavedText;
+  bool get hasUnsavedChanges {
+    final s = _state;
+    if (s == null) return false;
+    return s._currentMarkdown != s._lastSavedText;
+  }
 
   /// The text currently shown in the editor (may be dirty).
-  String get currentText => _state?._controller.text ?? '';
+  String get currentText => _state?._currentMarkdown ?? '';
 
   /// The last successfully persisted text.
   String get lastSavedText => _state?._lastSavedText ?? '';
@@ -149,8 +197,9 @@ class EditTileNote extends StatefulWidget {
 }
 
 class _EditTileNoteState extends State<EditTileNote> {
-  late final TextEditingController _controller;
+  late final QuillController _quillController;
   late final FocusNode _focusNode;
+  late final ScrollController _scrollController;
   late final NotesApi _notesApi;
 
   NotesPayload? _payload;
@@ -159,27 +208,54 @@ class _EditTileNoteState extends State<EditTileNote> {
   String _lastSavedText = '';
   Timer? _saveTimer;
   // Default to the rendered markdown view when there is content so users
-  // see the formatted output (e.g. **bold** rendered as bold). The editor is
-  // revealed when they tap the preview or when the note starts empty.
+  // see the formatted output. The WYSIWYG editor is revealed when they tap
+  // the preview or when the note starts empty.
   bool _isPreviewing = true;
   bool _suppressDirty = false;
 
   // Conflict descriptor: the server payload that rejected our last write.
   NotesPayload? _conflictPayload;
 
+  /// Current editor contents serialized back to markdown (the storage format).
+  String get _currentMarkdown => _quillDocumentToMarkdown(_quillController.document);
+
+  /// Whether the rich-text document currently has any visible characters.
+  bool get _isEditorEmpty =>
+      _quillController.document.toPlainText().trim().isEmpty;
+
+  /// Replaces the editor contents with [markdown] without tripping the dirty
+  /// listener. Places the caret at the end so typing continues naturally.
+  void _setDocumentFromMarkdown(String markdown) {
+    _suppressDirty = true;
+    _quillController.document = _markdownToQuillDocument(markdown);
+    final len = _quillController.document.length;
+    _quillController.updateSelection(
+      TextSelection.collapsed(offset: (len - 1).clamp(0, len)),
+      ChangeSource.local,
+    );
+    _suppressDirty = false;
+  }
+
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.tileNote);
+    _quillController = QuillController(
+      document: _markdownToQuillDocument(widget.tileNote),
+      selection: const TextSelection.collapsed(offset: 0),
+      readOnly: widget.isReadOnly,
+    );
     _focusNode = FocusNode();
+    _scrollController = ScrollController();
     _focusNode.addListener(_handleFocusChange);
     _notesApi = widget.notesApi ?? NotesApi(getContextCallBack: () => context);
-    _lastSavedText = widget.tileNote;
+    // Compare against the round-tripped form so markdown normalization from
+    // the converter doesn't register as an unsaved edit on load.
+    _lastSavedText = _currentMarkdown;
     final initialPreview =
         widget.previewModeNotifier?.value ?? widget.tileNote.trim().isNotEmpty;
     _isPreviewing = initialPreview;
     widget.previewModeNotifier?.addListener(_handleExternalPreviewToggle);
-    _controller.addListener(_onTextChanged);
+    _quillController.addListener(_onDocumentChanged);
     widget.controller?._attach(this);
     if (!widget.skipInitialLoad) {
       _loadInitial();
@@ -214,7 +290,7 @@ class _EditTileNoteState extends State<EditTileNote> {
     if (!mounted) return;
     if (widget.isReadOnly || widget.isProcrastinate) return;
     if (_isPreviewing) return;
-    if (_controller.text.trim().isEmpty) return;
+    if (_isEditorEmpty) return;
     setState(() => _isPreviewing = true);
     _syncPreviewNotifier();
   }
@@ -247,10 +323,8 @@ class _EditTileNoteState extends State<EditTileNote> {
       _saveTimer?.cancel();
       _payload = null;
       _conflictPayload = null;
-      _suppressDirty = true;
-      _controller.text = widget.tileNote;
-      _lastSavedText = widget.tileNote;
-      _suppressDirty = false;
+      _setDocumentFromMarkdown(widget.tileNote);
+      _lastSavedText = _currentMarkdown;
       if (!widget.skipInitialLoad) {
         _loadInitial();
       }
@@ -271,15 +345,12 @@ class _EditTileNoteState extends State<EditTileNote> {
       final payload = await _notesApi.getNotes(id, scope: widget.scope);
       if (!mounted) return;
       final serverNote = payload.userNote ?? '';
-      _suppressDirty = true;
-      _controller.value = TextEditingValue(
-        text: serverNote,
-        selection: TextSelection.collapsed(offset: serverNote.length),
-      );
-      _suppressDirty = false;
+      _setDocumentFromMarkdown(serverNote);
       setState(() {
         _payload = payload;
-        _lastSavedText = serverNote;
+        // Compare against the round-tripped form so converter normalization
+        // doesn't immediately mark the freshly loaded note as dirty.
+        _lastSavedText = _currentMarkdown;
         _status = NotesSaveStatus.idle;
         // Show the rendered markdown when the server returns content;
         // otherwise drop straight into the editor so the user can start typing.
@@ -295,11 +366,13 @@ class _EditTileNoteState extends State<EditTileNote> {
     }
   }
 
-  void _onTextChanged() {
+  void _onDocumentChanged() {
     if (_suppressDirty) return;
     if (widget.isReadOnly || widget.isProcrastinate) return;
-    if (_controller.text == _lastSavedText) return;
-    setState(() => _status = NotesSaveStatus.dirty);
+    if (_currentMarkdown == _lastSavedText) return;
+    if (_status != NotesSaveStatus.dirty) {
+      setState(() => _status = NotesSaveStatus.dirty);
+    }
     _saveTimer?.cancel();
     _saveTimer = Timer(widget.autoSaveDelay, _flushSave);
   }
@@ -307,7 +380,7 @@ class _EditTileNoteState extends State<EditTileNote> {
   Future<void> _flushSave() async {
     final id = widget.eventId;
     if (id == null || id.isEmpty) return;
-    final draft = _controller.text;
+    final draft = _currentMarkdown;
     if (draft == _lastSavedText) return;
     setState(() {
       _status = NotesSaveStatus.saving;
@@ -386,18 +459,13 @@ class _EditTileNoteState extends State<EditTileNote> {
   /// "throw away in-progress edits".
   void _discardEdits() {
     _saveTimer?.cancel();
-    if (_controller.text == _lastSavedText) {
+    if (_currentMarkdown == _lastSavedText) {
       if (_status == NotesSaveStatus.dirty) {
         setState(() => _status = NotesSaveStatus.idle);
       }
       return;
     }
-    _suppressDirty = true;
-    _controller.value = TextEditingValue(
-      text: _lastSavedText,
-      selection: TextSelection.collapsed(offset: _lastSavedText.length),
-    );
-    _suppressDirty = false;
+    _setDocumentFromMarkdown(_lastSavedText);
     setState(() {
       _status = NotesSaveStatus.idle;
       _errorMessage = null;
@@ -411,160 +479,27 @@ class _EditTileNoteState extends State<EditTileNote> {
     // Best-effort flush on unmount (mirrors TilerWeb's unmount-flush).
     if (!widget.isReadOnly &&
         !widget.isProcrastinate &&
-        _controller.text != _lastSavedText &&
+        _currentMarkdown != _lastSavedText &&
         widget.eventId != null &&
         widget.eventId!.isNotEmpty) {
       // Fire-and-forget: we're tearing down so no UI update is possible.
       _notesApi
           .updateNotes(
             eventId: widget.eventId!,
-            userNote: _controller.text,
+            userNote: _currentMarkdown,
             etag: _payload?.etag ?? '',
             scope: widget.scope,
           )
           .catchError((_) => _payload ?? NotesPayload());
     }
-    _controller.removeListener(_onTextChanged);
-    _controller.dispose();
+    _quillController.removeListener(_onDocumentChanged);
+    _quillController.dispose();
+    _scrollController.dispose();
     _focusNode.removeListener(_handleFocusChange);
     _focusNode.dispose();
     widget.previewModeNotifier?.removeListener(_handleExternalPreviewToggle);
     widget.controller?._detach(this);
     super.dispose();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Toolbar actions — operate on the current TextField selection.
-  // ---------------------------------------------------------------------------
-
-  void _wrapSelection(String left, String right, {String placeholder = ''}) {
-    final value = _controller.value;
-    final selection = value.selection.isValid
-        ? value.selection
-        : TextSelection.collapsed(offset: value.text.length);
-    final selectedText =
-        selection.isCollapsed ? placeholder : selection.textInside(value.text);
-    final newText = value.text.replaceRange(
-      selection.start,
-      selection.end,
-      '$left$selectedText$right',
-    );
-    final cursor = selection.start + left.length + selectedText.length;
-    _controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: cursor),
-    );
-  }
-
-  void _toggleLinePrefix(String prefix) {
-    final value = _controller.value;
-    final text = value.text;
-    final selection = value.selection.isValid
-        ? value.selection
-        : TextSelection.collapsed(offset: text.length);
-    int lineStart = selection.start;
-    while (lineStart > 0 && text[lineStart - 1] != '\n') {
-      lineStart--;
-    }
-    int lineEnd = selection.end;
-    while (lineEnd < text.length && text[lineEnd] != '\n') {
-      lineEnd++;
-    }
-    final lines = text.substring(lineStart, lineEnd).split('\n');
-    final allPrefixed = lines.every((l) => l.isEmpty || l.startsWith(prefix));
-    final newLines = lines.map((l) {
-      if (l.isEmpty) return l;
-      if (allPrefixed) {
-        return l.startsWith(prefix) ? l.substring(prefix.length) : l;
-      }
-      return '$prefix$l';
-    }).toList();
-    final newSegment = newLines.join('\n');
-    final newText = text.replaceRange(lineStart, lineEnd, newSegment);
-    _controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: lineStart + newSegment.length),
-    );
-  }
-
-  void _toggleNumberedList() {
-    final value = _controller.value;
-    final text = value.text;
-    final selection = value.selection.isValid
-        ? value.selection
-        : TextSelection.collapsed(offset: text.length);
-    int lineStart = selection.start;
-    while (lineStart > 0 && text[lineStart - 1] != '\n') {
-      lineStart--;
-    }
-    int lineEnd = selection.end;
-    while (lineEnd < text.length && text[lineEnd] != '\n') {
-      lineEnd++;
-    }
-    final lines = text.substring(lineStart, lineEnd).split('\n');
-    final numberPattern = RegExp(r'^\d+\.\s');
-    final allNumbered =
-        lines.every((l) => l.isEmpty || numberPattern.hasMatch(l));
-    int counter = 1;
-    final newLines = lines.map((l) {
-      if (l.isEmpty) return l;
-      if (allNumbered) {
-        return l.replaceFirst(numberPattern, '');
-      }
-      return '${counter++}. $l';
-    }).toList();
-    final newSegment = newLines.join('\n');
-    final newText = text.replaceRange(lineStart, lineEnd, newSegment);
-    _controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: lineStart + newSegment.length),
-    );
-  }
-
-  Future<void> _promptLink() async {
-    final localizations = AppLocalizations.of(context)!;
-    final selection = _controller.selection;
-    final selectedText = selection.isValid && !selection.isCollapsed
-        ? selection.textInside(_controller.text)
-        : '';
-    final urlController = TextEditingController(text: 'https://');
-    final url = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: Text(localizations.notesLinkPromptTitle),
-          content: TextField(
-            controller: urlController,
-            keyboardType: TextInputType.url,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'https://example.com',
-            ),
-          ),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, null),
-                child: Text(localizations.cancel)),
-            TextButton(
-                onPressed: () => Navigator.pop(ctx, urlController.text.trim()),
-                child: Text(localizations.ok)),
-          ],
-        );
-      },
-    );
-    if (url == null || url.isEmpty) return;
-    final label = selectedText.isEmpty ? url : selectedText;
-    final insertion = '[$label]($url)';
-    final value = _controller.value;
-    final start =
-        value.selection.isValid ? value.selection.start : value.text.length;
-    final end =
-        value.selection.isValid ? value.selection.end : value.text.length;
-    final newText = value.text.replaceRange(start, end, insertion);
-    _controller.value = TextEditingValue(
-      text: newText,
-      selection: TextSelection.collapsed(offset: start + insertion.length),
-    );
   }
 
   // ---------------------------------------------------------------------------
@@ -787,15 +722,9 @@ class _EditTileNoteState extends State<EditTileNote> {
               TextButton(
                 onPressed: () {
                   final serverNote = _conflictPayload?.userNote ?? '';
-                  _suppressDirty = true;
-                  _controller.value = TextEditingValue(
-                    text: serverNote,
-                    selection:
-                        TextSelection.collapsed(offset: serverNote.length),
-                  );
-                  _suppressDirty = false;
+                  _setDocumentFromMarkdown(serverNote);
                   setState(() {
-                    _lastSavedText = serverNote;
+                    _lastSavedText = _currentMarkdown;
                     _conflictPayload = null;
                     _status = NotesSaveStatus.saved;
                   });
@@ -822,33 +751,47 @@ class _EditTileNoteState extends State<EditTileNote> {
 
   Widget _buildToolbar(
       ColorScheme colorScheme, AppLocalizations localizations) {
-    final buttons = <_ToolbarSpec>[
-      _ToolbarSpec(Icons.format_bold, localizations.notesToolBold,
-          () => _wrapSelection('**', '**')),
-      _ToolbarSpec(Icons.format_italic, localizations.notesToolItalic,
-          () => _wrapSelection('*', '*')),
-      _ToolbarSpec(
-          Icons.format_strikethrough,
-          localizations.notesToolStrikethrough,
-          () => _wrapSelection('~~', '~~')),
-      _ToolbarSpec(Icons.code, localizations.notesToolInlineCode,
-          () => _wrapSelection('`', '`')),
-      _ToolbarSpec(Icons.title, localizations.notesToolHeading1,
-          () => _toggleLinePrefix('# ')),
-      _ToolbarSpec(Icons.text_fields, localizations.notesToolHeading2,
-          () => _toggleLinePrefix('## ')),
-      _ToolbarSpec(Icons.format_list_bulleted,
-          localizations.notesToolBulletList, () => _toggleLinePrefix('- ')),
-      _ToolbarSpec(Icons.format_list_numbered,
-          localizations.notesToolNumberedList, _toggleNumberedList),
-      _ToolbarSpec(Icons.check_box_outlined, localizations.notesToolTaskList,
-          () => _toggleLinePrefix('- [ ] ')),
-      _ToolbarSpec(Icons.format_quote, localizations.notesToolQuote,
-          () => _toggleLinePrefix('> ')),
-      _ToolbarSpec(Icons.link, localizations.notesToolLink, _promptLink),
-    ];
+    // Only surface formatting that round-trips cleanly to markdown. Anything
+    // Quill can express but markdown cannot (font family/size, colors,
+    // underline, sub/superscript, alignment, indent) is hidden so the stored
+    // note never silently loses formatting on save.
+    final toolbar = QuillSimpleToolbar(
+      controller: _quillController,
+      config: QuillSimpleToolbarConfig(
+        multiRowsDisplay: false,
+        showDividers: false,
+        showFontFamily: false,
+        showFontSize: false,
+        showSmallButton: false,
+        showUnderLineButton: false,
+        showLineHeightButton: false,
+        showColorButton: false,
+        showBackgroundColorButton: false,
+        showClearFormat: false,
+        showAlignmentButtons: false,
+        showHeaderStyle: true,
+        showListNumbers: true,
+        showListBullets: true,
+        showListCheck: true,
+        showCodeBlock: true,
+        showQuote: true,
+        showIndent: false,
+        showLink: true,
+        showSearchButton: false,
+        showSubscript: false,
+        showSuperscript: false,
+        showDirection: false,
+        showBoldButton: true,
+        showItalicButton: true,
+        showStrikeThrough: true,
+        showInlineCode: true,
+        showUndo: true,
+        showRedo: true,
+        toolbarIconAlignment: WrapAlignment.start,
+      ),
+    );
 
-    final bar = Material(
+    return Material(
       elevation: widget.fullScreen ? 4 : 0,
       color: widget.fullScreen
           ? colorScheme.surface
@@ -858,82 +801,81 @@ class _EditTileNoteState extends State<EditTileNote> {
           : BorderRadius.circular(8),
       child: SafeArea(
         top: false,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: buttons
-                .map((b) => IconButton(
-                      icon: Icon(b.icon, size: 20),
-                      tooltip: b.tooltip,
-                      onPressed: b.action,
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.all(8),
-                      constraints:
-                          const BoxConstraints(minWidth: 40, minHeight: 40),
-                    ))
-                .toList(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: toolbar,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEditor(ColorScheme colorScheme, AppLocalizations localizations) {
+    final editor = QuillEditor(
+      controller: _quillController,
+      focusNode: _focusNode,
+      scrollController: _scrollController,
+      config: QuillEditorConfig(
+        placeholder: widget.fullScreen
+            ? localizations.notesTapToAdd
+            : localizations.noteEllipsis,
+        padding: widget.fullScreen
+            ? const EdgeInsets.fromLTRB(24, 20, 24, 24)
+            : const EdgeInsets.fromLTRB(20, 15, 20, 15),
+        expands: widget.fullScreen,
+        scrollable: true,
+        autoFocus: false,
+        customStyles: DefaultStyles(
+          paragraph: DefaultTextBlockStyle(
+            TextStyle(
+              fontFamily: TileTextStyles.rubikFontName,
+              fontSize: widget.fullScreen ? 17 : 18,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+              color: colorScheme.onSurface,
+            ),
+            const HorizontalSpacing(0, 0),
+            const VerticalSpacing(6, 0),
+            const VerticalSpacing(0, 0),
+            null,
+          ),
+          placeHolder: DefaultTextBlockStyle(
+            TextStyle(
+              fontFamily: TileTextStyles.rubikFontName,
+              fontSize: widget.fullScreen ? 17 : 18,
+              fontWeight: FontWeight.w400,
+              height: 1.5,
+              color: colorScheme.onSurface.withValues(alpha: 0.4),
+            ),
+            const HorizontalSpacing(0, 0),
+            const VerticalSpacing(0, 0),
+            const VerticalSpacing(0, 0),
+            null,
           ),
         ),
       ),
     );
-    return bar;
-  }
 
-  Widget _buildEditor(ColorScheme colorScheme, AppLocalizations localizations) {
-    final field = TextFormField(
-      controller: _controller,
-      focusNode: _focusNode,
-      minLines: widget.fullScreen ? null : 5,
-      maxLines: widget.fullScreen ? null : 12,
-      expands: widget.fullScreen,
-      textAlignVertical: TextAlignVertical.top,
-      textInputAction:
-          Platform.isAndroid ? TextInputAction.newline : TextInputAction.done,
-      enabled: !widget.isReadOnly,
-      style: TextStyle(
-        fontFamily: TileTextStyles.rubikFontName,
-        fontSize: widget.fullScreen ? 17 : 18,
-        fontWeight: FontWeight.w400,
-        height: 1.5,
-      ),
-      decoration: InputDecoration(
-        hintText: widget.fullScreen
-            ? localizations.notesTapToAdd
-            : localizations.noteEllipsis,
-        hintStyle: TextStyle(
-          color: colorScheme.onSurface.withValues(alpha: 0.4),
-          fontFamily: TileTextStyles.rubikFontName,
-          fontWeight: FontWeight.w400,
-        ),
-        filled: false,
-        isDense: true,
-        fillColor: Colors.transparent,
-        contentPadding: widget.fullScreen
-            ? const EdgeInsets.fromLTRB(24, 20, 24, 24)
-            : const EdgeInsets.fromLTRB(20, 15, 20, 15),
-        border: widget.fullScreen
-            ? InputBorder.none
-            : _outlineBorder(colorScheme.primaryContainer, 1),
-        focusedBorder: widget.fullScreen
-            ? InputBorder.none
-            : _outlineBorder(colorScheme.primaryContainer, 2),
-        enabledBorder: widget.fullScreen
-            ? InputBorder.none
-            : _outlineBorder(colorScheme.primaryContainer, 1),
-      ),
-    );
-    if (!widget.fullScreen) return field;
+    if (widget.fullScreen) {
+      return Container(
+        key: const ValueKey('notes-editor'),
+        color: Colors.transparent,
+        child: editor,
+      );
+    }
+
     return Container(
       key: const ValueKey('notes-editor'),
-      color: Colors.transparent,
-      child: field,
+      constraints: const BoxConstraints(minHeight: 140, maxHeight: 320),
+      decoration: BoxDecoration(
+        border: Border.all(color: colorScheme.primaryContainer, width: 1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: editor,
     );
   }
 
   Widget _buildPreview(ColorScheme colorScheme) {
-    final text = _controller.text;
+    final text = _currentMarkdown;
     final canEdit = !widget.isReadOnly && !widget.isProcrastinate;
     final fs = widget.fullScreen;
 
@@ -994,11 +936,4 @@ class _EditTileNoteState extends State<EditTileNote> {
       borderSide: BorderSide(color: color, width: width),
     );
   }
-}
-
-class _ToolbarSpec {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback action;
-  _ToolbarSpec(this.icon, this.tooltip, this.action);
 }

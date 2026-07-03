@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -80,6 +81,7 @@ Widget _harness(Widget child) {
   return MaterialApp(
     localizationsDelegates: const [
       AppLocalizations.delegate,
+      FlutterQuillLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,
       GlobalCupertinoLocalizations.delegate,
@@ -87,6 +89,24 @@ Widget _harness(Widget child) {
     supportedLocales: const [Locale('en', '')],
     home: Scaffold(body: child),
   );
+}
+
+/// Replaces the QuillEditor contents with [text] by driving the editor's own
+/// [QuillController] — the same path the widget uses for real keystrokes.
+///
+/// We avoid the simulated-keyboard helpers from `flutter_quill_test`: their
+/// editing-value diffing trips internal range assertions when the editor is
+/// empty or the replacement is shorter than the current contents.
+Future<void> _enterNote(WidgetTester tester, String text) async {
+  final editor = tester.widget<QuillEditor>(find.byType(QuillEditor));
+  final controller = editor.controller;
+  controller.replaceText(
+    0,
+    controller.document.length - 1,
+    text,
+    TextSelection.collapsed(offset: text.length),
+  );
+  await tester.pump();
 }
 
 void main() {
@@ -155,8 +175,7 @@ void main() {
         await tester.tap(find.text('pre-hydrated'));
         await tester.pumpAndSettle();
 
-        await tester.enterText(
-            find.byType(TextFormField), 'pre-hydrated + edit');
+        await _enterNote(tester, 'pre-hydrated + edit');
         // Force the debounce to fire.
         await tester.pump(const Duration(milliseconds: 75));
         await controller.save();
@@ -191,7 +210,7 @@ void main() {
         )));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), 'first draft');
+        await _enterNote(tester, 'first draft');
         await tester.pump(); // emit dirty
         expect(status.value, NotesSaveStatus.dirty);
 
@@ -224,7 +243,7 @@ void main() {
         await tester.tap(find.text('hello from server'));
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), 'flushed text');
+        await _enterNote(tester, 'flushed text');
         await tester.pump();
 
         // No debounce elapsed, yet save() should still fire.
@@ -256,8 +275,7 @@ void main() {
         await tester.tap(find.text('hello from server'));
         await tester.pumpAndSettle();
 
-        await tester.enterText(
-            find.byType(TextFormField), 'hello from server + WIP');
+        await _enterNote(tester, 'hello from server + WIP');
         await tester.pump();
         expect(controller.hasUnsavedChanges, isTrue);
 
@@ -282,10 +300,12 @@ void main() {
         final api = _FakeNotesApi(conflictOnFirstSave: true);
         final status = ValueNotifier<NotesSaveStatus>(NotesSaveStatus.idle);
         addTearDown(status.dispose);
+        final controller = EditTileNoteController();
 
         await tester.pumpWidget(_harness(EditTileNote(
           eventId: 'event-1',
           notesApi: api,
+          controller: controller,
           statusNotifier: status,
           autoSaveDelay: const Duration(milliseconds: 50),
         )));
@@ -294,15 +314,14 @@ void main() {
         await tester.tap(find.text('hello from server'));
         await tester.pumpAndSettle();
 
-        await tester.enterText(
-            find.byType(TextFormField), 'my local draft');
+        await _enterNote(tester, 'my local draft');
         await tester.pump(const Duration(milliseconds: 75));
         await tester.pumpAndSettle();
 
         expect(api.putCalls, 1);
         expect(status.value, NotesSaveStatus.error);
         // Local draft must NOT have been clobbered by the server's text.
-        expect(find.text('my local draft'), findsOneWidget);
+        expect(controller.currentText, 'my local draft');
       },
     );
   });

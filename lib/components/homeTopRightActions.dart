@@ -25,7 +25,7 @@ class HomeTopRightActions extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Positioned(
-      top: 8,
+      top: 0,
       right: 8,
       child: Row(
         mainAxisSize: MainAxisSize.min,
