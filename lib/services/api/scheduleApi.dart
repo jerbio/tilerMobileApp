@@ -39,6 +39,7 @@ class ScheduleApi extends AppApi {
 
   Future<Tuple3<List<Timeline>, List<SubCalendarEvent>, ScheduleStatus>>
       getSubEventsInScheduleRequest(Timeline timeLine) async {
+    DateTime currentTime = Utility.currentTime(minuteLimitAccuracy: false);
     // Utility.debugPrint(
     //     "|||||||Get sub event for timeline ${timeLine.toString()} |||||||");
     if ((await this.authentication.isUserAuthenticated()).item1) {
@@ -83,6 +84,10 @@ class ScheduleApi extends AppApi {
             List sleepTimelinesJson = [];
             print(
                 "Done fetching sub events from server ${timeLine.toString()} |||||||");
+            DateTime endOfInstructionTime =
+                Utility.currentTime(minuteLimitAccuracy: false);
+            print(
+                "Time taken to fetch sub events from server ${endOfInstructionTime.difference(currentTime).inMilliseconds} ms |||||||");
             List<Timeline> sleepTimelines = sleepTimelinesJson
                 .map((timelinesJson) => Timeline.fromJson(timelinesJson))
                 .toList();
