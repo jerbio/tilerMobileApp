@@ -565,7 +565,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TutorialBloc(stepCount: 8),
+      create: (_) => TutorialBloc(stepCount: kTutorialStepCount),
       child: MultiBlocListener(
           listeners: [
             BlocListener<VibeChatBloc, VibeChatState>(
@@ -700,7 +700,7 @@ class _TutorialSheetDialog extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final currentStep = (tutorialBloc?.state.currentStepIndex ?? 2) + 1;
-    final totalSteps = tutorialBloc?.state.totalSteps ?? 8;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? kTutorialStepCount;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
@@ -899,7 +899,7 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final currentStep = (tutorialBloc?.state.currentStepIndex ?? 3) + 1;
-    final totalSteps = tutorialBloc?.state.totalSteps ?? 8;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? kTutorialStepCount;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
