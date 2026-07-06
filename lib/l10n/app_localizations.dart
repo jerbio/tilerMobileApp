@@ -4403,6 +4403,54 @@ abstract class AppLocalizations {
   /// **'Preview summary could not be loaded'**
   String get previewSummaryUnavailable;
 
+  /// No description provided for @previewGenerating.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating preview…'**
+  String get previewGenerating;
+
+  /// No description provided for @previewTimedOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview is taking longer than expected. Try again in a moment.'**
+  String get previewTimedOut;
+
+  /// No description provided for @previewGenerationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t generate this preview.'**
+  String get previewGenerationFailed;
+
+  /// No description provided for @previewInvalidated.
+  ///
+  /// In en, this message translates to:
+  /// **'This preview is no longer valid because your schedule changed.'**
+  String get previewInvalidated;
+
+  /// No description provided for @previewStaleBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'This preview reflects an earlier snapshot of your schedule.'**
+  String get previewStaleBanner;
+
+  /// No description provided for @previewNonViableLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t be scheduled'**
+  String get previewNonViableLabel;
+
+  /// No description provided for @reviewChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Review changes'**
+  String get reviewChanges;
+
+  /// No description provided for @previewRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get previewRetry;
+
   /// No description provided for @actionsCount.
   ///
   /// In en, this message translates to:

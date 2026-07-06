@@ -4,9 +4,11 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/vibeChat/tileCastPreviewLoader.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
 import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
+import 'package:tiler_app/data/VibeChat/VibeRequestPreview.dart';
 import 'package:tiler_app/data/VibeChat/VibeSession.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -48,6 +50,9 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<AcceptChangesEvent>(_onAcceptChanges);
     on<LogOutVibeChatEvent>(_onLogOut);
     on<PreviewActionEvent>(_onPreviewAction);
+    on<LoadTileCastEvent>(_onLoadTileCast);
+    on<NavigateTileCastEvent>(_onNavigateTileCast);
+    on<RetryTileCastEvent>(_onRetryTileCast);
     chatApi = ChatApi(getContextCallBack: getContextCallBack);
   }
 
@@ -716,6 +721,107 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
             : LocalizationService.instance.translations.errorOccurred,
       ));
     }
+  }
+
+  /// Builds a [TileCastPreviewLoader] bound to the chat API. Overridable pieces
+  /// (poll interval / timeout) keep the polling budget in one place.
+  TileCastPreviewLoader _buildTileCastLoader() {
+    return TileCastPreviewLoader(
+      fetchRequestPreview: (requestId) =>
+          chatApi.getVibeRequestPreviews(requestId),
+      fetchSummary: (previewId) => chatApi.getVibePreviewSummary(previewId),
+      pollInterval: const Duration(seconds: 10),
+      timeout: const Duration(minutes: 1),
+    );
+  }
+
+  Future<void> _loadTileCast(String vibeRequestId, String? actionId,
+      Emitter<VibeChatState> emit) async {
+    try {
+      emit(state.copyWith(
+        step: VibeChatStep.loadingPreview,
+        previewTiles: [],
+        previewActions: const [],
+        currentPreviewIndex: 0,
+        selectedActionEntityId: null,
+      ));
+
+      final result =
+          await _buildTileCastLoader().load(vibeRequestId, actionId: actionId);
+
+      final translations = LocalizationService.instance.translations;
+      switch (result.outcome) {
+        case TileCastOutcome.ready:
+          final focusEntityId = result.focusIndex < result.actions.length
+              ? result.actions[result.focusIndex].entityId
+              : null;
+          emit(state.copyWith(
+            step: VibeChatStep.previewLoaded,
+            previewBatch: result.batch,
+            previewActions: result.actions,
+            currentPreviewIndex: result.focusIndex,
+            previewTiles: result.tiles,
+            selectedActionEntityId: focusEntityId,
+          ));
+          break;
+        case TileCastOutcome.timedOut:
+          emit(state.copyWith(
+            step: VibeChatStep.error,
+            error: translations.previewTimedOut,
+          ));
+          break;
+        case TileCastOutcome.failed:
+          emit(state.copyWith(
+            step: VibeChatStep.error,
+            error: result.failureReason ?? translations.previewGenerationFailed,
+          ));
+          break;
+        case TileCastOutcome.invalidated:
+          emit(state.copyWith(
+            step: VibeChatStep.error,
+            error: result.failureReason ?? translations.previewInvalidated,
+          ));
+          break;
+        case TileCastOutcome.summaryUnavailable:
+          emit(state.copyWith(
+            step: VibeChatStep.error,
+            error: translations.previewSummaryUnavailable,
+          ));
+          break;
+      }
+    } catch (e) {
+      emit(state.copyWith(
+        step: VibeChatStep.error,
+        error: e is TilerError
+            ? e.Message
+            : LocalizationService.instance.translations.errorOccurred,
+      ));
+    }
+  }
+
+  Future<void> _onLoadTileCast(
+      LoadTileCastEvent event, Emitter<VibeChatState> emit) async {
+    await _loadTileCast(event.vibeRequestId, event.actionId, emit);
+  }
+
+  Future<void> _onRetryTileCast(
+      RetryTileCastEvent event, Emitter<VibeChatState> emit) async {
+    await _loadTileCast(event.vibeRequestId, null, emit);
+  }
+
+  /// Client-side carousel navigation: no refetch, since every action shares the
+  /// same downloaded schedule and differs only by the highlighted tile.
+  void _onNavigateTileCast(
+      NavigateTileCastEvent event, Emitter<VibeChatState> emit) {
+    final actions = state.previewActions;
+    if (actions.isEmpty) return;
+    final clamped = event.index < 0
+        ? 0
+        : (event.index >= actions.length ? actions.length - 1 : event.index);
+    emit(state.copyWith(
+      currentPreviewIndex: clamped,
+      selectedActionEntityId: actions[clamped].entityId,
+    ));
   }
 
   @override

@@ -57,3 +57,29 @@ class PreviewActionEvent extends VibeChatEvent {
   PreviewActionEvent(this.vibeRequestId, this.actionId);
   List<Object?> get props => [vibeRequestId, actionId];
 }
+
+/// Opens the TileCast preview carousel for a request. Polls the request-level
+/// preview until it reaches a terminal state, then loads the shared schedule.
+/// When [actionId] is supplied the carousel opens focused on that action.
+class LoadTileCastEvent extends VibeChatEvent {
+  final String vibeRequestId;
+  final String? actionId;
+  LoadTileCastEvent(this.vibeRequestId, {this.actionId});
+  List<Object?> get props => [vibeRequestId, actionId];
+}
+
+/// Moves the TileCast carousel to [index]. Purely client-side — no refetch,
+/// since every action shares the same downloaded schedule and differs only by
+/// which tile is highlighted.
+class NavigateTileCastEvent extends VibeChatEvent {
+  final int index;
+  NavigateTileCastEvent(this.index);
+  List<Object?> get props => [index];
+}
+
+/// Re-attempts a TileCast preview that timed out or failed.
+class RetryTileCastEvent extends VibeChatEvent {
+  final String vibeRequestId;
+  RetryTileCastEvent(this.vibeRequestId);
+  List<Object?> get props => [vibeRequestId];
+}

@@ -2466,6 +2466,33 @@ class AppLocalizationsEs extends AppLocalizations {
   String get previewSummaryUnavailable => 'Preview summary could not be loaded';
 
   @override
+  String get previewGenerating => 'Generating preview…';
+
+  @override
+  String get previewTimedOut =>
+      'Preview is taking longer than expected. Try again in a moment.';
+
+  @override
+  String get previewGenerationFailed => 'We couldn\'t generate this preview.';
+
+  @override
+  String get previewInvalidated =>
+      'This preview is no longer valid because your schedule changed.';
+
+  @override
+  String get previewStaleBanner =>
+      'This preview reflects an earlier snapshot of your schedule.';
+
+  @override
+  String get previewNonViableLabel => 'Couldn\'t be scheduled';
+
+  @override
+  String get reviewChanges => 'Review changes';
+
+  @override
+  String get previewRetry => 'Retry';
+
+  @override
   String actionsCount(int count) {
     return '$count actions';
   }

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:collection/collection.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,7 +20,7 @@ import 'package:tiler_app/components/ribbons/weekRibbon/weekRibbonCarousel.dart'
 import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
-import 'package:tiler_app/components/tilelist/dailyView/previewDailyTileList.dart';
+import 'package:tiler_app/components/vibeChat/tileCast/tileCastCarousel.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/components/homeFab.dart';
@@ -445,39 +444,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   }
 
   Widget _buildPreviewOverlay(VibeChatState vibeChatState) {
-    final tiles = vibeChatState.previewTiles;
-    final selectedTile = (tiles != null && tiles.isNotEmpty)
-        ? tiles.firstWhereOrNull(
-            (tile) =>
-                tile.id != null &&
-                vibeChatState.selectedActionEntityId != null &&
-                tile.id!.contains(vibeChatState.selectedActionEntityId!),
-          )
-        : null;
-
-    if (selectedTile == null &&
-        vibeChatState.step == VibeChatStep.previewLoaded) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        NotificationOverlayMessage().showToast(
-          context,
-          AppLocalizations.of(this.context)!.entityIdNotFound,
-          NotificationOverlayMessageType.warning,
-        );
-      });
-    }
-
-    final displayDate = selectedTile?.startTime ?? DateTime.now();
-    return Stack(
-      children: [
-        PreviewDailyTileList(displayDate: displayDate),
-        if (!displayDate.isToday)
-          DayRibbonCarousel(
-            displayDate,
-            autoUpdateAnchorDate: false,
-            preview: true,
-          ),
-      ],
-    );
+    return const TileCastCarousel();
   }
 
   Widget renderAuthorizedUserPageView() {

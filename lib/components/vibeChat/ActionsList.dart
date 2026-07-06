@@ -175,7 +175,8 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
         if (nonClickableStatuses.contains(action.status)) return;
 
         if (widget.requestId != null) {
-          context.read<VibeChatBloc>().add(PreviewActionEvent(widget.requestId! , action.id ?? ''));
+          context.read<VibeChatBloc>().add(
+              LoadTileCastEvent(widget.requestId!, actionId: action.id));
         }
       },
       child: Align(

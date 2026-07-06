@@ -29,6 +29,17 @@ class VibeChatState extends Equatable {
   final int currentSessionIndex;
   final List<SubCalendarEvent>? previewTiles;
   final String? selectedActionEntityId;
+
+  /// Ordered TileCast actions for the active request, used to drive the
+  /// preview carousel and the navigable action list.
+  final List<VibePreviewAction> previewActions;
+
+  /// Index of the currently displayed TileCast carousel page.
+  final int currentPreviewIndex;
+
+  /// Request-level TileCast preview carrying readiness/staleness metadata.
+  final VibeRequestPreview? previewBatch;
+
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession ,
@@ -42,8 +53,24 @@ class VibeChatState extends Equatable {
     this.hasMoreSessions = false,
     this.currentSessionIndex = 0,
     this.previewTiles,
-    this.selectedActionEntityId
+    this.selectedActionEntityId,
+    this.previewActions = const [],
+    this.currentPreviewIndex = 0,
+    this.previewBatch,
   });
+
+  /// The TileCast action currently focused in the carousel, or null when the
+  /// index is out of range / there are no actions.
+  VibePreviewAction? get currentPreviewAction =>
+      (currentPreviewIndex >= 0 && currentPreviewIndex < previewActions.length)
+          ? previewActions[currentPreviewIndex]
+          : null;
+
+  /// Readiness state of the active TileCast preview batch.
+  PreviewState get previewState => previewBatch?.state ?? PreviewState.unknown;
+
+  /// Whether the active TileCast preview no longer reflects the live schedule.
+  bool get isPreviewStale => previewBatch?.isStale ?? false;
 
   VibeChatState copyWith({
     VibeChatStep? step,
@@ -59,6 +86,9 @@ class VibeChatState extends Equatable {
     int? currentSessionIndex,
     List<SubCalendarEvent>? previewTiles,
     String? selectedActionEntityId,
+    List<VibePreviewAction>? previewActions,
+    int? currentPreviewIndex,
+    VibeRequestPreview? previewBatch,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -74,6 +104,9 @@ class VibeChatState extends Equatable {
       currentSessionIndex: currentSessionIndex ?? this.currentSessionIndex,
       previewTiles: previewTiles ?? this.previewTiles,
       selectedActionEntityId: selectedActionEntityId ?? this.selectedActionEntityId,
+      previewActions: previewActions ?? this.previewActions,
+      currentPreviewIndex: currentPreviewIndex ?? this.currentPreviewIndex,
+      previewBatch: previewBatch ?? this.previewBatch,
     );
   }
 
@@ -91,7 +124,10 @@ class VibeChatState extends Equatable {
     hasMoreMessages,
     currentSessionIndex,
     previewTiles,
-    selectedActionEntityId
+    selectedActionEntityId,
+    previewActions,
+    currentPreviewIndex,
+    previewBatch,
   ];
 }
 
