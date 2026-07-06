@@ -19,6 +19,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/components/homeFab.dart';
 import 'package:tiler_app/components/homeBottomNav.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
@@ -187,7 +188,12 @@ void main() {
     testWidgets('bottomNavKey and bottomNavAddTileKey are attached to HomeBottomNav',
         (tester) async {
       await tester.pumpWidget(_wrap(
-        HomeBottomNav(onShare: () {}, onAddTile: () {}, onCalendar: () {}),
+        HomeBottomNav(
+          onShare: () {},
+          onAddTile: () {},
+          currentView: AuthorizedRouteTileListPage.Daily,
+          onSelectView: (_) {},
+        ),
       ));
       await tester.pump();
       expect(TutorialKeys.bottomNavKey.currentContext, isNotNull,
@@ -266,16 +272,21 @@ void main() {
         (tester) async {
       final steps = await _loadSteps(tester);
       final switchViews = _stepById(steps, 'switch_views');
-      expect(switchViews.headerIcon, Icons.calendar_month);
+      expect(switchViews.headerIcon, Icons.calendar_view_month);
 
       await tester.pumpWidget(_wrap(
-        HomeBottomNav(onShare: () {}, onAddTile: () {}, onCalendar: () {}),
+        HomeBottomNav(
+          onShare: () {},
+          onAddTile: () {},
+          currentView: AuthorizedRouteTileListPage.Monthly,
+          onSelectView: (_) {},
+        ),
       ));
       await tester.pump();
-      expect(_renderedIcons(tester), contains(Icons.calendar_month),
+      expect(_renderedIcons(tester), contains(Icons.calendar_view_month),
           reason:
-              'Switch-views step points at the calendar toggle, which must '
-              'exist in the bottom nav.');
+              'Switch-views step points at the calendar toggle; on Monthly the '
+              'switcher renders the month-grid icon the step advertises.');
     });
 
     testWidgets('add_tile_button spotlight actually triggers add-tile',
@@ -285,7 +296,8 @@ void main() {
         HomeBottomNav(
           onShare: () {},
           onAddTile: () => addTileCalled = true,
-          onCalendar: () {},
+          currentView: AuthorizedRouteTileListPage.Daily,
+          onSelectView: (_) {},
         ),
       ));
       await tester.pump();

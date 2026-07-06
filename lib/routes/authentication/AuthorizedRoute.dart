@@ -26,6 +26,7 @@ import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/components/homeFab.dart';
 import 'package:tiler_app/components/homeBottomNav.dart';
+import 'package:tiler_app/components/calendarViewSwitcher/calendarViewSwitcherController.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
@@ -174,28 +175,14 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     Navigator.pushNamed(context, '/Setting');
   }
 
-  void _onCalendarViewSwitch() {
-    final currentState = context.read<ScheduleBloc>().state;
-    AuthorizedRouteTileListPage newView;
-    switch (currentState.currentView) {
-      case AuthorizedRouteTileListPage.Daily:
-        context.read<UiDateManagerBloc>().add(LogOutUiDateManagerEvent());
-        newView = AuthorizedRouteTileListPage.Weekly;
-        break;
-      case AuthorizedRouteTileListPage.Weekly:
-        newView = AuthorizedRouteTileListPage.Monthly;
-        context
-            .read<MonthlyUiDateManagerBloc>()
-            .add(LogOutMonthlyUiDateManagerEvent());
-        break;
-      case AuthorizedRouteTileListPage.Monthly:
-        context
-            .read<WeeklyUiDateManagerBloc>()
-            .add(LogOutWeeklyUiDateManagerEvent());
-        newView = AuthorizedRouteTileListPage.Daily;
-        break;
-    }
-    context.read<ScheduleBloc>().add(ChangeViewEvent(newView));
+  void _onSelectCalendarView(AuthorizedRouteTileListPage newView) {
+    selectCalendarView(
+      newView: newView,
+      scheduleBloc: context.read<ScheduleBloc>(),
+      dailyDateBloc: context.read<UiDateManagerBloc>(),
+      weeklyDateBloc: context.read<WeeklyUiDateManagerBloc>(),
+      monthlyDateBloc: context.read<MonthlyUiDateManagerBloc>(),
+    );
   }
 
   Widget _buildTileList(AuthorizedRouteTileListPage selectedListPage) {
@@ -426,10 +413,17 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
               : Colors.transparent,
           BlendMode.srcATop,
         ),
-        child: HomeBottomNav(
-          onShare: _onShareTap,
-          onAddTile: () => displayDialog(MediaQuery.of(context).size),
-          onCalendar: _onCalendarViewSwitch,
+        child: BlocBuilder<ScheduleBloc, ScheduleState>(
+          buildWhen: (previous, current) =>
+              previous.currentView != current.currentView,
+          builder: (context, scheduleState) {
+            return HomeBottomNav(
+              onShare: _onShareTap,
+              onAddTile: () => displayDialog(MediaQuery.of(context).size),
+              currentView: scheduleState.currentView,
+              onSelectView: _onSelectCalendarView,
+            );
+          },
         ),
       ),
     );

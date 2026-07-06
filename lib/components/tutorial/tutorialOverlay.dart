@@ -143,7 +143,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       targetKey: TutorialKeys.bottomNavKey,
       title: l10n.tutorialStepBigPictureTitle,
       body: l10n.tutorialStepBigPictureBody,
-      headerIcon: Icons.calendar_month,
+        headerIcon: Icons.calendar_view_month,
       tooltipPosition: TooltipPosition.above,
       spotlightShape: SpotlightShape.roundedRect,
       spotlightPadding: 4,
