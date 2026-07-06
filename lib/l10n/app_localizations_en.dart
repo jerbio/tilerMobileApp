@@ -323,6 +323,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleting => 'Deleting';
 
   @override
+  String get deleteBlockConfirming => 'Deleting this block...';
+
+  @override
+  String get deleteTileConfirming => 'Deleting this tile...';
+
+  @override
+  String get deleteNow => 'Delete Now';
+
+  @override
+  String get deleteGoogleWarning =>
+      '⚠️ This will also delete from Google Calendar';
+
+  @override
+  String get deleteOutlookWarning => '⚠️ This will also delete from Outlook';
+
+  @override
   String get previously => 'Previously';
 
   @override
@@ -2536,4 +2552,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notesDone => 'Done';
+
+  @override
+  String get endOfDay => 'End of Day';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get openChat => 'Open chat';
+
+  @override
+  String get goToToday => 'Go to today';
+
+  @override
+  String get switchCalendarView => 'Switch calendar view';
+
+  @override
+  String get previewSundialGreeting => 'Hello.';
+
+  @override
+  String get previewSundialCountsPrefix => 'Today has';
+
+  @override
+  String get previewSundialCountsSuffix => 'waiting.';
+
+  @override
+  String previewSundialTilesClause(String count) {
+    return '$count tiles';
+  }
+
+  @override
+  String previewSundialBlocksClause(String count) {
+    return '$count blocks';
+  }
+
+  @override
+  String previewSundialTileSharesClause(String count) {
+    return '$count tileshares';
+  }
+
+  @override
+  String previewSundialWorkClause(String hours) {
+    return '$hours hours of work';
+  }
+
+  @override
+  String previewSundialTransitClause(String mins) {
+    return '$mins mins of transit';
+  }
+
+  @override
+  String previewSundialClearsByClause(String time) {
+    return 'your day clears by $time';
+  }
+
+  @override
+  String get previewSundialAndSeparator => 'and';
+
+  @override
+  String previewSundialDistance(String distance, String unit) {
+    return '$distance $unit';
+  }
+
+  @override
+  String previewSundialLocations(String count) {
+    return '$count places';
+  }
+
+  @override
+  String previewSundialSleepHours(String hours) {
+    return '${hours}h sleep';
+  }
+
+  @override
+  String previewSundialFreeHours(String hours) {
+    return '${hours}h free';
+  }
+
+  @override
+  String get previewSundialFullyBooked => 'All booked up';
+
+  @override
+  String get previewSundialTier0 => 'Open day';
+
+  @override
+  String get previewSundialTier1 => 'Getting started';
+
+  @override
+  String get previewSundialTier2 => 'Underway';
+
+  @override
+  String get previewSundialTier3 => 'Solid progress';
+
+  @override
+  String get previewSundialTier4 => 'Almost there';
+
+  @override
+  String get previewSundialTodayLabel => 'Today';
+
+  @override
+  String previewSundialCompositionA11y(
+      String tiles, String blocks, String nonViable) {
+    return '$tiles tiles, $blocks blocks, $nonViable unscheduled';
+  }
 }

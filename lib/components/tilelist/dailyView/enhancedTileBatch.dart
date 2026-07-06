@@ -39,6 +39,8 @@ class EnhancedTileBatch extends StatefulWidget {
   final bool showConflictAlerts;
   final bool preview;
   final String? selectedActionEntityId;
+  final DateTime? endOfDayTime;
+  final VoidCallback? onEndOfDayUpdated;
   const EnhancedTileBatch({
     this.dayIndex,
     this.tiles,
@@ -52,6 +54,8 @@ class EnhancedTileBatch extends StatefulWidget {
     this.showConflictAlerts = true,
     this.preview = false,
     this.selectedActionEntityId,
+    this.endOfDayTime,
+    this.onEndOfDayUpdated,
     Key? key,
   }) : super(key: key);
 
@@ -243,6 +247,8 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       excludeDeclinedFromConflicts: false,
       now: DateTime.now(),
       selectedActionEntityId: widget.selectedActionEntityId,
+      endOfDayTime: widget.endOfDayTime,
+      onEndOfDayUpdated: widget.onEndOfDayUpdated,
       buildTile: (tile,
           {required hour, required showHourMarker, required isCurrentHour}) {
         if (widget.showTimelineMarkers) {

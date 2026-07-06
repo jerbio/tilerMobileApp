@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
+import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
@@ -12,17 +13,13 @@ import 'package:tiler_app/data/timeline.dart';
 
 class PreviewDailyTileList extends TileList {
   final DateTime displayDate;
-  PreviewDailyTileList({
-    Key? key,
-    required this.displayDate
-  }) : super(key: key);
+  PreviewDailyTileList({Key? key, required this.displayDate}) : super(key: key);
 
   @override
   _PreviewDailyTileListState createState() => _PreviewDailyTileListState();
 }
 
 class _PreviewDailyTileListState extends TileListState {
-
   @override
   PreviewDailyTileList get widget => super.widget as PreviewDailyTileList;
 
@@ -53,7 +50,9 @@ class _PreviewDailyTileListState extends TileListState {
         key: ValueKey("today_batch"),
         tiles: [...elapsedTiles, ...upcomingTiles],
         preview: true,
-        selectedActionEntityId: context.read<VibeChatBloc>().state.selectedActionEntityId
+        selectedActionEntityId:
+            context.read<VibeChatBloc>().state.selectedActionEntityId,
+        endOfDayTime: endOfDayDateTimeFor(now, Utility.defaultEndOfDay),
       );
     } else {
       int dayIndex = Utility.getDayIndex(widget.displayDate);
@@ -66,7 +65,10 @@ class _PreviewDailyTileListState extends TileListState {
         showTravelConnectors: true,
         showTimelineMarkers: true,
         preview: true,
-        selectedActionEntityId: context.read<VibeChatBloc>().state.selectedActionEntityId
+        selectedActionEntityId:
+            context.read<VibeChatBloc>().state.selectedActionEntityId,
+        endOfDayTime:
+            endOfDayDateTimeFor(widget.displayDate, Utility.defaultEndOfDay),
       );
     }
   }
@@ -75,12 +77,12 @@ class _PreviewDailyTileListState extends TileListState {
   Widget build(BuildContext context) {
     return BlocBuilder<VibeChatBloc, VibeChatState>(
       builder: (context, state) {
-        final tiles = (state.previewTiles ?? []).where((tile) =>
-            tile.isInterfering(Timeline.fromDateTime(
-              widget.displayDate.dayDate,
-              widget.displayDate.dayDate.add(Duration(days: 1)),
-            ))
-        ).toList();
+        final tiles = (state.previewTiles ?? [])
+            .where((tile) => tile.isInterfering(Timeline.fromDateTime(
+                  widget.displayDate.dayDate,
+                  widget.displayDate.dayDate.add(Duration(days: 1)),
+                )))
+            .toList();
         return Container(
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(color: colorScheme.surfaceContainerLowest),
@@ -91,7 +93,6 @@ class _PreviewDailyTileListState extends TileListState {
       },
     );
   }
-
 
   @override
   void dispose() {

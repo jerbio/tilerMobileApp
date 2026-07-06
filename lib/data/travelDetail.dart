@@ -60,6 +60,8 @@ class TravelData {
   final bool? isEnabled;
   final bool? isTardy;
   final double? duration;
+  final double? distance;
+  final String? distanceUnit;
 
   const TravelData({
     this.start,
@@ -72,6 +74,8 @@ class TravelData {
     this.isEnabled,
     this.isTardy,
     this.duration,
+    this.distance,
+    this.distanceUnit,
   });
 
   factory TravelData.fromJson(Map<String, dynamic>? json) {
@@ -92,7 +96,13 @@ class TravelData {
       travelMedium: json['travelMedium'],
       isEnabled: json['isEnabled'],
       isTardy: json['isTardy'],
-      duration: json['duration'],
+      duration: json['duration'] != null
+          ? (json['duration'] as num).toDouble()
+          : null,
+      distance: json['distance'] != null
+          ? (json['distance'] as num).toDouble()
+          : null,
+      distanceUnit: json['distanceUnit'] as String?,
     );
   }
 
@@ -107,6 +117,8 @@ class TravelData {
         'isEnabled': isEnabled,
         'isTardy': isTardy,
         'duration': duration,
+        'distance': distance,
+        'distanceUnit': distanceUnit,
       };
 }
 

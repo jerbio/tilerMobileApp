@@ -4,6 +4,7 @@ class ScheduleProfile {
   TravelMedium? travelMedium;
   PinPreference? pinPreference;
   num? sleepDuration;
+  String? endTimeOfDay;
 
   ScheduleProfile.fromJson(Map<String, dynamic> json) {
     travelMedium = null;
@@ -21,7 +22,9 @@ class ScheduleProfile {
         break;
       }
     }
-
+    if (json['endTimeOfDay'] != null) {
+      endTimeOfDay = json['endTimeOfDay'];
+    }
     if (json['sleepDuration'] != null) {
       sleepDuration = json['sleepDuration'];
     }

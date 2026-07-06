@@ -25,7 +25,7 @@ const Duration retryLoginDuration = Duration(seconds: 2);
 const int retryLoginCount = 150;
 String googleClientDefaultKey = 'GOOGLE_CLIENT_ID_DEFAULT';
 String googleClientIdKey =
-    Platform.isIOS ? 'GOOGLE_CLIENT_ID_IOS' : 'GOOGLE_CLIENT_ID_DEFAULT';
+    Platform.isIOS ? 'GOOGLE_CLIENT_ID_IOS' : 'GOOGLER_CLIENT_ID_DEFAULT';
 String googleClientSecretKey = 'GOOGLE_CLIENT_SECRET';
 String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';

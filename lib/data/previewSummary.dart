@@ -1,4 +1,5 @@
 import 'package:tiler_app/data/previewGroup.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 
 class PreviewSummary {
@@ -56,7 +57,7 @@ class PreviewSummary {
       if (json[tilesKey] is List) {
         tiles = (json[tilesKey] as List)
             .where((element) => element != null)
-            .map<TilerEvent>((e) => TilerEvent.fromJson(e))
+            .map<TilerEvent>((e) => SubCalendarEvent.fromJson(e))
             .toList();
       }
     }
