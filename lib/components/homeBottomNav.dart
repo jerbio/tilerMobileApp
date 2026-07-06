@@ -55,6 +55,7 @@ class HomeBottomNav extends StatelessWidget {
 
               // ── Centre: Tiler logo ────────────────────────────────────────
               GestureDetector(
+                key: TutorialKeys.bottomNavAddTileKey,
                 onTap: onAddTile,
                 child: Container(
                   width: 56,

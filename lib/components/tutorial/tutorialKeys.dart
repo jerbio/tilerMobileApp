@@ -7,17 +7,22 @@ class TutorialKeys {
 
   static final GlobalKey scheduleViewKey =
       GlobalKey(debugLabel: 'tutorialScheduleView');
+
+  /// The chat FAB (bottom-right floating action button).
   static final GlobalKey fabKey = GlobalKey(debugLabel: 'tutorialFab');
+
+  /// The whole bottom navigation bar (Share · Add-tile logo · Calendar).
   static final GlobalKey bottomNavKey =
       GlobalKey(debugLabel: 'tutorialBottomNav');
-  static final GlobalKey bottomNavShareKey =
-      GlobalKey(debugLabel: 'tutorialBottomNavShare');
-  static final GlobalKey bottomNavSearchKey =
-      GlobalKey(debugLabel: 'tutorialBottomNavSearch');
-  static final GlobalKey bottomNavSettingsKey =
-      GlobalKey(debugLabel: 'tutorialBottomNavSettings');
-  static final GlobalKey bottomNavCalendarKey =
-      GlobalKey(debugLabel: 'tutorialBottomNavCalendar');
+
+  /// The centre "Tiler logo" slot in the bottom bar that opens the add-tile sheet.
+  static final GlobalKey bottomNavAddTileKey =
+      GlobalKey(debugLabel: 'tutorialBottomNavAddTile');
+
+  /// The top-right action cluster (Go-to-today · Search · Settings).
+  static final GlobalKey topRightActionsKey =
+      GlobalKey(debugLabel: 'tutorialTopRightActions');
+
   static final GlobalKey currentTileKey =
       GlobalKey(debugLabel: 'tutorialCurrentTile');
 }

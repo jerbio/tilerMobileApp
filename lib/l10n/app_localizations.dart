@@ -3932,7 +3932,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialStepToolkitBody.
   ///
   /// In en, this message translates to:
-  /// **'The bottom bar gives you quick access to key features:'**
+  /// **'These handy tools are always within reach:'**
   String get tutorialStepToolkitBody;
 
   /// No description provided for @tutorialCalloutShare.
@@ -3970,6 +3970,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customize your experience, connect calendars, set preferences'**
   String get tutorialCalloutSettingsDesc;
+
+  /// No description provided for @tutorialCalloutChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get tutorialCalloutChat;
+
+  /// No description provided for @tutorialCalloutChatDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chat button to add or adjust tiles by just talking to Tiler'**
+  String get tutorialCalloutChatDesc;
+
+  /// No description provided for @tutorialStepChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with Tiler'**
+  String get tutorialStepChatTitle;
+
+  /// No description provided for @tutorialStepChatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.'**
+  String get tutorialStepChatBody;
 
   /// No description provided for @tutorialNavNext.
   ///

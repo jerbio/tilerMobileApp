@@ -92,28 +92,16 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         spotlightPadding: 0,
       ),
 
-      // Step 2: The FAB — Create & Optimize
+      // Step 2: The centre Tiler logo — Create a Tile
       TutorialStep(
-        id: 'fab_add_tile',
-        targetKey: TutorialKeys.fabKey,
+        id: 'add_tile_button',
+        targetKey: TutorialKeys.bottomNavAddTileKey,
         title: l10n.tutorialStepCreateOptimizeTitle,
         body: l10n.tutorialStepCreateOptimizeBody,
         headerIcon: Icons.add_circle_outline,
         tooltipPosition: TooltipPosition.above,
         spotlightShape: SpotlightShape.circle,
-        spotlightPadding: 4,
-        callouts: [
-          TutorialCallout(
-            icon: Icons.refresh,
-            label: l10n.tutorialCalloutReOptimize,
-            description: l10n.tutorialCalloutReOptimizeDesc,
-          ),
-          TutorialCallout(
-            icon: Icons.directions_car,
-            label: l10n.tutorialCalloutTravelTime,
-            description: l10n.tutorialCalloutTravelTimeDesc,
-          ),
-        ],
+        spotlightPadding: 6,
       ),
 
       // Step 3: Quick Add explanation — opens the real add-tile sheet
@@ -144,6 +132,8 @@ class _TutorialOverlayState extends State<TutorialOverlay>
       ),
 
       // Step 4: Smart Scheduling — Tiler Works for You
+      // Callouts mirror the real add-tile sheet action row:
+      // Shuffle · Defer All · Options (see PreviewAddWidget.renderModal).
       TutorialStep(
         id: 'smart_scheduling',
         targetKey: TutorialKeys.bottomNavKey,
@@ -155,11 +145,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         spotlightPadding: 4,
         callouts: [
           TutorialCallout(
-            icon: Icons.preview,
-            label: l10n.tutorialCalloutForecast,
-            description: l10n.tutorialCalloutForecastDesc,
-          ),
-          TutorialCallout(
             icon: Icons.shuffle,
             label: l10n.tutorialCalloutShuffle,
             description: l10n.tutorialCalloutShuffleDesc,
@@ -168,6 +153,11 @@ class _TutorialOverlayState extends State<TutorialOverlay>
             icon: Icons.fast_forward,
             label: l10n.tutorialCalloutDeferAll,
             description: l10n.tutorialCalloutDeferAllDesc,
+          ),
+          TutorialCallout(
+            icon: Icons.more_time,
+            label: l10n.tutorialCalloutMoreOptions,
+            description: l10n.tutorialCalloutMoreOptionsSheetDesc,
           ),
         ],
       ),
@@ -230,22 +220,17 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         ],
       ),
 
-      // Step 7: Bottom Nav — Share, Search, Settings
+      // Step 7: Top-right tools — Search & Settings
       TutorialStep(
-        id: 'bottom_nav_tools',
-        targetKey: TutorialKeys.bottomNavKey,
+        id: 'quick_tools',
+        targetKey: TutorialKeys.topRightActionsKey,
         title: l10n.tutorialStepToolkitTitle,
         body: l10n.tutorialStepToolkitBody,
         headerIcon: Icons.dashboard,
-        tooltipPosition: TooltipPosition.above,
+        tooltipPosition: TooltipPosition.below,
         spotlightShape: SpotlightShape.roundedRect,
-        spotlightPadding: 4,
+        spotlightPadding: 6,
         callouts: [
-          TutorialCallout(
-            icon: Icons.share,
-            label: l10n.tutorialCalloutShare,
-            description: l10n.tutorialCalloutShareDesc,
-          ),
           TutorialCallout(
             icon: Icons.search,
             label: l10n.tutorialCalloutSearch,
@@ -257,6 +242,18 @@ class _TutorialOverlayState extends State<TutorialOverlay>
             description: l10n.tutorialCalloutSettingsDesc,
           ),
         ],
+      ),
+
+      // Step 8: The Chat FAB — talk to Tiler
+      TutorialStep(
+        id: 'chat_fab',
+        targetKey: TutorialKeys.fabKey,
+        title: l10n.tutorialStepChatTitle,
+        body: l10n.tutorialStepChatBody,
+        headerIcon: Icons.chat_outlined,
+        tooltipPosition: TooltipPosition.above,
+        spotlightShape: SpotlightShape.circle,
+        spotlightPadding: 6,
       ),
     ];
   }

@@ -2225,7 +2225,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialStepToolkitBody =>
-      'La barra inferior te da acceso rápido a funciones clave:';
+      'Estas herramientas prácticas están siempre a tu alcance:';
 
   @override
   String get tutorialCalloutShare => 'Compartir';
@@ -2245,6 +2245,20 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutorialCalloutSettingsDesc =>
       'Personaliza tu experiencia, conecta calendarios, establece preferencias';
+
+  @override
+  String get tutorialCalloutChat => 'Chat';
+
+  @override
+  String get tutorialCalloutChatDesc =>
+      'Toca el botón de chat para agregar o ajustar tiles solo hablando con Tiler';
+
+  @override
+  String get tutorialStepChatTitle => 'Chatea con Tiler';
+
+  @override
+  String get tutorialStepChatBody =>
+      'Toca el botón de chat en cualquier momento para agregar o ajustar tiles solo hablando con Tiler — sin formularios.';
 
   @override
   String get tutorialNavNext => 'Siguiente';

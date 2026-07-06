@@ -565,7 +565,7 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TutorialBloc(stepCount: 7),
+      create: (_) => TutorialBloc(stepCount: 8),
       child: MultiBlocListener(
           listeners: [
             BlocListener<VibeChatBloc, VibeChatState>(
@@ -700,7 +700,7 @@ class _TutorialSheetDialog extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final currentStep = (tutorialBloc?.state.currentStepIndex ?? 2) + 1;
-    final totalSteps = tutorialBloc?.state.totalSteps ?? 7;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? 8;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
@@ -899,7 +899,7 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final currentStep = (tutorialBloc?.state.currentStepIndex ?? 3) + 1;
-    final totalSteps = tutorialBloc?.state.totalSteps ?? 7;
+    final totalSteps = tutorialBloc?.state.totalSteps ?? 8;
 
     return Align(
       alignment: Alignment(0.0, -0.75),
@@ -983,9 +983,6 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(20, 4, 20, 8),
                 child: Column(
                   children: [
-                    _calloutRow(Icons.preview, l10n.tutorialCalloutForecast,
-                        l10n.tutorialCalloutForecastDesc, theme, colorScheme),
-                    SizedBox(height: 8),
                     _calloutRow(Icons.shuffle, l10n.tutorialCalloutShuffle,
                         l10n.tutorialCalloutShuffleDesc, theme, colorScheme),
                     SizedBox(height: 8),
@@ -993,6 +990,13 @@ class _TutorialWorksForYouDialog extends StatelessWidget {
                         Icons.fast_forward,
                         l10n.tutorialCalloutDeferAll,
                         l10n.tutorialCalloutDeferAllDesc,
+                        theme,
+                        colorScheme),
+                    SizedBox(height: 8),
+                    _calloutRow(
+                        Icons.more_time,
+                        l10n.tutorialCalloutMoreOptions,
+                        l10n.tutorialCalloutMoreOptionsSheetDesc,
                         theme,
                         colorScheme),
                   ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// Persistent top-right overlay shown on the home screen.
@@ -28,6 +29,7 @@ class HomeTopRightActions extends StatelessWidget {
       top: 0,
       right: 8,
       child: Row(
+        key: TutorialKeys.topRightActionsKey,
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!isViewingToday)
