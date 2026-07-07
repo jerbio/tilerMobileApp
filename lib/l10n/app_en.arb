@@ -1548,13 +1548,18 @@
         "tutorialCalloutMonthlyDesc": "Plan ahead with a monthly overview",
 
         "tutorialStepToolkitTitle": "Your Toolkit",
-        "tutorialStepToolkitBody": "The bottom bar gives you quick access to key features:",
+        "tutorialStepToolkitBody": "These handy tools are always within reach:",
         "tutorialCalloutShare": "Share",
         "tutorialCalloutShareDesc": "Collaborate — share tiles with others",
         "tutorialCalloutSearch": "Search",
         "tutorialCalloutSearchDesc": "Find any tile by name",
         "tutorialCalloutSettings": "Settings",
         "tutorialCalloutSettingsDesc": "Customize your experience, connect calendars, set preferences",
+        "tutorialCalloutChat": "Chat",
+        "tutorialCalloutChatDesc": "Tap the chat button to add or adjust tiles by just talking to Tiler",
+
+        "tutorialStepChatTitle": "Chat with Tiler",
+        "tutorialStepChatBody": "Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.",
 
         "tutorialNavNext": "Next",
         "tutorialNavNextArrow": "Next →",

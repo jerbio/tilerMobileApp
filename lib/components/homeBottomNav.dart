@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/components/calendarViewSwitcher/calendarViewOptions.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
@@ -6,20 +8,83 @@ import 'package:tiler_app/routes/authenticatedUser/autoSwitchingWidget.dart';
 /// Bottom navigation bar used on the home screen.
 ///
 /// Three items:
-///   0 – Share (left)
+///   0 – Calendar view switcher (left). Its icon reflects [currentView]; tapping
+///       opens an anchored pop-out (above the bar) listing the two other views.
 ///   1 – Tiler logo / add-tile (centre, raised)
-///   2 – Calendar view switcher (right)
+///   2 – Share (right)
 class HomeBottomNav extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onAddTile;
-  final VoidCallback onCalendar;
+
+  /// The currently active calendar view — drives the switcher icon and which
+  /// two views the pop-out offers.
+  final AuthorizedRouteTileListPage currentView;
+
+  /// Invoked with the chosen view when the user picks one from the pop-out.
+  final ValueChanged<AuthorizedRouteTileListPage> onSelectView;
 
   const HomeBottomNav({
     super.key,
     required this.onShare,
     required this.onAddTile,
-    required this.onCalendar,
+    required this.currentView,
+    required this.onSelectView,
   });
+
+  /// Opens the anchored pop-out (a menu, not a dialog) above the switcher button
+  /// listing the views other than [currentView].
+  Future<void> _showViewMenu(BuildContext buttonContext) async {
+    final l10n = AppLocalizations.of(buttonContext)!;
+    final ColorScheme colorScheme = Theme.of(buttonContext).colorScheme;
+    final RenderBox button = buttonContext.findRenderObject() as RenderBox;
+    final RenderBox overlay = Navigator.of(buttonContext)
+        .overlay!
+        .context
+        .findRenderObject() as RenderBox;
+    final Offset buttonTopLeft =
+        button.localToGlobal(Offset.zero, ancestor: overlay);
+
+    // Estimate the menu's height so we can anchor it ABOVE the bottom nav bar
+    // (showMenu lays the menu out downward from position.top, so we push the
+    // top up by the estimated height to keep it above the button).
+    const double rowHeight = 48.0;
+    const double menuVerticalPadding = 16.0;
+    final double estimatedMenuHeight =
+        otherCalendarViews(currentView).length * rowHeight +
+            menuVerticalPadding;
+    final RelativeRect position = RelativeRect.fromLTRB(
+      buttonTopLeft.dx,
+      buttonTopLeft.dy - estimatedMenuHeight,
+      overlay.size.width - buttonTopLeft.dx - button.size.width,
+      overlay.size.height - buttonTopLeft.dy,
+    );
+
+    final AuthorizedRouteTileListPage? selected =
+        await showMenu<AuthorizedRouteTileListPage>(
+      context: buttonContext,
+      position: position,
+      color: colorScheme.surfaceContainerHigh,
+      items: [
+        for (final view in otherCalendarViews(currentView))
+          PopupMenuItem<AuthorizedRouteTileListPage>(
+            value: view,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(view.navIcon, color: colorScheme.primary),
+                const SizedBox(width: 12),
+                Text(view.label(l10n)),
+              ],
+            ),
+          ),
+      ],
+    );
+
+    if (selected != null) {
+      onSelectView(selected);
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +111,18 @@ class HomeBottomNav extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // ── Left: Share ───────────────────────────────────────────────
-              IconButton(
-                icon: Icon(Icons.share, color: colorScheme.primary),
-                onPressed: onShare,
-                tooltip: AppLocalizations.of(context)!.share,
+              // ── Left: Calendar view switcher ──────────────────────────────
+              Builder(
+                builder: (buttonContext) => IconButton(
+                  icon: Icon(currentView.navIcon, color: colorScheme.primary),
+                  onPressed: () => _showViewMenu(buttonContext),
+                  tooltip: AppLocalizations.of(context)!.switchCalendarView,
+                ),
               ),
 
               // ── Centre: Tiler logo ────────────────────────────────────────
               GestureDetector(
+                key: TutorialKeys.bottomNavAddTileKey,
                 onTap: onAddTile,
                 child: Container(
                   width: 56,
@@ -86,11 +154,11 @@ class HomeBottomNav extends StatelessWidget {
                 ),
               ),
 
-              // ── Right: Calendar view switcher ──────────────────────────────
+              // ── Right: Share ──────────────────────────────────────────────
               IconButton(
-                icon: Icon(Icons.calendar_month, color: colorScheme.primary),
-                onPressed: onCalendar,
-                tooltip: AppLocalizations.of(context)!.switchCalendarView,
+                icon: Icon(Icons.share, color: colorScheme.primary),
+                onPressed: onShare,
+                tooltip: AppLocalizations.of(context)!.share,
               ),
             ],
           ),
