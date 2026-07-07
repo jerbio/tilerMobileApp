@@ -1043,7 +1043,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyDayFooterLine1.
   ///
   /// In en, this message translates to:
-  /// **'Get started in seconds—'**
+  /// **'Get started in seconds'**
   String get emptyDayFooterLine1;
 
   /// No description provided for @emptyDayFooterLine2.
@@ -4781,6 +4781,18 @@ abstract class AppLocalizations {
   /// **'{tiles} tiles, {blocks} blocks, {nonViable} unscheduled'**
   String previewSundialCompositionA11y(
       String tiles, String blocks, String nonViable);
+
+  /// Heading shown in the contextual empty state when there are no scheduled tasks but RSVPs or all-day events exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Your timeline is clear today'**
+  String get timelineClearHeading;
+
+  /// Call-to-action button label in the contextual empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a tile'**
+  String get timelineClearAddTask;
 }
 
 class _AppLocalizationsDelegate

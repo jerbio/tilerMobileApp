@@ -501,7 +501,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyDayHeaderLine1 => 'No plans yet.';
 
   @override
-  String get emptyDayFooterLine1 => 'Get started in seconds—';
+  String get emptyDayFooterLine1 => 'Get started in seconds';
 
   @override
   String get emptyDayFooterLine2 => 'import calendars or create tiles.';
@@ -2673,4 +2673,10 @@ class AppLocalizationsEn extends AppLocalizations {
       String tiles, String blocks, String nonViable) {
     return '$tiles tiles, $blocks blocks, $nonViable unscheduled';
   }
+
+  @override
+  String get timelineClearHeading => 'Your timeline is clear today';
+
+  @override
+  String get timelineClearAddTask => 'Add a tile';
 }

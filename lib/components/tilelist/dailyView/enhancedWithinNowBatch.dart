@@ -456,31 +456,46 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
       final (tilesWithConnectors, targetScrollIndex) =
           _buildTilesWithConnectors(orderedTiles);
-      if (withinNow.preview && targetScrollIndex != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _listController.jumpToItem(
-            index: targetScrollIndex!,
-            scrollController: _scrollController,
-            alignment: 0.15,
-          );
-        });
-      }
 
-      tilesContent = SuperSliverList(
-        listController: _listController,
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index == tilesWithConnectors.length)
-              return MediaQuery.of(context).orientation == Orientation.landscape
-                  ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                  : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
-            return tilesWithConnectors[index];
-          },
-          childCount: tilesWithConnectors.length + 1,
-        ),
-      );
+      // All tiles may have been filtered out (e.g. only all-day events which
+      // are ≥16h and excluded from the timeline). Show EmptyDayTile so the
+      // chips at the top handle alerting and the body stays familiar.
+      if (tilesWithConnectors.isEmpty) {
+        tilesContent = SliverToBoxAdapter(
+          child: _renderEmptyDayTile(),
+        );
+      } else {
+        if (withinNow.preview && targetScrollIndex != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _listController.jumpToItem(
+              index: targetScrollIndex,
+              scrollController: _scrollController,
+              alignment: 0.15,
+            );
+          });
+        }
+
+        tilesContent = SuperSliverList(
+          listController: _listController,
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index == tilesWithConnectors.length)
+                return MediaQuery.of(context).orientation ==
+                        Orientation.landscape
+                    ? TileDimensions
+                        .bottomLandScapePaddingForTileBatchListOfTiles
+                    : TileDimensions
+                        .bottomPortraitPaddingForTileBatchListOfTiles;
+              return tilesWithConnectors[index];
+            },
+            childCount: tilesWithConnectors.length + 1,
+          ),
+        );
+      }
     } else {
-      tilesContent = SliverToBoxAdapter(child: _renderEmptyDayTile());
+      tilesContent = SliverToBoxAdapter(
+        child: _renderEmptyDayTile(),
+      );
     }
 
     // Use CustomScrollView with SliverAppBar for sticky action chips

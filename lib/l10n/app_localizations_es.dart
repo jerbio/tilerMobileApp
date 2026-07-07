@@ -2680,4 +2680,10 @@ class AppLocalizationsEs extends AppLocalizations {
       String tiles, String blocks, String nonViable) {
     return '$tiles tiles, $blocks bloques, $nonViable sin programar';
   }
+
+  @override
+  String get timelineClearHeading => 'Tu agenda está despejada hoy';
+
+  @override
+  String get timelineClearAddTask => 'Añadir tile';
 }

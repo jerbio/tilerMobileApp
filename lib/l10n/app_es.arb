@@ -618,5 +618,7 @@
     "previewSundialTier3": "Buen avance",
     "previewSundialTier4": "Casi listo",
     "previewSundialTodayLabel": "Hoy",
-    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar"
+    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
+    "timelineClearHeading": "Tu agenda está despejada hoy",
+    "timelineClearAddTask": "Añadir tile"
 }

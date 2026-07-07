@@ -200,7 +200,7 @@
     "noteEllipsis": "Note...",
     "tapToCreateNewTile": "Tap to create a new tile",
     "emptyDayHeaderLine1": "No plans yet.",
-    "emptyDayFooterLine1": "Get started in seconds—",
+    "emptyDayFooterLine1": "Get started in seconds",
     "emptyDayFooterLine2": "import calendars or create tiles.",
     "emptyDayOr": "or",
     "emptyDayImportGoogleCalendarButton": "Import Google Calendar",
@@ -1761,5 +1761,13 @@
                 "blocks": { "type": "String", "example": "3" },
                 "nonViable": { "type": "String", "example": "2" }
               }
+            },
+            "timelineClearHeading": "Your timeline is clear today",
+            "@timelineClearHeading": {
+              "description": "Heading shown in the contextual empty state when there are no scheduled tasks but RSVPs or all-day events exist."
+            },
+            "timelineClearAddTask": "Add a tile",
+            "@timelineClearAddTask": {
+              "description": "Call-to-action button label in the contextual empty state."
             }
 }
