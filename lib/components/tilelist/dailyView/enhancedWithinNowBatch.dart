@@ -402,7 +402,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     List<SubCalendarEvent> extendedTiles = [];
 
     if (viableTiles.isNotEmpty) {
-      final orderedTilesForAlerts = Utility.orderTiles(viableTiles.values.toList());
+      final orderedTilesForAlerts =
+          Utility.orderTiles(viableTiles.values.toList());
       nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesForAlerts);
       extendedTiles =
           ExtendedTilesBanner.detectExtendedTiles(viableTiles.values.toList());
