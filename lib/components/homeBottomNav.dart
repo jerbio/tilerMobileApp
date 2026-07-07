@@ -63,6 +63,7 @@ class HomeBottomNav extends StatelessWidget {
         await showMenu<AuthorizedRouteTileListPage>(
       context: buttonContext,
       position: position,
+      color: colorScheme.surfaceContainerHigh,
       items: [
         for (final view in otherCalendarViews(currentView))
           PopupMenuItem<AuthorizedRouteTileListPage>(
