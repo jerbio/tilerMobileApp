@@ -567,15 +567,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     evaluateTileDelta(renderedTiles.values);
     late Widget dayContent;
 
+    List<Widget>? tilesWithConnectors;
+    int? targetScrollIndex;
     if (renderedTiles.length > 0) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
+      final (built, scrollIndex) = _buildTilesWithConnectors(orderedTilesList);
+      tilesWithConnectors = built;
+      targetScrollIndex = scrollIndex;
+    }
 
-      final (tilesWithConnectors, targetScrollIndex) =
-          _buildTilesWithConnectors(
-        orderedTilesList,
-      );
-
+    // All tiles may have been filtered out (e.g. only all-day events which
+    // are ≥16h and excluded from the timeline). Treat that the same as an
+    // empty day so the body doesn't render blank.
+    if (tilesWithConnectors != null && tilesWithConnectors.isNotEmpty) {
       if (widget.preview && targetScrollIndex != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_itemScrollController.isAttached) {
@@ -595,7 +600,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           itemPositionsListener: _itemPositionsListener,
           itemCount: tilesWithConnectors.length + 1,
           itemBuilder: (context, index) {
-            if (index == tilesWithConnectors.length) {
+            if (index == tilesWithConnectors!.length) {
               return MediaQuery.of(context).orientation == Orientation.landscape
                   ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
                   : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
