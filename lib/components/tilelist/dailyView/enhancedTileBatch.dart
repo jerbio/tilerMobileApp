@@ -14,6 +14,7 @@ import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
+import 'package:tiler_app/components/tilelist/freeSlotRow.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -307,6 +308,13 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         }
         return connector;
       },
+      buildFreeSlot: (slot) {
+        final row = FreeSlotRow(slot: slot, preview: widget.preview);
+        if (widget.showTimelineMarkers) {
+          return _buildConnectorRowWithHourMarker(row);
+        }
+        return row;
+      },
     );
 
     return (result.widgets, result.selectedTileIndex);
@@ -556,6 +564,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         );
       }
     }
+
+    // Free-slot rows are rendered inline within the timeline (see
+    // _buildTilesWithConnectors), between the tiles that bound each gap.
 
     // Sleep widget
     Widget? sleepWidget;

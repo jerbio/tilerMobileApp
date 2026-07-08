@@ -125,6 +125,14 @@
     "morningBreak":"Morning Break",
     "afternoonBreak":"Afternoon Break",
     "freeTime":"Free Time",
+    "freeSlotHeader":"Free time",
+    "@freeSlotHeader": {
+      "description": "Header label for the free-slot strip listing open windows in the day."
+    },
+    "freeSlotNow":"Free now",
+    "@freeSlotNow": {
+      "description": "Badge shown on a free-slot chip whose window is currently live."
+    },
     "quickBreak":"Quick Break",
     "shortBreak":"Short Break",
     "blockedTime":"Blocked Time",

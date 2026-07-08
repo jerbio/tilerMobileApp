@@ -16,6 +16,7 @@ import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/freeSlotRow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -248,6 +249,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       },
       wrapConnector: (connector) => ConnectorRowWithHourMarker(
         connector: connector,
+        hourMarkerWidth: _hourMarkerWidth,
+      ),
+      buildFreeSlot: (slot) => ConnectorRowWithHourMarker(
+        connector: FreeSlotRow(slot: slot, preview: withinNow.preview),
         hourMarkerWidth: _hourMarkerWidth,
       ),
     );

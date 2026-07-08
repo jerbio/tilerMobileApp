@@ -800,6 +800,18 @@ abstract class AppLocalizations {
   /// **'Free Time'**
   String get freeTime;
 
+  /// Header label for the free-slot strip listing open windows in the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time'**
+  String get freeSlotHeader;
+
+  /// Badge shown on a free-slot chip whose window is currently live.
+  ///
+  /// In en, this message translates to:
+  /// **'Free now'**
+  String get freeSlotNow;
+
   /// No description provided for @quickBreak.
   ///
   /// In en, this message translates to:

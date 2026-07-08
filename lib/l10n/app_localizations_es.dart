@@ -374,6 +374,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get freeTime => 'Tiempo Libre';
 
   @override
+  String get freeSlotHeader => 'Tiempo libre';
+
+  @override
+  String get freeSlotNow => 'Libre ahora';
+
+  @override
   String get quickBreak => 'Pausa Rápida';
 
   @override
