@@ -2518,6 +2518,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get previewActionsUnavailable => 'TileCast unavailable';
 
   @override
+  String get tileCastStaleNote =>
+      'Your schedule changed — this TileCast may be out of date';
+
+  @override
   String actionsCount(int count) {
     return '$count actions';
   }

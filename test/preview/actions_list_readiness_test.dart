@@ -66,12 +66,16 @@ VibeChatBloc _makeBloc() {
   return bloc;
 }
 
-VibeChatState _stateWith(PreviewState state, {String requestId = 'req_1'}) =>
+VibeChatState _stateWith(PreviewState state,
+        {String requestId = 'req_1', bool isStale = false}) =>
     VibeChatState(
       step: VibeChatStep.loaded,
       tileCastStatusByRequest: {
         requestId: VibeRequestPreview(
-            id: 'preview_1', vibeRequestId: requestId, state: state),
+            id: 'preview_1',
+            vibeRequestId: requestId,
+            state: state,
+            isStale: isStale),
       },
     );
 
@@ -159,6 +163,37 @@ void main() {
       await t.pump();
       expect(find.byKey(const ValueKey('tilecast_readiness_banner')),
           findsNothing);
+    });
+  });
+
+  group('ActionsList stale note', () {
+    testWidgets('shows stale note when the ready TileCast is stale',
+        (t) async {
+      await pumpList(
+          t, _stateWith(PreviewState.ready, isStale: true));
+      expect(find.byKey(const ValueKey('tilecast_stale_note')), findsOneWidget);
+      expect(find.text('Your schedule changed — this TileCast may be out of date'),
+          findsOneWidget);
+      // Ready + stale must remain tappable (banner still says ready).
+      expect(find.text('Tap to view TileCast'), findsOneWidget);
+    });
+
+    testWidgets('no stale note when the TileCast is not stale', (t) async {
+      await pumpList(t, _stateWith(PreviewState.ready));
+      expect(find.byKey(const ValueKey('tilecast_stale_note')), findsNothing);
+    });
+
+    testWidgets('stale TileCast still opens when tapped', (t) async {
+      final bloc = _RecordingBloc()..chatApi = _FakeChatApi(PreviewState.ready);
+      bloc.tileCastReadinessDelayOverride = (_) async {};
+      bloc.tileCastReadinessMaxAttempts = 1;
+      await pumpList(t, _stateWith(PreviewState.ready, isStale: true),
+          bloc: bloc);
+
+      await t.tap(find.text('Add gym task'));
+      await t.pump();
+
+      expect(bloc.recorded.whereType<LoadTileCastEvent>(), isNotEmpty);
     });
   });
 

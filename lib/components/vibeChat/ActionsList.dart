@@ -85,6 +85,11 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
 
   bool get _isTileCastReady => _previewState == PreviewState.ready;
 
+  /// True when the tracked TileCast is openable but reflects a stale snapshot
+  /// (schedule changed after it was generated). Informational only.
+  bool get _isTileCastStale =>
+      widget.state.isTileCastStaleFor(widget.requestId);
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -166,28 +171,61 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     return Padding(
       key: const ValueKey('tilecast_readiness_banner'),
       padding: const EdgeInsets.only(left: 6, top: 4, bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (showSpinner)
+                SizedBox(
+                  width: 12,
+                  height: 12,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.6,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                  ),
+                )
+              else
+                Icon(icon, size: 14, color: color),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_isTileCastStale) _buildStaleNote(),
+        ],
+      ),
+    );
+  }
+
+  /// Non-blocking note shown when the TileCast is still openable but reflects a
+  /// pre-schedule-change snapshot. Never gates tapping.
+  Widget _buildStaleNote() {
+    return Padding(
+      key: const ValueKey('tilecast_stale_note'),
+      padding: const EdgeInsets.only(top: 4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (showSpinner)
-            SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(
-                strokeWidth: 1.6,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
-            )
-          else
-            Icon(icon, size: 14, color: color),
+          Icon(Icons.history_rounded,
+              size: 13, color: colorScheme.tertiary),
           const SizedBox(width: 6),
           Flexible(
             child: Text(
-              label,
+              localization.tileCastStaleNote,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: color,
+                fontSize: 11,
+                color: colorScheme.tertiary,
               ),
             ),
           ),

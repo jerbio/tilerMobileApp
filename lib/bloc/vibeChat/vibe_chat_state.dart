@@ -91,6 +91,12 @@ class VibeChatState extends Equatable {
   bool isTileCastReadyFor(String? requestId) =>
       tileCastStateFor(requestId) == PreviewState.ready;
 
+  /// Whether [requestId]'s TileCast preview is still openable but no longer
+  /// reflects the live schedule (a schedule change happened after it was
+  /// generated). This is informational only — it must not block loading.
+  bool isTileCastStaleFor(String? requestId) =>
+      tileCastStatusFor(requestId)?.isStale ?? false;
+
   VibeChatState copyWith({
     VibeChatStep? step,
     VibeSession? currentSession,

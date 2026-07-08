@@ -4511,6 +4511,12 @@ abstract class AppLocalizations {
   /// **'TileCast unavailable'**
   String get previewActionsUnavailable;
 
+  /// No description provided for @tileCastStaleNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your schedule changed — this TileCast may be out of date'**
+  String get tileCastStaleNote;
+
   /// No description provided for @actionsCount.
   ///
   /// In en, this message translates to:

@@ -33,8 +33,8 @@ void main() {
       expect(preview.state, PreviewState.queued);
     });
 
-    test('parses Completed state', () {
-      final json = processingJson()..['state'] = 'Completed';
+    test('parses Ready state', () {
+      final json = processingJson()..['state'] = 'Ready';
       final preview = VibeRequestPreview.fromJson(json);
       expect(preview.state, PreviewState.ready);
     });
@@ -96,9 +96,9 @@ void main() {
   });
 
   group('VibeRequestPreview state helpers', () {
-    test('isTerminal is true for completed/failed/invalidated', () {
+    test('isTerminal is true for ready/failed/invalidated', () {
       expect(
-          VibeRequestPreview.fromJson(processingJson()..['state'] = 'Completed')
+          VibeRequestPreview.fromJson(processingJson()..['state'] = 'Ready')
               .isTerminal,
           isTrue);
       expect(
