@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
+import 'package:tiler_app/data/VibeChat/VibeRequestPreview.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -25,6 +26,7 @@ class ActionsList extends StatefulWidget {
 
 class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClientMixin {
   bool _expanded = false;
+  bool _readinessRequested = false;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
   late AppLocalizations localization;
@@ -40,7 +42,48 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
         .colorScheme;
     tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
     localization = AppLocalizations.of(context)!;
+    _requestReadinessTracking();
   }
+
+  /// Kicks off background polling of this request's TileCast readiness (once)
+  /// so the user can see when the actions become tappable.
+  void _requestReadinessTracking() {
+    if (_readinessRequested) return;
+    final requestId = widget.requestId;
+    if (requestId == null || requestId.isEmpty) return;
+    if (!_hasClickableActions) return;
+    _readinessRequested = true;
+    context
+        .read<VibeChatBloc>()
+        .add(TrackTileCastReadinessEvent(requestId));
+  }
+
+  static const Set<ActionType> _nonClickableTypes = {
+    ActionType.removeExistingTask,
+    ActionType.whatIfRemovedTask,
+    ActionType.conversationalAndNotSupported,
+    ActionType.none,
+  };
+  static const Set<ActionStatus> _nonClickableStatuses = {
+    ActionStatus.executed,
+    ActionStatus.failed,
+    ActionStatus.exited,
+    ActionStatus.disposed,
+  };
+
+  bool _isActionClickable(VibeAction action) {
+    if (_nonClickableTypes.contains(action.type)) return false;
+    if (_nonClickableStatuses.contains(action.status)) return false;
+    return true;
+  }
+
+  bool get _hasClickableActions =>
+      widget.actions.any(_isActionClickable);
+
+  PreviewState get _previewState =>
+      widget.state.tileCastStateFor(widget.requestId);
+
+  bool get _isTileCastReady => _previewState == PreviewState.ready;
 
   @override
   Widget build(BuildContext context) {
@@ -51,17 +94,105 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
 
     if (validActions.isEmpty) return SizedBox.shrink();
 
+    Widget actionsWidget;
     if (validActions.length <= 5) {
-      return Column(
+      actionsWidget = Column(
         children: validActions
             .map((action) => _buildActionTile(action: action))
             .toList(),
       );
+    } else {
+      actionsWidget = Align(
+        alignment: Alignment.centerLeft,
+        child: _buildPillGroup(validActions),
+      );
     }
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: _buildPillGroup(validActions),
+    final banner = _buildReadinessBanner();
+    if (banner == null) return actionsWidget;
+
+    // Dim the actions until the preview is ready so it's obvious they aren't
+    // tappable yet.
+    final bool dim = !_isTileCastReady;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        banner,
+        AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          opacity: dim ? 0.45 : 1.0,
+          child: actionsWidget,
+        ),
+      ],
+    );
+  }
+
+  /// Request-level affordance telling the user whether the TileCast preview is
+  /// ready to open. Returns null when there is nothing tappable to preview.
+  Widget? _buildReadinessBanner() {
+    if (!_hasClickableActions) return null;
+
+    late final IconData icon;
+    late final String label;
+    late final Color color;
+    bool showSpinner = false;
+
+    switch (_previewState) {
+      case PreviewState.ready:
+        icon = Icons.check_circle_rounded;
+        label = localization.previewReadyToView;
+        color = TileColors.vibeChatExecutedAction;
+        break;
+      case PreviewState.failed:
+        icon = Icons.error_outline_rounded;
+        label = localization.previewActionsUnavailable;
+        color = colorScheme.error;
+        break;
+      case PreviewState.invalidated:
+        icon = Icons.history_rounded;
+        label = localization.previewActionsOutdated;
+        color = colorScheme.tertiary;
+        break;
+      case PreviewState.queued:
+      case PreviewState.processing:
+      case PreviewState.unknown:
+        icon = Icons.hourglass_top_rounded;
+        label = localization.previewPreparing;
+        color = colorScheme.onSurfaceVariant;
+        showSpinner = true;
+        break;
+    }
+
+    return Padding(
+      key: const ValueKey('tilecast_readiness_banner'),
+      padding: const EdgeInsets.only(left: 6, top: 4, bottom: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (showSpinner)
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 1.6,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            )
+          else
+            Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: color,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -158,21 +289,11 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     return GestureDetector(
       onTap: () {
         if (widget.state.step != VibeChatStep.loaded) return;
-        const nonClickableTypes = {
-          ActionType.removeExistingTask,
-          ActionType.whatIfRemovedTask,
-          ActionType.conversationalAndNotSupported,
-          ActionType.none,
-        };
-        const nonClickableStatuses = {
-          ActionStatus.executed,
-          ActionStatus.failed,
-          ActionStatus.exited,
-          ActionStatus.disposed,
-        };
+        if (!_isActionClickable(action)) return;
 
-        if (nonClickableTypes.contains(action.type)) return;
-        if (nonClickableStatuses.contains(action.status)) return;
+        // Only open the preview once the request's TileCast has finished
+        // generating; otherwise tapping would spin and eventually time out.
+        if (!_isTileCastReady) return;
 
         if (widget.requestId != null) {
           context.read<VibeChatBloc>().add(

@@ -2470,31 +2470,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackError => 'Failed to submit feedback';
 
   @override
-  String get noPreviewsAvailable => 'No previews available for this request';
+  String get noPreviewsAvailable => 'No TileCasts available for this request';
 
   @override
-  String get previewUnavailable => 'The selected preview is unavailable';
+  String get previewUnavailable => 'The selected TileCast is unavailable';
 
   @override
-  String get previewSummaryUnavailable => 'Preview summary could not be loaded';
+  String get previewSummaryUnavailable => 'TileCast could not be loaded';
 
   @override
-  String get previewGenerating => 'Generating preview…';
+  String get previewGenerating => 'Generating TileCast…';
 
   @override
   String get previewTimedOut =>
-      'Preview is taking longer than expected. Try again in a moment.';
+      'TileCast is taking longer than expected. Try again in a moment.';
 
   @override
-  String get previewGenerationFailed => 'We couldn\'t generate this preview.';
+  String get previewGenerationFailed => 'We couldn\'t generate this TileCast.';
 
   @override
   String get previewInvalidated =>
-      'This preview is no longer valid because your schedule changed.';
+      'This TileCast is no longer valid because your schedule changed.';
 
   @override
   String get previewStaleBanner =>
-      'This preview reflects an earlier snapshot of your schedule.';
+      'This TileCast reflects an earlier snapshot of your schedule.';
 
   @override
   String get previewNonViableLabel => 'Couldn\'t be scheduled';
@@ -2504,6 +2504,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previewRetry => 'Retry';
+
+  @override
+  String get previewPreparing => 'Preparing TileCast…';
+
+  @override
+  String get previewReadyToView => 'Tap to view TileCast';
+
+  @override
+  String get previewActionsOutdated => 'Outdated — send a new message';
+
+  @override
+  String get previewActionsUnavailable => 'TileCast unavailable';
 
   @override
   String actionsCount(int count) {

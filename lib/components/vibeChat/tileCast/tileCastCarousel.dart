@@ -5,7 +5,7 @@ import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/tilelist/dailyView/previewDailyTileList.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
-import 'package:tiler_app/components/vibeChat/tileCast/tileCastActionHeader.dart';
+import 'package:tiler_app/components/vibeChat/tileCast/tileCastHeaderSheet.dart';
 import 'package:tiler_app/components/vibeChat/tileCast/tileCastActionList.dart';
 import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -176,19 +176,22 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
 
   Widget _buildPageFallback(BuildContext context, DateTime displayDate,
       {Key? key}) {
-    return Stack(
-      children: [
-        PreviewDailyTileList(
-          key: key,
-          displayDate: displayDate,
-        ),
-        if (!displayDate.isToday)
-          DayRibbonCarousel(
-            displayDate,
-            autoUpdateAnchorDate: false,
-            preview: true,
+    return Padding(
+      padding: const EdgeInsets.only(top: TileCastHeaderSheet.collapsedHeight),
+      child: Stack(
+        children: [
+          PreviewDailyTileList(
+            key: key,
+            displayDate: displayDate,
           ),
-      ],
+          if (!displayDate.isToday)
+            DayRibbonCarousel(
+              displayDate,
+              autoUpdateAnchorDate: false,
+              preview: true,
+            ),
+        ],
+      ),
     );
   }
 
@@ -238,28 +241,33 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
           if (mounted) _syncController(index);
         });
 
-        return Column(
+        return Stack(
           children: [
-            TileCastActionHeader(
-              action: currentAction,
-              index: index,
-              total: actions.length,
-              isStale: state.isPreviewStale,
-              isNonViable: currentNonViable,
-              onPrev: index > 0 ? () => _navigateTo(index - 1) : null,
-              onNext: index < actions.length - 1
-                  ? () => _navigateTo(index + 1)
-                  : null,
-              onOpenList: () => _openActionList(
-                  context, actions, index, nonViableEntityIds),
-            ),
-            Expanded(
+            Positioned.fill(
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: actions.length,
                 onPageChanged: _navigateTo,
                 itemBuilder: (context, pageIndex) =>
                     _buildPage(context, actions[pageIndex], tiles),
+              ),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: TileCastHeaderSheet(
+                action: currentAction,
+                index: index,
+                total: actions.length,
+                isStale: state.isPreviewStale,
+                isNonViable: currentNonViable,
+                onPrev: index > 0 ? () => _navigateTo(index - 1) : null,
+                onNext: index < actions.length - 1
+                    ? () => _navigateTo(index + 1)
+                    : null,
+                onOpenList: () => _openActionList(
+                    context, actions, index, nonViableEntityIds),
               ),
             ),
           ],

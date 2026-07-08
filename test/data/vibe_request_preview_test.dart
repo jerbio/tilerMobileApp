@@ -36,7 +36,7 @@ void main() {
     test('parses Completed state', () {
       final json = processingJson()..['state'] = 'Completed';
       final preview = VibeRequestPreview.fromJson(json);
-      expect(preview.state, PreviewState.completed);
+      expect(preview.state, PreviewState.ready);
     });
 
     test('parses Failed state', () {

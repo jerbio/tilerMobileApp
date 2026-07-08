@@ -4424,49 +4424,49 @@ abstract class AppLocalizations {
   /// No description provided for @noPreviewsAvailable.
   ///
   /// In en, this message translates to:
-  /// **'No previews available for this request'**
+  /// **'No TileCasts available for this request'**
   String get noPreviewsAvailable;
 
   /// No description provided for @previewUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'The selected preview is unavailable'**
+  /// **'The selected TileCast is unavailable'**
   String get previewUnavailable;
 
   /// No description provided for @previewSummaryUnavailable.
   ///
   /// In en, this message translates to:
-  /// **'Preview summary could not be loaded'**
+  /// **'TileCast could not be loaded'**
   String get previewSummaryUnavailable;
 
   /// No description provided for @previewGenerating.
   ///
   /// In en, this message translates to:
-  /// **'Generating preview…'**
+  /// **'Generating TileCast…'**
   String get previewGenerating;
 
   /// No description provided for @previewTimedOut.
   ///
   /// In en, this message translates to:
-  /// **'Preview is taking longer than expected. Try again in a moment.'**
+  /// **'TileCast is taking longer than expected. Try again in a moment.'**
   String get previewTimedOut;
 
   /// No description provided for @previewGenerationFailed.
   ///
   /// In en, this message translates to:
-  /// **'We couldn\'t generate this preview.'**
+  /// **'We couldn\'t generate this TileCast.'**
   String get previewGenerationFailed;
 
   /// No description provided for @previewInvalidated.
   ///
   /// In en, this message translates to:
-  /// **'This preview is no longer valid because your schedule changed.'**
+  /// **'This TileCast is no longer valid because your schedule changed.'**
   String get previewInvalidated;
 
   /// No description provided for @previewStaleBanner.
   ///
   /// In en, this message translates to:
-  /// **'This preview reflects an earlier snapshot of your schedule.'**
+  /// **'This TileCast reflects an earlier snapshot of your schedule.'**
   String get previewStaleBanner;
 
   /// No description provided for @previewNonViableLabel.
@@ -4486,6 +4486,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get previewRetry;
+
+  /// No description provided for @previewPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing TileCast…'**
+  String get previewPreparing;
+
+  /// No description provided for @previewReadyToView.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to view TileCast'**
+  String get previewReadyToView;
+
+  /// No description provided for @previewActionsOutdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Outdated — send a new message'**
+  String get previewActionsOutdated;
+
+  /// No description provided for @previewActionsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'TileCast unavailable'**
+  String get previewActionsUnavailable;
 
   /// No description provided for @actionsCount.
   ///

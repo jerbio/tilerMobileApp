@@ -40,6 +40,10 @@ class VibeChatState extends Equatable {
   /// Request-level TileCast preview carrying readiness/staleness metadata.
   final VibeRequestPreview? previewBatch;
 
+  /// Latest known TileCast readiness per request id, populated by background
+  /// polling so the action list can reflect whether a preview is tappable.
+  final Map<String, VibeRequestPreview> tileCastStatusByRequest;
+
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession ,
@@ -57,6 +61,7 @@ class VibeChatState extends Equatable {
     this.previewActions = const [],
     this.currentPreviewIndex = 0,
     this.previewBatch,
+    this.tileCastStatusByRequest = const {},
   });
 
   /// The TileCast action currently focused in the carousel, or null when the
@@ -71,6 +76,20 @@ class VibeChatState extends Equatable {
 
   /// Whether the active TileCast preview no longer reflects the live schedule.
   bool get isPreviewStale => previewBatch?.isStale ?? false;
+
+  /// Latest known TileCast readiness for [requestId], or null when the request
+  /// has not been polled yet.
+  VibeRequestPreview? tileCastStatusFor(String? requestId) =>
+      requestId == null ? null : tileCastStatusByRequest[requestId];
+
+  /// Server-reported readiness state for [requestId]'s TileCast preview.
+  PreviewState tileCastStateFor(String? requestId) =>
+      tileCastStatusFor(requestId)?.state ?? PreviewState.unknown;
+
+  /// Whether [requestId]'s TileCast preview has finished generating and can be
+  /// opened without waiting.
+  bool isTileCastReadyFor(String? requestId) =>
+      tileCastStateFor(requestId) == PreviewState.ready;
 
   VibeChatState copyWith({
     VibeChatStep? step,
@@ -89,6 +108,7 @@ class VibeChatState extends Equatable {
     List<VibePreviewAction>? previewActions,
     int? currentPreviewIndex,
     VibeRequestPreview? previewBatch,
+    Map<String, VibeRequestPreview>? tileCastStatusByRequest,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -107,6 +127,8 @@ class VibeChatState extends Equatable {
       previewActions: previewActions ?? this.previewActions,
       currentPreviewIndex: currentPreviewIndex ?? this.currentPreviewIndex,
       previewBatch: previewBatch ?? this.previewBatch,
+      tileCastStatusByRequest:
+          tileCastStatusByRequest ?? this.tileCastStatusByRequest,
     );
   }
 
@@ -128,6 +150,7 @@ class VibeChatState extends Equatable {
     previewActions,
     currentPreviewIndex,
     previewBatch,
+    tileCastStatusByRequest,
   ];
 }
 

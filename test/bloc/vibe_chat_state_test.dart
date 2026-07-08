@@ -23,14 +23,14 @@ void main() {
       final state = VibeChatState(
         previewActions: [_pa('e1'), _pa('e2')],
         currentPreviewIndex: 1,
-        previewBatch: VibeRequestPreview(state: PreviewState.completed),
+        previewBatch: VibeRequestPreview(state: PreviewState.ready),
       );
 
       final copy = state.copyWith(step: VibeChatStep.loaded);
 
       expect(copy.previewActions.length, 2);
       expect(copy.currentPreviewIndex, 1);
-      expect(copy.previewBatch?.state, PreviewState.completed);
+      expect(copy.previewBatch?.state, PreviewState.ready);
     });
 
     test('copyWith updates new fields', () {

@@ -30,6 +30,19 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
   SignalRSocketService? _signalRService;
   StreamSubscription<String>? _statusSubscription;
 
+  /// Requests currently being polled for TileCast readiness, so repeated
+  /// [TrackTileCastReadinessEvent]s don't spawn duplicate polling loops.
+  final Set<String> _trackingReadinessRequests = {};
+
+  /// How often background readiness polling re-checks a request.
+  Duration tileCastReadinessPollInterval = const Duration(seconds: 5);
+
+  /// Maximum number of background readiness polls before giving up.
+  int tileCastReadinessMaxAttempts = 36;
+
+  /// Injection seam for the wait between readiness polls (tests override this).
+  Future<void> Function(Duration duration)? tileCastReadinessDelayOverride;
+
   VibeChatBloc(
       {required this.scheduleBloc,
       required this.scheduleSummaryBloc,
@@ -53,6 +66,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<LoadTileCastEvent>(_onLoadTileCast);
     on<NavigateTileCastEvent>(_onNavigateTileCast);
     on<RetryTileCastEvent>(_onRetryTileCast);
+    on<TrackTileCastReadinessEvent>(_onTrackTileCastReadiness);
     chatApi = ChatApi(getContextCallBack: getContextCallBack);
   }
 
@@ -822,6 +836,49 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
       currentPreviewIndex: clamped,
       selectedActionEntityId: actions[clamped].entityId,
     ));
+  }
+
+  /// Background poll that keeps [VibeChatState.tileCastStatusByRequest] current
+  /// for a request so the action list can show when its preview is tappable.
+  Future<void> _onTrackTileCastReadiness(
+      TrackTileCastReadinessEvent event, Emitter<VibeChatState> emit) async {
+    final requestId = event.vibeRequestId;
+    if (requestId.isEmpty) return;
+
+    // Skip if already resolved or a poll loop is already running for it.
+    if (state.tileCastStatusFor(requestId)?.isTerminal ?? false) return;
+    if (_trackingReadinessRequests.contains(requestId)) return;
+    _trackingReadinessRequests.add(requestId);
+
+    final delay = tileCastReadinessDelayOverride ?? Future.delayed;
+    try {
+      for (var attempt = 0;
+          attempt < tileCastReadinessMaxAttempts;
+          attempt++) {
+        List<VibeRequestPreview> previews;
+        try {
+          previews = await chatApi.getVibeRequestPreviews(requestId);
+        } catch (_) {
+          // Transient failure: stop polling rather than spamming the API.
+          return;
+        }
+
+        final batch = previews.isNotEmpty ? previews.first : null;
+        if (batch != null) {
+          final updated = Map<String, VibeRequestPreview>.from(
+              state.tileCastStatusByRequest)
+            ..[requestId] = batch;
+          emit(state.copyWith(tileCastStatusByRequest: updated));
+          if (batch.isTerminal) return;
+        }
+
+        if (attempt < tileCastReadinessMaxAttempts - 1) {
+          await delay(tileCastReadinessPollInterval);
+        }
+      }
+    } finally {
+      _trackingReadinessRequests.remove(requestId);
+    }
   }
 
   @override

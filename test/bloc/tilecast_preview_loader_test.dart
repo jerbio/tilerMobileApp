@@ -74,7 +74,7 @@ void main() {
       final actions = [_pa('e1'), _pa('e2')];
       final h = buildLoader(
         [
-          [_batch(PreviewState.completed, actions: actions)],
+          [_batch(PreviewState.ready, actions: actions)],
         ],
         summary: _summary(['e1', 'e2']),
       );
@@ -92,7 +92,7 @@ void main() {
       final actions = [_pa('e1'), _pa('e2'), _pa('e3')];
       final h = buildLoader(
         [
-          [_batch(PreviewState.completed, actions: actions)],
+          [_batch(PreviewState.ready, actions: actions)],
         ],
         summary: _summary(['e1']),
       );
@@ -106,7 +106,7 @@ void main() {
       final actions = [_pa('e1'), _pa('e2')];
       final h = buildLoader(
         [
-          [_batch(PreviewState.completed, actions: actions)],
+          [_batch(PreviewState.ready, actions: actions)],
         ],
         summary: _summary(['e1']),
       );
@@ -120,7 +120,7 @@ void main() {
       final h = buildLoader(
         [
           [
-            _batch(PreviewState.completed,
+            _batch(PreviewState.ready,
                 actions: [_pa('e1')], isStale: true)
           ],
         ],
@@ -140,7 +140,7 @@ void main() {
         [
           [_batch(PreviewState.queued)],
           [_batch(PreviewState.processing)],
-          [_batch(PreviewState.completed, actions: actions)],
+          [_batch(PreviewState.ready, actions: actions)],
         ],
         summary: _summary(['e1']),
       );
@@ -158,7 +158,7 @@ void main() {
       final h = buildLoader(
         [
           <VibeRequestPreview>[],
-          [_batch(PreviewState.completed, actions: actions)],
+          [_batch(PreviewState.ready, actions: actions)],
         ],
         summary: _summary(['e1']),
       );
@@ -220,7 +220,7 @@ void main() {
     test('Completed but null summary maps to summaryUnavailable', () async {
       final h = buildLoader(
         [
-          [_batch(PreviewState.completed, actions: [_pa('e1')])],
+          [_batch(PreviewState.ready, actions: [_pa('e1')])],
         ],
         summary: null,
       );

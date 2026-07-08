@@ -5,7 +5,7 @@ import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
 enum PreviewState {
   queued,
   processing,
-  completed,
+  ready,
   failed,
   invalidated,
   unknown;
@@ -16,8 +16,8 @@ enum PreviewState {
         return PreviewState.queued;
       case 'processing':
         return PreviewState.processing;
-      case 'completed':
-        return PreviewState.completed;
+      case 'ready':
+        return PreviewState.ready;
       case 'failed':
         return PreviewState.failed;
       case 'invalidated':
@@ -68,7 +68,7 @@ class VibeRequestPreview {
   /// True once the backend has reached a state that will not change on its own,
   /// i.e. polling can stop.
   bool get isTerminal =>
-      state == PreviewState.completed ||
+      state == PreviewState.ready ||
       state == PreviewState.failed ||
       state == PreviewState.invalidated;
 

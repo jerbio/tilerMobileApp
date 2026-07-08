@@ -83,3 +83,13 @@ class RetryTileCastEvent extends VibeChatEvent {
   RetryTileCastEvent(this.vibeRequestId);
   List<Object?> get props => [vibeRequestId];
 }
+
+/// Starts background polling of a request's TileCast readiness so the action
+/// list can show whether its preview is ready to open. Idempotent: a second
+/// request for an already-tracked or already-ready request is ignored.
+class TrackTileCastReadinessEvent extends VibeChatEvent {
+  final String vibeRequestId;
+  TrackTileCastReadinessEvent(this.vibeRequestId);
+  List<Object?> get props => [vibeRequestId];
+}
+

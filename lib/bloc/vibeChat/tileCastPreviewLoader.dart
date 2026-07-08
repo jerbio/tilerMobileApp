@@ -115,7 +115,7 @@ class TileCastPreviewLoader {
           batch: batch,
           failureReason: batch.invalidationReason ?? batch.failureReason,
         );
-      case PreviewState.completed:
+      case PreviewState.ready:
         return _resolveCompleted(batch, actionId);
       default:
         // Should not happen (isTerminal guarded), treat defensively as timeout.
