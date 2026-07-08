@@ -164,12 +164,19 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('HomeBottomNav', () {
-    Widget buildNav({VoidCallback? onShare, VoidCallback? onAddTile, VoidCallback? onCalendar}) {
+    Widget buildNav({
+      VoidCallback? onShare,
+      VoidCallback? onAddTile,
+      AuthorizedRouteTileListPage currentView =
+          AuthorizedRouteTileListPage.Daily,
+      ValueChanged<AuthorizedRouteTileListPage>? onSelectView,
+    }) {
       return _wrap(
         HomeBottomNav(
           onShare: onShare ?? () {},
           onAddTile: onAddTile ?? () {},
-          onCalendar: onCalendar ?? () {},
+          currentView: currentView,
+          onSelectView: onSelectView ?? (_) {},
         ),
       );
     }
@@ -202,20 +209,23 @@ void main() {
           reason: 'Centre nav item must show the animated Tiler logo');
     });
 
-    testWidgets('left item has share icon', (tester) async {
+    testWidgets('right item has share icon', (tester) async {
       await tester.pumpWidget(buildNav());
       await tester.pump();
 
       expect(find.byIcon(Icons.share), findsOneWidget,
-          reason: 'Left nav item must be the share icon');
+          reason: 'Right nav item must be the share icon');
     });
 
-    testWidgets('right item has calendar icon', (tester) async {
+    testWidgets('left item (switcher) reflects the active view (Daily -> view_day)',
+        (tester) async {
       await tester.pumpWidget(buildNav());
       await tester.pump();
 
-      expect(find.byIcon(Icons.calendar_month), findsOneWidget,
-          reason: 'Right nav item must be the calendar-view switcher');
+      expect(find.byIcon(Icons.view_day), findsOneWidget,
+          reason:
+              'Left nav item is the view switcher and must reflect the active '
+              'view (Daily) rather than a generic calendar icon');
     });
 
     testWidgets('tapping center item triggers onAddTile callback', (tester) async {

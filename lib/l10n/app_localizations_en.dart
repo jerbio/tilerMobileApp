@@ -372,6 +372,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeTime => 'Free Time';
 
   @override
+  String get freeSlotHeader => 'Free time';
+
+  @override
+  String get freeSlotNow => 'Free now';
+
+  @override
   String get quickBreak => 'Quick Break';
 
   @override
@@ -501,7 +507,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyDayHeaderLine1 => 'No plans yet.';
 
   @override
-  String get emptyDayFooterLine1 => 'Get started in seconds—';
+  String get emptyDayFooterLine1 => 'Get started in seconds';
 
   @override
   String get emptyDayFooterLine2 => 'import calendars or create tiles.';
@@ -2217,7 +2223,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tutorialStepToolkitBody =>
-      'The bottom bar gives you quick access to key features:';
+      'These handy tools are always within reach:';
 
   @override
   String get tutorialCalloutShare => 'Share';
@@ -2238,6 +2244,20 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get tutorialCalloutSettingsDesc =>
       'Customize your experience, connect calendars, set preferences';
+
+  @override
+  String get tutorialCalloutChat => 'Chat';
+
+  @override
+  String get tutorialCalloutChatDesc =>
+      'Tap the chat button to add or adjust tiles by just talking to Tiler';
+
+  @override
+  String get tutorialStepChatTitle => 'Chat with Tiler';
+
+  @override
+  String get tutorialStepChatBody =>
+      'Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.';
 
   @override
   String get tutorialNavNext => 'Next';
@@ -2686,4 +2706,10 @@ class AppLocalizationsEn extends AppLocalizations {
       String tiles, String blocks, String nonViable) {
     return '$tiles tiles, $blocks blocks, $nonViable unscheduled';
   }
+
+  @override
+  String get timelineClearHeading => 'Your timeline is clear today';
+
+  @override
+  String get timelineClearAddTask => 'Add a tile';
 }

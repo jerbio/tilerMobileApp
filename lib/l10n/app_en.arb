@@ -125,6 +125,14 @@
     "morningBreak":"Morning Break",
     "afternoonBreak":"Afternoon Break",
     "freeTime":"Free Time",
+    "freeSlotHeader":"Free time",
+    "@freeSlotHeader": {
+      "description": "Header label for the free-slot strip listing open windows in the day."
+    },
+    "freeSlotNow":"Free now",
+    "@freeSlotNow": {
+      "description": "Badge shown on a free-slot chip whose window is currently live."
+    },
     "quickBreak":"Quick Break",
     "shortBreak":"Short Break",
     "blockedTime":"Blocked Time",
@@ -200,7 +208,7 @@
     "noteEllipsis": "Note...",
     "tapToCreateNewTile": "Tap to create a new tile",
     "emptyDayHeaderLine1": "No plans yet.",
-    "emptyDayFooterLine1": "Get started in seconds—",
+    "emptyDayFooterLine1": "Get started in seconds",
     "emptyDayFooterLine2": "import calendars or create tiles.",
     "emptyDayOr": "or",
     "emptyDayImportGoogleCalendarButton": "Import Google Calendar",
@@ -1548,13 +1556,18 @@
         "tutorialCalloutMonthlyDesc": "Plan ahead with a monthly overview",
 
         "tutorialStepToolkitTitle": "Your Toolkit",
-        "tutorialStepToolkitBody": "The bottom bar gives you quick access to key features:",
+        "tutorialStepToolkitBody": "These handy tools are always within reach:",
         "tutorialCalloutShare": "Share",
         "tutorialCalloutShareDesc": "Collaborate — share tiles with others",
         "tutorialCalloutSearch": "Search",
         "tutorialCalloutSearchDesc": "Find any tile by name",
         "tutorialCalloutSettings": "Settings",
         "tutorialCalloutSettingsDesc": "Customize your experience, connect calendars, set preferences",
+        "tutorialCalloutChat": "Chat",
+        "tutorialCalloutChatDesc": "Tap the chat button to add or adjust tiles by just talking to Tiler",
+
+        "tutorialStepChatTitle": "Chat with Tiler",
+        "tutorialStepChatBody": "Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.",
 
         "tutorialNavNext": "Next",
         "tutorialNavNextArrow": "Next →",
@@ -1764,5 +1777,13 @@
                 "blocks": { "type": "String", "example": "3" },
                 "nonViable": { "type": "String", "example": "2" }
               }
+            },
+            "timelineClearHeading": "Your timeline is clear today",
+            "@timelineClearHeading": {
+              "description": "Heading shown in the contextual empty state when there are no scheduled tasks but RSVPs or all-day events exist."
+            },
+            "timelineClearAddTask": "Add a tile",
+            "@timelineClearAddTask": {
+              "description": "Call-to-action button label in the contextual empty state."
             }
 }

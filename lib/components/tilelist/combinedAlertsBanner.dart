@@ -391,9 +391,10 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
 
   /// Chips-only row for embedding inside another widget (no outer container).
   Widget _buildInlineChipsRow(BuildContext context, List<ActiveAlert> alerts) {
-    // Sort by urgency (same as _buildCombinedAlertRow)
-    final sorted = [...alerts]
-      ..sort((a, b) {
+    // RSVP always first, then by urgency, then by type priority
+    final sorted = [...alerts]..sort((a, b) {
+        if (a.type == AlertType.rsvp && b.type != AlertType.rsvp) return -1;
+        if (a.type != AlertType.rsvp && b.type == AlertType.rsvp) return 1;
         if (a.isUrgent && !b.isUrgent) return -1;
         if (!a.isUrgent && b.isUrgent) return 1;
         return a.type.index.compareTo(b.type.index);
@@ -493,8 +494,10 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Sort alerts by urgency (travel first if urgent, then by type priority)
+    // RSVP always first, then by urgency, then by type priority
     alerts.sort((a, b) {
+      if (a.type == AlertType.rsvp && b.type != AlertType.rsvp) return -1;
+      if (a.type != AlertType.rsvp && b.type == AlertType.rsvp) return 1;
       if (a.isUrgent && !b.isUrgent) return -1;
       if (!a.isUrgent && b.isUrgent) return 1;
       return a.type.index.compareTo(b.type.index);
@@ -620,30 +623,33 @@ class _CombinedAlertsBannerState extends State<CombinedAlertsBanner>
 extension CombinedAlertsBannerHelpers on CombinedAlertsBanner {
   /// Show the extended tiles modal
   static void showExtendedTilesModal(
-      BuildContext context, List<SubCalendarEvent> extendedTiles, {required bool preview}) {
+      BuildContext context, List<SubCalendarEvent> extendedTiles,
+      {required bool preview}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles,preview: preview , ),
+      builder: (context) => ExtendedTilesModal(
+        extendedTiles: extendedTiles,
+        preview: preview,
+      ),
     );
   }
 
   /// Show the pending RSVP modal
   static void showPendingRsvpModal(
     BuildContext context,
-    List<SubCalendarEvent> pendingTiles,
-      {
-        required bool preview,
-        List<SubCalendarEvent> declinedTiles = const [],
-        VoidCallback? onRsvpUpdated,
+    List<SubCalendarEvent> pendingTiles, {
+    required bool preview,
+    List<SubCalendarEvent> declinedTiles = const [],
+    VoidCallback? onRsvpUpdated,
   }) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => PendingRsvpModal(
-        preview: preview ,
+        preview: preview,
         pendingTiles: pendingTiles,
         declinedTiles: declinedTiles,
         onRsvpUpdated: onRsvpUpdated,

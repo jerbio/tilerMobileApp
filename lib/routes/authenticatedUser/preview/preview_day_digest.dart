@@ -396,8 +396,7 @@ class _AutoScrollTextState extends State<_AutoScrollText> {
           duration: duration, curve: Curves.linear);
       await Future.delayed(const Duration(milliseconds: 1200));
       if (!mounted || !_controller.hasClients) return;
-      await _controller.animateTo(0,
-          duration: duration, curve: Curves.linear);
+      await _controller.animateTo(0, duration: duration, curve: Curves.linear);
     }
   }
 

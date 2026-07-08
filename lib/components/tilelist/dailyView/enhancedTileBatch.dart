@@ -14,6 +14,7 @@ import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
+import 'package:tiler_app/components/tilelist/freeSlotRow.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -307,6 +308,13 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
         }
         return connector;
       },
+      buildFreeSlot: (slot) {
+        final row = FreeSlotRow(slot: slot, preview: widget.preview);
+        if (widget.showTimelineMarkers) {
+          return _buildConnectorRowWithHourMarker(row);
+        }
+        return row;
+      },
     );
 
     return (result.widgets, result.selectedTileIndex);
@@ -557,6 +565,9 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       }
     }
 
+    // Free-slot rows are rendered inline within the timeline (see
+    // _buildTilesWithConnectors), between the tiles that bound each gap.
+
     // Sleep widget
     Widget? sleepWidget;
     if (sleepTimeline != null) {
@@ -567,15 +578,20 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
     evaluateTileDelta(renderedTiles.values);
     late Widget dayContent;
 
+    List<Widget>? tilesWithConnectors;
+    int? targetScrollIndex;
     if (renderedTiles.length > 0) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
+      final (built, scrollIndex) = _buildTilesWithConnectors(orderedTilesList);
+      tilesWithConnectors = built;
+      targetScrollIndex = scrollIndex;
+    }
 
-      final (tilesWithConnectors, targetScrollIndex) =
-          _buildTilesWithConnectors(
-        orderedTilesList,
-      );
-
+    // All tiles may have been filtered out (e.g. only all-day events which
+    // are ≥16h and excluded from the timeline). Treat that the same as an
+    // empty day so the body doesn't render blank.
+    if (tilesWithConnectors != null && tilesWithConnectors.isNotEmpty) {
       if (widget.preview && targetScrollIndex != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (_itemScrollController.isAttached) {
@@ -595,7 +611,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
           itemPositionsListener: _itemPositionsListener,
           itemCount: tilesWithConnectors.length + 1,
           itemBuilder: (context, index) {
-            if (index == tilesWithConnectors.length) {
+            if (index == tilesWithConnectors!.length) {
               return MediaQuery.of(context).orientation == Orientation.landscape
                   ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
                   : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;

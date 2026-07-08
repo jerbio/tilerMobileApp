@@ -374,6 +374,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get freeTime => 'Tiempo Libre';
 
   @override
+  String get freeSlotHeader => 'Tiempo libre';
+
+  @override
+  String get freeSlotNow => 'Libre ahora';
+
+  @override
   String get quickBreak => 'Pausa Rápida';
 
   @override
@@ -2225,7 +2231,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get tutorialStepToolkitBody =>
-      'La barra inferior te da acceso rápido a funciones clave:';
+      'Estas herramientas prácticas están siempre a tu alcance:';
 
   @override
   String get tutorialCalloutShare => 'Compartir';
@@ -2245,6 +2251,20 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get tutorialCalloutSettingsDesc =>
       'Personaliza tu experiencia, conecta calendarios, establece preferencias';
+
+  @override
+  String get tutorialCalloutChat => 'Chat';
+
+  @override
+  String get tutorialCalloutChatDesc =>
+      'Toca el botón de chat para agregar o ajustar tiles solo hablando con Tiler';
+
+  @override
+  String get tutorialStepChatTitle => 'Chatea con Tiler';
+
+  @override
+  String get tutorialStepChatBody =>
+      'Toca el botón de chat en cualquier momento para agregar o ajustar tiles solo hablando con Tiler — sin formularios.';
 
   @override
   String get tutorialNavNext => 'Siguiente';
@@ -2693,4 +2713,10 @@ class AppLocalizationsEs extends AppLocalizations {
       String tiles, String blocks, String nonViable) {
     return '$tiles tiles, $blocks bloques, $nonViable sin programar';
   }
+
+  @override
+  String get timelineClearHeading => 'Tu agenda está despejada hoy';
+
+  @override
+  String get timelineClearAddTask => 'Añadir tile';
 }

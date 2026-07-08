@@ -16,6 +16,7 @@ import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart
 import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
+import 'package:tiler_app/components/tilelist/freeSlotRow.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/todaysRoute/todaysRoutePage.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -250,6 +251,10 @@ class EnhancedWithinNowBatchState extends TileBatchState {
         connector: connector,
         hourMarkerWidth: _hourMarkerWidth,
       ),
+      buildFreeSlot: (slot) => ConnectorRowWithHourMarker(
+        connector: FreeSlotRow(slot: slot, preview: withinNow.preview),
+        hourMarkerWidth: _hourMarkerWidth,
+      ),
     );
 
     _detectedConflicts = result.conflictGroups;
@@ -402,7 +407,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     List<SubCalendarEvent> extendedTiles = [];
 
     if (viableTiles.isNotEmpty) {
-      final orderedTilesForAlerts = Utility.orderTiles(viableTiles.values.toList());
+      final orderedTilesForAlerts =
+          Utility.orderTiles(viableTiles.values.toList());
       nextDepartureTile = _getNextDepartureRequiredTile(orderedTilesForAlerts);
       extendedTiles =
           ExtendedTilesBanner.detectExtendedTiles(viableTiles.values.toList());
@@ -455,31 +461,46 @@ class EnhancedWithinNowBatchState extends TileBatchState {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
       final (tilesWithConnectors, targetScrollIndex) =
           _buildTilesWithConnectors(orderedTiles);
-      if (withinNow.preview && targetScrollIndex != null) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _listController.jumpToItem(
-            index: targetScrollIndex!,
-            scrollController: _scrollController,
-            alignment: 0.15,
-          );
-        });
-      }
 
-      tilesContent = SuperSliverList(
-        listController: _listController,
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (index == tilesWithConnectors.length)
-              return MediaQuery.of(context).orientation == Orientation.landscape
-                  ? TileDimensions.bottomLandScapePaddingForTileBatchListOfTiles
-                  : TileDimensions.bottomPortraitPaddingForTileBatchListOfTiles;
-            return tilesWithConnectors[index];
-          },
-          childCount: tilesWithConnectors.length + 1,
-        ),
-      );
+      // All tiles may have been filtered out (e.g. only all-day events which
+      // are ≥16h and excluded from the timeline). Show EmptyDayTile so the
+      // chips at the top handle alerting and the body stays familiar.
+      if (tilesWithConnectors.isEmpty) {
+        tilesContent = SliverToBoxAdapter(
+          child: _renderEmptyDayTile(),
+        );
+      } else {
+        if (withinNow.preview && targetScrollIndex != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _listController.jumpToItem(
+              index: targetScrollIndex,
+              scrollController: _scrollController,
+              alignment: 0.15,
+            );
+          });
+        }
+
+        tilesContent = SuperSliverList(
+          listController: _listController,
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              if (index == tilesWithConnectors.length)
+                return MediaQuery.of(context).orientation ==
+                        Orientation.landscape
+                    ? TileDimensions
+                        .bottomLandScapePaddingForTileBatchListOfTiles
+                    : TileDimensions
+                        .bottomPortraitPaddingForTileBatchListOfTiles;
+              return tilesWithConnectors[index];
+            },
+            childCount: tilesWithConnectors.length + 1,
+          ),
+        );
+      }
     } else {
-      tilesContent = SliverToBoxAdapter(child: _renderEmptyDayTile());
+      tilesContent = SliverToBoxAdapter(
+        child: _renderEmptyDayTile(),
+      );
     }
 
     // Use CustomScrollView with SliverAppBar for sticky action chips

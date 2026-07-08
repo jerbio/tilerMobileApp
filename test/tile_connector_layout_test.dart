@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/components/tilelist/dailyView/models/freeSlot.dart';
 import 'package:tiler_app/components/tilelist/dailyView/tileConnectorLayout.dart';
 import 'package:tiler_app/components/tilelist/returnConnector.dart';
 import 'package:tiler_app/data/location.dart';
@@ -58,6 +59,37 @@ TileConnectorLayoutResult _build(
             {required hour, required showHourMarker, required isCurrentHour}) =>
         const SizedBox(),
     wrapConnector: (connector) => connector,
+  );
+}
+
+/// Marker widget emitted for each free slot so tests can locate slot rows in
+/// the resulting widget list by type and inspect the slot they carry.
+class _FreeSlotMarker extends StatelessWidget {
+  final FreeSlot slot;
+  const _FreeSlotMarker(this.slot);
+  @override
+  Widget build(BuildContext context) => const SizedBox();
+}
+
+/// Builds with an inline free-slot builder wired up. [now] controls clamping.
+TileConnectorLayoutResult _buildWithFreeSlots(
+  List<SubCalendarEvent> tiles, {
+  required DateTime now,
+}) {
+  return buildTileListWithConnectors(
+    orderedTiles: tiles,
+    showTravelConnectors: true,
+    showConflictAlerts: false,
+    excludeDeclinedFromConflicts: false,
+    now: now,
+    buildTile: (tile,
+            {required hour, required showHourMarker, required isCurrentHour}) =>
+        SizedBox(key: ValueKey(tile.id)),
+    buildConflictGroup: (group,
+            {required hour, required showHourMarker, required isCurrentHour}) =>
+        const SizedBox(),
+    wrapConnector: (connector) => connector,
+    buildFreeSlot: (slot) => _FreeSlotMarker(slot),
   );
 }
 
@@ -306,6 +338,106 @@ void main() {
 
       final connector = result.widgets.last as ReturnConnector;
       expect(connector.lastTile.id, equals('last'));
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Group 5: inline free-slot emission
+  // -------------------------------------------------------------------------
+
+  group('buildTileListWithConnectors — inline free-slot rows', () {
+    test('no free-slot builder means no free-slot rows', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 13),
+          end: DateTime(2026, 6, 28, 14),
+        ),
+      ];
+
+      // _build has no buildFreeSlot wired up.
+      final result = _build(tiles);
+
+      expect(result.widgets.whereType<_FreeSlotMarker>(), isEmpty);
+    });
+
+    test('emits a free-slot row for a qualifying gap between two tiles', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 13),
+          end: DateTime(2026, 6, 28, 14),
+        ),
+      ];
+
+      final result =
+          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
+
+      final markers = result.widgets.whereType<_FreeSlotMarker>().toList();
+      expect(markers, hasLength(1));
+      expect(markers.first.slot.startMs,
+          DateTime(2026, 6, 28, 10).millisecondsSinceEpoch);
+      expect(markers.first.slot.endMs,
+          DateTime(2026, 6, 28, 13).millisecondsSinceEpoch);
+    });
+
+    test('free-slot row is placed before the tile that follows the gap', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 13),
+          end: DateTime(2026, 6, 28, 14),
+        ),
+      ];
+
+      final result =
+          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
+
+      final slotIndex =
+          result.widgets.indexWhere((w) => w is _FreeSlotMarker);
+      final tileAIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'a');
+      final tileBIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'b');
+
+      expect(slotIndex, greaterThan(tileAIndex));
+      expect(slotIndex, lessThan(tileBIndex));
+    });
+
+    test('past-day gaps produce no free-slot rows', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 6),
+          end: DateTime(2026, 6, 28, 7),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+      ];
+
+      // now is after the entire gap.
+      final result =
+          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 15));
+
+      expect(result.widgets.whereType<_FreeSlotMarker>(), isEmpty);
     });
   });
 }

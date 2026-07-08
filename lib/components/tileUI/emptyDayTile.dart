@@ -3,7 +3,6 @@ import 'package:appinio_swiper/appinio_swiper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
-import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/data/adHoc/autoTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
@@ -47,13 +46,13 @@ class EmptyDayTileState extends State<EmptyDayTile> {
             [].getRandomize(seed: daySeed).cast<AutoTile>().toList();
     Map<String, AutoTile> categoryIds = {};
     autoTiles = <AutoTile>[];
-    for (var eachAutoTile in autoTilesWithDuplicateCategory) {
-      if (eachAutoTile.categoryId != null &&
-          !categoryIds.containsKey(eachAutoTile.categoryId)) {
-        autoTiles.add(eachAutoTile);
-        categoryIds[eachAutoTile.categoryId!] = eachAutoTile;
-      }
-    }
+    // for (var eachAutoTile in autoTilesWithDuplicateCategory) {
+    //   if (eachAutoTile.categoryId != null &&
+    //       !categoryIds.containsKey(eachAutoTile.categoryId)) {
+    //     autoTiles.add(eachAutoTile);
+    //     categoryIds[eachAutoTile.categoryId!] = eachAutoTile;
+    //   }
+    // }
     super.initState();
   }
 
@@ -285,20 +284,20 @@ class EmptyDayTileState extends State<EmptyDayTile> {
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
-                                      Text(
-                                        AppLocalizations.of(context)!
-                                            .emptyDayFooterLine2,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          color: colorScheme.onPrimary
-                                              .withValues(alpha: 0.65),
-                                          fontSize: 13,
-                                          height: 1.3,
-                                          fontFamily:
-                                              TileTextStyles.rubikFontName,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
+                                      // Text(
+                                      //   AppLocalizations.of(context)!
+                                      //       .emptyDayFooterLine2,
+                                      //   textAlign: TextAlign.center,
+                                      //   style: TextStyle(
+                                      //     color: colorScheme.onPrimary
+                                      //         .withValues(alpha: 0.65),
+                                      //     fontSize: 13,
+                                      //     height: 1.3,
+                                      //     fontFamily:
+                                      //         TileTextStyles.rubikFontName,
+                                      //     fontWeight: FontWeight.w400,
+                                      //   ),
+                                      // ),
                                     ],
                                   ),
                                 ),

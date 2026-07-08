@@ -324,6 +324,8 @@
     "morningBreak": "Pausa Matutina",
     "afternoonBreak": "Pausa Vespertina",
     "freeTime": "Tiempo Libre",
+    "freeSlotHeader": "Tiempo libre",
+    "freeSlotNow": "Libre ahora",
     "quickBreak": "Pausa Rápida",
     "shortBreak": "Pausa Corta",
     "blockedTime": "Tiempo Bloqueado",
@@ -526,13 +528,18 @@
     "tutorialCalloutMonthlyDesc": "Planifica con una vista mensual",
 
     "tutorialStepToolkitTitle": "Tu Kit de Herramientas",
-    "tutorialStepToolkitBody": "La barra inferior te da acceso rápido a funciones clave:",
+    "tutorialStepToolkitBody": "Estas herramientas prácticas están siempre a tu alcance:",
     "tutorialCalloutShare": "Compartir",
     "tutorialCalloutShareDesc": "Colabora — comparte tiles con otros",
     "tutorialCalloutSearch": "Buscar",
     "tutorialCalloutSearchDesc": "Encuentra cualquier tile por nombre",
     "tutorialCalloutSettings": "Configuración",
     "tutorialCalloutSettingsDesc": "Personaliza tu experiencia, conecta calendarios, establece preferencias",
+    "tutorialCalloutChat": "Chat",
+    "tutorialCalloutChatDesc": "Toca el botón de chat para agregar o ajustar tiles solo hablando con Tiler",
+
+    "tutorialStepChatTitle": "Chatea con Tiler",
+    "tutorialStepChatBody": "Toca el botón de chat en cualquier momento para agregar o ajustar tiles solo hablando con Tiler — sin formularios.",
 
     "tutorialNavNext": "Siguiente",
     "tutorialNavNextArrow": "Siguiente →",
@@ -613,5 +620,7 @@
     "previewSundialTier3": "Buen avance",
     "previewSundialTier4": "Casi listo",
     "previewSundialTodayLabel": "Hoy",
-    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar"
+    "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
+    "timelineClearHeading": "Tu agenda está despejada hoy",
+    "timelineClearAddTask": "Añadir tile"
 }

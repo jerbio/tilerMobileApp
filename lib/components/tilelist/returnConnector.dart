@@ -60,8 +60,19 @@ class ReturnConnector extends StatelessWidget {
 
   bool get _hasLocation => _afterData?.endLocation != null;
 
-  bool get _hasTravelData =>
-      lastTile.travelDetail?.after != null || lastTile.travelTimeAfter != null;
+  /// Returns true only when the travel section has something meaningful to
+  /// render — a non-zero duration OR a known destination.  A bare
+  /// [TravelData] object with no useful fields produces an empty card, so we
+  /// suppress it here.
+  bool get _hasTravelData {
+    if (lastTile.travelDetail?.after == null &&
+        lastTile.travelTimeAfter == null) {
+      return false;
+    }
+    final hasDuration = _durationMs != null && _durationMs! > 0;
+    final hasDestination = _hasLocation || _isHome;
+    return hasDuration || hasDestination;
+  }
 
   bool get _canOpenMaps =>
       _hasLocation &&

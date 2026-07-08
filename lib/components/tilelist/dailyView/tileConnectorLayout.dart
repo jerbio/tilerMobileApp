@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
+import 'package:tiler_app/components/tilelist/dailyView/models/freeSlot.dart';
 import 'package:tiler_app/components/tilelist/returnConnector.dart';
 import 'package:tiler_app/components/tilelist/travelConnector.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -53,6 +54,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
   required TileWidgetBuilder buildTile,
   required ConflictGroupWidgetBuilder buildConflictGroup,
   required ConnectorWrapper wrapConnector,
+  Widget Function(FreeSlot slot)? buildFreeSlot,
 }) {
   final List<Widget> widgets = [];
   int? selectedTileIndex;
@@ -64,6 +66,25 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
     return true;
   }).toList();
+
+  // Open windows between tiles, surfaced inline as their own rows in the
+  // connector lane. Detection clamps to `now`, so past days yield none.
+  final List<FreeSlot> freeSlots = buildFreeSlot != null
+      ? (FreeSlot.detect(
+          orderedTiles: orderedTiles,
+          nowMs: now.millisecondsSinceEpoch,
+        )..sort((a, b) => a.startMs.compareTo(b.startMs)))
+      : const [];
+  int freeSlotIndex = 0;
+
+  void emitFreeSlotsBefore(int destinationStartMs) {
+    if (buildFreeSlot == null) return;
+    while (freeSlotIndex < freeSlots.length &&
+        freeSlots[freeSlotIndex].startMs < destinationStartMs) {
+      widgets.add(buildFreeSlot(freeSlots[freeSlotIndex]));
+      freeSlotIndex++;
+    }
+  }
 
   final subCalendarEvents = regularTiles
       .whereType<SubCalendarEvent>()
@@ -142,6 +163,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
         final groupTilesByStart = [...group.tiles]
           ..sort((a, b) => (a.start ?? 0).compareTo(b.start ?? 0));
         if (groupTilesByStart.isNotEmpty) {
+          emitFreeSlotsBefore(groupTilesByStart.first.start ?? 0);
           emitTravelConnectorTo(groupTilesByStart.first);
         }
 
@@ -167,6 +189,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
 
     if (tile is SubCalendarEvent) {
+      emitFreeSlotsBefore(tile.start ?? 0);
       emitTravelConnectorTo(tile);
     }
 

@@ -800,6 +800,18 @@ abstract class AppLocalizations {
   /// **'Free Time'**
   String get freeTime;
 
+  /// Header label for the free-slot strip listing open windows in the day.
+  ///
+  /// In en, this message translates to:
+  /// **'Free time'**
+  String get freeSlotHeader;
+
+  /// Badge shown on a free-slot chip whose window is currently live.
+  ///
+  /// In en, this message translates to:
+  /// **'Free now'**
+  String get freeSlotNow;
+
   /// No description provided for @quickBreak.
   ///
   /// In en, this message translates to:
@@ -1043,7 +1055,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyDayFooterLine1.
   ///
   /// In en, this message translates to:
-  /// **'Get started in seconds—'**
+  /// **'Get started in seconds'**
   String get emptyDayFooterLine1;
 
   /// No description provided for @emptyDayFooterLine2.
@@ -3932,7 +3944,7 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialStepToolkitBody.
   ///
   /// In en, this message translates to:
-  /// **'The bottom bar gives you quick access to key features:'**
+  /// **'These handy tools are always within reach:'**
   String get tutorialStepToolkitBody;
 
   /// No description provided for @tutorialCalloutShare.
@@ -3970,6 +3982,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Customize your experience, connect calendars, set preferences'**
   String get tutorialCalloutSettingsDesc;
+
+  /// No description provided for @tutorialCalloutChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat'**
+  String get tutorialCalloutChat;
+
+  /// No description provided for @tutorialCalloutChatDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chat button to add or adjust tiles by just talking to Tiler'**
+  String get tutorialCalloutChatDesc;
+
+  /// No description provided for @tutorialStepChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat with Tiler'**
+  String get tutorialStepChatTitle;
+
+  /// No description provided for @tutorialStepChatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the chat button anytime to add or adjust tiles just by talking to Tiler — no forms needed.'**
+  String get tutorialStepChatBody;
 
   /// No description provided for @tutorialNavNext.
   ///
@@ -4805,6 +4841,18 @@ abstract class AppLocalizations {
   /// **'{tiles} tiles, {blocks} blocks, {nonViable} unscheduled'**
   String previewSundialCompositionA11y(
       String tiles, String blocks, String nonViable);
+
+  /// Heading shown in the contextual empty state when there are no scheduled tasks but RSVPs or all-day events exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Your timeline is clear today'**
+  String get timelineClearHeading;
+
+  /// Call-to-action button label in the contextual empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a tile'**
+  String get timelineClearAddTask;
 }
 
 class _AppLocalizationsDelegate
