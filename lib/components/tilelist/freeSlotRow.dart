@@ -55,7 +55,7 @@ class FreeSlotRow extends StatelessWidget {
         '${timeFmt.format(slot.startTime)} – ${timeFmt.format(slot.endTime)}';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.fromLTRB(0, 4, 12, 4),
       child: GestureDetector(
         onTap: () => _openAddTile(context),
         child: CustomPaint(
