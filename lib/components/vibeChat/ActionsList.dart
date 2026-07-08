@@ -85,6 +85,14 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
 
   bool get _isTileCastReady => _previewState == PreviewState.ready;
 
+  /// True while the TileCast is still being generated. Only in this phase do we
+  /// dim the actions to signal "not tappable yet" — terminal states (ready /
+  /// failed / invalidated) rely on the banner message instead.
+  bool get _isTileCastPreparing =>
+      _previewState == PreviewState.queued ||
+      _previewState == PreviewState.processing ||
+      _previewState == PreviewState.unknown;
+
   /// True when the tracked TileCast is openable but reflects a stale snapshot
   /// (schedule changed after it was generated). Informational only.
   bool get _isTileCastStale =>
@@ -116,9 +124,10 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
     final banner = _buildReadinessBanner();
     if (banner == null) return actionsWidget;
 
-    // Dim the actions until the preview is ready so it's obvious they aren't
-    // tappable yet.
-    final bool dim = !_isTileCastReady;
+    // Dim the actions only while the preview is still being generated so it's
+    // obvious they aren't tappable yet. When it's unavailable/outdated the
+    // banner message is enough — keep the actions at full opacity.
+    final bool dim = _isTileCastPreparing;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

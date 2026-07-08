@@ -137,6 +137,24 @@ void main() {
       expect(find.text('TileCast unavailable'), findsOneWidget);
     });
 
+    double opacity(WidgetTester t) =>
+        t.widget<AnimatedOpacity>(find.byType(AnimatedOpacity)).opacity;
+
+    testWidgets('dims actions only while preparing', (t) async {
+      await pumpList(t, _stateWith(PreviewState.processing));
+      expect(opacity(t), lessThan(1.0));
+    });
+
+    testWidgets('does not dim actions when unavailable (failed)', (t) async {
+      await pumpList(t, _stateWith(PreviewState.failed));
+      expect(opacity(t), 1.0);
+    });
+
+    testWidgets('does not dim actions when outdated (invalidated)', (t) async {
+      await pumpList(t, _stateWith(PreviewState.invalidated));
+      expect(opacity(t), 1.0);
+    });
+
     testWidgets('no banner when there are no clickable actions', (t) async {
       final bloc = _makeBloc();
       await t.pumpWidget(_wrap(
