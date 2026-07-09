@@ -56,7 +56,7 @@ class _TileSummaryState extends State<TileSummary> {
 
     if (this.subEvent.start != null && this.subEvent.end != null) {
       if (this.subEvent.end! > currentMsTime) {
-        duration = Duration(milliseconds: this.subEvent.end! - currentMsTime);
+        duration = Duration(milliseconds: this.subEvent.start! - currentMsTime);
         temporalTextStatus = AppLocalizations.of(context)!
             .durationLeft(Utility.toHuman(duration));
         if (this.subEvent.start! > currentMsTime) {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 /// Auto-hiding TileCast header.
 ///
@@ -181,19 +182,38 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final tileTheme = Theme.of(context).extension<TileThemeExtension>();
+    final stripColor = tileTheme?.primaryContainerLow ?? colorScheme.primaryContainer;
     final localization = AppLocalizations.of(context)!;
     final bool hasWarning = widget.isNonViable || widget.isStale;
 
-    return Material(
-      key: TileCastHeaderSheet.stripKey,
-      color: colorScheme.surfaceContainerLowest,
-      elevation: 2,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildStrip(context, colorScheme, localization, hasWarning),
-          _buildSlidingTitle(context, colorScheme, localization),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: stripColor,
+        border: Border(
+          bottom: BorderSide(
+            color: colorScheme.outline.withValues(alpha: 0.25),
+            width: 1,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.08),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
+      ),
+      child: Material(
+        key: TileCastHeaderSheet.stripKey,
+        color: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildStrip(context, colorScheme, localization, hasWarning, stripColor),
+            _buildSlidingTitle(context, colorScheme, localization, stripColor),
+          ],
+        ),
       ),
     );
   }
@@ -203,6 +223,7 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
     ColorScheme colorScheme,
     AppLocalizations localization,
     bool hasWarning,
+    Color stripColor,
   ) {
     final bool canGoPrev = widget.index > 0;
     final bool canGoNext = widget.index < widget.total - 1;
@@ -233,8 +254,8 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
                     width: 32,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.4),
+                      color: colorScheme.onPrimaryContainer
+                          .withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -297,6 +318,7 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
     BuildContext context,
     ColorScheme colorScheme,
     AppLocalizations localization,
+    Color stripColor,
   ) {
     return SizeTransition(
       sizeFactor: CurvedAnimation(
@@ -307,7 +329,7 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
       axisAlignment: -1,
       child: Container(
         width: double.infinity,
-        color: colorScheme.surfaceContainerLowest,
+        color: stripColor,
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
