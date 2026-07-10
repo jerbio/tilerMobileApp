@@ -216,6 +216,31 @@ void main() {
     });
   });
 
+  group('ActionsList ready banner tap', () {
+    testWidgets('tapping the ready banner dispatches LoadTileCastEvent',
+        (t) async {
+      final bloc = _RecordingBloc()..chatApi = _FakeChatApi(PreviewState.ready);
+      bloc.tileCastReadinessDelayOverride = (_) async {};
+      bloc.tileCastReadinessMaxAttempts = 1;
+      await pumpList(t, _stateWith(PreviewState.ready), bloc: bloc);
+
+      await t.tap(find.byKey(const ValueKey('tilecast_ready_banner_tap')));
+      await t.pump();
+
+      final loadEvents = bloc.recorded.whereType<LoadTileCastEvent>().toList();
+      expect(loadEvents, hasLength(1));
+      expect(loadEvents.first.vibeRequestId, 'req_1');
+      // No actionId — opens the first page by default.
+      expect(loadEvents.first.actionId, isNull);
+    });
+
+    testWidgets('non-ready banner row is not tappable', (t) async {
+      await pumpList(t, _stateWith(PreviewState.processing));
+      expect(
+          find.byKey(const ValueKey('tilecast_ready_banner_tap')), findsNothing);
+    });
+  });
+
   group('ActionsList stale note', () {
     testWidgets('shows stale note when the ready TileCast is stale',
         (t) async {

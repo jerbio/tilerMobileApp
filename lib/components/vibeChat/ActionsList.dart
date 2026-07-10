@@ -191,36 +191,70 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (showSpinner)
-                SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.6,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                  ),
-                )
-              else
-                Icon(icon, size: 14, color: color),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: color,
-                  ),
-                ),
-              ),
-            ],
+          _buildReadinessBannerRow(
+            icon: icon,
+            label: label,
+            color: color,
+            showSpinner: showSpinner,
+            tappable: _previewState == PreviewState.ready &&
+                widget.requestId != null,
           ),
           if (_isTileCastStale) _buildStaleNote(),
         ],
       ),
+    );
+  }
+
+  Widget _buildReadinessBannerRow({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required bool showSpinner,
+    required bool tappable,
+  }) {
+    final row = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showSpinner)
+          SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.6,
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          )
+        else
+          Icon(icon, size: 14, color: color),
+        const SizedBox(width: 6),
+        Flexible(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: color,
+            ),
+          ),
+        ),
+        if (tappable) ...[
+          const SizedBox(width: 4),
+          Icon(Icons.chevron_right_rounded, size: 14, color: color),
+        ],
+      ],
+    );
+
+    if (!tappable) return row;
+
+    return GestureDetector(
+      key: const ValueKey('tilecast_ready_banner_tap'),
+      onTap: () {
+        if (widget.requestId == null) return;
+        context
+            .read<VibeChatBloc>()
+            .add(LoadTileCastEvent(widget.requestId!));
+      },
+      child: row,
     );
   }
 
