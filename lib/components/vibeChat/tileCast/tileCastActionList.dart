@@ -10,9 +10,20 @@ class TileCastActionList extends StatelessWidget {
   static ValueKey<String> itemKey(int index) => ValueKey('tilecast_item_$index');
   static ValueKey<String> nonViableBadgeKey(int index) =>
       ValueKey('tilecast_item_nonviable_$index');
+  static ValueKey<String> compositeGroupIconKey(int index) =>
+      ValueKey('tilecast_item_composite_$index');
 
   final List<VibePreviewAction> actions;
   final int selectedIndex;
+
+  /// Indices (into [actions]) of non-highlightable actions that belong to the
+  /// composite "Also included" page. These items display a group icon and are
+  /// highlighted together when [isCompositeSelected] is true.
+  final Set<int> compositeGroupIndices;
+
+  /// Whether the carousel is currently showing the composite page. When true,
+  /// all items in [compositeGroupIndices] appear selected.
+  final bool isCompositeSelected;
 
   /// Entity ids of tiles that could not be scheduled, used to badge the
   /// matching actions.
@@ -24,6 +35,8 @@ class TileCastActionList extends StatelessWidget {
     required this.actions,
     required this.selectedIndex,
     required this.onSelect,
+    this.compositeGroupIndices = const {},
+    this.isCompositeSelected = false,
     this.nonViableEntityIds = const {},
   }) : super(key: key);
 
@@ -73,7 +86,11 @@ class TileCastActionList extends StatelessWidget {
               itemCount: actions.length,
               itemBuilder: (context, index) {
                 final action = actions[index];
-                final bool isSelected = index == selectedIndex;
+                final bool isCompositeItem =
+                    compositeGroupIndices.contains(index);
+                final bool isSelected = isCompositeItem
+                    ? isCompositeSelected
+                    : index == selectedIndex;
                 final bool isNonViable = _isNonViable(action);
 
                 return ListTile(
@@ -115,10 +132,18 @@ class TileCastActionList extends StatelessWidget {
                           size: 18,
                           color: colorScheme.error,
                         )
-                      : (isSelected
-                          ? Icon(Icons.check_rounded,
-                              size: 18, color: colorScheme.primary)
-                          : null),
+                      : isCompositeItem
+                          ? Icon(
+                              Icons.info_outline_rounded,
+                              key: TileCastActionList.compositeGroupIconKey(
+                                  index),
+                              size: 18,
+                              color: colorScheme.onSurfaceVariant,
+                            )
+                          : (isSelected
+                              ? Icon(Icons.check_rounded,
+                                  size: 18, color: colorScheme.primary)
+                              : null),
                   onTap: () => onSelect(index),
                 );
               },

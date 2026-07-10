@@ -199,4 +199,26 @@ extension TileCastActionLabel on VibePreviewAction {
     return type != ActionType.conversationalAndNotSupported &&
         type != ActionType.none;
   }
+
+  /// Whether this action maps to a specific tile that can be highlighted in
+  /// the TileCast carousel. Non-highlightable actions (removals, mark-done,
+  /// shuffle, exit) are grouped into a single composite summary page instead
+  /// of getting their own carousel page.
+  bool get isHighlightable {
+    const _nonHighlightable = {
+      ActionType.removeExistingTask,
+      ActionType.markTaskAsDone,
+      ActionType.exitPrompting,
+      ActionType.procrastinateAllTasks,
+      ActionType.whatIfRemovedTask,
+      ActionType.whatIfMarkedTaskAsDone,
+      ActionType.whatIfProcrastinateAll,
+      ActionType.whatIfProcrastinateTask,
+      ActionType.conversationalAndNotSupported,
+      ActionType.none,
+    };
+    final type = action?.type;
+    if (type == null) return false;
+    return !_nonHighlightable.contains(type);
+  }
 }

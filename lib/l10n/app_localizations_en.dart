@@ -2522,6 +2522,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your schedule changed — this TileCast may be out of date';
 
   @override
+  String get tileCastAlsoIncluded => 'Also included';
+
+  @override
   String actionsCount(int count) {
     return '$count actions';
   }

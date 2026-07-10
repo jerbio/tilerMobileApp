@@ -46,6 +46,11 @@ class TileCastHeaderSheet extends StatefulWidget {
   final VoidCallback? onNext;
   final VoidCallback? onOpenList;
 
+  /// When provided, overrides the auto-resolved action title. Used for the
+  /// composite "Also included" page so the header title can be customised
+  /// without needing a fake action object.
+  final String? titleOverride;
+
   /// How long the title stays open after an automatic peek before retracting.
   final Duration autoHideDelay;
 
@@ -62,6 +67,7 @@ class TileCastHeaderSheet extends StatefulWidget {
     this.onPrev,
     this.onNext,
     this.onOpenList,
+    this.titleOverride,
     this.autoHideDelay = const Duration(seconds: 3),
     this.slideDuration = const Duration(milliseconds: 260),
   }) : super(key: key);
@@ -172,6 +178,7 @@ class _TileCastHeaderSheetState extends State<TileCastHeaderSheet>
   }
 
   String _resolveTitle(AppLocalizations localization) {
+    if (widget.titleOverride != null) return widget.titleOverride!;
     final description = widget.action.action?.descriptions;
     if (description != null && description.trim().isNotEmpty) {
       return description.trim();

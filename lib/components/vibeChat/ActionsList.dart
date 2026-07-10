@@ -59,8 +59,15 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
   }
 
   static const Set<ActionType> _nonClickableTypes = {
+    // These types either remove tiles, mark them done, or produce no
+    // highlightable entity — nothing specific to focus in the carousel.
+    // They may still appear in a TileCast batch (general schedule view) but
+    // should not individually trigger a TileCast load from the action list.
     ActionType.removeExistingTask,
+    ActionType.markTaskAsDone,
+    ActionType.exitPrompting,
     ActionType.whatIfRemovedTask,
+    ActionType.whatIfMarkedTaskAsDone,
     ActionType.conversationalAndNotSupported,
     ActionType.none,
   };
@@ -357,8 +364,13 @@ class _ActionsListState extends State<ActionsList>   with AutomaticKeepAliveClie
             color: colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: statusColor,
-              width: 2,
+              // Non-type-clickable pills use a muted outline border to signal
+              // they won't open a TileCast preview. The solid statusColor
+              // border is reserved for actions with a direct TileCast view.
+              color: _nonClickableTypes.contains(action.type)
+                  ? colorScheme.outline.withValues(alpha: 0.45)
+                  : statusColor,
+              width: _nonClickableTypes.contains(action.type) ? 1.2 : 2,
             ),
           ),
           child: Row(

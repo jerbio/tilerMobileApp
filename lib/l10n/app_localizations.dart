@@ -4517,6 +4517,12 @@ abstract class AppLocalizations {
   /// **'Your schedule changed — this TileCast may be out of date'**
   String get tileCastStaleNote;
 
+  /// No description provided for @tileCastAlsoIncluded.
+  ///
+  /// In en, this message translates to:
+  /// **'Also included'**
+  String get tileCastAlsoIncluded;
+
   /// No description provided for @actionsCount.
   ///
   /// In en, this message translates to:

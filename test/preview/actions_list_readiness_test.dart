@@ -182,6 +182,38 @@ void main() {
       expect(find.byKey(const ValueKey('tilecast_readiness_banner')),
           findsNothing);
     });
+
+    testWidgets(
+        'no banner when all actions are non-highlightable types', (t) async {
+      final bloc = _makeBloc();
+      await t.pumpWidget(_wrap(
+        bloc,
+        ActionsList(
+          actions: [
+            VibeAction(
+                id: 'a',
+                descriptions: 'Mark done',
+                type: ActionType.markTaskAsDone,
+                status: ActionStatus.pending),
+            VibeAction(
+                id: 'b',
+                descriptions: 'Exit',
+                type: ActionType.exitPrompting,
+                status: ActionStatus.pending),
+            VibeAction(
+                id: 'c',
+                descriptions: 'Remove',
+                type: ActionType.removeExistingTask,
+                status: ActionStatus.pending),
+          ],
+          requestId: 'req_1',
+          state: _stateWith(PreviewState.ready),
+        ),
+      ));
+      await t.pump();
+      expect(find.byKey(const ValueKey('tilecast_readiness_banner')),
+          findsNothing);
+    });
   });
 
   group('ActionsList stale note', () {
