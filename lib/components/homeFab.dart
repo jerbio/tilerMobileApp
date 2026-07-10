@@ -21,7 +21,7 @@ class HomeFab extends StatelessWidget {
       shape: const CircleBorder(),
       onPressed: onPressed,
       tooltip: AppLocalizations.of(context)!.openChat,
-      child: Icon(Icons.chat_outlined, color: colorScheme.primary),
+      child: Icon(Icons.auto_awesome, color: colorScheme.primary),
     );
   }
 }
