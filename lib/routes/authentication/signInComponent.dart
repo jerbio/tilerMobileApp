@@ -24,6 +24,7 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 
 import '../../services/api/thirdPartyAuthResult.dart';
 import '../../util.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SignInComponent extends StatefulWidget {
   @override
@@ -56,17 +57,17 @@ class SignInComponentState extends State<SignInComponent>
   bool isEmailCodeRequestScreen = false;
   bool isEmailCodeVerificationScreen = false;
   bool isPasswordSignInMode = false;
-  final double registrationContainerHeight = 550;
-  final double signInContainerHeight = 400;
-  final double forgotPasswordContainerHeight = 300;
-  final double emailCodeRequestContainerHeight = 280;
-  final double emailCodeVerificationContainerHeight = 320;
+  final double registrationContainerHeight = 550.h;
+  final double signInContainerHeight = 400.h;
+  final double forgotPasswordContainerHeight = 300.h;
+  final double emailCodeRequestContainerHeight = 280.h;
+  final double emailCodeVerificationContainerHeight = 320.h;
 
-  final double registrationContainerButtonHeight = 300;
-  final double signInContainerButtonHeight = 175;
-  final double forgotPasswordContainerButtonHeight = 100;
-  final double emailCodeRequestButtonHeight = 120;
-  final double emailCodeVerificationButtonHeight = 175;
+  final double registrationContainerButtonHeight = 300.h;
+  final double signInContainerButtonHeight = 175.h;
+  final double forgotPasswordContainerButtonHeight = 100.h;
+  final double emailCodeRequestButtonHeight = 120.h;
+  final double emailCodeVerificationButtonHeight = 175.h;
 
   late double credentialManagerHeight = 400;
   double credentialButtonHeight = 175;
@@ -180,6 +181,8 @@ class SignInComponentState extends State<SignInComponent>
     tileThemeExtension = theme.extension<TileThemeExtension>()!;
     elevatedButtonStyle = ElevatedButton.styleFrom(
       foregroundColor: colorScheme.tertiary,
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      iconSize: 16.r,
     );
     super.didChangeDependencies();
   }
@@ -229,7 +232,7 @@ class SignInComponentState extends State<SignInComponent>
         timeInSecForIosWeb: 1,
         backgroundColor: colorScheme.inverseSurface,
         textColor: colorScheme.onInverseSurface,
-        fontSize: 16.0);
+        fontSize: 16.sp);
   }
 
   void userNamePasswordSignIn() async {
@@ -708,10 +711,10 @@ class SignInComponentState extends State<SignInComponent>
   Widget createSignInPendingComponent(String message) {
     return Center(
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: colorScheme.surface.withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(18.r),
           boxShadow: [
             BoxShadow(
               color: colorScheme.shadow.withValues(alpha: 0.12),
@@ -729,8 +732,8 @@ class SignInComponentState extends State<SignInComponent>
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                height: 24,
-                width: 24,
+                height: 24.r,
+                width: 24.r,
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -738,12 +741,12 @@ class SignInComponentState extends State<SignInComponent>
                   ),
                 ),
               ),
-              SizedBox(width: 12),
+              SizedBox(width: 12.w),
               Text(
                 message,
                 style: TextStyle(
                   color: colorScheme.onSurface,
-                  fontSize: 18,
+                  fontSize: 18.sp,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -764,7 +767,7 @@ class SignInComponentState extends State<SignInComponent>
 
   Widget spacer(double height) {
     return SizedBox(
-      height: height,
+      height: height.h,
     );
   }
 
@@ -857,11 +860,6 @@ class SignInComponentState extends State<SignInComponent>
     final linkTextColor = colorScheme.primary;
     final validationTextColor = colorScheme.error;
 
-    // Function to dynamically calculate height according to screen size
-    double calculateSizeByHeight(double value) {
-      return height / (height / value);
-    }
-
     List<String> unmetConditions = [];
 
     if (!isUpperCase) {
@@ -952,7 +950,7 @@ class SignInComponentState extends State<SignInComponent>
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.person),
-        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
             borderRadius: TileDimensions.inputFieldBorderRadius,
@@ -975,7 +973,7 @@ class SignInComponentState extends State<SignInComponent>
         filled: true,
         isDense: true,
         prefixIcon: Icon(Icons.email),
-        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
         fillColor: inputFieldFillColor,
         border: OutlineInputBorder(
             borderRadius: TileDimensions.inputFieldBorderRadius,
@@ -1049,7 +1047,7 @@ class SignInComponentState extends State<SignInComponent>
             });
           },
         ),
-        contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+        contentPadding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
         border: OutlineInputBorder(
             borderRadius: TileDimensions.inputFieldBorderRadius,
             borderSide: BorderSide.none),
@@ -1080,7 +1078,7 @@ class SignInComponentState extends State<SignInComponent>
               style: TextStyle(
                   fontFamily: TileTextStyles.rubikFontName,
                   fontWeight: FontWeight.w300,
-                  fontSize: calculateSizeByHeight(12),
+                  fontSize: 12.sp,
                   color: validationTextColor),
             )
           : SizedBox.shrink(),
@@ -1095,7 +1093,7 @@ class SignInComponentState extends State<SignInComponent>
               style: TextStyle(
                 fontFamily: TileTextStyles.rubikFontName,
                 fontWeight: FontWeight.w300,
-                fontSize: calculateSizeByHeight(12),
+                fontSize: 12.sp,
                 color: validationTextColor,
               ),
             )
@@ -1109,99 +1107,100 @@ class SignInComponentState extends State<SignInComponent>
     ];
 
     var signUpButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.person_add),
-        label: Text(AppLocalizations.of(context)!.signUp),
+        label: Text(AppLocalizations.of(context)!.signUp, style: TextStyle(fontSize: 14.sp)),
         onPressed: setAsRegistrationScreen,
       ),
     );
 
     var signInButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.arrow_forward),
-        label: Text(AppLocalizations.of(context)!.signIn),
+        label: Text(AppLocalizations.of(context)!.signIn, style: TextStyle(fontSize: 14.sp)),
         onPressed: userNamePasswordSignIn,
       ),
     );
 
     var signInWithEmailCodeButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.mark_email_read_outlined),
-        label: Text(AppLocalizations.of(context)!.sendAccessCode),
+        label: Text(AppLocalizations.of(context)!.sendAccessCode, style: TextStyle(fontSize: 14.sp)),
         onPressed: requestEmailCode,
       ),
     );
 
     var passwordModeButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.password_outlined),
-        label: Text(AppLocalizations.of(context)!.usePasswordInstead),
+        label: Text(AppLocalizations.of(context)!.usePasswordInstead, style: TextStyle(fontSize: 14.sp)),
         onPressed: enablePasswordSignInMode,
       ),
     );
 
     var googleSignInButton = isGoogleSignInEnabled
         ? SizedBox(
-            width: 200,
+            width: 0.6.sw,
             child: ElevatedButton.icon(
                 style: elevatedButtonStyle,
                 onPressed: signInToGoogle,
                 icon: FaIcon(FontAwesomeIcons.google),
-                label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
+                label: Text(AppLocalizations.of(context)!.signUpWithGoogle, style: TextStyle(fontSize: 14.sp))
+            ),
           )
         : SizedBox.shrink();
 
     var backToSignInButton = SizedBox(
-      width: isForgetPasswordScreen || isPasswordSignInMode ? 200 : null,
+      width: isForgetPasswordScreen || isPasswordSignInMode ? 0.6.sw : null,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
-        label: Text(AppLocalizations.of(context)!.back),
+        label: Text(AppLocalizations.of(context)!.back, style: TextStyle(fontSize: 14.sp)),
         icon: Icon(Icons.arrow_back),
         onPressed: setAsSignInScreen,
       ),
     );
 
     var forgetPasswordButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.lock_reset),
-        label: Text(AppLocalizations.of(context)!.resetPassword),
+        label: Text(AppLocalizations.of(context)!.resetPassword, style: TextStyle(fontSize: 14.sp)),
         onPressed: forgetPassword,
       ),
     );
 
     var verifyCodeButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.verified_outlined),
-        label: Text(AppLocalizations.of(context)!.verifyCode),
+        label: Text(AppLocalizations.of(context)!.verifyCode, style: TextStyle(fontSize: 14.sp)),
         onPressed: verifyEmailCode,
       ),
     );
 
     var resendCodeButton = SizedBox(
-      width: 200,
+      width: 0.6.sw,
       child: ElevatedButton.icon(
         style: elevatedButtonStyle,
         icon: Icon(Icons.refresh),
-        label: Text(AppLocalizations.of(context)!.resendCode),
+        label: Text(AppLocalizations.of(context)!.resendCode, style: TextStyle(fontSize: 14.sp)),
         onPressed: requestEmailCode,
       ),
     );
 
     var registerUserButton = ElevatedButton.icon(
       style: elevatedButtonStyle,
-      label: Text(AppLocalizations.of(context)!.signUp),
+      label: Text(AppLocalizations.of(context)!.signUp, style: TextStyle(fontSize: 14.sp)),
       icon: Icon(Icons.person_add),
       onPressed: registerUser,
     );
@@ -1236,7 +1235,7 @@ class SignInComponentState extends State<SignInComponent>
           filled: true,
           isDense: true,
           prefixIcon: Icon(Icons.password_outlined),
-          contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          contentPadding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
           fillColor: inputFieldFillColor,
           border: OutlineInputBorder(
               borderRadius: TileDimensions.inputFieldBorderRadius,
@@ -1280,7 +1279,7 @@ class SignInComponentState extends State<SignInComponent>
           filled: true,
           isDense: true,
           prefixIcon: Icon(Icons.lock),
-          contentPadding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          contentPadding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
           border: OutlineInputBorder(
               borderRadius: TileDimensions.inputFieldBorderRadius,
               borderSide: BorderSide.none),
@@ -1361,8 +1360,8 @@ class SignInComponentState extends State<SignInComponent>
                 height: credentialManagerHeight,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40.0),
-                      topRight: Radius.circular(40.0)),
+                      topLeft: Radius.circular(40.r),
+                      topRight: Radius.circular(40.r)),
                   color: colorScheme.surface.withValues(alpha: 0.2),
                   boxShadow: [
                     BoxShadow(
@@ -1372,9 +1371,8 @@ class SignInComponentState extends State<SignInComponent>
                   ],
                 ),
                 padding: EdgeInsets.symmetric(
-                    vertical:
-                        isRegistrationScreen ? calculateSizeByHeight(10) : 0.0,
-                    horizontal: calculateSizeByHeight(10)),
+                    vertical: isRegistrationScreen ? 10.h : 0.0,
+                    horizontal: 10.w),
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                   child: Column(
@@ -1383,8 +1381,8 @@ class SignInComponentState extends State<SignInComponent>
                     children: [
                       Container(
                         padding: EdgeInsets.symmetric(
-                            vertical: calculateSizeByHeight(5),
-                            horizontal: calculateSizeByHeight(20)),
+                            vertical: 5.h,
+                            horizontal: 20.w),
                         child: AutofillGroup(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -1405,7 +1403,7 @@ class SignInComponentState extends State<SignInComponent>
                               : [
                                   SizedBox(
                                     width: width,
-                                    height: calculateSizeByHeight(120),
+                                    height: 120.h,
                                   )
                                 ],
                         ),

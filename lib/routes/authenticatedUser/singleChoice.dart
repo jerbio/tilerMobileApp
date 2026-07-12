@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 
@@ -25,6 +26,8 @@ class _SingleChoiceState extends State<SingleChoice> {
     final colorScheme = theme.colorScheme;
     return SegmentedButton<TilePriority>(
       style: ButtonStyle(
+          iconSize: WidgetStateProperty.all(16.r),
+          textStyle: WidgetStateProperty.all(TextStyle(fontSize: 12.sp)),
           foregroundColor: WidgetStateProperty.resolveWith<Color>(
             (Set<WidgetState> states) {
               if (states.contains(WidgetState.selected)) {
@@ -47,15 +50,15 @@ class _SingleChoiceState extends State<SingleChoice> {
         ButtonSegment<TilePriority>(
             value: TilePriority.low,
             label: Text(AppLocalizations.of(context)!.lowPriorityTrunc),
-            icon: Icon(Icons.circle)),
+            icon: Icon(Icons.circle, size: 16.r)),
         ButtonSegment<TilePriority>(
             value: TilePriority.medium,
             label: Text(AppLocalizations.of(context)!.mediumPriorityTrunc),
-            icon: Icon(Icons.calendar_view_week)),
+            icon: Icon(Icons.calendar_view_week, size: 16.r)),
         ButtonSegment<TilePriority>(
             value: TilePriority.high,
             label: Text(AppLocalizations.of(context)!.highPriorityTrunc),
-            icon: Icon(Icons.calendar_view_month)),
+            icon: Icon(Icons.calendar_view_month, size: 16.r)),
       ],
       selected: <TilePriority>{_priorityView},
       onSelectionChanged: (Set<TilePriority> newSelection) {

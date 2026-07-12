@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import '../../constants.dart' as Constants;
@@ -63,10 +64,10 @@ class SearchWidgetState extends State<SearchWidget> {
         BoxDecoration resultContainerDecoration = BoxDecoration(
           color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(10),
-              topRight: Radius.circular(10),
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)
+              topLeft: Radius.circular(10.r),
+              topRight: Radius.circular(10.r),
+              bottomLeft: Radius.circular(10.r),
+              bottomRight: Radius.circular(10.r)
           ),
           boxShadow: [
             BoxShadow(
@@ -90,8 +91,8 @@ class SearchWidgetState extends State<SearchWidget> {
                 },
                 child: Container(
                   decoration: resultContainerDecoration,
-                  height: 75,
-                  width: 500,
+                  height: 75.h,
+                  width: 500.w,
                   child: Stack(
                     alignment: Alignment.topLeft,
                     children: [
@@ -101,21 +102,21 @@ class SearchWidgetState extends State<SearchWidget> {
                           child: Container(
                             decoration: BoxDecoration(
                                 color: colorScheme.onSurface.withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(8.r)),
                           )),
                       Container(
-                        padding: EdgeInsets.all(20),
+                        padding: EdgeInsets.all(20.r),
                         child: Row(
                           children: [
                             Container(
-                                margin: EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                margin: EdgeInsets.fromLTRB(0, 5.h, 0, 0),
                                 child: Icon(Icons.search)),
                             Flexible(
                               child: Container(
                                 child: Text(
                                   this.widget.textField!.controller!.text,
                                   style: TextStyle(
-                                      fontSize: 22.5,
+                                      fontSize: 22.5.sp,
                                       overflow: TextOverflow.ellipsis),
                                 ),
                               ),
@@ -160,7 +161,7 @@ class SearchWidgetState extends State<SearchWidget> {
     TextField? textField = this.widget.textField;
     List<Widget> allWidgets = [];
 
-    double heightOfTextContainer = 120;
+    double heightOfTextContainer = 120.h;
     double topMarginOfListContainer = heightOfTextContainer;
     double bottomMarginOfListContainer = 0;
     if (!this.widget.renderBelowTextfield) {
@@ -184,7 +185,7 @@ class SearchWidgetState extends State<SearchWidget> {
 
     textEditingController?.addListener(this.onInputChangeDefault);
     Container textFieldContainer = Container(
-      margin: EdgeInsets.fromLTRB(0, 13, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 13.h, 0, 0),
       child: textField,
     );
 
@@ -198,14 +199,14 @@ class SearchWidgetState extends State<SearchWidget> {
       }
       Container listContainer = Container(
         margin: resultsMargin,
-        padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
+        padding: EdgeInsets.all(5.r),
         child: resultViewContainer,
       );
       allWidgets.add(listContainer);
     }
 
     return Container(
-      margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 10.h, 0, 0),
       child: Stack(
         children: allWidgets,
       ),

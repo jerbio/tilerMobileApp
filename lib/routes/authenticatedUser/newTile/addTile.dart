@@ -38,6 +38,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tuple/tuple.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import '../../../constants.dart' as Constants;
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class AddTile extends StatefulWidget {
   final Function? onAddTileClose;
@@ -102,10 +103,10 @@ class AddTileState extends State<AddTile> {
   static final String addTileCancelAndProceedRouteName =
       "addTileCancelAndProceedRouteName";
 
-  final EdgeInsets configUpdateIconPadding =
-      const EdgeInsets.fromLTRB(5, 2, 5, 5);
-  final EdgeInsets configUpdatePadding =
-      const EdgeInsets.fromLTRB(5, 10, 10, 7);
+  EdgeInsets get configUpdateIconPadding =>
+      EdgeInsets.fromLTRB(5.w, 2.h, 5.w, 5.h);
+  EdgeInsets get configUpdatePadding =>
+      EdgeInsets.fromLTRB(5.w, 10.h, 10.w, 7.h);
   bool isPendingAutoResult = false;
   final inputBorderRadius = TileDimensions.inputFieldRadius;
   late ThemeData theme;
@@ -489,13 +490,12 @@ class AddTileState extends State<AddTile> {
     Widget tileNameContainer = FractionallySizedBox(
       widthFactor: TileDimensions.widthRatio,
       child: Container(
-        width: 380,
-        margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
+        margin: EdgeInsets.fromLTRB(0, 0, 0, 20.h),
         child: TextField(
           controller: tileNameController,
           style: TextStyle(
             fontFamily: TileTextStyles.rubikFontName,
-            fontSize: 20,
+            fontSize: 20.sp,
           ),
           decoration: InputDecoration(
             hintText: AppLocalizations.of(context)!.tileNameStar,
@@ -530,18 +530,19 @@ class AddTileState extends State<AddTile> {
     Widget splitCountContainer = FractionallySizedBox(
       widthFactor: TileDimensions.widthRatio,
       child: Container(
-        height: 60,
+        height: 60.h,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               AppLocalizations.of(context)!.howManyTimes,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700),
             ),
             SizedBox(
-                width: 60,
+                width: 60.w,
                 child: TextField(
                   controller: splitCountController,
+                  style: TextStyle(fontSize: 14.sp),
                   keyboardType: TextInputType.numberWithOptions(
                       signed: true, decimal: true),
                   inputFormatters: <TextInputFormatter>[
@@ -549,14 +550,14 @@ class AddTileState extends State<AddTile> {
                   ],
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context)!.once,
-                    hintStyle: TextStyle(color: colorScheme.primary),
+                    hintStyle: TextStyle(color: colorScheme.primary, fontSize: 14.sp),
                     filled: true,
                     isDense: true,
-                    contentPadding: EdgeInsets.all(10),
+                    contentPadding: EdgeInsets.all(10.r),
                     fillColor: colorScheme.surfaceContainerLowest,
                     border: OutlineInputBorder(
-                      borderRadius: const BorderRadius.all(
-                        const Radius.circular(50.0),
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(50.r),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -619,8 +620,8 @@ class AddTileState extends State<AddTile> {
       child: FractionallySizedBox(
         widthFactor: TileDimensions.widthRatio,
         child: Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20.h),
+          padding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
           decoration: BoxDecoration(
               color: colorScheme.surfaceContainerLowest,
               borderRadius: BorderRadius.all(
@@ -633,14 +634,15 @@ class AddTileState extends State<AddTile> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(Icons.timelapse_outlined, color: inputFieldIconColor),
+              Icon(Icons.timelapse_outlined, color: inputFieldIconColor, size: 20.r),
               Container(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(5.w, 0, 0, 0),
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: TextStyle(fontSize: 20.sp),
                   ),
                   onPressed: setDuration,
                   child: Text(
@@ -708,6 +710,7 @@ class AddTileState extends State<AddTile> {
       padding: configUpdatePadding,
       prefixIcon: Icon(
         Icons.location_pin,
+        size: 20.r,
         color: isLocationConfigSet
             ? populatedOnSurfaceColor
             : unPopulatedOnSurfaceColor,
@@ -756,6 +759,7 @@ class AddTileState extends State<AddTile> {
         padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.repeat_outlined,
+          size: 20.r,
           color: isRepetitionSet
               ? populatedOnSurfaceColor
               : unPopulatedOnSurfaceColor,
@@ -820,12 +824,13 @@ class AddTileState extends State<AddTile> {
         padding: configUpdatePadding,
         prefixIcon: Icon(
           Icons.doorbell_outlined,
+          size: 20.r,
           color: unPopulatedOnSurfaceColor,
         ),
         decoration: BoxDecoration(
             color: colorScheme.onSurface.withValues(alpha: 0.05),
             borderRadius: BorderRadius.all(
-              const Radius.circular(10.0),
+              Radius.circular(10.r),
             )),
         textColor: unPopulatedOnSurfaceColor,
         onPress: () {
@@ -848,6 +853,7 @@ class AddTileState extends State<AddTile> {
           : _restrictionProfileName ?? AppLocalizations.of(context)!.anytime,
       prefixIcon: Icon(
         Icons.switch_left,
+        size: 20.r,
         color: isTimeRestrictionConfigSet
             ? populatedOnSurfaceColor
             : unPopulatedOnSurfaceColor,
@@ -906,7 +912,7 @@ class AddTileState extends State<AddTile> {
     if (isColorConfigSet) {
       colorConfigUpdateDecoration = BoxDecoration(
         borderRadius: BorderRadius.all(
-          const Radius.circular(10.0),
+          Radius.circular(10.r),
         ),
         gradient: LinearGradient(
           begin: Alignment.centerLeft,
@@ -925,6 +931,7 @@ class AddTileState extends State<AddTile> {
       text: AppLocalizations.of(context)!.color,
       prefixIcon: Icon(
         Icons.contrast,
+        size: 20.r,
         color: isColorConfigSet ? (inverseColor) : unPopulatedOnSurfaceColor,
       ),
       decoration: colorConfigUpdateDecoration,
@@ -958,6 +965,7 @@ class AddTileState extends State<AddTile> {
           : unPopulatedOnSurfaceColor,
       prefixIcon: Icon(
         Icons.check,
+        size: 20.r,
         color: _isAutoRevisable
             ? populatedOnSurfaceColor
             : unPopulatedOnSurfaceColor,
@@ -995,13 +1003,13 @@ class AddTileState extends State<AddTile> {
     }
 
     Widget retValue = Container(
-      margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+      margin: EdgeInsets.fromLTRB(0, 20.h, 0, 0),
       width: MediaQuery.of(context).size.width * TileDimensions.widthRatio,
       child: Wrap(
         direction: Axis.horizontal,
         alignment: WrapAlignment.spaceAround,
-        spacing: 10.0,
-        runSpacing: 20.0,
+        spacing: 10.w,
+        runSpacing: 20.h,
         children: wrapWidgets,
       ),
     );
@@ -1272,8 +1280,8 @@ class AddTileState extends State<AddTile> {
       child: FractionallySizedBox(
         widthFactor: TileDimensions.widthRatio,
         child: Container(
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 20),
-          padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 20.h),
+          padding: EdgeInsets.fromLTRB(10.w, 0, 0, 0),
           decoration: BoxDecoration(
             color: colorScheme.surfaceContainerLowest,
             borderRadius: BorderRadius.all(
@@ -1287,14 +1295,15 @@ class AddTileState extends State<AddTile> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Icon(Icons.calendar_month, color: inputFieldIconColor),
+              Icon(Icons.calendar_month, color: inputFieldIconColor, size: 20.r),
               Container(
-                padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(5.w, 0, 0, 0),
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    textStyle: TextStyle(fontSize: 20.sp),
                   ),
                   onPressed: onEndDateTap,
                   // TODO: work on this
@@ -1427,6 +1436,10 @@ class AddTileState extends State<AddTile> {
         totalSwitches: 2,
         animate: true,
         labels: tabButtons,
+        fontSize: 14.sp,
+        minWidth: 80.w,
+        minHeight: 40.h,
+        cornerRadius: 8.r,
         onToggle: onTabTypeChange,
         activeBgColor: [colorScheme.primary],
         activeFgColor: colorScheme.onPrimary,
@@ -1440,7 +1453,7 @@ class AddTileState extends State<AddTile> {
       items: carouselItems,
       options: CarouselOptions(
         height:
-            isAppointment ? 340 : (this._repetitionData != null ? 220 : 300),
+            isAppointment ? 340.h : (this._repetitionData != null ? 220.h : 300.h),
         aspectRatio: 16 / 9,
         viewportFraction: 1,
         initialPage: 0,
@@ -1469,19 +1482,21 @@ class AddTileState extends State<AddTile> {
         title: Text(AppLocalizations.of(context)!.addTile),
         automaticallyImplyLeading: false,
       ),
-      child: Container(
-        margin: TileSpacing.topMargin,
-        alignment: Alignment.topCenter,
-        child: Stack(
-          children: [
-            isPendingAutoResult
-                ? TileThemeNew.getShimmerPending(context, colorScheme.primary)
-                : SizedBox.shrink(),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: childrenWidgets,
-            ),
-          ],
+      child: SingleChildScrollView(
+        child: Container(
+          margin: TileSpacing.topMargin,
+          alignment: Alignment.topCenter,
+          child: Stack(
+            children: [
+              isPendingAutoResult
+                  ? TileThemeNew.getShimmerPending(context, colorScheme.primary)
+                  : SizedBox.shrink(),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: childrenWidgets,
+              ),
+            ],
+          ),
         ),
       ),
       onProceed: this.onProceed,
