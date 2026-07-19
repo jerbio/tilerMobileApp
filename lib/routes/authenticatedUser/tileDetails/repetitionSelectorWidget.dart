@@ -103,32 +103,28 @@ class _RepetitionSelectorWidgetState extends State<RepetitionSelectorWidget> {
         .whenComplete(() {
       RepetitionData? updatedRepetitionData =
           repetitionParams['updatedRepetition'] as RepetitionData?;
-      bool isRepetitionEndValid = true;
-      if (repetitionParams.containsKey('isRepetitionEndValid')) {
-        isRepetitionEndValid =
-            repetitionParams['isRepetitionEndValid'] ?? false;
+
+      // If the user cancelled (no selection returned) leave the current
+      // repetition untouched. Previously a repetition whose deadline failed the
+      // route's deadline validation was silently discarded and the selector was
+      // forced into a non-recurring state. That desynced the selector from the
+      // underlying tile (which still held the old repetition) and hid the save
+      // button, making the tile impossible to save after changing the
+      // frequency. RepetitionData already guarantees a sane default deadline,
+      // so we apply exactly what the user chose and always notify the parent.
+      if (updatedRepetitionData == null) {
+        return;
       }
 
-      if (updatedRepetitionData != null) {
-        setState(() {
-          _repetitionData = isRepetitionEndValid ? updatedRepetitionData : null;
-          if (_repetitionData != null &&
-              this.widget.onRepetitionUpdate != null) {
-            Repetition dataToRepetition =
-                Repetition.fromRepetitionData(_repetitionData!);
-            dataToRepetition.tileTimeline =
-                this.widget.repetition?.tileTimeline;
-
-            this.widget.onRepetitionUpdate!(dataToRepetition);
-            _repetition = dataToRepetition;
-          }
-        });
-      }
-      if (!isRepetitionEndValid) {
-        setState(() {
-          _repetition = null;
-        });
-      }
+      setState(() {
+        Repetition updatedRepetition =
+            Repetition.fromRepetitionData(updatedRepetitionData);
+        updatedRepetition.tileTimeline = this.widget.repetition?.tileTimeline;
+        _repetition = updatedRepetition;
+        if (this.widget.onRepetitionUpdate != null) {
+          this.widget.onRepetitionUpdate!(updatedRepetition);
+        }
+      });
     });
   }
 

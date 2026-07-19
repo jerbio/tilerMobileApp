@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/components/tileUI/timeScrubGeometry.dart';
 import 'package:tiler_app/data/timeRangeMix.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -26,45 +27,62 @@ class TimeScrubWidget extends StatefulWidget {
   TimeScrubWidgetState createState() => TimeScrubWidgetState();
 }
 
-class TimeScrubWidgetState extends State<TimeScrubWidget> {
-  final double maxWidthOfTimeline = 280;
+class TimeScrubWidgetState extends State<TimeScrubWidget>
+    with SingleTickerProviderStateMixin {
+  /// Fallback track width used when the parent gives us an unbounded width.
+  final double fallbackTrackWidth = 280;
   final double diameterOfBall = 10;
   final DateFormat formatter = DateFormat.jm();
-  late double evaluatedPosition;
-  late int subEventDuratonInMs;
-  late int durationInMs;
   final int _autoRefreshScrubberDelayInSecs = 20;
-  late double widthOfUsedUpDuration = 0;
+
+  /// Flips true after the first frame so the ball/fill glide toward the end of
+  /// the occurrence over the remaining time (smooth, proportional motion).
+  bool _animateToEnd = false;
+
+  /// Last usable track width we laid out against. Used to re-anchor the
+  /// scrubber to the true "now" position whenever the available width changes
+  /// (e.g. a device orientation change) instead of letting the implicit
+  /// [AnimatedPositioned] carry over a stale absolute pixel offset.
+  double? _lastTrackWidth;
+
   late Timer refreshTimer;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseScale;
 
   @override
   void initState() {
-    int start = widget.timeline.start!;
-    int end = widget.timeline.end!;
-    var currentTimeInMs = Utility.msCurrentTime;
-    subEventDuratonInMs = end - start;
-    durationInMs = currentTimeInMs - start;
-    evaluatedPosition = ((durationInMs / subEventDuratonInMs) *
-        (maxWidthOfTimeline - diameterOfBall));
-    widthOfUsedUpDuration =
-        (durationInMs / subEventDuratonInMs) * maxWidthOfTimeline;
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 850),
+    )..repeat(reverse: true);
+    _pulseScale = Tween<double>(begin: 1.0, end: 1.3).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (this.mounted) {
         setState(() {
-          evaluatedPosition = (maxWidthOfTimeline - diameterOfBall);
-          widthOfUsedUpDuration = maxWidthOfTimeline;
+          _animateToEnd = true;
         });
       }
     });
     refreshTimer = Timer.periodic(
         Duration(seconds: _autoRefreshScrubberDelayInSecs), (timer) {
-      setState(() {
-        currentTimeInMs = Utility.msCurrentTime;
-        subEventDuratonInMs = end - start;
-        durationInMs = currentTimeInMs - start;
-      });
+      if (this.mounted) {
+        setState(() {});
+      }
     });
+  }
+
+  /// Derives the usable track width from the parent constraints, keeping a
+  /// little slack for the start/end labels and falling back to a fixed width
+  /// when the parent is unbounded (e.g. inside an unconstrained Row).
+  double _trackWidthFor(BoxConstraints constraints) {
+    if (constraints.maxWidth.isFinite) {
+      return (constraints.maxWidth - 20).clamp(120.0, 600.0);
+    }
+    return fallbackTrackWidth;
   }
 
   @override
@@ -78,58 +96,102 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
         color: this.widget.loadTimeScrub
             ? TileColors.lightContent
             : colorScheme.onSurface);
-    String locale = Localizations.localeOf(context).languageCode;
-    bool isToday = widget.timeline.isInterfering(Utility.todayTimeline());
-    var currentTimeInMs = Utility.msCurrentTime;
 
-    Widget timeline;
-    if (widget.timeline.start != null && widget.timeline.end != null) {
-      int start = widget.timeline.start!;
-      int end = widget.timeline.end!;
-      bool isInterferring = widget.timeline.isInterfering(new Timeline(
-          currentTimeInMs.toInt(), (currentTimeInMs + 10).toInt()));
-      if (this.widget.loadTimeScrub || isInterferring) {
-        int colorRed = 255;
-        int colorGreen = 255;
-        int colorBlue = 255;
-        String startString = formatter
-            .format(DateTime.fromMillisecondsSinceEpoch(start.toInt()));
-        String endString =
-            formatter.format(DateTime.fromMillisecondsSinceEpoch(end.toInt()));
+    if (widget.timeline.start == null || widget.timeline.end == null) {
+      throw ("Invalid subEvent sent, check the start and end time aren't null");
+    }
 
-        var backgroundShade = Container(
-          width: maxWidthOfTimeline,
-          height: 5,
-          margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(10.0)),
-            color: this.widget.loadTimeScrub
-                ? colorScheme.surfaceContainerLowest
-                : tileThemeExtension!.surfaceContainerMaximum
-                    .withValues(alpha: 0.2),
-          ),
-        );
-        var scrubberElements = <Widget>[backgroundShade];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double outerWidth =
+            constraints.maxWidth.isFinite ? constraints.maxWidth : 300.0;
+        final double trackWidth = _trackWidthFor(constraints);
+        // Detect a track-width change (e.g. orientation change) so we can snap
+        // the ball back to its true proportional position for the new width.
+        final bool trackWidthChanged =
+            _lastTrackWidth != null && _lastTrackWidth != trackWidth;
+        _lastTrackWidth = trackWidth;
 
-        if (isInterferring) {
-          int durationLeft = end - currentTimeInMs;
-          var usedUpTimeWidget = AnimatedPositioned(
-            duration: Duration(milliseconds: durationLeft.toInt()),
-            width: widthOfUsedUpDuration,
-            child: Container(
-              height: 5,
-              margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                color: TileColors.success,
-              ),
+        final int start = widget.timeline.start!;
+        final int end = widget.timeline.end!;
+        final int currentTimeInMs = Utility.msCurrentTime;
+        final bool isInterferring = widget.timeline.isInterfering(new Timeline(
+            currentTimeInMs.toInt(), (currentTimeInMs + 10).toInt()));
+
+        Widget timeline;
+        if (this.widget.loadTimeScrub || isInterferring) {
+          const int colorRed = 255;
+          const int colorGreen = 255;
+          const int colorBlue = 255;
+          final String startString = formatter
+              .format(DateTime.fromMillisecondsSinceEpoch(start.toInt()));
+          final String endString = formatter
+              .format(DateTime.fromMillisecondsSinceEpoch(end.toInt()));
+
+          final backgroundShade = Container(
+            width: trackWidth,
+            height: 5,
+            margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(10.0)),
+              color: this.widget.loadTimeScrub
+                  ? colorScheme.surfaceContainerLowest
+                  : tileThemeExtension!.surfaceContainerMaximum
+                      .withValues(alpha: 0.2),
             ),
-          ); //Used up time
+          );
+          final scrubberElements = <Widget>[backgroundShade];
 
-          var movingBallWidget = AnimatedPositioned(
-            duration: Duration(milliseconds: durationLeft.toInt()),
-            left: evaluatedPosition,
-            child: Container(
+          if (isInterferring) {
+            // Both endpoints are derived from the SAME geometry/track so the
+            // fill edge and the ball stay aligned. The current geometry is the
+            // starting point; we glide to the end geometry over the remaining
+            // time, keeping motion smooth and proportional at every instant.
+            final nowGeo = TimeScrubGeometry(
+                startMs: start, endMs: end, nowMs: currentTimeInMs);
+            final endGeo =
+                TimeScrubGeometry(startMs: start, endMs: end, nowMs: end);
+            // Anchor to the true "now" geometry before the first glide frame,
+            // and again for one frame whenever the track width changes, so the
+            // ball never inherits a stale pixel offset from a previous layout.
+            final bool anchorNow = !_animateToEnd || trackWidthChanged;
+            final TimeScrubGeometry activeGeo = anchorNow ? nowGeo : endGeo;
+
+            final double fillW =
+                activeGeo.fillWidth(trackWidth, diameterOfBall);
+            final double ballL = activeGeo.ballLeft(trackWidth, diameterOfBall);
+
+            final int durationLeft =
+                (end - currentTimeInMs).clamp(0, 1 << 31).toInt();
+            final Duration animDuration = anchorNow
+                ? Duration.zero
+                : Duration(milliseconds: durationLeft);
+
+            if (trackWidthChanged && _animateToEnd) {
+              // Snapped to the correct spot this frame; resume the smooth glide
+              // toward the end on the next frame.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (this.mounted) {
+                  setState(() {});
+                }
+              });
+            }
+
+            final usedUpTimeWidget = AnimatedPositioned(
+              duration: animDuration,
+              left: 0,
+              width: fillW,
+              child: Container(
+                height: 5,
+                margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  color: TileColors.success,
+                ),
+              ),
+            ); // Used up time
+
+            final ball = Container(
               width: diameterOfBall,
               height: diameterOfBall,
               decoration: BoxDecoration(
@@ -142,100 +204,118 @@ class TimeScrubWidgetState extends State<TimeScrubWidget> {
                         blurRadius: 2,
                         spreadRadius: 2),
                   ]),
-            ),
-          ); // moving ball
-          scrubberElements.add(usedUpTimeWidget);
-          scrubberElements.add(movingBallWidget);
-        }
-        timeline = Align(
-            alignment: Alignment.center,
-            child: Column(children: [
-              Expanded(
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: scrubberElements,
-                ),
+            );
+
+            final movingBallWidget = AnimatedPositioned(
+              duration: animDuration,
+              left: ballL,
+              child: ScaleTransition(
+                key: const ValueKey('timeScrubPulse'),
+                scale: _pulseScale,
+                child: ball,
               ),
-              Stack(
-                children: [
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: Container(
-                      margin: EdgeInsets.fromLTRB(10, 5, 0, 0),
-                      child: Text(
-                        '$startString',
-                        overflow: TextOverflow.ellipsis,
-                        style: timelineTextStyle,
-                      ),
+            ); // moving ball (pulses only while current)
+            scrubberElements.add(usedUpTimeWidget);
+            scrubberElements.add(movingBallWidget);
+          }
+          timeline = Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: trackWidth,
+                child: Column(children: [
+                  Expanded(
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: scrubberElements,
                     ),
                   ),
-                  Align(
-                      alignment: Alignment.topRight,
-                      child: Container(
-                          margin: EdgeInsets.fromLTRB(0, 5, 10, 0),
+                  Stack(
+                    children: [
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Container(
+                          margin: EdgeInsets.fromLTRB(10, 5, 0, 0),
                           child: Text(
-                            '$endString',
+                            '$startString',
                             overflow: TextOverflow.ellipsis,
                             style: timelineTextStyle,
-                          )))
-                ],
-              )
-            ]));
-      } else {
-        if (widget.timeline.hasElapsed) {
-          int durationInMs = Utility.msCurrentTime - end.toInt();
-          Duration durationToStart = Duration(milliseconds: durationInMs);
-          String elapsedTime = Utility.toHuman(durationToStart);
-
-          timeline = Container(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(Icons.check_circle_outline_outlined),
-                Text(
-                  AppLocalizations.of(context)!.elapsedDurationAgo(elapsedTime),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 15),
-                )
-              ],
-            ),
-          );
+                          ),
+                        ),
+                      ),
+                      Align(
+                          alignment: Alignment.topRight,
+                          child: Container(
+                              margin: EdgeInsets.fromLTRB(0, 5, 10, 0),
+                              child: Text(
+                                '$endString',
+                                overflow: TextOverflow.ellipsis,
+                                style: timelineTextStyle,
+                              )))
+                    ],
+                  )
+                ]),
+              ));
         } else {
-          int durationInMs = start.toInt() - Utility.msCurrentTime as int;
-          Duration durationToStart = Duration(milliseconds: durationInMs);
-          String elapsedTime = Utility.toHuman(durationToStart);
-          timeline = Container(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(Icons.timelapse, color: colorScheme.onSurface),
-                Text(
-                  AppLocalizations.of(context)!.startsInDuration(elapsedTime),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontFamily: TileTextStyles.rubikFontName,
-                  ),
-                )
-              ],
-            ),
-          );
-        }
-      }
-    } else {
-      throw ("Invalid subEvent sent, check the start and end time aren't null");
-    }
+          if (widget.timeline.hasElapsed) {
+            int durationInMs = Utility.msCurrentTime - end.toInt();
+            Duration durationToStart = Duration(milliseconds: durationInMs);
+            String elapsedTime = Utility.toHuman(durationToStart);
 
-    return Container(
-      width: 300,
-      height: 30,
-      child: timeline,
+            timeline = Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(Icons.check_circle_outline_outlined),
+                  Flexible(
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .elapsedDurationAgo(elapsedTime),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 15),
+                    ),
+                  )
+                ],
+              ),
+            );
+          } else {
+            int durationInMs = start.toInt() - Utility.msCurrentTime as int;
+            Duration durationToStart = Duration(milliseconds: durationInMs);
+            String elapsedTime = Utility.toHuman(durationToStart);
+            timeline = Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Icon(Icons.timelapse, color: colorScheme.onSurface),
+                  Flexible(
+                    child: Text(
+                      AppLocalizations.of(context)!
+                          .startsInDuration(elapsedTime),
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: TileTextStyles.rubikFontName,
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
+        }
+
+        return SizedBox(
+          width: outerWidth,
+          height: 30,
+          child: timeline,
+        );
+      },
     );
   }
 
   @override
   void dispose() {
     refreshTimer.cancel();
+    _pulseController.dispose();
     super.dispose();
   }
 }

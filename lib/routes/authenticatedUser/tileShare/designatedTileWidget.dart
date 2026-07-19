@@ -6,7 +6,7 @@ import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/designatedTile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/tileForecast.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/tileShareClusterApi.dart';
 import 'package:tiler_app/services/api/whatIfApi.dart';

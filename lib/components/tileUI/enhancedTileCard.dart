@@ -13,6 +13,29 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Temporal position of a tile occurrence relative to "now".
+enum TileTemporalState { past, active, future }
+
+/// Pure classifier for a tile's temporal position. Kept free of Flutter so it
+/// can be unit-tested deterministically with an injected [nowMs].
+///
+/// - [past]: the occurrence has already ended (`endMs <= nowMs`).
+/// - [future]: the occurrence has not started yet (`startMs > nowMs`).
+/// - [active]: happening now, or unbounded when start/end are missing.
+TileTemporalState resolveTileTemporalState({
+  required int? startMs,
+  required int? endMs,
+  required int nowMs,
+}) {
+  if (endMs != null && endMs <= nowMs) {
+    return TileTemporalState.past;
+  }
+  if (startMs != null && startMs > nowMs) {
+    return TileTemporalState.future;
+  }
+  return TileTemporalState.active;
+}
+
 /// Helper function to get location icon based on address type
 /// Can be used by both stateful and stateless widgets
 IconData _getLocationIconForAddress(String address) {
@@ -317,6 +340,16 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final isCurrent = widget.subEvent.isCurrentTimeWithin;
     final isPaused = widget.subEvent.isPaused ?? false;
 
+    // Temporal orientation (P2/P3): mute cards whose occurrence has already
+    // ended so active/upcoming work stands out. Editing stays available via
+    // the existing whole-card tap, so no extra affordance is added.
+    final bool isPastTile = resolveTileTemporalState(
+          startMs: widget.subEvent.start,
+          endMs: widget.subEvent.end,
+          nowMs: Utility.msCurrentTime,
+        ) ==
+        TileTemporalState.past;
+
     return GestureDetector(
       onTap: widget.preview?null:(widget.onTap ??
           () {
@@ -336,7 +369,8 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
             );
           }),
       child: Opacity(
-        opacity: effectiveOpacity,
+        key: const ValueKey('enhancedTileCardOpacity'),
+        opacity: effectiveOpacity * (isPastTile ? 0.6 : 1.0),
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
@@ -403,8 +437,10 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                           ? colorScheme.surface // White/surface for outline style
                           : null,
                     ),
-                    child: Column(
+                    child: Stack(
                       children: [
+                        Column(
+                          children: [
                         // Main content
                         Stack(
                           children: [
@@ -652,19 +688,25 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                               ),
                             ),
 
-                            // Tardy indicator strip
-                            if (isTardy)
+                            // Active tile accent (top edge). Intentionally on
+                            // the top edge / primary color so it is not
+                            // conflated with the tardy left-edge strip below.
+                            if (isCurrent)
                               Positioned(
-                                left: 0,
                                 top: 0,
-                                bottom: 0,
+                                left: 0,
+                                right: 0,
                                 child: Container(
-                                  width: 4,
+                                  key: const ValueKey('enhancedTileActiveAccent'),
+                                  height: 4,
                                   decoration: BoxDecoration(
-                                    color: TileColors.late,
+                                    // Tertiary hue keeps the active cue distinct
+                                    // from the red tardy strip and green
+                                    // completed styling.
+                                    color: colorScheme.tertiary,
                                     borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
-                                      bottomLeft: Radius.circular(16),
+                                      topRight: Radius.circular(16),
                                     ),
                                   ),
                                 ),
@@ -842,6 +884,27 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
                                 ? CrossFadeState.showSecond
                                 : CrossFadeState.showFirst,
                             duration: const Duration(milliseconds: 200),
+                          ),
+                      ],
+                        ),
+                        // Tardy indicator strip spans the full card height
+                        // (including the Actions footer) so the red left-edge
+                        // cue is continuous top-to-bottom.
+                        if (isTardy)
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(
+                              width: 4,
+                              decoration: BoxDecoration(
+                                color: TileColors.late,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  bottomLeft: Radius.circular(16),
+                                ),
+                              ),
+                            ),
                           ),
                       ],
                     ),

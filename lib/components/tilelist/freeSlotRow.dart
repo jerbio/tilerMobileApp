@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/components/tileUI/timeScrubGeometry.dart';
 import 'package:tiler_app/components/tilelist/dailyView/models/freeSlot.dart';
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -129,6 +132,8 @@ class FreeSlotRow extends StatelessWidget {
                           color: colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
+                      if (slot.isLive)
+                        _LiveFreeSlotFooter(slot: slot, accent: accent),
                     ],
                   ),
                 ),
@@ -139,6 +144,111 @@ class FreeSlotRow extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Live-only footer: a countdown to the end of the open window plus a slim
+/// depleting scrubber, with a gentle pulse to signal "this time is yours to
+/// grab." Non-live slots never build this, so the extra timer/animation cost
+/// is confined to the one window that is actually happening now.
+class _LiveFreeSlotFooter extends StatefulWidget {
+  final FreeSlot slot;
+  final Color accent;
+  const _LiveFreeSlotFooter({required this.slot, required this.accent});
+
+  @override
+  State<_LiveFreeSlotFooter> createState() => _LiveFreeSlotFooterState();
+}
+
+class _LiveFreeSlotFooterState extends State<_LiveFreeSlotFooter>
+    with SingleTickerProviderStateMixin {
+  Timer? _ticker;
+  late final AnimationController _glow;
+
+  @override
+  void initState() {
+    super.initState();
+    _glow = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat(reverse: true);
+    // Refresh the countdown and bar each second while the window is live.
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _ticker?.cancel();
+    _glow.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nowMs = Utility.msCurrentTime;
+    final geometry = TimeScrubGeometry(
+      startMs: widget.slot.startMs,
+      endMs: widget.slot.endMs,
+      nowMs: nowMs,
+    );
+    final double remainingFraction = (1.0 - geometry.progress).clamp(0.0, 1.0);
+    final int spanMs = widget.slot.endMs - widget.slot.startMs;
+    final Duration remaining = Duration(
+      milliseconds: (widget.slot.endMs - nowMs).clamp(0, spanMs),
+    );
+
+    return Padding(
+      key: const ValueKey('freeSlotLiveFooter'),
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          Icon(Icons.auto_awesome_rounded, size: 14, color: widget.accent),
+          const SizedBox(width: 6),
+          Text(
+            remaining.toHumanLocalized(context),
+            style: TextStyle(
+              fontFamily: TileTextStyles.rubikFontName,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: widget.accent,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: AnimatedBuilder(
+              animation: _glow,
+              builder: (context, _) {
+                final double glow = 0.35 + (_glow.value * 0.45);
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: Container(
+                    height: 5,
+                    color: widget.accent.withOpacity(0.15),
+                    child: FractionallySizedBox(
+                      alignment: Alignment.centerLeft,
+                      widthFactor: remainingFraction,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: widget.accent.withOpacity(glow),
+                          boxShadow: [
+                            BoxShadow(
+                              color: widget.accent.withOpacity(glow * 0.6),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
