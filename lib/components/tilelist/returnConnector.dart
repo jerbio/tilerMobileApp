@@ -30,6 +30,11 @@ class ReturnConnector extends StatelessWidget {
   /// re-fetch the latest end-of-day setting.
   final VoidCallback? onEndOfDayUpdated;
 
+  /// True when the day list continues below this marker (overflow tiles
+  /// scheduled past the end-of-day time). Controls whether the trailing line
+  /// connects down to the next tile instead of fading out.
+  final bool hasSubsequentTiles;
+
   // Sunset palette — warm amber → deep purple
   static const Color _sunsetAmber = Color(0xFFFF8F00);
   static const Color _sunsetPurple = Color(0xFF6A1B9A);
@@ -39,6 +44,7 @@ class ReturnConnector extends StatelessWidget {
     required this.lastTile,
     this.endOfDayTime,
     this.onEndOfDayUpdated,
+    this.hasSubsequentTiles = false,
   }) : super(key: key);
 
   // ---------------------------------------------------------------------------
@@ -331,18 +337,25 @@ class ReturnConnector extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                // Fade-out trailing line — the day tapers off
+                // Trailing line. When the day continues below (overflow tiles
+                // scheduled past end-of-day) this is a solid connector down to
+                // the next tile; otherwise it fades out as the day tapers off.
                 Container(
                   width: 2,
-                  height: 12,
+                  height: hasSubsequentTiles ? 20 : 12,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        _sunsetPurple.withOpacity(0.4),
-                        Colors.transparent,
-                      ],
+                      colors: hasSubsequentTiles
+                          ? [
+                              _sunsetPurple.withOpacity(0.6),
+                              colorScheme.outline.withOpacity(0.4),
+                            ]
+                          : [
+                              _sunsetPurple.withOpacity(0.4),
+                              Colors.transparent,
+                            ],
                     ),
                   ),
                 ),

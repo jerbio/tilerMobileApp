@@ -65,6 +65,7 @@ TileConnectorLayoutResult buildTileListWithConnectors({
   final List<Widget> widgets = [];
   int? selectedTileIndex;
   final int nowMs = now.millisecondsSinceEpoch;
+  final int? endOfDayMs = endOfDayTime?.millisecondsSinceEpoch;
 
   // Now-relative anchors for the live view's auto-focus. Precedence at return
   // is: active tile -> live free slot -> next upcoming tile.
@@ -166,8 +167,40 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
   }
 
+  // Emits the end-of-day ReturnConnector exactly once. It is called mid-loop
+  // as soon as a tile starts after the configured end-of-day time (so the
+  // marker lands in chronological order, above any overflow tiles) and once
+  // more after the loop for the common case where the day ends after the last
+  // tile.
+  bool returnConnectorEmitted = false;
+  void emitReturnConnector({bool hasSubsequentTiles = false}) {
+    if (returnConnectorEmitted) return;
+    if (!showTravelConnectors) return;
+    final last = prevRenderedTile;
+    if (last == null) return;
+    returnConnectorEmitted = true;
+    widgets.add(wrapConnector(
+      ReturnConnector(
+        lastTile: last,
+        endOfDayTime: endOfDayTime,
+        onEndOfDayUpdated: onEndOfDayUpdated,
+        hasSubsequentTiles: hasSubsequentTiles,
+      ),
+    ));
+  }
+
   for (int i = 0; i < regularTiles.length; i++) {
     final tile = regularTiles[i];
+
+    // Insert the end-of-day marker in chronological order: once we reach a
+    // tile that begins after the end-of-day time, drop the ReturnConnector in
+    // above it instead of pinning it to the very bottom of the day. Tiles
+    // still follow it, so it renders with a connecting trailing line.
+    if (endOfDayMs != null &&
+        tile.startTime.millisecondsSinceEpoch > endOfDayMs) {
+      emitReturnConnector(hasSubsequentTiles: true);
+    }
+
     final tileHour = tile.startTime.hour;
     final isCurrentHour = tile.startTime.day == now.day &&
         tile.startTime.month == now.month &&
@@ -240,17 +273,10 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     }
   }
 
-  // Always emit a ReturnConnector after the last tile — it shows end-of-day
-  // even when there is no return-travel data.
-  if (showTravelConnectors && prevRenderedTile != null) {
-    widgets.add(wrapConnector(
-      ReturnConnector(
-        lastTile: prevRenderedTile,
-        endOfDayTime: endOfDayTime,
-        onEndOfDayUpdated: onEndOfDayUpdated,
-      ),
-    ));
-  }
+  // Fallback for the common case: the day ends after every tile, so the marker
+  // was not emitted mid-loop. Append it after the last tile. (No-ops if it was
+  // already placed chronologically above overflow tiles.)
+  emitReturnConnector();
 
   return TileConnectorLayoutResult(
     widgets: widgets,
