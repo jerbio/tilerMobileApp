@@ -127,6 +127,44 @@ void main() {
       expect(find.byType(TimeScrubWidget), findsOneWidget);
     });
   });
+
+  group('TimeScrubWidget orientation change', () {
+    testWidgets(
+        're-anchors the ball to the correct proportion after a width change',
+        (tester) async {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      // ~50% elapsed occurrence so the correct ball position is unambiguous.
+      final timeline = _timeline(now - 30 * _minute, now + 30 * _minute);
+
+      // Narrow (portrait-like) layout first, then let the glide begin.
+      await tester.pumpWidget(
+        _host(width: 220, child: TimeScrubWidget(timeline: timeline)),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      // Widen (landscape-like). The scrubber must snap the ball to its true
+      // proportional position for the NEW track width instead of keeping the
+      // stale absolute pixel offset from the narrow layout. We read the
+      // anchor frame directly (no extra pump) before the glide resumes.
+      await tester.pumpWidget(
+        _host(width: 760, child: TimeScrubWidget(timeline: timeline)),
+      );
+
+      final ballPos = tester.widget<AnimatedPositioned>(
+        find.ancestor(of: _pulse, matching: find.byType(AnimatedPositioned)),
+      );
+
+      // New track width = (760 - 20).clamp(120, 600) = 600; travel = 600 - 10.
+      // On the re-anchor frame the ball snaps (duration 0) to its true ~50%
+      // position (~295). The pre-fix behavior kept animating toward the end
+      // target (590) with a non-zero duration from a stale start.
+      expect(ballPos.duration, Duration.zero);
+      expect(ballPos.left, isNotNull);
+      expect(ballPos.left!, closeTo(295, 45));
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
 
 extension _CurrentScrub on WidgetTester {

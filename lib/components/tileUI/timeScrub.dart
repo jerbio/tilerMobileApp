@@ -39,6 +39,12 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
   /// the occurrence over the remaining time (smooth, proportional motion).
   bool _animateToEnd = false;
 
+  /// Last usable track width we laid out against. Used to re-anchor the
+  /// scrubber to the true "now" position whenever the available width changes
+  /// (e.g. a device orientation change) instead of letting the implicit
+  /// [AnimatedPositioned] carry over a stale absolute pixel offset.
+  double? _lastTrackWidth;
+
   late Timer refreshTimer;
   late final AnimationController _pulseController;
   late final Animation<double> _pulseScale;
@@ -100,6 +106,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
         final double outerWidth =
             constraints.maxWidth.isFinite ? constraints.maxWidth : 300.0;
         final double trackWidth = _trackWidthFor(constraints);
+        // Detect a track-width change (e.g. orientation change) so we can snap
+        // the ball back to its true proportional position for the new width.
+        final bool trackWidthChanged =
+            _lastTrackWidth != null && _lastTrackWidth != trackWidth;
+        _lastTrackWidth = trackWidth;
 
         final int start = widget.timeline.start!;
         final int end = widget.timeline.end!;
@@ -140,7 +151,11 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
                 startMs: start, endMs: end, nowMs: currentTimeInMs);
             final endGeo =
                 TimeScrubGeometry(startMs: start, endMs: end, nowMs: end);
-            final TimeScrubGeometry activeGeo = _animateToEnd ? endGeo : nowGeo;
+            // Anchor to the true "now" geometry before the first glide frame,
+            // and again for one frame whenever the track width changes, so the
+            // ball never inherits a stale pixel offset from a previous layout.
+            final bool anchorNow = !_animateToEnd || trackWidthChanged;
+            final TimeScrubGeometry activeGeo = anchorNow ? nowGeo : endGeo;
 
             final double fillW =
                 activeGeo.fillWidth(trackWidth, diameterOfBall);
@@ -148,9 +163,19 @@ class TimeScrubWidgetState extends State<TimeScrubWidget>
 
             final int durationLeft =
                 (end - currentTimeInMs).clamp(0, 1 << 31).toInt();
-            final Duration animDuration = _animateToEnd
-                ? Duration(milliseconds: durationLeft)
-                : Duration.zero;
+            final Duration animDuration = anchorNow
+                ? Duration.zero
+                : Duration(milliseconds: durationLeft);
+
+            if (trackWidthChanged && _animateToEnd) {
+              // Snapped to the correct spot this frame; resume the smooth glide
+              // toward the end on the next frame.
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (this.mounted) {
+                  setState(() {});
+                }
+              });
+            }
 
             final usedUpTimeWidget = AnimatedPositioned(
               duration: animDuration,
