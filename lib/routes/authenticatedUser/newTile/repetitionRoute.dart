@@ -137,19 +137,30 @@ class _RepetitionRouteState extends State<RepetitionRoute>
   }
 
   void onDeadlineDateTap() async {
-    DateTime _endDate = this.repetitionData?.repetitionEnd == null
-        ? Utility.todayTimeline().endTime.add(Utility.oneDay)
-        : this.repetitionData!.repetitionEnd!;
-    DateTime firstDate = _endDate.add(Duration(days: -100000));
-    DateTime lastDate = _endDate.add(Duration(days: 100000));
+    DateTime today = Utility.currentTime();
+    DateTime todayDate = DateTime(today.year, today.month, today.day);
+
+    // Sensible, bounded range for the deadline picker: from today up to
+    // ten years out. The 'none' frequency also allows selecting past dates.
+    DateTime firstDate = todayDate;
+    DateTime lastDate = DateTime(today.year + 10, today.month, today.day);
     if (this.repetitionData != null &&
         this.repetitionData!.frequency == RepetitionFrequency.none) {
-      firstDate =
-          Utility.todayTimeline().startTime.subtract(Duration(days: 365 * 10));
-      lastDate =
-          Utility.todayTimeline().startTime.add(Duration(days: 365 * 10));
-      _endDate = Utility.todayTimeline().endTime.add(Utility.oneDay);
+      firstDate = DateTime(today.year - 10, today.month, today.day);
     }
+
+    DateTime _endDate = this.repetitionData?.repetitionEnd ??
+        Utility.todayTimeline().endTime.add(Utility.oneDay);
+
+    // Guard against a broken/out-of-range default so the picker always opens
+    // on a valid, selectable date within [firstDate, lastDate].
+    if (_endDate.isBefore(firstDate)) {
+      _endDate = firstDate;
+    }
+    if (_endDate.isAfter(lastDate)) {
+      lastDate = _endDate;
+    }
+
     final DateTime? revisedEndDate = await showDatePicker(
       context: context,
       initialDate: _endDate,
@@ -165,9 +176,7 @@ class _RepetitionRouteState extends State<RepetitionRoute>
           _endDate.hour,
           _endDate.minute);
       RepetitionData updatedRepetitionData = repetitionData!;
-      if (updatedRepetitionData.weeklyRepetition != null) {
-        updatedRepetitionData.repetitionEnd = updatedEndTime;
-      }
+      updatedRepetitionData.repetitionEnd = updatedEndTime;
       setState(() => repetitionData = updatedRepetitionData);
     }
   }
