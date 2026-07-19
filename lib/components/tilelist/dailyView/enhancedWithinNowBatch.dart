@@ -74,6 +74,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   // State
   double _emptyDayOpacity = 0;
   bool _isEmptyDay = false;
+  bool _isAutoScrolled = false;
   List<ConflictGroup> _detectedConflicts = [];
 
   // Theming
@@ -83,11 +84,6 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _scrollToCurrentTime();
-      }
-    });
   }
 
   @override
@@ -104,41 +100,21 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     super.dispose();
   }
 
-  /// Scroll to show current/upcoming tiles
-  void _scrollToCurrentTime() {
-    if (!_scrollController.hasClients) return;
-
-    final currentTimeMs = Utility.currentTime().millisecondsSinceEpoch;
-    bool hasPrecedingTiles = false;
-    bool hasCurrentTile = false;
-
-    if (widget.tiles != null) {
-      for (var tile in widget.tiles!) {
-        if (tile is SubCalendarEvent) {
-          if (tile.end != null && tile.end! < currentTimeMs) {
-            hasPrecedingTiles = true;
-          }
-          if (tile.start != null &&
-              tile.start! <= currentTimeMs &&
-              tile.end != null &&
-              tile.end! > currentTimeMs) {
-            hasCurrentTile = true;
-          }
-        }
-      }
-    }
-
-    if (hasPrecedingTiles) {
-      // Scroll past the optimization card to show current tiles
-      final offset = hasCurrentTile ? 150.0 : 200.0;
-      if (_scrollController.position.maxScrollExtent >= offset) {
-        _scrollController.animateTo(
-          offset,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    }
+  /// Auto-scroll the today batch so the active card (the tile happening now,
+  /// else the live free slot, else the next upcoming tile) is brought into
+  /// view. Runs once per mount, after the SuperSliverList has laid out.
+  void _autoScrollToFocus(int focusIndex) {
+    if (_isAutoScrolled) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (!_listController.isAttached || !_scrollController.hasClients) return;
+      _isAutoScrolled = true;
+      _listController.jumpToItem(
+        index: focusIndex,
+        scrollController: _scrollController,
+        alignment: 0.15,
+      );
+    });
   }
 
   /// Navigate to today's route page
@@ -209,7 +185,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
   }
 
   /// Build tiles list with travel connectors and conflict handling
-  (List<Widget>, int?) _buildTilesWithConnectors(
+  (List<Widget>, int?, int?) _buildTilesWithConnectors(
       List<TilerEvent> orderedTiles) {
     final withinNow = widget as EnhancedWithinNowBatch;
     final result = buildTileListWithConnectors(
@@ -258,7 +234,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     );
 
     _detectedConflicts = result.conflictGroups;
-    return (result.widgets, result.selectedTileIndex);
+    return (result.widgets, result.selectedTileIndex, result.currentFocusIndex);
   }
 
   /// Trigger schedule revise (re-optimize)
@@ -459,7 +435,7 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     Widget tilesContent;
     if (viableTiles.isNotEmpty) {
       final orderedTiles = Utility.orderTiles(viableTiles.values.toList());
-      final (tilesWithConnectors, targetScrollIndex) =
+      final (tilesWithConnectors, targetScrollIndex, focusIndex) =
           _buildTilesWithConnectors(orderedTiles);
 
       // All tiles may have been filtered out (e.g. only all-day events which
@@ -478,6 +454,8 @@ class EnhancedWithinNowBatchState extends TileBatchState {
               alignment: 0.15,
             );
           });
+        } else if (!withinNow.preview && focusIndex != null) {
+          _autoScrollToFocus(focusIndex);
         }
 
         tilesContent = SuperSliverList(

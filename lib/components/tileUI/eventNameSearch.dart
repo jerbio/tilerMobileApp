@@ -10,7 +10,7 @@ import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/TileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/tileNameApi.dart';
@@ -186,7 +186,7 @@ class EventNameSearchState extends SearchWidgetState {
     };
     return retValue;
   }
-  
+
   void _performDeletion(String tileId, String thirdPartyId) async {
     final scheduleState = this.context.read<ScheduleBloc>().state;
     if (scheduleState is ScheduleEvaluationState) {
@@ -389,7 +389,7 @@ class EventNameSearchState extends SearchWidgetState {
         ),
       );
     }
-    
+
     final textStyle =
         TextStyle(fontSize: 12, fontFamily: TileTextStyles.rubikFontName);
     List<Widget> childWidgets = [];

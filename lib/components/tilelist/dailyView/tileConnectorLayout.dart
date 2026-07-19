@@ -29,11 +29,17 @@ typedef ConnectorWrapper = Widget Function(Widget connector);
 class TileConnectorLayoutResult {
   final List<Widget> widgets;
   final int? selectedTileIndex;
+
+  /// Widget index the live "today" view should auto-focus on load. Resolves
+  /// to the tile happening now, else the live free-slot row, else the next
+  /// upcoming tile. Null when the day has no now-relative anchor.
+  final int? currentFocusIndex;
   final List<ConflictGroup> conflictGroups;
 
   const TileConnectorLayoutResult({
     required this.widgets,
     required this.selectedTileIndex,
+    required this.currentFocusIndex,
     required this.conflictGroups,
   });
 }
@@ -58,6 +64,13 @@ TileConnectorLayoutResult buildTileListWithConnectors({
 }) {
   final List<Widget> widgets = [];
   int? selectedTileIndex;
+  final int nowMs = now.millisecondsSinceEpoch;
+
+  // Now-relative anchors for the live view's auto-focus. Precedence at return
+  // is: active tile -> live free slot -> next upcoming tile.
+  int? activeTileIndex;
+  int? liveFreeSlotIndex;
+  int? upcomingTileIndex;
   final Set<int> displayedHours = {};
 
   final regularTiles = orderedTiles.where((tile) {
@@ -81,8 +94,23 @@ TileConnectorLayoutResult buildTileListWithConnectors({
     if (buildFreeSlot == null) return;
     while (freeSlotIndex < freeSlots.length &&
         freeSlots[freeSlotIndex].startMs < destinationStartMs) {
-      widgets.add(buildFreeSlot(freeSlots[freeSlotIndex]));
+      final slot = freeSlots[freeSlotIndex];
+      if (slot.isLive && liveFreeSlotIndex == null) {
+        liveFreeSlotIndex = widgets.length;
+      }
+      widgets.add(buildFreeSlot(slot));
       freeSlotIndex++;
+    }
+  }
+
+  // Records the now-relative anchor for a tile about to be added at [idx].
+  void recordAnchor(TilerEvent tile, int idx) {
+    final s = tile.start;
+    final e = tile.end;
+    if (s != null && e != null && s <= nowMs && nowMs < e) {
+      activeTileIndex ??= idx;
+    } else if (s != null && s > nowMs) {
+      upcomingTileIndex ??= idx;
     }
   }
 
@@ -167,6 +195,11 @@ TileConnectorLayoutResult buildTileListWithConnectors({
           emitTravelConnectorTo(groupTilesByStart.first);
         }
 
+        final int groupIndex0 = widgets.length;
+        for (final gt in group.tiles) {
+          recordAnchor(gt, groupIndex0);
+        }
+
         widgets.add(buildConflictGroup(
           group,
           hour: tileHour,
@@ -192,6 +225,8 @@ TileConnectorLayoutResult buildTileListWithConnectors({
       emitFreeSlotsBefore(tile.start ?? 0);
       emitTravelConnectorTo(tile);
     }
+
+    recordAnchor(tile, widgets.length);
 
     widgets.add(buildTile(
       tile,
@@ -220,6 +255,8 @@ TileConnectorLayoutResult buildTileListWithConnectors({
   return TileConnectorLayoutResult(
     widgets: widgets,
     selectedTileIndex: selectedTileIndex,
+    currentFocusIndex:
+        activeTileIndex ?? liveFreeSlotIndex ?? upcomingTileIndex,
     conflictGroups: conflictGroups,
   );
 }

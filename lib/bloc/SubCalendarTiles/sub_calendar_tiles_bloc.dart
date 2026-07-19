@@ -1,11 +1,8 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
-import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
-import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';
-import 'package:tuple/tuple.dart';
 import '../../constants.dart' as Constants;
 
 part 'sub_calendar_tiles_event.dart';

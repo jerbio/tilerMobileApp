@@ -9,7 +9,7 @@ import 'package:tiler_app/constants.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/TileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/TileDetail.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/constants.dart' as Constants;

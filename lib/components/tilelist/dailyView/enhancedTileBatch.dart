@@ -83,6 +83,10 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
   final ItemPositionsListener _itemPositionsListener =
       ItemPositionsListener.create();
 
+  /// Guards the live "today" auto-focus so it runs once and does not fight a
+  /// user's manual scroll on subsequent rebuilds.
+  bool _isAutoScrolled = false;
+
   @override
   void initState() {
     super.initState();
@@ -239,7 +243,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
   /// Build a list of widgets with travel connectors between tiles
   /// Groups conflicting tiles into stacked cards
-  (List<Widget>, int?) _buildTilesWithConnectors(
+  (List<Widget>, int?, int?) _buildTilesWithConnectors(
       List<TilerEvent> orderedTiles) {
     final result = buildTileListWithConnectors(
       orderedTiles: orderedTiles,
@@ -317,7 +321,7 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
       },
     );
 
-    return (result.widgets, result.selectedTileIndex);
+    return (result.widgets, result.selectedTileIndex, result.currentFocusIndex);
   }
 
   void evaluateTileDelta(Iterable<TilerEvent>? tiles) {
@@ -580,12 +584,15 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
     List<Widget>? tilesWithConnectors;
     int? targetScrollIndex;
+    int? currentFocusIndex;
     if (renderedTiles.length > 0) {
       final orderedTilesList =
           Utility.orderTiles(renderedTiles.values.toList());
-      final (built, scrollIndex) = _buildTilesWithConnectors(orderedTilesList);
+      final (built, scrollIndex, focusIndex) =
+          _buildTilesWithConnectors(orderedTilesList);
       tilesWithConnectors = built;
       targetScrollIndex = scrollIndex;
+      currentFocusIndex = focusIndex;
     }
 
     // All tiles may have been filtered out (e.g. only all-day events which
@@ -598,6 +605,27 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
             _itemScrollController.jumpTo(
               index: targetScrollIndex!,
               alignment: 0.15,
+            );
+          }
+        });
+      }
+
+      // Live view: on first render of today, glide to the tile happening now
+      // (or the live free slot / next upcoming tile). One-shot per state so a
+      // manual scroll afterwards is respected.
+      if (!widget.preview &&
+          _isToday &&
+          !_isAutoScrolled &&
+          currentFocusIndex != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (_itemScrollController.isAttached) {
+            _isAutoScrolled = true;
+            _itemScrollController.scrollTo(
+              index: currentFocusIndex!,
+              alignment: 0.15,
+              duration: const Duration(milliseconds: 450),
+              curve: Curves.easeInOutCubic,
             );
           }
         });

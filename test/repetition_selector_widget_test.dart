@@ -14,7 +14,7 @@ import 'package:tiler_app/data/repetition.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/repetitionSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/repetitionSelectorWidget.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 // ── fake RepetitionRoute ──────────────────────────────────────────────────────
@@ -174,7 +174,8 @@ void main() {
       expect(find.text('Non-Recurring'), findsNothing);
     });
 
-    testWidgets('changing the frequency on an already-recurring tile updates it',
+    testWidgets(
+        'changing the frequency on an already-recurring tile updates it',
         (WidgetTester tester) async {
       Repetition? captured;
       _fakeResult = _FakeRepetitionResult(

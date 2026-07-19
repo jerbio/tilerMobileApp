@@ -27,7 +27,7 @@ import 'package:tiler_app/routes/authenticatedUser/editTile/editDateAndTime.dart
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileName.dart';
 import 'package:tiler_app/data/notesPayload.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileNotePage.dart';
-import 'package:tiler_app/routes/authenticatedUser/tileDetails.dart/tileDetail.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/tileDetail.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/subCalendarEventApi.dart';

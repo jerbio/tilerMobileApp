@@ -380,8 +380,7 @@ void main() {
         ),
       ];
 
-      final result =
-          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
 
       final markers = result.widgets.whereType<_FreeSlotMarker>().toList();
       expect(markers, hasLength(1));
@@ -405,11 +404,9 @@ void main() {
         ),
       ];
 
-      final result =
-          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 8));
 
-      final slotIndex =
-          result.widgets.indexWhere((w) => w is _FreeSlotMarker);
+      final slotIndex = result.widgets.indexWhere((w) => w is _FreeSlotMarker);
       final tileAIndex = result.widgets.indexWhere(
           (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'a');
       final tileBIndex = result.widgets.indexWhere(
@@ -434,10 +431,106 @@ void main() {
       ];
 
       // now is after the entire gap.
-      final result =
-          _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 15));
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 15));
 
       expect(result.widgets.whereType<_FreeSlotMarker>(), isEmpty);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Group 6: currentFocusIndex (live auto-focus anchor)
+  // -------------------------------------------------------------------------
+
+  group('buildTileListWithConnectors — currentFocusIndex', () {
+    test('null for an empty day', () {
+      final result = _buildWithFreeSlots([], now: DateTime(2026, 6, 28, 12));
+      expect(result.currentFocusIndex, isNull);
+    });
+
+    test('points at the tile happening now', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 11),
+          end: DateTime(2026, 6, 28, 13),
+        ),
+      ];
+
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 12));
+
+      final tileBIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'b');
+      expect(result.currentFocusIndex, tileBIndex);
+    });
+
+    test('points at the live free-slot row when now is in a gap', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 14),
+          end: DateTime(2026, 6, 28, 15),
+        ),
+      ];
+
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 12));
+
+      final slotIndex = result.widgets.indexWhere((w) => w is _FreeSlotMarker);
+      expect(slotIndex, greaterThanOrEqualTo(0));
+      final marker = result.widgets[slotIndex] as _FreeSlotMarker;
+      expect(marker.slot.isLive, isTrue);
+      expect(result.currentFocusIndex, slotIndex);
+    });
+
+    test('points at the next upcoming tile when the whole day is ahead', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 14),
+          end: DateTime(2026, 6, 28, 15),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 16),
+          end: DateTime(2026, 6, 28, 17),
+        ),
+      ];
+
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 12));
+
+      final tileAIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'a');
+      expect(result.currentFocusIndex, tileAIndex);
+    });
+
+    test('active tile takes precedence over later upcoming tiles', () {
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 11),
+          end: DateTime(2026, 6, 28, 13),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 15),
+          end: DateTime(2026, 6, 28, 16),
+        ),
+      ];
+
+      final result = _buildWithFreeSlots(tiles, now: DateTime(2026, 6, 28, 12));
+
+      final tileAIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'a');
+      expect(result.currentFocusIndex, tileAIndex);
     });
   });
 }
