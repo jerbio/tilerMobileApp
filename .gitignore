@@ -56,3 +56,6 @@ firebase.json
 
 # FVM Version Cache
 .fvm/
+
+androidRelease.sh
+iosRelease.sh
