@@ -427,9 +427,13 @@ class EnhancedTileBatchState extends State<EnhancedTileBatch> {
 
     // Day summary header - match original TileBatch margins (bottom margin only)
     if (dayData != null && widget.tiles != null) {
+      // Only nonViable can be derived from widget.tiles. The completed/tardy
+      // lists are never present in widget.tiles (it only carries the day's
+      // schedulable tiles) — those come solely from the daySummarys web
+      // request and are surfaced by DaySummary via its retrieval cache.
       _dayData!.nonViable = widget.tiles!
-          .where(
-              (eachTile) => !((eachTile as SubCalendarEvent).isViable ?? true))
+          .whereType<SubCalendarEvent>()
+          .where((tile) => !(tile.isViable ?? true))
           .toList();
       childrenColumnWidgets.add(Container(
         margin: EdgeInsets.fromLTRB(0, 0, 0, 61),

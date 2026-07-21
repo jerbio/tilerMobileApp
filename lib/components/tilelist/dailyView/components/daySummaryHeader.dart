@@ -32,6 +32,13 @@ class DaySummaryHeader extends StatefulWidget {
 class _DaySummaryHeaderState extends State<DaySummaryHeader> {
   TimelineSummary? _dayData;
   bool _isPending = false;
+
+  /// True once a server-provided day summary (from the daySummarys request) has
+  /// been applied for this day. The completed/tardy lists only ever come from
+  /// that request, so once we have them we keep showing the numbers across
+  /// refreshes instead of blanking them back to a loading shimmer.
+  bool _hasAppliedServerSummary = false;
+
   late ThemeData theme;
   late TileThemeExtension tileThemeExtension;
 
@@ -54,6 +61,32 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
     if (widget.dayData != oldWidget.dayData) {
       _dayData = widget.dayData;
     }
+  }
+
+  /// Effective pending flag used to drive the shimmer. Once a server summary
+  /// has been applied we stop showing the shimmer so a refresh never drops the
+  /// already-known completion numbers.
+  bool get _showPending => _hasAppliedServerSummary ? false : _isPending;
+
+  /// Pulls the summary matching this day out of a bloc state. Both the loaded
+  /// and loading states carry the retained day summaries (the loading state
+  /// keeps the previously retrieved completion data), so we honour either. That
+  /// lets the header render its last-known completion during a refresh instead
+  /// of dropping it while the in-flight request settles.
+  TimelineSummary? _matchingSummaryFromState(ScheduleSummaryState state) {
+    List<TimelineSummary>? stateDayData;
+    if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+      stateDayData = state.dayData;
+    } else if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+      stateDayData = state.dayData;
+    }
+    if (stateDayData == null) {
+      return null;
+    }
+    return stateDayData
+        .where((timelineSummary) =>
+            timelineSummary.dayIndex == _dayData?.dayIndex)
+        .firstOrNull;
   }
 
   void _navigateToSummary(BuildContext context) {
@@ -125,37 +158,31 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
 
     return BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
       listener: (context, state) {
-        if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-          if (state.dayData != null && _dayData != null) {
-            TimelineSummary? latestDayData = state.dayData!
-                .where((timelineSummary) =>
-                    timelineSummary.dayIndex == _dayData?.dayIndex)
-                .firstOrNull;
-            if (latestDayData != null) {
-              setState(() {
-                _dayData = latestDayData;
-                _isPending = false;
-              });
-            }
-          }
-        }
-        if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+        final latestDayData = _matchingSummaryFromState(state);
+        if (latestDayData != null) {
           setState(() {
-            _isPending = true;
+            _dayData = latestDayData;
+            _hasAppliedServerSummary = true;
+            _isPending = false;
           });
+        } else if (state is ScheduleDaySummaryLoading &&
+            state.requestId == null) {
+          // Only fall back to the shimmer while we have never retrieved a
+          // summary for this day; otherwise keep the last-known numbers.
+          if (!_hasAppliedServerSummary) {
+            setState(() {
+              _isPending = true;
+            });
+          }
         }
       },
       child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
         builder: (context, state) {
           // Update from bloc state
-          if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-            TimelineSummary? latestDayData = state.dayData
-                ?.where((timelineSummary) =>
-                    timelineSummary.dayIndex == _dayData?.dayIndex)
-                .firstOrNull;
-            if (latestDayData != null) {
-              _dayData = latestDayData;
-            }
+          final latestDayData = _matchingSummaryFromState(state);
+          if (latestDayData != null) {
+            _dayData = latestDayData;
+            _hasAppliedServerSummary = true;
           }
 
           final nonViableCount = _dayData?.nonViable?.length ?? 0;
@@ -198,33 +225,33 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
                             ),
                             const SizedBox(width: 8),
                             // Day metrics inline with "Today"
-                            if (nonViableCount > 0 || _isPending) ...[
+                            if (nonViableCount > 0 || _showPending) ...[
                               _buildMetricChip(
                                 icon: Icons.error,
                                 iconColor: colorScheme.error,
                                 count: nonViableCount,
                                 colorScheme: colorScheme,
-                                isPending: _isPending,
+                                isPending: _showPending,
                               ),
                               const SizedBox(width: 6),
                             ],
-                            if (completeCount > 0 || _isPending) ...[
+                            if (completeCount > 0 || _showPending) ...[
                               _buildMetricChip(
                                 icon: Icons.check_circle,
                                 iconColor: TileColors.completedTeal,
                                 count: completeCount,
                                 colorScheme: colorScheme,
-                                isPending: _isPending,
+                                isPending: _showPending,
                               ),
                               const SizedBox(width: 6),
                             ],
-                            if (tardyCount > 0 || _isPending) ...[
+                            if (tardyCount > 0 || _showPending) ...[
                               _buildMetricChip(
                                 icon: Icons.car_crash_outlined,
                                 iconColor: TileColors.warning,
                                 count: tardyCount,
                                 colorScheme: colorScheme,
-                                isPending: _isPending,
+                                isPending: _showPending,
                               ),
                               const SizedBox(width: 6),
                             ],

@@ -21,6 +21,13 @@ class DaySummary extends StatefulWidget {
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
   bool pendingFlag = false;
+
+  /// True once a server-provided day summary (from the daySummarys request) has
+  /// been applied for this day. The completed/tardy lists only ever come from
+  /// that request, so once we have them we keep showing the numbers across
+  /// refreshes instead of blanking back to a loading shimmer.
+  bool _hasAppliedServerSummary = false;
+
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
@@ -39,11 +46,36 @@ class _DaySummaryState extends State<DaySummary> {
     tileThemeExtension= theme.extension<TileThemeExtension>()!;
   }
 
+  /// Pulls the summary matching this day out of a bloc state. Both the loaded
+  /// and loading states carry the retained day summaries (the loading state
+  /// keeps the previously retrieved completion data), so we honour either. That
+  /// lets a DaySummary that is recreated during a refresh (e.g. while swiping
+  /// between days) render its last-known completion immediately instead of
+  /// dropping it while the in-flight request settles.
+  TimelineSummary? _matchingSummaryFromState(ScheduleSummaryState state) {
+    List<TimelineSummary>? stateDayData;
+    if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+      stateDayData = state.dayData;
+    } else if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+      stateDayData = state.dayData;
+    }
+    if (stateDayData == null) {
+      return null;
+    }
+    return stateDayData
+        .where((timelineSummary) =>
+            timelineSummary.dayIndex == dayData?.dayIndex)
+        .firstOrNull;
+  }
+
   bool get isPending {
-    bool retValue = false;
-    retValue = retValue ||
-        this.context.read<ScheduleSummaryBloc>().state
-            is ScheduleDaySummaryLoading;
+    // Keep displaying the last-known metrics while a refresh is in flight so
+    // the completion numbers don't drop off every time the summary reloads.
+    if (_hasAppliedServerSummary) {
+      return false;
+    }
+    bool retValue = this.context.read<ScheduleSummaryBloc>().state
+        is ScheduleDaySummaryLoading;
     retValue = pendingFlag || retValue;
     return retValue;
   }
@@ -156,36 +188,32 @@ class _DaySummaryState extends State<DaySummary> {
       listeners: [
         BlocListener<ScheduleSummaryBloc, ScheduleSummaryState>(
           listener: (context, state) {
-            if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-              if (state.dayData != null && dayData != null) {
-                TimelineSummary? latestDayData = state.dayData!
-                    .where((timelineSummary) =>
-                        timelineSummary.dayIndex == dayData?.dayIndex)
-                    .firstOrNull;
+            final latestDayData = _matchingSummaryFromState(state);
+            if (latestDayData != null) {
+              setState(() {
+                dayData = latestDayData;
+                _hasAppliedServerSummary = true;
+                pendingFlag = false;
+              });
+            } else if (state is ScheduleDaySummaryLoading &&
+                state.requestId == null) {
+              // Only fall back to the shimmer while we have never retrieved a
+              // summary for this day; otherwise keep the last-known numbers.
+              if (!_hasAppliedServerSummary) {
                 setState(() {
-                  dayData = latestDayData;
-                  pendingFlag = false;
+                  pendingFlag = true;
                 });
               }
-            }
-            if (state is ScheduleDaySummaryLoading && state.requestId == null) {
-              setState(() {
-                pendingFlag = true;
-              });
             }
           },
         ),
       ],
       child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(
         builder: (context, state) {
-          if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
-            TimelineSummary? latestDayData = state.dayData!
-                .where((timelineSummary) =>
-                    timelineSummary.dayIndex == dayData?.dayIndex)
-                .firstOrNull;
-            if (latestDayData != null) {
-              dayData = latestDayData;
-            }
+          final latestDayData = _matchingSummaryFromState(state);
+          if (latestDayData != null) {
+            dayData = latestDayData;
+            _hasAppliedServerSummary = true;
           }
 
           Widget dayDateText = Container(
