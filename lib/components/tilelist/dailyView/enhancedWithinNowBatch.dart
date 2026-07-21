@@ -371,10 +371,14 @@ class EnhancedWithinNowBatchState extends TileBatchState {
     // Calculate stats
     final stats = TodayStats.fromTiles(viableTiles.values.toList());
 
-    // Update dayData with non-viable tiles for display in header
+    // Update dayData with non-viable tiles for display in header. Only
+    // nonViable is derivable from widget.tiles; the completed/tardy lists
+    // never appear in widget.tiles and come solely from the daySummarys web
+    // request, surfaced by DaySummaryHeader via its retrieval cache.
     if (dayData != null && widget.tiles != null) {
       dayData!.nonViable = widget.tiles!
-          .where((tile) => !((tile as SubCalendarEvent).isViable ?? true))
+          .whereType<SubCalendarEvent>()
+          .where((tile) => !(tile.isViable ?? true))
           .toList();
     }
 

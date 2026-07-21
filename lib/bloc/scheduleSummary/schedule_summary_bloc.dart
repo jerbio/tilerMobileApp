@@ -20,6 +20,14 @@ class ScheduleSummaryBloc
     extends Bloc<ScheduleSummaryEvent, ScheduleSummaryState> {
   late ScheduleApi scheduleApi;
   late SubCalendarEventApi subCalendarEventApi;
+
+  /// Last retrieved day summary per universal day index. The daySummarys web
+  /// request is the only source of the completed/tardy lists (they never
+  /// appear in the schedule tiles), and a given fetch may not re-report every
+  /// day in view. Retaining the most recent summary per day lets us backfill
+  /// those lists so a day never loses its previously fetched completion data.
+  final Map<int, TimelineSummary> _retainedDaySummaries = {};
+
   ScheduleSummaryBloc({required Function getContextCallBack})
       : super(ScheduleSummaryInitial()) {
     on<GetScheduleDaySummaryEvent>(_onGetDayData, transformer: restartable());
@@ -29,6 +37,32 @@ class ScheduleSummaryBloc
     subCalendarEventApi =
         SubCalendarEventApi(getContextCallBack: getContextCallBack);
     scheduleApi = new ScheduleApi(getContextCallBack: getContextCallBack);
+  }
+
+  /// Merges freshly fetched day summaries into the retained cache and returns
+  /// the union of all known days. Freshly fetched data wins, but any list the
+  /// new fetch didn't report (most importantly [complete] and [tardy]) is
+  /// backfilled from the last retrieval so the completion metrics persist.
+  List<TimelineSummary> _mergeAndRetainDaySummaries(
+      List<TimelineSummary> freshSummaries) {
+    for (final fresh in freshSummaries) {
+      final int? dayIndex = fresh.dayIndex;
+      if (dayIndex == null) {
+        continue;
+      }
+      final TimelineSummary? prior = _retainedDaySummaries[dayIndex];
+      if (prior != null) {
+        fresh.complete ??= prior.complete;
+        fresh.tardy ??= prior.tardy;
+        fresh.wake ??= prior.wake;
+        fresh.sleep ??= prior.sleep;
+        fresh.deleted ??= prior.deleted;
+        fresh.nonViable ??= prior.nonViable;
+        fresh.sleepDuration ??= prior.sleepDuration;
+      }
+      _retainedDaySummaries[dayIndex] = fresh;
+    }
+    return _retainedDaySummaries.values.toList();
   }
 
   List<TilerEvent> _getElapsedTasks(List<TimelineSummary> daySummaries) {
@@ -93,9 +127,11 @@ class ScheduleSummaryBloc
     await scheduleApi.getDaySummary(timeline).then((value) async {
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
+      List<TimelineSummary> mergedDayData =
+          _mergeAndRetainDaySummaries(daySummaries);
       emit(ScheduleDaySummaryLoaded(
           timeline: timeline,
-          dayData: value.values.toList(),
+          dayData: mergedDayData,
           requestId: event.requestId,
           elapsedTiles: elapsedTasks));
     }).catchError((error) {
@@ -116,9 +152,11 @@ class ScheduleSummaryBloc
     await scheduleApi.getDaySummary(timeline).then((value) async {
       List<TimelineSummary> daySummaries = value.values.toList();
       List<TilerEvent> elapsedTasks = _getElapsedTasks(daySummaries);
+      List<TimelineSummary> mergedDayData =
+          _mergeAndRetainDaySummaries(daySummaries);
       emit(ScheduleDaySummaryLoaded(
           timeline: timeline,
-          dayData: daySummaries,
+          dayData: mergedDayData,
           requestId: null,
           elapsedTiles: elapsedTasks));
     }).catchError((error) {
@@ -143,6 +181,7 @@ class ScheduleSummaryBloc
 
   FutureOr<void> _onLogOutScheduleDaySummaryEvent(
       LogOutScheduleDaySummaryEvent event, Emitter<ScheduleSummaryState> emit) {
+    _retainedDaySummaries.clear();
     scheduleApi = new ScheduleApi(getContextCallBack: () => null);
     emit(LoggedOutScheduleSummaryState());
   }
