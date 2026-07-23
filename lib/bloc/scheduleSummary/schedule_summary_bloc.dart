@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -24,8 +23,9 @@ class ScheduleSummaryBloc
   /// Last retrieved day summary per universal day index. The daySummarys web
   /// request is the only source of the completed/tardy lists (they never
   /// appear in the schedule tiles), and a given fetch may not re-report every
-  /// day in view. Retaining the most recent summary per day lets us backfill
-  /// those lists so a day never loses its previously fetched completion data.
+  /// day in view. Retaining the most recent summary per day lets a day keep
+  /// its previously fetched completion data when a later fetch doesn't include
+  /// that day.
   final Map<int, TimelineSummary> _retainedDaySummaries = {};
 
   ScheduleSummaryBloc({required Function getContextCallBack})
@@ -40,25 +40,19 @@ class ScheduleSummaryBloc
   }
 
   /// Merges freshly fetched day summaries into the retained cache and returns
-  /// the union of all known days. Freshly fetched data wins, but any list the
-  /// new fetch didn't report (most importantly [complete] and [tardy]) is
-  /// backfilled from the last retrieval so the completion metrics persist.
+  /// the union of all known days.
+  ///
+  /// A day present in [freshSummaries] is authoritative and replaces any prior
+  /// entry wholesale (so completing/uncompleting a tile and pulling to refresh
+  /// reflects the new counts, including going back to zero). Days the fetch did
+  /// not include simply stay in the cache from their last retrieval, so they
+  /// don't lose their completion data when a later, narrower fetch omits them.
   List<TimelineSummary> _mergeAndRetainDaySummaries(
       List<TimelineSummary> freshSummaries) {
     for (final fresh in freshSummaries) {
       final int? dayIndex = fresh.dayIndex;
       if (dayIndex == null) {
         continue;
-      }
-      final TimelineSummary? prior = _retainedDaySummaries[dayIndex];
-      if (prior != null) {
-        fresh.complete ??= prior.complete;
-        fresh.tardy ??= prior.tardy;
-        fresh.wake ??= prior.wake;
-        fresh.sleep ??= prior.sleep;
-        fresh.deleted ??= prior.deleted;
-        fresh.nonViable ??= prior.nonViable;
-        fresh.sleepDuration ??= prior.sleepDuration;
       }
       _retainedDaySummaries[dayIndex] = fresh;
     }
@@ -94,32 +88,21 @@ class ScheduleSummaryBloc
   Future<void> _onGetDayData(GetScheduleDaySummaryEvent event,
       Emitter<ScheduleSummaryState> emit) async {
     List<TimelineSummary>? dayData;
-    Timeline? timeline = event.timeline ?? Utility.todayTimeline();
+    Timeline timeline = event.timeline ?? Utility.todayTimeline();
+
+    // Carry the previously loaded/retained summaries into the loading state so
+    // the UI keeps showing the last-known metrics while the fetch is in flight.
+    //
+    // Note: we intentionally fetch exactly the requested [timeline] window and
+    // do NOT union it with the previously loaded timeline. The backend only
+    // answers for a bounded window, so unioning an out-of-window jump (e.g. 20
+    // days back) with the current window produced a huge span that never
+    // returned the selected day. Retention of earlier days is handled by
+    // [_mergeAndRetainDaySummaries], not by an ever-growing query range.
     if (state is ScheduleDaySummaryLoaded) {
-      if (event.requestId == null) {
-        Timeline loadedTimeline = (state as ScheduleDaySummaryLoaded).timeline!;
-        DateTime startTimeline = DateTime.fromMillisecondsSinceEpoch(min(
-            loadedTimeline.startTime.millisecondsSinceEpoch,
-            timeline.startTime.millisecondsSinceEpoch));
-        DateTime endTimeline = DateTime.fromMillisecondsSinceEpoch(max(
-            loadedTimeline.endTime.millisecondsSinceEpoch,
-            timeline.endTime.millisecondsSinceEpoch));
-        timeline = Timeline.fromDateTime(startTimeline, endTimeline);
-      }
       dayData = (state as ScheduleDaySummaryLoaded).dayData;
     }
     if (state is ScheduleDaySummaryLoading) {
-      if (event.requestId == null) {
-        Timeline pendingTimeline =
-            (state as ScheduleDaySummaryLoading).timeline!;
-        DateTime startTimeline = DateTime.fromMillisecondsSinceEpoch(min(
-            pendingTimeline.startTime.millisecondsSinceEpoch,
-            timeline.startTime.millisecondsSinceEpoch));
-        DateTime endTimeline = DateTime.fromMillisecondsSinceEpoch(max(
-            pendingTimeline.endTime.millisecondsSinceEpoch,
-            timeline.endTime.millisecondsSinceEpoch));
-        timeline = Timeline.fromDateTime(startTimeline, endTimeline);
-      }
       dayData = (state as ScheduleDaySummaryLoading).dayData;
     }
     emit(ScheduleDaySummaryLoading(timeline: timeline, dayData: dayData));
