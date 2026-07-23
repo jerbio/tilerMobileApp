@@ -75,9 +75,13 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
   /// of dropping it while the in-flight request settles.
   TimelineSummary? _matchingSummaryFromState(ScheduleSummaryState state) {
     List<TimelineSummary>? stateDayData;
-    if (state is ScheduleDaySummaryLoaded && state.requestId == null) {
+    // Accept the day summaries regardless of requestId: they are keyed by
+    // dayIndex and the emitted dayData is the full retained union, so it is
+    // valid for any request. (The daily view dispatches summary requests with a
+    // non-null requestId via TileListState.refreshScheduleSummary.)
+    if (state is ScheduleDaySummaryLoaded) {
       stateDayData = state.dayData;
-    } else if (state is ScheduleDaySummaryLoading && state.requestId == null) {
+    } else if (state is ScheduleDaySummaryLoading) {
       stateDayData = state.dayData;
     }
     if (stateDayData == null) {
@@ -165,8 +169,7 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
             _hasAppliedServerSummary = true;
             _isPending = false;
           });
-        } else if (state is ScheduleDaySummaryLoading &&
-            state.requestId == null) {
+        } else if (state is ScheduleDaySummaryLoading) {
           // Only fall back to the shimmer while we have never retrieved a
           // summary for this day; otherwise keep the last-known numbers.
           if (!_hasAppliedServerSummary) {
