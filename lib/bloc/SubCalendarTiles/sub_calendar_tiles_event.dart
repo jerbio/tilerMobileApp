@@ -48,9 +48,15 @@ class GetListOfCalendarTilesSubTilesBlocEvent extends SubCalendarTileEvent {
   final String calEventId;
   final String? requestId;
   final List<SubCalendarEvent>? subEvents;
+  final int? batchSize;
+  final String? orderingEngine;
 
   GetListOfCalendarTilesSubTilesBlocEvent(
-      {required this.calEventId, this.subEvents, this.requestId});
+      {required this.calEventId,
+      this.subEvents,
+      this.requestId,
+      this.batchSize,
+      this.orderingEngine});
 
   @override
   List<Object> get props => [];

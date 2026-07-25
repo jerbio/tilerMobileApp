@@ -12,7 +12,6 @@ import 'package:tiler_app/data/calendarEvent.dart';
 import 'package:tiler_app/data/editCalendarEvent.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
-import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tileColor.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/uiConfig.dart';
@@ -24,6 +23,7 @@ import 'package:tiler_app/routes/authenticatedUser/tileCarousel.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/colorSelectorWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/repetitionSelectorWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileDetails/restrictionProfileSelectorWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/tileDetails/subEventPaging.dart';
 import 'package:tiler_app/services/api/calendarEventApi.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -51,7 +51,9 @@ class TileDetail extends StatefulWidget {
 
 class _TileDetailState extends State<TileDetail> {
   CalendarEvent? calEvent;
-  List<SubCalendarEvent>? subEvents;
+  final SubEventPaging _subEventPaging = SubEventPaging();
+  bool _isSubEventsLoading = false;
+  String? _subEventQueryId;
   EditCalendarEvent? editTilerEvent;
   int? splitCount;
   late CalendarEventApi calendarEventApi;
@@ -76,6 +78,13 @@ class _TileDetailState extends State<TileDetail> {
   late ThemeData theme;
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
+
+  /// Owned by the State so the detail form keeps its scroll offset across the
+  /// frequent BlocBuilder rebuilds. When the builder momentarily returns
+  /// PendingWidget (a loading state) and then the ListView again, a plain
+  /// ListView would recreate its Scrollable and reset to the top; a persistent
+  /// controller restores the previous offset on reattach.
+  final ScrollController _detailScrollController = ScrollController();
 
   @override
   void initState() {
@@ -153,9 +162,79 @@ class _TileDetailState extends State<TileDetail> {
   }
 
   void getSubEvents(String tileId) {
+    _subEventQueryId = tileId;
+    setState(() {
+      _isSubEventsLoading = true;
+    });
     this.context.read<SubCalendarTileBloc>().add(
         GetListOfCalendarTilesSubTilesBlocEvent(
-            calEventId: tileId, requestId: requestId));
+            calEventId: tileId,
+            requestId: requestId,
+            batchSize: kSubEventBatchSize,
+            orderingEngine: 'ProximityToNow'));
+  }
+
+  /// Extends the trailing edge of the sub-event list. Silent prefetch — the
+  /// carousel only surfaces a spinner if the user reaches the edge first.
+  Future<void> _loadMoreSubEventsAfter() async {
+    if (!_subEventPaging.canLoadAfter || _subEventQueryId == null) return;
+    setState(() {
+      _subEventPaging.isLoadingAfter = true;
+    });
+    try {
+      final page = await calendarEventApi.getSubEvents(
+        _subEventQueryId!,
+        batchSize: kSubEventBatchSize,
+        orderingEngine: 'Id',
+        afterSubEventId: _subEventPaging.rightCursorId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _subEventPaging.appendPage(page);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _subEventPaging.hasMoreAfter = false;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _subEventPaging.isLoadingAfter = false;
+        });
+      }
+    }
+  }
+
+  /// Extends the leading edge of the sub-event list (silent prefetch).
+  Future<void> _loadMoreSubEventsBefore() async {
+    if (!_subEventPaging.canLoadBefore || _subEventQueryId == null) return;
+    setState(() {
+      _subEventPaging.isLoadingBefore = true;
+    });
+    try {
+      final page = await calendarEventApi.getSubEvents(
+        _subEventQueryId!,
+        batchSize: kSubEventBatchSize,
+        orderingEngine: 'Id',
+        beforeSubEventId: _subEventPaging.leftCursorId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _subEventPaging.prependPage(page);
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _subEventPaging.hasMoreBefore = false;
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _subEventPaging.isLoadingBefore = false;
+        });
+      }
+    }
   }
 
   void updateProceed() {
@@ -571,7 +650,8 @@ class _TileDetailState extends State<TileDetail> {
             if (state is ListOfSubCalendarTileLoadedState) {
               if (state.requestId == requestId) {
                 setState(() {
-                  subEvents = state.subEvents;
+                  _subEventPaging.setInitial(state.subEvents);
+                  _isSubEventsLoading = false;
                 });
               }
             }
@@ -616,6 +696,17 @@ class _TileDetailState extends State<TileDetail> {
             automaticallyImplyLeading: false,
           ),
           child: BlocBuilder<CalendarTileBloc, CalendarTileState>(
+            buildWhen: (previous, current) {
+              // Once the form is populated, ignore transient loading/initial
+              // states so the ListView (and its scroll offset) isn't torn down
+              // and rebuilt into a PendingWidget on every reload.
+              if (calEvent != null &&
+                  (current is CalendarTileLoading ||
+                      current is CalendarTileInitial)) {
+                return false;
+              }
+              return true;
+            },
             builder: (context, state) {
               if (state is CalendarTileInitial ||
                   state is CalendarTileLoading ||
@@ -839,13 +930,21 @@ class _TileDetailState extends State<TileDetail> {
                 inputChildWidgets.add(tileEndWidget);
               }
 
-              if (subEvents != null && subEvents!.length > 0) {
+              if (this.widget.loadSubEvents &&
+                  (_isSubEventsLoading || !_subEventPaging.isEmpty)) {
                 inputChildWidgets.add(FractionallySizedBox(
                     widthFactor: TileDimensions.tileWidthRatio,
                     child: Container(
                       margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
                       child: TileCarousel(
-                        subEvents: subEvents,
+                        subEvents: _subEventPaging.orderedItems,
+                        isInitialLoading: _isSubEventsLoading,
+                        hasMoreBefore: _subEventPaging.hasMoreBefore,
+                        hasMoreAfter: _subEventPaging.hasMoreAfter,
+                        isLoadingBefore: _subEventPaging.isLoadingBefore,
+                        isLoadingAfter: _subEventPaging.isLoadingAfter,
+                        onLoadBefore: _loadMoreSubEventsBefore,
+                        onLoadAfter: _loadMoreSubEventsAfter,
                       ),
                     )));
               }
@@ -855,6 +954,8 @@ class _TileDetailState extends State<TileDetail> {
                 margin: TileSpacing.topMargin,
                 alignment: Alignment.topCenter,
                 child: ListView(
+                  controller: _detailScrollController,
+                  key: const PageStorageKey<String>('tileDetailScrollView'),
                   children: inputChildWidgets,
                 ),
               );
@@ -868,6 +969,7 @@ class _TileDetailState extends State<TileDetail> {
     if (splitCountController != null) {
       splitCountController!.dispose();
     }
+    _detailScrollController.dispose();
     super.dispose();
   }
 }

@@ -80,7 +80,10 @@ class SubCalendarTileBloc
         subEvents: subEvents,
         requestId: event.requestId));
 
-    await calendarEventApi.getSubEvents(event.calEventId).then((value) {
+    await calendarEventApi
+        .getSubEvents(event.calEventId,
+            batchSize: event.batchSize, orderingEngine: event.orderingEngine)
+        .then((value) {
       emit(ListOfSubCalendarTileLoadedState(
           subEvents: value.toList(), requestId: event.requestId));
     });

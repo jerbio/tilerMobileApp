@@ -10,6 +10,40 @@ import 'dart:convert';
 
 import '../../constants.dart' as Constants;
 
+/// Builds the query parameter map for the `api/CalendarEvent/subEvents`
+/// endpoint. Only keys with non-null values are included, and numeric
+/// values are stringified so the map can be passed directly to [Uri.https].
+///
+/// Cursor-based pagination is expressed via [orderingEngine] together with
+/// [afterSubEventId] (trailing edge) or [beforeSubEventId] (leading edge),
+/// mirroring the backend model binding property names.
+Map<String, dynamic> buildSubEventsQueryParameters(
+  String id, {
+  int? index,
+  int? batchSize,
+  String? orderingEngine,
+  String? afterSubEventId,
+  String? beforeSubEventId,
+}) {
+  final Map<String, dynamic> queryParameters = {'EventID': id};
+  if (batchSize != null) {
+    queryParameters['BatchSize'] = batchSize.toString();
+  }
+  if (index != null) {
+    queryParameters['Index'] = index.toString();
+  }
+  if (orderingEngine != null) {
+    queryParameters['OrderingEngine'] = orderingEngine;
+  }
+  if (afterSubEventId != null) {
+    queryParameters['AfterSubEventId'] = afterSubEventId;
+  }
+  if (beforeSubEventId != null) {
+    queryParameters['BeforeSubEventId'] = beforeSubEventId;
+  }
+  return queryParameters;
+}
+
 class CalendarEventApi extends AppApi {
   CalendarEventApi({required Function getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
@@ -211,7 +245,11 @@ class CalendarEventApi extends AppApi {
   }
 
   Future<List<SubCalendarEvent>> getSubEvents(String id,
-      {int? index, int? batchSize}) async {
+      {int? index,
+      int? batchSize,
+      String? orderingEngine,
+      String? afterSubEventId,
+      String? beforeSubEventId}) async {
     String tilerDomain = Constants.tilerDomain;
     // String url = tilerDomain + 'api/SubCalendarEvent';
     // return getAdHocSubEventId(id);
@@ -219,11 +257,14 @@ class CalendarEventApi extends AppApi {
       await checkAndReplaceCredentialCache();
       String tilerDomain = Constants.tilerDomain;
       String url = tilerDomain;
-      final queryParameters = {
-        'EventID': id,
-        'BatchSize': batchSize,
-        'Index': index
-      };
+      final queryParameters = buildSubEventsQueryParameters(
+        id,
+        index: index,
+        batchSize: batchSize,
+        orderingEngine: orderingEngine,
+        afterSubEventId: afterSubEventId,
+        beforeSubEventId: beforeSubEventId,
+      );
       Map<String, dynamic> updatedParams = await injectRequestParams(
           queryParameters,
           includeLocationParams: false);

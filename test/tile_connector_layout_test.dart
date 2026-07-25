@@ -268,6 +268,77 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
+  // Group 2b: Chronological placement relative to endOfDayTime
+  // -------------------------------------------------------------------------
+
+  group('buildTileListWithConnectors — end-of-day chronological placement', () {
+    test(
+        'ReturnConnector is inserted before tiles that start after endOfDayTime',
+        () {
+      final endOfDay = DateTime(2026, 6, 28, 22, 0);
+      final tiles = [
+        _tile(
+          id: 'evening',
+          start: DateTime(2026, 6, 28, 20),
+          end: DateTime(2026, 6, 28, 21),
+        ),
+        // Overflow tile scheduled past the end-of-day boundary (next morning).
+        _tile(
+          id: 'overflow',
+          start: DateTime(2026, 6, 29, 4, 30),
+          end: DateTime(2026, 6, 29, 5),
+        ),
+      ];
+
+      final result = _build(tiles, endOfDayTime: endOfDay);
+
+      final connectorIndex =
+          result.widgets.indexWhere((w) => w is ReturnConnector);
+      final overflowIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'overflow');
+      final eveningIndex = result.widgets.indexWhere(
+          (w) => w is SizedBox && (w.key as ValueKey?)?.value == 'evening');
+
+      // Exactly one marker, positioned after the in-day tile but before the
+      // overflow tile.
+      expect(result.widgets.whereType<ReturnConnector>().length, equals(1));
+      expect(eveningIndex, lessThan(connectorIndex));
+      expect(connectorIndex, lessThan(overflowIndex));
+
+      // Because tiles follow it, the marker must connect downward.
+      final connector = result.widgets.firstWhere((w) => w is ReturnConnector)
+          as ReturnConnector;
+      expect(connector.hasSubsequentTiles, isTrue);
+    });
+
+    test('ReturnConnector stays at the end when no tile overflows endOfDayTime',
+        () {
+      final endOfDay = DateTime(2026, 6, 28, 22, 0);
+      final tiles = [
+        _tile(
+          id: 'a',
+          start: DateTime(2026, 6, 28, 9),
+          end: DateTime(2026, 6, 28, 10),
+        ),
+        _tile(
+          id: 'b',
+          start: DateTime(2026, 6, 28, 18),
+          end: DateTime(2026, 6, 28, 19),
+        ),
+      ];
+
+      final result = _build(tiles, endOfDayTime: endOfDay);
+
+      expect(result.widgets.whereType<ReturnConnector>().length, equals(1));
+      expect(result.widgets.last, isA<ReturnConnector>());
+
+      // Terminal marker: nothing follows, so it tapers off (no connector).
+      expect(
+          (result.widgets.last as ReturnConnector).hasSubsequentTiles, isFalse);
+    });
+  });
+
+  // -------------------------------------------------------------------------
   // Group 3: endOfDayTime threading
   // -------------------------------------------------------------------------
 

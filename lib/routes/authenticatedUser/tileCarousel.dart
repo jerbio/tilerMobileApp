@@ -1,212 +1,293 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
-import 'package:tiler_app/components/pendingWidget.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/tileSummary.dart';
-import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
-import 'package:tuple/tuple.dart';
 
-import '../../constants.dart' as Constants;
-
+/// Prop-driven horizontal carousel of sub-events grouped by day.
+///
+/// Data and paging flags are owned by the parent (see `SubEventPaging` in
+/// tileDetail). The carousel silently prefetches the next/previous page when
+/// the user nears an edge via [onLoadAfter] / [onLoadBefore], shows an inline
+/// spinner only if the user reaches the edge before the prefetch resolves, and
+/// an "end" chip once a direction is exhausted. Because the data lives with the
+/// parent, the carousel survives an edit-and-return round trip (defect #3).
 class TileCarousel extends StatefulWidget {
-  List<String>? subEventIds;
-  List<SubCalendarEvent>? subEvents;
-  TileCarousel({this.subEventIds, this.subEvents});
+  final List<SubCalendarEvent>? subEvents;
+  final bool isInitialLoading;
+  final bool hasMoreBefore;
+  final bool hasMoreAfter;
+  final bool isLoadingBefore;
+  final bool isLoadingAfter;
+  final Future<void> Function()? onLoadBefore;
+  final Future<void> Function()? onLoadAfter;
+
+  const TileCarousel({
+    Key? key,
+    this.subEvents,
+    this.isInitialLoading = false,
+    this.hasMoreBefore = false,
+    this.hasMoreAfter = false,
+    this.isLoadingBefore = false,
+    this.isLoadingAfter = false,
+    this.onLoadBefore,
+    this.onLoadAfter,
+  }) : super(key: key);
+
   @override
   _TileCarouselState createState() => _TileCarouselState();
 }
 
 class _TileCarouselState extends State<TileCarousel> {
-  bool isAutoScrolled = false;
-  double renderSummaryContainerWidth = 300;
-  final ItemScrollController dayScrollController = ItemScrollController();
-  final ItemPositionsListener dayPositionsListener =
+  static const double _cardWidth = 300;
+
+  /// Fire an edge prefetch when the first/last visible day is within this many
+  /// days of the corresponding end of the list.
+  static const int _dayLeadThreshold = 1;
+
+  bool _isAutoScrolled = false;
+  final ItemScrollController _dayScrollController = ItemScrollController();
+  final ItemPositionsListener _dayPositionsListener =
       ItemPositionsListener.create();
 
-  late SubCalendarEventApi subEventApi;
-  List<SubCalendarEvent>? subEvents;
-  Map<
-      int,
-      Tuple3<ItemScrollController, ItemPositionsListener,
-          List<SubCalendarEvent>>>? dayIndexToScrollItems = {};
   @override
   void initState() {
     super.initState();
-    subEventApi = new SubCalendarEventApi(getContextCallBack: () => context);
-    this
-        .context
-        .read<SubCalendarTileBloc>()
-        .add(ResetSubCalendarTileBlocEvent());
-    subEvents = this.widget.subEvents;
-    if (this.widget.subEvents == null &&
-        this.widget.subEventIds != null &&
-        this.widget.subEventIds!.length > 0) {
-      this.context.read<SubCalendarTileBloc>().add(
-          GetListOfSubCalendarTilesBlocEvent(
-              subEventIds: this.widget.subEventIds!));
-      return;
-    }
-    if (this.widget.subEvents != null) {
-      this.context.read<SubCalendarTileBloc>().add(
-          ListOfSubCalendarTileBlocEvent(subEvents: this.widget.subEvents!));
-      dayIndexToScrollItems =
-          populateDayIndexToScrollItems(this.widget.subEvents!);
-      return;
-    }
-  }
-
-  Widget renderHorizontalSubEvents(int dayIndex) {
-    Tuple3<ItemScrollController, ItemPositionsListener, List<SubCalendarEvent>>
-        dayInfo = dayIndexToScrollItems![dayIndex]!;
-    List<SubCalendarEvent> orderedSubEvents = dayInfo.item3
-        .map<SubCalendarEvent>((e) => e as SubCalendarEvent)
-        .toList();
-
-    return Expanded(
-        child: Row(
-      children: orderedSubEvents
-          .map((e) => Container(
-              height: 200,
-              width: renderSummaryContainerWidth,
-              child: TileSummary(e)))
-          .toList(),
-    ));
-  }
-
-  Map<
-      int,
-      Tuple3<ItemScrollController, ItemPositionsListener,
-          List<SubCalendarEvent>>> populateDayIndexToScrollItems(
-      Iterable<SubCalendarEvent> subEvents) {
-    Map<
-        int,
-        Tuple3<ItemScrollController, ItemPositionsListener,
-            List<SubCalendarEvent>>> dayIndexToSubEvents = {};
-    subEvents.forEach((eachSubEvent) {
-      int dayIndex = Utility.getDayIndex(eachSubEvent.startTime);
-      List<SubCalendarEvent> daySubEvents = [];
-      if (dayIndexToSubEvents.containsKey(dayIndex)) {
-        daySubEvents = dayIndexToSubEvents[dayIndex]!.item3;
-      } else {
-        Tuple3<ItemScrollController, ItemPositionsListener,
-                List<SubCalendarEvent>> dayTupleData =
-            Tuple3(ItemScrollController(), ItemPositionsListener.create(),
-                daySubEvents);
-        dayIndexToSubEvents[dayIndex] = dayTupleData;
-      }
-      daySubEvents.add(eachSubEvent);
-    });
-
-    return dayIndexToSubEvents;
+    _dayPositionsListener.itemPositions.addListener(_onDayPositionsChanged);
   }
 
   @override
-  Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    return BlocListener<SubCalendarTileBloc, SubCalendarTileState>(
-      listener: (context, state) {
-        if (state is ListOfSubCalendarTileLoadedState) {
-          Map<
-                  int,
-                  Tuple3<ItemScrollController, ItemPositionsListener,
-                      List<SubCalendarEvent>>> dayIndexToSubEvents =
-              populateDayIndexToScrollItems(state.subEvents);
+  void dispose() {
+    _dayPositionsListener.itemPositions.removeListener(_onDayPositionsChanged);
+    super.dispose();
+  }
 
-          return setState(() {
-            subEvents = state.subEvents;
-            dayIndexToScrollItems = dayIndexToSubEvents;
-          });
-        }
-      },
-      child: BlocBuilder<SubCalendarTileBloc, SubCalendarTileState>(
-        builder: (context, state) {
-          if (state is ListOfSubCalendarTilesLoadingState) {
-            return PendingWidget();
-          }
+  List<SubCalendarEvent> get _subEvents => widget.subEvents ?? const [];
 
-          if (state is ListOfSubCalendarTileLoadedState) {
-            Map<int, List<SubCalendarEvent>> dayIndexToSubEvents = {};
+  Map<int, List<SubCalendarEvent>> _groupByDay(List<SubCalendarEvent> subs) {
+    final Map<int, List<SubCalendarEvent>> byDay = {};
+    for (final sub in subs) {
+      final dayIndex = Utility.getDayIndex(sub.startTime);
+      byDay.putIfAbsent(dayIndex, () => []).add(sub);
+    }
+    return byDay;
+  }
 
-            state.subEvents.forEach((eachSubEvent) {
-              int dayIndex = Utility.getDayIndex(eachSubEvent.startTime);
-              List<SubCalendarEvent> daySubEvents = [];
-              if (dayIndexToSubEvents.containsKey(dayIndex)) {
-                daySubEvents = dayIndexToSubEvents[dayIndex]!;
-              }
-              daySubEvents.add(eachSubEvent);
-              dayIndexToSubEvents[dayIndex] = daySubEvents;
-            });
+  List<int> _sortedDayIndexes(Map<int, List<SubCalendarEvent>> byDay) {
+    final keys = byDay.keys.toList();
+    keys.sort();
+    return keys;
+  }
 
-            List<int> dayIndexes = dayIndexToSubEvents.keys.toList();
-            dayIndexes.sort();
-            int todayIndex = Utility.getDayIndex(Utility.currentTime());
-            int foundIndex = dayIndexes.length - 1;
-            for (int i = 0; i < dayIndexes.length; i++) {
-              int dayIndex = dayIndexes[i];
-              int dayDiff = dayIndex - todayIndex;
-              if (dayDiff >= 0) {
-                foundIndex = i;
-                break;
-              }
-            }
-            Widget retValue = Container(
-                height: 300,
-                child: ScrollablePositionedList.builder(
-                    itemScrollController: dayScrollController,
-                    itemPositionsListener: dayPositionsListener,
-                    itemCount: dayIndexes.length,
-                    scrollDirection: Axis.horizontal,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        height: 250,
-                        width: renderSummaryContainerWidth *
-                            dayIndexToSubEvents[dayIndexes[index]]!.length,
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                margin: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                                child: Text(
-                                    Utility.getTimeFromIndex(dayIndexes[index])
-                                        .humanDate(context),
-                                    style:TextStyle(
-                                      fontFamily: TileTextStyles.rubikFontName,
-                                      fontSize: 25,
-                                    ),
-                                ),
-                              ),
-                              renderHorizontalSubEvents(dayIndexes[index])
-                            ]),
-                      );
-                    }));
-            if (!isAutoScrolled && foundIndex >= 0) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                setState(() {
-                  isAutoScrolled = true;
-                });
-                if (foundIndex >= 0) {
-                  dayScrollController.scrollTo(
-                      index: foundIndex, duration: Duration(milliseconds: 500));
-                }
-              });
-            }
+  void _onDayPositionsChanged() {
+    final positions = _dayPositionsListener.itemPositions.value;
+    if (positions.isEmpty) return;
+    final dayCount = _groupByDay(_subEvents).length;
+    if (dayCount == 0) return;
 
-            return retValue;
-          }
-          return SizedBox();
-        },
+    int minIndex = positions.first.index;
+    int maxIndex = positions.first.index;
+    for (final pos in positions) {
+      if (pos.index < minIndex) minIndex = pos.index;
+      if (pos.index > maxIndex) maxIndex = pos.index;
+    }
+
+    if (maxIndex >= dayCount - 1 - _dayLeadThreshold) {
+      widget.onLoadAfter?.call();
+    }
+    if (minIndex <= _dayLeadThreshold) {
+      widget.onLoadBefore?.call();
+    }
+  }
+
+  /// Scrolls one day step toward the leading/trailing edge. Bound to the
+  /// tappable chevron scroll-hint so it doubles as a manual "next/previous
+  /// day" control, not just a passive affordance.
+  void _scrollByOneDay({required bool leading}) {
+    if (!_dayScrollController.isAttached) return;
+    final dayCount = _groupByDay(_subEvents).length;
+    if (dayCount == 0) return;
+
+    final positions = _dayPositionsListener.itemPositions.value;
+    int currentIndex = leading ? dayCount - 1 : 0;
+    if (positions.isNotEmpty) {
+      currentIndex = leading
+          ? positions.map((pos) => pos.index).reduce((a, b) => a < b ? a : b)
+          : positions.map((pos) => pos.index).reduce((a, b) => a > b ? a : b);
+    }
+    final targetIndex =
+        (leading ? currentIndex - 1 : currentIndex + 1).clamp(0, dayCount - 1);
+
+    _dayScrollController.scrollTo(
+      index: targetIndex,
+      duration: const Duration(milliseconds: 300),
+    );
+  }
+
+  Widget _buildDay(int dayIndex, List<SubCalendarEvent> daySubs) {
+    return Container(
+      height: 250,
+      width: _cardWidth * daySubs.length,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.fromLTRB(15, 0, 0, 0),
+            child: Text(
+              Utility.getTimeFromIndex(dayIndex).humanDate(context),
+              style: const TextStyle(
+                fontFamily: TileTextStyles.rubikFontName,
+                fontSize: 25,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Row(
+              children: daySubs
+                  .map((e) => Container(
+                      height: 200, width: _cardWidth, child: TileSummary(e)))
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEdgeIndicator({required bool leading}) {
+    final theme = Theme.of(context);
+    final hasMore = leading ? widget.hasMoreBefore : widget.hasMoreAfter;
+    final isLoadingThisEdge =
+        leading ? widget.isLoadingBefore : widget.isLoadingAfter;
+    final showSpinner = isLoadingThisEdge;
+    final showEndChip = !hasMore && !isLoadingThisEdge && _subEvents.isNotEmpty;
+    final showScrollHint = hasMore && !isLoadingThisEdge;
+
+    Widget child = const SizedBox.shrink();
+    if (showSpinner) {
+      child = const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    } else if (showEndChip) {
+      child = Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: theme.dividerColor.withValues(alpha: 0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Icon(
+          leading ? Icons.first_page : Icons.last_page,
+          size: 16,
+          color: theme.hintColor,
+        ),
+      );
+    } else if (showScrollHint) {
+      // Affordance telling the user there's more content in this direction
+      // to scroll to, even before a prefetch is triggered. Tappable so it
+      // also acts as a manual "next/previous day" control.
+      child = InkResponse(
+        onTap: () => _scrollByOneDay(leading: leading),
+        radius: 20,
+        child: Icon(
+          leading ? Icons.chevron_left : Icons.chevron_right,
+          size: 22,
+          color: theme.hintColor.withValues(alpha: 0.6),
+        ),
+      );
+    }
+
+    return Container(width: 44, alignment: Alignment.center, child: child);
+  }
+
+  Widget _buildSkeleton() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      height: 300,
+      child: Shimmer.fromColors(
+        baseColor: colorScheme.primary.withAlpha(50),
+        highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 3,
+          itemBuilder: (context, i) => Center(
+            child: Container(
+              height: 200,
+              width: _cardWidth,
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: colorScheme.onSurface.withValues(alpha: 0.8),
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
 
   @override
-  void dispose() {
-    super.dispose();
+  Widget build(BuildContext context) {
+    if (_subEvents.isEmpty) {
+      if (widget.isInitialLoading) return _buildSkeleton();
+      return const SizedBox();
+    }
+
+    final byDay = _groupByDay(_subEvents);
+    final dayIndexes = _sortedDayIndexes(byDay);
+
+    // Auto-scroll once to the first day at or after today.
+    final todayIndex = Utility.getDayIndex(Utility.currentTime());
+    int foundIndex = dayIndexes.length - 1;
+    for (int i = 0; i < dayIndexes.length; i++) {
+      if (dayIndexes[i] - todayIndex >= 0) {
+        foundIndex = i;
+        break;
+      }
+    }
+    if (!_isAutoScrolled && foundIndex >= 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _isAutoScrolled = true;
+        if (_dayScrollController.isAttached) {
+          _dayScrollController.scrollTo(
+            index: foundIndex,
+            duration: const Duration(milliseconds: 500),
+          );
+        }
+      });
+    }
+
+    return Container(
+      height: 300,
+      child: Row(
+        children: [
+          _buildEdgeIndicator(leading: true),
+          Expanded(
+            child: ScrollablePositionedList.builder(
+              // Explicit key avoids a PageStorage identity collision: without
+              // it, this list's auto-restore slot is derived from its
+              // position among the parent ListView's conditionally-inserted
+              // children, which can land on a slot previously holding a
+              // plain scroll-offset double from a different widget and crash
+              // ScrollablePositionedList's `ItemPosition?` cast on restore.
+              key: const PageStorageKey<String>('tileCarouselDayList'),
+              itemScrollController: _dayScrollController,
+              itemPositionsListener: _dayPositionsListener,
+              itemCount: dayIndexes.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) =>
+                  _buildDay(dayIndexes[index], byDay[dayIndexes[index]]!),
+            ),
+          ),
+          _buildEdgeIndicator(leading: false),
+        ],
+      ),
+    );
   }
 }
