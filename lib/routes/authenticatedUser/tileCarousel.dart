@@ -48,9 +48,92 @@ class _TileCarouselState extends State<TileCarousel> {
   static const int _dayLeadThreshold = 1;
 
   bool _isAutoScrolled = false;
+
+  /// True while a deliberate programmatic scroll is in progress.
+  /// [_onDayPositionsChanged] is suppressed during this window to prevent
+  /// cascade fetches triggered by intermediate scroll positions.
+  bool _isProgrammaticScroll = false;
+
   final ItemScrollController _dayScrollController = ItemScrollController();
   final ItemPositionsListener _dayPositionsListener =
       ItemPositionsListener.create();
+
+  @override
+  void didUpdateWidget(TileCarousel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _maybeScrollToNewItems(oldWidget.subEvents ?? const []);
+  }
+
+  /// When a new page is appended or prepended, scroll to show the first newly
+  /// loaded day rather than staying at the edge. This prevents the infinite
+  /// pagination loop (edge still visible → fetch triggered again) and surfaces
+  /// the fresh content to the user.
+  void _maybeScrollToNewItems(List<SubCalendarEvent> oldSubs) {
+    final newSubs = _subEvents;
+    if (newSubs.length <= oldSubs.length) return;
+    if (!_dayScrollController.isAttached) return;
+
+    final oldByDay = _groupByDay(oldSubs);
+    final newByDay = _groupByDay(newSubs);
+    final oldIndexes = _sortedDayIndexes(oldByDay);
+    final newIndexes = _sortedDayIndexes(newByDay);
+    if (oldIndexes.isEmpty || newIndexes.isEmpty) return;
+
+    int? targetListIndex;
+
+    if (newIndexes.last > oldIndexes.last) {
+      // Days appended at trailing edge — jump to the first new day.
+      targetListIndex = oldByDay.length;
+    } else if (newIndexes.first < oldIndexes.first) {
+      // Days prepended at the leading edge.
+      // Do NOT jump to the start of the new items — that would land minIndex
+      // at 0-1, immediately re-triggering onLoadBefore and causing a loop.
+      // Instead, maintain the user's current view by scrolling to the same
+      // day they were on before the prepend (its index has shifted by
+      // prependedCount). The new older days are silently available by
+      // scrolling left.
+      final prependedCount =
+          newIndexes.where((i) => i < oldIndexes.first).length;
+      final positions = _dayPositionsListener.itemPositions.value;
+      final currentMinIndex = positions.isEmpty
+          ? 0
+          : positions.map((p) => p.index).reduce((a, b) => a < b ? a : b);
+      targetListIndex = prependedCount + currentMinIndex;
+    }
+
+    if (targetListIndex != null) {
+      final clamped = targetListIndex.clamp(0, newByDay.length - 1);
+      final isAppend = newIndexes.last > oldIndexes.last;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_dayScrollController.isAttached) return;
+        _isProgrammaticScroll = true;
+        if (isAppend) {
+          // Animate toward new content so the user sees where fresh items are.
+          _dayScrollController.scrollTo(
+            index: clamped,
+            duration: const Duration(milliseconds: 300),
+          );
+          // Release the suppression flag after the animation completes.
+          Future.delayed(const Duration(milliseconds: 350), () {
+            if (mounted) _isProgrammaticScroll = false;
+          });
+        } else {
+          // Maintain-position after prepend: jump instantly so there is no
+          // animation window during which the listener could fire at an
+          // intermediate position and trigger a cascade fetch.
+          _dayScrollController.jumpTo(index: clamped);
+          _isProgrammaticScroll = false;
+        }
+      });
+    } else {
+      // New items all fell on existing day groups — no scroll needed, but we
+      // must re-check the edge so the next batch can be triggered if the
+      // positions listener didn't fire (no position change occurred).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _onDayPositionsChanged();
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -82,6 +165,9 @@ class _TileCarouselState extends State<TileCarousel> {
   }
 
   void _onDayPositionsChanged() {
+    // Suppress edge-based load callbacks while a deliberate programmatic
+    // scroll is in flight to avoid cascade fetches.
+    if (_isProgrammaticScroll) return;
     final positions = _dayPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
     final dayCount = _groupByDay(_subEvents).length;
@@ -119,6 +205,18 @@ class _TileCarouselState extends State<TileCarousel> {
     }
     final targetIndex =
         (leading ? currentIndex - 1 : currentIndex + 1).clamp(0, dayCount - 1);
+
+    if (targetIndex == currentIndex) {
+      // Already at the absolute edge of loaded items — no day to scroll to.
+      // Trigger a fetch directly so the user isn't stuck waiting for the
+      // positions listener to fire (it won't fire without a position change).
+      if (leading) {
+        widget.onLoadBefore?.call();
+      } else {
+        widget.onLoadAfter?.call();
+      }
+      return;
+    }
 
     _dayScrollController.scrollTo(
       index: targetIndex,
@@ -163,7 +261,6 @@ class _TileCarouselState extends State<TileCarousel> {
     final isLoadingThisEdge =
         leading ? widget.isLoadingBefore : widget.isLoadingAfter;
     final showSpinner = isLoadingThisEdge;
-    final showEndChip = !hasMore && !isLoadingThisEdge && _subEvents.isNotEmpty;
     final showScrollHint = hasMore && !isLoadingThisEdge;
 
     Widget child = const SizedBox.shrink();
@@ -173,30 +270,24 @@ class _TileCarouselState extends State<TileCarousel> {
         height: 20,
         child: CircularProgressIndicator(strokeWidth: 2),
       );
-    } else if (showEndChip) {
-      child = Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: BoxDecoration(
-          color: theme.dividerColor.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Icon(
-          leading ? Icons.first_page : Icons.last_page,
-          size: 16,
-          color: theme.hintColor,
-        ),
-      );
     } else if (showScrollHint) {
-      // Affordance telling the user there's more content in this direction
-      // to scroll to, even before a prefetch is triggered. Tappable so it
-      // also acts as a manual "next/previous day" control.
-      child = InkResponse(
+      // Affordance telling the user there's more content in this direction.
+      // Tappable: scrolls one day toward the edge, or triggers a fetch if
+      // already at the absolute edge of loaded items.
+      //
+      // Uses GestureDetector + HitTestBehavior.opaque so the full 44 px
+      // container is tappable, not just the 22 px icon bounding box.
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => _scrollByOneDay(leading: leading),
-        radius: 20,
-        child: Icon(
-          leading ? Icons.chevron_left : Icons.chevron_right,
-          size: 22,
-          color: theme.hintColor.withValues(alpha: 0.6),
+        child: Container(
+          width: 44,
+          alignment: Alignment.center,
+          child: Icon(
+            leading ? Icons.chevron_left : Icons.chevron_right,
+            size: 22,
+            color: theme.hintColor.withValues(alpha: 0.6),
+          ),
         ),
       );
     }

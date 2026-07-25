@@ -189,20 +189,20 @@ class _TileDetailState extends State<TileDetail> {
         afterSubEventId: _subEventPaging.rightCursorId,
       );
       if (!mounted) return;
+      // Combine new items + spinner-off into one setState so the carousel
+      // only rebuilds once: new items appear and the spinner disappears
+      // in the same frame, avoiding a transient state where items are
+      // visible but the loading indicator is still showing.
       setState(() {
         _subEventPaging.appendPage(page);
+        _subEventPaging.isLoadingAfter = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _subEventPaging.hasMoreAfter = false;
+        _subEventPaging.isLoadingAfter = false;
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _subEventPaging.isLoadingAfter = false;
-        });
-      }
     }
   }
 
@@ -222,18 +222,14 @@ class _TileDetailState extends State<TileDetail> {
       if (!mounted) return;
       setState(() {
         _subEventPaging.prependPage(page);
+        _subEventPaging.isLoadingBefore = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
         _subEventPaging.hasMoreBefore = false;
+        _subEventPaging.isLoadingBefore = false;
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _subEventPaging.isLoadingBefore = false;
-        });
-      }
     }
   }
 
