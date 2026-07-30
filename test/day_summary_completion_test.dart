@@ -8,10 +8,13 @@
 // transient loading state. This test locks in that a Loaded state carrying a
 // non-null requestId still surfaces the completed count.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -33,6 +36,33 @@ class _FakeScheduleApi extends ScheduleApi {
 
   @override
   Future<Map<int, TimelineSummary>> getDaySummary(Timeline timeline) async {
+    final Map<int, TimelineSummary> result = {};
+    final int startIndex = timeline.startTime.universalDayIndex;
+    final int endIndex = timeline.endTime.universalDayIndex;
+    for (int dayIndex = startIndex; dayIndex <= endIndex; dayIndex++) {
+      final summary = TimelineSummary();
+      summary.dayIndex = dayIndex;
+      final int count = completeCountByDay[dayIndex] ?? 0;
+      summary.complete =
+          List.generate(count, (i) => SubCalendarEvent(id: 'c-$dayIndex-$i'));
+      result[dayIndex] = summary;
+    }
+    return result;
+  }
+}
+
+/// Like [_FakeScheduleApi] but blocks until [gate] completes, so a test can
+/// observe the bloc's loading state (and the DaySummary shimmer) mid-flight.
+class _GatedFakeScheduleApi extends ScheduleApi {
+  _GatedFakeScheduleApi(this.completeCountByDay, this.gate)
+      : super(getContextCallBack: () => null);
+
+  final Map<int, int> completeCountByDay;
+  final Future<void> gate;
+
+  @override
+  Future<Map<int, TimelineSummary>> getDaySummary(Timeline timeline) async {
+    await gate;
     final Map<int, TimelineSummary> result = {};
     final int startIndex = timeline.startTime.universalDayIndex;
     final int endIndex = timeline.endTime.universalDayIndex;
@@ -151,5 +181,57 @@ void main() {
     expect(find.text('2'), findsOneWidget,
         reason: 'A summary that arrives after mount must be applied through the '
             'BlocListener, regardless of its requestId.');
+  });
+
+  testWidgets(
+      'DaySummary shows a loading shimmer while the summary is loading, then '
+      'replaces it with the real numbers', (tester) async {
+    final DateTime today = Utility.currentTime().dayDate;
+    final int todayIndex = today.universalDayIndex;
+
+    final gate = Completer<void>();
+    final bloc = ScheduleSummaryBloc(getContextCallBack: () => null);
+    bloc.scheduleApi = _GatedFakeScheduleApi({todayIndex: 2}, gate.future);
+    addTearDown(bloc.close);
+
+    final summary = TimelineSummary()..dayIndex = todayIndex;
+    await tester.pumpWidget(
+      _buildTestApp(
+        child: BlocProvider.value(
+          value: bloc,
+          child: Scaffold(
+            body: DaySummary(dayTimelineSummary: summary),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    // Kick off a load; the gated fake keeps the bloc in its loading state.
+    bloc.add(GetScheduleDaySummaryEvent(
+      timeline: Timeline.fromDateTime(
+        today.subtract(const Duration(days: 4)),
+        today.add(const Duration(days: 4)),
+      ),
+      requestId: 'incremental-get-schedule',
+    ));
+    // Let the loading state emit and a frame render (do NOT pumpAndSettle while
+    // the shimmer animation is running — it never settles).
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byType(Shimmer), findsWidgets,
+        reason: 'A loading shimmer must show while the summary fetch is in '
+            'flight.');
+    expect(find.text('2'), findsNothing);
+
+    // Complete the fetch; the shimmer is replaced by the real numbers.
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(Shimmer), findsNothing,
+        reason: 'Once the summary is applied the shimmer must be replaced by '
+            'the real numbers.');
+    expect(find.text('2'), findsOneWidget);
   });
 }
