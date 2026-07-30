@@ -31,7 +31,6 @@ class DaySummaryHeader extends StatefulWidget {
 
 class _DaySummaryHeaderState extends State<DaySummaryHeader> {
   TimelineSummary? _dayData;
-  bool _isPending = false;
 
   /// True once a server-provided day summary (from the daySummarys request) has
   /// been applied for this day. The completed/tardy lists only ever come from
@@ -63,10 +62,17 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
     }
   }
 
-  /// Effective pending flag used to drive the shimmer. Once a server summary
-  /// has been applied we stop showing the shimmer so a refresh never drops the
-  /// already-known completion numbers.
-  bool get _showPending => _hasAppliedServerSummary ? false : _isPending;
+  /// Effective pending flag used to drive the shimmer. Show the shimmer until
+  /// this day's server summary has been applied; once we have it, keep the real
+  /// numbers even across refreshes so they never drop off. Stop shimmering on
+  /// error rather than spinning forever.
+  bool get _showPending {
+    if (_hasAppliedServerSummary) {
+      return false;
+    }
+    return context.read<ScheduleSummaryBloc>().state
+        is! ScheduleSummaryErrorState;
+  }
 
   /// Pulls the summary matching this day out of a bloc state. Both the loaded
   /// and loading states carry the retained day summaries (the loading state
@@ -167,16 +173,7 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
           setState(() {
             _dayData = latestDayData;
             _hasAppliedServerSummary = true;
-            _isPending = false;
           });
-        } else if (state is ScheduleDaySummaryLoading) {
-          // Only fall back to the shimmer while we have never retrieved a
-          // summary for this day; otherwise keep the last-known numbers.
-          if (!_hasAppliedServerSummary) {
-            setState(() {
-              _isPending = true;
-            });
-          }
         }
       },
       child: BlocBuilder<ScheduleSummaryBloc, ScheduleSummaryState>(

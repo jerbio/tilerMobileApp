@@ -108,7 +108,12 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        // pumpAndSettle is avoided: the DaySummary shows a loading shimmer
+        // (continuous animation) while the summary bloc has no data, which
+        // would make pumpAndSettle loop forever. Bounded pumps are enough to
+        // lay out and measure the connector ordering.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
         final connectorFinder = find.byType(TravelConnector);
         final conflictFinder = find.text('2 conflicts');
@@ -214,7 +219,12 @@ void main() {
             ),
           ),
         );
-        await tester.pumpAndSettle();
+        // pumpAndSettle is avoided: the DaySummaryHeader shows a loading
+        // shimmer (continuous animation) while the summary bloc has no data,
+        // which would make pumpAndSettle loop forever. Bounded pumps are enough
+        // to lay out and measure the connector ordering.
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
 
         final connectorFinder = find.byType(TravelConnector);
         final conflictFinder = find.text('2 conflicts');

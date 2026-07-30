@@ -20,7 +20,6 @@ class DaySummary extends StatefulWidget {
 
 class _DaySummaryState extends State<DaySummary> {
   TimelineSummary? dayData;
-  bool pendingFlag = false;
 
   /// True once a server-provided day summary (from the daySummarys request) has
   /// been applied for this day. The completed/tardy lists only ever come from
@@ -75,15 +74,15 @@ class _DaySummaryState extends State<DaySummary> {
   }
 
   bool get isPending {
-    // Keep displaying the last-known metrics while a refresh is in flight so
-    // the completion numbers don't drop off every time the summary reloads.
+    // Show the loading shimmer whenever this day's server summary hasn't been
+    // retrieved yet. Once applied, keep the real numbers even across refreshes
+    // so they never drop off. Stop shimmering on error rather than spinning
+    // forever.
     if (_hasAppliedServerSummary) {
       return false;
     }
-    bool retValue = this.context.read<ScheduleSummaryBloc>().state
-        is ScheduleDaySummaryLoading;
-    retValue = pendingFlag || retValue;
-    return retValue;
+    return this.context.read<ScheduleSummaryBloc>().state
+        is! ScheduleSummaryErrorState;
   }
 
   Widget _buildShimmer() {
@@ -199,16 +198,7 @@ class _DaySummaryState extends State<DaySummary> {
               setState(() {
                 dayData = latestDayData;
                 _hasAppliedServerSummary = true;
-                pendingFlag = false;
               });
-            } else if (state is ScheduleDaySummaryLoading) {
-              // Only fall back to the shimmer while we have never retrieved a
-              // summary for this day; otherwise keep the last-known numbers.
-              if (!_hasAppliedServerSummary) {
-                setState(() {
-                  pendingFlag = true;
-                });
-              }
             }
           },
         ),
