@@ -42,7 +42,7 @@ class Connections extends StatelessWidget {
             title: localization.microsoft,
             isComingSoon: true,
             colorScheme: colorScheme,
-            tileThemeExtension: tileThemeExtension!,
+            tileThemeExtension: tileThemeExtension,
             localization: localization,
           ),
           _buildIntegrationRow(
@@ -50,7 +50,7 @@ class Connections extends StatelessWidget {
             title: localization.appleCalendar,
             isComingSoon: true,
             colorScheme: colorScheme,
-            tileThemeExtension: tileThemeExtension!,
+            tileThemeExtension: tileThemeExtension,
             localization: localization,
           ),
           _buildIntegrationRow(
@@ -58,7 +58,7 @@ class Connections extends StatelessWidget {
             title: localization.googleTasks,
             isComingSoon: true,
             colorScheme: colorScheme,
-            tileThemeExtension: tileThemeExtension!,
+            tileThemeExtension: tileThemeExtension,
             localization: localization,
           ),
           _buildIntegrationRow(
@@ -66,7 +66,7 @@ class Connections extends StatelessWidget {
             title: localization.slack,
             isComingSoon: true,
             colorScheme: colorScheme,
-            tileThemeExtension: tileThemeExtension!,
+            tileThemeExtension: tileThemeExtension,
             localization: localization,
           ),
         ],

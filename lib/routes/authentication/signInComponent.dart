@@ -78,6 +78,8 @@ class SignInComponentState extends State<SignInComponent>
   bool isPendingEmailCodeRequest = false;
   bool isPendingCodeVerification = false;
   bool isGoogleSignInEnabled = false;
+  bool isAppleSignInEnabled = false;
+  bool isMicrosoftSignInEnabled = false;
   bool _isPasswordVisible = false;
   bool shouldHideButtons = false;
   String emailCodeTarget = '';
@@ -148,6 +150,13 @@ class SignInComponentState extends State<SignInComponent>
       vsync: this,
     )..repeat(reverse: true);
     isGoogleSignInEnabled = !Platform.isIOS;
+    // Apple sign-in is offered on both mobile surfaces: natively on iOS, and on
+    // Android via Apple's web flow in a Chrome Custom Tab (Apple ships no native
+    // Android SDK). Both funnel through the same two-step server flow.
+    isAppleSignInEnabled = Platform.isIOS || Platform.isAndroid;
+    // Microsoft (Entra) sign-in runs the same interactive web flow on both
+    // mobile surfaces via AppAuth, funneling through the two-step server flow.
+    isMicrosoftSignInEnabled = Platform.isIOS || Platform.isAndroid;
     if (Platform.isIOS) {
       authApi.statusSupport().then((value) {
         String versionKey = "version";
@@ -831,6 +840,132 @@ class SignInComponentState extends State<SignInComponent>
     });
   }
 
+  Future signInWithApple() async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    AnalysticsSignal.send('APPLE_SIGNUP_INITIALIZE');
+    setState(() {
+      isPendingSigning = true;
+    });
+    AuthorizationApi authorizationApi = AuthorizationApi(
+      getContextCallBack: () => context,
+    );
+    AuthResult? authenticationData =
+        await authorizationApi.signInWithApple().then((value) {
+      AnalysticsSignal.send('APPLE_SIGNUP_SUCCESSFUL');
+      return value;
+    }).catchError((onError) {
+      setState(() {
+        isPendingSigning = false;
+      });
+      AnalysticsSignal.send('APPLE_SIGNUP_FAILED');
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        onError.errorMessage,
+        NotificationOverlayMessageType.error,
+      );
+      return null;
+    });
+
+    if (authenticationData != null) {
+      if (authenticationData.authData.isValid) {
+        Authentication localAuthentication = new Authentication();
+        await localAuthentication.saveCredentials(authenticationData.authData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        context.read<ScheduleBloc>().add(LogInScheduleEvent(
+              getContextCallBack: () => context,
+            ));
+        await Utility.checkOnboardingStatus();
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WelcomeScreen(
+              welcomeType: WelcomeType.login,
+              firstName: authenticationData.displayName.isNotEmpty
+                  ? authenticationData.displayName
+                  : "",
+            ),
+          ),
+        );
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
+      }
+    }
+    setState(() {
+      isPendingSigning = false;
+    });
+  }
+
+  Future signInWithMicrosoft() async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    AnalysticsSignal.send('MICROSOFT_SIGNUP_INITIALIZE');
+    setState(() {
+      isPendingSigning = true;
+    });
+    AuthorizationApi authorizationApi = AuthorizationApi(
+      getContextCallBack: () => context,
+    );
+    AuthResult? authenticationData =
+        await authorizationApi.signInWithMicrosoft().then((value) {
+      AnalysticsSignal.send('MICROSOFT_SIGNUP_SUCCESSFUL');
+      return value;
+    }).catchError((onError) {
+      setState(() {
+        isPendingSigning = false;
+      });
+      AnalysticsSignal.send('MICROSOFT_SIGNUP_FAILED');
+      hideButtonsTemporarily();
+      notificationOverlayMessage.showToast(
+        context,
+        onError.errorMessage,
+        NotificationOverlayMessageType.error,
+      );
+      return null;
+    });
+
+    if (authenticationData != null) {
+      if (authenticationData.authData.isValid) {
+        Authentication localAuthentication = new Authentication();
+        await localAuthentication.saveCredentials(authenticationData.authData);
+        while (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        context.read<ScheduleBloc>().add(LogInScheduleEvent(
+              getContextCallBack: () => context,
+            ));
+        await Utility.checkOnboardingStatus();
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WelcomeScreen(
+              welcomeType: WelcomeType.login,
+              firstName: authenticationData.displayName.isNotEmpty
+                  ? authenticationData.displayName
+                  : "",
+            ),
+          ),
+        );
+        context.read<ScheduleBloc>().add(GetScheduleEvent(
+            scheduleTimeline: Utility.initialScheduleTimeline,
+            isAlreadyLoaded: false,
+            previousSubEvents: []));
+      }
+    }
+    setState(() {
+      isPendingSigning = false;
+    });
+  }
+
   @override
   void dispose() {
     userNameEditingController.dispose();
@@ -850,10 +985,10 @@ class SignInComponentState extends State<SignInComponent>
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     final isEmailCodeActionPending =
-      isPendingEmailCodeRequest || isPendingCodeVerification;
+        isPendingEmailCodeRequest || isPendingCodeVerification;
     final emailCodePendingMessage = isPendingEmailCodeRequest
-      ? AppLocalizations.of(context)!.sendVerificationCode
-      : AppLocalizations.of(context)!.verifyingCode;
+        ? AppLocalizations.of(context)!.sendVerificationCode
+        : AppLocalizations.of(context)!.verifyingCode;
     final linkTextColor = colorScheme.primary;
     final validationTextColor = colorScheme.error;
 
@@ -1065,8 +1200,7 @@ class SignInComponentState extends State<SignInComponent>
         child: Text(
           AppLocalizations.of(context)!.forgotPasswordBtn,
           style: TextStyle(
-              color: linkTextColor,
-              decoration: TextDecoration.underline),
+              color: linkTextColor, decoration: TextDecoration.underline),
         ),
       ),
     );
@@ -1159,6 +1293,28 @@ class SignInComponentState extends State<SignInComponent>
           )
         : SizedBox.shrink();
 
+    var appleSignInButton = isAppleSignInEnabled
+        ? SizedBox(
+            width: 200,
+            child: ElevatedButton.icon(
+                style: elevatedButtonStyle,
+                onPressed: signInWithApple,
+                icon: FaIcon(FontAwesomeIcons.apple),
+                label: Text(AppLocalizations.of(context)!.signUpWithApple)),
+          )
+        : SizedBox.shrink();
+
+    var microsoftSignInButton = isMicrosoftSignInEnabled
+        ? SizedBox(
+            width: 200,
+            child: ElevatedButton.icon(
+                style: elevatedButtonStyle,
+                onPressed: signInWithMicrosoft,
+                icon: FaIcon(FontAwesomeIcons.microsoft),
+                label: Text(AppLocalizations.of(context)!.signUpWithMicrosoft)),
+          )
+        : SizedBox.shrink();
+
     var backToSignInButton = SizedBox(
       width: isForgetPasswordScreen || isPasswordSignInMode ? 200 : null,
       child: ElevatedButton.icon(
@@ -1209,6 +1365,8 @@ class SignInComponentState extends State<SignInComponent>
     List<Widget> buttons = [
       signInWithEmailCodeButton,
       googleSignInButton,
+      appleSignInButton,
+      microsoftSignInButton,
       passwordModeButton,
       signUpButton,
     ];

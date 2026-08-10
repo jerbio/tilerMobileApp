@@ -1310,6 +1310,18 @@ abstract class AppLocalizations {
   /// **'Sign In with Google'**
   String get signUpWithGoogle;
 
+  /// No description provided for @signUpWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signUpWithApple;
+
+  /// No description provided for @signUpWithMicrosoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Microsoft'**
+  String get signUpWithMicrosoft;
+
   /// No description provided for @signIn.
   ///
   /// In en, this message translates to:

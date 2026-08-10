@@ -40,6 +40,16 @@
 				<string>tilerapp</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.tiler.tiler_app.appauth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>msal6d9f8ba1-1980-4a28-9516-7a8af2227bd2</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
