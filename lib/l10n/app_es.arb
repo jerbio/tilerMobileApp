@@ -622,5 +622,10 @@
     "previewSundialTodayLabel": "Hoy",
     "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
     "timelineClearHeading": "Tu agenda está despejada hoy",
-    "timelineClearAddTask": "Añadir tile"
+    "timelineClearAddTask": "Añadir tile",
+    "legalFooterPrefix": "Al continuar, aceptas los",
+    "legalFooterTerms": "Términos",
+    "legalFooterAnd": "y la",
+    "legalFooterPrivacy": "Privacidad",
+    "aiConsentLinkError": "No se pudo abrir el enlace."
 }
