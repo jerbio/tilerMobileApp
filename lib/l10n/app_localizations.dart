@@ -4901,6 +4901,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a tile'**
   String get timelineClearAddTask;
+
+  /// Leading text of the subtle sign-in legal footer, before the Terms link.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to Tiler\'s'**
+  String get legalFooterPrefix;
+
+  /// Tappable Terms of Service link in the sign-in legal footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms'**
+  String get legalFooterTerms;
+
+  /// Conjunction between the Terms and Privacy links in the sign-in legal footer.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get legalFooterAnd;
+
+  /// Tappable Privacy Policy link in the sign-in legal footer.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get legalFooterPrivacy;
+
+  /// Error message shown when a legal footer link cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the link.'**
+  String get aiConsentLinkError;
 }
 
 class _AppLocalizationsDelegate

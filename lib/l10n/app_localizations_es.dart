@@ -2744,4 +2744,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get timelineClearAddTask => 'Añadir tile';
+
+  @override
+  String get legalFooterPrefix => 'Al continuar, aceptas los';
+
+  @override
+  String get legalFooterTerms => 'Términos';
+
+  @override
+  String get legalFooterAnd => 'y la';
+
+  @override
+  String get legalFooterPrivacy => 'Privacidad';
+
+  @override
+  String get aiConsentLinkError => 'No se pudo abrir el enlace.';
 }

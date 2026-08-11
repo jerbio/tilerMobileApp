@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
+import 'package:tiler_app/components/aiDataSharingNotice.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/routes/authenticatedUser/welcomeScreen.dart';
 import 'package:tiler_app/services/api/emailCodeAuthenticationData.dart';
@@ -57,7 +58,7 @@ class SignInComponentState extends State<SignInComponent>
   bool isEmailCodeVerificationScreen = false;
   bool isPasswordSignInMode = false;
   final double registrationContainerHeight = 550;
-  final double signInContainerHeight = 400;
+  final double signInContainerHeight = 475;
   final double forgotPasswordContainerHeight = 300;
   final double emailCodeRequestContainerHeight = 280;
   final double emailCodeVerificationContainerHeight = 320;
@@ -1568,6 +1569,11 @@ class SignInComponentState extends State<SignInComponent>
                                 ],
                         ),
                       ),
+                      if (!shouldHideButtons && !isRegistrationScreen)
+                        Align(
+                          alignment: Alignment.center,
+                          child: const AiDataSharingNotice(),
+                        ),
                     ],
                   ),
                 ),

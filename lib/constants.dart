@@ -10,6 +10,15 @@ const stagingDomain = 'tiler-stage.conveyor.cloud';
 const devDomain = 'tiler-dev.conveyor.cloud';
 const String tilerDomain =
     isProduction ? prodDomain : (isStaging ? stagingDomain : devDomain);
+
+/// Public privacy policy URL surfaced in the AI data-sharing disclosure. Must
+/// describe what data is collected, how it is collected, how it is used, and
+/// that it may be shared with a third-party AI service.
+const String privacyPolicyUrl = 'https://tiler.app/privacy';
+
+/// Public terms of service URL surfaced in the sign-in footer.
+const String termsOfServiceUrl = 'https://tiler.app/TOS';
+
 const int stateRetrievalRetry = 100;
 const int onTextChangeDelayInMs = 700;
 const int autoCompleteTriggerCharacterCount = 3;
@@ -31,6 +40,7 @@ String oneSignalAppIdKey =
     isProduction ? 'ONE_SIGNAL_APP_ID' : 'ONE_SIGNAL_APP_ID_DEV';
 String googleMapsApiKey =
     isProduction ? 'GOOGLE_MAPS_API_KEY' : 'GOOGLE_MAPS_API_KEY_DEV';
+
 /// Apple "Services ID" — the OAuth client id for Apple's *web* sign-in flow.
 ///
 /// Android has no native Sign in with Apple SDK, so the Android app runs the same

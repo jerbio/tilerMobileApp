@@ -1793,5 +1793,25 @@
             "timelineClearAddTask": "Add a tile",
             "@timelineClearAddTask": {
               "description": "Call-to-action button label in the contextual empty state."
+            },
+            "legalFooterPrefix": "By continuing, you agree to Tiler's",
+            "@legalFooterPrefix": {
+              "description": "Leading text of the subtle sign-in legal footer, before the Terms link."
+            },
+            "legalFooterTerms": "Terms",
+            "@legalFooterTerms": {
+              "description": "Tappable Terms of Service link in the sign-in legal footer."
+            },
+            "legalFooterAnd": "and",
+            "@legalFooterAnd": {
+              "description": "Conjunction between the Terms and Privacy links in the sign-in legal footer."
+            },
+            "legalFooterPrivacy": "Privacy",
+            "@legalFooterPrivacy": {
+              "description": "Tappable Privacy Policy link in the sign-in legal footer."
+            },
+            "aiConsentLinkError": "Could not open the link.",
+            "@aiConsentLinkError": {
+              "description": "Error message shown when a legal footer link cannot be opened."
             }
 }
