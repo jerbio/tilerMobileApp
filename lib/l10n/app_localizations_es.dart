@@ -2737,34 +2737,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineClearHeading => 'Tu agenda está despejada hoy';
 
   @override
-  String get timelineClearAddTask => 'AÃ±adir tile';
+  String get timelineClearAddTask => 'Añadir tile';
 
   @override
   String get aiConsentTitle => 'Descubre Tiler AI';
 
   @override
-  String get aiConsentSubtitle => 'Tu asistente de planificaciÃ³n con IA';
+  String get aiConsentSubtitle => 'Tu asistente de planificación con IA';
 
   @override
   String get aiConsentIntro =>
-      'Para convertir tus palabras en un horario, Tiler AI comparte lo que envÃ­as con proveedores de IA de confianza.';
+      'Para convertir tus palabras en un horario, Tiler AI comparte lo que envías con proveedores de IA de confianza.';
 
   @override
-  String get aiConsentDataTitle => 'QuÃ© enviamos';
+  String get aiConsentDataTitle => 'Qué enviamos';
 
   @override
   String get aiConsentDataBody =>
-      'Los mensajes y grabaciones de voz que envÃ­as, ademÃ¡s de detalles relevantes de tu agenda.';
+      'Los mensajes y grabaciones de voz que envías, además de detalles relevantes de tu agenda.';
 
   @override
-  String get aiConsentProvidersTitle => 'QuiÃ©n lo recibe';
+  String get aiConsentProvidersTitle => 'Quién lo recibe';
 
   @override
   String get aiConsentProvidersBody =>
       'Google Gemini y OpenAI, nuestros proveedores de IA externos.';
 
   @override
-  String get aiConsentPrivacyLink => 'Lee nuestra PolÃ­tica de Privacidad';
+  String get aiConsentPrivacyLink => 'Lee nuestra Política de Privacidad';
 
   @override
   String get aiConsentContinue => 'Continuar a Tiler AI';
@@ -2775,4 +2775,19 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiConsentClose => 'Cerrar';
+
+  @override
+  String get legalFooterPrefix => 'Al continuar, aceptas los';
+
+  @override
+  String get legalFooterTerms => 'Términos';
+
+  @override
+  String get legalFooterAnd => 'y la';
+
+  @override
+  String get legalFooterPrivacy => 'Privacidad';
+
+  @override
+  String get aiConsentLinkError => 'No se pudo abrir el enlace.';
 }
