@@ -58,6 +58,12 @@ void main() {
       expect(find.text('What we send'), findsOneWidget);
       expect(find.text('Read our Privacy Policy'), findsOneWidget);
       expect(find.text('Continue to Tiler AI'), findsOneWidget);
+
+      // Makes clear that tapping Continue is the act of granting permission.
+      expect(
+        find.textContaining('By continuing, you agree to share'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('returns true when the affirmative CTA is tapped',
@@ -67,6 +73,8 @@ void main() {
       await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
+      await tester.ensureVisible(find.text('Continue to Tiler AI'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Continue to Tiler AI'));
       await tester.pumpAndSettle();
 

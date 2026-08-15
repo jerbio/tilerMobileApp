@@ -106,6 +106,14 @@ class TilerAiConsentSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
+              Text(
+                localization.aiConsentAgreementNotice,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 12),
               FilledButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: FilledButton.styleFrom(

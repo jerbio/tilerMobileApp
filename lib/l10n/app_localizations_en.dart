@@ -2763,5 +2763,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiConsentContinue => 'Continue to Tiler AI';
 
   @override
+  String get aiConsentAgreementNotice =>
+      'By continuing, you agree to share this data with Google Gemini and OpenAI as described above.';
+
+  @override
   String get aiConsentClose => 'Close';
 }

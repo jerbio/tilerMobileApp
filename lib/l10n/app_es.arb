@@ -632,5 +632,6 @@
     "aiConsentProvidersBody": "Google Gemini y OpenAI, nuestros proveedores de IA externos.",
     "aiConsentPrivacyLink": "Lee nuestra PolÃ­tica de Privacidad",
     "aiConsentContinue": "Continuar a Tiler AI",
+    "aiConsentAgreementNotice": "Al continuar, aceptas compartir estos datos con Google Gemini y OpenAI como se describe arriba.",
     "aiConsentClose": "Cerrar"
 }

@@ -1828,6 +1828,10 @@
             "@aiConsentContinue": {
               "description": "Primary affirmative button granting AI data-sharing consent."
             },
+            "aiConsentAgreementNotice": "By continuing, you agree to share this data with the Third-Party provider as described above.",
+            "@aiConsentAgreementNotice": {
+              "description": "Affirmative agreement notice shown next to the consent CTA, clarifying that tapping Continue grants permission."
+            },
             "aiConsentClose": "Close",
             "@aiConsentClose": {
               "description": "Accessibility label for the dismiss button on the consent sheet."

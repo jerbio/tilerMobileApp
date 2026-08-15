@@ -4944,6 +4944,12 @@ abstract class AppLocalizations {
   /// **'Continue to Tiler AI'**
   String get aiConsentContinue;
 
+  /// Affirmative agreement notice shown next to the consent CTA, clarifying that tapping Continue grants permission.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to share this data with Google Gemini and OpenAI as described above.'**
+  String get aiConsentAgreementNotice;
+
   /// Accessibility label for the dismiss button on the consent sheet.
   ///
   /// In en, this message translates to:
