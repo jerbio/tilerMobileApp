@@ -2737,5 +2737,38 @@ class AppLocalizationsEs extends AppLocalizations {
   String get timelineClearHeading => 'Tu agenda está despejada hoy';
 
   @override
-  String get timelineClearAddTask => 'Añadir tile';
+  String get timelineClearAddTask => 'AÃ±adir tile';
+
+  @override
+  String get aiConsentTitle => 'Descubre Tiler AI';
+
+  @override
+  String get aiConsentSubtitle => 'Tu asistente de planificaciÃ³n con IA';
+
+  @override
+  String get aiConsentIntro =>
+      'Para convertir tus palabras en un horario, Tiler AI comparte lo que envÃ­as con proveedores de IA de confianza.';
+
+  @override
+  String get aiConsentDataTitle => 'QuÃ© enviamos';
+
+  @override
+  String get aiConsentDataBody =>
+      'Los mensajes y grabaciones de voz que envÃ­as, ademÃ¡s de detalles relevantes de tu agenda.';
+
+  @override
+  String get aiConsentProvidersTitle => 'QuiÃ©n lo recibe';
+
+  @override
+  String get aiConsentProvidersBody =>
+      'Google Gemini y OpenAI, nuestros proveedores de IA externos.';
+
+  @override
+  String get aiConsentPrivacyLink => 'Lee nuestra PolÃ­tica de Privacidad';
+
+  @override
+  String get aiConsentContinue => 'Continuar a Tiler AI';
+
+  @override
+  String get aiConsentClose => 'Cerrar';
 }

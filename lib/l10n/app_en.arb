@@ -1791,5 +1791,45 @@
             "timelineClearAddTask": "Add a tile",
             "@timelineClearAddTask": {
               "description": "Call-to-action button label in the contextual empty state."
+            },
+            "aiConsentTitle": "Meet Tiler AI",
+            "@aiConsentTitle": {
+              "description": "Headline of the iOS AI data-sharing consent sheet."
+            },
+            "aiConsentSubtitle": "Your AI planning assistant",
+            "@aiConsentSubtitle": {
+              "description": "Supporting subtitle under the AI consent sheet headline."
+            },
+            "aiConsentIntro": "To turn your words into a schedule, Tiler AI shares what you send with trusted AI providers.",
+            "@aiConsentIntro": {
+              "description": "Intro paragraph framing the value of Tiler AI before consent."
+            },
+            "aiConsentDataTitle": "What we send",
+            "@aiConsentDataTitle": {
+              "description": "Section title disclosing what data is shared."
+            },
+            "aiConsentDataBody": "The messages and voice recordings you send, plus relevant details from your schedule.",
+            "@aiConsentDataBody": {
+              "description": "Section body disclosing what data is shared with AI providers."
+            },
+            "aiConsentProvidersTitle": "Who receives it",
+            "@aiConsentProvidersTitle": {
+              "description": "Section title naming the third-party AI providers."
+            },
+            "aiConsentProvidersBody": "Google Gemini and OpenAI, our third-party AI providers.",
+            "@aiConsentProvidersBody": {
+              "description": "Section body naming Google Gemini and OpenAI as third-party AI providers."
+            },
+            "aiConsentPrivacyLink": "Read our Privacy Policy",
+            "@aiConsentPrivacyLink": {
+              "description": "Tappable link opening the privacy policy from the consent sheet."
+            },
+            "aiConsentContinue": "Continue to Tiler AI",
+            "@aiConsentContinue": {
+              "description": "Primary affirmative button granting AI data-sharing consent."
+            },
+            "aiConsentClose": "Close",
+            "@aiConsentClose": {
+              "description": "Accessibility label for the dismiss button on the consent sheet."
             }
 }

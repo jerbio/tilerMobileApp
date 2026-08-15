@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,6 +22,7 @@ import 'package:tiler_app/components/status.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dailyTileList.dart';
 import 'package:tiler_app/components/vibeChat/tileCast/tileCastCarousel.dart';
+import 'package:tiler_app/components/vibeChat/tilerAiConsentSheet.dart';
 import 'package:tiler_app/components/tilelist/monthlyView/monthlyTileList.dart';
 import 'package:tiler_app/components/tilelist/weeklyView/weeklyTileList.dart';
 import 'package:tiler_app/components/homeFab.dart';
@@ -34,6 +36,8 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/autoAddTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/previewAddWidget.dart';
 import 'package:tiler_app/routes/authentication/RedirectHandler.dart';
 import 'package:tiler_app/services/accessManager.dart';
+import 'package:tiler_app/services/aiChatConsentGate.dart';
+import 'package:tiler_app/services/aiConsentPreferencesHelper.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
@@ -432,7 +436,13 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
     return HomeFab(
       onPressed: () {
         AnalysticsSignal.send('OPEN_CHAT_BUTTON');
-        Navigator.pushNamed(context, '/vibeChat');
+        runAiChatConsentGate(
+          isIOS: () => Platform.isIOS,
+          hasConsent: AiConsentPreferencesHelper.hasGrantedAiConsent,
+          requestConsent: () => showTilerAiConsentSheet(context),
+          persistConsent: AiConsentPreferencesHelper.setAiConsentGranted,
+          onProceed: () => Navigator.pushNamed(context, '/vibeChat'),
+        );
       },
     );
   }

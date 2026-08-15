@@ -622,5 +622,15 @@
     "previewSundialTodayLabel": "Hoy",
     "previewSundialCompositionA11y": "{tiles} tiles, {blocks} bloques, {nonViable} sin programar",
     "timelineClearHeading": "Tu agenda está despejada hoy",
-    "timelineClearAddTask": "Añadir tile"
+    "timelineClearAddTask": "AÃ±adir tile",
+    "aiConsentTitle": "Descubre Tiler AI",
+    "aiConsentSubtitle": "Tu asistente de planificaciÃ³n con IA",
+    "aiConsentIntro": "Para convertir tus palabras en un horario, Tiler AI comparte lo que envÃ­as con proveedores de IA de confianza.",
+    "aiConsentDataTitle": "QuÃ© enviamos",
+    "aiConsentDataBody": "Los mensajes y grabaciones de voz que envÃ­as, ademÃ¡s de detalles relevantes de tu agenda.",
+    "aiConsentProvidersTitle": "QuiÃ©n lo recibe",
+    "aiConsentProvidersBody": "Google Gemini y OpenAI, nuestros proveedores de IA externos.",
+    "aiConsentPrivacyLink": "Lee nuestra PolÃ­tica de Privacidad",
+    "aiConsentContinue": "Continuar a Tiler AI",
+    "aiConsentClose": "Cerrar"
 }

@@ -2731,4 +2731,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get timelineClearAddTask => 'Add a tile';
+
+  @override
+  String get aiConsentTitle => 'Meet Tiler AI';
+
+  @override
+  String get aiConsentSubtitle => 'Your AI planning assistant';
+
+  @override
+  String get aiConsentIntro =>
+      'To turn your words into a schedule, Tiler AI shares what you send with trusted AI providers.';
+
+  @override
+  String get aiConsentDataTitle => 'What we send';
+
+  @override
+  String get aiConsentDataBody =>
+      'The messages and voice recordings you send, plus relevant details from your schedule.';
+
+  @override
+  String get aiConsentProvidersTitle => 'Who receives it';
+
+  @override
+  String get aiConsentProvidersBody =>
+      'Google Gemini and OpenAI, our third-party AI providers.';
+
+  @override
+  String get aiConsentPrivacyLink => 'Read our Privacy Policy';
+
+  @override
+  String get aiConsentContinue => 'Continue to Tiler AI';
+
+  @override
+  String get aiConsentClose => 'Close';
 }

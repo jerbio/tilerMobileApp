@@ -4889,6 +4889,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a tile'**
   String get timelineClearAddTask;
+
+  /// Headline of the iOS AI data-sharing consent sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Meet Tiler AI'**
+  String get aiConsentTitle;
+
+  /// Supporting subtitle under the AI consent sheet headline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your AI planning assistant'**
+  String get aiConsentSubtitle;
+
+  /// Intro paragraph framing the value of Tiler AI before consent.
+  ///
+  /// In en, this message translates to:
+  /// **'To turn your words into a schedule, Tiler AI shares what you send with trusted AI providers.'**
+  String get aiConsentIntro;
+
+  /// Section title disclosing what data is shared.
+  ///
+  /// In en, this message translates to:
+  /// **'What we send'**
+  String get aiConsentDataTitle;
+
+  /// Section body disclosing what data is shared with AI providers.
+  ///
+  /// In en, this message translates to:
+  /// **'The messages and voice recordings you send, plus relevant details from your schedule.'**
+  String get aiConsentDataBody;
+
+  /// Section title naming the third-party AI providers.
+  ///
+  /// In en, this message translates to:
+  /// **'Who receives it'**
+  String get aiConsentProvidersTitle;
+
+  /// Section body naming Google Gemini and OpenAI as third-party AI providers.
+  ///
+  /// In en, this message translates to:
+  /// **'Google Gemini and OpenAI, our third-party AI providers.'**
+  String get aiConsentProvidersBody;
+
+  /// Tappable link opening the privacy policy from the consent sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Read our Privacy Policy'**
+  String get aiConsentPrivacyLink;
+
+  /// Primary affirmative button granting AI data-sharing consent.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue to Tiler AI'**
+  String get aiConsentContinue;
+
+  /// Accessibility label for the dismiss button on the consent sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get aiConsentClose;
 }
 
 class _AppLocalizationsDelegate
