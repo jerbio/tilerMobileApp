@@ -2764,7 +2764,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiConsentAgreementNotice =>
-      'By continuing, you agree to share this data with Google Gemini and OpenAI as described above.';
+      'By continuing, you agree to share this data with the Third-Party provider as described above.';
 
   @override
   String get aiConsentClose => 'Close';
