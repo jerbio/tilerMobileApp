@@ -373,6 +373,8 @@
     "overview": "Overview",
     "driveTime": "Drive Time",
     "signUpWithGoogle": "Sign In with Google",
+    "signUpWithApple": "Sign in with Apple",
+    "signUpWithMicrosoft": "Sign in with Microsoft",
     "signIn": "Sign In",
     "signUp": "Sign Up",
     "invalidUsernameOrPassword": "Invalid username or password",

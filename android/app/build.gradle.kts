@@ -28,6 +28,11 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        // AppAuth redirect scheme for the Microsoft (Entra) native sign-in
+        // (flutter_appauth). Must match `microsoftRedirectScheme` in lib/constants.dart
+        // and the "Mobile and desktop applications" redirect URI on the Entra app.
+        manifestPlaceholders["appAuthRedirectScheme"] = "msal6d9f8ba1-1980-4a28-9516-7a8af2227bd2"
     }
 
     buildTypes {

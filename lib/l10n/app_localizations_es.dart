@@ -668,6 +668,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get signUpWithGoogle => 'Sign In with Google';
 
   @override
+  String get signUpWithApple => 'Sign in with Apple';
+
+  @override
+  String get signUpWithMicrosoft => 'Sign in with Microsoft';
+
+  @override
   String get signIn => 'Sign In';
 
   @override

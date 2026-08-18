@@ -30,6 +30,8 @@ PODS:
     - Flutter
   - rive_common (0.0.1):
     - Flutter
+  - sign_in_with_apple (0.0.1):
+    - Flutter
   - signalr_flutter (0.0.1):
     - Flutter
 
@@ -44,6 +46,7 @@ DEPENDENCIES:
   - google_maps_flutter_ios (from `.symlinks/plugins/google_maps_flutter_ios/ios`)
   - maps_launcher (from `.symlinks/plugins/maps_launcher/ios`)
   - rive_common (from `.symlinks/plugins/rive_common/ios`)
+  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - signalr_flutter (from `.symlinks/plugins/signalr_flutter/ios`)
 
 SPEC REPOS:
@@ -72,6 +75,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/maps_launcher/ios"
   rive_common:
     :path: ".symlinks/plugins/rive_common/ios"
+  sign_in_with_apple:
+    :path: ".symlinks/plugins/sign_in_with_apple/ios"
   signalr_flutter:
     :path: ".symlinks/plugins/signalr_flutter/ios"
 
@@ -88,6 +93,7 @@ SPEC CHECKSUMS:
   GoogleMaps: 8939898920281c649150e0af74aa291c60f2e77d
   maps_launcher: edf829809ba9e894d70e569bab11c16352dedb45
   rive_common: dd421daaf9ae69f0125aa761dd96abd278399952
+  sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   signalr_flutter: 3409faa0d159e3e6415ded5116ae3374a46d7bd2
 
 PODFILE CHECKSUM: b58f38a4cb4362e7b4b3778faf859736481355f4
