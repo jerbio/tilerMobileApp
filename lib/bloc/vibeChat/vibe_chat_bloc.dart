@@ -6,6 +6,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/tileCastPreviewLoader.dart';
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
+import 'package:tiler_app/data/VibeChat/VibeAutoSuggestions.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
 import 'package:tiler_app/data/VibeChat/VibePreviewAction.dart';
 import 'package:tiler_app/data/VibeChat/VibeRequestPreview.dart';
@@ -56,6 +57,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     on<StopRecordingAndTranscribeEvent>(_onStopRecordingAndTranscribe);
     on<CancelRecordingEvent>(_onCancelRecording);
     on<ClearTranscribedTextEvent>(_onClearTranscribedText);
+    on<LoadAutoSuggestionsEvent>(_onLoadAutoSuggestions);
     on<LoadSessionsEvent>(_onLoadSessions);
     on<LoadMoreSessionsEvent>(_onLoadMoreSessions);
     on<SelectSessionEvent>(_onSelectSession);
@@ -186,6 +188,32 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
     }
   }
 
+  /// Reads stored suggestions first, then regenerates only when the server says
+  /// they lag the session. Reopening the chat therefore costs no inference.
+  Future<void> _onLoadAutoSuggestions(
+      LoadAutoSuggestionsEvent event, Emitter<VibeChatState> emit) async {
+    final sessionId = state.currentSession?.id;
+    emit(state.copyWith(isLoadingAutoSuggestions: true));
+
+    final stored = await chatApi.getAutoSuggestions(
+      sessionId: sessionId,
+      language: LocalizationService.instance.translations.localeName,
+    );
+
+    if (!stored.isStale || sessionId == null || sessionId.isEmpty) {
+      emit(state.copyWith(
+          autoSuggestions: stored, isLoadingAutoSuggestions: false));
+      return;
+    }
+
+    emit(state.copyWith(autoSuggestions: stored));
+    final fresh = await chatApi.refreshAutoSuggestions(sessionId);
+    emit(state.copyWith(
+      autoSuggestions: fresh.isEmpty ? stored : fresh,
+      isLoadingAutoSuggestions: false,
+    ));
+  }
+
   Future<void> _onSelectSession(
       SelectSessionEvent event, Emitter<VibeChatState> emit) async {
     try {
@@ -208,6 +236,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
           hasMoreMessages: messages.length == 10,
           currentIndex: 10,
           shouldShowAcceptButton: shouldShowAccept));
+      add(LoadAutoSuggestionsEvent());
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,
@@ -225,6 +254,7 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         currentIndex: 0,
         sessions: state.sessions,
         hasMoreMessages: false));
+    add(LoadAutoSuggestionsEvent());
   }
 
   Future<List<VibeMessage>> _getMessagesWithActions(
@@ -431,6 +461,9 @@ class VibeChatBloc extends Bloc<VibeChatEvent, VibeChatState> {
         sessions: updatedSessions,
         shouldShowAcceptButton: shouldShowAccept,
       ));
+      // The exchange bumped the session hash, so pick up conversation-aware
+      // suggestions without blocking the send.
+      add(LoadAutoSuggestionsEvent());
     } catch (e) {
       emit(state.copyWith(
         step: VibeChatStep.error,

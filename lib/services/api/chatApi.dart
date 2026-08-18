@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/VibeChat/VibeAction.dart';
+import 'package:tiler_app/data/VibeChat/VibeAutoSuggestions.dart';
 import 'package:tiler_app/data/VibeChat/VibeMessage.dart';
 import 'package:tiler_app/data/VibeChat/VibePreviewSummary.dart';
 import 'package:tiler_app/data/VibeChat/VibeRequest.dart';
@@ -454,6 +455,86 @@ class ChatApi extends AppApi {
           Message: e is TilerError
               ? e.Message
               : LocalizationService.instance.translations.errorOccurred);
+    }
+  }
+
+  /// Reads stored auto suggestions. Never triggers generation server-side, so a
+  /// chat reopen costs no inference. Omit [sessionId] for the cold-start set.
+  /// Returns an empty set rather than throwing — suggestions are decorative and
+  /// must never block the chat surface.
+  Future<VibeAutoSuggestions> getAutoSuggestions({
+    String? sessionId,
+    String? language,
+  }) async {
+    try {
+      var isAuthenticated = await this.authentication.isUserAuthenticated();
+      if (!isAuthenticated.item1) {
+        return const VibeAutoSuggestions();
+      }
+      await checkAndReplaceCredentialCache();
+
+      Map<String, String> queryParams = {'mobileApp': 'true'};
+      if (sessionId != null && sessionId.isNotEmpty) {
+        queryParams['SessionId'] = sessionId;
+      }
+      if (language != null && language.isNotEmpty) {
+        queryParams['Language'] = language;
+      }
+      Uri uri = Uri.https(
+          Constants.tilerDomain, 'api/Vibe/Session/AutoSuggestions', queryParams);
+
+      var headers = this.getHeaders();
+      if (headers == null) {
+        return const VibeAutoSuggestions();
+      }
+
+      http.Response response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        final payload = jsonResult['Content']?['autoSuggestions'];
+        if (payload != null) {
+          return VibeAutoSuggestions.fromJson(
+              Map<String, dynamic>.from(payload));
+        }
+      }
+      return const VibeAutoSuggestions();
+    } catch (e) {
+      return const VibeAutoSuggestions();
+    }
+  }
+
+  /// Regenerates suggestions from the session's recent conversation.
+  Future<VibeAutoSuggestions> refreshAutoSuggestions(String sessionId) async {
+    try {
+      var isAuthenticated = await this.authentication.isUserAuthenticated();
+      if (!isAuthenticated.item1) {
+        return const VibeAutoSuggestions();
+      }
+      await checkAndReplaceCredentialCache();
+
+      Uri uri = Uri.https(
+          Constants.tilerDomain, 'api/Vibe/Session/AutoSuggestions/Refresh');
+
+      var headers = this.getHeaders();
+      if (headers == null) {
+        return const VibeAutoSuggestions();
+      }
+      headers['Content-Type'] = 'application/json';
+
+      http.Response response = await http.post(uri,
+          headers: headers, body: jsonEncode({'sessionId': sessionId}));
+
+      if (response.statusCode == 200) {
+        var jsonResult = jsonDecode(response.body);
+        final payload = jsonResult['Content']?['autoSuggestions'];
+        if (payload != null) {
+          return VibeAutoSuggestions.fromJson(
+              Map<String, dynamic>.from(payload));
+        }
+      }
+      return const VibeAutoSuggestions();
+    } catch (e) {
+      return const VibeAutoSuggestions();
     }
   }
 }

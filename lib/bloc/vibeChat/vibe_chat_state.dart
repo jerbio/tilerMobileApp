@@ -44,6 +44,13 @@ class VibeChatState extends Equatable {
   /// polling so the action list can reflect whether a preview is tappable.
   final Map<String, VibeRequestPreview> tileCastStatusByRequest;
 
+  /// Tap-to-send prompt suggestions for the active session, or the cold-start
+  /// capability set when no session exists yet.
+  final VibeAutoSuggestions autoSuggestions;
+
+  /// True while suggestions are being fetched or regenerated.
+  final bool isLoadingAutoSuggestions;
+
   const VibeChatState({
     this.step = VibeChatStep.initial,
     this.currentSession ,
@@ -62,6 +69,8 @@ class VibeChatState extends Equatable {
     this.currentPreviewIndex = 0,
     this.previewBatch,
     this.tileCastStatusByRequest = const {},
+    this.autoSuggestions = const VibeAutoSuggestions(),
+    this.isLoadingAutoSuggestions = false,
   });
 
   /// The TileCast action currently focused in the carousel, or null when the
@@ -115,6 +124,8 @@ class VibeChatState extends Equatable {
     int? currentPreviewIndex,
     VibeRequestPreview? previewBatch,
     Map<String, VibeRequestPreview>? tileCastStatusByRequest,
+    VibeAutoSuggestions? autoSuggestions,
+    bool? isLoadingAutoSuggestions,
   }) {
     return VibeChatState(
       step: step ?? this.step,
@@ -135,6 +146,9 @@ class VibeChatState extends Equatable {
       previewBatch: previewBatch ?? this.previewBatch,
       tileCastStatusByRequest:
           tileCastStatusByRequest ?? this.tileCastStatusByRequest,
+      autoSuggestions: autoSuggestions ?? this.autoSuggestions,
+      isLoadingAutoSuggestions:
+          isLoadingAutoSuggestions ?? this.isLoadingAutoSuggestions,
     );
   }
 
@@ -157,6 +171,8 @@ class VibeChatState extends Equatable {
     currentPreviewIndex,
     previewBatch,
     tileCastStatusByRequest,
+    autoSuggestions,
+    isLoadingAutoSuggestions,
   ];
 }
 
