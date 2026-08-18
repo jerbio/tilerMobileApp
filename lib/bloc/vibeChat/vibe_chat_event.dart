@@ -27,6 +27,10 @@ class CancelRecordingEvent extends VibeChatEvent {}
 
 class ClearTranscribedTextEvent extends VibeChatEvent {}
 
+/// Loads stored auto suggestions, then regenerates in the background only when
+/// the server reports them stale relative to the session's latest exchange.
+class LoadAutoSuggestionsEvent extends VibeChatEvent {}
+
 class LoadSessionsEvent extends VibeChatEvent {}
 
 class LoadMoreSessionsEvent extends VibeChatEvent {}

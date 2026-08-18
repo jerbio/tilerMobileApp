@@ -6,6 +6,7 @@ import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/vibeChat/MessageList.dart';
 import 'package:tiler_app/components/vibeChat/messageInput.dart';
+import 'package:tiler_app/components/vibeChat/promptSuggestions.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 class VibeChat extends StatefulWidget {
@@ -22,6 +23,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
   late AppLocalizations localization ;
   VibeChatStep? _previousStep;
   String? _previousSession;
+  bool _hasTypedText = false;
   late AnimationController _lineAnimationController;
   late AnimationController _dotAnimationController;
 
@@ -39,8 +41,10 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       }
     });
     _messageController = TextEditingController();
+    _messageController.addListener(_onMessageChanged);
     context.read<VibeChatBloc>().add(OpenChatEvent());
     context.read<VibeChatBloc>().add(LoadSessionsEvent());
+    context.read<VibeChatBloc>().add(LoadAutoSuggestionsEvent());
     _lineAnimationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -76,9 +80,19 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
     _dotAnimationController.dispose();
     _scrollController.dispose();
     _sessionsScrollController.dispose();
+    _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
     _lineAnimationController.dispose();
     super.dispose();
+  }
+
+  /// Suggestions hide as soon as the user starts typing, so the strip only
+  /// competes for space when the input is empty.
+  void _onMessageChanged() {
+    final hasText = _messageController.text.trim().isNotEmpty;
+    if (hasText != _hasTypedText) {
+      setState(() => _hasTypedText = hasText);
+    }
   }
 
   void _handleBlocStateChanges(BuildContext context, VibeChatState state) {
@@ -348,6 +362,14 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                   ),
                 if (state.step == VibeChatStep.sending || state.step == VibeChatStep.transcribing)
                   _buildAnimatedLoadingWidget(state.step==VibeChatStep.transcribing),
+                if (!_hasTypedText && state.step != VibeChatStep.sending)
+                  PromptSuggestions(
+                    suggestions: state.autoSuggestions,
+                    isLoading: state.isLoadingAutoSuggestions,
+                    onPromptTap: (prompt) {
+                      context.read<VibeChatBloc>().add(SendAMessageEvent(prompt));
+                    },
+                  ),
                 MessageInput(
                   controller: _messageController,
                 ),
