@@ -188,8 +188,13 @@ class SignInComponentState extends State<SignInComponent>
     colorScheme = theme.colorScheme;
     inputFieldFillColor = colorScheme.surfaceContainerLowest;
     tileThemeExtension = theme.extension<TileThemeExtension>()!;
+    final bool isDarkTheme = theme.brightness == Brightness.dark;
+    final Color buttonBackground = isDarkTheme ? Colors.black : Colors.white;
+    final Color buttonForeground = isDarkTheme ? Colors.white : Colors.black;
     elevatedButtonStyle = ElevatedButton.styleFrom(
-      foregroundColor: colorScheme.tertiary,
+      foregroundColor: buttonForeground,
+      backgroundColor: buttonBackground,
+      iconColor: buttonForeground,
     );
     super.didChangeDependencies();
   }
