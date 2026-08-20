@@ -22,6 +22,7 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
     on<UpdateEndOfDay>(_updateEndOfDay);
     on<UpdateSleepDuration>(_updateSleepDuration);
     on<UpdateTravelMedium>(_updateTravelMedium);
+    on<UpdateIntensityRate>(_updateIntensityRate);
     on<ProceedUpdate>(_proceedUpdate);
     FlutterTimezone.getLocalTimezone().then((value) {
       localTimeZone = value;
@@ -138,6 +139,46 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
       }
     }
   }
+
+  void _updateIntensityRate(UpdateIntensityRate event, Emitter<TilePreferencesState> emit) {
+    if (state is PreferencesLoaded) {
+      final current = state as PreferencesLoaded;
+      final updatedUserSettings = current.userSettings;
+
+      if (updatedUserSettings != null) {
+        if (updatedUserSettings.scheduleProfile == null) {
+          final scheduleProfile = ScheduleProfile.fromJson({});
+          scheduleProfile.intensityRate = event.intensityRate;
+          final newUserSettings = UserSettings(
+            userPreference: updatedUserSettings.userPreference,
+            marketingPreference: updatedUserSettings.marketingPreference,
+            scheduleProfile: scheduleProfile,
+          );
+
+          emit(PreferencesLoaded(
+            workProfile: current.workProfile,
+            personalProfile: current.personalProfile,
+            endOfDay: current.endOfDay,
+            userSettings: newUserSettings,
+            localTimeZone: current.localTimeZone,
+            hasChanges: true
+          ));
+        } else {
+          updatedUserSettings.scheduleProfile!.intensityRate = event.intensityRate;
+
+          emit(PreferencesLoaded(
+            workProfile: current.workProfile,
+            personalProfile: current.personalProfile,
+            endOfDay: current.endOfDay,
+            userSettings: updatedUserSettings,
+            localTimeZone: current.localTimeZone,
+            hasChanges: true
+          ));
+        }
+      }
+    }
+  }
+
   void _updateWork(UpdateWorkProfile event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;

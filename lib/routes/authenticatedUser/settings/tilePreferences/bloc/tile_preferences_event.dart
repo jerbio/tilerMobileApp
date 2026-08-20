@@ -26,4 +26,10 @@ class UpdateTravelMedium extends TilePreferencesEvent {
   final TravelMedium travelMedium;
   UpdateTravelMedium(this.travelMedium);
 }
+
+class UpdateIntensityRate extends TilePreferencesEvent {
+  final num? intensityRate;
+  UpdateIntensityRate(this.intensityRate);
+}
+
 class ProceedUpdate extends TilePreferencesEvent {}

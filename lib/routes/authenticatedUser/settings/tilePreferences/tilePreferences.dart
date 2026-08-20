@@ -347,6 +347,89 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildScheduleFullnessWidget(BuildContext context, PreferencesLoaded state,
+      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
+    final currentIntensity = state.userSettings?.scheduleProfile?.intensityRate?.toDouble() ?? 50.0;
+    
+    return _buildSectionContainer(
+      colorScheme: colorScheme,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            AppLocalizations.of(context)!.scheduleFullness,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+          ),
+          SizedBox(height: 8),
+          Text(
+            AppLocalizations.of(context)!.scheduleFullnessDescription,
+            style: TextStyle(fontSize: 14, color: tileThemeExtension.onSurfaceSecondary),
+          ),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                flex: 15,
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withAlpha((255 * 0.65).toInt()),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 80,
+                child: Slider(
+                  value: currentIntensity,
+                  min: 15,
+                  max: 95,
+                  divisions: 16,
+                  onChanged: (value) {
+                    context.read<TilePreferencesBloc>().add(UpdateIntensityRate(value.toInt()));
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 5,
+                child: Container(
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withAlpha((255 * 0.65).toInt()),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                AppLocalizations.of(context)!.lighter,
+                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
+              ),
+              Text(
+                AppLocalizations.of(context)!.balanced,
+                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
+              ),
+              Text(
+                AppLocalizations.of(context)!.fuller,
+                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            AppLocalizations.of(context)!.scheduleFullnessLimits,
+            style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<bool> _saveTilePreferences(BuildContext context) async {
     final completer = Completer<bool>();
 
@@ -461,7 +544,18 @@ class TilePreferencesScreen extends StatelessWidget {
             ),
           ),
           _buildBlockOutHourWidget(
-              context, loadedState, colorScheme, tileThemeExtension)
+              context, loadedState, colorScheme, tileThemeExtension),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Text(
+              AppLocalizations.of(context)!.schedulePreferences,
+              style: TextStyle(
+                  fontSize: 16,
+                  color: tileThemeExtension.onSurfaceVariantSecondary),
+            ),
+          ),
+          _buildScheduleFullnessWidget(
+              context, loadedState, colorScheme, tileThemeExtension),
         ],
       ),
     );

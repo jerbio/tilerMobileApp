@@ -5,6 +5,7 @@ class ScheduleProfile {
   PinPreference? pinPreference;
   num? sleepDuration;
   String? endTimeOfDay;
+  num? intensityRate;
 
   ScheduleProfile.fromJson(Map<String, dynamic> json) {
     travelMedium = null;
@@ -28,6 +29,9 @@ class ScheduleProfile {
     if (json['sleepDuration'] != null) {
       sleepDuration = json['sleepDuration'];
     }
+    if (json['intensityRate'] != null) {
+      intensityRate = json['intensityRate'];
+    }
   }
 
   Map<String, dynamic> toJsonForUpdate() {
@@ -35,6 +39,7 @@ class ScheduleProfile {
       'TravelMedium': travelMedium?.name.toString().toLowerCase(),
       'PinPreference': pinPreference?.name.toString().toLowerCase(),
       'SleepDurationInMs': sleepDuration,
+      'IntensityRate': intensityRate,
     };
   }
 }
