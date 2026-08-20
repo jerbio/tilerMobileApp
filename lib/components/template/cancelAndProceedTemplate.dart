@@ -17,6 +17,9 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
   Widget? child;
   PreferredSizeWidget? appBar;
 
+  /// Set when [child] is not already a scroll view.
+  bool scrollableContent = false;
+
   CancelAndProceedTemplateWidget(
       {required this.routeName,
       this.onCancel,
@@ -25,6 +28,7 @@ class CancelAndProceedTemplateWidget extends StatefulWidget {
       this.isProceedAllowed,
       this.appBar,
       this.bottomWidget,
+      this.scrollableContent = false,
       this.hideButtons = false});
 
   @override
@@ -219,7 +223,27 @@ class CancelAndProceedTemplateWidgetState
 
     List<Widget> stackWidgets = [];
     if (this.widget.child != null) {
-      stackWidgets.add(this.widget.child!);
+      final mediaQuery = MediaQuery.of(context);
+      final double actionBarInset = bottomButtons.isEmpty
+          ? 0.0
+          : TileDimensions.proceedAndCancelButtonWidth + bottomBarPadding;
+      Widget content = this.widget.child!;
+      if (this.widget.scrollableContent) {
+        content = SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: actionBarInset),
+          child: content,
+        );
+      }
+      // Reports the floating action bar as bottom padding so SafeArea/scroll
+      // views inside the child can clear it without shrinking the layout.
+      stackWidgets.add(MediaQuery(
+        data: mediaQuery.copyWith(
+          padding: mediaQuery.padding.copyWith(
+            bottom: this.widget.scrollableContent ? 0.0 : actionBarInset,
+          ),
+        ),
+        child: content,
+      ));
     }
 
     if (showLoading) {

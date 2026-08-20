@@ -10,6 +10,7 @@ import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/editTile/editTileTime.dart';
 import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/bloc/tile_preferences_bloc.dart';
+import 'package:tiler_app/routes/authenticatedUser/settings/tilePreferences/scheduleFullnessSlider.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
@@ -347,85 +348,17 @@ class TilePreferencesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScheduleFullnessWidget(BuildContext context, PreferencesLoaded state,
-      ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
-    final currentIntensity = state.userSettings?.scheduleProfile?.intensityRate?.toDouble() ?? 50.0;
-    
+  Widget _buildScheduleFullnessWidget(
+      BuildContext context,
+      PreferencesLoaded state,
+      ColorScheme colorScheme,
+      TileThemeExtension tileThemeExtension) {
     return _buildSectionContainer(
       colorScheme: colorScheme,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            AppLocalizations.of(context)!.scheduleFullness,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-          ),
-          SizedBox(height: 8),
-          Text(
-            AppLocalizations.of(context)!.scheduleFullnessDescription,
-            style: TextStyle(fontSize: 14, color: tileThemeExtension.onSurfaceSecondary),
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                flex: 15,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withAlpha((255 * 0.65).toInt()),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 80,
-                child: Slider(
-                  value: currentIntensity,
-                  min: 15,
-                  max: 95,
-                  divisions: 16,
-                  onChanged: (value) {
-                    context.read<TilePreferencesBloc>().add(UpdateIntensityRate(value.toInt()));
-                  },
-                ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Container(
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withAlpha((255 * 0.65).toInt()),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                AppLocalizations.of(context)!.lighter,
-                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
-              ),
-              Text(
-                AppLocalizations.of(context)!.balanced,
-                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
-              ),
-              Text(
-                AppLocalizations.of(context)!.fuller,
-                style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          Text(
-            AppLocalizations.of(context)!.scheduleFullnessLimits,
-            style: TextStyle(fontSize: 12, color: tileThemeExtension.onSurfaceSecondary),
-          ),
-        ],
+      child: ScheduleFullnessSlider(
+        intensityRate: state.userSettings?.scheduleProfile?.intensityRate,
+        onIntensityChanged: (value) =>
+            context.read<TilePreferencesBloc>().add(UpdateIntensityRate(value)),
       ),
     );
   }
@@ -489,6 +422,7 @@ class TilePreferencesScreen extends StatelessWidget {
                 : null,
             routeName:
                 TilePreferencesScreen.tilePreferencesCancelAndProceedRouteName,
+            scrollableContent: true,
             appBar: AppBar(
               title: Text(
                 AppLocalizations.of(context)!.tilePreferences,
@@ -496,11 +430,8 @@ class TilePreferencesScreen extends StatelessWidget {
               automaticallyImplyLeading: false,
             ),
             child: SafeArea(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: _buildContent(
-                    context, state, colorScheme, tileThemeExtension!),
-              ),
+              child: _buildContent(
+                  context, state, colorScheme, tileThemeExtension!),
             ),
           );
         }),

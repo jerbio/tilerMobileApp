@@ -1256,6 +1256,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sleepTime => 'Sleep Time';
 
   @override
+  String get scheduleFullness => 'Schedule Fullness';
+
+  @override
+  String get scheduleFullnessDescription => 'How full should your schedule be?';
+
+  @override
+  String scheduleFullnessLimits(int minimum, int maximum) {
+    return 'Targets range from $minimum% to $maximum%. This keeps a useful baseline while leaving room for changes and travel.';
+  }
+
+  @override
+  String get schedulePreferences => 'Schedule Preferences';
+
+  @override
+  String get lighter => 'Lighter';
+
+  @override
+  String get balanced => 'Balanced';
+
+  @override
+  String get fuller => 'Fuller';
+
+  @override
   String get tilePreferencesUpdatedSuccessfully =>
       'Tile Preferences have been updated successfully.';
 

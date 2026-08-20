@@ -751,7 +751,20 @@
       "sleepTime": "Sleep Time",
       "scheduleFullness": "Schedule Fullness",
       "scheduleFullnessDescription": "How full should your schedule be?",
-      "scheduleFullnessLimits": "Targets range from 15% to 95%. This keeps a useful baseline while leaving room for changes and travel.",
+      "scheduleFullnessLimits": "Targets range from {minimum}% to {maximum}%. This keeps a useful baseline while leaving room for changes and travel.",
+      "@scheduleFullnessLimits": {
+        "description": "Explains the supported range of the schedule fullness slider.",
+        "placeholders": {
+          "minimum": {
+            "type": "int",
+            "example": "15"
+          },
+          "maximum": {
+            "type": "int",
+            "example": "95"
+          }
+        }
+      },
       "schedulePreferences": "Schedule Preferences",
       "lighter": "Lighter",
       "balanced": "Balanced",

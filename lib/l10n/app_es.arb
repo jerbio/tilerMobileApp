@@ -595,7 +595,7 @@
     "endOfDay": "Fin del día",
     "scheduleFullness": "Ocupación del horario",
     "scheduleFullnessDescription": "¿Qué tan ocupado debería estar tu horario?",
-    "scheduleFullnessLimits": "Los objetivos oscilan entre el 15% y el 95%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.",
+    "scheduleFullnessLimits": "Los objetivos oscilan entre el {minimum}% y el {maximum}%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.",
     "schedulePreferences": "Preferencias de horario",
     "lighter": "Más ligero",
     "balanced": "Equilibrado",

@@ -2381,6 +2381,48 @@ abstract class AppLocalizations {
   /// **'Sleep Time'**
   String get sleepTime;
 
+  /// No description provided for @scheduleFullness.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Fullness'**
+  String get scheduleFullness;
+
+  /// No description provided for @scheduleFullnessDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'How full should your schedule be?'**
+  String get scheduleFullnessDescription;
+
+  /// Explains the supported range of the schedule fullness slider.
+  ///
+  /// In en, this message translates to:
+  /// **'Targets range from {minimum}% to {maximum}%. This keeps a useful baseline while leaving room for changes and travel.'**
+  String scheduleFullnessLimits(int minimum, int maximum);
+
+  /// No description provided for @schedulePreferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule Preferences'**
+  String get schedulePreferences;
+
+  /// No description provided for @lighter.
+  ///
+  /// In en, this message translates to:
+  /// **'Lighter'**
+  String get lighter;
+
+  /// No description provided for @balanced.
+  ///
+  /// In en, this message translates to:
+  /// **'Balanced'**
+  String get balanced;
+
+  /// No description provided for @fuller.
+  ///
+  /// In en, this message translates to:
+  /// **'Fuller'**
+  String get fuller;
+
   /// No description provided for @tilePreferencesUpdatedSuccessfully.
   ///
   /// In en, this message translates to:
