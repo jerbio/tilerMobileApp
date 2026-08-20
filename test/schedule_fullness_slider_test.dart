@@ -44,10 +44,10 @@ void main() {
   group('ScheduleFullnessSlider unit conversion', () {
     test('scales the persisted fraction up to a percentage', () {
       expect(ScheduleFullnessSlider.percentageFromRate(0.5), 50);
-      expect(ScheduleFullnessSlider.percentageFromRate(_rate(_minimum)),
-          _minimum);
-      expect(ScheduleFullnessSlider.percentageFromRate(_rate(_maximum)),
-          _maximum);
+      expect(
+          ScheduleFullnessSlider.percentageFromRate(_rate(_minimum)), _minimum);
+      expect(
+          ScheduleFullnessSlider.percentageFromRate(_rate(_maximum)), _maximum);
     });
 
     test('scales the percentage back down to a fraction', () {
@@ -58,7 +58,8 @@ void main() {
 
     test('round trips a persisted fraction', () {
       for (final double percentage in [_minimum, 50, _maximum]) {
-        final num stored = ScheduleFullnessSlider.rateFromPercentage(percentage);
+        final num stored =
+            ScheduleFullnessSlider.rateFromPercentage(percentage);
         expect(ScheduleFullnessSlider.percentageFromRate(stored), percentage);
       }
     });
@@ -154,6 +155,39 @@ void main() {
       expect(slider.value, lessThanOrEqualTo(slider.max));
     });
 
+    testWidgets('displays the selected percentage',
+        (WidgetTester tester) async {
+      await _pumpSlider(tester, intensityRate: _rate(65));
+
+      expect(find.text('65%'), findsOneWidget);
+    });
+
+    testWidgets('displays the percentage for the persisted fraction',
+        (WidgetTester tester) async {
+      await _pumpSlider(tester, intensityRate: 0.5);
+
+      expect(find.text('50%'), findsOneWidget);
+    });
+
+    testWidgets('displays the percentage at each end of the range',
+        (WidgetTester tester) async {
+      await _pumpSlider(tester, intensityRate: _rate(_minimum));
+      expect(find.text('${_minimum.round()}%'), findsOneWidget);
+
+      await _pumpSlider(tester, intensityRate: _rate(_maximum));
+      expect(find.text('${_maximum.round()}%'), findsOneWidget);
+    });
+
+    testWidgets('updates the displayed percentage when the value changes',
+        (WidgetTester tester) async {
+      await _pumpSlider(tester, intensityRate: _rate(40));
+      expect(find.text('40%'), findsOneWidget);
+
+      await _pumpSlider(tester, intensityRate: _rate(75));
+      expect(find.text('75%'), findsOneWidget);
+      expect(find.text('40%'), findsNothing);
+    });
+
     testWidgets('shows the scale labels and the limit message',
         (WidgetTester tester) async {
       await _pumpSlider(tester,
@@ -177,7 +211,9 @@ void main() {
 
       final flexes = tester
           .widgetList<Expanded>(find.descendant(
-            of: find.byType(Row).first,
+            of: find
+                .ancestor(of: find.byType(Slider), matching: find.byType(Row))
+                .first,
             matching: find.byType(Expanded),
           ))
           .map((expanded) => expanded.flex)

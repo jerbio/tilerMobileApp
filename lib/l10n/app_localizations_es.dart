@@ -1266,6 +1266,11 @@ class AppLocalizationsEs extends AppLocalizations {
       '¿Qué tan ocupado debería estar tu horario?';
 
   @override
+  String scheduleFullnessValue(int percentage) {
+    return '$percentage por ciento de ocupación objetivo';
+  }
+
+  @override
   String scheduleFullnessLimits(int minimum, int maximum) {
     return 'Los objetivos oscilan entre el $minimum% y el $maximum%. Esto mantiene una línea base útil mientras deja espacio para cambios y viajes.';
   }

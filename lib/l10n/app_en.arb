@@ -751,6 +751,16 @@
       "sleepTime": "Sleep Time",
       "scheduleFullness": "Schedule Fullness",
       "scheduleFullnessDescription": "How full should your schedule be?",
+      "scheduleFullnessValue": "{percentage} percent target fullness",
+      "@scheduleFullnessValue": {
+        "description": "Screen reader description of the selected schedule fullness.",
+        "placeholders": {
+          "percentage": {
+            "type": "int",
+            "example": "50"
+          }
+        }
+      },
       "scheduleFullnessLimits": "Targets range from {minimum}% to {maximum}%. This keeps a useful baseline while leaving room for changes and travel.",
       "@scheduleFullnessLimits": {
         "description": "Explains the supported range of the schedule fullness slider.",

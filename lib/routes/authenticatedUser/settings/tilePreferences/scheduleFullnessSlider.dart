@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 
@@ -79,13 +80,32 @@ class ScheduleFullnessSlider extends StatelessWidget {
     final deadZoneColor =
         colorScheme.surfaceContainerHighest.withAlpha((255 * 0.65).toInt());
     final scaleStyle = TextStyle(fontSize: 12, color: secondaryColor);
+    final percentage = percentageFromRate(intensityRate);
+    final formattedPercentage = NumberFormat.percentPattern(
+            Localizations.localeOf(context).toLanguageTag())
+        .format(rateFromPercentage(percentage));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          localizations.scheduleFullness,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                localizations.scheduleFullness,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+              ),
+            ),
+            Text(
+              formattedPercentage,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary,
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 8),
         Text(
@@ -99,10 +119,13 @@ class ScheduleFullnessSlider extends StatelessWidget {
             Expanded(
               flex: activeFlex,
               child: Slider(
-                value: percentageFromRate(intensityRate),
+                value: percentage,
                 min: minimumIntensity,
                 max: maximumIntensity,
                 divisions: divisions,
+                label: formattedPercentage,
+                semanticFormatterCallback: (value) =>
+                    localizations.scheduleFullnessValue(value.round()),
                 onChanged: (value) =>
                     onIntensityChanged(rateFromPercentage(value)),
               ),

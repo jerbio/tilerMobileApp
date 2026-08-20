@@ -1262,6 +1262,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scheduleFullnessDescription => 'How full should your schedule be?';
 
   @override
+  String scheduleFullnessValue(int percentage) {
+    return '$percentage percent target fullness';
+  }
+
+  @override
   String scheduleFullnessLimits(int minimum, int maximum) {
     return 'Targets range from $minimum% to $maximum%. This keeps a useful baseline while leaving room for changes and travel.';
   }

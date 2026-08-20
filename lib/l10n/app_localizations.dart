@@ -2393,6 +2393,12 @@ abstract class AppLocalizations {
   /// **'How full should your schedule be?'**
   String get scheduleFullnessDescription;
 
+  /// Screen reader description of the selected schedule fullness.
+  ///
+  /// In en, this message translates to:
+  /// **'{percentage} percent target fullness'**
+  String scheduleFullnessValue(int percentage);
+
   /// Explains the supported range of the schedule fullness slider.
   ///
   /// In en, this message translates to:
