@@ -58,10 +58,11 @@ class SignInComponentState extends State<SignInComponent>
   bool isEmailCodeVerificationScreen = false;
   bool isPasswordSignInMode = false;
   final double registrationContainerHeight = 550;
+  final double landingContainerHeight = 400;
   final double signInContainerHeight = 475;
   final double forgotPasswordContainerHeight = 300;
   final double emailCodeRequestContainerHeight = 280;
-  final double emailCodeVerificationContainerHeight = 320;
+  final double emailCodeVerificationContainerHeight = 370;
 
   final double registrationContainerButtonHeight = 300;
   final double signInContainerButtonHeight = 175;
@@ -175,7 +176,7 @@ class SignInComponentState extends State<SignInComponent>
         }
       });
     }
-    credentialManagerHeight = signInContainerHeight;
+    credentialManagerHeight = landingContainerHeight;
     credentialButtonHeight = signInContainerButtonHeight;
 
     _onPasswordFocusChange();
@@ -337,7 +338,10 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   void requestEmailCode() async {
-    final shouldValidateForm = !isEmailCodeVerificationScreen;
+    // Skip form validation when other fields (code/password) are on screen;
+    // the email is checked manually below.
+    final shouldValidateForm =
+        !isEmailCodeVerificationScreen && !isPasswordSignInMode;
     if (shouldValidateForm && !_formKey.currentState!.validate()) {
       return;
     }
@@ -636,6 +640,11 @@ class SignInComponentState extends State<SignInComponent>
 
   void enablePasswordSignInMode() {
     passwordEditingController.clear();
+    // Carry the email over when arriving from the code-verification screen.
+    if (userNameEditingController.text.trim().isEmpty &&
+        emailCodeTarget.trim().isNotEmpty) {
+      userNameEditingController.text = emailCodeTarget.trim();
+    }
     setState(() {
       isRegistrationScreen = false;
       isForgetPasswordScreen = false;
@@ -715,7 +724,7 @@ class SignInComponentState extends State<SignInComponent>
       isEmailCodeVerificationScreen = false;
       isPasswordSignInMode = false;
       emailCodeTarget = '';
-      credentialManagerHeight = signInContainerHeight;
+      credentialManagerHeight = landingContainerHeight;
       credentialButtonHeight = signInContainerButtonHeight;
     });
   }
@@ -1248,16 +1257,6 @@ class SignInComponentState extends State<SignInComponent>
       spacer(40),
     ];
 
-    var signUpButton = SizedBox(
-      width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.person_add),
-        label: Text(AppLocalizations.of(context)!.signUp),
-        onPressed: setAsRegistrationScreen,
-      ),
-    );
-
     var signInButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
@@ -1268,23 +1267,36 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var signInWithEmailCodeButton = SizedBox(
+    // Primary CTA: sends the access code immediately and moves to code entry.
+    var continueButton = SizedBox(
       width: 200,
       child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.mark_email_read_outlined),
-        label: Text(AppLocalizations.of(context)!.sendAccessCode),
+        style: ElevatedButton.styleFrom(
+          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.primary,
+          iconColor: colorScheme.onPrimary,
+        ),
+        icon: Icon(Icons.arrow_forward),
+        label: Text(AppLocalizations.of(context)!.continueBtn),
         onPressed: requestEmailCode,
       ),
     );
 
-    var passwordModeButton = SizedBox(
-      width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.password_outlined),
-        label: Text(AppLocalizations.of(context)!.usePasswordInstead),
-        onPressed: enablePasswordSignInMode,
+    var usePasswordLink = TextButton(
+      onPressed: enablePasswordSignInMode,
+      child: Text(
+        AppLocalizations.of(context)!.usePasswordInstead,
+        style: TextStyle(
+            color: linkTextColor, decoration: TextDecoration.underline),
+      ),
+    );
+
+    var useAccessCodeLink = TextButton(
+      onPressed: requestEmailCode,
+      child: Text(
+        AppLocalizations.of(context)!.useAccessCodeInstead,
+        style: TextStyle(
+            color: linkTextColor, decoration: TextDecoration.underline),
       ),
     );
 
@@ -1368,13 +1380,18 @@ class SignInComponentState extends State<SignInComponent>
       onPressed: registerUser,
     );
 
+    // Landing: single primary CTA, socials ordered per platform (Apple first
+    // on iOS per App Store guidelines, Google first elsewhere).
     List<Widget> buttons = [
-      signInWithEmailCodeButton,
-      googleSignInButton,
-      appleSignInButton,
+      continueButton,
+      if (Platform.isIOS) ...[
+        appleSignInButton,
+        googleSignInButton,
+      ] else ...[
+        googleSignInButton,
+        appleSignInButton,
+      ],
       microsoftSignInButton,
-      passwordModeButton,
-      signUpButton,
     ];
 
     if (isForgetPasswordScreen) {
@@ -1417,7 +1434,12 @@ class SignInComponentState extends State<SignInComponent>
         spacer(20),
         verificationCodeTextField,
       ];
-      buttons = [verifyCodeButton, resendCodeButton, backToSignInButton];
+      buttons = [
+        verifyCodeButton,
+        resendCodeButton,
+        usePasswordLink,
+        backToSignInButton,
+      ];
     }
 
     if (isRegistrationScreen) {
@@ -1488,7 +1510,7 @@ class SignInComponentState extends State<SignInComponent>
         forgetPasswordTextButton,
         spacer(24),
       ];
-      buttons = [signInButton, signInWithEmailCodeButton, backToSignInButton];
+      buttons = [signInButton, useAccessCodeLink, backToSignInButton];
     }
 
     if (this.isPendingSigning || this.isSuccessfulSignin) {

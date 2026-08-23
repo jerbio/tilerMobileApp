@@ -175,7 +175,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendAccessCode => 'Send access code';
 
   @override
-  String get usePasswordInstead => 'Use password';
+  String get continueBtn => 'Continue';
+
+  @override
+  String get usePasswordInstead => 'Use password instead';
+
+  @override
+  String get useAccessCodeInstead => 'Use access code instead';
 
   @override
   String get registeringUser => 'Registering User';

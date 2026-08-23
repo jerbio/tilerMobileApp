@@ -428,11 +428,23 @@ abstract class AppLocalizations {
   /// **'Send access code'**
   String get sendAccessCode;
 
+  /// No description provided for @continueBtn.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueBtn;
+
   /// No description provided for @usePasswordInstead.
   ///
   /// In en, this message translates to:
-  /// **'Use password'**
+  /// **'Use password instead'**
   String get usePasswordInstead;
+
+  /// No description provided for @useAccessCodeInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Use access code instead'**
+  String get useAccessCodeInstead;
 
   /// No description provided for @registeringUser.
   ///
