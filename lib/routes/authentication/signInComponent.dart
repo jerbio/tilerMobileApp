@@ -689,11 +689,19 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   void setAsRegistrationScreen() {
-    userNameEditingController.clear();
+    // Carry the value typed on the sign-in screen into the registration
+    // form so the user does not have to retype it: a valid email moves to
+    // the email field, any other value is kept in the username field
+    // (the sign-in field accepts both).
+    final String signInValue = userNameEditingController.text.trim();
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
     verificationCodeEditingController.clear();
+    if (isValidEmailAddress(signInValue)) {
+      emailEditingController.text = signInValue;
+      userNameEditingController.clear();
+    }
     setState(() {
       isRegistrationScreen = true;
       isForgetPasswordScreen = false;
@@ -1282,12 +1290,13 @@ class SignInComponentState extends State<SignInComponent>
       ),
     );
 
-    var usePasswordLink = TextButton(
-      onPressed: enablePasswordSignInMode,
-      child: Text(
-        AppLocalizations.of(context)!.usePasswordInstead,
-        style: TextStyle(
-            color: linkTextColor, decoration: TextDecoration.underline),
+    var usePasswordButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: elevatedButtonStyle,
+        icon: Icon(Icons.lock),
+        label: Text(AppLocalizations.of(context)!.usePasswordInstead),
+        onPressed: enablePasswordSignInMode,
       ),
     );
 
@@ -1297,6 +1306,20 @@ class SignInComponentState extends State<SignInComponent>
         AppLocalizations.of(context)!.useAccessCodeInstead,
         style: TextStyle(
             color: linkTextColor, decoration: TextDecoration.underline),
+      ),
+    );
+
+    var signUpButton = SizedBox(
+      width: 200,
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.primary,
+          iconColor: colorScheme.onPrimary,
+        ),
+        icon: Icon(Icons.person_add),
+        label: Text(AppLocalizations.of(context)!.signUp),
+        onPressed: setAsRegistrationScreen,
       ),
     );
 
@@ -1392,6 +1415,7 @@ class SignInComponentState extends State<SignInComponent>
         appleSignInButton,
       ],
       microsoftSignInButton,
+      signUpButton,
     ];
 
     if (isForgetPasswordScreen) {
@@ -1437,7 +1461,7 @@ class SignInComponentState extends State<SignInComponent>
       buttons = [
         verifyCodeButton,
         resendCodeButton,
-        usePasswordLink,
+        usePasswordButton,
         backToSignInButton,
       ];
     }
@@ -1510,7 +1534,12 @@ class SignInComponentState extends State<SignInComponent>
         forgetPasswordTextButton,
         spacer(24),
       ];
-      buttons = [signInButton, useAccessCodeLink, backToSignInButton];
+      buttons = [
+        signInButton,
+        useAccessCodeLink,
+        signUpButton,
+        backToSignInButton,
+      ];
     }
 
     if (this.isPendingSigning || this.isSuccessfulSignin) {
