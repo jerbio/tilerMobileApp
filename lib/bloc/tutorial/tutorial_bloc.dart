@@ -6,7 +6,12 @@ import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 class TutorialBloc extends Bloc<TutorialEvent, TutorialState> {
   final int stepCount;
 
-  TutorialBloc({required this.stepCount})
+  /// The tour this bloc instance drives. Defaults to the `home` tour so the
+  /// existing AuthorizedRoute wiring keeps working during the Phase 1
+  /// transition (stages 1.2/1.3).
+  final String tourId;
+
+  TutorialBloc({required this.stepCount, this.tourId = TourPreferencesHelper.homeTourId})
       : super(TutorialState(totalSteps: stepCount)) {
     on<StartTutorialEvent>(_onStart);
     on<NextTutorialStepEvent>(_onNext);
@@ -43,17 +48,17 @@ class TutorialBloc extends Bloc<TutorialEvent, TutorialState> {
   }
 
   void _onSkip(SkipTutorialEvent event, Emitter<TutorialState> emit) {
-    TutorialPreferencesHelper.setTutorialCompleted(true);
+    TourPreferencesHelper.setTourCompleted(tourId);
     emit(state.copyWith(status: TutorialStatus.skipped));
   }
 
   void _onComplete(CompleteTutorialEvent event, Emitter<TutorialState> emit) {
-    TutorialPreferencesHelper.setTutorialCompleted(true);
+    TourPreferencesHelper.setTourCompleted(tourId);
     emit(state.copyWith(status: TutorialStatus.completed));
   }
 
   void _onReset(ResetTutorialEvent event, Emitter<TutorialState> emit) {
-    TutorialPreferencesHelper.resetTutorial();
+    TourPreferencesHelper.resetTour(tourId);
     emit(TutorialState(
       status: TutorialStatus.active,
       currentStepIndex: 0,

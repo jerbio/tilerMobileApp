@@ -9,6 +9,7 @@ import 'package:tiler_app/components/tutorial/tutorialSpotlightPainter.dart';
 import 'package:tiler_app/components/tutorial/tutorialStep.dart';
 import 'package:tiler_app/components/tutorial/tutorialTooltipWidget.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 
 /// The number of steps in the onboarding tour.
 ///
@@ -204,11 +205,23 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
   ];
 }
 
-/// The main tutorial overlay that renders on top of the AuthorizedRoute.
-/// It reads the current step from TutorialBloc, highlights the target widget,
-/// and shows a tooltip with instructions.
+/// The main tutorial overlay. Renders on top of the surface hosting the
+/// tour, reads the current step from [TutorialBloc], highlights the target
+/// widget, and shows a tooltip with instructions.
+///
+/// Generalized per tour (product-tour-onboarding-redesign.md, Phase 1):
+/// [stepsBuilder] supplies any tour's steps (defaults to the home tour), and
+/// home-specific side effects (dummy-tile injection) only run when
+/// [tourId] is the home tour.
 class TutorialOverlay extends StatefulWidget {
   final Widget child;
+
+  /// The tour id this overlay is rendering.
+  final String tourId;
+
+  /// Builds the ordered list of steps for [tourId]. Defaults to the home
+  /// tour steps.
+  final List<TutorialStep> Function(BuildContext context) stepsBuilder;
 
   /// Callback that opens the real add-tile bottom sheet during the tutorial.
   /// Receives the [TutorialBloc] so the dialog shown on top of the sheet
@@ -224,6 +237,8 @@ class TutorialOverlay extends StatefulWidget {
     required this.child,
     this.onShowAddTileSheet,
     this.onDismissAddTileSheet,
+    this.tourId = TourPreferencesHelper.homeTourId,
+    this.stepsBuilder = buildTutorialSteps,
   }) : super(key: key);
 
   @override
@@ -272,7 +287,7 @@ class _TutorialOverlayState extends State<TutorialOverlay>
   }
 
   List<TutorialStep> _buildSteps(BuildContext context) =>
-      buildTutorialSteps(context);
+      widget.stepsBuilder(context);
 
   /// Finds the Rect of the target widget on screen using its GlobalKey.
   Rect? _getTargetRect(GlobalKey? key) {
@@ -400,9 +415,11 @@ class _TutorialOverlayState extends State<TutorialOverlay>
         if (state.isActive) {
           _animationController.forward();
 
-          // Inject dummy tiles the first time the tutorial becomes active
-          // so new users see a populated schedule.
-          if (!_dummyTilesInjected) {
+          // Inject dummy tiles the first time the home tutorial becomes
+          // active so new users see a populated schedule. Home-specific:
+          // other tours must not mutate the schedule.
+          if (widget.tourId == TourPreferencesHelper.homeTourId &&
+              !_dummyTilesInjected) {
             _dummyTilesInjected = true;
             TutorialDummyData.injectDummyTiles(context);
           }
