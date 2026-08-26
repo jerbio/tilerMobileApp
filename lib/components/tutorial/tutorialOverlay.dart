@@ -197,7 +197,9 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       targetKey: TutorialKeys.fabKey,
       title: l10n.tutorialStepChatTitle,
       body: l10n.tutorialStepChatBody,
-      headerIcon: Icons.chat_outlined,
+      // The chat FAB renders Icons.auto_awesome (HomeFab) — the step icon
+      // must track the live FAB icon (see onboarding sync tests).
+      headerIcon: Icons.auto_awesome,
       tooltipPosition: TooltipPosition.above,
       spotlightShape: SpotlightShape.circle,
       spotlightPadding: 6,

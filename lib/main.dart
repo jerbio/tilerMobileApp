@@ -18,6 +18,8 @@ import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/weeklyUiDateManager/weekly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/onBoarding/subWidgets/workProfileWidget.dart';
 import 'package:tiler_app/components/tileUI/eventNameSearch.dart';
+import 'package:tiler_app/components/tutorial/tourHost.dart';
+import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
 import 'package:tiler_app/components/vibeChat/vibeChat.dart';
 // import 'package:tiler_app/firebase_options.dart';
 import 'package:tiler_app/routes/authenticatedUser/durationDial.dart';
@@ -43,6 +45,7 @@ import 'package:tiler_app/routes/authentication/onBoarding.dart';
 import 'package:tiler_app/routes/authentication/signin.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/themerHelper.dart';
+import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tuple/tuple.dart';
@@ -217,7 +220,7 @@ class _TilerAppState extends State<TilerApp> {
                         ),
                     '/RepetitionRoute': (ctx) => RepetitionRoute(),
                     '/PickColor': (ctx) => PickColor(),
-                    '/Setting': (ctx) => Settings(),
+                    '/Setting': buildSettingsRoute,
                     '/Integrations': (ctx) => IntegrationWidgetRoute(),
                     '/OnBoarding': (ctx) => OnboardingView(),
                     '/TileCluster': (ctx) => CreateTileShareClusterWidget(),
@@ -323,4 +326,22 @@ class _TilerAppState extends State<TilerApp> {
                 );
               }));
   }
+}
+
+/// The `/Setting` route: the settings page hosted under the per-device
+/// settings tour (product-tour-onboarding-redesign.md, Phase 2 item 3).
+///
+/// Top-level (rather than inlined in the `MaterialApp` routes map) so the
+/// production wiring stays testable: `test/settings_tour_test.dart` mounts
+/// `MaterialApp(routes: {'/Setting': buildSettingsRoute})` and asserts the
+/// tour starts on the first visit, spotlighting the live settings rows.
+/// Uses [TourHost]'s default settle delay so the settings list renders
+/// before the spotlight appears.
+Widget buildSettingsRoute(BuildContext context) {
+  return TourHost(
+    tourId: TourPreferencesHelper.settingsTourId,
+    stepCount: kSettingsTourStepCount,
+    stepsBuilder: buildSettingsTourSteps,
+    child: Settings(),
+  );
 }

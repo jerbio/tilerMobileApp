@@ -5,6 +5,7 @@ import 'package:tiler_app/bloc/tutorial/tutorial_event.dart';
 import 'package:tiler_app/bloc/tutorial/tutorial_state.dart';
 import 'package:tiler_app/components/tutorial/tourCoordinator.dart';
 import 'package:tiler_app/components/tutorial/tutorialOverlay.dart';
+import 'package:tiler_app/components/tutorial/tutorialStep.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 
 /// Hosts one product tour on a surface
@@ -44,6 +45,12 @@ class TourHost extends StatefulWidget {
   /// Home-tour only: dismisses the add-tile sheet if it is currently showing.
   final VoidCallback? onDismissAddTileSheet;
 
+  /// Builds the ordered list of steps for [tourId]. Defaults to the home
+  /// tour steps and is passed through to [TutorialOverlay] unchanged, so
+  /// any tour (e.g. the settings tour) can supply its own steps while the
+  /// existing home-tour wiring keeps working without changes.
+  final List<TutorialStep> Function(BuildContext context) stepsBuilder;
+
   const TourHost({
     Key? key,
     required this.tourId,
@@ -52,6 +59,7 @@ class TourHost extends StatefulWidget {
     this.settleDelay = const Duration(milliseconds: 1200),
     this.onShowAddTileSheet,
     this.onDismissAddTileSheet,
+    this.stepsBuilder = buildTutorialSteps,
   }) : super(key: key);
 
   @override
@@ -102,6 +110,7 @@ class _TourHostState extends State<TourHost> {
         },
         child: TutorialOverlay(
           tourId: widget.tourId,
+          stepsBuilder: widget.stepsBuilder,
           onShowAddTileSheet: widget.onShowAddTileSheet,
           onDismissAddTileSheet: widget.onDismissAddTileSheet,
           child: widget.child,

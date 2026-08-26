@@ -19,6 +19,9 @@ class TourPreferencesHelper {
   /// Tour id for the existing 8-step home tour.
   static const String homeTourId = 'home';
 
+  /// Tour id for the 4-step settings tour (Phase 2, section 3.4).
+  static const String settingsTourId = 'settings';
+
   /// Legacy single-tour flag written by the pre-multi-tour engine.
   static const String legacyCompletedKey = 'hasCompletedAppTutorial';
 

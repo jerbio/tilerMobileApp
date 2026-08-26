@@ -7,6 +7,7 @@ import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/previewSummary/preview_summary_bloc.dart';
 import 'package:tiler_app/bloc/vibeChat/vibe_chat_bloc.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tutorial/tours/settingsTour.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -88,18 +89,21 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/AccountInfo.svg',
               title: AppLocalizations.of(context)!.accountInfo,
               color: textColor,
+              key: SettingsTourKeys.accountInfoTileKey,
               onTap: () => Navigator.pushNamed(context, '/accountInfo'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/TilePreferences.svg',
               title: AppLocalizations.of(context)!.tilePreferences,
               color: textColor,
+              key: SettingsTourKeys.tilePreferencesTileKey,
               onTap: () => Navigator.pushNamed(context, '/tilePreferences'),
             ),
             _buildListTile(
               icon: 'assets/icons/settings/NotificationsPreferences.svg',
               title: AppLocalizations.of(context)!.notificationsPreferences,
               color: textColor,
+              key: SettingsTourKeys.notificationsTileKey,
               onTap: () =>
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
@@ -114,6 +118,7 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
+              key: SettingsTourKeys.connectionsTileKey,
               onTap: () => Navigator.pushNamed(context, '/Connections'),
             ),
             // _buildListTile(
@@ -182,8 +187,10 @@ class Settings extends StatelessWidget {
       {required String icon,
       required String title,
       required Color color,
-      Function()? onTap}) {
+      Function()? onTap,
+      Key? key}) {
     return ListTile(
+        key: key,
         leading: SvgPicture.asset(
           icon,
           colorFilter: ColorFilter.mode(color, BlendMode.srcIn),

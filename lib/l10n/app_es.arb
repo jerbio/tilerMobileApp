@@ -563,6 +563,14 @@
         }
       }
     },
+    "tutorialStepSettingsAccountTitle": "Tu Cuenta",
+    "tutorialStepSettingsAccountBody": "Perfil y detalles de la cuenta.",
+    "tutorialStepSettingsTilesTitle": "Preferencias de Tiles",
+    "tutorialStepSettingsTilesBody": "Horas, ubicaciones, perfiles — ajusta lo que el onboarding solía preguntar.",
+    "tutorialStepSettingsNotificationsTitle": "Notificaciones",
+    "tutorialStepSettingsNotificationsBody": "Cómo te avisa Tiler.",
+    "tutorialStepSettingsConnectionsTitle": "Conexiones",
+    "tutorialStepSettingsConnectionsBody": "Conecta Google Calendar.",
     "ok": "OK",
     "notesLoading": "Cargando notas…",
     "notesSaving": "Guardando…",

@@ -2295,6 +2295,31 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get tutorialStepSettingsAccountTitle => 'Account Info';
+
+  @override
+  String get tutorialStepSettingsAccountBody => 'Profile and account details.';
+
+  @override
+  String get tutorialStepSettingsTilesTitle => 'Tile Preferences';
+
+  @override
+  String get tutorialStepSettingsTilesBody =>
+      'Hours, locations, profiles — fine-tune what onboarding used to ask.';
+
+  @override
+  String get tutorialStepSettingsNotificationsTitle => 'Notifications';
+
+  @override
+  String get tutorialStepSettingsNotificationsBody => 'How Tiler nudges you.';
+
+  @override
+  String get tutorialStepSettingsConnectionsTitle => 'Connections';
+
+  @override
+  String get tutorialStepSettingsConnectionsBody => 'Connect Google Calendar.';
+
+  @override
   String get chat => 'Chat';
 
   @override

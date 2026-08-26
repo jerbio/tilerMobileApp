@@ -231,7 +231,7 @@ void main() {
     testWidgets('chat_fab step icon matches the chat FAB', (tester) async {
       final steps = await _loadSteps(tester);
       final chatStep = _stepById(steps, 'chat_fab');
-      expect(chatStep.headerIcon, Icons.chat_outlined);
+      expect(chatStep.headerIcon, Icons.auto_awesome);
 
       await tester.pumpWidget(_wrap(HomeFab(onPressed: () {})));
       await tester.pump();

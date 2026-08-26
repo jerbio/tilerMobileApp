@@ -4073,6 +4073,54 @@ abstract class AppLocalizations {
   /// **'{current}/{total}'**
   String tutorialStepCounter(int current, int total);
 
+  /// No description provided for @tutorialStepSettingsAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Info'**
+  String get tutorialStepSettingsAccountTitle;
+
+  /// No description provided for @tutorialStepSettingsAccountBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile and account details.'**
+  String get tutorialStepSettingsAccountBody;
+
+  /// No description provided for @tutorialStepSettingsTilesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tile Preferences'**
+  String get tutorialStepSettingsTilesTitle;
+
+  /// No description provided for @tutorialStepSettingsTilesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hours, locations, profiles — fine-tune what onboarding used to ask.'**
+  String get tutorialStepSettingsTilesBody;
+
+  /// No description provided for @tutorialStepSettingsNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get tutorialStepSettingsNotificationsTitle;
+
+  /// No description provided for @tutorialStepSettingsNotificationsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'How Tiler nudges you.'**
+  String get tutorialStepSettingsNotificationsBody;
+
+  /// No description provided for @tutorialStepSettingsConnectionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connections'**
+  String get tutorialStepSettingsConnectionsTitle;
+
+  /// No description provided for @tutorialStepSettingsConnectionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect Google Calendar.'**
+  String get tutorialStepSettingsConnectionsBody;
+
   /// No description provided for @chat.
   ///
   /// In en, this message translates to:
