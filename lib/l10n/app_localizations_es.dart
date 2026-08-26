@@ -1198,6 +1198,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get aboutTiler => 'About Tiler';
 
   @override
+  String get howToUseTiler => 'Cómo usar Tiler';
+
+  @override
   String get darkMode => 'Dark Mode';
 
   @override

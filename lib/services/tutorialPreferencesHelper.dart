@@ -64,6 +64,30 @@ class TourPreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(completedKeyFor(tourId), false);
   }
+
+  /// Every tour id registered with the multi-tour engine.
+  ///
+  /// This is the registry behind the manual "How to use Tiler" replay
+  /// (settings row, product-tour-onboarding-redesign.md section 1 "Manual
+  /// replay" + Phase 2 item 4). New tours MUST append their id here so the
+  /// replay-all behavior covers them too.
+  static const List<String> allTourIds = [homeTourId, settingsTourId];
+
+  /// Clears completion for [tourIds] (default: every registered tour) so the
+  /// tours can be replayed — the "How to use Tiler" settings row behavior
+  /// (replay-all). Each tour then replays the next time its own surface is
+  /// visited; this method never triggers a tour by itself.
+  ///
+  /// Writes `false` per tour (it never removes keys), so the legacy
+  /// migration can never re-complete the home tour afterwards. The legacy
+  /// `hasCompletedAppTutorial` flag is never written, consistent with the
+  /// multi-tour path (stage 1.2).
+  static Future<void> resetTours([List<String> tourIds = allTourIds]) async {
+    final prefs = await SharedPreferences.getInstance();
+    for (final tourId in tourIds) {
+      await prefs.setBool(completedKeyFor(tourId), false);
+    }
+  }
 }
 
 /// Legacy single-tour completion API.

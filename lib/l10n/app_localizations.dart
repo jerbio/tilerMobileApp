@@ -2267,6 +2267,12 @@ abstract class AppLocalizations {
   /// **'About Tiler'**
   String get aboutTiler;
 
+  /// No description provided for @howToUseTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'How to use Tiler'**
+  String get howToUseTiler;
+
   /// No description provided for @darkMode.
   ///
   /// In en, this message translates to:

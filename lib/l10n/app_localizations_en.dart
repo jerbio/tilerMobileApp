@@ -1195,6 +1195,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutTiler => 'About Tiler';
 
   @override
+  String get howToUseTiler => 'How to use Tiler';
+
+  @override
   String get darkMode => 'Dark Mode';
 
   @override

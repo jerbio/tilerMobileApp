@@ -159,4 +159,78 @@ void main() {
       expect(await TourPreferencesHelper.hasCompletedTour('settings'), isFalse);
     });
   });
+
+  group('TourPreferencesHelper — resetTours replay-all (stage 2.4)', () {
+    test('the registry covers the home and settings tours', () {
+      // Locks the registry contents behind the "How to use Tiler" row: the
+      // manual replay must cover every tour the user can currently see.
+      expect(
+        TourPreferencesHelper.allTourIds,
+        containsAll([
+          TourPreferencesHelper.homeTourId,
+          TourPreferencesHelper.settingsTourId,
+        ]),
+      );
+    });
+
+    test('default reset clears every registered tour', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      for (final tourId in TourPreferencesHelper.allTourIds) {
+        await TourPreferencesHelper.setTourCompleted(tourId);
+      }
+
+      await TourPreferencesHelper.resetTours();
+
+      for (final tourId in TourPreferencesHelper.allTourIds) {
+        expect(await TourPreferencesHelper.hasCompletedTour(tourId), isFalse,
+            reason: 'Replay-all must clear the "$tourId" tour.');
+      }
+    });
+
+    test('a custom tour-id list resets only those tours', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      await TourPreferencesHelper.setTourCompleted('home');
+      await TourPreferencesHelper.setTourCompleted('settings');
+
+      await TourPreferencesHelper.resetTours([
+        TourPreferencesHelper.settingsTourId,
+      ]);
+
+      expect(await TourPreferencesHelper.hasCompletedTour('home'), isTrue,
+          reason: 'A partial replay must leave other tours untouched.');
+      expect(await TourPreferencesHelper.hasCompletedTour('settings'), isFalse);
+    });
+
+    test('never writes the legacy hasCompletedAppTutorial flag', () async {
+      SharedPreferences.setMockInitialValues({});
+
+      await TourPreferencesHelper.resetTours();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool(TourPreferencesHelper.legacyCompletedKey), isNull,
+          reason:
+              'The multi-tour path must not touch the legacy flag (1.2).');
+    });
+
+    test('reset writes false so the legacy migration cannot re-apply',
+        () async {
+      // Regression lock for legacy users: after a replay-all, a stale
+      // `hasCompletedAppTutorial == true` must not bring the home tour
+      // completion back (the migration only applies while the per-tour key
+      // is absent).
+      SharedPreferences.setMockInitialValues({
+        TourPreferencesHelper.legacyCompletedKey: true,
+      });
+
+      await TourPreferencesHelper.hasCompletedTour('home'); // migrate
+      await TourPreferencesHelper.resetTours();
+
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('hasCompletedTour_home'), isFalse,
+          reason: 'The key must exist as false, not be absent.');
+      expect(await TourPreferencesHelper.hasCompletedTour('home'), isFalse);
+    });
+  });
 }
