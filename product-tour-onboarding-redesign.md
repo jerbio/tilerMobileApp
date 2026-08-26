@@ -10,7 +10,7 @@ analyze -> refactor. Update the tracker after every red-green-refactor cycle.
 Last updated: 2026-08-26
 
 **Resume point (pause/error recovery):** Phases 1 + 2 complete (commits
-`711af31` phase 1, `a10302e` phase 2, plus stage 2.4 "How to use Tiler"
+`711af31` phase 1, `a10302e` phase 2, `aec0f74` stage 2.4 "How to use Tiler"
 reset row). Next stage: **3.1 — Essentials pages + order + validation**
 (write `test/essentials_onboarding_flow_test.dart` RED first).
 Resume protocol: (1) read this block, (2) the section 9 tracker row for
