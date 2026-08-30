@@ -109,14 +109,22 @@ class LoadedUserProfileDeviceSettingEvent extends DeviceSettingEvent {
   List<Object> get props => [];
 }
 
-class UpdateDarkModeMainSettingDeviceSettingEvent extends DeviceSettingEvent {
-  final bool isDarkMode;
-  UpdateDarkModeMainSettingDeviceSettingEvent(
-      {required this.isDarkMode, required String id})
+class LoadThemeModeFromBackendEvent extends DeviceSettingEvent {
+  LoadThemeModeFromBackendEvent({required String id})
       : super(id: id, loadingType: LoadingType.none);
 
   @override
-  List<Object> get props => [id, loadingType, isDarkMode];
+  List<Object> get props => [id];
+}
+
+class UpdateThemeModeDeviceSettingEvent extends DeviceSettingEvent {
+  final AppThemeMode themeMode;
+  UpdateThemeModeDeviceSettingEvent(
+      {required this.themeMode, required String id})
+      : super(id: id, loadingType: LoadingType.none);
+
+  @override
+  List<Object> get props => [id, themeMode];
 }
 
 class LogOutMainSettingDeviceSettingEvent extends DeviceSettingEvent {
