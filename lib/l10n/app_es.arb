@@ -1,5 +1,6 @@
 {
     "helloWorld": "¡Hola Mundo!",
+    "useDeviceLocation": "Usar la ubicación de mi dispositivo",
     "travelDurationMinutes": "{minutes} min",
     "@travelDurationMinutes": {
       "description": "Travel duration in minutes",

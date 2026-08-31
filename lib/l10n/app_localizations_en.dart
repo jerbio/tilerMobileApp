@@ -867,6 +867,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'What is your primary location for work or study?';
 
   @override
+  String get useDeviceLocation => 'Use my device location';
+
+  @override
   String get energyLevelDescriptionQuestion =>
       'How would you describe your energy levels throughout the day?';
 

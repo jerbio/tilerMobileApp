@@ -490,6 +490,7 @@
     "wakeUpTimeQuestion":"What time do you usually wake up in the morning?",
     "workdayStartQuestion":"What time do you typically start your workday?",
     "primaryLocationQuestion":"What is your primary location for work or study?",
+    "useDeviceLocation":"Use my device location",
     "energyLevelDescriptionQuestion":"How would you describe your energy levels throughout the day?",
     "incompleteRequest":"Did not send complete request",
     "addContact": "Add contact",

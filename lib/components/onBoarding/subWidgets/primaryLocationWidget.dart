@@ -74,9 +74,42 @@ class _PrimaryLocationWidgetState extends State<PrimaryLocationWidget> {
           ),
         );
 
+        final localizations = AppLocalizations.of(context)!;
+
+        // Stage 3.1: device-location consent is button-driven only —
+        // swiping or Next must never trigger the permission flow.
+        ElevatedButton deviceLocationButton = ElevatedButton(
+          onPressed: () {
+            context.read<OnboardingBloc>().add(GetTimeAndLocationEvent(true));
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            padding:
+                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+          ),
+          child: Text(
+            localizations.useDeviceLocation,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        );
+
         return OnboardingSubWidget(
-          questionText: AppLocalizations.of(context)!.primaryLocationQuestion,
-          child: locationSearchWidget,
+          questionText: localizations.primaryLocationQuestion,
+          questionSubText: localizations.timeAndLocationSecondarySubTitle,
+          child: Column(
+            children: [
+              locationSearchWidget,
+              const SizedBox(height: 20.0),
+              deviceLocationButton,
+            ],
+          ),
         );
       },
     );

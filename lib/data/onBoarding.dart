@@ -17,7 +17,7 @@ class OnboardingContent {
   List<RecurringTask>? recurringTasks;
   List<TileSuggestion>? tileSuggestions;
   List<String>? usage;
-
+  String? profession;
 
   OnboardingContent({
     required this.personalHoursStart,
@@ -30,7 +30,8 @@ class OnboardingContent {
     required this.preferredDaySections,
     required this.recurringTasks,
     required this.tileSuggestions,
-    required this.usage
+    required this.usage,
+    this.profession
   });
 
 
@@ -59,6 +60,7 @@ class OnboardingContent {
       tileSuggestions: json['TileList'] != null
           ? (json['TileList'] as List).map((e) => TileSuggestion.fromJson(e)).toList()
           : [],
+      profession: json['Profession'] as String?,
 
     );
   }
@@ -75,6 +77,7 @@ class OnboardingContent {
       'Repetitives': recurringTasks?.map((e) => e.toJson()).toList(),
       'TilerUsage' : usage,
       'TileList':tileSuggestions?.map((e) => e.toJson()).toList(),
+      'Profession': profession,
 
     };
   }

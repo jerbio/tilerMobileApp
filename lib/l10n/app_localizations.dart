@@ -1676,6 +1676,12 @@ abstract class AppLocalizations {
   /// **'What is your primary location for work or study?'**
   String get primaryLocationQuestion;
 
+  /// No description provided for @useDeviceLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my device location'**
+  String get useDeviceLocation;
+
   /// No description provided for @energyLevelDescriptionQuestion.
   ///
   /// In en, this message translates to:
