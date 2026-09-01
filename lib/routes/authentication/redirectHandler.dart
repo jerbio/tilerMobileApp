@@ -122,6 +122,14 @@ class RedirectHandler {
         }
         break;
       case CalendarConnectOutcome.error:
+        if (calendarReturn.reason != null) {
+          // The server appends a safe reason token on failure (see
+          // RedirectTargetValidator.AppendCallbackResult). Surface it in the
+          // debug console so QA can pair it with the server's [CalendarConnect]
+          // logs; the user only sees the generic toast.
+          debugPrint(
+              'Calendar connect failed: reason=${calendarReturn.reason}');
+        }
         if (localization != null) {
           notification.showToast(context,
               localization.calendarConnectionError,

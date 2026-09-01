@@ -110,9 +110,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
           NotificationOverlayMessage notificationOverlayMessage =
               NotificationOverlayMessage();
           print("IntegrationWidgetRoute: state: $state");
-          if (state is IntegrationAdded) {
-            //_handleNewIntegration(context, state.integrationId);
-          } else if (state is IntegrationDeleted) {
+          if (state is IntegrationDeleted) {
             notificationOverlayMessage.showToast(
               context,
               AppLocalizations.of(context)!

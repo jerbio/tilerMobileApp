@@ -59,6 +59,11 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
   /// Opens a URL in the external browser. Injectable for tests.
   final Future<void> Function(Uri url) _launchAuthorizationUrl;
 
+  /// True while a connect flow is being started (the `api/Integrations/connect`
+  /// call plus the external-browser launch). Repeat taps on the add button are
+  /// ignored while set, so one tap starts exactly one consent round-trip.
+  bool _connectInProgress = false;
+
   IntegrationsBloc._({
     required IntegrationApi integrationApi,
     required IntegrationType integrationType,
@@ -174,6 +179,16 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       currentIntegrations = List<CalendarIntegration>.from(
           (state as IntegrationsLoaded).integrations);
     }
+    if (_connectInProgress) {
+      // A connect flow is already in flight — ignore the repeat tap. The
+      // in-flight flow (or its tilerapp:// deep-link return) refreshes the
+      // page; starting a second consent round-trip would only open a second
+      // consent screen (both providers force consent: prompt=consent).
+      debugPrint(
+          'AddIntegrationEvent ignored: connect flow already in flight (provider=${integrationType.providerName})');
+      return;
+    }
+    _connectInProgress = true;
     try {
       // P4-2: both Google and Microsoft connect through the backend-driven
       // flow. The app calls `api/Integrations/connect` with its Bearer token
@@ -197,6 +212,8 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       }
       emit(IntegrationsError(
           errorMessage: errorMessage, integrations: currentIntegrations));
+    } finally {
+      _connectInProgress = false;
     }
   }
 

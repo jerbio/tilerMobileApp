@@ -123,6 +123,46 @@ void main() {
 
       expect(message, contains('Failed to add integration'));
     });
+test(
+        'a repeat AddIntegrationEvent while a connect is in flight is ignored',
+        () async {
+      int connectCalls = 0;
+      int launches = 0;
+      final Completer<void> firstLaunchStarted = Completer<void>();
+      final Completer<void> holdFirstLaunch = Completer<void>();
+
+      IntegrationsBloc bloc = IntegrationsBloc(
+        getContextCallBack: () => null,
+        integrationType: IntegrationType.microsoft,
+        startCalendarConnect: (String provider) async {
+          connectCalls++;
+          return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize?state=s1gn3d';
+        },
+        launchAuthorizationUrl: (Uri url) async {
+          launches++;
+          if (launches == 1) {
+            if (!firstLaunchStarted.isCompleted) {
+              firstLaunchStarted.complete();
+            }
+            // Keep the first flow open until the test releases it.
+            await holdFirstLaunch.future;
+          }
+        },
+      );
+      addTearDown(bloc.close);
+
+      bloc.add(AddIntegrationEvent());
+      await firstLaunchStarted.future.timeout(const Duration(seconds: 5));
+      // Second tap while the first flow is still in flight — ignored.
+      bloc.add(AddIntegrationEvent());
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(connectCalls, 1);
+      expect(launches, 1);
+
+      holdFirstLaunch.complete();
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
   });
 
   group('IntegrationsBloc GetIntegrationsEvent (P4-2 provider filter)', () {

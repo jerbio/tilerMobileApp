@@ -45,16 +45,6 @@ class IntegrationsLoaded extends IntegrationsState {
   }
 }
 
-class IntegrationAdded extends IntegrationsState {
-  final String integrationId;
-
-  const IntegrationAdded({required this.integrationId, String? requestId})
-      : super(requestId: requestId);
-
-  @override
-  List<Object> get props => [integrationId];
-}
-
 class IntegrationDeleted extends IntegrationsState {
   final String integrationInfo;
   IntegrationDeleted({required this.integrationInfo, String? requestId})
