@@ -640,5 +640,9 @@
     "legalFooterTerms": "Términos",
     "legalFooterAnd": "y la",
     "legalFooterPrivacy": "Privacidad",
-    "aiConsentLinkError": "No se pudo abrir el enlace."
+    "aiConsentLinkError": "No se pudo abrir el enlace.",
+    "addCalendar": "Añadir calendario",
+    "calendarConnected": "Calendario conectado",
+    "calendarConnectionDeclined": "La conexión del calendario se canceló",
+    "calendarConnectionError": "No se pudo conectar tu calendario"
 }

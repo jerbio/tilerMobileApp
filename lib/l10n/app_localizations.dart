@@ -2327,6 +2327,30 @@ abstract class AppLocalizations {
   /// **'Slack'**
   String get slack;
 
+  /// No description provided for @addCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add calendar'**
+  String get addCalendar;
+
+  /// No description provided for @calendarConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar connected'**
+  String get calendarConnected;
+
+  /// No description provided for @calendarConnectionDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar connection was cancelled'**
+  String get calendarConnectionDeclined;
+
+  /// No description provided for @calendarConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect your calendar'**
+  String get calendarConnectionError;
+
   /// No description provided for @sleepDuration.
   ///
   /// In en, this message translates to:

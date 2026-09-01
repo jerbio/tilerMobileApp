@@ -1225,6 +1225,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get slack => 'Slack';
 
   @override
+  String get addCalendar => 'Add calendar';
+
+  @override
+  String get calendarConnected => 'Calendar connected';
+
+  @override
+  String get calendarConnectionDeclined => 'Calendar connection was cancelled';
+
+  @override
+  String get calendarConnectionError => 'Could not connect your calendar';
+
+  @override
   String get sleepDuration => 'Sleep Duration';
 
   @override

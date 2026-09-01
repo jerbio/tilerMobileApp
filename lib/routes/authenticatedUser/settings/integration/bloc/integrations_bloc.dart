@@ -3,27 +3,41 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
-import 'package:tiler_app/services/api/authorization.dart';
 import 'package:tiler_app/services/api/integrationsApi.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'integrations_event.dart';
 part 'integrations_state.dart';
 
 enum IntegrationType { googleCalendar, microsoft }
 
+/// Default connect seam: delegates to [IntegrationApi.startCalendarConnect].
+Future<String> _defaultStartCalendarConnect(
+    IntegrationApi api, String provider) {
+  return api.startCalendarConnect(provider: provider);
+}
+
 class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
   final IntegrationApi _integrationApi;
-  final AuthorizationApi _authorizationApi;
   final IntegrationType integrationType;
 
-  IntegrationsBloc({
-    required Function getContextCallBack,
-    required this.integrationType,
-  })  : _integrationApi =
-            IntegrationApi(getContextCallBack: getContextCallBack),
-        _authorizationApi =
-            AuthorizationApi(getContextCallBack: getContextCallBack),
+  /// Starts the backend-driven calendar-connect flow for [provider] and
+  /// returns the provider authorization URL. Injectable for tests.
+  final Future<String> Function(String provider) _startCalendarConnect;
+
+  /// Opens a URL in the external browser. Injectable for tests.
+  final Future<void> Function(Uri url) _launchAuthorizationUrl;
+
+  IntegrationsBloc._({
+    required IntegrationApi integrationApi,
+    required IntegrationType integrationType,
+    required Future<String> Function(String provider) startCalendarConnect,
+    required Future<void> Function(Uri url) launchAuthorizationUrl,
+  })  : _integrationApi = integrationApi,
+        integrationType = integrationType,
+        _startCalendarConnect = startCalendarConnect,
+        _launchAuthorizationUrl = launchAuthorizationUrl,
         super(IntegrationsInitial()) {
     on<GetIntegrationsEvent>(_getIntegrations);
     on<DeleteIntegrationEvent>(_deleteIntegration);
@@ -31,6 +45,39 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
     on<UpdateIntegrationLocationEvent>(_updateIntegrationLocation);
     on<UpdateCalendarItemEvent>(_updateCalendarItem);
     on<ResetIntegrationsEvent>((event, emit) => emit(IntegrationsInitial()));
+  }
+
+  factory IntegrationsBloc({
+    required Function getContextCallBack,
+    required IntegrationType integrationType,
+    IntegrationApi? integrationApi,
+    Future<String> Function(String provider)? startCalendarConnect,
+    Future<void> Function(Uri url)? launchAuthorizationUrl,
+  }) {
+    final api =
+        integrationApi ?? IntegrationApi(getContextCallBack: getContextCallBack);
+    return IntegrationsBloc._(
+      integrationApi: api,
+      integrationType: integrationType,
+      startCalendarConnect:
+          startCalendarConnect ?? (provider) => _defaultStartCalendarConnect(api, provider),
+      launchAuthorizationUrl:
+          launchAuthorizationUrl ?? _launchInExternalBrowser,
+    );
+  }
+
+  /// Provider value for `GET api/Integrations/connect`.
+  String get _providerName => integrationType == IntegrationType.microsoft
+      ? 'microsoft'
+      : 'google';
+
+  static Future<void> _launchInExternalBrowser(Uri authorizationUrl) async {
+    final bool launched =
+        await launchUrl(authorizationUrl, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      throw Exception(
+          'Failed to open external browser for calendar connect: $authorizationUrl');
+    }
   }
 
   void _getIntegrations(
@@ -91,38 +138,27 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
           (state as IntegrationsLoaded).integrations);
     }
     try {
-      Map<String, dynamic>? result;
-      switch (integrationType) {
-        case IntegrationType.googleCalendar:
-          result = await _authorizationApi.addGoogleCalendar();
-          break;
-        case IntegrationType.microsoft:
-          result = {};
-      }
-      if (result != null) {
-        add(GetIntegrationsEvent());
-      } else {
-        BuildContext? context = null;
-        if (this._integrationApi.getContextCallBack != null) {
-          context = this._integrationApi.getContextCallBack!();
-        }
-
-        if (context != null) {
-          emit(IntegrationsError(
-              errorMessage:
-                  AppLocalizations.of(context)!.failedToAddIntegration,
-              integrations: currentIntegrations));
-          return;
-        }
-
-        emit(IntegrationsError(
-            errorMessage: "Failed to add integration",
-            integrations: currentIntegrations));
-      }
+      // P4-2: both Google and Microsoft connect through the backend-driven
+      // flow. The app calls `api/Integrations/connect` with its Bearer token
+      // and opens the returned provider authorization URL in the external
+      // browser (the browser cannot carry the mobile token). No local state
+      // changes here — the connected calendar appears when the provider
+      // redirects back via the tilerapp:// deep link, which `RedirectHandler`
+      // routes into the integrations page with a fresh bloc (the refresh).
+      final authorizationUrl = await _startCalendarConnect(_providerName);
+      await _launchAuthorizationUrl(Uri.parse(authorizationUrl));
     } catch (e) {
+      BuildContext? context = null;
+      if (this._integrationApi.getContextCallBack != null) {
+        context = this._integrationApi.getContextCallBack!();
+      }
+
+      String errorMessage = "Failed to add integration: ${e.toString()}";
+      if (context != null) {
+        errorMessage = AppLocalizations.of(context)!.failedToAddIntegration;
+      }
       emit(IntegrationsError(
-          errorMessage: "Failed to add integration: ${e.toString()}",
-          integrations: currentIntegrations));
+          errorMessage: errorMessage, integrations: currentIntegrations));
     }
   }
 

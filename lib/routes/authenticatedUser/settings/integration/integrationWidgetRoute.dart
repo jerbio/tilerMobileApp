@@ -27,7 +27,7 @@ class IntegrationWidgetRoute extends StatelessWidget {
       onPressed: () =>
           context.read<IntegrationsBloc>().add(AddIntegrationEvent()),
       child: Text(
-        AppLocalizations.of(context)!.addGoogleCalendar,
+        AppLocalizations.of(context)!.addCalendar,
         style: TextStyle(fontSize: 16),
       ),
     );
@@ -88,12 +88,20 @@ class IntegrationWidgetRoute extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final localization = AppLocalizations.of(context)!;
+    // P4-2: the page is shared by the Google and Microsoft connect flows —
+    // the AppBar title reflects the provider of the bloc above it.
+    final integrationType = context.read<IntegrationsBloc>().integrationType;
+    final appBarTitle =
+        integrationType == IntegrationType.microsoft
+            ? localization.microsoft
+            : localization.googleCalender;
 
     return CancelAndProceedTemplateWidget(
       routeName: routeName,
       appBar: AppBar(
         title: Text(
-          AppLocalizations.of(context)!.googleCalender,
+          appBarTitle,
         ),
         automaticallyImplyLeading: false,
       ),

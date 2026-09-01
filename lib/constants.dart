@@ -55,6 +55,19 @@ const String appleServicesId = 'app.tiler.web.signin';
 final Uri appleAndroidRedirectUri =
     Uri.https(tilerDomain, '/Account/AppleAndroidCallback');
 
+/// Return deep link for the backend-driven calendar-connect flow (P4-2).
+///
+/// The app passes this as `redirectTarget` to `GET api/Integrations/connect`;
+/// after the provider consent round-trip the server redirects the browser back
+/// to this URL with the result markers appended
+/// (`calendarConnect=success|declined|error`, `integrationId` on success,
+/// `reason` on error) — handled by `RedirectHandler.parseCalendarConnectReturn`.
+/// The `tilerapp://` scheme is allow-listed unconditionally by the server's
+/// `RedirectTargetValidator`, and the Android manifest registers
+/// `tilerapp://app.tiler.app` with no path restriction.
+const String calendarConnectRedirectTarget =
+    'tilerapp://app.tiler.app/integrations';
+
 /// Microsoft (Entra) native sign-in — identity-only, via flutter_appauth (AppAuth).
 ///
 /// This is the mobile counterpart of the web OpenID Connect flow. The app performs
