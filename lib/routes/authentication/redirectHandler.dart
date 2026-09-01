@@ -144,7 +144,7 @@ class RedirectHandler {
   /// integration cannot be resolved.
   static Future<void> _navigateToConnectedIntegration(
       BuildContext context, String? integrationId) async {
-    IntegrationType integrationType = IntegrationType.googleCalendar;
+    IntegrationType? integrationType;
     bool resolved = integrationId != null && integrationId.isNotEmpty;
     if (resolved) {
       try {
@@ -155,8 +155,11 @@ class RedirectHandler {
         if (integrations == null || integrations.isEmpty) {
           resolved = false;
         } else {
+          // An unknown provider resolves to null and falls back to the
+          // connections list below.
           integrationType =
-              _integrationTypeFromProvider(integrations.first.calendarType);
+              IntegrationType.fromProviderName(integrations.first.calendarType);
+          resolved = integrationType != null;
         }
       } catch (e) {
         resolved = false;
@@ -175,7 +178,7 @@ class RedirectHandler {
         builder: (context) => BlocProvider(
           create: (context) => IntegrationsBloc(
             getContextCallBack: () => context,
-            integrationType: integrationType,
+            integrationType: integrationType!,
           ),
           child: IntegrationWidgetRoute(),
         ),
@@ -183,14 +186,7 @@ class RedirectHandler {
     );
   }
 
-  static IntegrationType _integrationTypeFromProvider(String? provider) {
-    switch (provider?.toLowerCase()) {
-      case 'microsoft':
-        return IntegrationType.microsoft;
-      default:
-        return IntegrationType.googleCalendar;
-    }
-  }
+  
 
   static void _routeToTileShare(BuildContext context, String uriString) {
     var decodedString = Uri.decodeFull(uriString);

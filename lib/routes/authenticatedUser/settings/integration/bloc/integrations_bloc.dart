@@ -10,7 +10,37 @@ import 'package:url_launcher/url_launcher.dart';
 part 'integrations_event.dart';
 part 'integrations_state.dart';
 
-enum IntegrationType { googleCalendar, microsoft }
+/// Provider for the settings integrations pages.
+///
+/// Single source of truth for the provider names the server uses — the
+/// `provider` field on `GET api/Integrations` rows and the `Provider=` query
+/// parameter of `GET api/Integrations/connect`. To add a provider, add one
+/// enum entry with its server name; the per-provider list filter in
+/// `IntegrationsBloc` and the deep-link return routing
+/// (`IntegrationType.fromProviderName`) pick it up automatically.
+enum IntegrationType {
+  googleCalendar('google'),
+  microsoft('microsoft');
+
+  const IntegrationType(this.providerName);
+
+  /// The provider name sent to and expected from the server.
+  final String providerName;
+
+  /// Reverse lookup of [providerName] (case-insensitive). Returns `null` for
+  /// unknown or missing providers, so a row for a provider the app does not
+  /// know about is shown on no page (and a deep-link return falls back to
+  /// the connections list).
+  static IntegrationType? fromProviderName(String? providerName) {
+    final String? normalized = providerName?.toLowerCase();
+    for (final IntegrationType type in IntegrationType.values) {
+      if (type.providerName == normalized) {
+        return type;
+      }
+    }
+    return null;
+  }
+}
 
 /// Default connect seam: delegates to [IntegrationApi.startCalendarConnect].
 Future<String> _defaultStartCalendarConnect(
@@ -66,10 +96,7 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
     );
   }
 
-  /// Provider value for `GET api/Integrations/connect`.
-  String get _providerName => integrationType == IntegrationType.microsoft
-      ? 'microsoft'
-      : 'google';
+  
 
   static Future<void> _launchInExternalBrowser(Uri authorizationUrl) async {
     final bool launched =
@@ -86,7 +113,17 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
     try {
       final integrations = await _integrationApi.getIntegrations(
           integrationId: event.integrationId);
-      emit(IntegrationsLoaded(integrations: integrations ?? []));
+      // P4-2 fix: the server list endpoint (GET api/Integrations without an
+      // integrationId) returns ALL of the user's third-party rows — google
+      // AND microsoft. This page is per-provider (one bloc per provider), so
+      // keep only this bloc's provider rows. Case-insensitive match on the
+      // `provider` field (`CalendarIntegration.calendarType`).
+      final integrationsForProvider = (integrations ?? [])
+          .where((integration) =>
+              IntegrationType.fromProviderName(integration.calendarType) ==
+                  integrationType)
+          .toList();
+      emit(IntegrationsLoaded(integrations: integrationsForProvider));
     } catch (e) {
       emit(IntegrationsError(
           errorMessage: e.toString(),
@@ -145,7 +182,8 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       // changes here — the connected calendar appears when the provider
       // redirects back via the tilerapp:// deep link, which `RedirectHandler`
       // routes into the integrations page with a fresh bloc (the refresh).
-      final authorizationUrl = await _startCalendarConnect(_providerName);
+      final authorizationUrl =
+          await _startCalendarConnect(integrationType.providerName);
       await _launchAuthorizationUrl(Uri.parse(authorizationUrl));
     } catch (e) {
       BuildContext? context = null;
