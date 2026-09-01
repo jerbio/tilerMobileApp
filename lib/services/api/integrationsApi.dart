@@ -140,49 +140,76 @@ class IntegrationApi extends AppApi {
     });
   }
 
-  Future<bool?> deleteIntegration(
+  /// Deletes (disconnects) [calendarIntegration] from the backend.
+  ///
+  /// Sends `DELETE api/Integrations` with the integration id, its provider,
+  /// and the mobile marker. Returns `true` when the server acknowledges the
+  /// delete (`Error.Code == '0'`). A successful delete carries no `Content`
+  /// (there is nothing to echo back), so success is judged by the error code
+  /// alone — not by the presence of a `Content` field. Throws [TilerError]
+  /// with the server's message when the delete fails, so the caller can show
+  /// the actual reason instead of a generic error.
+  Future<bool> deleteIntegration(
       CalendarIntegration calendarIntegration) async {
-    TilerError error = new TilerError();
-    if ((await this.authentication.isUserAuthenticated()).item1) {
-      await checkAndReplaceCredentialCache();
-      error.Message = "Did not send request";
-      String url = Constants.tilerDomain;
-      Uri uri = Uri.https(url, 'api/Integrations');
-      var header = this.getHeaders();
-      if (header == null) {
+    final isAuthenticated = await authentication.isUserAuthenticated();
+    if (!isAuthenticated.item1) {
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.userIsNotAuthenticated);
+    }
+    await checkAndReplaceCredentialCache();
+
+    var header = this.getHeaders();
+    if (header == null) {
+      throw TilerError(
+          Message:
+              LocalizationService.instance.translations.authenticationIssues);
+    }
+
+    final deleteIntegrationParameters = {
+      'IntegrationId': calendarIntegration.id,
+      'Provider': calendarIntegration.calendarType,
+      // Match the working POST endpoints (e.g. updateCalendarItem), which send
+      // the mobile marker as a JSON boolean rather than the string "true".
+      'MobileApp': true,
+    };
+    final injectedDeleteIntegrationParameters =
+        await injectRequestParams(deleteIntegrationParameters);
+
+    Utility.debugPrint(
+        'Deleting integration: $injectedDeleteIntegrationParameters');
+    final response = await httpClient
+        .delete(
+            Uri.https(Constants.tilerDomain, 'api/Integrations'),
+            headers: header,
+            body: json.encode(injectedDeleteIntegrationParameters))
+        .timeout(
+      AppApi.requestTimeout,
+      onTimeout: () {
         throw TilerError(
             Message:
-                LocalizationService.instance.translations.authenticationIssues);
-      }
-      var deleteIntegrationParameters = {
-        'IntegrationId': calendarIntegration.id,
-        'Provider': calendarIntegration.calendarType,
-        'MobileApp': true.toString()
-      };
+                LocalizationService.instance.translations.requestTimeout);
+      },
+    );
+    Utility.debugPrint('Delete integration API response: '
+        '${response.statusCode} ${response.body}');
 
-      var injectedDeleteIntegrationParameters =
-          await injectRequestParams(deleteIntegrationParameters);
-      var response = await httpClient
-          .delete(uri,
-              headers: header,
-              body: json.encode(injectedDeleteIntegrationParameters))
-          .timeout(
-        AppApi.requestTimeout,
-        onTimeout: () {
-          throw TilerError(
-              Message:
-                  LocalizationService.instance.translations.requestTimeout);
-        },
-      );
-      var jsonResult = jsonDecode(response.body);
-      error.Message = "Issues with reaching Tiler servers";
-      if (isJsonResponseOk(jsonResult)) {
-        if (isContentInResponse(jsonResult)) {
-          return true;
-        }
-      }
+    final dynamic jsonResult;
+    try {
+      jsonResult = jsonDecode(response.body);
+    } catch (_) {
+      throw TilerError(
+          Message: LocalizationService.instance.translations.errorOccurred);
     }
-    return false;
+
+    // Success is the server reporting `Error.Code == '0'`. A delete returns no
+    // `Content` (nothing to echo back), so it must not be rejected for lacking
+    // one — the previous `isContentInResponse` check turned a successful
+    // delete into a failure and left the row on the list.
+    if (isJsonResponseOk(jsonResult)) {
+      return true;
+    }
+    throw TilerError(Message: errorMessage(jsonResult));
   }
 
   Future<CalendarItem?> updateCalendarItem({

@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/request/TilerError.dart';
 import 'package:tiler_app/services/api/integrationsApi.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -144,28 +145,31 @@ class IntegrationsBloc extends Bloc<IntegrationsEvent, IntegrationsState> {
       final currentIntegrations = List<CalendarIntegration>.from(
           (state as IntegrationsLoaded).integrations);
       try {
-        final success =
-            await _integrationApi.deleteIntegration(event.integration);
+        // `deleteIntegration` returns true on success and throws a
+        // TilerError carrying the server's message on failure.
+        await _integrationApi.deleteIntegration(event.integration);
 
-        if (success!) {
-          final index = currentIntegrations
-              .indexWhere((index) => index.id == event.integration.id);
-          String integrationInfo = currentIntegrations[index].email ??
-              currentIntegrations[index].userId ??
-              currentIntegrations[index].id ??
-              "";
-          if (index != -1) currentIntegrations.removeAt(index);
-          emit(IntegrationDeleted(integrationInfo: integrationInfo));
-          emit(IntegrationsLoaded(integrations: currentIntegrations));
-        } else {
+        final index = currentIntegrations
+            .indexWhere((integration) => integration.id == event.integration.id);
+        if (index == -1) {
           emit(IntegrationsError(
             errorMessage: "Failed to delete integration",
             integrations: currentIntegrations,
           ));
+          return;
         }
+        final integrationInfo = currentIntegrations[index].email ??
+            currentIntegrations[index].userId ??
+            currentIntegrations[index].id ??
+            "";
+        currentIntegrations.removeAt(index);
+        emit(IntegrationDeleted(integrationInfo: integrationInfo));
+        emit(IntegrationsLoaded(integrations: currentIntegrations));
       } catch (e) {
+        final message =
+            e is TilerError ? (e.Message ?? e.toString()) : e.toString();
         emit(IntegrationsError(
-          errorMessage: "Failed to delete integration: ${e.toString()}",
+          errorMessage: "Failed to delete integration: $message",
           integrations: currentIntegrations,
         ));
       }
