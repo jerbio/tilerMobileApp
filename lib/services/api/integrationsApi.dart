@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/calendarIntegration.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/TilerError.dart';
@@ -103,25 +104,11 @@ class IntegrationApi extends AppApi {
               LocalizationService.instance.translations.authenticationIssues);
     }
     Utility.debugPrint('Starting calendar connect for provider: $provider');
-    var response = await httpClient.get(uri, headers: header).timeout(
-      AppApi.requestTimeout,
-      onTimeout: () {
-        throw TilerError(
-            Message:
-                LocalizationService.instance.translations.requestTimeout);
-      },
-    );
-    // The http client does not follow redirects: a 302 whose Location header
-    // holds the provider authorization URL is the expected success shape.
-    String? authorizationUrl = response.headers['Location'];
-    if (authorizationUrl == null || authorizationUrl.isEmpty) {
-      Utility.debugPrint(
-          'Calendar connect response missing Location header: '
-          '${response.statusCode} ${response.body}');
-      throw TilerError(
-          Message: LocalizationService.instance.translations.errorOccurred);
-    }
-    return authorizationUrl;
+    // The server answers with a 302 whose Location header holds the provider
+    // authorization URL. The helper sends the request with redirect-following
+    // disabled so we read that raw redirect instead of receiving the
+    // provider's consent page (a 200 HTML page with no Location header).
+    return getCalendarConnectAuthorizationUrl(httpClient, uri, header);
   }
 
   Future<Map<String, dynamic>?> addIntegrationLocation(
@@ -253,4 +240,60 @@ class IntegrationApi extends AppApi {
               : LocalizationService.instance.translations.errorOccurred);
     }
   }
+}
+
+/// Sends [uri] through [client] and returns the server's `Location` header.
+///
+/// The calendar-connect endpoint (`GET api/Integrations/connect`) answers with
+/// a 302 whose `Location` header holds the provider authorization URL. The
+/// request is sent with `followRedirects` disabled: with the http client's
+/// default (follow), the 302 is chased to the provider's consent page and the
+/// caller receives that page's 200 HTML body instead of the redirect — no
+/// `Location` header, no authorization URL to launch in the external browser.
+///
+/// Throws [TilerError] when the response carries no usable `Location` header
+/// (e.g. an auth failure answered with a 200/401 body) or when the request
+/// times out after [timeout].
+Future<String> getCalendarConnectAuthorizationUrl(
+  http.Client client,
+  Uri uri,
+  Map<String, String> headers, {
+  Duration timeout = AppApi.requestTimeout,
+}) async {
+  final request = http.Request('GET', uri)
+    ..headers.addAll(headers)
+    ..followRedirects = false
+    ..maxRedirects = 0;
+  final streamed = await client.send(request).timeout(timeout, onTimeout: () {
+    throw TilerError(
+        Message: LocalizationService.instance.translations.requestTimeout);
+  });
+  final response = await http.Response.fromStream(streamed);
+  // Response header names are case-insensitive and the VM's http client
+  // lower-cases them, so look the name up ignoring case.
+  final String? authorizationUrl =
+      _headerValueIgnoreCase(response.headers, 'Location');
+  if (authorizationUrl == null || authorizationUrl.isEmpty) {
+    Utility.debugPrint(
+        'Calendar connect response missing Location header: '
+        '${response.statusCode} ${response.body}');
+    throw TilerError(
+        Message: LocalizationService.instance.translations.errorOccurred);
+  }
+  return authorizationUrl;
+}
+
+/// Case-insensitive lookup in a response header map.
+///
+/// `package:http` hands back a plain `Map<String, String>` (no
+/// case-insensitivity), and the VM's `HttpClient` lower-cases response header
+/// names — so read the header by exact name first, then case-insensitively.
+String? _headerValueIgnoreCase(Map<String, String> headers, String name) {
+  final String? direct = headers[name];
+  if (direct != null) return direct;
+  final String target = name.toLowerCase();
+  for (final MapEntry<String, String> entry in headers.entries) {
+    if (entry.key.toLowerCase() == target) return entry.value;
+  }
+  return null;
 }
