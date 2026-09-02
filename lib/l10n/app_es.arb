@@ -1,5 +1,109 @@
 {
     "helloWorld": "¡Hola Mundo!",
+    "todayStatusPlacedTitle": "Programadas correctamente",
+    "todayStatusAttentionTitle": "Necesitan atención",
+    "todayStatusLateTitle": "Con retraso",
+    "todayStatusAttentionHelper": "Estas no cupieron en el tiempo disponible de hoy.",
+    "todayStatusLateHelper": "El tiempo de viaje entre estas y tus tiles cercanas hace que no puedas llegar a tiempo.",
+    "todayStatusTileCount": "{count, plural, =1{1 tile} other{{count} tiles}}",
+    "@todayStatusTileCount": {
+      "description": "Low-emphasis count beside a Today Status section heading",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
+      }
+    },
+    "todayStatusTilesPlaced": "{count, plural, =1{Tile completada} other{Tiles completadas}}",
+    "@todayStatusTilesPlaced": {
+      "description": "Summary strip label under the completed count",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
+      }
+    },
+    "todayStatusTilesNeedAttention": "Necesitan atención",
+    "todayStatusTilesRunningLate": "Con retraso",
+    "todayStatusEverythingOnTrack": "Todo va según lo previsto",
+    "todayStatusEverythingElseOnTrack": "Todo lo demás va según lo previsto",
+    "todayStatusOnTrackSubcopy": "Ninguna tile programada va con retraso.",
+    "todayStatusClearDay": "Tu día está despejado.",
+    "todayStatusPreviewCta": "Ver un plan mejor",
+    "todayStatusPreviewLoading": "Preparando la vista previa…",
+    "todayStatusPreviewUnavailable": "No se pudo generar la vista previa. Tu plan no ha cambiado.",
+    "todayStatusUntitledTile": "Tile sin título",
+    "todayStatusShowAll": "Ver todo",
+    "todayStatusExpandSection": "Expandir {section}",
+    "@todayStatusExpandSection": {
+      "description": "Screen reader label for the collapsed section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Programadas correctamente"
+        }
+      }
+    },
+    "todayStatusCollapseSection": "Contraer {section}",
+    "@todayStatusCollapseSection": {
+      "description": "Screen reader label for the expanded section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Programadas correctamente"
+        }
+      }
+    },
+    "todayStatusReasonDueToday": "Vence hoy",
+    "todayStatusReasonNoOpenSlot": "Sin hueco disponible",
+    "todayStatusReasonTravelInfeasible": "El viaje lo hace inviable",
+    "todayStatusReasonOutsideHours": "Fuera del horario disponible",
+    "todayStatusReasonDependencyBlocked": "Esperando otra tile",
+    "todayStatusReasonNeedsTime": "Necesita {duration}",
+    "@todayStatusReasonNeedsTime": {
+      "description": "Attention reason chip where the tile needs a longer gap than exists",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45 min"
+        }
+      }
+    },
+    "todayStatusReasonManualHold": "Necesita tu decisión",
+    "todayStatusReasonUnknown": "No cupo",
+    "todayStatusSessionCount": "{count, plural, =1{1 sesión} other{{count} sesiones}}",
+    "@todayStatusSessionCount": {
+      "description": "How many sub-events a grouped tile holds on the Today Status screen",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "todayStatusSelectTiles": "Seleccionar tiles",
+    "todayStatusExpandGroup": "Expandir sesiones de {title}",
+    "@todayStatusExpandGroup": {
+      "description": "Screen reader label for expanding a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
+      }
+    },
+    "todayStatusCollapseGroup": "Contraer sesiones de {title}",
+    "@todayStatusCollapseGroup": {
+      "description": "Screen reader label for collapsing a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
+      }
+    },
     "travelDurationMinutes": "{minutes} min",
     "@travelDurationMinutes": {
       "description": "Travel duration in minutes",
@@ -640,5 +744,9 @@
     "legalFooterTerms": "Términos",
     "legalFooterAnd": "y la",
     "legalFooterPrivacy": "Privacidad",
-    "aiConsentLinkError": "No se pudo abrir el enlace."
+    "aiConsentLinkError": "No se pudo abrir el enlace.",
+    "addCalendar": "Añadir calendario",
+    "calendarConnected": "Calendario conectado",
+    "calendarConnectionDeclined": "La conexión del calendario se canceló",
+    "calendarConnectionError": "No se pudo conectar tu calendario"
 }

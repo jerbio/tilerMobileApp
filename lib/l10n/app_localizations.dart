@@ -1286,6 +1286,198 @@ abstract class AppLocalizations {
   /// **'On time'**
   String get onTime;
 
+  /// No description provided for @todayStatusPlacedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed successfully'**
+  String get todayStatusPlacedTitle;
+
+  /// No description provided for @todayStatusAttentionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Need attention'**
+  String get todayStatusAttentionTitle;
+
+  /// No description provided for @todayStatusLateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Running late'**
+  String get todayStatusLateTitle;
+
+  /// No description provided for @todayStatusAttentionHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'These could not fit into today\'s available time.'**
+  String get todayStatusAttentionHelper;
+
+  /// No description provided for @todayStatusLateHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel time between these and your surrounding tiles means you can\'t get there on schedule.'**
+  String get todayStatusLateHelper;
+
+  /// Low-emphasis count beside a Today Status section heading
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 tile} other{{count} tiles}}'**
+  String todayStatusTileCount(int count);
+
+  /// Summary strip label under the completed count
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Tile completed} other{Tiles completed}}'**
+  String todayStatusTilesPlaced(int count);
+
+  /// No description provided for @todayStatusTilesNeedAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Need attention'**
+  String get todayStatusTilesNeedAttention;
+
+  /// No description provided for @todayStatusTilesRunningLate.
+  ///
+  /// In en, this message translates to:
+  /// **'Running late'**
+  String get todayStatusTilesRunningLate;
+
+  /// No description provided for @todayStatusEverythingOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything is on track'**
+  String get todayStatusEverythingOnTrack;
+
+  /// No description provided for @todayStatusEverythingElseOnTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Everything else is on track'**
+  String get todayStatusEverythingElseOnTrack;
+
+  /// No description provided for @todayStatusOnTrackSubcopy.
+  ///
+  /// In en, this message translates to:
+  /// **'No scheduled tiles are running late.'**
+  String get todayStatusOnTrackSubcopy;
+
+  /// No description provided for @todayStatusClearDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Your day is clear.'**
+  String get todayStatusClearDay;
+
+  /// No description provided for @todayStatusPreviewCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview a better plan'**
+  String get todayStatusPreviewCta;
+
+  /// No description provided for @todayStatusPreviewLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing preview…'**
+  String get todayStatusPreviewLoading;
+
+  /// No description provided for @todayStatusPreviewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview couldn\'t be generated. Your plan is unchanged.'**
+  String get todayStatusPreviewUnavailable;
+
+  /// No description provided for @todayStatusUntitledTile.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled tile'**
+  String get todayStatusUntitledTile;
+
+  /// No description provided for @todayStatusShowAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all'**
+  String get todayStatusShowAll;
+
+  /// Screen reader label for the collapsed section chevron
+  ///
+  /// In en, this message translates to:
+  /// **'Expand {section}'**
+  String todayStatusExpandSection(String section);
+
+  /// Screen reader label for the expanded section chevron
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse {section}'**
+  String todayStatusCollapseSection(String section);
+
+  /// No description provided for @todayStatusReasonDueToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Due today'**
+  String get todayStatusReasonDueToday;
+
+  /// No description provided for @todayStatusReasonNoOpenSlot.
+  ///
+  /// In en, this message translates to:
+  /// **'No open slot'**
+  String get todayStatusReasonNoOpenSlot;
+
+  /// No description provided for @todayStatusReasonTravelInfeasible.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel makes this infeasible'**
+  String get todayStatusReasonTravelInfeasible;
+
+  /// No description provided for @todayStatusReasonOutsideHours.
+  ///
+  /// In en, this message translates to:
+  /// **'Outside available hours'**
+  String get todayStatusReasonOutsideHours;
+
+  /// No description provided for @todayStatusReasonDependencyBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting on another tile'**
+  String get todayStatusReasonDependencyBlocked;
+
+  /// Attention reason chip where the tile needs a longer gap than exists
+  ///
+  /// In en, this message translates to:
+  /// **'Needs {duration}'**
+  String todayStatusReasonNeedsTime(String duration);
+
+  /// No description provided for @todayStatusReasonManualHold.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs your decision'**
+  String get todayStatusReasonManualHold;
+
+  /// No description provided for @todayStatusReasonUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t fit'**
+  String get todayStatusReasonUnknown;
+
+  /// How many sub-events a grouped tile holds on the Today Status screen
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 session} other{{count} sessions}}'**
+  String todayStatusSessionCount(int count);
+
+  /// No description provided for @todayStatusSelectTiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Select tiles'**
+  String get todayStatusSelectTiles;
+
+  /// Screen reader label for expanding a grouped tile
+  ///
+  /// In en, this message translates to:
+  /// **'Expand {title} sessions'**
+  String todayStatusExpandGroup(String title);
+
+  /// Screen reader label for collapsing a grouped tile
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse {title} sessions'**
+  String todayStatusCollapseGroup(String title);
+
   /// No description provided for @analysis.
   ///
   /// In en, this message translates to:
@@ -2326,6 +2518,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Slack'**
   String get slack;
+
+  /// No description provided for @addCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add calendar'**
+  String get addCalendar;
+
+  /// No description provided for @calendarConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar connected'**
+  String get calendarConnected;
+
+  /// No description provided for @calendarConnectionDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar connection was cancelled'**
+  String get calendarConnectionDeclined;
+
+  /// No description provided for @calendarConnectionError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect your calendar'**
+  String get calendarConnectionError;
 
   /// No description provided for @sleepDuration.
   ///

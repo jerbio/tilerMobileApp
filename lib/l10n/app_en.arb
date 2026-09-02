@@ -369,6 +369,110 @@
     "done": "Done",
     "late": "Late",
     "onTime": "On time",
+    "todayStatusPlacedTitle": "Placed successfully",
+    "todayStatusAttentionTitle": "Need attention",
+    "todayStatusLateTitle": "Running late",
+    "todayStatusAttentionHelper": "These could not fit into today's available time.",
+    "todayStatusLateHelper": "Travel time between these and your surrounding tiles means you can't get there on schedule.",
+    "todayStatusTileCount": "{count, plural, =1{1 tile} other{{count} tiles}}",
+    "@todayStatusTileCount": {
+      "description": "Low-emphasis count beside a Today Status section heading",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
+      }
+    },
+    "todayStatusTilesPlaced": "{count, plural, =1{Tile completed} other{Tiles completed}}",
+    "@todayStatusTilesPlaced": {
+      "description": "Summary strip label under the completed count",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "4"
+        }
+      }
+    },
+    "todayStatusTilesNeedAttention": "Need attention",
+    "todayStatusTilesRunningLate": "Running late",
+    "todayStatusEverythingOnTrack": "Everything is on track",
+    "todayStatusEverythingElseOnTrack": "Everything else is on track",
+    "todayStatusOnTrackSubcopy": "No scheduled tiles are running late.",
+    "todayStatusClearDay": "Your day is clear.",
+    "todayStatusPreviewCta": "Preview a better plan",
+    "todayStatusPreviewLoading": "Preparing preview…",
+    "todayStatusPreviewUnavailable": "Preview couldn't be generated. Your plan is unchanged.",
+    "todayStatusUntitledTile": "Untitled tile",
+    "todayStatusShowAll": "Show all",
+    "todayStatusExpandSection": "Expand {section}",
+    "@todayStatusExpandSection": {
+      "description": "Screen reader label for the collapsed section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Placed successfully"
+        }
+      }
+    },
+    "todayStatusCollapseSection": "Collapse {section}",
+    "@todayStatusCollapseSection": {
+      "description": "Screen reader label for the expanded section chevron",
+      "placeholders": {
+        "section": {
+          "type": "String",
+          "example": "Placed successfully"
+        }
+      }
+    },
+    "todayStatusReasonDueToday": "Due today",
+    "todayStatusReasonNoOpenSlot": "No open slot",
+    "todayStatusReasonTravelInfeasible": "Travel makes this infeasible",
+    "todayStatusReasonOutsideHours": "Outside available hours",
+    "todayStatusReasonDependencyBlocked": "Waiting on another tile",
+    "todayStatusReasonNeedsTime": "Needs {duration}",
+    "@todayStatusReasonNeedsTime": {
+      "description": "Attention reason chip where the tile needs a longer gap than exists",
+      "placeholders": {
+        "duration": {
+          "type": "String",
+          "example": "45 min"
+        }
+      }
+    },
+    "todayStatusReasonManualHold": "Needs your decision",
+    "todayStatusReasonUnknown": "Couldn't fit",
+    "todayStatusSessionCount": "{count, plural, =1{1 session} other{{count} sessions}}",
+    "@todayStatusSessionCount": {
+      "description": "How many sub-events a grouped tile holds on the Today Status screen",
+      "placeholders": {
+        "count": {
+          "type": "int",
+          "example": "3"
+        }
+      }
+    },
+    "todayStatusSelectTiles": "Select tiles",
+    "todayStatusExpandGroup": "Expand {title} sessions",
+    "@todayStatusExpandGroup": {
+      "description": "Screen reader label for expanding a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
+      }
+    },
+    "todayStatusCollapseGroup": "Collapse {title} sessions",
+    "@todayStatusCollapseGroup": {
+      "description": "Screen reader label for collapsing a grouped tile",
+      "placeholders": {
+        "title": {
+          "type": "String",
+          "example": "Gym session"
+        }
+      }
+    },
     "analysis": "Analysis",
     "noDataAvailable": "No data available",
     "sleep": "Sleep",
@@ -722,6 +826,10 @@
       "googleTasks":"Google Tasks",
       "microsoft":"Microsoft",
       "slack":"Slack",
+      "addCalendar": "Add calendar",
+      "calendarConnected": "Calendar connected",
+      "calendarConnectionDeclined": "Calendar connection was cancelled",
+      "calendarConnectionError": "Could not connect your calendar",
       "sleepDuration": "Sleep Duration",
       "transportationMethodQuestion":"How do you move around?",
       "defineYourTimeRestrictions": "Define Your Time Restrictions",
