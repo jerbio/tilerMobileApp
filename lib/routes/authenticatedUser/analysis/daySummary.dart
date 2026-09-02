@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
-import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
+import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
@@ -12,8 +12,8 @@ import 'package:tiler_app/util.dart';
 
 class DaySummary extends StatefulWidget {
   TimelineSummary dayTimelineSummary;
-  final bool preview ;
-  DaySummary({required this.dayTimelineSummary,this.preview=false});
+  final bool preview;
+  DaySummary({required this.dayTimelineSummary, this.preview = false});
   @override
   State createState() => _DaySummaryState();
 }
@@ -42,7 +42,7 @@ class _DaySummaryState extends State<DaySummary> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension= theme.extension<TileThemeExtension>()!;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
 
   /// Pulls the summary matching this day out of a bloc state. Both the loaded
@@ -67,8 +67,8 @@ class _DaySummaryState extends State<DaySummary> {
       return null;
     }
     final match = stateDayData
-        .where((timelineSummary) =>
-            timelineSummary.dayIndex == dayData?.dayIndex)
+        .where(
+            (timelineSummary) => timelineSummary.dayIndex == dayData?.dayIndex)
         .firstOrNull;
     return match;
   }
@@ -224,19 +224,22 @@ class _DaySummaryState extends State<DaySummary> {
           );
 
           Widget buttonPress = GestureDetector(
-            onTap:widget.preview?null: () {
-              DateTime start = Utility.getTimeFromIndex(dayData!.dayIndex!);
-              DateTime end =
-                  Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
-              Timeline timeline = Timeline(
-                  start.millisecondsSinceEpoch, end.millisecondsSinceEpoch);
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => SummaryPage(
-                            timeline: timeline,
-                          )));
-            },
+            onTap: widget.preview
+                ? null
+                : () {
+                    DateTime start =
+                        Utility.getTimeFromIndex(dayData!.dayIndex!);
+                    DateTime end =
+                        Utility.getTimeFromIndex(dayData!.dayIndex!).endOfDay;
+                    Timeline timeline = Timeline(start.millisecondsSinceEpoch,
+                        end.millisecondsSinceEpoch);
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => TodayStatusScreen(
+                                  timeline: timeline,
+                                )));
+                  },
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -254,14 +257,15 @@ class _DaySummaryState extends State<DaySummary> {
               color: colorScheme.surface,
               child: buttonPress);
 
-          return    ColorFiltered(
+          return ColorFiltered(
               colorFilter: ColorFilter.mode(
-              widget.preview
-              ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-                  : Colors.transparent,
-              BlendMode.srcATop,
-          ),
-          child: retContainer);
+                widget.preview
+                    ? tileThemeExtension.vibeChatPreviewDisableColor
+                        .withValues(alpha: 0.6)
+                    : Colors.transparent,
+                BlendMode.srcATop,
+              ),
+              child: retContainer);
         },
       ),
     );

@@ -58,10 +58,13 @@ class SignInComponentState extends State<SignInComponent>
   bool isEmailCodeVerificationScreen = false;
   bool isPasswordSignInMode = false;
   final double registrationContainerHeight = 550;
+  // Landing panel hosts 5 buttons (Continue, Google, Apple, Microsoft,
+  // Sign Up), so it needs more height than the 4-field sign-in layout.
+  final double landingContainerHeight = 450;
   final double signInContainerHeight = 475;
   final double forgotPasswordContainerHeight = 300;
   final double emailCodeRequestContainerHeight = 280;
-  final double emailCodeVerificationContainerHeight = 320;
+  final double emailCodeVerificationContainerHeight = 370;
 
   final double registrationContainerButtonHeight = 300;
   final double signInContainerButtonHeight = 175;
@@ -139,6 +142,7 @@ class SignInComponentState extends State<SignInComponent>
   late Color inputFieldFillColor;
   late TileThemeExtension tileThemeExtension;
   late ButtonStyle elevatedButtonStyle;
+  late Color buttonForegroundColor;
 
   @override
   void initState() {
@@ -175,7 +179,7 @@ class SignInComponentState extends State<SignInComponent>
         }
       });
     }
-    credentialManagerHeight = signInContainerHeight;
+    credentialManagerHeight = landingContainerHeight;
     credentialButtonHeight = signInContainerButtonHeight;
 
     _onPasswordFocusChange();
@@ -191,12 +195,50 @@ class SignInComponentState extends State<SignInComponent>
     final bool isDarkTheme = theme.brightness == Brightness.dark;
     final Color buttonBackground = isDarkTheme ? Colors.black : Colors.white;
     final Color buttonForeground = isDarkTheme ? Colors.white : Colors.black;
+    buttonForegroundColor = buttonForeground;
     elevatedButtonStyle = ElevatedButton.styleFrom(
       foregroundColor: buttonForeground,
       backgroundColor: buttonBackground,
       iconColor: buttonForeground,
     );
     super.didChangeDependencies();
+  }
+
+  // All auth buttons share this layout so their leading icons sit on the same
+  // vertical line: a fixed 18px icon slot, an 8px gap, then the label expanded
+  // to fill the rest and centered. Horizontal padding is pinned to 12/12 so
+  // the icon's left offset is deterministic regardless of label length.
+  Widget authIconButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback? onPressed,
+    ButtonStyle? style,
+    Color? iconColor,
+  }) {
+    final ButtonStyle effectiveStyle = style ?? elevatedButtonStyle;
+    final Color effectiveIconColor = iconColor ?? buttonForegroundColor;
+    return ElevatedButton(
+      style: effectiveStyle.copyWith(
+        padding: const WidgetStatePropertyAll<EdgeInsetsGeometry>(
+          EdgeInsets.symmetric(horizontal: 12),
+        ),
+      ),
+      onPressed: onPressed,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 18,
+            child: Icon(icon, size: 18, color: effectiveIconColor),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(label, textAlign: TextAlign.center),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onPasswordFocusChange() {
@@ -337,7 +379,10 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   void requestEmailCode() async {
-    final shouldValidateForm = !isEmailCodeVerificationScreen;
+    // Skip form validation when other fields (code/password) are on screen;
+    // the email is checked manually below.
+    final shouldValidateForm =
+        !isEmailCodeVerificationScreen && !isPasswordSignInMode;
     if (shouldValidateForm && !_formKey.currentState!.validate()) {
       return;
     }
@@ -636,6 +681,11 @@ class SignInComponentState extends State<SignInComponent>
 
   void enablePasswordSignInMode() {
     passwordEditingController.clear();
+    // Carry the email over when arriving from the code-verification screen.
+    if (userNameEditingController.text.trim().isEmpty &&
+        emailCodeTarget.trim().isNotEmpty) {
+      userNameEditingController.text = emailCodeTarget.trim();
+    }
     setState(() {
       isRegistrationScreen = false;
       isForgetPasswordScreen = false;
@@ -680,11 +730,19 @@ class SignInComponentState extends State<SignInComponent>
   }
 
   void setAsRegistrationScreen() {
-    userNameEditingController.clear();
+    // Carry the value typed on the sign-in screen into the registration
+    // form so the user does not have to retype it: a valid email moves to
+    // the email field, any other value is kept in the username field
+    // (the sign-in field accepts both).
+    final String signInValue = userNameEditingController.text.trim();
     passwordEditingController.clear();
     emailEditingController.clear();
     confirmPasswordEditingController.clear();
     verificationCodeEditingController.clear();
+    if (isValidEmailAddress(signInValue)) {
+      emailEditingController.text = signInValue;
+      userNameEditingController.clear();
+    }
     setState(() {
       isRegistrationScreen = true;
       isForgetPasswordScreen = false;
@@ -715,7 +773,7 @@ class SignInComponentState extends State<SignInComponent>
       isEmailCodeVerificationScreen = false;
       isPasswordSignInMode = false;
       emailCodeTarget = '';
-      credentialManagerHeight = signInContainerHeight;
+      credentialManagerHeight = landingContainerHeight;
       credentialButtonHeight = signInContainerButtonHeight;
     });
   }
@@ -1248,132 +1306,154 @@ class SignInComponentState extends State<SignInComponent>
       spacer(40),
     ];
 
-    var signUpButton = SizedBox(
-      width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.person_add),
-        label: Text(AppLocalizations.of(context)!.signUp),
-        onPressed: setAsRegistrationScreen,
-      ),
-    );
-
     var signInButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.arrow_forward),
-        label: Text(AppLocalizations.of(context)!.signIn),
+      child: authIconButton(
+        icon: Icons.arrow_forward,
+        label: AppLocalizations.of(context)!.signIn,
         onPressed: userNamePasswordSignIn,
       ),
     );
 
-    var signInWithEmailCodeButton = SizedBox(
+    // Primary CTA: sends the access code immediately and moves to code entry.
+    var continueButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.mark_email_read_outlined),
-        label: Text(AppLocalizations.of(context)!.sendAccessCode),
+      child: authIconButton(
+        icon: Icons.arrow_forward,
+        label: AppLocalizations.of(context)!.continueBtn,
         onPressed: requestEmailCode,
+        style: ElevatedButton.styleFrom(
+          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.primary,
+          iconColor: colorScheme.onPrimary,
+        ),
+        iconColor: colorScheme.onPrimary,
       ),
     );
 
-    var passwordModeButton = SizedBox(
+    var usePasswordButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.password_outlined),
-        label: Text(AppLocalizations.of(context)!.usePasswordInstead),
+      child: authIconButton(
+        icon: Icons.lock,
+        label: AppLocalizations.of(context)!.usePasswordInstead,
         onPressed: enablePasswordSignInMode,
+      ),
+    );
+
+    var useAccessCodeLink = TextButton(
+      onPressed: requestEmailCode,
+      child: Text(
+        AppLocalizations.of(context)!.useAccessCodeInstead,
+        style: TextStyle(
+            color: linkTextColor, decoration: TextDecoration.underline),
+      ),
+    );
+
+    var signUpButton = SizedBox(
+      width: 200,
+      child: authIconButton(
+        icon: Icons.person_add,
+        label: AppLocalizations.of(context)!.signUp,
+        onPressed: setAsRegistrationScreen,
+        style: ElevatedButton.styleFrom(
+          foregroundColor: colorScheme.onPrimary,
+          backgroundColor: colorScheme.primary,
+          iconColor: colorScheme.onPrimary,
+        ),
+        iconColor: colorScheme.onPrimary,
       ),
     );
 
     var googleSignInButton = isGoogleSignInEnabled
         ? SizedBox(
             width: 200,
-            child: ElevatedButton.icon(
-                style: elevatedButtonStyle,
-                onPressed: signInToGoogle,
-                icon: FaIcon(FontAwesomeIcons.google),
-                label: Text(AppLocalizations.of(context)!.signUpWithGoogle)),
+            child: authIconButton(
+              icon: FontAwesomeIcons.google.data,
+              label: AppLocalizations.of(context)!.signUpWithGoogle,
+              onPressed: signInToGoogle,
+            ),
           )
         : SizedBox.shrink();
 
     var appleSignInButton = isAppleSignInEnabled
         ? SizedBox(
             width: 200,
-            child: ElevatedButton.icon(
-                style: elevatedButtonStyle,
-                onPressed: signInWithApple,
-                icon: FaIcon(FontAwesomeIcons.apple),
-                label: Text(AppLocalizations.of(context)!.signUpWithApple)),
+            child: authIconButton(
+              icon: FontAwesomeIcons.apple.data,
+              label: AppLocalizations.of(context)!.signUpWithApple,
+              onPressed: signInWithApple,
+            ),
           )
         : SizedBox.shrink();
 
     var microsoftSignInButton = isMicrosoftSignInEnabled
         ? SizedBox(
             width: 200,
-            child: ElevatedButton.icon(
-                style: elevatedButtonStyle,
-                onPressed: signInWithMicrosoft,
-                icon: FaIcon(FontAwesomeIcons.microsoft),
-                label: Text(AppLocalizations.of(context)!.signUpWithMicrosoft)),
+            child: authIconButton(
+              icon: FontAwesomeIcons.microsoft.data,
+              label: AppLocalizations.of(context)!.signUpWithMicrosoft,
+              onPressed: signInWithMicrosoft,
+            ),
           )
         : SizedBox.shrink();
 
     var backToSignInButton = SizedBox(
-      width: isForgetPasswordScreen || isPasswordSignInMode ? 200 : null,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        label: Text(AppLocalizations.of(context)!.back),
-        icon: Icon(Icons.arrow_back),
+      width: 200,
+      child: authIconButton(
+        icon: Icons.arrow_back,
+        label: AppLocalizations.of(context)!.back,
         onPressed: setAsSignInScreen,
       ),
     );
 
     var forgetPasswordButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.lock_reset),
-        label: Text(AppLocalizations.of(context)!.resetPassword),
+      child: authIconButton(
+        icon: Icons.lock_reset,
+        label: AppLocalizations.of(context)!.resetPassword,
         onPressed: forgetPassword,
       ),
     );
 
     var verifyCodeButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.verified_outlined),
-        label: Text(AppLocalizations.of(context)!.verifyCode),
+      child: authIconButton(
+        icon: Icons.verified_outlined,
+        label: AppLocalizations.of(context)!.verifyCode,
         onPressed: verifyEmailCode,
       ),
     );
 
     var resendCodeButton = SizedBox(
       width: 200,
-      child: ElevatedButton.icon(
-        style: elevatedButtonStyle,
-        icon: Icon(Icons.refresh),
-        label: Text(AppLocalizations.of(context)!.resendCode),
+      child: authIconButton(
+        icon: Icons.refresh,
+        label: AppLocalizations.of(context)!.resendCode,
         onPressed: requestEmailCode,
       ),
     );
 
-    var registerUserButton = ElevatedButton.icon(
-      style: elevatedButtonStyle,
-      label: Text(AppLocalizations.of(context)!.signUp),
-      icon: Icon(Icons.person_add),
-      onPressed: registerUser,
+    var registerUserButton = SizedBox(
+      width: 200,
+      child: authIconButton(
+        icon: Icons.person_add,
+        label: AppLocalizations.of(context)!.signUp,
+        onPressed: registerUser,
+      ),
     );
 
+    // Landing: single primary CTA, socials ordered per platform (Apple first
+    // on iOS per App Store guidelines, Google first elsewhere).
     List<Widget> buttons = [
-      signInWithEmailCodeButton,
-      googleSignInButton,
-      appleSignInButton,
+      continueButton,
+      if (Platform.isIOS) ...[
+        appleSignInButton,
+        googleSignInButton,
+      ] else ...[
+        googleSignInButton,
+        appleSignInButton,
+      ],
       microsoftSignInButton,
-      passwordModeButton,
       signUpButton,
     ];
 
@@ -1417,7 +1497,12 @@ class SignInComponentState extends State<SignInComponent>
         spacer(20),
         verificationCodeTextField,
       ];
-      buttons = [verifyCodeButton, resendCodeButton, backToSignInButton];
+      buttons = [
+        verifyCodeButton,
+        resendCodeButton,
+        usePasswordButton,
+        backToSignInButton,
+      ];
     }
 
     if (isRegistrationScreen) {
@@ -1488,7 +1573,12 @@ class SignInComponentState extends State<SignInComponent>
         forgetPasswordTextButton,
         spacer(24),
       ];
-      buttons = [signInButton, signInWithEmailCodeButton, backToSignInButton];
+      buttons = [
+        signInButton,
+        useAccessCodeLink,
+        signUpButton,
+        backToSignInButton,
+      ];
     }
 
     if (this.isPendingSigning || this.isSuccessfulSignin) {
