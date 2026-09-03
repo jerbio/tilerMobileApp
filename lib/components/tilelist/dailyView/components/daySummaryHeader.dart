@@ -6,7 +6,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/summaryPage.dart';
+import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
@@ -18,12 +18,9 @@ class DaySummaryHeader extends StatefulWidget {
   final DateTime? date;
   final TimelineSummary? dayData;
   final bool preview;
-  const DaySummaryHeader({
-    Key? key,
-    this.date,
-    this.dayData,
-    this.preview=false
-  }) : super(key: key);
+  const DaySummaryHeader(
+      {Key? key, this.date, this.dayData, this.preview = false})
+      : super(key: key);
 
   @override
   State<DaySummaryHeader> createState() => _DaySummaryHeaderState();
@@ -94,8 +91,8 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
       return null;
     }
     return stateDayData
-        .where((timelineSummary) =>
-            timelineSummary.dayIndex == _dayData?.dayIndex)
+        .where(
+            (timelineSummary) => timelineSummary.dayIndex == _dayData?.dayIndex)
         .firstOrNull;
   }
 
@@ -109,7 +106,7 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => SummaryPage(
+            builder: (context) => TodayStatusScreen(
                   timeline: timeline,
                 )));
   }
@@ -189,15 +186,16 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
           final completeCount = _dayData?.complete?.length ?? 0;
           final tardyCount = _dayData?.tardy?.length ?? 0;
 
-          return  ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                widget.preview
-                    ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-                    : Colors.transparent,
-                BlendMode.srcATop,
-              ),
+          return ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              widget.preview
+                  ? tileThemeExtension.vibeChatPreviewDisableColor
+                      .withValues(alpha: 0.6)
+                  : Colors.transparent,
+              BlendMode.srcATop,
+            ),
             child: GestureDetector(
-              onTap: widget.preview?null:() => _navigateToSummary(context),
+              onTap: widget.preview ? null : () => _navigateToSummary(context),
               child: Container(
                 margin: EdgeInsets.zero,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
@@ -265,8 +263,8 @@ class _DaySummaryHeaderState extends State<DaySummaryHeader> {
                               style: TextStyle(
                                 fontFamily: TileTextStyles.rubikFontName,
                                 fontSize: 15,
-                                color:
-                                    colorScheme.onSurface.withValues(alpha: 0.6),
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
                               ),
                             ),
                             const SizedBox(width: 8),

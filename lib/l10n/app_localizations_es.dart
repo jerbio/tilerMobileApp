@@ -656,6 +656,141 @@ class AppLocalizationsEs extends AppLocalizations {
   String get onTime => 'On time';
 
   @override
+  String get todayStatusPlacedTitle => 'Programadas correctamente';
+
+  @override
+  String get todayStatusAttentionTitle => 'Necesitan atención';
+
+  @override
+  String get todayStatusLateTitle => 'Con retraso';
+
+  @override
+  String get todayStatusAttentionHelper =>
+      'Estas no cupieron en el tiempo disponible de hoy.';
+
+  @override
+  String get todayStatusLateHelper =>
+      'El tiempo de viaje entre estas y tus tiles cercanas hace que no puedas llegar a tiempo.';
+
+  @override
+  String todayStatusTileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tiles',
+      one: '1 tile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayStatusTilesPlaced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tiles completadas',
+      one: 'Tile completada',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusTilesNeedAttention => 'Necesitan atención';
+
+  @override
+  String get todayStatusTilesRunningLate => 'Con retraso';
+
+  @override
+  String get todayStatusEverythingOnTrack => 'Todo va según lo previsto';
+
+  @override
+  String get todayStatusEverythingElseOnTrack =>
+      'Todo lo demás va según lo previsto';
+
+  @override
+  String get todayStatusOnTrackSubcopy =>
+      'Ninguna tile programada va con retraso.';
+
+  @override
+  String get todayStatusClearDay => 'Tu día está despejado.';
+
+  @override
+  String get todayStatusPreviewCta => 'Ver un plan mejor';
+
+  @override
+  String get todayStatusPreviewLoading => 'Preparando la vista previa…';
+
+  @override
+  String get todayStatusPreviewUnavailable =>
+      'No se pudo generar la vista previa. Tu plan no ha cambiado.';
+
+  @override
+  String get todayStatusUntitledTile => 'Tile sin título';
+
+  @override
+  String get todayStatusShowAll => 'Ver todo';
+
+  @override
+  String todayStatusExpandSection(String section) {
+    return 'Expandir $section';
+  }
+
+  @override
+  String todayStatusCollapseSection(String section) {
+    return 'Contraer $section';
+  }
+
+  @override
+  String get todayStatusReasonDueToday => 'Vence hoy';
+
+  @override
+  String get todayStatusReasonNoOpenSlot => 'Sin hueco disponible';
+
+  @override
+  String get todayStatusReasonTravelInfeasible => 'El viaje lo hace inviable';
+
+  @override
+  String get todayStatusReasonOutsideHours => 'Fuera del horario disponible';
+
+  @override
+  String get todayStatusReasonDependencyBlocked => 'Esperando otra tile';
+
+  @override
+  String todayStatusReasonNeedsTime(String duration) {
+    return 'Necesita $duration';
+  }
+
+  @override
+  String get todayStatusReasonManualHold => 'Necesita tu decisión';
+
+  @override
+  String get todayStatusReasonUnknown => 'No cupo';
+
+  @override
+  String todayStatusSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sesiones',
+      one: '1 sesión',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusSelectTiles => 'Seleccionar tiles';
+
+  @override
+  String todayStatusExpandGroup(String title) {
+    return 'Expandir sesiones de $title';
+  }
+
+  @override
+  String todayStatusCollapseGroup(String title) {
+    return 'Contraer sesiones de $title';
+  }
+
+  @override
   String get analysis => 'Analysis';
 
   @override

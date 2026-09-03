@@ -654,6 +654,141 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onTime => 'On time';
 
   @override
+  String get todayStatusPlacedTitle => 'Placed successfully';
+
+  @override
+  String get todayStatusAttentionTitle => 'Need attention';
+
+  @override
+  String get todayStatusLateTitle => 'Running late';
+
+  @override
+  String get todayStatusAttentionHelper =>
+      'These could not fit into today\'s available time.';
+
+  @override
+  String get todayStatusLateHelper =>
+      'Travel time between these and your surrounding tiles means you can\'t get there on schedule.';
+
+  @override
+  String todayStatusTileCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count tiles',
+      one: '1 tile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayStatusTilesPlaced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tiles completed',
+      one: 'Tile completed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusTilesNeedAttention => 'Need attention';
+
+  @override
+  String get todayStatusTilesRunningLate => 'Running late';
+
+  @override
+  String get todayStatusEverythingOnTrack => 'Everything is on track';
+
+  @override
+  String get todayStatusEverythingElseOnTrack => 'Everything else is on track';
+
+  @override
+  String get todayStatusOnTrackSubcopy =>
+      'No scheduled tiles are running late.';
+
+  @override
+  String get todayStatusClearDay => 'Your day is clear.';
+
+  @override
+  String get todayStatusPreviewCta => 'Preview a better plan';
+
+  @override
+  String get todayStatusPreviewLoading => 'Preparing preview…';
+
+  @override
+  String get todayStatusPreviewUnavailable =>
+      'Preview couldn\'t be generated. Your plan is unchanged.';
+
+  @override
+  String get todayStatusUntitledTile => 'Untitled tile';
+
+  @override
+  String get todayStatusShowAll => 'Show all';
+
+  @override
+  String todayStatusExpandSection(String section) {
+    return 'Expand $section';
+  }
+
+  @override
+  String todayStatusCollapseSection(String section) {
+    return 'Collapse $section';
+  }
+
+  @override
+  String get todayStatusReasonDueToday => 'Due today';
+
+  @override
+  String get todayStatusReasonNoOpenSlot => 'No open slot';
+
+  @override
+  String get todayStatusReasonTravelInfeasible =>
+      'Travel makes this infeasible';
+
+  @override
+  String get todayStatusReasonOutsideHours => 'Outside available hours';
+
+  @override
+  String get todayStatusReasonDependencyBlocked => 'Waiting on another tile';
+
+  @override
+  String todayStatusReasonNeedsTime(String duration) {
+    return 'Needs $duration';
+  }
+
+  @override
+  String get todayStatusReasonManualHold => 'Needs your decision';
+
+  @override
+  String get todayStatusReasonUnknown => 'Couldn\'t fit';
+
+  @override
+  String todayStatusSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sessions',
+      one: '1 session',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get todayStatusSelectTiles => 'Select tiles';
+
+  @override
+  String todayStatusExpandGroup(String title) {
+    return 'Expand $title sessions';
+  }
+
+  @override
+  String todayStatusCollapseGroup(String title) {
+    return 'Collapse $title sessions';
+  }
+
+  @override
   String get analysis => 'Analysis';
 
   @override
