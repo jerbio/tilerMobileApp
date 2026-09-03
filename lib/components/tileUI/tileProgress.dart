@@ -83,11 +83,11 @@ class _TileProgressState extends State<TileProgress> {
   }
 
   int touchedIndex = -1;
-  final Map<TileStatus, Color> colorMapping = {
-    TileStatus.Complete: TileColors.completedTeal,
-    TileStatus.Delete: TileColors.deleted,
-    TileStatus.Scheduled: TileColors.scheduled,
-  };
+  Map<TileStatus, Color> get colorMapping => {
+        TileStatus.Complete: tileThemeExtension.statusSuccess,
+        TileStatus.Delete: tileThemeExtension.statusDanger,
+        TileStatus.Scheduled: TileColors.scheduled,
+      };
 
   List<PieChartSectionData> showingSections() {
     return List.generate(
@@ -103,8 +103,10 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? BorderSide(color: TileColors.success, width: 6)
-                  : BorderSide(color: TileColors.success.withValues(alpha: 0)),
+                  ? BorderSide(color: tileThemeExtension.statusSuccess, width: 6)
+                  : BorderSide(
+                      color: tileThemeExtension.statusSuccess
+                          .withValues(alpha: 0)),
             );
           case 1:
             return PieChartSectionData(
@@ -125,8 +127,10 @@ class _TileProgressState extends State<TileProgress> {
               radius: 45,
               titlePositionPercentageOffset: 0.55,
               borderSide: isTouched
-                  ? BorderSide(color: TileColors.deletion, width: 6)
-                  : BorderSide(color: TileColors.deletion.withValues(alpha: 0)),
+                  ? BorderSide(color: tileThemeExtension.statusDanger, width: 6)
+                  : BorderSide(
+                      color: tileThemeExtension.statusDanger
+                          .withValues(alpha: 0)),
             );
           default:
             throw Error();

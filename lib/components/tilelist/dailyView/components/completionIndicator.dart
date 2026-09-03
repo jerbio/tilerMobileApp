@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 /// Circular completion indicator showing percentage progress
 class CompletionIndicator extends StatelessWidget {
@@ -17,7 +17,9 @@ class CompletionIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileTheme = theme.extension<TileThemeExtension>()!;
 
     return SizedBox(
       width: size,
@@ -31,9 +33,9 @@ class CompletionIndicator extends StatelessWidget {
             backgroundColor: colorScheme.outline.withOpacity(0.2),
             valueColor: AlwaysStoppedAnimation<Color>(
               percentage >= 70
-                  ? TileColors.completedTeal
+                  ? tileTheme.statusSuccess
                   : percentage >= 40
-                      ? TileColors.progressMedium
+                      ? tileTheme.statusAttention
                       : colorScheme.primary,
             ),
           ),
