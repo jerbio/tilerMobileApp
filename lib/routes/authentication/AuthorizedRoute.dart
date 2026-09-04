@@ -17,6 +17,7 @@ import 'package:tiler_app/components/datePickers/monthlyDatePicker/monthlyPicker
 import 'package:tiler_app/components/datePickers/weeklyDatePicker/weeklyPickerPage.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonCarousel.dart';
+import 'package:tiler_app/components/ribbons/dayRibbon/dayRibbonTab.dart';
 import 'package:tiler_app/components/ribbons/monthRibbon/monthRibbon.dart';
 import 'package:tiler_app/components/ribbons/weekRibbon/weekRibbonCarousel.dart';
 import 'package:tiler_app/components/status.dart';
@@ -210,9 +211,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             if (uiDateState is UiDateManagerUpdated) {
               dayRibbonDate = uiDateState.currentDate;
             }
-            // Hide ribbon when viewing current day - day summary is embedded in EnhancedWithinNowBatch
+            // DayGrid step 1.7 (C2): viewing today shows a collapsed
+            // tap-to-expand ribbon tab instead of the old hard hide — the
+            // day summary is still embedded in EnhancedWithinNowBatch (list
+            // mode) and covered by the now-line (grid mode).
             if (dayRibbonDate.isToday) {
-              return const SizedBox.shrink();
+              return DayRibbonTab(dayRibbonDate: dayRibbonDate);
             }
             return DayRibbonCarousel(
               dayRibbonDate,

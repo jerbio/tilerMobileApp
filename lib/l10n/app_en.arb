@@ -1820,6 +1820,7 @@
             "goToToday": "Go to today",
             "switchCalendarView": "Switch calendar view",
             "switchDayGridLayout": "Switch day layout",
+            "openDayRibbon": "View days",
 
             "previewSundialGreeting": "Hello.",
             "previewSundialCountsPrefix": "Today has",

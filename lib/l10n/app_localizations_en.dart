@@ -2800,6 +2800,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchDayGridLayout => 'Switch day layout';
 
   @override
+  String get openDayRibbon => 'View days';
+
+  @override
   String get previewSundialGreeting => 'Hello.';
 
   @override

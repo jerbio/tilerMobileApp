@@ -2808,6 +2808,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get switchDayGridLayout => 'Cambiar diseño del día';
 
   @override
+  String get openDayRibbon => 'Ver días';
+
+  @override
   String get previewSundialGreeting => 'Hola.';
 
   @override

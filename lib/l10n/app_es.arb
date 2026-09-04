@@ -705,6 +705,7 @@
     "goToToday": "Ir a hoy",
     "switchCalendarView": "Cambiar vista de calendario",
     "switchDayGridLayout": "Cambiar diseño del día",
+    "openDayRibbon": "Ver días",
 
     "previewSundialGreeting": "Hola.",
     "previewSundialCountsPrefix": "Hoy tienes",

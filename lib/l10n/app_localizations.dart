@@ -4991,6 +4991,12 @@ abstract class AppLocalizations {
   /// **'Switch day layout'**
   String get switchDayGridLayout;
 
+  /// No description provided for @openDayRibbon.
+  ///
+  /// In en, this message translates to:
+  /// **'View days'**
+  String get openDayRibbon;
+
   /// No description provided for @previewSundialGreeting.
   ///
   /// In en, this message translates to:
