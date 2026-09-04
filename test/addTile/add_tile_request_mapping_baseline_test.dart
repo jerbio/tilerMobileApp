@@ -25,7 +25,7 @@ void main() {
   group('0.1 request mapping baseline — Flexible Tile', () {
     test('basic flexible tile (name + duration only) maps to documented wire',
         () {
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: 'Test Task',
         duration: Duration(minutes: 45),
@@ -78,7 +78,7 @@ void main() {
     test(
         'no-deadline flexible tile leaves End unset and stays auto-revisable (D1 baseline)',
         () {
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: 'No Deadline',
         duration: Duration(minutes: 30),
@@ -116,7 +116,7 @@ void main() {
         isEnabled: true,
       );
 
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: 'Deep Work',
         duration: Duration(minutes: 90),
@@ -175,7 +175,7 @@ void main() {
     });
 
     test('random color fallback (no explicit color) emits in-range RGB', () {
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: 'Random Color',
         duration: Duration(minutes: 30),
@@ -194,7 +194,7 @@ void main() {
 
   group('0.1 request mapping baseline — Fixed Block', () {
     test('basic fixed block maps rigid interval with calculated end', () {
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: true,
         name: 'Standup',
         duration: Duration(minutes: 30),
@@ -233,7 +233,7 @@ void main() {
         isEnabled: true,
       );
 
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: true,
         name: 'Weekly Review',
         duration: Duration(minutes: 60),
@@ -273,7 +273,7 @@ void main() {
       // Baseline finding: for a FLEXIBLE tile the start prefill is ignored;
       // Start is always midnight of the submit day. It is honored only for
       // Fixed Blocks (see the Fixed Block group above).
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: 'Free Slot Task',
         duration: Duration(minutes: 20),
@@ -297,7 +297,7 @@ void main() {
       // The widget initializes _duration to Duration.zero. The mapper is not a
       // validator; it emits whatever it is given. "0" minutes is blocked by
       // the UI's isSubmissionReady (>1 minute), not by the mapper.
-      final NewTile tile = NewTileRequestMapper.build(AddTileDraft(
+      final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
         name: '',
         duration: Duration.zero,

@@ -1,80 +1,101 @@
-// Phase 0 / Step 0.2 — Product & API decision gates (Red).
+// Phase 0 / Step 0.2 — Product & API decision gates.
 //
-// These tests encode the UNRESOLVED P0/P1 decisions (D1-D3, D9-D10) as
-// pending tests so the open behavior is visible in the suite. Each is `skip`-
-// ped with the decision id; when the decision is resolved (owner + date in
-// docs/add-tile-decision-log.md) the skip is removed and the assertions are
-// wired to the real implementation.
-//
-// Per the plan, NO product behavior is implemented in this step — these are
-// the executable fixtures that make unresolved behavior explicit.
+// Decisions resolved at the Phase 1 checkpoint (owner PROD, 2026-09-04, see
+// docs/add-tile-decision-log.md) are now EXECUTABLE assertions against the
+// Step 1.1 draft model (`AddTileDraft`) and the existing `RepetitionData`
+// default. Tests that cannot yet be exercised against production code (D10
+// location-picker interaction contract -> Phase 4.1; O1 analytics send()
+// no-op -> still a blocking finding) remain `skip`-ped with the decision id.
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tiler_app/data/repetitionData.dart';
+import 'package:tiler_app/data/repetitionFrequency.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/util.dart';
 
 void main() {
-  group('0.2 decision gates (pending — remove skip when resolved)', () {
-    test(
-      'D1: no-deadline Flexible Tile is accepted by the server (End* unset)',
-      () {
-        // Client half is already characterized in
-        // add_tile_request_mapping_baseline_test.dart: "Complete by: Anytime"
-        // maps to End* unset + AutoReviseDeadline='true'. The server half
-        // (200 accepted, tile scheduled without a deadline) cannot be asserted
-        // without a live API and is BLOCKED on the D1 product confirmation.
-        expect(true, isTrue,
-            reason: 'Placeholder until D1 resolved: assert server accepts '
-                'AddTileRequest with End* absent.');
-      },
-      skip: 'P0 D1 open — server acceptance of no-deadline Tiles unconfirmed.',
-    );
+  final now = DateTime(2026, 9, 4, 9, 30);
 
-    test('D2: dirty draft shows a discard confirmation before close', () {
-      // Target: after a meaningful edit (name/duration/etc. differs from the
-      // initial/prefilled state) a Close/Back shows a confirm-discard dialog;
-      // an untouched draft closes immediately. Currently the legacy screen
-      // closes with no warning — implementing this changes close behavior.
-      expect(true, isTrue,
-          reason:
-              'Placeholder until D2 resolved: assert confirm-before-close for '
-              'dirty drafts and immediate close for pristine drafts.');
-    }, skip: 'P0 D2 open — dirty-close policy unconfirmed.');
+  group('0.2 decision gates (resolved -> executable)', () {
+    test('D1: no-deadline Flexible Tile is a valid draft (End* unset)', () {
+      final d = AddTileDraft.flexible(now: now)
+        ..name = 'Think about things'
+        ..setUserDuration(const Duration(minutes: 30));
+      expect(d.endTime, isNull,
+          reason: 'Complete by: Anytime leaves the deadline unset');
+      expect(d.isValid, isTrue,
+          reason: 'D1 accepted: no-deadline is valid; the mapper leaves End* '
+              'unset + AutoReviseDeadline=true (characterized in Step 0.1)');
+    });
 
-    test('D3: Repeat is preserved across a type switch only when safe', () {
-      // Target: Flexible<->Fixed switch preserves recurrence when the
-      // semantics map identically; otherwise a confirm-before-clearing prompt
-      // is shown and no data is silently discarded.
-      expect(true, isTrue,
-          reason: 'Placeholder until D3 resolved: assert safe preservation and '
-              'destructive-clear confirmation across type switches.');
-    }, skip: 'P0 D3 open — cross-mode repeat preservation policy unconfirmed.');
+    test('D2: dirty draft needs a close confirmation; pristine does not', () {
+      final pristine = AddTileDraft.flexible(now: now);
+      expect(pristine.needsCloseConfirmation, isFalse);
 
-    test('D9: Repeat preset keeps the current recurrence end default', () {
-      // Target: choosing a preset preserves the existing recurrence end
-      // default; an explicit end control is exposed only if the existing
-      // deadline/recurrence ordering validation requires it.
-      expect(true, isTrue,
-          reason:
-              'Placeholder until D9 resolved: assert preset default end and '
-              'conditional end control.');
-    }, skip: 'P0 D9 open — recurrence-end default for presets unconfirmed.');
+      final edited = AddTileDraft.flexible(now: now)
+        ..setUserDuration(const Duration(minutes: 45));
+      expect(edited.needsCloseConfirmation, isTrue,
+          reason: 'D2 accepted: meaningful user edit -> confirm before close');
+    });
 
-    test('D10: Location row tap selects; CTA returns; favorite independent',
+    test('D3: Repeat is preserved across a type switch (identical semantics)',
         () {
-      // Target: tapping a location row marks it selected (distinct from the
-      // favorite star); the CTA becomes enabled and returns the selection;
-      // toggling the favorite never changes the selection.
-      expect(true, isTrue,
-          reason:
-              'Placeholder until D10 resolved: assert selection vs favorite '
-              'states and CTA return semantics.');
-    }, skip: 'P1 D10 open — location row interaction contract unconfirmed.');
+      final d = AddTileDraft.flexible(
+        now: now,
+        repetitionData: RepetitionData(
+          frequency: RepetitionFrequency.daily,
+          repetitionStart: DateTime(2026, 9, 4),
+          repetitionEnd: DateTime(2026, 10, 4),
+        ),
+      );
+      expect(d.repeatSwitchDecision, RepeatSwitchDecision.preserve);
+      d.switchToFixed();
+      expect(d.repetitionData, isNotNull,
+          reason: 'D3 accepted: identical recurrence semantics -> preserve, '
+              'no destructive clear');
+    });
+
+    test('D9: choosing a recurrence keeps the current end default', () {
+      // The `RepetitionData` constructor is the single source of the
+      // recurrence-end default, measured from the clock at construction;
+      // D9 says we preserve it (180 days; 3650 for yearly) rather than
+      // introduce a new control in v1.
+      final weekly = RepetitionData(frequency: RepetitionFrequency.weekly);
+      expect(weekly.repetitionEnd, isNotNull);
+      expect(weekly.isForever, isTrue);
+      final weeklyDays =
+          weekly.repetitionEnd!.difference(Utility.currentTime()).inDays;
+      expect(weeklyDays, inInclusiveRange(179, 180),
+          reason: 'D9 accepted: default recurrence end ~180 days out');
+
+      final yearly = RepetitionData(frequency: RepetitionFrequency.yearly);
+      final yearlyDays =
+          yearly.repetitionEnd!.difference(Utility.currentTime()).inDays;
+      expect(yearlyDays, inInclusiveRange(3649, 3650),
+          reason: 'D9 accepted: yearly default ~3650 days out');
+    });
+  });
+
+  group('0.2 decision gates (resolved, executable test lands later)', () {
+    test(
+      'D10: Location row tap selects; CTA returns; favorite independent',
+      () {
+        // Product contract accepted 2026-09-04 (owner PROD). The executable
+        // assertion is a widget test of the Location picker and ships in
+        // Phase 4.1 — the draft model does not carry selection/favorite state.
+        expect(true, isTrue,
+            reason: 'D10 resolved; executable picker test deferred to 4.1.');
+      },
+      skip:
+          'P1 D10 accepted — executable Location-picker test lands in Phase 4.1.',
+    );
 
     test('O1: analytics baseline is actually emitted (send() is not a no-op)',
         () {
-      // BLOCKING FINDING: AnalysticsSignal.send() returns "no-tag-set" before
-      // logging, so no Add Tile funnel event reaches Firebase today and there
-      // is no queryable baseline for the §2.2/§5.2 metrics. This test becomes
-      // the gate for re-enabling the signal path (or a structured equivalent)
-      // with the allow-listed schema in docs/add-tile-analytics-schema.md.
+      // Still an OPEN, blocking finding: AnalysticsSignal.send() returns
+      // "no-tag-set" before logging, so no Add Tile funnel event reaches
+      // Firebase today. This test is the gate for re-enabling the signal path
+      // (or a structured equivalent) with the allow-listed schema in
+      // docs/add-tile-analytics-schema.md.
       expect(true, isTrue,
           reason:
               'Placeholder until O1 resolved: assert the Add Tile funnel event '

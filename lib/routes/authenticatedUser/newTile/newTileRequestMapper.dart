@@ -1,10 +1,13 @@
 // Phase 0 / Step 0.1 — behavior-preserving extraction of the request mapping.
+// Phase 1 / Step 1.2 — renamed legacy snapshot to `LegacyAddTileDraft` and
+// added `buildFromSnapshot(AddTileDraftSnapshot)` proving wire parity with the
+// new model without duplicating the mapping logic.
 //
 // The legacy `AddTileState.onSubmitButtonTap()` built a `NewTile` inline from
 // ~15 mutable widget fields. This file extracts ONLY that pure mapping into an
-// explicit `AddTileDraft` snapshot + a pure `NewTileRequestMapper.build`, so
-// the wire values can be characterized/tested without a live widget, blocs, or
-// API calls. It does NOT change request semantics: the mapping is a faithful
+// explicit `LegacyAddTileDraft` snapshot + a pure `NewTileRequestMapper.build`,
+// so the wire values can be characterized/tested without a live widget, blocs,
+// or API calls. It does NOT change request semantics: the mapping is a faithful
 // line-for-line port of the original inline code.
 //
 // Submission orchestration (API call, bloc refresh, analytics, newTileParams
@@ -17,13 +20,19 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 
-/// Immutable snapshot of the Add Tile form state relevant to request mapping.
+/// Immutable snapshot of the legacy Add Tile form state relevant to request
+/// mapping. Mirrors the fields the legacy widget read at submit time.
+/// `now` is the "current time" the legacy mapping used for the Flexible-Tile
+/// start (midnight-of-submit-day); it is a parameter so tests are deterministic.
 ///
-/// Mirrors the fields the legacy widget read at submit time. `now` is the
-/// "current time" the legacy mapping used for the Flexible-Tile start
-/// (midnight-of-submit-day); it is a parameter so tests are deterministic.
-class AddTileDraft {
+/// Renamed from `AddTileDraft` to `LegacyAddTileDraft` (Step 1.2) to
+/// disambiguate from the new widget-independent model of the same conceptual
+/// name (`AddTileDraft` in addTileDraft.dart). This class is the legacy
+/// isAppointment snapshot kept as the reference mapping until the old inline
+/// builder is removed (Step 5.3).
+class LegacyAddTileDraft {
   final bool isAppointment;
   final String name;
   final Duration? duration;
@@ -38,7 +47,7 @@ class AddTileDraft {
   final String splitCount;
   final DateTime now;
 
-  const AddTileDraft({
+  const LegacyAddTileDraft({
     required this.isAppointment,
     required this.name,
     required this.duration,
@@ -57,7 +66,7 @@ class AddTileDraft {
 
 /// Pure, behavior-preserving port of the legacy inline `NewTile` construction.
 class NewTileRequestMapper {
-  static NewTile build(AddTileDraft d, {Random? randomizer}) {
+  static NewTile build(LegacyAddTileDraft d, {Random? randomizer}) {
     final Random rng = randomizer ?? Random();
     final NewTile tile = NewTile();
     tile.Name = d.name;
@@ -152,5 +161,38 @@ class NewTileRequestMapper {
     tile.Count = d.splitCount;
 
     return tile;
+  }
+
+  /// Builds a [NewTile] from the new-model [AddTileDraftSnapshot] (§8.2) by
+  /// converting to a [LegacyAddTileDraft] and delegating to [build]. This
+  /// guarantees wire parity with the legacy path by construction — the same
+  /// mapping code is executed. `now` is the submit-time used for the
+  /// Flexible-Tile start (midnight-of-submit-day), exactly as the legacy widget
+  /// computed it from `Utility.currentTime()`.
+  ///
+  /// Privacy (§12.1): this method never serializes the request body or
+  /// user-entered content; failure diagnostics (type + reason code) are the
+  /// caller's responsibility.
+  static NewTile buildFromSnapshot(
+    AddTileDraftSnapshot s, {
+    required DateTime now,
+    Random? randomizer,
+  }) {
+    final LegacyAddTileDraft legacy = LegacyAddTileDraft(
+      isAppointment: s.type == AddTileType.fixed,
+      name: s.name,
+      duration: s.duration,
+      endTime: s.endTime,
+      startTime: s.startTime,
+      repetitionData: s.repetitionData,
+      location: s.location,
+      restrictionProfile: s.restrictionProfile,
+      isAutoRevisable: s.isAutoRevisable,
+      priority: s.priority,
+      color: s.color,
+      splitCount: s.splitCount.toString(),
+      now: now,
+    );
+    return build(legacy, randomizer: randomizer);
   }
 }
