@@ -4,6 +4,8 @@ import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStrip.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 
@@ -61,7 +63,21 @@ class DayGridPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final layout = context.watch<DailyViewLayoutCubit>().state;
     if (layout == DailyViewLayout.grid) {
-      return DayGridWidget(tiles: gridTiles(tiles));
+      final parityTiles = gridTiles(tiles);
+      return Column(
+        children: [
+          // Step 1.7 (C3): compact alert strip — the list-mode detectors
+          // surfaced as a condensed chip row above the grid.
+          DayGridBannerStrip(tiles: tiles),
+          // Step 1.7 (C7): pinned >=16h / all-day tiles — excluded from
+          // the grid timeline, kept visible here.
+          DayGridPinnedHeader(tiles: parityTiles),
+          // The grid fills the remaining height (the page is hosted in a
+          // bounded viewport); its internal scroll view keeps the day
+          // pannable.
+          Expanded(child: DayGridWidget(tiles: parityTiles)),
+        ],
+      );
     }
     if (listView != null) {
       return listView!;

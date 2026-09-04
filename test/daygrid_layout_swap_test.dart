@@ -99,8 +99,45 @@ void main() {
   /// and viable — mirroring EnhancedTileBatch's main-list filtering.
   const expectedGridIds = ['accepted', 'tiler-declined', 'viable'];
 
+  /// Swap fixture: plain viable tiles with no active alerts.
+  ///
+  /// The toggle test hosts the page in a bounded body (the grid-mode
+  /// contract). ETB's list-mode body is a fixed-height
+  /// `MediaQuery.height - daySummaryToHeightBuffer` container plus the
+  /// DaySummary header (which is exactly what the buffer reserves); the
+  /// alert banner the parity fixture would surface (pending + declined
+  /// tiles) overflows that bounded body in the test environment — a
+  /// pre-existing ETB sizing nuance, not a step 1.7 concern. Keeping the
+  /// list frame alert-free lets the bounded host carry both modes, so
+  /// the test asserts the swap itself with the page in place.
+  List<TilerEvent> buildSwapTiles() {
+    return <TilerEvent>[
+      buildTile(
+          id: 'swap-a',
+          name: 'SwapA',
+          start: DateTime(2026, 5, 15, 8),
+          end: DateTime(2026, 5, 15, 9)),
+      buildTile(
+          id: 'swap-b',
+          name: 'SwapB',
+          start: DateTime(2026, 5, 15, 12),
+          end: DateTime(2026, 5, 15, 13)),
+    ];
+  }
+
   Widget buildTestApp(
-      {required DailyViewLayoutCubit cubit, required List<TilerEvent> tiles}) {
+      {required DailyViewLayoutCubit cubit,
+      required List<TilerEvent> tiles,
+      // Grid mode (step 1.7) builds its body with an Expanded grid, which
+      // needs a bounded parent; list mode keeps the scrollable-parent
+      // convention so the batch's natural-height Column lays out without
+      // overflowing.
+      bool scrollableParent = true}) {
+    final dayPage = DayGridPage(
+      dayIndex: 20500,
+      tiles: tiles,
+      key: const Key('day_20500'),
+    );
     return MaterialApp(
       theme: TileThemeData.lightTheme,
       localizationsDelegates: const [
@@ -120,15 +157,12 @@ void main() {
                   ScheduleSummaryBloc(getContextCallBack: () => null)),
         ],
         child: Scaffold(
-          // The existing ETB test convention: a scrollable parent so the
-          // batch's natural-height Column lays out without overflowing.
-          body: SingleChildScrollView(
-            child: DayGridPage(
-              dayIndex: 20500,
-              tiles: tiles,
-              key: const Key('day_20500'),
-            ),
-          ),
+          // List mode: the existing ETB convention (scrollable parent,
+          // natural-height Column). Grid mode (step 1.7): a bounded parent
+          // so the page's Expanded grid lays out.
+          body: scrollableParent
+              ? SingleChildScrollView(child: dayPage)
+              : dayPage,
         ),
       ),
     );
@@ -136,16 +170,23 @@ void main() {
 
   group('DayGridPage layout swap (step 1.5)', () {
     Future<void> pumpSwapPage(WidgetTester tester, DailyViewLayoutCubit cubit,
-        List<TilerEvent> tiles) async {
+        List<TilerEvent> tiles,
+        {bool scrollableParent = true}) async {
       // EnhancedTileBatch needs a real-size viewport (same convention as
-      // enhanced_tile_batch_test).
-      tester.view.physicalSize = const Size(1080, 4000);
+      // enhanced_tile_batch_test). 5000 physical px (3750 logical) keeps
+      // the batch's natural height (~3000px) under the bounded parent the
+      // grid-mode cases (step 1.7) rely on.
+      tester.view.physicalSize = const Size(1080, 5000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
         tester.view.resetPhysicalSize();
         tester.view.resetDevicePixelRatio();
       });
-      await tester.pumpWidget(buildTestApp(cubit: cubit, tiles: tiles));
+      await tester.pumpWidget(buildTestApp(
+        cubit: cubit,
+        tiles: tiles,
+        scrollableParent: scrollableParent,
+      ));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump();
     }
@@ -166,7 +207,7 @@ void main() {
       SharedPreferences.setMockInitialValues({'dayGridLayout': 'grid'});
       final cubit = DailyViewLayoutCubit();
       final tiles = buildFixtureTiles();
-      await pumpSwapPage(tester, cubit, tiles);
+      await pumpSwapPage(tester, cubit, tiles, scrollableParent: false);
 
       expect(find.byType(DayGridWidget), findsOneWidget);
       expect(find.byType(EnhancedTileBatch), findsNothing);
@@ -187,8 +228,13 @@ void main() {
 
     testWidgets('toggling the cubit swaps the page in place', (tester) async {
       final cubit = DailyViewLayoutCubit();
-      final tiles = buildFixtureTiles();
-      await pumpSwapPage(tester, cubit, tiles);
+      // Alert-free fixture: with a bounded body, ETB's list frame fits only
+      // while no alert banner stacks on top of its fixed-height timeline
+      // (see buildSwapTiles). The swap is what's under test here.
+      final tiles = buildSwapTiles();
+      // Bounded parent throughout: the page starts in list mode and is
+      // toggled to grid mode (Expanded) in place.
+      await pumpSwapPage(tester, cubit, tiles, scrollableParent: false);
       expect(find.byType(EnhancedTileBatch), findsOneWidget);
       expect(find.byType(DayGridWidget), findsNothing);
 
