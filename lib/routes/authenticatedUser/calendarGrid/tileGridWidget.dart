@@ -26,6 +26,12 @@ class TileGridWidget extends GridPositionableWidget {
   /// P1 (step 1.4): responsive tile width (legacy 270 when omitted).
   final double? tileGridWidth;
   final Function? onTap;
+
+  /// P2 (step 2.2): animate the tile's top/left delta on a position change
+  /// (true by default). The parent passes `false` while the grid is
+  /// zooming/dragging so positions track the controller directly. Reduced
+  /// motion is also respected inside the widget.
+  final bool? animate;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -35,6 +41,7 @@ class TileGridWidget extends GridPositionableWidget {
       this.dayStart,
       this.tileGridWidth,
       this.onTap,
+      this.animate,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -193,9 +200,21 @@ class TileGridWidgetState extends GridPositionableState {
   @override
   Widget build(BuildContext context) {
     if (this.tilerEvent != null) {
-      return Positioned(
+      final animateEnabled = (this.widget is TileGridWidget)
+          ? ((this.widget as TileGridWidget).animate ?? true)
+          : true;
+      final disableAnimations =
+          MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+      final animate = animateEnabled && !disableAnimations;
+      // P2 (step 2.2): slide to the new top/left instead of teleporting. A
+      // stable key (set by the parent) reuses this element so the delta
+      // animates; gated off while zooming/dragging and by reduced motion.
+      return AnimatedPositioned(
         top: topPosition,
         left: leftPosition,
+        duration:
+            animate ? const Duration(milliseconds: 300) : Duration.zero,
+        curve: Curves.easeInOutCubic,
         child: Container(
           height: this.widgetHeight,
           width: widgetWidth,

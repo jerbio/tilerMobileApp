@@ -109,13 +109,19 @@ void main() {
           tester.element(find.byKey(const ValueKey<String>('daygrid_tile_a')));
 
       controller.setPxPerHour(240);
-      await tester.pump(const Duration(milliseconds: 100));
+      // Idle mode repositions now slide (§6.6, step 2.2), so let the
+      // 300ms transition settle before asserting the final position. Fixed
+      // pumps (not pumpAndSettle — the now-line's minute timer would keep
+      // scheduling frames).
+      await tester.pump(); // rebuild -> the tile's AnimatedPositioned starts
+      await tester.pump(const Duration(milliseconds: 400)); // drive past 300ms
+      await tester.pump(); // flush the final rebuilt frame
 
       final elementAfter =
           tester.element(find.byKey(const ValueKey<String>('daygrid_tile_a')));
       expect(identical(elementBefore, elementAfter), isTrue,
           reason: 'tile element must be reused, not remounted');
-      expect(tilePosition(tester, 'a').top, 1920); // 8h * 240
+      expect(tilePosition(tester, 'a').top, 1920); // 8h * 240 (after the slide)
       expect(tileSize(tester, 'a').height, 240); // 1h * 240
     });
 

@@ -69,12 +69,19 @@ class DayGridWidget extends StatefulWidget {
   /// read-only and no tap-to-add target is offered.
   final DateTime? day;
 
+  /// P2 (step 2.2): an optional identity prefix for the per-tile `ValueKey`s.
+  /// Prefixing the tile key with the day keeps element reuse scoped to one
+  /// day, so a tile with the same `uniqueId` on a different day never "flies"
+  /// into the new day's layout. When omitted the key is the bare `uniqueId`.
+  final String? dayKey;
+
   const DayGridWidget({
     this.tiles = const <SubCalendarEvent>[],
     this.onTileTap,
     this.controller,
     this.now,
     this.day,
+    this.dayKey,
   });
 
   /// P2 (step 2.1): pure tap-to-add time math — the inverse of the layout
@@ -446,6 +453,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
               ));
             }
 
+            // P2 (step 2.2): animate position deltas only while idle; during a
+            // pinch/drag the tiles track the controller directly (no double
+            // animation). Day-scope the per-tile keys so a tile's element never
+            // carries across days.
+            final animate = _controller.mode == DayGridMode.idle;
+            final keyPrefix =
+                (widget.dayKey == null || widget.dayKey!.isEmpty) ? '' : 'day_${widget.dayKey}_';
+
             final tileWidgets = [...unselected, ...selected]
                 .map(
                   (tile) {
@@ -454,13 +469,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     // Stable per-tile identity: add/remove/replace of
                     // tiles maps to element remove/update — never a stale
                     // reused state.
-                    key: ValueKey<String>('daygrid_tile_${tile.uniqueId}'),
+                    key: ValueKey<String>('daygrid_tile_${keyPrefix}${tile.uniqueId}'),
                     tilerEvent: tile,
                     onTap: onTileGridTap,
                     pxPerHour: pxPerHour,
                     dayStart: dayStart,
                     left: column?.left ?? tileLeft,
                     tileGridWidth: column?.width ?? tileWidth,
+                    animate: animate,
                     );
                   },
                 )

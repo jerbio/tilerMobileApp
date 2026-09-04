@@ -83,6 +83,9 @@ class DayGridPage extends StatelessWidget {
               // still tap-to-add (the grid derives its own date only from
               // tiles, which is null on an empty day).
               day: Utility.getTimeFromIndex(dayIndex),
+              // P2 (step 2.2): scope the per-tile keys to this day so a tile
+              // never re-animates (flies) across a day-page swap.
+              dayKey: 'day_$dayIndex',
             ),
           ),
         ],

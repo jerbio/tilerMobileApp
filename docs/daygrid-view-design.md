@@ -387,19 +387,19 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P1 | Grid constructor → `List<SubCalendarEvent>` (C1) | 64c4785 | Done | Step 1.3; `DayCast` adapts |
 | P1 | Ribbon collapsed tab, tap-to-expand (C2) | | Not started | replaces `isToday` hard hide |
 | P1 | Compact alert banner strip (C3) | | Not started | reuse detectors + modals |
-| P1 | Pinned header for all-day/≥16h tiles (C7) | | Not started | |
+| P1 | Pinned header for all-day/≥16h tiles (C7) | b97b987 | Done | Step 1.7; all-day/≥16h tiles render in a pinned strip above the timeline (excluded from the grid); `test/daygrid_pinned_header_test.dart` (8) |
 | P1 | Rebuild / `didUpdateWidget` hardening | 64c4785 | Done | Step 1.3; `test/daygrid_widget_rebuild_test.dart` (7) — dupes on `setState` + in-place sort fixed; stale-state tile swap fixed via `ValueKey` + `TileGridWidgetState.didUpdateWidget` |
 | P1 | Responsive tile width | 64c4785 | Done | Step 1.4 — drops hard-coded `80` / `270`; `LayoutBuilder` constraints |
 | P1 | Filtering parity with list view | 64c4785 | Done | Step 1.5; `DayGridPage.gridTiles` mirrors `EnhancedTileBatch` rules (null ids, non-viable, third-party pending/tentative + declined RSVP; tiler-sourced exempt) |
 | P1 | Cross-midnight clamp | 64c4785 | Done | Step 1.4 |
-| P1 | Pull-to-refresh in grid mode | | Not started | reuse `ScheduleBloc` refresh wiring |
-| P1 | Live now-line (C10) | | Not started | today only; minute timer |
-| P1 | GCal-style overlap columns (C11) | | Done | pure `OverlapColumns.assign` + `DayGridWidget` wiring; `test/daygrid_overlap_columns_test.dart` (13) — overlapping tiles cluster into shared-width columns; a singleton keeps the full region; tap-to-raise z-order + no-duplicate preserved |
-| P2 | Auto-fit initial zoom (C8) | | Not started | `viewportHeight / 4`, clamped |
+| P1 | Pull-to-refresh in grid mode | b8d2fe5 | Done | Step 1.6; `RefreshIndicator` wraps the grid scroll view (same `ScheduleBloc` refresh wiring as the list); `test/daygrid_refresh_nowline_test.dart` (6) |
+| P1 | Live now-line (C10) | b8d2fe5 | Done | Step 1.6; today-only, 1px line + gutter time bubble; minute `Timer` + `ValueKey` bump rebuilds the line in place (no full-grid remount); `test/daygrid_refresh_nowline_test.dart` |
+| P1 | GCal-style overlap columns (C11) | 5ccf822 | Done | Step 1.8; pure `OverlapColumns.assign` + `DayGridWidget` wiring; `test/daygrid_overlap_columns_test.dart` (13) — overlapping tiles cluster into shared-width columns; a singleton keeps the full region; tap-to-raise z-order + no-duplicate preserved |
+| P2 | Auto-fit initial zoom (C8) | b8d2fe5 | Done | folded into C10 (step 1.6); `DayGridController.autoFit(viewportHeight)` = `viewportHeight / 4` clamped [40, 240], first-launch only, stored value wins; `_autoFitOnFirstLaunch` in `dayGridPage` |
 | P2 | Zoom-dependent `snapInterval` (C4) | | Not started | seeded 15 min |
-| P2 | Tap-to-add: hit layer + snap highlight | | Not started | behind-tiles `GestureDetector` |
-| P2 | Tap-to-add: `PreTile` prefill → `/AddTile` | | Not started | 1h default duration (C13) |
-| P2 | Moved/resized tile transitions (§6.6) | | Not started | `AnimatedPositioned` + stable keys; idle-mode only |
+| P2 | Tap-to-add: hit layer + snap highlight | df2e1e8 | Done | Steps C12/C14; behind-tiles tap layer maps y → `time(y)` → `snapInterval` (C4); `test/daygrid_tap_to_add_test.dart` |
+| P2 | Tap-to-add: `PreTile` prefill → `/AddTile` | df2e1e8 | Done | Steps C12/C13; tapped slot → `/AddTile` prefill (start + 1h default duration) |
+| P2 | Moved/resized tile transitions (§6.6) | | Done | Step 2.2; `AnimatedPositioned(top/left)` 300ms `easeInOutCubic`, gated on `mode == idle` (immediate while zooming/dragging), honors `MediaQuery.disableAnimations`; day-scoped `ValueKey` prefix prevents cross-day slides; `test/daygrid_transitions_test.dart` (5) |
 | P2 | Added/removed slide-in / fade-out (§6.6) | | Not started | stagger on batch; column reflow animates with it |
 | P2 | TileCast: grid `preview` mode + highlight (§6.7) | | Not started | read-only; dotted border + raise + auto-scroll |
 | P2 | TileCast: `PreviewDailyTileList` layout branch (§6.7) | | Not started | non-viable action tiles NOT filtered |
