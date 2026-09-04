@@ -1,11 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
@@ -28,10 +33,16 @@ class DayGridWidget extends StatefulWidget {
   /// [DayGridController] (80 px/h, matching the historical constant).
   final DayGridController? controller;
 
+  /// C10 (step 1.6): the clock feeding the now-line. When omitted a live
+  /// [DateTime.now()] clock is used and advanced by a minute timer.
+  /// Inject a fixed value in tests (the timer stays off).
+  final DateTime? now;
+
   const DayGridWidget({
     this.tiles = const <SubCalendarEvent>[],
     this.onTileTap,
     this.controller,
+    this.now,
   });
 
   @override
@@ -65,6 +76,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// draws on top); it never duplicates tile widgets.
   final Set<String> _selectedEventIds = <String>{};
 
+  /// C10 (step 1.6): the clock feeding the now-line. Live [DateTime.now()]
+  /// when [DayGridWidget.now] is omitted; fixed when injected.
+  late DateTime _liveNow;
+
+  /// C10 (step 1.6): minute timer advancing [_liveNow]. Only runs when the
+  /// caller did not inject a fixed clock; cancelled in dispose.
+  Timer? _nowLineTimer;
+
   double get _pxPerHour => _controller.pxPerHour;
 
   @override
@@ -72,6 +91,17 @@ class DayGridWidgetState extends State<DayGridWidget> {
     super.initState();
     _ownedController = null;
     _controller = widget.controller ?? (_ownedController = DayGridController());
+    _liveNow = widget.now ?? DateTime.now();
+    if (widget.now == null) {
+      _nowLineTimer = Timer.periodic(const Duration(minutes: 1), (_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _liveNow = DateTime.now();
+        });
+      });
+    }
     _resyncInitialScroll();
   }
 
@@ -83,6 +113,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
       _ownedController = null;
       _controller =
           widget.controller ?? (_ownedController = DayGridController());
+    }
+    if (oldWidget.now != widget.now) {
+      _liveNow = widget.now ?? _liveNow;
     }
     if (identical(oldWidget.tiles, widget.tiles)) {
       return; // same instance: parent rebuilt with the same data.
@@ -190,6 +223,36 @@ class DayGridWidgetState extends State<DayGridWidget> {
         '${clamped.toStringAsFixed(1)}px');
   }
 
+  /// C10 (step 1.6): pull-to-refresh — the same ScheduleBloc wiring as
+  /// [EnhancedTileBatch]: dispatch `GetScheduleEvent(forceRefresh: true)`,
+  /// carrying the current state's subEvents/timeline when it holds them.
+  Future<void> _onGridRefresh() async {
+    Utility.debugPrint('DayGrid:: pull-to-refresh -> '
+        'GetScheduleEvent(forceRefresh: true)');
+    await AnalysticsSignal.send('daygrid_pull_refresh');
+    final scheduleBloc = context.read<ScheduleBloc>();
+    final state = scheduleBloc.state;
+    List<SubCalendarEvent>? subEvents;
+    Timeline? timeline;
+    if (state is ScheduleEvaluationState) {
+      subEvents = state.subEvents;
+      timeline = state.lookupTimeline;
+    } else if (state is ScheduleLoadedState) {
+      subEvents = state.subEvents;
+      timeline = state.lookupTimeline;
+    } else if (state is ScheduleLoadingState) {
+      subEvents = state.subEvents;
+      timeline = state.previousLookupTimeline;
+    }
+    scheduleBloc.add(GetScheduleEvent(
+      isAlreadyLoaded: true,
+      previousSubEvents: subEvents,
+      scheduleTimeline: timeline,
+      previousTimeline: timeline,
+      forceRefresh: true,
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     // C1 hardening: everything below is derived fresh from
@@ -223,6 +286,20 @@ class DayGridWidgetState extends State<DayGridWidget> {
             final tileLeft = gutter + 4;
             final tileWidth = maxWidth != null ? maxWidth - gutter - 8 : 270.0;
             final dayStart = _gridDayStart();
+
+            // C10 (step 1.6): live now-line + gutter time bubble, today
+            // only (the grid day is midnight of the earliest tile).
+            final now = _liveNow;
+            final isToday = dayStart != null &&
+                dayStart.year == now.year &&
+                dayStart.month == now.month &&
+                dayStart.day == now.day;
+            final nowLineTop =
+                (now.hour + now.minute / 60.0 + now.second / 3600.0) *
+                    pxPerHour;
+            final nowLineMax = timeCellCount * pxPerHour;
+            final nowLineColor = Theme.of(context).colorScheme.error;
+            final nowLabel = TimeOfDay.fromDateTime(now).format(context);
 
             // Renderable tiles: id'd, inside the grid day, and not extended
             // (>=16h / all-day -> the pinned strip, step 1.7).
@@ -276,14 +353,52 @@ class DayGridWidgetState extends State<DayGridWidget> {
               WidgetsBinding.instance.addPostFrameCallback(_applyPendingScroll);
             }
 
-            return SingleChildScrollView(
-              controller: _scrollController,
-              child: Stack(
-                children: <Widget>[
-                  Container(height: timeCellCount * pxPerHour),
-                  ...gutterWidgets,
-                  ...tileWidgets,
-                ],
+            return RefreshIndicator(
+              color: Theme.of(context).colorScheme.tertiary,
+              onRefresh: _onGridRefresh,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Stack(
+                  children: <Widget>[
+                    Container(height: timeCellCount * pxPerHour),
+                    ...gutterWidgets,
+                    ...tileWidgets,
+                    if (isToday) ...<Widget>[
+                      // 1-2px now-line across the day at the clock's y.
+                      Positioned(
+                        key: const Key('daygrid_now_line'),
+                        top: nowLineTop.clamp(0.0, nowLineMax),
+                        left: 0,
+                        right: 0,
+                        height: 2,
+                        child: ColoredBox(color: nowLineColor),
+                      ),
+                      // Gutter time bubble.
+                      Positioned(
+                        key: const Key('daygrid_now_bubble'),
+                        top: (nowLineTop - 10).clamp(0.0, nowLineMax - 20),
+                        left: 0,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 4, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: nowLineColor,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            nowLabel,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              height: 1.0,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             );
           },
@@ -294,6 +409,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
   @override
   void dispose() {
+    _nowLineTimer?.cancel(); // C10: no leaked minute timers
     _ownedController?.dispose(); // own resources first (C1: dispose order)
     _scrollController.dispose();
     super.dispose();
