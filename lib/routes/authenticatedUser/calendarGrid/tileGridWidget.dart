@@ -1,4 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 
@@ -32,6 +34,16 @@ class TileGridWidget extends GridPositionableWidget {
   /// zooming/dragging so positions track the controller directly. Reduced
   /// motion is also respected inside the widget.
   final bool? animate;
+
+  /// P2 (step 2.2b): non-null when this tile was newly added and should slide
+  /// in (scale + fade) from a corner. The value is the stagger delay applied
+  /// before the reveal; `null` means the tile is static (no enter animation —
+  /// the initial full-day render and day-swaps pass `null`).
+  final Duration? enterDelay;
+
+  /// P2 (step 2.2b): `true` for a fading-out ghost of a removed tile — it
+  /// renders at full opacity for one frame, then animates to `0`.
+  final bool? exiting;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -42,6 +54,8 @@ class TileGridWidget extends GridPositionableWidget {
       this.tileGridWidth,
       this.onTap,
       this.animate,
+      this.enterDelay,
+      this.exiting,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -60,11 +74,23 @@ class TileGridWidgetState extends GridPositionableState {
   static final Duration minDuration = Duration(minutes: 20);
   late ThemeData theme;
   late ColorScheme colorScheme;
+
+  // P2 (step 2.2b): enter/exit animation state.
+  /// Enter: false until the stagger delay elapses (only when [TileGridWidget
+  /// .enterDelay] is set); drives the 0 -> 1 fade/scale reveal.
+  bool _revealed = true;
+  /// Exit: flipped one frame after a ghost mounts; drives the 1 -> 0 fade-out.
+  bool _fading = false;
+  Timer? _enterTimer;
+
   @override
   void initState() {
     super.initState();
     if (this.widget is TileGridWidget) {
       tilerEvent = (this.widget as TileGridWidget).tilerEvent;
+      // Start hidden only when the parent marks this as a fresh add; a null
+      // enterDelay (initial render / day-swap) stays visible from frame one.
+      _revealed = (this.widget as TileGridWidget).enterDelay == null;
     }
     _recomputePosition();
     // Legacy default when the parent supplies no gutter offset.
@@ -72,6 +98,48 @@ class TileGridWidgetState extends GridPositionableState {
       this.leftPosition = 80.0;
     }
     this.widgetWidth = (this.widget as TileGridWidget).tileGridWidth ?? 270;
+    WidgetsBinding.instance.addPostFrameCallback(_onFirstFrame);
+  }
+
+  /// P2 (step 2.2b): after the first frame, kick off the enter reveal (after
+  /// the stagger delay) or the exit fade-out, honouring the reduced-motion
+  /// and zoom/drag gates.
+  void _onFirstFrame(Duration _) {
+    if (!mounted) {
+      return;
+    }
+    final w = this.widget as TileGridWidget;
+    final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final animate = (w.animate ?? true) && !reduce;
+    if (w.exiting ?? false) {
+      if (!_fading) {
+        setState(() => _fading = true);
+      }
+      return;
+    }
+    final delay = w.enterDelay;
+    if (delay == null) {
+      return;
+    }
+    if (!animate) {
+      // Jump cut (zooming/dragging or reduced motion): reveal immediately.
+      if (!_revealed) {
+        setState(() => _revealed = true);
+      }
+      return;
+    }
+    _enterTimer = Timer(delay, () {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _revealed = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _enterTimer?.cancel();
+    super.dispose();
   }
 
   /// P1 (step 1.4): derives top/height from the effective px-per-hour. With
@@ -206,6 +274,39 @@ class TileGridWidgetState extends GridPositionableState {
       final disableAnimations =
           MediaQuery.maybeOf(context)?.disableAnimations ?? false;
       final animate = animateEnabled && !disableAnimations;
+
+      // P2 (step 2.2b): enter (slide-in from a corner) / exit (fade-out) for
+      // added/removed tiles. The Positioned root below is unchanged so the
+      // Stack keeps placing the tile; opacity + scale apply to the body and
+      // are identity (1.0 / 0ms) for static tiles, so existing positions and
+      // key-identity tests are unaffected.
+      final isExiting = (this.widget is TileGridWidget)
+          ? ((this.widget as TileGridWidget).exiting ?? false)
+          : false;
+      final hasEnter = (this.widget is TileGridWidget)
+          ? ((this.widget as TileGridWidget).enterDelay != null)
+          : false;
+      final double opacityTarget;
+      final double scaleTarget;
+      final Duration fadeDuration;
+      if (isExiting) {
+        opacityTarget = _fading ? 0.0 : 1.0;
+        scaleTarget = 1.0;
+        fadeDuration = animate
+            ? const Duration(milliseconds: 200)
+            : Duration.zero;
+      } else if (hasEnter) {
+        opacityTarget = _revealed ? 1.0 : (animate ? 0.0 : 1.0);
+        scaleTarget = _revealed ? 1.0 : (animate ? 0.86 : 1.0);
+        fadeDuration = animate
+            ? const Duration(milliseconds: 200)
+            : Duration.zero;
+      } else {
+        opacityTarget = 1.0;
+        scaleTarget = 1.0;
+        fadeDuration = Duration.zero;
+      }
+
       // P2 (step 2.2): slide to the new top/left instead of teleporting. A
       // stable key (set by the parent) reuses this element so the delta
       // animates; gated off while zooming/dragging and by reduced motion.
@@ -215,20 +316,30 @@ class TileGridWidgetState extends GridPositionableState {
         duration:
             animate ? const Duration(milliseconds: 300) : Duration.zero,
         curve: Curves.easeInOutCubic,
-        child: Container(
-          height: this.widgetHeight,
-          width: widgetWidth,
-          child: InkWell(
-              onTap: () {
-                onTapPreviewTile(tilerEvent!);
-                if (this.widget is TileGridWidget) {
-                  if ((this.widget as TileGridWidget).onTap != null) {
-                    (this.widget as TileGridWidget).onTap!(
-                        tilerEvent: this.tilerEvent);
-                  }
-                }
-              },
-              child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!)),
+        child: AnimatedOpacity(
+          opacity: opacityTarget,
+          duration: fadeDuration,
+          curve: Curves.easeIn,
+          child: AnimatedScale(
+            scale: scaleTarget,
+            duration: fadeDuration,
+            alignment: Alignment.center,
+            child: Container(
+              height: this.widgetHeight,
+              width: widgetWidth,
+              child: InkWell(
+                  onTap: () {
+                    onTapPreviewTile(tilerEvent!);
+                    if (this.widget is TileGridWidget) {
+                      if ((this.widget as TileGridWidget).onTap != null) {
+                        (this.widget as TileGridWidget).onTap!(
+                            tilerEvent: this.tilerEvent);
+                      }
+                    }
+                  },
+                  child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!)),
+            ),
+          ),
         ),
       );
     }

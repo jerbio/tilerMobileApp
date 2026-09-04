@@ -78,6 +78,10 @@ class DayGridPage extends StatelessWidget {
           // pannable.
           Expanded(
             child: DayGridWidget(
+              // Stable element identity: keeps the grid's enter/exit/position
+              // transition state (P2 2.2b) across rebuilds so an in-place
+              // schedule update animates instead of remounting the whole grid.
+              key: ValueKey<String>('daygrid_$dayIndex'),
               tiles: parityTiles,
               // P2 (step 2.1): the page's calendar day, so an empty day can
               // still tap-to-add (the grid derives its own date only from

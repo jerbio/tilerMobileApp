@@ -55,6 +55,18 @@ class _DailyTileListState extends TileListState {
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
   int? carouselSliderIndex = null;
 
+  /// P2 (step 2.2): the carousel's *structural* signature — the day window +
+  /// current view day + forced-refresh counter. Used to keep [carouselKey]
+  /// stable across pure schedule-data updates so the `CarouselSlider` (and
+  /// every `DayGridWidget` inside it) is NOT remounted on every update. A
+  /// remount would wipe the grid's position-transition state (§6.6): a fresh
+  /// `DayGridWidget` has no "old position" to animate from, so tiles hard-cut
+  /// to their new spots instead of sliding. The carousel is only remounted
+  /// when this signature actually changes (day window / current day / refresh),
+  /// which is when `carousel_slider`'s non-reactive `initialPage` must
+  /// re-apply.
+  String _carouselStructureSignature = '';
+
   // Edge loading placeholders - these mark the loading pages at carousel edges
   static const int _edgeLoadingPastIndex = -1;
   static const int _edgeLoadingFutureIndex = -2;
@@ -877,8 +889,31 @@ class _DailyTileListState extends TileListState {
                   previousTimeline = state.previousLookupTimeline!;
                 }
                 if (statusId != null) {
-                  String carouselId = _generateCarouselKeyId(statusId);
-                  carouselKey = ValueKey(carouselId);
+                  // P2 (step 2.2): keep the carousel key STABLE across pure
+                  // schedule-data updates. The old code rebuilt it from the
+                  // volatile `evaluationId` (which changes every update), which
+                  // remounted the whole `CarouselSlider` and, with it, every
+                  // `DayGridWidget` — killing the §6.6 position transitions.
+                  // Only remount when the structure (visible day window,
+                  // current view day, or a forced refresh) actually changed.
+                  final int windowStart =
+                      state.lookupTimeline.startTime.universalDayIndex;
+                  final int windowEnd =
+                      state.lookupTimeline.endTime.universalDayIndex;
+                  int currentViewDay =
+                      Utility.currentTime().universalDayIndex;
+                  final uiDateState = context.read<UiDateManagerBloc>().state;
+                  if (uiDateState is UiDateManagerUpdated) {
+                    currentViewDay =
+                        uiDateState.currentDate.universalDayIndex;
+                  }
+                  final String structureSignature =
+                      'gridwin_${windowStart}_${windowEnd}_d${currentViewDay}_r$_forceRefreshCounter';
+                  if (structureSignature != _carouselStructureSignature) {
+                    _carouselStructureSignature = structureSignature;
+                    carouselKey =
+                        ValueKey(_generateCarouselKeyId(structureSignature));
+                  }
                 }
                 // Reset edge loading flags when new data is loaded
                 _isLoadingPastDays = false;

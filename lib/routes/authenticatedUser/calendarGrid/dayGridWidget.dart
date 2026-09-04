@@ -76,6 +76,7 @@ class DayGridWidget extends StatefulWidget {
   final String? dayKey;
 
   const DayGridWidget({
+    super.key,
     this.tiles = const <SubCalendarEvent>[],
     this.onTileTap,
     this.controller,
@@ -161,6 +162,23 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// caller did not inject a fixed clock; cancelled in dispose.
   Timer? _nowLineTimer;
 
+  // P2 (step 2.2b): add/remove enter/exit bookkeeping.
+  /// Tiles rendered in the previous frame, by uniqueId (the diff source).
+  /// Updated in [build] so the next [didUpdateWidget] diffs against it.
+  Map<String, SubCalendarEvent> _lastTilesById = <String, SubCalendarEvent>{};
+  /// The [DayGridWidget.dayKey] the previous frame rendered; a change means
+  /// the day swapped (fresh keys -> no cross-day ghost/enter cascade).
+  String? _lastDayKey;
+  /// Last known (left, width) per uniqueId, captured in build so a removed
+  /// tile's fading-out ghost sits where it was.
+  final Map<String, _TileLayout> _lastLayoutById = <String, _TileLayout>{};
+  /// Removed tiles still fading out; dropped by [_removeTimer].
+  final Map<String, _RemovingTile> _removingTiles = <String, _RemovingTile>{};
+  /// Stagger delay per newly-added uniqueId (reset each diff).
+  final Map<String, Duration> _enterDelays = <String, Duration>{};
+  /// One-shot timer that drops the fading-out ghosts once the fade finishes.
+  Timer? _removeTimer;
+
   double get _pxPerHour => _controller.pxPerHour;
 
   @override
@@ -194,6 +212,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (oldWidget.now != widget.now) {
       _liveNow = widget.now ?? _liveNow;
     }
+    // P2 (step 2.2b): diff the tile set for add/remove enter/exit animations
+    // (runs before build so the result is visible in the upcoming frame).
+    _diffTiles(oldWidget, widget);
     if (identical(oldWidget.tiles, widget.tiles)) {
       return; // same instance: parent rebuilt with the same data.
     }
@@ -201,6 +222,68 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // initial scroll syncs to the first tile again (previous UX).
     _selectedEventIds.clear();
     _resyncInitialScroll();
+  }
+
+  /// P2 (step 2.2b): compare the current tile set with the previous frame
+  /// (captured in [build]) to drive a staggered enter for added tiles and a
+  /// fade-out ghost for removed ones. A day swap resets the bookkeeping so
+  /// nothing animates across days (fresh keys, matching step 2.2).
+  void _diffTiles(DayGridWidget oldWidget, DayGridWidget newWidget) {
+    final String? newDayKey = newWidget.dayKey;
+    final List<SubCalendarEvent> newTiles = newWidget.tiles;
+    if (_lastDayKey != newDayKey) {
+      // Day changed: fresh keys, no cross-day ghost or enter cascade.
+      _removingTiles.clear();
+      _enterDelays.clear();
+      _lastDayKey = newDayKey;
+      return;
+    }
+    final Set<String> prevIds = _lastTilesById.keys.toSet();
+    final Set<String> curIds = newTiles.map((t) => t.uniqueId).toSet();
+
+    // Added: staggered enter (~40ms each, capped ~400ms total, per §6.6).
+    _enterDelays.clear();
+    int i = 0;
+    for (final t in newTiles) {
+      if (!prevIds.contains(t.uniqueId)) {
+        _enterDelays[t.uniqueId] =
+            Duration(milliseconds: (i * 40).clamp(0, 400));
+        i++;
+      }
+    }
+
+    // Removed: fade-out ghost (idle only — while zooming/dragging the tiles
+    // track the controller, so a fading ghost would fight the gesture).
+    if (_controller.mode == DayGridMode.idle) {
+      for (final id in prevIds) {
+        if (!curIds.contains(id)) {
+          final tile = _lastTilesById[id];
+          if (tile == null) {
+            continue;
+          }
+          final layout = _lastLayoutById[id];
+          _removingTiles[id] = _RemovingTile(
+            tile,
+            layout?.left ?? 80.0,
+            layout?.width ?? 270.0,
+          );
+        }
+      }
+    } else {
+      _removingTiles.clear();
+    }
+
+    if (_removingTiles.isNotEmpty) {
+      _removeTimer?.cancel();
+      _removeTimer = Timer(const Duration(milliseconds: 220), () {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _removingTiles.clear();
+        });
+      });
+    }
   }
 
   /// Queue an initial scroll to the first tile's start hour.
@@ -477,8 +560,47 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     left: column?.left ?? tileLeft,
                     tileGridWidth: column?.width ?? tileWidth,
                     animate: animate,
+                    // P2 (step 2.2b): newly-added tiles slide in (staggered);
+                    // existing/static tiles pass null (no enter animation).
+                    enterDelay: _enterDelays[tile.uniqueId],
                     );
                   },
+                )
+                .toList();
+
+            // P2 (step 2.2b): capture this frame's layout + tile set so the
+            // next [didUpdateWidget] can diff for add/remove and place
+            // fading-out ghosts at their last-known spot.
+            _lastTilesById = {
+              for (final t in renderable) t.uniqueId: t,
+            };
+            _lastLayoutById.clear();
+            for (final t in renderable) {
+              final column = columnLayout[t.uniqueId];
+              _lastLayoutById[t.uniqueId] = _TileLayout(
+                column?.left ?? tileLeft,
+                column?.width ?? tileWidth,
+              );
+            }
+            _lastDayKey = widget.dayKey;
+
+            // P2 (step 2.2b): fading-out ghosts for removed tiles. Each is a
+            // [TileGridWidget] pinned at its last-known spot, animated to
+            // opacity 0, then dropped by [_removeTimer]. A distinct `exit`
+            // key keeps it from colliding with a live tile of the same id.
+            final ghostWidgets = _removingTiles.values
+                .map(
+                  (g) => TileGridWidget(
+                    key: ValueKey<String>(
+                        'daygrid_tile_exit_${g.tile.uniqueId}'),
+                    tilerEvent: g.tile,
+                    pxPerHour: pxPerHour,
+                    dayStart: dayStart,
+                    left: g.left,
+                    tileGridWidth: g.width,
+                    animate: animate,
+                    exiting: true,
+                  ),
                 )
                 .toList();
 
@@ -509,6 +631,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     ),
                     ...gutterWidgets,
                     ...tileWidgets,
+                    ...ghostWidgets,
                     if (isToday) ...<Widget>[
                       // 1-2px now-line across the day at the clock's y.
                       Positioned(
@@ -556,8 +679,24 @@ class DayGridWidgetState extends State<DayGridWidget> {
   @override
   void dispose() {
     _nowLineTimer?.cancel(); // C10: no leaked minute timers
+    _removeTimer?.cancel(); // P2 (2.2b): no leaked ghost-cleanup timers
     _ownedController?.dispose(); // own resources first (C1: dispose order)
     _scrollController.dispose();
     super.dispose();
   }
+}
+
+// P2 (step 2.2b): a removed tile's last-known geometry, for ghost placement.
+class _TileLayout {
+  final double left;
+  final double width;
+  _TileLayout(this.left, this.width);
+}
+
+// P2 (step 2.2b): a removed tile still fading out in the grid.
+class _RemovingTile {
+  final SubCalendarEvent tile;
+  final double left;
+  final double width;
+  _RemovingTile(this.tile, this.left, this.width);
 }
