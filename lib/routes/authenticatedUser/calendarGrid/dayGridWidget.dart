@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/constants.dart' as constant;
+import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -10,6 +11,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridControlle
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
@@ -21,6 +23,27 @@ import 'package:tiler_app/util.dart';
 /// Daily-view toggle. Callers adapt:
 ///   - `DayCast` passes `peekDay.subEvents`,
 ///   - the daily page passes its filtered schedule list.
+
+/// P2 (step 2.1): the resolved start time + default duration for a tap-to-add.
+class DayGridTapSeed {
+  /// The seeded tile start time (snapped + clamped to the day; "now" when the
+  /// tap resolved into the past — C14).
+  final DateTime start;
+
+  /// C13: the tap-to-add default duration (the user adjusts it in `AddTile`).
+  final Duration duration;
+
+  /// C14: true when the tapped time was in the past and [start] was prefilled
+  /// with "now" instead.
+  final bool prefilledFromNow;
+
+  const DayGridTapSeed({
+    required this.start,
+    required this.duration,
+    this.prefilledFromNow = false,
+  });
+}
+
 class DayGridWidget extends StatefulWidget {
   /// The tiles to render. Never mutated by the grid.
   final List<SubCalendarEvent> tiles;
@@ -38,12 +61,58 @@ class DayGridWidget extends StatefulWidget {
   /// Inject a fixed value in tests (the timer stays off).
   final DateTime? now;
 
+  /// P2 (step 2.1): the calendar day this grid renders, used to seed the start
+  /// time of a tile created by tapping an empty region (tap-to-add). When
+  /// supplied, a background tap target opens `AddTile` with the tapped
+  /// (snapped) time. When omitted (e.g. the forecast peek day) the grid stays
+  /// read-only and no tap-to-add target is offered.
+  final DateTime? day;
+
   const DayGridWidget({
     this.tiles = const <SubCalendarEvent>[],
     this.onTileTap,
     this.controller,
     this.now,
+    this.day,
   });
+
+  /// P2 (step 2.1): pure tap-to-add time math — the inverse of the layout
+  /// mapping `time(y) = y / pxPerHour`, snapped and guarded. Kept separate
+  /// from the widget so the y→time inversion, snap, clamp and guards are
+  /// unit-testable without pumping the grid.
+  ///
+  /// [dy] is in day-content coordinates (0 at midnight of [dayStart]). The raw
+  /// tapped hour is snapped DOWN to [snapInterval] (C4, shared with
+  /// drag-and-drop) and clamped to the visible day. C14: a tap resolving before
+  /// [now] prefills with [now] (AddTile's default) rather than the past. C13:
+  /// the default duration is 1 hour.
+  static DayGridTapSeed computeTapSeed({
+    required DateTime dayStart,
+    required double dy,
+    required double pxPerHour,
+    required Duration snapInterval,
+    required DateTime now,
+  }) {
+    final clampedDy = dy.clamp(0.0, 24.0 * pxPerHour);
+    final rawMs = clampedDy / pxPerHour * Duration.millisecondsPerHour;
+    final snapMs = snapInterval.inMilliseconds;
+    final snappedMs = (rawMs / snapMs).floor() * snapMs;
+    var start = dayStart.add(Duration(milliseconds: snappedMs));
+    final dayEnd = dayStart.add(const Duration(hours: 24));
+    if (!start.isBefore(dayEnd)) {
+      // Tap on/past the day's end: clamp to the last snap slot.
+      start = dayStart.add(const Duration(hours: 24) - snapInterval);
+    }
+    final prefilled = start.isBefore(now);
+    if (prefilled) {
+      start = now;
+    }
+    return DayGridTapSeed(
+      start: start,
+      duration: const Duration(hours: 1),
+      prefilledFromNow: prefilled,
+    );
+  }
 
   @override
   DayGridWidgetState createState() => DayGridWidgetState();
@@ -199,6 +268,36 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (widget.onTileTap != null) {
       widget.onTileTap!(tilerEvent: tilerEvent);
     }
+  }
+
+  /// P2 (step 2.1): tap-to-add. [details.localPosition] is in day-content
+  /// coordinates (the detector sits inside the scroll content), so
+  /// `dy / pxPerHour` is the tapped hour of the grid day. Only the daily view
+  /// (which supplies [DayGridWidget.day]) offers tap-to-add; the forecast peek
+  /// has no day and stays read-only. C14: taps while a pinch/drag is active are
+  /// ignored.
+  void _onEmptyGridTap(TapUpDetails details) {
+    if (_controller.mode != DayGridMode.idle) {
+      return; // C14: a pinch/drag owns the grid — don't start a tile.
+    }
+    final dayStart = widget.day;
+    if (dayStart == null) {
+      return; // no day supplied (e.g. DayCast) — read-only.
+    }
+    final seed = DayGridWidget.computeTapSeed(
+      dayStart: dayStart,
+      dy: details.localPosition.dy,
+      pxPerHour: _pxPerHour,
+      snapInterval: _controller.snapInterval,
+      now: _liveNow,
+    );
+    final preTile = SimpleAdditionTile()
+      ..startTime = seed.start
+      ..duration = seed.duration;
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => AddTile(preTile: preTile)),
+    );
   }
 
   void _applyPendingScroll(Duration _) {
@@ -360,7 +459,20 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 controller: _scrollController,
                 child: Stack(
                   children: <Widget>[
-                    Container(height: timeCellCount * pxPerHour),
+                    // P2 (step 2.1): tap-to-add. A background tap target
+                    // behind the tiles (first child => lowest z, so the
+                    // positioned tiles on top win the hit test and keep their
+                    // onTileTap behaviour). The handler no-ops unless a
+                    // [day] is supplied, so the forecast peek (DayCast) stays
+                    // read-only.
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTapUp: _onEmptyGridTap,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: timeCellCount * pxPerHour,
+                      ),
+                    ),
                     ...gutterWidgets,
                     ...tileWidgets,
                     if (isToday) ...<Widget>[

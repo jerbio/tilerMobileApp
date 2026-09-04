@@ -44,17 +44,25 @@ class _TileTimeCellState extends TimeCellWidgetState {
           if (constraints.maxWidth.isFinite) {
             width = constraints.maxWidth;
           }
-          return Container(
-            decoration: (this.widget as TileTimeCellWidget).decoration ??
-                BoxDecoration(
-                  border: Border(
-                      top: BorderSide(
-                          color: colorScheme.primary,
-                          width: TileDimensions.thickness)),
-                ),
-            height: this.widgetHeight,
-            width: width,
-            child: this.widget.child,
+          // P1 (step 1.4): width comes from the available constraints instead
+          // of MediaQuery, so the line tracks the grid's real viewport width.
+          // IgnorePointer: the hour row is a purely decorative guide line
+          // (a Container with a Border decoration is hit-test-opaque).
+          // Without this it swallows taps in the empty grid area and blocks
+          // the DayGrid background tap-to-add detector (C12). No visual change.
+          return IgnorePointer(
+            child: Container(
+              decoration: (this.widget as TileTimeCellWidget).decoration ??
+                  BoxDecoration(
+                    border: Border(
+                        top: BorderSide(
+                            color: colorScheme.primary,
+                            width: TileDimensions.thickness)),
+                  ),
+              height: this.widgetHeight,
+              width: width,
+              child: this.widget.child,
+            ),
           );
         },
       ),

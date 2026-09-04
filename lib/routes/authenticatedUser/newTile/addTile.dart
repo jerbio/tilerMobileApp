@@ -1503,6 +1503,13 @@ class AddTileState extends State<AddTile> {
 
   @override
   void dispose() {
+    // Cancel the pending auto-result subscription started in initState
+    // (location==null) / onTextChange so no stale callback fires after the
+    // widget is gone. Note: this cancels the asStream() listener but NOT the
+    // underlying Future.delayed Timer itself — that one-shot timer still has
+    // to fire (its callback is a guarded no-op when description is null).
+    pendingSendTextRequest?.cancel();
+    pendingSendTextRequest = null;
     tileNameController.dispose();
     tileDeadline.dispose();
     splitCountController.dispose();

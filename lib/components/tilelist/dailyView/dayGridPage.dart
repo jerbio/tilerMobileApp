@@ -8,6 +8,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStr
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
+import 'package:tiler_app/util.dart';
 
 /// One day page of the Daily carousel (P1, step 1.5).
 ///
@@ -75,7 +76,15 @@ class DayGridPage extends StatelessWidget {
           // The grid fills the remaining height (the page is hosted in a
           // bounded viewport); its internal scroll view keeps the day
           // pannable.
-          Expanded(child: DayGridWidget(tiles: parityTiles)),
+          Expanded(
+            child: DayGridWidget(
+              tiles: parityTiles,
+              // P2 (step 2.1): the page's calendar day, so an empty day can
+              // still tap-to-add (the grid derives its own date only from
+              // tiles, which is null on an empty day).
+              day: Utility.getTimeFromIndex(dayIndex),
+            ),
+          ),
         ],
       );
     }

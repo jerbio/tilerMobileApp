@@ -45,23 +45,30 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
     }
     return Positioned(
       top: topPosition,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        height: this.widgetHeight,
-        width: widgetWidth,
-        child: Stack(
-          children: [
-            Positioned(right: 0, child: Text("$formattedTimeOfDay")),
-            Positioned(
-                right: 0,
-                child: Container(
-                  color: colorScheme.primary,
-                  height: TileDimensions.thickness,
-                  width: 20,
-                ))
-          ],
+      // IgnorePointer: the time label is display-only but its Container has a
+      // (BorderRadius) decoration, making it hit-test-opaque, and the inner
+      // Stack with only Positioned children expands to the available width.
+      // Without this it would swallow taps across the grid and block the
+      // DayGrid background tap-to-add detector (C12). No visual change.
+      child: IgnorePointer(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          height: this.widgetHeight,
+          width: widgetWidth,
+          child: Stack(
+            children: [
+              Positioned(right: 0, child: Text("$formattedTimeOfDay")),
+              Positioned(
+                  right: 0,
+                  child: Container(
+                    color: colorScheme.primary,
+                    height: TileDimensions.thickness,
+                    width: 20,
+                  ))
+            ],
+          ),
         ),
       ),
     );
