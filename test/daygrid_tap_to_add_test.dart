@@ -236,12 +236,12 @@ group('DayGridWidget tap-to-add wiring (daily view)', () {
       // Default controller: 80 px/h. y = 320 -> 4:00.
       await tester.tapAt(const Offset(200, 320));
       await tester.pump();
-      // Advance the fake clock past AddTile's 700ms auto-result
-      // Future.delayed (started in initState because preTile.location is
-      // null). Its callback is a no-op here (preTile.description is null),
-      // but it must FIRE before test end or the "A Timer is still pending"
-      // invariant trips — cancelling the asStream() subscription does NOT
-      // cancel the underlying Future.delayed Timer.
+      // Advance the fake clock past AddTile's 700ms auto-result Timer
+      // (started in initState because preTile.location is null) so its
+      // callback runs and is consumed. The callback is a no-op here
+      // (preTile.description is null). AddTileState.dispose() would cancel
+      // the now directly-cancellable Timer anyway, so this pump is just
+      // belt-and-suspenders for the "A Timer is still pending" invariant.
       await tester.pump(const Duration(milliseconds: 750));
 
       expect(find.byType(AddTile), findsOneWidget);
@@ -266,8 +266,8 @@ group('DayGridWidget tap-to-add wiring (daily view)', () {
       // y for 4:07 at 80 px/h -> snaps down to 4:00.
       await tester.tapAt(Offset(200, (4 + 7 / 60.0) * 80));
       await tester.pump();
-      // Fire AddTile's 700ms auto-result Future.delayed (see above) so no
-      // Timer is pending when the widget tree is torn down.
+      // Fire AddTile's 700ms auto-result Timer (see above) so no Timer is
+      // pending when the widget tree is torn down.
       await tester.pump(const Duration(milliseconds: 750));
 
       final addTile = tester.widget<AddTile>(find.byType(AddTile));
@@ -289,6 +289,46 @@ group('DayGridWidget tap-to-add wiring (daily view)', () {
       await tester.tapAt(const Offset(200, 320));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(AddTile), findsNothing);
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets(
+        'dismissing AddTile before the 700ms auto-result fires leaves no pending Timer',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        tiles: anchorTiles,
+        now: now,
+        day: dayStart,
+      ));
+      await tester.pump(); // post-frame: initial scroll settles.
+
+      // Push AddTile; initState schedules the 700ms auto-result Timer because
+      // the seeded preTile has location == null.
+      await tester.tapAt(const Offset(200, 320));
+      await tester.pump();
+      // Settle the push so AddTile is built and its initState Timer is
+      // scheduled. 100ms keeps the fake clock well under the 700ms
+      // auto-result Timer.
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.byType(AddTile), findsOneWidget);
+
+      // Dismiss AddTile while the 700ms auto-result Timer is still pending:
+      // pop the route so AddTileState.dispose() runs. dispose() cancels the
+      // (now directly-cancellable) Timer, so no Timer is pending at test end.
+      // (Fake clock here is ~400ms < 700ms, so the Timer is still live when
+      // it is cancelled.) Under the previous
+      // Future.delayed(...).asStream().listen(...) approach the underlying
+      // one-shot Timer would survive dispose and trip the framework's
+      // "A Timer is still pending" invariant.
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pump(); // start the (300ms) reverse transition.
+      await tester.pump(const Duration(milliseconds: 300)); // transition done.
+      await tester.pump(); // frame that detaches & disposes AddTile.
 
       expect(find.byType(AddTile), findsNothing);
       await _closeBloc(tester, bloc);

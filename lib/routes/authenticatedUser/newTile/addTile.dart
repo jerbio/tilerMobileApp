@@ -94,7 +94,7 @@ class AddTileState extends State<AddTile> {
   late ScheduleApi scheduleApi;
   late SettingsApi settingsApi;
   late final LocationApi locationApi;
-  StreamSubscription? pendingSendTextRequest;
+  Timer? pendingSendTextTimer;
   List<Tuple2<String, RestrictionProfile>>? _listedRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _workRestrictionProfile;
   Tuple2<String, RestrictionProfile>? _personalRestrictionProfile;
@@ -131,11 +131,15 @@ class AddTileState extends State<AddTile> {
         _isDurationManuallySet = true;
       }
       if (_location == null) {
-        var future = new Future.delayed(
-            const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-        // ignore: cancel_subscriptions
-        StreamSubscription streamSubScription =
-            future.asStream().listen((event) {
+        // Auto-fill a location suggestion once the seeded description has
+        // settled. Uses a directly-cancellable Timer (not
+        // Future.delayed(...).asStream().listen(...)) so dispose() cancels the
+        // underlying timer instead of leaving it pending after teardown.
+        pendingSendTextTimer = Timer(
+            const Duration(milliseconds: Constants.onTextChangeDelayInMs), () {
+          if (!mounted) {
+            return;
+          }
           if (this
               .widget
               .preTile!
@@ -148,9 +152,11 @@ class AddTileState extends State<AddTile> {
                 .scheduleApi
                 .getAutoResult(this.widget.preTile!.description!)
                 .then((remoteTileResponse) {
-              setState(() {
-                isPendingAutoResult = false;
-              });
+              if (mounted) {
+                setState(() {
+                  isPendingAutoResult = false;
+                });
+              }
               Location? _locationResponse;
               if (remoteTileResponse.item2.isNotEmpty) {
                 _locationResponse = remoteTileResponse.item2.last;
@@ -171,10 +177,6 @@ class AddTileState extends State<AddTile> {
               }
             });
           }
-        });
-
-        setState(() {
-          pendingSendTextRequest = streamSubScription;
         });
       }
     }
@@ -397,9 +399,7 @@ class AddTileState extends State<AddTile> {
   }
 
   Function generateSuggestionCallToServer() {
-    if (pendingSendTextRequest != null) {
-      pendingSendTextRequest!.cancel();
-    }
+    pendingSendTextTimer?.cancel();
 
     Function retValue = () async {
       if (_isDurationManuallySet && _isLocationManuallySet ||
@@ -408,10 +408,21 @@ class AddTileState extends State<AddTile> {
               this.widget.preTile!.location != null)) {
         return;
       }
-      var future = new Future.delayed(
-          const Duration(milliseconds: Constants.onTextChangeDelayInMs));
-      // ignore: cancel_subscriptions
-      StreamSubscription streamSubScription = future.asStream().listen((event) {
+      // Only schedule while mounted so we never create a timer that
+      // dispose() can no longer cancel.
+      if (!mounted) {
+        return;
+      }
+      // Defer the suggestion request until typing settles, using a
+      // directly-cancellable Timer (not Future.delayed(...).asStream().listen)
+      // so dispose() can cancel the underlying timer instead of leaving it
+      // pending after teardown.
+      pendingSendTextTimer =
+          Timer(const Duration(milliseconds: Constants.onTextChangeDelayInMs),
+              () {
+        if (!mounted) {
+          return;
+        }
         setState(() {
           isPendingAutoResult = true;
         });
@@ -469,11 +480,6 @@ class AddTileState extends State<AddTile> {
           }
         });
       });
-      if (mounted) {
-        setState(() {
-          pendingSendTextRequest = streamSubScription;
-        });
-      }
     };
 
     return retValue;
@@ -1370,7 +1376,7 @@ class AddTileState extends State<AddTile> {
   }
 
   onTimeLineChange(TimeRange updatedTimeLine) {
-    pendingSendTextRequest?.cancel();
+    pendingSendTextTimer?.cancel();
     setState(() {
       _startTime = updatedTimeLine.startTime;
       _duration = updatedTimeLine.duration;
@@ -1503,13 +1509,12 @@ class AddTileState extends State<AddTile> {
 
   @override
   void dispose() {
-    // Cancel the pending auto-result subscription started in initState
-    // (location==null) / onTextChange so no stale callback fires after the
-    // widget is gone. Note: this cancels the asStream() listener but NOT the
-    // underlying Future.delayed Timer itself — that one-shot timer still has
-    // to fire (its callback is a guarded no-op when description is null).
-    pendingSendTextRequest?.cancel();
-    pendingSendTextRequest = null;
+    // Cancel the pending auto-result Timer started in initState
+    // (location==null) / generateSuggestionCallToServer. A Timer is directly
+    // cancellable, so dispose() actually stops the underlying timer: no stale
+    // callback fires and no Timer is left pending after teardown.
+    pendingSendTextTimer?.cancel();
+    pendingSendTextTimer = null;
     tileNameController.dispose();
     tileDeadline.dispose();
     splitCountController.dispose();
