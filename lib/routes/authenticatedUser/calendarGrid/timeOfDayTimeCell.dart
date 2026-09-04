@@ -5,7 +5,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 
 class TimeOfDayTimeCellWidget extends TimeCellWidget {
   final TimeOfDay? start;
-  TimeOfDayTimeCellWidget({this.start});
+  TimeOfDayTimeCellWidget({this.start, double? height})
+      : super(timeCellHeight: height);
 
   @override
   _TimeOfDayTimeCellState createState() => _TimeOfDayTimeCellState();

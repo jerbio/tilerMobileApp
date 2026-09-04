@@ -14,18 +14,33 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
   final double? tileGridHeight;
-  BoxDecoration? decoration;
+
+  /// P1 (step 1.4): pixels per hour — every position/height of this tile
+  /// derives from it (legacy 80 when omitted).
+  final double? pxPerHour;
+
+  /// P1 (step 1.4): day context for cross-midnight clamping. When omitted,
+  /// the legacy time-of-day positioning applies.
+  final DateTime? dayStart;
+
+  /// P1 (step 1.4): responsive tile width (legacy 270 when omitted).
+  final double? tileGridWidth;
   final Function? onTap;
   TileGridWidget(
-      {required this.tilerEvent,
+      {Key? key,
+      required this.tilerEvent,
       double? left,
       this.tileGridHeight,
+      this.pxPerHour,
+      this.dayStart,
+      this.tileGridWidth,
       this.onTap,
-      this.decoration,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
+            key: key,
             left: left,
-            height: tileGridHeight ??
+            height: pxPerHour ??
+                tileGridHeight ??
                 GridPositionableWidget.defaultHeigtPerDuration,
             durationPerCell: durationPerUnitTime);
 
@@ -44,18 +59,68 @@ class TileGridWidgetState extends GridPositionableState {
     if (this.widget is TileGridWidget) {
       tilerEvent = (this.widget as TileGridWidget).tilerEvent;
     }
-    if (this.tilerEvent != null) {
+    _recomputePosition();
+    // Legacy default when the parent supplies no gutter offset.
+    if (this.widget.left == null) {
+      this.leftPosition = 80.0;
+    }
+    this.widgetWidth = (this.widget as TileGridWidget).tileGridWidth ?? 270;
+  }
+
+  /// P1 (step 1.4): derives top/height from the effective px-per-hour. With
+  /// a [TileGridWidget.dayStart] the tile is clamped into that day
+  /// (cross-midnight clamp). Shared by initState and didUpdateWidget so
+  /// zoom/position changes re-derive in place instead of going stale.
+  void _recomputePosition() {
+    if (this.tilerEvent == null) {
+      return;
+    }
+    final grid = this.widget as TileGridWidget;
+    final pxPerHour = this.widget.height;
+    final dayStart = grid.dayStart;
+    if (dayStart == null) {
+      // Legacy path: time-of-day positioning without a day context.
       this.topPosition = this
           .evalTopPosition(TimeOfDay.fromDateTime(this.tilerEvent!.startTime));
-    }
-    this.widgetHeight = durationToHeight();
-    if (this.widget is TileGridWidget) {
+      this.widgetHeight = durationToHeight();
+    } else {
+      assert(pxPerHour.isFinite && pxPerHour > 0,
+          'DayGrid:: invalid pxPerHour $pxPerHour');
+      final dayStartMs = dayStart.millisecondsSinceEpoch;
+      final dayEndMs = dayStartMs + Duration.millisecondsPerDay;
+      final startMs = this.tilerEvent!.start ?? 0;
+      final endMs = this.tilerEvent!.end ?? startMs;
+      // Cross-midnight clamp into the grid day.
+      final clampedStart = startMs < dayStartMs ? dayStartMs : startMs;
+      final clampedEnd = endMs > dayEndMs ? dayEndMs : endMs;
+      if (clampedEnd <= dayStartMs || clampedStart >= dayEndMs) {
+        // Fully outside the grid day — the pinned strip (C7) owns this.
+        this.topPosition = 0;
+        this.widgetHeight = 0;
+        return;
+      }
+      this.topPosition =
+          ((clampedStart - dayStartMs) / Duration.millisecondsPerHour) *
+              pxPerHour;
       this.widgetHeight =
-          (this.widget as TileGridWidget).tileGridHeight ?? this.widgetHeight;
+          ((clampedEnd - clampedStart) / Duration.millisecondsPerHour) *
+              pxPerHour;
+      // Minimum visible height (minDuration at the current zoom).
+      final minPx = (TileGridWidgetState.minDuration.inMilliseconds /
+              Duration.millisecondsPerHour) *
+          pxPerHour;
+      if (this.widgetHeight < minPx) {
+        this.widgetHeight = minPx;
+      }
+      // Invariant: the tile stays within [0, 24h] of the day.
+      final dayPx = 24 * pxPerHour;
+      assert(this.topPosition >= 0 && this.topPosition <= dayPx,
+          'DayGrid:: top ${this.topPosition} outside day bounds [0, $dayPx]');
+      if (this.topPosition + this.widgetHeight > dayPx) {
+        this.widgetHeight = dayPx - this.topPosition;
+      }
     }
-
-    this.leftPosition = 80.0;
-    this.widgetWidth = 270;
+    this.widgetHeight = grid.tileGridHeight ?? this.widgetHeight;
   }
 
   @override
@@ -63,6 +128,30 @@ class TileGridWidgetState extends GridPositionableState {
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
     super.didChangeDependencies();
+  }
+
+  @override
+  void didUpdateWidget(covariant TileGridWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newEvent = (this.widget as TileGridWidget).tilerEvent;
+    final eventChanged = !identical(oldWidget.tilerEvent, newEvent);
+    final zoomChanged = oldWidget.height != this.widget.height;
+    final geometryChanged = oldWidget.left != this.widget.left ||
+        oldWidget.tileGridWidth !=
+            (this.widget as TileGridWidget).tileGridWidth ||
+        oldWidget.dayStart != (this.widget as TileGridWidget).dayStart;
+    if (!eventChanged && !zoomChanged && !geometryChanged) {
+      return; // same tile, same zoom, same geometry: nothing to re-derive.
+    }
+    // A different tile/zoom/geometry now owns this element (C1 hardening +
+    // step 1.4): re-sync the state fields that would otherwise keep
+    // rendering the OLD event at the OLD zoom.
+    this.tilerEvent = newEvent;
+    if (this.widget.left != null) {
+      this.leftPosition = this.widget.left!;
+    }
+    this.widgetWidth = (this.widget as TileGridWidget).tileGridWidth ?? 270;
+    _recomputePosition();
   }
 
   double durationToHeight() {
@@ -136,9 +225,8 @@ class TileGridWidgetState extends GridPositionableState {
 
 class _TilerEventInnerGridWidget extends StatelessWidget {
   final TilerEvent tilerEvent;
-  final Decoration? decoration;
 
-  _TilerEventInnerGridWidget({required this.tilerEvent, this.decoration});
+  _TilerEventInnerGridWidget({required this.tilerEvent});
 
   @override
   Widget build(BuildContext context) {
@@ -154,32 +242,29 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
     Color color = Color.fromRGBO(tilerEvent.colorRed ?? 255,
         tilerEvent.colorGreen ?? 255, tilerEvent.colorGreen ?? 255, 1);
     String name = this.tilerEvent.name ?? "--no--name";
-    Decoration uiDecoration = this.decoration ??
-        BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-          boxShadow: [
-            BoxShadow(
-              color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.1),
-              spreadRadius: 0.5,
-              blurRadius: 1,
-              offset: Offset(0, 1),
-            ),
-          ],
-        );
+    Decoration uiDecoration = BoxDecoration(
+      color: color,
+      borderRadius: BorderRadius.all(Radius.circular(10)),
+      boxShadow: [
+        BoxShadow(
+          color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.1),
+          spreadRadius: 0.5,
+          blurRadius: 1,
+          offset: Offset(0, 1),
+        ),
+      ],
+    );
     if (tilerEvent.isWhatIf == true) {
       color = Utility.randomColor;
       name = AppLocalizations.of(context)!.foreCastTile;
-      if (this.decoration == null) {
-        uiDecoration = BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          color: colorScheme.surfaceContainerLowest,
-          border: Border.all(
-            color: colorScheme.primary,
-            width: 1,
-          ),
-        );
-      }
+      uiDecoration = BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: colorScheme.surfaceContainerLowest,
+        border: Border.all(
+          color: colorScheme.primary,
+          width: 1,
+        ),
+      );
     }
     return Container(
         decoration: uiDecoration,

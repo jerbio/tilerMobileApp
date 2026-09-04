@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/services/dayGridPreferences.dart';
 
 /// Persistent top-right overlay shown on the home screen.
 ///
@@ -13,12 +14,19 @@ class HomeTopRightActions extends StatelessWidget {
   final VoidCallback onSettings;
   final VoidCallback onGoToToday;
 
+  /// P1 (step 1.5): the current Daily-view layout. When non-null (and
+  /// [onDayGridLayoutToggle] is set) the list/grid toggle button is shown.
+  final DailyViewLayout? dayGridLayout;
+  final VoidCallback? onDayGridLayoutToggle;
+
   const HomeTopRightActions({
     super.key,
     required this.isViewingToday,
     required this.onSearch,
     required this.onSettings,
     required this.onGoToToday,
+    this.dayGridLayout,
+    this.onDayGridLayoutToggle,
   });
 
   @override
@@ -32,6 +40,19 @@ class HomeTopRightActions extends StatelessWidget {
         key: TutorialKeys.topRightActionsKey,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // P1 (step 1.5): list <-> grid toggle (Daily view only). The icon
+          // shows the layout the user would switch TO.
+          if (dayGridLayout != null && onDayGridLayoutToggle != null)
+            IconButton(
+              icon: Icon(
+                dayGridLayout == DailyViewLayout.grid
+                    ? Icons.view_list
+                    : Icons.grid_view,
+                color: colorScheme.primary,
+              ),
+              onPressed: onDayGridLayoutToggle,
+              tooltip: AppLocalizations.of(context)!.switchDayGridLayout,
+            ),
           if (!isViewingToday)
             IconButton(
               icon: Icon(Icons.calendar_today, color: colorScheme.primary),

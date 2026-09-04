@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/deviceSetting/device_setting_bloc.dart';
 import 'package:tiler_app/bloc/forecast/forecast_bloc.dart';
 import 'package:tiler_app/bloc/monthlyUiDateManager/monthly_ui_date_manager_bloc.dart';
@@ -473,6 +474,19 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                   isViewingToday: scheduleState.currentView !=
                           AuthorizedRouteTileListPage.Daily ||
                       isViewingToday,
+                  // P1 (step 1.5): list/grid toggle, Daily-view only.
+                  dayGridLayout: scheduleState.currentView ==
+                          AuthorizedRouteTileListPage.Daily
+                      ? context.watch<DailyViewLayoutCubit>().state
+                      : null,
+                  onDayGridLayoutToggle: scheduleState.currentView ==
+                          AuthorizedRouteTileListPage.Daily
+                      ? () {
+                          context.read<DailyViewLayoutCubit>().toggle(
+                                dayIndex: currentViewDate.universalDayIndex,
+                              );
+                        }
+                      : null,
                   onSearch: _onSearchTap,
                   onSettings: _onSettingsTap,
                   onGoToToday: () {

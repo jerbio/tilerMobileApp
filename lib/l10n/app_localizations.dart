@@ -4985,6 +4985,12 @@ abstract class AppLocalizations {
   /// **'Switch calendar view'**
   String get switchCalendarView;
 
+  /// No description provided for @switchDayGridLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch day layout'**
+  String get switchDayGridLayout;
+
   /// No description provided for @previewSundialGreeting.
   ///
   /// In en, this message translates to:

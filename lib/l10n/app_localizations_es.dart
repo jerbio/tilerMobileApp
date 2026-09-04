@@ -2805,6 +2805,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get switchCalendarView => 'Cambiar vista de calendario';
 
   @override
+  String get switchDayGridLayout => 'Cambiar diseño del día';
+
+  @override
   String get previewSundialGreeting => 'Hola.';
 
   @override

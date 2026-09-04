@@ -2797,6 +2797,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get switchCalendarView => 'Switch calendar view';
 
   @override
+  String get switchDayGridLayout => 'Switch day layout';
+
+  @override
   String get previewSundialGreeting => 'Hello.';
 
   @override

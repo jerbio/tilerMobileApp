@@ -7,7 +7,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/tilelistCarousel/tile_list_carousel_bloc.dart';
 import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
-import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
+import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedWithinNowBatch.dart';
 import 'package:tiler_app/components/tilelist/tileList.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
@@ -321,13 +321,12 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          EnhancedTileBatch upcomingTileBatch = EnhancedTileBatch(
+          // P1 (step 1.5): day pages are switchable (list | grid); the
+          // layout comes from DailyViewLayoutCubit.
+          DayGridPage upcomingTileBatch = DayGridPage(
             dayIndex: dayIndex,
             tiles: allTiles,
             key: key,
-            showEnhancedCards: true,
-            showTravelConnectors: true,
-            showTimelineMarkers: true,
             endOfDayTime: _endOfDayFor(dayIndex),
             onEndOfDayUpdated: _fetchUserEndOfDay,
           );
@@ -341,13 +340,11 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          EnhancedTileBatch precedingDayTileBatch = EnhancedTileBatch(
+          // P1 (step 1.5): day pages are switchable (list | grid).
+          DayGridPage precedingDayTileBatch = DayGridPage(
             dayIndex: dayIndex,
             key: key,
             tiles: allTiles,
-            showEnhancedCards: true,
-            showTravelConnectors: true,
-            showTimelineMarkers: true,
             endOfDayTime: _endOfDayFor(dayIndex),
             onEndOfDayUpdated: _fetchUserEndOfDay,
           );
@@ -417,10 +414,19 @@ class _DailyTileListState extends TileListState {
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
       EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
-      childTileBatches.add(todayBatch);
+      // P1 (step 1.5): today's page is switchable too; list mode keeps the
+      // within-now batch, grid mode renders the day grid.
+      DayGridPage todayPage = DayGridPage(
+        dayIndex: currentTime.universalDayIndex,
+        tiles: todayTiles,
+        listView: todayBatch,
+        endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
+        onEndOfDayUpdated: _fetchUserEndOfDay,
+      );
+      childTileBatches.add(todayPage);
       dayIndexToWidget[currentTime.universalDayIndex] = Container(
         height: MediaQuery.of(context).size.height,
-        child: todayBatch,
+        child: todayPage,
       );
     } else {
       DateTime currentTime = Utility.currentTime();
@@ -430,12 +436,19 @@ class _DailyTileListState extends TileListState {
         endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
         onEndOfDayUpdated: _fetchUserEndOfDay,
       );
+      DayGridPage todayPage = DayGridPage(
+        dayIndex: currentTime.universalDayIndex,
+        tiles: const <TilerEvent>[],
+        listView: emptyTodayBatch,
+        endOfDayTime: _endOfDayFor(currentTime.universalDayIndex),
+        onEndOfDayUpdated: _fetchUserEndOfDay,
+      );
       Widget widget = Container(
         height: MediaQuery.of(context).size.height,
-        child: emptyTodayBatch,
+        child: todayPage,
       );
       dayIndexToWidget[currentTime.universalDayIndex] = widget;
-      childTileBatches.add(emptyTodayBatch);
+      childTileBatches.add(todayPage);
     }
 
     for (int dayIndex in upcomingDayIndexes) {

@@ -1,5 +1,3 @@
-import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -7,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tiler_app/data/ForecastResponse.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/executionConstants.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
@@ -20,7 +19,7 @@ import '../../../constants.dart' as Constants;
 import 'googleMapSingleRoute.dart';
 
 class DayCast extends StatefulWidget {
-  PeekDay peekDay;
+  final PeekDay peekDay;
   DayCast(this.peekDay);
   @override
   _WidgetGoogleMapState createState() => _WidgetGoogleMapState();
@@ -48,48 +47,46 @@ class _WidgetGoogleMapState extends State<DayCast> {
   @override
   void initState() {
     super.initState();
-    if (this.widget.peekDay != null) {
-      if (this.widget.peekDay.subEvents != null) {
-        LatitudeAndLongitude? previousLocation = null;
-        List<LatitudeAndLongitude> latitudeAndLongitudes = [];
-        for (var eachSubEvent in this.widget.peekDay!.subEvents!) {
-          if (eachSubEvent.location != null &&
-              eachSubEvent.location!.isNotNullAndNotDefault &&
-              eachSubEvent.location!.latitude != null &&
-              eachSubEvent.location!.longitude != null) {
-            LatitudeAndLongitude? currentLocation =
-                eachSubEvent.location!.toLatitudeAndLongitude;
-            if (currentLocation != null) {
-              bool isSameLocation = false;
-              if (previousLocation != null) {
-                double travelDistance = LatitudeAndLongitude.distance(
-                    previousLocation, currentLocation);
-                if (travelDistance < sameLocationRadius) {
-                  isSameLocation = true;
-                }
+    if (this.widget.peekDay.subEvents != null) {
+      LatitudeAndLongitude? previousLocation = null;
+      List<LatitudeAndLongitude> latitudeAndLongitudes = [];
+      for (var eachSubEvent in this.widget.peekDay.subEvents!) {
+        if (eachSubEvent.location != null &&
+            eachSubEvent.location!.isNotNullAndNotDefault &&
+            eachSubEvent.location!.latitude != null &&
+            eachSubEvent.location!.longitude != null) {
+          LatitudeAndLongitude? currentLocation =
+              eachSubEvent.location!.toLatitudeAndLongitude;
+          if (currentLocation != null) {
+            bool isSameLocation = false;
+            if (previousLocation != null) {
+              double travelDistance = LatitudeAndLongitude.distance(
+                  previousLocation, currentLocation);
+              if (travelDistance < sameLocationRadius) {
+                isSameLocation = true;
               }
-
-              if (!isSameLocation) {
-                LatLng latLong = LatLng(eachSubEvent.location!.latitude!,
-                    eachSubEvent.location!.longitude!);
-                listLocations.add(latLong);
-                LatitudeAndLongitude? eachLatLong =
-                    eachSubEvent.location!.toLatitudeAndLongitude;
-                if (eachLatLong != null) {
-                  latitudeAndLongitudes.add(eachLatLong);
-                }
-              }
-              previousLocation = currentLocation;
             }
+
+            if (!isSameLocation) {
+              LatLng latLong = LatLng(eachSubEvent.location!.latitude!,
+                  eachSubEvent.location!.longitude!);
+              listLocations.add(latLong);
+              LatitudeAndLongitude? eachLatLong =
+                  eachSubEvent.location!.toLatitudeAndLongitude;
+              if (eachLatLong != null) {
+                latitudeAndLongitudes.add(eachLatLong);
+              }
+            }
+            previousLocation = currentLocation;
           }
         }
-        if (listLocations.isNotEmpty) {
-          defaultLocation = LatitudeAndLongitude.averageLatLong(listLocations
-              .map((e) => LatitudeAndLongitude(e.latitude, e.longitude))
-              .toList());
-        }
-        updateZoomLevel(latitudeAndLongitudes);
       }
+      if (listLocations.isNotEmpty) {
+        defaultLocation = LatitudeAndLongitude.averageLatLong(listLocations
+            .map((e) => LatitudeAndLongitude(e.latitude, e.longitude))
+            .toList());
+      }
+      updateZoomLevel(latitudeAndLongitudes);
     }
     _determinePosition().then((value) {
       setState(() {
@@ -156,8 +153,10 @@ class _WidgetGoogleMapState extends State<DayCast> {
   }
 
   Widget renderTiles() {
+    // C1: DayGridWidget takes tiles directly; DayCast adapts the peek day.
+    final subEvents = this.widget.peekDay.subEvents;
     return DayGridWidget(
-      peekDay: this.widget.peekDay,
+      tiles: subEvents ?? const <SubCalendarEvent>[],
       onTileTap: onTileGridTap,
     );
   }

@@ -1819,6 +1819,7 @@
             "openChat": "Open chat",
             "goToToday": "Go to today",
             "switchCalendarView": "Switch calendar view",
+            "switchDayGridLayout": "Switch day layout",
 
             "previewSundialGreeting": "Hello.",
             "previewSundialCountsPrefix": "Today has",

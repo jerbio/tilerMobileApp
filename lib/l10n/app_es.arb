@@ -704,6 +704,7 @@
     "openChat": "Abrir chat",
     "goToToday": "Ir a hoy",
     "switchCalendarView": "Cambiar vista de calendario",
+    "switchDayGridLayout": "Cambiar diseño del día",
 
     "previewSundialGreeting": "Hola.",
     "previewSundialCountsPrefix": "Hoy tienes",
