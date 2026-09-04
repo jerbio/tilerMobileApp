@@ -8,6 +8,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
@@ -407,6 +408,20 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 .where((t) => _renderableInTimeline(t, dayStart))
                 .toList();
 
+            // C11: overlap columns. Cluster the renderable tiles and give
+            // each a shared-width column so overlapping tiles sit side by
+            // side instead of stacking. A one-tile cluster keeps the full
+            // [tileLeft, tileLeft + tileWidth] region (the pre-C11 single
+            // tile geometry). Empty when tileWidth <= 0; the per-tile
+            // fallback below then uses the full region.
+            final columnLayout =
+                OverlapColumns.assign<String, SubCalendarEvent>(
+                  tiles: renderable,
+                  keyOf: (t) => t.uniqueId,
+                  left: tileLeft,
+                  width: tileWidth,
+                );
+
             // Z-order: the selected tile renders last (on top) — same
             // behaviour as before, without duplicating the widget.
             final unselected = renderable
@@ -433,7 +448,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
             final tileWidgets = [...unselected, ...selected]
                 .map(
-                  (tile) => TileGridWidget(
+                  (tile) {
+                    final column = columnLayout[tile.uniqueId];
+                    return TileGridWidget(
                     // Stable per-tile identity: add/remove/replace of
                     // tiles maps to element remove/update — never a stale
                     // reused state.
@@ -442,9 +459,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     onTap: onTileGridTap,
                     pxPerHour: pxPerHour,
                     dayStart: dayStart,
-                    left: tileLeft,
-                    tileGridWidth: tileWidth,
-                  ),
+                    left: column?.left ?? tileLeft,
+                    tileGridWidth: column?.width ?? tileWidth,
+                    );
+                  },
                 )
                 .toList();
 

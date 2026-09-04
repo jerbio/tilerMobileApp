@@ -394,7 +394,7 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P1 | Cross-midnight clamp | 64c4785 | Done | Step 1.4 |
 | P1 | Pull-to-refresh in grid mode | | Not started | reuse `ScheduleBloc` refresh wiring |
 | P1 | Live now-line (C10) | | Not started | today only; minute timer |
-| P1 | GCal-style overlap columns (C11) | | Not started | cluster via `ConflictGroup.detectGroups` |
+| P1 | GCal-style overlap columns (C11) | | Done | pure `OverlapColumns.assign` + `DayGridWidget` wiring; `test/daygrid_overlap_columns_test.dart` (13) — overlapping tiles cluster into shared-width columns; a singleton keeps the full region; tap-to-raise z-order + no-duplicate preserved |
 | P2 | Auto-fit initial zoom (C8) | | Not started | `viewportHeight / 4`, clamped |
 | P2 | Zoom-dependent `snapInterval` (C4) | | Not started | seeded 15 min |
 | P2 | Tap-to-add: hit layer + snap highlight | | Not started | behind-tiles `GestureDetector` |
