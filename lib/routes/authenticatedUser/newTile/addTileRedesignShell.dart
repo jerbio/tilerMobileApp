@@ -19,9 +19,14 @@
 // app_en.arb/app_es.arb when the content system lands.
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
+import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
 
 /// Local, dependency-free feature flag (no remote-config coupling) so the new
 /// shell can be validated in isolation. Remote/rollout gating arrives later.
@@ -175,7 +180,11 @@ class AddTileBottomAction extends StatelessWidget {
       minimum: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Semantics(
         button: true,
-        enabled: canSubmit,
+        // Raw draft validity (not `canSubmit`): the button stays tappable so
+        // an invalid attempt surfaces the first invalid field's inline error
+        // ("why creation is unavailable", not an inaccessible tooltip).
+        // Double-fire while pending is guarded in the submit handler.
+        enabled: enabled,
         label: submitting ? 'Submitting' : _label,
         container: true,
         child: Material(
@@ -185,7 +194,9 @@ class AddTileBottomAction extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: InkWell(
             borderRadius: BorderRadius.circular(8),
-            onTap: canSubmit ? onTap : null,
+            // Always tappable: an invalid tap focuses the first invalid field
+            // and announces its error; a pending tap is a guarded no-op.
+            onTap: onTap,
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 48),
               child: Center(
@@ -247,6 +258,10 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   late final TextEditingController _nameController;
   final _nameFocus = FocusNode();
 
+  /// Set when a submit attempt (CTA or keyboard) finds an invalid draft; the
+  /// first invalid field's inline error is shown until addressed.
+  bool _showValidationErrors = false;
+
   @override
   void initState() {
     super.initState();
@@ -286,9 +301,89 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     }
   }
 
-  Future<void> _onSubmitTap() async {
-    if (!_draft.isValid || _submitting) {
-      // Focus the first invalid field (name) and announce to assistive tech.
+  void _onNameChanged(String value) {
+    _draft.name = value;
+    if (_showValidationErrors && value.trim().isNotEmpty) {
+      setState(() => _showValidationErrors = false);
+    }
+  }
+
+  /// Opens the existing duration dial (legacy `/DurationDial` route with a
+  /// by-reference argument map) so the returned semantics are unchanged. A
+  /// cancelled picker leaves the draft untouched.
+  Future<void> _openDurationPicker() async {
+    final Map<String, dynamic> params = {'duration': _draft.duration};
+    try {
+      await Navigator.of(context).pushNamed('/DurationDial', arguments: params);
+    } catch (_) {
+      return; // route not registered (test harness) — no crash, no change.
+    }
+    final Duration? result = params['duration'] as Duration?;
+    if (result != null && result != _draft.duration) {
+      _draft.setUserDuration(result);
+    }
+  }
+
+  /// Opens the platform date picker with the legacy +/-180-day window. Wire
+  /// semantics are preserved: the deadline is the end (23:59) of the chosen
+  /// day; cancelling leaves Complete by untouched (it may remain Anytime).
+  Future<void> _openDeadlinePicker() async {
+    final DateTime base = _draft.endTime ??
+        DateTime(
+          _draft.startTime.year,
+          _draft.startTime.month,
+          _draft.startTime.day,
+          23,
+          59,
+        );
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: base,
+      firstDate: base.subtract(const Duration(days: 180)),
+      lastDate: base.add(const Duration(days: 180)),
+    );
+    if (picked == null || !mounted) return;
+    _draft.endTime = DateTime(picked.year, picked.month, picked.day, 23, 59);
+  }
+
+  /// Applies a simple day-part choice. [applyPreferredTimeSelection] keeps an
+  /// advanced/custom profile intact, so this can never silently discard one.
+  void _onPreferredTimeSelected(PreferredTimeOfDay part) {
+    final RestrictionProfile? next =
+        applyPreferredTimeSelection(_draft.restrictionProfile, part);
+    if (identical(next, _draft.restrictionProfile)) return;
+    _draft.setRestrictionProfile(next);
+  }
+
+  /// Opens the legacy `/LocationRoute` through its typed adapter. A cancelled
+  /// route returns `null` and the draft is left untouched (not dirtied).
+  Future<void> _openLocationPicker() async {
+    final Location? picked = await openLocationRoute(
+      context,
+      currentLocation: _draft.location,
+    );
+    if (picked == null || !mounted) return;
+    _draft.setLocation(picked);
+  }
+
+  /// Opens the legacy `/RepetitionRoute` through its typed adapter, which
+  /// preserves the legacy apply/clear/unchanged result semantics.
+  Future<void> _openRepeatPicker() async {
+    final RepeatRouteResult result = await openRepeatRoute(
+      context,
+      current: _draft.repetitionData,
+      deadline: _draft.endTime,
+    );
+    if (!mounted) return;
+    applyRepeatRouteResult(_draft, result);
+  }
+
+  Future<void> _attemptSubmit() async {
+    if (_submitting) return;
+    if (!_draft.isValid) {
+      // Surface the inline error on the first invalid field (name) and focus
+      // it; the error text announces to assistive tech (not color-only).
+      setState(() => _showValidationErrors = true);
       _nameFocus.requestFocus();
       return;
     }
@@ -316,6 +411,11 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
           ),
         );
       }
+    } catch (_) {
+      // Submission failure (API/network): the draft is preserved and the CTA
+      // is re-enabled in `finally`. The real orchestration surfaces a
+      // retryable message; tests inject onSubmitted and assert that the draft
+      // survives the failure.
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -369,7 +469,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
               type: type,
               enabled: _draft.isValid,
               submitting: _submitting,
-              onTap: _onSubmitTap,
+              onTap: _attemptSubmit,
             ),
           ),
         ],
@@ -378,9 +478,26 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   }
 
   Widget _buildFormArea(AddTileType type) {
-    // Minimal chrome for now. The full Flexible/Fixed field sets arrive in
-    // later work. The CTA is already gated by AddTileDraft.isValid (name +
-    // duration), which proves the submission wiring end-to-end.
+    if (type == AddTileType.flexible) {
+      return FlexibleTileForm(
+        draft: _draft,
+        nameController: _nameController,
+        nameFocus: _nameFocus,
+        nameError: _showValidationErrors && _draft.name.trim().isEmpty
+            ? 'Name is required'
+            : null,
+        onNameChanged: _onNameChanged,
+        onNameSubmitted: (_) => _attemptSubmit(),
+        onDurationTap: _openDurationPicker,
+        onDeadlineTap: _openDeadlinePicker,
+        onPreferredTimeSelected: _onPreferredTimeSelected,
+        onLocationTap: _openLocationPicker,
+        onRepeatTap: _openRepeatPicker,
+      );
+    }
+    // The Fixed form (date / start / duration / calculated read-only end)
+    // lands in Phase 3. A minimal name/duration area keeps CTA gating and
+    // rigid-payload submission testable in this slice.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -388,14 +505,20 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
           controller: _nameController,
           focusNode: _nameFocus,
           textInputAction: TextInputAction.done,
-          onChanged: (value) => _draft.name = value,
+          onChanged: (value) {
+            _draft.name = value;
+            if (_showValidationErrors && value.trim().isNotEmpty) {
+              setState(() => _showValidationErrors = false);
+            }
+          },
+          onSubmitted: (_) => _attemptSubmit(),
           decoration: const InputDecoration(
-            labelText: 'What do you want to do?',
+            labelText: 'Title',
             border: OutlineInputBorder(),
           ),
         ),
         const SizedBox(height: 12),
-        Text('How long? *', style: Theme.of(context).textTheme.titleSmall),
+        Text('Duration *', style: Theme.of(context).textTheme.titleSmall),
         const SizedBox(height: 4),
         Text(
           _draft.duration.inMinutes > 0
