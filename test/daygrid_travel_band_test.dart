@@ -591,9 +591,12 @@ void main() {
           findsWidgets);
     });
 
-    testWidgets('the travel-medium icon only appears at height >= 18px',
+    testWidgets(
+        'the travel-medium icon is always visible (min-height clamp)',
         (tester) async {
-      // Below the icon threshold: only the hairline, no icon.
+      // Below the icon threshold: the band's effective height is clamped
+      // to 18px so the icon is still rendered (the band extends into the
+      // gutter space above the tile for pre-bands).
       await pumpBand(
           tester,
           bandWidget(
@@ -606,7 +609,7 @@ void main() {
             of: find.byKey(const ValueKey<String>('band_pre_17')),
             matching: find.byType(Icon),
           ),
-          findsNothing);
+          findsOneWidget);
 
       // At the threshold: the 14px gutter icon is rendered (not expanded,
       // so there is exactly one icon).

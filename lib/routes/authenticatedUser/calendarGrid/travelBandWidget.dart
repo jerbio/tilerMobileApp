@@ -331,11 +331,24 @@ class TravelBandWidget extends StatelessWidget {
     final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     final anim = animate && !reduce;
 
+    // Ensure the band is tall enough for the travel-medium icon to be
+    // legible. At the default zoom (80 px/hr) a 3-minute travel time is
+    // only ~4 px — a 2-px hairline with no icon is essentially invisible.
+    // The band sits in the gutter (left of tiles), so extra height extends
+    // into the empty gutter space above (pre) or below (post) the tile
+    // without overlapping tile content.
+    final effectiveHeight =
+        height >= iconHeightThreshold ? height : iconHeightThreshold;
+    final effectiveTop =
+        kind == TravelBandKind.pre && height < iconHeightThreshold
+            ? (top - (iconHeightThreshold - height)).clamp(0.0, double.infinity)
+            : top;
+
     // Same colour rule as the design: `TileColors.travel`,
     // `TileColors.late` when the tile is tardy.
     final color = _isTardy ? TileColors.late : TileColors.travel;
-    final expanded = height >= expandedHeightThreshold;
-    final showIcon = height >= iconHeightThreshold;
+    final expanded = effectiveHeight >= expandedHeightThreshold;
+    final showIcon = effectiveHeight >= iconHeightThreshold;
     // ReturnConnector shows the home icon instead of the medium icon
     // when the return destination is home.
     final icon = _isHome ? Icons.home : _travelMedium.icon;
@@ -346,7 +359,7 @@ class TravelBandWidget extends StatelessWidget {
     // connectors.
     final line = Container(
       width: 2,
-      height: height,
+      height: effectiveHeight,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
@@ -427,10 +440,10 @@ class TravelBandWidget extends StatelessWidget {
     );
 
     return AnimatedPositioned(
-      top: top,
+      top: effectiveTop,
       left: left - gutterSpan,
       width: gutterSpan + width,
-      height: height,
+      height: effectiveHeight,
       duration: anim ? const Duration(milliseconds: 300) : Duration.zero,
       curve: Curves.easeInOutCubic,
       // A non-tappable band (no valid destination) leaves `onTap` null so
@@ -444,13 +457,13 @@ class TravelBandWidget extends StatelessWidget {
               left: 0,
               top: 0,
               width: 2,
-              height: height,
+              height: effectiveHeight,
               child: line,
             ),
             if (showIcon)
               Positioned(
                 left: 4,
-                top: (height - 14) / 2,
+                top: (effectiveHeight - 14) / 2,
                 width: 14,
                 height: 14,
                 child: Icon(icon, size: 14, color: color),
@@ -458,7 +471,7 @@ class TravelBandWidget extends StatelessWidget {
             if (expanded)
               Positioned(
                 left: gutterSpan + 2,
-                top: (height - 24) / 2,
+                top: (effectiveHeight - 24) / 2,
                 width: (width - 4).clamp(0.0, double.infinity),
                 child: pill,
               ),
