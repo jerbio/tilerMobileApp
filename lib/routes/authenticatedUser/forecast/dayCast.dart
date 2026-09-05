@@ -153,7 +153,7 @@ class _WidgetGoogleMapState extends State<DayCast> {
   }
 
   Widget renderTiles() {
-    // C1: DayGridWidget takes tiles directly; DayCast adapts the peek day.
+    // DayGridWidget takes tiles directly; DayCast adapts the peek day.
     final subEvents = this.widget.peekDay.subEvents;
     return DayGridWidget(
       tiles: subEvents ?? const <SubCalendarEvent>[],

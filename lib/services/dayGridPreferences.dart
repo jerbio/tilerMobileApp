@@ -1,20 +1,20 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 
-/// User's daily-view layout choice (P1, C9).
+/// User's daily-view layout choice.
 ///
 /// Lives next to its persistence so both the cubit and the helper share one
 /// definition.
 enum DailyViewLayout { list, grid }
 
-/// SharedPreferences persistence for the day grid (P1, step 1.2).
+/// SharedPreferences persistence for the day grid.
 ///
 /// Follows the existing `ThemeManager` / `TutorialPreferencesHelper` idiom:
 /// static accessors, one `SharedPreferences.getInstance()` per call, never
 /// throws on absent or corrupt values.
 ///
 /// A **missing** zoom value is significant: it is the sentinel that tells
-/// [DayGridController.autoFit] (C8) to compute the first-launch zoom from
+/// [DayGridController.autoFit] to compute the first-launch zoom from
 /// the viewport. Corrupt values behave the same way (default / null).
 class DayGridPreferences {
   static const String _layoutKey = 'dayGridLayout';
@@ -41,7 +41,7 @@ class DayGridPreferences {
   static Future<double?> getPxPerHour() async {
     final prefs = await SharedPreferences.getInstance();
     // `get` + type check (rather than `getDouble`) so a value of the wrong
-    // type degrades to "absent" instead of throwing — the auto-fit (C8)
+    // type degrades to "absent" instead of throwing — the auto-fit
     // path then runs on the next launch.
     final stored = prefs.get(_pxPerHourKey);
     if (stored is! double) return null;

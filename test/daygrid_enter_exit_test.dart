@@ -1,4 +1,4 @@
-// DayGrid P2 step 2.2b — added/removed slide-in / fade-out (§6.6).
+// Added/removed slide-in / fade-out.
 //
 // A tile that is newly added slides in from a corner (fade + scale 0.86 -> 1,
 // ~200ms); a tile that is removed fades out in place (a "ghost") before being
@@ -9,7 +9,7 @@
 // `AnimatedPositioned` root is unchanged, so position tests elsewhere are
 // unaffected).
 //
-// Like the step 2.2 test, `now` is fixed to a different day than the grid day:
+// Like the position-transition test, `now` is fixed to a different day
 // no now-line renders and the minute timer stays off (no pending-timer
 // failures), so we can drive the animation with fixed-duration pumps.
 import 'package:flutter/material.dart';
@@ -124,7 +124,7 @@ void main() {
   Finder scaleOf(String name) =>
       find.ancestor(of: find.text(name), matching: find.byType(AnimatedScale));
 
-  group('DayGridWidget add/remove enter/exit (step 2.2b)', () {
+  group('DayGridWidget add/remove enter/exit', () {
     testWidgets('a newly-added tile slides in from a corner',
         (tester) async {
       List<SubCalendarEvent> tiles = [alpha()];

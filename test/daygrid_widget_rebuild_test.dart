@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.3 — C1 constructor refactor + rebuild hardening.
+// Constructor refactor + rebuild hardening.
 //
 // Regression set for the old `DayGridWidget` (which took a `PeekDay` and
 // accumulated tile widgets in state lists during `build`):
@@ -63,7 +63,7 @@ void main() {
     );
   }
 
-  group('DayGridWidget rebuild safety (C1)', () {
+  group('DayGridWidget rebuild safety', () {
     testWidgets('tile count stays stable across rebuilds (no duplicates)',
         (tester) async {
       final tiles = <SubCalendarEvent>[
@@ -180,8 +180,8 @@ void main() {
       expect(find.text('Alpha'), findsOneWidget);
       expect(find.text('Beta'), findsOneWidget);
 
-      // New list: B stays, C arrives, A is removed. With §6.6 enter/exit
-      // (Step 2.2b) a removed tile fades out as a short-lived ghost before it
+      // New list: B stays, C arrives, A is removed. With enter/exit
+      // animations a removed tile fades out as a short-lived ghost before it
       // is dropped — it is no longer gone on the very next frame.
       setTiles([b, c]);
       await tester.pump();
@@ -269,7 +269,7 @@ void main() {
     });
   });
 
-  group('DayCast forecast path (C1 adapter)', () {
+  group('DayCast forecast path', () {
     testWidgets('still renders the day grid after geolocation resolves',
         (tester) async {
       tester.view.physicalSize = const Size(1080, 2400);

@@ -1,6 +1,6 @@
-// DayGrid P1 step 1.6 — pull-to-refresh dispatches
+// Pull-to-refresh dispatches
 // GetScheduleEvent(forceRefresh: true) through ScheduleBloc (same wiring
-// as EnhancedTileBatch); the live now-line (C10) renders only for the
+// as EnhancedTileBatch); the live now-line renders only for the
 // current day, sits at the injected clock's position, and its minute
 // timer is cancelled on dispose (no pending timers).
 import 'dart:async';
@@ -115,7 +115,7 @@ Future<void> _teardown(WidgetTester tester, ScheduleBloc bloc) async {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('DayGrid pull-to-refresh (step 1.6)', () {
+  group('DayGrid pull-to-refresh', () {
     testWidgets(
         'pull gesture dispatches GetScheduleEvent(forceRefresh: true)',
         (tester) async {
@@ -139,7 +139,7 @@ void main() {
     });
   });
 
-  group('DayGrid now-line (C10, step 1.6)', () {
+  group('DayGrid now-line', () {
     final injectedNow = DateTime(2026, 5, 15, 14, 30);
 
     testWidgets('renders only for the current day', (tester) async {

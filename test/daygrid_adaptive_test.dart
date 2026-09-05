@@ -1,11 +1,11 @@
-// DayGrid Step 2.3 (adaptive rendering) — the two remaining adaptive rows:
+// DayGrid adaptive rendering — the two remaining adaptive rows:
 // "Adaptive lines/labels" and "Tile content reflow".
 //
 // Covers:
 //   * `DayGridWidget.gutterLineStride` — hour guide-line density thins out
 //     at low zoom (every 2nd hour below the thin threshold).
 //   * `DayGridWidget.gutterTickIntervalMinutes` — sub-hour tick hairlines
-//     appear at high zoom (30 min; 15 min at/above the C4 fine-snap
+//     appear at high zoom (30 min; 15 min at/above the fine-snap
 //     threshold of 160 px/h) and disappear at low zoom.
 //   * `TileGridWidgetState.tileContentCollapsed` — tiles shorter than the
 //     caption threshold collapse to a plain color bar (no name Text).

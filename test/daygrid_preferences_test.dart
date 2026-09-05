@@ -26,7 +26,7 @@ void main() {
       expect(await DayGridPreferences.getLayout(), DailyViewLayout.list);
     });
 
-    test('absent zoom returns null so auto-fit (C8) can run', () async {
+    test('absent zoom returns null so auto-fit can run', () async {
       expect(await DayGridPreferences.getPxPerHour(), isNull);
     });
 

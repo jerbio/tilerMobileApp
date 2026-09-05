@@ -1,12 +1,12 @@
-// DayGrid P2 step 2.1 — tap-to-add (C12/C13/C14).
+// Tap-to-add.
 //
 // Tapping an empty region of the *daily* grid seeds a new tile at the tapped
 // (snapped) time and opens the existing `AddTile` route with a `PreTile`.
 //
 // `DayGridWidget.computeTapSeed` is the pure inverse of the layout mapping
 // `time(y) = y / pxPerHour`: snapped DOWN to the controller's `snapInterval`
-// (C4, shared with drag-and-drop), clamped to the visible day, C14 (a tap
-// resolving into the past prefills with "now"), and C13 (1h default duration).
+// (shared with drag-and-drop), clamped to the visible day (a tap
+// resolving into the past prefills with "now"), and a 1h default duration.
 // The widget tests prove the daily grid actually pushes `AddTile` with the
 // seeded preTile, and that a grid with no `day` (the forecast peek) stays
 // read-only.
@@ -110,11 +110,11 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('computeTapSeed (y→time inversion, guards)', () {
-    // A future grid day: no C14 prefill, so the raw snapped time is returned.
+    // A future grid day: no past-time prefill, so the raw snapped time is returned.
     final dayStart = DateTime(2027, 1, 15);
     final now = DateTime(2026, 5, 15, 14, 30);
 
-    test('exact hour -> snapped start with 1h default duration (C13)', () {
+    test('exact hour -> snapped start with 1h default duration', () {
       final seed = DayGridWidget.computeTapSeed(
         dayStart: dayStart,
         dy: 4 * 80,
@@ -127,7 +127,7 @@ void main() {
       expect(seed.prefilledFromNow, isFalse);
     });
 
-    test('snaps DOWN to snapInterval (C4)', () {
+    test('snaps DOWN to snapInterval', () {
       // 4:07 at 80 px/h -> 4:00 (15-min snap, snap down).
       final seed = DayGridWidget.computeTapSeed(
         dayStart: dayStart,
@@ -139,7 +139,7 @@ void main() {
       expect(seed.start, DateTime(2027, 1, 15, 4, 0));
     });
 
-    test('snap granularity follows the zoom band (C4)', () {
+    test('snap granularity follows the zoom band', () {
       const dy = 12.483 * 80; // raw hour ~12:29.
       expect(
         DayGridWidget.computeTapSeed(
@@ -185,7 +185,7 @@ void main() {
       expect(seed.start, DateTime(2027, 1, 15, 23, 45));
     });
 
-    test('C14: a past-time tap prefills with now', () {
+    test('a past-time tap prefills with now', () {
       // Grid day is today; tapping 10:00 (before now 14:30) -> now.
       final today = DateTime(2026, 5, 15);
       final seed = DayGridWidget.computeTapSeed(
@@ -199,7 +199,7 @@ void main() {
       expect(seed.prefilledFromNow, isTrue);
     });
 
-    test('C14: a tap at/after now is not prefilled', () {
+    test('a tap at/after now is not prefilled', () {
       final today = DateTime(2026, 5, 15);
       final seed = DayGridWidget.computeTapSeed(
         dayStart: today,
@@ -213,7 +213,7 @@ void main() {
     });
   });
 group('DayGridWidget tap-to-add wiring (daily view)', () {
-    // A future grid day (no C14 prefill) with a 0–1h tile that pins the
+    // A future grid day (no past-time prefill) with a 0–1h tile that pins the
     // initial scroll offset to 0 (midnight at the viewport top).
     final dayStart = DateTime(2027, 1, 15);
     final now = DateTime(2026, 5, 15, 14, 30);

@@ -1,5 +1,4 @@
-// DayGrid P1 step 1.7 (C7) — the pinned >=16h / all-day header for grid
-// mode.
+// The pinned >=16h / all-day header for the day grid.
 //
 // DayGridWidget excludes >=16h tiles from the timeline
 // (`_renderableInTimeline`). The pinned header keeps those tiles visible in
@@ -12,7 +11,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
 /// Pinned header showing the >=16h / all-day tiles that the grid timeline
-/// excludes (step 1.7, C7).
+/// excludes.
 class DayGridPinnedHeader extends StatelessWidget {
   /// The grid's parity-filtered tile set. The excluded subset shown in the
   /// header is computed with [excludedTiles].

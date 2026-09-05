@@ -18,42 +18,42 @@ class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
   final double? tileGridHeight;
 
-  /// P1 (step 1.4): pixels per hour — every position/height of this tile
+  /// Pixels per hour — every position/height of this tile
   /// derives from it (legacy 80 when omitted).
   final double? pxPerHour;
 
-  /// P1 (step 1.4): day context for cross-midnight clamping. When omitted,
+  /// Day context for cross-midnight clamping. When omitted,
   /// the legacy time-of-day positioning applies.
   final DateTime? dayStart;
 
-  /// P1 (step 1.4): responsive tile width (legacy 270 when omitted).
+  /// Responsive tile width (legacy 270 when omitted).
   final double? tileGridWidth;
   final Function? onTap;
 
-  /// P2 (step 2.2): animate the tile's top/left delta on a position change
+  /// Animate the tile's top/left delta on a position change
   /// (true by default). The parent passes `false` while the grid is
   /// zooming/dragging so positions track the controller directly. Reduced
   /// motion is also respected inside the widget.
   final bool? animate;
 
-  /// P2 (step 2.2b): non-null when this tile was newly added and should slide
+  /// Non-null when this tile was newly added and should slide
   /// in (scale + fade) from a corner. The value is the stagger delay applied
   /// before the reveal; `null` means the tile is static (no enter animation —
   /// the initial full-day render and day-swaps pass `null`).
   final Duration? enterDelay;
 
-  /// P2 (step 2.2b): `true` for a fading-out ghost of a removed tile — it
+  /// `true` for a fading-out ghost of a removed tile — it
   /// renders at full opacity for one frame, then animates to `0`.
   final bool? exiting;
 
-  /// P2 (step 2.4, §6.7): TileCast (vibe-chat) preview mode — the tile is
+  /// TileCast (vibe-chat) preview mode — the tile is
   /// read-only. The grid-level gates (no tap-to-add, no refresh dispatch,
   /// no zoom persist) live in `DayGridWidget`; this flag keeps the per-tile
   /// surface aligned with `EnhancedTileCard.preview` if a preview-specific
   /// tile rendering is added later.
   final bool preview;
 
-  /// P2 (step 2.4, §6.7): the dotted-border treatment for the highlighted
+  /// The dotted-border treatment for the highlighted
   /// TileCast action tile — same rule as `EnhancedTileCard.hasDottedBorder`
   /// (id `contains` the action's entity id).
   final bool hasDottedBorder;
@@ -88,12 +88,12 @@ class TileGridWidgetState extends GridPositionableState {
   late TilerEvent? tilerEvent;
   static final Duration minDuration = Duration(minutes: 20);
 
-  /// P2 (step 2.3, content reflow §6.2): the caption (10px top/bottom
+  /// The caption (10px top/bottom
   /// padding + a 13px line) needs ~32px to render legibly. Tiles shorter
   /// than this pixel height collapse to a plain color bar (no name).
   static const double collapsedTileHeight = 32;
 
-  /// P2 (step 2.3, content reflow §6.2): pure so the reflow threshold is
+  /// Pure so the reflow threshold is
   /// unit-testable without pumping a tile — true when [tileHeight] is too
   /// short for the name caption.
   static bool tileContentCollapsed(double tileHeight) =>
@@ -101,7 +101,7 @@ class TileGridWidgetState extends GridPositionableState {
   late ThemeData theme;
   late ColorScheme colorScheme;
 
-  // P2 (step 2.2b): enter/exit animation state.
+  // Enter/exit animation state.
   /// Enter: false until the stagger delay elapses (only when [TileGridWidget
   /// .enterDelay] is set); drives the 0 -> 1 fade/scale reveal.
   bool _revealed = true;
@@ -127,7 +127,7 @@ class TileGridWidgetState extends GridPositionableState {
     WidgetsBinding.instance.addPostFrameCallback(_onFirstFrame);
   }
 
-  /// P2 (step 2.2b): after the first frame, kick off the enter reveal (after
+  /// After the first frame, kick off the enter reveal (after
   /// the stagger delay) or the exit fade-out, honouring the reduced-motion
   /// and zoom/drag gates.
   void _onFirstFrame(Duration _) {
@@ -168,7 +168,7 @@ class TileGridWidgetState extends GridPositionableState {
     super.dispose();
   }
 
-  /// P1 (step 1.4): derives top/height from the effective px-per-hour. With
+  /// Derives top/height from the effective px-per-hour. With
   /// a [TileGridWidget.dayStart] the tile is clamped into that day
   /// (cross-midnight clamp). Shared by initState and didUpdateWidget so
   /// zoom/position changes re-derive in place instead of going stale.
@@ -195,7 +195,7 @@ class TileGridWidgetState extends GridPositionableState {
       final clampedStart = startMs < dayStartMs ? dayStartMs : startMs;
       final clampedEnd = endMs > dayEndMs ? dayEndMs : endMs;
       if (clampedEnd <= dayStartMs || clampedStart >= dayEndMs) {
-        // Fully outside the grid day — the pinned strip (C7) owns this.
+        // Fully outside the grid day — the pinned strip owns this.
         this.topPosition = 0;
         this.widgetHeight = 0;
         return;
@@ -244,8 +244,8 @@ class TileGridWidgetState extends GridPositionableState {
     if (!eventChanged && !zoomChanged && !geometryChanged) {
       return; // same tile, same zoom, same geometry: nothing to re-derive.
     }
-    // A different tile/zoom/geometry now owns this element (C1 hardening +
-    // step 1.4): re-sync the state fields that would otherwise keep
+    // A different tile/zoom/geometry now owns this element: re-sync
+    // the state fields that would otherwise keep
     // rendering the OLD event at the OLD zoom.
     this.tilerEvent = newEvent;
     if (this.widget.left != null) {
@@ -301,7 +301,7 @@ class TileGridWidgetState extends GridPositionableState {
           MediaQuery.maybeOf(context)?.disableAnimations ?? false;
       final animate = animateEnabled && !disableAnimations;
 
-      // P2 (step 2.2b): enter (slide-in from a corner) / exit (fade-out) for
+      // Enter (slide-in from a corner) / exit (fade-out) for
       // added/removed tiles. The Positioned root below is unchanged so the
       // Stack keeps placing the tile; opacity + scale apply to the body and
       // are identity (1.0 / 0ms) for static tiles, so existing positions and
@@ -333,7 +333,7 @@ class TileGridWidgetState extends GridPositionableState {
         fadeDuration = Duration.zero;
       }
 
-      // P2 (step 2.2): slide to the new top/left instead of teleporting. A
+      // Slide to the new top/left instead of teleporting. A
       // stable key (set by the parent) reuses this element so the delta
       // animates; gated off while zooming/dragging and by reduced motion.
       return AnimatedPositioned(
@@ -365,7 +365,7 @@ class TileGridWidgetState extends GridPositionableState {
                   },
                   child: _TilerEventInnerGridWidget(
                      tilerEvent: tilerEvent!,
-                     // P2 (step 2.3, content reflow §6.2): the rendered
+                     // The rendered
                      // pixel height decides whether the caption fits.
                      tileHeight: this.widgetHeight,
                      hasDottedBorder: (this.widget is TileGridWidget)
@@ -390,11 +390,11 @@ class TileGridWidgetState extends GridPositionableState {
 class _TilerEventInnerGridWidget extends StatelessWidget {
   final TilerEvent tilerEvent;
 
-  /// P2 (step 2.4, §6.7): dotted-border treatment for the highlighted
+  /// Dotted-border treatment for the highlighted
   /// TileCast action tile (same visual as `EnhancedTileCard.hasDottedBorder`).
   final bool hasDottedBorder;
 
-  /// P2 (step 2.3, content reflow §6.2): the tile's rendered pixel height.
+  /// The tile's rendered pixel height.
   /// Below [TileGridWidgetState.collapsedTileHeight] the body collapses to
   /// a plain color bar — the name caption would not fit.
   final double tileHeight;
@@ -442,7 +442,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
         ),
       );
     }
-    // P2 (step 2.3, content reflow §6.2): too short for the caption —
+    // Too short for the caption —
     // collapse to a plain color bar (no padding, no name).
     if (TileGridWidgetState.tileContentCollapsed(tileHeight)) {
       final Widget bar = Container(decoration: uiDecoration);
@@ -478,7 +478,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
     if (!hasDottedBorder) {
       return tileBody;
     }
-    // P2 (step 2.4, §6.7): the highlighted TileCast action's dotted border —
+    // The highlighted TileCast action's dotted border —
     // the same DashedBorderPainter treatment as `EnhancedTileCard`.
     return CustomPaint(
       painter: DashedBorderPainter(

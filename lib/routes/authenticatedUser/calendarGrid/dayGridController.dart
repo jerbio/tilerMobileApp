@@ -7,11 +7,11 @@ import 'package:tiler_app/util.dart';
 /// directly (no animated transitions) while a gesture is active.
 enum DayGridMode { idle, dragging, zooming }
 
-/// The reactive core of the day grid (P1, step 1.1).
+/// The reactive core of the day grid.
 ///
 /// Owns the pixels-per-hour zoom level [pxPerHour], the current interaction
-/// [mode], and the zoom-derived [snapInterval] (C4). Pure state — no widget
-/// dependencies — because a pinch gesture mutates it at frame rate (P2).
+/// [mode], and the zoom-derived [snapInterval]. Pure state — no widget
+/// dependencies — because a pinch gesture mutates it at frame rate.
 ///
 /// Layout math (see [GridPositionableWidget]) derives every position from
 /// [pxPerHour]:
@@ -22,13 +22,13 @@ enum DayGridMode { idle, dragging, zooming }
 /// time(y)     = y / pxPerHour
 /// ```
 class DayGridController extends ChangeNotifier {
-  /// C8: "whole day on screen" floor.
+  /// "Whole day on screen" floor.
   static const double minPxPerHour = 40;
 
-  /// C8: "~5-min precision" ceiling.
+  /// "~5-min precision" ceiling.
   static const double maxPxPerHour = 240;
 
-  /// Step 2.3: settle step (px/hour) for a finished pinch. Zoom levels snap
+  /// Settle step (px/hour) for a finished pinch. Zoom levels snap
   /// to the nearest multiple so the persisted value is clean, not fractional.
   static const double settleStep = 5;
 
@@ -36,11 +36,11 @@ class DayGridController extends ChangeNotifier {
   static const double defaultPxPerHour =
       GridPositionableWidget.defaultHeigtPerDuration;
 
-  /// C4 snap band boundary: below this the grid is too coarse for 15-min
+  /// Snap band boundary: below this the grid is too coarse for 15-min
   /// snaps.
   static const double _snapCoarseBoundary = 80;
 
-  /// C4 snap band boundary: at or above this the grid is fine enough for
+  /// Snap band boundary: at or above this the grid is fine enough for
   /// 5-min snaps.
   static const double _snapFineBoundary = 160;
 
@@ -64,11 +64,11 @@ class DayGridController extends ChangeNotifier {
 
   /// True once the user (or a restored preference) has set a zoom that must
   /// survive relaunches. An auto-fit seed does **not** count — a stored
-  /// value restored later still wins (C8).
+  /// value restored later still wins.
   bool get hasExplicitZoom => _hasExplicitZoom;
 
-  /// C4: zoom-dependent snap granularity, shared by tap-to-add (P2) and
-  /// drag-and-drop (P4).
+  /// Zoom-dependent snap granularity, shared by tap-to-add and
+  /// drag-and-drop.
   ///
   /// | pxPerHour | snap     |
   /// |-----------|----------|
@@ -85,7 +85,7 @@ class DayGridController extends ChangeNotifier {
     return const Duration(minutes: 5);
   }
 
-  /// Sets [value] clamped to the C8 range. Notifies only when the effective
+  /// Sets [value] clamped to the valid range. Notifies only when the effective
   /// value changes. Marks the zoom explicit so a later auto-fit cannot
   /// overwrite it.
   void setPxPerHour(double value) {
@@ -101,14 +101,14 @@ class DayGridController extends ChangeNotifier {
     _hasExplicitZoom = true;
   }
 
-  /// Step 2.3: settle a finished pinch to the nearest [settleStep] and clamp
-  /// to the C8 range. Pure so it is unit-testable without the widget.
+  /// Settle a finished pinch to the nearest [settleStep] and clamp to the
+  /// valid range. Pure so it is unit-testable without the widget.
   static double settlePxPerHour(double value) {
     final stepped = (value / settleStep).round() * settleStep;
     return stepped.clamp(minPxPerHour, maxPxPerHour).toDouble();
   }
 
-  /// C8 first-launch seed: fit ~4 hours into [viewportHeight]
+  /// First-launch seed: fit ~4 hours into [viewportHeight]
   /// (`viewportHeight / 4`, clamped). No-op once an explicit zoom exists.
   void autoFit(double viewportHeight) {
     if (_hasExplicitZoom) return;
@@ -132,8 +132,8 @@ class DayGridController extends ChangeNotifier {
     setPxPerHour(stored);
   }
 
-  /// Restores the last persisted zoom (C6: global across all days).
-  /// Absent/corrupt values leave the default in place so auto-fit (C8) can
+  /// Restores the last persisted zoom (global across all days).
+  /// Absent/corrupt values leave the default in place so auto-fit can
   /// run on first launch.
   Future<void> restoreFromPrefs() async {
     double? stored;
@@ -141,7 +141,7 @@ class DayGridController extends ChangeNotifier {
       stored = await DayGridPreferences.getPxPerHour();
     } catch (_) {
       // Prefs unavailable (e.g. no platform channel in tests) — keep the
-      // default so auto-fit (C8) can still run.
+      // default so auto-fit can still run.
       stored = null;
     }
     Utility.debugPrint(

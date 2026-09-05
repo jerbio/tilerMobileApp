@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.5 — day page swaps EnhancedTileBatch <-> DayGridWidget
+// Day page swaps EnhancedTileBatch <-> DayGridWidget
 // via the DailyViewLayoutCubit, with list-view parity filtering applied to
 // the grid input.
 import 'package:flutter/material.dart';
@@ -107,7 +107,7 @@ void main() {
   /// DaySummary header (which is exactly what the buffer reserves); the
   /// alert banner the parity fixture would surface (pending + declined
   /// tiles) overflows that bounded body in the test environment — a
-  /// pre-existing ETB sizing nuance, not a step 1.7 concern. Keeping the
+  /// pre-existing ETB sizing nuance. Keeping the
   /// list frame alert-free lets the bounded host carry both modes, so
   /// the test asserts the swap itself with the page in place.
   List<TilerEvent> buildSwapTiles() {
@@ -128,7 +128,7 @@ void main() {
   Widget buildTestApp(
       {required DailyViewLayoutCubit cubit,
       required List<TilerEvent> tiles,
-      // Grid mode (step 1.7) builds its body with an Expanded grid, which
+      // Grid mode builds its body with an Expanded grid, which
       // needs a bounded parent; list mode keeps the scrollable-parent
       // convention so the batch's natural-height Column lays out without
       // overflowing.
@@ -158,7 +158,7 @@ void main() {
         ],
         child: Scaffold(
           // List mode: the existing ETB convention (scrollable parent,
-          // natural-height Column). Grid mode (step 1.7): a bounded parent
+          // natural-height Column). Grid mode: a bounded parent
           // so the page's Expanded grid lays out.
           body: scrollableParent
               ? SingleChildScrollView(child: dayPage)
@@ -168,14 +168,14 @@ void main() {
     );
   }
 
-  group('DayGridPage layout swap (step 1.5)', () {
+  group('DayGridPage layout swap', () {
     Future<void> pumpSwapPage(WidgetTester tester, DailyViewLayoutCubit cubit,
         List<TilerEvent> tiles,
         {bool scrollableParent = true}) async {
       // EnhancedTileBatch needs a real-size viewport (same convention as
       // enhanced_tile_batch_test). 5000 physical px (3750 logical) keeps
       // the batch's natural height (~3000px) under the bounded parent the
-      // grid-mode cases (step 1.7) rely on.
+      // grid-mode cases rely on.
       tester.view.physicalSize = const Size(1080, 5000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {

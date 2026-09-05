@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.7 (C7) — the pinned header strip renders the >=16h /
+// The pinned header strip renders the >=16h /
 // all-day tiles that DayGridWidget excludes from the timeline, so they
 // stay visible in grid mode: in the header, not on the timeline.
 import 'package:flutter/material.dart';
@@ -70,7 +70,7 @@ void main() {
     SharedPreferences.setMockInitialValues({'dayGridLayout': 'grid'});
   });
 
-  group('DayGrid pinned header (C7, step 1.7)', () {
+  group('DayGrid pinned header', () {
     testWidgets('>=16h tile renders in the header, not the timeline',
         (tester) async {
       final cubit = DailyViewLayoutCubit();

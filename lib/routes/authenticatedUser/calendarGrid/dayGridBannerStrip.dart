@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.7 (C3) — the compact alert banner strip for grid mode.
+// The compact alert banner strip for the day grid.
 //
 // Reuses the list-mode detectors (ConflictGroup.detectGroups,
 // ExtendedTilesBanner.detectExtendedTiles,
@@ -15,7 +15,7 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
-/// Compact grid-mode alert strip (step 1.7, C3).
+/// Compact grid-mode alert strip.
 ///
 /// Renders nothing when [tiles] carry no conflicts, extended (>=16h /
 /// all-day) tiles, or pending/declined RSVP tiles.

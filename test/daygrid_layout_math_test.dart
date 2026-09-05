@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.4 — parametric rendering from DayGridController.pxPerHour,
+// Parametric rendering from DayGridController.pxPerHour,
 // responsive tile width, cross-midnight clamping, and >=16h exclusion.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -53,7 +53,7 @@ void main() {
   Size tileSize(WidgetTester tester, String id) =>
       tester.getSize(find.byKey(ValueKey<String>('daygrid_tile_$id')));
 
-  group('DayGrid layout math (step 1.4)', () {
+  group('DayGrid layout math', () {
     testWidgets('tile top/height track pxPerHour at 40 / 80 / 240',
         (tester) async {
       final tile = buildTile(
@@ -109,7 +109,7 @@ void main() {
           tester.element(find.byKey(const ValueKey<String>('daygrid_tile_a')));
 
       controller.setPxPerHour(240);
-      // Idle mode repositions now slide (§6.6, step 2.2), so let the
+      // Idle mode repositions now slide, so let the
       // 300ms transition settle before asserting the final position. Fixed
       // pumps (not pumpAndSettle — the now-line's minute timer would keep
       // scheduling frames).
@@ -204,7 +204,7 @@ void main() {
                   tiles: [longTile, normal], controller: controller))));
       await tester.pump(const Duration(milliseconds: 100));
 
-      // The 18h tile belongs to the pinned header (step 1.7), not the grid.
+      // The 18h tile belongs to the pinned header, not the grid.
       expect(
           find.byKey(const ValueKey<String>('daygrid_tile_l')), findsNothing);
       expect(find.text('LongTile'), findsNothing);

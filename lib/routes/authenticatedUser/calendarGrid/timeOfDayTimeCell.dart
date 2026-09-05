@@ -49,7 +49,7 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
       // (BorderRadius) decoration, making it hit-test-opaque, and the inner
       // Stack with only Positioned children expands to the available width.
       // Without this it would swallow taps across the grid and block the
-      // DayGrid background tap-to-add detector (C12). No visual change.
+      // DayGrid background tap-to-add detector. No visual change.
       child: IgnorePointer(
         child: Container(
           decoration: BoxDecoration(

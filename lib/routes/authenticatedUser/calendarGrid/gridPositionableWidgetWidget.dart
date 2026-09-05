@@ -46,7 +46,7 @@ abstract class GridPositionableState extends State<GridPositionableWidget> {
     }
   }
 
-  /// P1 (step 1.4): positions derive from [GridPositionableWidget.height]
+  /// Positions derive from [GridPositionableWidget.height]
   /// (px per cell). Re-sync when the parent re-sources them (zoom change)
   /// instead of keeping the stale `initState` values.
   @override

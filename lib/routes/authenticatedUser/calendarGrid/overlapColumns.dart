@@ -1,4 +1,4 @@
-// DayGrid C11 — Google-Calendar-style overlap columns.
+// Google-Calendar-style overlap columns.
 //
 // Pure, widget-independent layout math. Given the tiles rendered in a day and
 // the horizontal region a single tile would otherwise fill, assign each tile a
@@ -22,16 +22,16 @@ class TileColumnLayout {
   const TileColumnLayout({required this.left, required this.width});
 }
 
-/// C11: pure overlap-column layout.
+/// Pure overlap-column layout.
 ///
 /// [assign] groups [tiles] into maximal clusters of transitively overlapping
 /// tiles, assigns each tile the leftmost free column in its cluster (classic
 /// interval partitioning), and gives every tile in a cluster a shared width so
 /// the cluster fills the region exactly. A tile with no overlaps is its own
 /// one-column cluster and therefore keeps the full `[left, left + width]`
-/// region — preserving the pre-C11 single-tile geometry.
+/// region — preserving the single-tile geometry.
 ///
-/// Deferred (P2): per-tile "expand over ended columns" (a later-starting tile
+/// Deferred: per-tile "expand over ended columns" (a later-starting tile
 /// becomes wider when the columns it overlaps have already ended). The
 /// shared-width model here is the predictable v1 and matches the grid's
 /// existing full-region width.

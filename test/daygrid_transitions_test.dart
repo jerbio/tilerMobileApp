@@ -1,4 +1,4 @@
-// DayGrid P2 step 2.2 — moved/resized tile position transitions (§6.6).
+// Moved/resized tile position transitions.
 //
 // When the schedule changes, a tile must slide to its new position (animated
 // `AnimatedPositioned`) rather than teleport, and only when the controller is
@@ -133,7 +133,7 @@ void main() {
     return rebuild;
   }
 
-  group('DayGridWidget tile position transitions (step 2.2)', () {
+  group('DayGridWidget tile position transitions', () {
     testWidgets('moved tile slides from its old top to its new top',
         (tester) async {
       List<SubCalendarEvent> tiles = tilesWithBetaAt(10); // Beta at 10am.

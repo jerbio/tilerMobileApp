@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.7 (C3) — the compact alert banner strip above the
+// The compact alert banner strip above the
 // grid reuses the list-mode detectors (ConflictGroup.detectGroups /
 // ExtendedTilesBanner.detectExtendedTiles / pending-RSVP split) and
 // surfaces them as a single condensed chip row: it shows conflict /
@@ -94,7 +94,7 @@ List<TilerEvent> _alertFixture() {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('DayGrid banner strip (C3, step 1.7)', () {
+  group('DayGrid banner strip', () {
     testWidgets(
         'shows conflict / extended / RSVP counts from fixture tiles',
         (tester) async {
@@ -171,7 +171,7 @@ void main() {
     });
   });
 
-  group('DayGridBannerStrip detector mirror (C3, step 1.7)', () {
+  group('DayGridBannerStrip detector mirror', () {
     test('grid detectors mirror the list-mode detectors on the same input',
         () {
       final tiles = _alertFixture();

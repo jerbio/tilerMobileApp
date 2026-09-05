@@ -13,7 +13,7 @@ void main() {
       controller.dispose();
     });
 
-    group('pxPerHour clamping (C8: [40, 240])', () {
+    group('pxPerHour clamping ([40, 240])', () {
       test('values inside the range are applied unchanged', () {
         final controller = DayGridController();
         controller.setPxPerHour(120);
@@ -36,7 +36,7 @@ void main() {
       });
     });
 
-    group('snapInterval bands (C4)', () {
+    group('snapInterval bands', () {
       test('pxPerHour below 80 snaps to 30 min', () {
         final controller = DayGridController();
         controller.setPxPerHour(79);
@@ -66,7 +66,7 @@ void main() {
       });
     });
 
-    group('auto-fit seed (C8)', () {
+    group('auto-fit seed', () {
       test('auto-fits viewportHeight / 4 when no explicit zoom exists', () {
         final controller = DayGridController();
         controller.autoFit(600);

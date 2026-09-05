@@ -1,4 +1,4 @@
-// DayGrid C11 — Google-Calendar-style overlap columns.
+// Google-Calendar-style overlap columns.
 //
 // Two layers:
 //   1. Pure unit tests for `OverlapColumns.assign` (the layout math).
@@ -41,7 +41,7 @@ void main() {
         width: regionWidth,
       );
 
-  group('OverlapColumns.assign (C11 math)', () {
+  group('OverlapColumns.assign', () {
     test('empty input -> empty map', () {
       expect(layout([]), isEmpty);
     });
@@ -225,7 +225,7 @@ void main() {
     return -1;
   }
 
-  group('DayGridWidget overlap columns (C11)', () {
+  group('DayGridWidget overlap columns', () {
     testWidgets('non-overlapping tiles each keep the full region',
         (tester) async {
       final tiles = <SubCalendarEvent>[
@@ -286,7 +286,7 @@ void main() {
     testWidgets('tapping a tile raises it above its neighbours (z-order)',
         (tester) async {
       // Non-overlapping so each tile stays independently tappable — this
-      // isolates the pre-existing tap-to-raise behaviour C11 must preserve.
+      // isolates the pre-existing tap-to-raise behaviour.
       final tiles = <SubCalendarEvent>[
         buildTile(
             id: 'a',

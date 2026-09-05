@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.5 — DailyViewLayoutCubit: restore from prefs, toggle
+// DailyViewLayoutCubit: restore from prefs, toggle
 // persistence, and round-trip across a simulated app restart.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +8,7 @@ import 'package:tiler_app/services/dayGridPreferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('DailyViewLayoutCubit (C9)', () {
+  group('DailyViewLayoutCubit', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
     });

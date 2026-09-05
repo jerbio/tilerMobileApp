@@ -3,8 +3,8 @@
 // Phase 7 of the Today Status screen rebuild
 // (docs/today-status-screen-implementation-plan.md).
 //
-// Walks the §16.3 acceptance matrix (cases A–I) against the assembled screen,
-// plus the §15.3 loading/error states and the ported completion flow.
+// Walks the acceptance matrix (cases A–I) against the assembled screen,
+// plus the loading/error states and the ported completion flow.
 
 import 'dart:async';
 
@@ -122,7 +122,7 @@ Finder _stripLabel(String text) => find.descendant(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('§16.3 acceptance matrix', () {
+  group('acceptance matrix', () {
     testWidgets('A · 4 placed / 6 attention / 0 late', (tester) async {
       await tester
           .pumpWidget(_harness(_FakeScheduleApi(placed: 4, attention: 6)));
@@ -233,7 +233,7 @@ void main() {
     });
   });
 
-  group('§15.3 loading', () {
+  group('loading', () {
     testWidgets('shows a loading state until the summary arrives',
         (tester) async {
       final gate = Completer<void>();

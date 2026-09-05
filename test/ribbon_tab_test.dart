@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.7 (C2) — the day ribbon for today becomes a collapsed
+// The day ribbon for today becomes a collapsed
 // tap-to-expand tab instead of the hard hide (SizedBox.shrink) in
 // AuthorizedRoute._ribbonCarousel: it starts collapsed while the viewed date
 // is today, expands the DayRibbonCarousel on tap, and collapses again on
@@ -54,7 +54,7 @@ Widget _buildApp({required UiDateManagerBloc dateBloc}) {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('Day ribbon tab (C2, step 1.7)', () {
+  group('Day ribbon tab', () {
     testWidgets('is collapsed when viewing today', (tester) async {
       final dateBloc = UiDateManagerBloc();
       addTearDown(dateBloc.close);

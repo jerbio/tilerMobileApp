@@ -1,13 +1,13 @@
-// DayGrid Step 2.3 — pinch-to-zoom with adaptive rendering and safe
+// Pinch-to-zoom with adaptive rendering and safe
 // coexistence with carousel paging, vertical scrolling and tile taps.
 //
 // Covers:
 //   * `DayGridController.settlePxPerHour` — settle a finished pinch to the
-//     nearest clean step, clamped to the C8 [40, 240] range.
+//     nearest clean step, clamped to the [40, 240] range.
 //   * `DayGridWidget.gutterLabelStride` — adaptive gutter label density.
 //   * The gesture-arena SPIKE: a two-finger pinch drives `pxPerHour`.
 //   * Coexistence: a single-finger drag scrolls and does NOT zoom; the zoom
-//     settles back to `idle` and persists (C6).
+//     settles back to `idle` and persists.
 //   * `DayGridController.restoreFromPrefs` — restores a stored zoom and is a
 //     no-op / safe when the value is absent or out of range.
 import 'dart:async';
@@ -119,7 +119,7 @@ Widget _buildApp({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('DayGridController.settlePxPerHour (step 2.3)', () {
+  group('DayGridController.settlePxPerHour', () {
     test('applies clean multiples of the settle step unchanged', () {
       expect(DayGridController.settlePxPerHour(80), 80);
       expect(DayGridController.settlePxPerHour(120), 120);
@@ -159,7 +159,7 @@ void main() {
     });
   });
 
-  group('DayGridController.restoreFromPrefs (C6)', () {
+  group('DayGridController.restoreFromPrefs', () {
     setUp(() {
       SharedPreferences.setMockInitialValues({});
     });
@@ -196,8 +196,8 @@ void main() {
     });
   });
 
-  group('DayGrid pinch-to-zoom (step 2.3)', () {
-    // A future grid day (no C14 prefill) with a 0–1h tile that pins the
+  group('DayGrid pinch-to-zoom', () {
+    // A future grid day (no past-time prefill) with a 0–1h tile that pins the
     // initial scroll offset to 0 (midnight at the viewport top), leaving the
     // mid-day region (y ~ 300) free of tiles for a clean two-finger pinch.
     final dayStart = DateTime(2027, 1, 15);
@@ -252,7 +252,7 @@ void main() {
       // Back to idle once the pinch ended.
       expect(controller.mode, DayGridMode.idle);
 
-      // The settled zoom persisted (C6). Read in the real async zone so the
+      // The settled zoom persisted. Read in the real async zone so the
       // mock SharedPreferences future resolves.
       final stored = await tester
           .runAsync<double?>(() => DayGridPreferences.getPxPerHour());
