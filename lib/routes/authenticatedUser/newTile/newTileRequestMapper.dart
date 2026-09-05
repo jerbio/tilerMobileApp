@@ -1,7 +1,4 @@
-// Phase 0 / Step 0.1 — behavior-preserving extraction of the request mapping.
-// Phase 1 / Step 1.2 — renamed legacy snapshot to `LegacyAddTileDraft` and
-// added `buildFromSnapshot(AddTileDraftSnapshot)` proving wire parity with the
-// new model without duplicating the mapping logic.
+// Behavior-preserving extraction of the Add Tile request mapping.
 //
 // The legacy `AddTileState.onSubmitButtonTap()` built a `NewTile` inline from
 // ~15 mutable widget fields. This file extracts ONLY that pure mapping into an
@@ -9,6 +6,9 @@
 // so the wire values can be characterized/tested without a live widget, blocs,
 // or API calls. It does NOT change request semantics: the mapping is a faithful
 // line-for-line port of the original inline code.
+//
+// `buildFromSnapshot(AddTileDraftSnapshot)` proves wire parity with the
+// widget-independent model by delegating to the same mapping code.
 //
 // Submission orchestration (API call, bloc refresh, analytics, newTileParams
 // return) remains in the widget — this file is a pure mapper.
@@ -27,11 +27,10 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 /// `now` is the "current time" the legacy mapping used for the Flexible-Tile
 /// start (midnight-of-submit-day); it is a parameter so tests are deterministic.
 ///
-/// Renamed from `AddTileDraft` to `LegacyAddTileDraft` (Step 1.2) to
-/// disambiguate from the new widget-independent model of the same conceptual
-/// name (`AddTileDraft` in addTileDraft.dart). This class is the legacy
-/// isAppointment snapshot kept as the reference mapping until the old inline
-/// builder is removed (Step 5.3).
+/// Named `LegacyAddTileDraft` to disambiguate from the new widget-independent
+/// model of the same conceptual name (`AddTileDraft` in addTileDraft.dart).
+/// This class is the legacy isAppointment snapshot kept as the reference
+/// mapping until the old inline builder is removed.
 class LegacyAddTileDraft {
   final bool isAppointment;
   final String name;
@@ -163,16 +162,16 @@ class NewTileRequestMapper {
     return tile;
   }
 
-  /// Builds a [NewTile] from the new-model [AddTileDraftSnapshot] (§8.2) by
-  /// converting to a [LegacyAddTileDraft] and delegating to [build]. This
-  /// guarantees wire parity with the legacy path by construction — the same
-  /// mapping code is executed. `now` is the submit-time used for the
-  /// Flexible-Tile start (midnight-of-submit-day), exactly as the legacy widget
-  /// computed it from `Utility.currentTime()`.
+  /// Builds a [NewTile] from the new-model [AddTileDraftSnapshot] by converting
+  /// to a [LegacyAddTileDraft] and delegating to [build]. This guarantees wire
+  /// parity with the legacy path by construction — the same mapping code is
+  /// executed. `now` is the submit-time used for the Flexible-Tile start
+  /// (midnight-of-submit-day), exactly as the legacy widget computed it from
+  /// `Utility.currentTime()`.
   ///
-  /// Privacy (§12.1): this method never serializes the request body or
-  /// user-entered content; failure diagnostics (type + reason code) are the
-  /// caller's responsibility.
+  /// Privacy: this method never serializes the request body or user-entered
+  /// content; failure diagnostics (type + reason code) are the caller's
+  /// responsibility.
   static NewTile buildFromSnapshot(
     AddTileDraftSnapshot s, {
     required DateTime now,

@@ -1,20 +1,20 @@
-// Phase 1 / Step 1.1 — RED: AddTileDraft state-model contract.
+// AddTileDraft state-model contract.
 //
-// Behavior under test (docs/add-tile-redesign.md §6.1, §6.2, §6.4, §8.1):
+// Behavior under test:
 //  * Explicit AddTileType.flexible/fixed replaces the isAppointment boolean.
 //  * Defaults: flexible has NO guessed duration (visibly required); fixed
 //    defaults to 30 minutes only when no prefill/suggestion supplies one.
 //  * Validation by type: name non-empty + duration >= 1 minute (legacy
 //    equivalence: legacy rejects inMinutes <= 0); fixed end is derived.
 //  * Mode switch preserves shared values; mode-specific values go dormant,
-//    are never discarded, and restore on switch back (§6.1 matrix).
-//  * Dirty state (D2): dirty only when a USER-edited field differs from its
+//    are never discarded, and restore on switch back.
+//  * Dirty state: dirty only when a USER-edited field differs from its
 //    initial/prefilled value; suggestion-applied changes are not dirty.
-//  * Stale suggestions (§6.4): rejected after a manual edit or disposal.
-//  * D3: repeat is preserved across type switches (both modes carry
-//    RepetitionData end-to-end, characterized in Step 0.1) — the confirm
-//    path is exposed but not triggered in v1.
-//  * A single immutable snapshot for request mapping (Step 1.2 input).
+//  * Stale suggestions: rejected after a manual edit or disposal.
+//  * Repeat is preserved across type switches (both modes carry
+//    RepetitionData end-to-end) — the confirm path is exposed but not
+//    triggered in v1.
+//  * A single immutable snapshot for request mapping.
 library;
 
 import 'package:flutter/material.dart';
@@ -31,7 +31,7 @@ void main() {
   final now = DateTime(2026, 9, 4, 9, 30);
   final location = Location.fromDefault();
 
-  group('1.1 AddTileDraft — defaults', () {
+  group('AddTileDraft — defaults', () {
     test(
         'flexible defaults: empty name, zero duration (required, not guessed), Anytime, no restriction, auto-revisable, medium priority, split 1',
         () {
@@ -80,11 +80,12 @@ void main() {
       final d = AddTileDraft.flexible(preTile: pre, now: now);
       expect(d.name, 'Think');
       expect(d.duration, Duration.zero,
-          reason: '§5.2: do not silently submit a guessed duration');
+          reason:
+              'a Flexible draft must not silently submit a guessed duration');
     });
   });
 
-  group('1.1 AddTileDraft — validation by type', () {
+  group('AddTileDraft — validation by type', () {
     test(
         'flexible: empty name and zero duration are invalid with stable reason codes',
         () {
@@ -104,13 +105,14 @@ void main() {
       expect(d.isValid, isTrue);
     });
 
-    test('flexible: no-deadline (Anytime) is valid per D1', () {
+    test('flexible: no-deadline (Anytime) is valid client-side', () {
       final d = AddTileDraft.flexible(now: now)
         ..name = 'x'
         ..setUserDuration(const Duration(minutes: 30));
       expect(d.endTime, isNull);
       expect(d.isValid, isTrue,
-          reason: 'D1 accepted: Complete by: Anytime is server-valid');
+          reason: 'a no-deadline ("Anytime") Flexible draft is valid; server '
+              'acceptance is a separate live check');
     });
 
     test('fixed: valid with name+duration; start always present', () {
@@ -128,7 +130,7 @@ void main() {
     });
   });
 
-  group('1.1 AddTileDraft — calculated fixed end', () {
+  group('AddTileDraft — calculated fixed end', () {
     test('end = start + duration, immediate and pure', () {
       final d = AddTileDraft.fixed(now: DateTime(2026, 9, 4, 9, 0))..name = 'x';
       expect(d.calculatedEnd, DateTime(2026, 9, 4, 9, 30));
@@ -146,7 +148,7 @@ void main() {
     });
   });
 
-  group('1.1 AddTileDraft — mode switch (§6.1 matrix)', () {
+  group('AddTileDraft — mode switch (preservation matrix)', () {
     test(
         'flexible -> fixed preserves name/duration/location/color/repeat; invalid duration becomes 30 min',
         () {
@@ -213,7 +215,7 @@ void main() {
     });
 
     test(
-        'D3: repeat with identical semantics in both modes => preserve (no confirmation required)',
+        'repeat with identical semantics in both modes => preserve (no confirmation required)',
         () {
       final d = AddTileDraft.flexible(
         now: now,
@@ -229,7 +231,7 @@ void main() {
     });
   });
 
-  group('1.1 AddTileDraft — dirty state (D2)', () {
+  group('AddTileDraft — dirty state', () {
     test('fresh draft is not dirty; needsCloseConfirmation is false', () {
       final d = AddTileDraft.flexible(now: now);
       expect(d.isDirty, isFalse);
@@ -257,11 +259,11 @@ void main() {
       expect(d.applySuggestedDuration(const Duration(minutes: 20)), isTrue);
       expect(d.duration, const Duration(minutes: 20));
       expect(d.isDirty, isFalse,
-          reason: '§6.4/D2: app-driven suggestions are not meaningful edits');
+          reason: 'app-driven suggestions are not meaningful user edits');
     });
   });
 
-  group('1.1 AddTileDraft — stale suggestion rejection (§6.4)', () {
+  group('AddTileDraft — stale suggestion rejection', () {
     test('suggestions are rejected after the user manually edited the field',
         () {
       final d = AddTileDraft.flexible(now: now);
@@ -287,7 +289,7 @@ void main() {
     });
   });
 
-  group('1.1 AddTileDraft — snapshot (Step 1.2 input)', () {
+  group('AddTileDraft — snapshot', () {
     test('snapshot is a stable immutable view of the current draft', () {
       final d = AddTileDraft.fixed(now: now, name: 'Gym')
         ..setUserDuration(const Duration(minutes: 40));

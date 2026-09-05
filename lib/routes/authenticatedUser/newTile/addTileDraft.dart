@@ -5,12 +5,12 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 
-/// Explicit add-flow type, replacing the legacy `isAppointment` boolean
-/// (docs/add-tile-redesign.md §8.1). `false`==flexible, `true`==fixed in the
-/// legacy mapping; the request mapper keeps that equivalence (Step 1.2).
+/// Explicit add-flow type, replacing the legacy `isAppointment` boolean.
+/// `false`==flexible, `true`==fixed in the legacy mapping; the request
+/// mapper keeps that equivalence.
 enum AddTileType { flexible, fixed }
 
-/// Fields the app's auto-suggestion service may populate (§6.4).
+/// Fields the app's auto-suggestion service may populate.
 enum AddTileSuggestedField {
   name,
   duration,
@@ -19,7 +19,7 @@ enum AddTileSuggestedField {
   restrictionProfile,
 }
 
-/// D3 outcome for the Repeat value when the user changes type.
+/// Outcome for the Repeat value when the user changes type.
 enum RepeatSwitchDecision { preserve, confirmBeforeClear }
 
 /// Which fields a suggestion/dirty check concerns, internally.
@@ -38,7 +38,7 @@ enum _Field {
 }
 
 /// Immutable snapshot of [AddTileDraft] — the single input to the request
-/// mapper (Step 1.2). Value-equality so tests can compare snapshots.
+/// mapper. Value-equality so tests can compare snapshots.
 class AddTileDraftSnapshot {
   const AddTileDraftSnapshot({
     required this.type,
@@ -70,7 +70,7 @@ class AddTileDraftSnapshot {
   final RepetitionData? repetitionData;
 
   /// Always `startTime + duration`; the wire `End` for both types (legacy
-  /// behavior characterized in Step 0.1). Display-only for Fixed Blocks.
+  /// behavior). Display-only for Fixed Blocks.
   final DateTime calculatedEnd;
 
   @override
@@ -107,20 +107,19 @@ class AddTileDraftSnapshot {
         calculatedEnd,
       );
 
-  /// Diagnostics only. Deliberately omits the user-entered name (§12.1
-  /// privacy: never serialize draft content into logs).
+  /// Diagnostics only. Deliberately omits the user-entered name (privacy:
+  /// never serialize draft content into logs).
   @override
   String toString() => 'AddTileDraftSnapshot(type:$type,duration:$duration,'
       'hasDeadline:${endTime != null},priority:$priority,split:$splitCount)';
 }
 
-/// Widget-independent draft state for the Add Tile flow (Step 1.1).
+/// Widget-independent draft state for the Add Tile flow.
 ///
-/// Owns shared + mode-specific values, validation, dirty state (D2),
-/// suggestion-application rules (§6.4), and mode-switch preservation
-/// (§6.1). Keeping this out of the widget makes validation and switching
-/// unit-testable and gives the shell (Step 1.3) a local notifier without a
-/// new app-wide bloc (§8.1).
+/// Owns shared + mode-specific values, validation, dirty state,
+/// suggestion-application rules, and mode-switch preservation. Keeping this
+/// out of the widget makes validation and switching unit-testable and gives
+/// the shell a local notifier without a new app-wide bloc.
 class AddTileDraft extends ChangeNotifier {
   AddTileDraft.flexible({
     required DateTime now,
@@ -197,7 +196,7 @@ class AddTileDraft extends ChangeNotifier {
   })  : _type = type,
         _name = name ?? preTile?.description ?? '',
         // Explicit value > prefill > type default. Flexible has NO default
-        // duration (§5.2: visibly required, never silently guessed); Fixed
+        // duration (visibly required, never silently guessed); Fixed
         // defaults to 30 minutes only without prefill/suggestion.
         _duration = duration ??
             preTile?.duration ??
@@ -214,7 +213,7 @@ class AddTileDraft extends ChangeNotifier {
         _splitCount = splitCount ?? 1,
         _color = color,
         _repetitionData = repetitionData {
-    // Baseline for the D2 dirty check = initial/prefilled state.
+    // Baseline for the dirty check = initial/prefilled state.
     _initial = snapshot;
   }
 
@@ -245,10 +244,10 @@ class AddTileDraft extends ChangeNotifier {
   DateTime get startTime => _startTime;
   DateTime? get endTime => _endTime;
 
-  /// Nullable to mirror the legacy widget exactly (addTile.dart:81/124): the
+  /// Nullable to mirror the legacy widget exactly (addTile.dart): the
   /// ghost `Location.fromDefault()` is held when no preTile is supplied, but
   /// a `PreTile` without a location yields `null` (not a ghost), which changes
-  /// the wire `LocationIsVerified` field. Step 1.2 parity depends on this.
+  /// the wire `LocationIsVerified` field. Wire parity depends on this.
   Location? get location => _location;
   RestrictionProfile? get restrictionProfile => _restrictionProfile;
   bool get isAutoRevisable => _isAutoRevisable;
@@ -257,8 +256,8 @@ class AddTileDraft extends ChangeNotifier {
   Color? get color => _color;
   RepetitionData? get repetitionData => _repetitionData;
 
-  /// Fixed Block end = start + duration, always derived (§4, D6 locked:
-  /// read-only in v1; API semantics remain start + duration).
+  /// Fixed Block end = start + duration, always derived (read-only in v1;
+  /// API semantics remain start + duration).
   DateTime get calculatedEnd => _startTime.add(_duration);
 
   AddTileDraftSnapshot get snapshot => AddTileDraftSnapshot(
@@ -278,7 +277,7 @@ class AddTileDraft extends ChangeNotifier {
       );
 
   // ------------------------------------------------------------------
-  // User mutation (marks a field as user-edited for D2 + §6.4)
+  // User mutation (marks a field as user-edited for the dirty check)
   // ------------------------------------------------------------------
 
   set name(String value) {
@@ -350,7 +349,7 @@ class AddTileDraft extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------------
-  // Suggestion application (§6.4): never overwrite manual edits; stale
+  // Suggestion application: never overwrite manual edits; stale
   // responses after disposal are ignored.
   // ------------------------------------------------------------------
 
@@ -377,7 +376,7 @@ class AddTileDraft extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------------
-  // Validation (§6.2) — reason codes per the analytics schema
+  // Validation — stable reason codes per the analytics schema
   // ------------------------------------------------------------------
 
   /// Field-id -> stable reason code. Legacy equivalence: name must be
@@ -393,7 +392,7 @@ class AddTileDraft extends ChangeNotifier {
   bool get isValid => validate().isEmpty;
 
   // ------------------------------------------------------------------
-  // Dirty state (D2, accepted 2026-09-04): confirm discard only after a
+  // Dirty state: confirm discard only after a
   // meaningful USER edit — i.e. a user-edited field that differs from its
   // initial/prefilled value. Suggestion-applied values are not dirty.
   // ------------------------------------------------------------------
@@ -421,17 +420,17 @@ class AddTileDraft extends ChangeNotifier {
   bool get needsCloseConfirmation => isDirty;
 
   // ------------------------------------------------------------------
-  // Type switching (§6.1) — deterministic, nothing silently discarded.
+  // Type switching — deterministic, nothing silently discarded.
   // ------------------------------------------------------------------
 
-  /// Step 0.1 characterization (`add_tile_request_mapping_baseline_test.dart`):
+  /// Characterized in `add_tile_request_mapping_baseline_test.dart`:
   /// `RepetitionData` maps identically for rigid and flexible payloads, so
   /// repeat semantics are identical across modes in v1.
   static const bool repeatSemanticsIdenticalAcrossModes = true;
 
-  /// D3 (accepted 2026-09-04): preserve only when semantics are identical,
-  /// otherwise the UI must confirm before clearing. Exposed as a decision so
-  /// the shell can prompt; v1 resolves to [RepeatSwitchDecision.preserve].
+  /// Preserve only when semantics are identical, otherwise the UI must confirm
+  /// before clearing. Exposed as a decision so the shell can prompt; v1
+  /// resolves to [RepeatSwitchDecision.preserve].
   RepeatSwitchDecision get repeatSwitchDecision {
     if (_repetitionData == null) return RepeatSwitchDecision.preserve;
     return repeatSemanticsIdenticalAcrossModes
@@ -442,7 +441,7 @@ class AddTileDraft extends ChangeNotifier {
   void switchToFixed() {
     if (_type == AddTileType.fixed) return;
     _type = AddTileType.fixed;
-    // §6.1: preserve duration if valid; otherwise adopt the 30-minute
+    // Preserve duration if valid; otherwise adopt the 30-minute
     // Fixed default. This is an app-driven fill, not a user edit.
     if (_duration.inMinutes <= 0) {
       _duration = const Duration(minutes: 30);
@@ -455,7 +454,7 @@ class AddTileDraft extends ChangeNotifier {
   void switchToFlexible() {
     if (_type == AddTileType.flexible) return;
     _type = AddTileType.flexible;
-    // §6.1: dormant flexible-only values are restored by existing on them —
+    // Dormant flexible-only values are restored by existing on them —
     // they were never discarded.
     _notify();
   }

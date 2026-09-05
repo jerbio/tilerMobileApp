@@ -1,13 +1,13 @@
-// Phase 1 / Step 1.3 — Feature-flagged Add Tile redesign shell.
+// Feature-flagged Add Tile redesign shell.
 //
-// Widget tests for the shared frame (docs §5.1): type selector BEFORE fields,
+// Widget tests for the shared frame: type selector BEFORE fields,
 // dynamic title/explanation/CTA by type, an independently scrolling form with a
 // pinned persistent CTA, a keyboard/safe-area-safe CTA, a single root Close,
 // CTA gating by draft validity, mapper routing, and double-submit prevention.
 //
-// Uses the Step 0.3 harness matrix (viewports / text scale / themes) and the
-// isCoveredByKeyboardBottom helper so the shell is validated against the same
-// responsive / a11y matrix the later phases depend on.
+// Uses the shared widget-test harness matrix (viewports / text scale / themes)
+// and the isCoveredByKeyboardBottom helper so the shell is validated against
+// the same responsive / a11y matrix the later phases depend on.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -99,9 +99,8 @@ void main() {
   // context; the value is still deterministic.
   final now = DateTime(2026, 9, 4, 14, 0);
 
-  group('1.3 shell — shared frame', () {
-    testWidgets('type selector appears before the fields (§5.1)',
-        (tester) async {
+  group('shell — shared frame', () {
+    testWidgets('type selector appears before the fields', (tester) async {
       await pumpShell(tester, AddTileRedesignScreen(now: now));
       await tester.pump();
 
@@ -141,8 +140,7 @@ void main() {
       expect(find.text('Find time'), findsNothing);
     });
 
-    testWidgets('only one root Close; no legacy bottom Cancel (§4, §12.1)',
-        (tester) async {
+    testWidgets('only one root Close; no legacy bottom Cancel', (tester) async {
       await pumpShell(tester, AddTileRedesignScreen(now: now));
       await tester.pump();
 
@@ -151,8 +149,7 @@ void main() {
       expect(find.text('Proceed'), findsNothing);
     });
 
-    testWidgets('form scrolls independently of the pinned CTA (§5.1, §6.3)',
-        (tester) async {
+    testWidgets('form scrolls independently of the pinned CTA', (tester) async {
       // Short viewport so the form content can exceed the scroll area.
       await pumpShell(tester, AddTileRedesignScreen(now: now),
           viewSize: const Size(320, 500));
@@ -169,8 +166,7 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('CTA stays above a simulated keyboard inset (§6.3)',
-        (tester) async {
+    testWidgets('CTA stays above a simulated keyboard inset', (tester) async {
       const keyboard = 320.0;
       await pumpShell(tester, AddTileRedesignScreen(now: now),
           viewSize: AddTileTestMatrix.largePhone,
@@ -185,7 +181,7 @@ void main() {
     });
   });
 
-  group('1.3 shell — CTA gating + submission', () {
+  group('shell — CTA gating + submission', () {
     testWidgets('default flexible draft (no duration) keeps the CTA disabled',
         (tester) async {
       var submitted = false;
@@ -239,7 +235,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(captured, hasLength(1));
-      // Flexible maps Rigid unset (Step 1.2 parity).
+      // Flexible maps Rigid unset (mapper parity).
       expect(captured.first.Rigid, isNull);
       expect(captured.first.Name, 'Do laundry');
       expect(captured.first.DurationMinute, '30');
@@ -272,8 +268,7 @@ void main() {
       expect(captured.first.Name, 'Standup');
     });
 
-    testWidgets('a pending submission cannot fire twice (§6.2)',
-        (tester) async {
+    testWidgets('a pending submission cannot fire twice', (tester) async {
       final draft = _validFlexibleDraft(now);
       final gate = Completer<void>();
       var count = 0;
@@ -310,7 +305,7 @@ void main() {
     });
   });
 
-  group('1.3 shell — responsive / a11y matrix', () {
+  group('shell — responsive / a11y matrix', () {
     testWidgets('narrow width at text scale 1.3 does not overflow',
         (tester) async {
       await pumpShell(tester, AddTileRedesignScreen(now: now),
@@ -324,13 +319,13 @@ void main() {
       expect(find.text('Find time'), findsOneWidget);
     });
 
-    testWidgets('selector exposes selected state to assistive tech (§11)',
+    testWidgets('selector exposes selected state to assistive tech',
         (tester) async {
       await pumpShell(tester, AddTileRedesignScreen(now: now));
       await tester.pump();
 
       // Exactly one mode is marked selected (the Flexible segment); the other
-      // is not — selected state is exposed, not color-only (§11). The segment
+      // is not — selected state is exposed, not color-only. The segment
       // widget carries the assistive-tech values (label/selected) that feed
       // its Semantics node.
       final segments = tester

@@ -1,23 +1,22 @@
-// Phase 1 / Step 1.3 — Feature-flagged Add Tile redesign shell.
+// Feature-flagged Add Tile redesign shell.
 //
-// Implements the shared frame from docs/add-tile-redesign.md §5.1:
+// Implements the shared frame:
 //   Close            Add Tile / Add Block
 //   [ Flexible Tile | Fixed Block ]      (one non-swipeable segmented control)
 //   Mode explanation
 //   Scrollable mode-specific form
 //   Persistent primary CTA
 //
-// Scope for Step 1.3 is the CHROME: the type selector (before any fields),
-// dynamic title/explanation/CTA, an independently scrolling form area, a
-// persistent keyboard/safe-area-safe CTA, and a single root Close. The CTA
-// submits through the proven NewTileRequestMapper (Step 1.2). The redesigned
-// form FIELDS land in Phase 2 (Flexible) and Phase 3 (Fixed); this slice keeps
-// a minimal name/duration area so the CTA gating and submission wiring are
-// testable without the field redesign.
+// This slice covers the CHROME: the type selector (before any fields), dynamic
+// title/explanation/CTA, an independently scrolling form area, a persistent
+// keyboard/safe-area-safe CTA, and a single root Close. The CTA submits through
+// the NewTileRequestMapper. The redesigned form FIELDS land in later work
+// (Flexible and Fixed); this slice keeps a minimal name/duration area so the
+// CTA gating and submission wiring are testable without the field redesign.
 //
 // The legacy AddTile carousel/toggle flow remains the default (flag off) until
-// rollout (Step 5.3). Strings are English constants for now; they migrate to
-// app_en.arb/app_es.arb in Phase 2 when the content system lands (§7.2).
+// rollout. Strings are English constants for now; they migrate to
+// app_en.arb/app_es.arb when the content system lands.
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
@@ -25,7 +24,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 
 /// Local, dependency-free feature flag (no remote-config coupling) so the new
-/// shell can be validated in isolation. Remote/rollout gating is Phase 5.
+/// shell can be validated in isolation. Remote/rollout gating arrives later.
 class AddTileFeatureFlags {
   AddTileFeatureFlags._();
 
@@ -36,14 +35,14 @@ class AddTileFeatureFlags {
   static set addTileRedesignEnabled(bool value) =>
       _addTileRedesignEnabled = value;
 
-  /// Analytics `flow_version` values (§12.1).
+  /// Analytics `flow_version` values.
   static const String redesignFlowVersion = 'redesign-v1';
   static const String legacyFlowVersion = 'legacy';
 }
 
-/// Non-swipeable segmented type selector (§4, §5.1). One control for the
+/// Non-swipeable segmented type selector. One control for the
 /// Flexible Tile / Fixed Block decision — the legacy carousel + toggle
-/// duplication is removed. Selected state is exposed to assistive tech (§11).
+/// duplication is removed. Selected state is exposed to assistive tech.
 class AddTileTypeSelector extends StatelessWidget {
   const AddTileTypeSelector({
     super.key,
@@ -146,7 +145,7 @@ class AddTileTypeSegment extends StatelessWidget {
   }
 }
 
-/// Persistent primary CTA (§4, §5.1, §6.3). Solid brand color with a text
+/// Persistent primary CTA. Solid brand color with a text
 /// label (not an icon-only checkmark), loading + disabled states, and a guard
 /// against duplicate submissions. Keyboard/safe-area insets are applied by the
 /// shell wrapper so the button stays reachable above the keyboard.
@@ -216,9 +215,9 @@ class AddTileBottomAction extends StatelessWidget {
   }
 }
 
-/// Redesigned Add Tile shell (Step 1.3). Feature-flagged. Owns an
-/// [AddTileDraft] (Step 1.1) and submits through [NewTileRequestMapper]
-/// (Step 1.2). [draft], when supplied, is owned by the caller (used by tests);
+/// Redesigned Add Tile shell. Feature-flagged. Owns an
+/// [AddTileDraft] and submits through [NewTileRequestMapper].
+/// [draft], when supplied, is owned by the caller (used by tests);
 /// otherwise the shell builds and owns one from [preTile].
 class AddTileRedesignScreen extends StatefulWidget {
   const AddTileRedesignScreen({
@@ -232,7 +231,7 @@ class AddTileRedesignScreen extends StatefulWidget {
   final PreTile? preTile;
   final AddTileDraft? draft;
 
-  /// Submission seam. Phase 1: injected (stubbed in tests); wired to the
+  /// Submission seam: injected (stubbed in tests); wired to the
   /// existing orchestration when the redesign replaces the legacy flow.
   final Future<void> Function(NewTile)? onSubmitted;
   final DateTime? now;
@@ -289,7 +288,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   Future<void> _onSubmitTap() async {
     if (!_draft.isValid || _submitting) {
-      // Focus the first invalid field (name) and announce to a11y (§6.2).
+      // Focus the first invalid field (name) and announce to assistive tech.
       _nameFocus.requestFocus();
       return;
     }
@@ -303,9 +302,10 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         await widget.onSubmitted!.call(tile);
       } else {
         // Debug-only seam: the default /AddTileRedesign route has no backend
-        // orchestrator yet (wired in later phases). Surface the mapped payload
-        // so the draft -> mapper -> CTA path is verifiable on-device without
-        // writing to the API. No analytics, no side effects.
+        // orchestrator yet (wired when the redesign replaces the legacy flow).
+        // Surface the mapped payload so the draft -> mapper -> CTA path is
+        // verifiable on-device without writing to the API. No analytics, no
+        // side effects.
         final messenger = ScaffoldMessenger.of(context);
         messenger.showSnackBar(
           SnackBar(
@@ -378,8 +378,8 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   }
 
   Widget _buildFormArea(AddTileType type) {
-    // Phase 1: minimal chrome. The full Flexible/Fixed field sets arrive in
-    // Phase 2/3. The CTA is already gated by AddTileDraft.isValid (name +
+    // Minimal chrome for now. The full Flexible/Fixed field sets arrive in
+    // later work. The CTA is already gated by AddTileDraft.isValid (name +
     // duration), which proves the submission wiring end-to-end.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,4 +1,4 @@
-// Phase 0 / Step 0.1 — Behavioral baseline (characterization).
+// Behavioral baseline (characterization).
 //
 // These tests pin the EXACT wire fields the legacy `AddTileState
 // .onSubmitButtonTap()` produces for representative drafts. The mapping is
@@ -22,7 +22,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.
 DateTime get _now => DateTime(2026, 9, 4, 14, 30);
 
 void main() {
-  group('0.1 request mapping baseline — Flexible Tile', () {
+  group('request mapping baseline — Flexible Tile', () {
     test('basic flexible tile (name + duration only) maps to documented wire',
         () {
       final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
@@ -75,8 +75,7 @@ void main() {
       expect(tile.RestrictionProfileId, isNull);
     });
 
-    test(
-        'no-deadline flexible tile leaves End unset and stays auto-revisable (D1 baseline)',
+    test('no-deadline flexible tile leaves End unset and stays auto-revisable',
         () {
       final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: false,
@@ -192,7 +191,7 @@ void main() {
     });
   });
 
-  group('0.1 request mapping baseline — Fixed Block', () {
+  group('request mapping baseline — Fixed Block', () {
     test('basic fixed block maps rigid interval with calculated end', () {
       final NewTile tile = NewTileRequestMapper.build(LegacyAddTileDraft(
         isAppointment: true,
@@ -265,7 +264,7 @@ void main() {
     });
   });
 
-  group('0.1 entry-point prefill characterization', () {
+  group('entry-point prefill characterization', () {
     test(
         'free-slot PreTile value-set (name+duration+startTime) for a flexible tile',
         () {

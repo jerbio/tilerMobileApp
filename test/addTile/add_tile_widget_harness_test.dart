@@ -1,9 +1,9 @@
-// Phase 0 / Step 0.3 — Verification that the reusable Add Tile widget-test
+// Verification that the reusable Add Tile widget-test
 // harness itself works: repeatable rendering across the supported matrix
 // (light/dark theme, narrow + large viewports, text scale 1.0/1.3, keyboard
 // insets) with actionable failure context (route/viewport/theme in messages).
 //
-// Self-contained (framework-only) so the harness is proven before Phase 1
+// Self-contained (framework-only) so the harness is proven before later
 // widget tests depend on it. No app widgets are pumped here.
 library;
 
@@ -27,7 +27,7 @@ void main() {
         ),
       );
 
-  group('AddTileWidgetHarness — matrix reproducibility (Step 0.3)', () {
+  group('AddTileWidgetHarness — matrix reproducibility', () {
     testWidgets('renders subject + semantics across light and dark themes',
         (tester) async {
       for (final theme in [AddTileTestTheme.light, AddTileTestTheme.dark]) {

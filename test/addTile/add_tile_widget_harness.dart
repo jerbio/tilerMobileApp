@@ -1,9 +1,9 @@
-// Phase 0 / Step 0.3 — Reusable Add Tile widget-test harness.
+// Reusable Add Tile widget-test harness.
 //
 // Centralizes the theme / viewport / text-scale / keyboard-inset / action-area
 // / semantics setup so every later widget test (shell, forms, pickers) runs
 // against one consistent, repeatable matrix instead of ad-hoc `MaterialApp`
-// scaffolding. This is the harness the plan's §10.2/§10.4 matrix depends on.
+// scaffolding.
 //
 // Intentionally thin and framework-only (no app widgets imported) so it is
 // stable across the whole redesign.
@@ -15,7 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
-/// Viewports / scales for the §10.4 responsive + a11y matrix.
+/// Viewports / scales for the responsive + a11y matrix.
 class AddTileTestMatrix {
   AddTileTestMatrix._();
 
@@ -49,7 +49,7 @@ enum AddTileTestTheme { light, dark }
 /// viewport, text scale, and simulated keyboard bottom inset. Pass
 /// [actionArea] to [pump] to model the persistent, keyboard-safe bottom CTA
 /// slot so layout tests can assert a control stays visible above the keyboard
-/// (§6.3, §10.2).
+/// (keyboard + a11y matrix).
 class AddTileWidgetHarness {
   const AddTileWidgetHarness({
     required this.tester,
@@ -125,7 +125,7 @@ class _KeyboardSpacer extends StatelessWidget {
 }
 
 /// Applies a [MediaQuery] text scale factor to the subtree. Version-
-/// independent way to exercise the §10.4 large-text matrix without relying on
+/// independent way to exercise the large-text matrix without relying on
 /// a specific `TestFlutterView` setter.
 class _TextScaleOverride extends StatelessWidget {
   const _TextScaleOverride({required this.scale, required this.child});

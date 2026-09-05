@@ -1,21 +1,21 @@
-// Phase 1 / Step 1.2 — RED: request-mapper parity (legacy vs new model).
+// Request-mapper parity (legacy vs new model).
 //
 // The legacy `AddTileState.onSubmitButtonTap()` mapping was extracted
-// (behavior-preserving) into `NewTileRequestMapper.build(LegacyAddTileDraft)`
-// in Step 0.1. Step 1.1 introduced the widget-independent draft model
-// (`AddTileDraft` + `AddTileDraftSnapshot`). This step proves the NEW path —
-// `NewTileRequestMapper.buildFromSnapshot(snapshot)` — produces the SAME
+// (behavior-preserving) into `NewTileRequestMapper.build(LegacyAddTileDraft)`.
+// The widget-independent draft model (`AddTileDraft` +
+// `AddTileDraftSnapshot`) provides the new path. This suite proves the NEW
+// path — `NewTileRequestMapper.buildFromSnapshot(snapshot)` — produces the SAME
 // `NewTile` wire payload as the legacy path for representative drafts.
 //
 // Each case builds the SAME logical draft two ways (a legacy snapshot and a
 // new-model draft) and asserts deep equality of `toJson()`. This catches any
-// field the snapshot/adapter drops or remaps. Per docs §8.2 the old mapping
-// must not be removed until these parity tests pass; the legacy inline builder
-// stays the reference.
+// field the snapshot/adapter drops or remaps. The old inline mapping must not
+// be removed until these parity tests pass; the legacy inline builder stays
+// the reference.
 //
 // Colors are set explicitly in every parity case so `toJson()` is
 // deterministic and comparable. The random-color fallback is covered separately
-// in the 0.1 baseline (byteRange) and is intentionally excluded from the
+// in the baseline suite (byteRange) and is intentionally excluded from the
 // deep-equality set.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -56,7 +56,7 @@ void _expectParity(
 }
 
 void main() {
-  group('1.2 request mapper parity (legacy == new)', () {
+  group('request mapper parity (legacy == new)', () {
     test('basic flexible tile (name + duration)', () {
       _expectParity(
         'basic flexible',
@@ -82,8 +82,7 @@ void main() {
       );
     });
 
-    test('no-deadline flexible tile (D1: Anytime, auto-revisable stays true)',
-        () {
+    test('no-deadline flexible tile (Anytime, auto-revisable stays true)', () {
       _expectParity(
         'no-deadline flexible',
         LegacyAddTileDraft(
