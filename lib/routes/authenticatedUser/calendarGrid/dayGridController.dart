@@ -28,6 +28,10 @@ class DayGridController extends ChangeNotifier {
   /// C8: "~5-min precision" ceiling.
   static const double maxPxPerHour = 240;
 
+  /// Step 2.3: settle step (px/hour) for a finished pinch. Zoom levels snap
+  /// to the nearest multiple so the persisted value is clean, not fractional.
+  static const double settleStep = 5;
+
   /// Default zoom; matches the historical `heightPerCell` constant.
   static const double defaultPxPerHour =
       GridPositionableWidget.defaultHeigtPerDuration;
@@ -97,6 +101,13 @@ class DayGridController extends ChangeNotifier {
     _hasExplicitZoom = true;
   }
 
+  /// Step 2.3: settle a finished pinch to the nearest [settleStep] and clamp
+  /// to the C8 range. Pure so it is unit-testable without the widget.
+  static double settlePxPerHour(double value) {
+    final stepped = (value / settleStep).round() * settleStep;
+    return stepped.clamp(minPxPerHour, maxPxPerHour).toDouble();
+  }
+
   /// C8 first-launch seed: fit ~4 hours into [viewportHeight]
   /// (`viewportHeight / 4`, clamped). No-op once an explicit zoom exists.
   void autoFit(double viewportHeight) {
@@ -125,7 +136,14 @@ class DayGridController extends ChangeNotifier {
   /// Absent/corrupt values leave the default in place so auto-fit (C8) can
   /// run on first launch.
   Future<void> restoreFromPrefs() async {
-    final stored = await DayGridPreferences.getPxPerHour();
+    double? stored;
+    try {
+      stored = await DayGridPreferences.getPxPerHour();
+    } catch (_) {
+      // Prefs unavailable (e.g. no platform channel in tests) — keep the
+      // default so auto-fit (C8) can still run.
+      stored = null;
+    }
     Utility.debugPrint(
         'DayGrid:: restore pxPerHour: ${stored ?? 'default (auto-fit)'} '
         '(source: ${stored == null ? 'default' : 'stored'})');

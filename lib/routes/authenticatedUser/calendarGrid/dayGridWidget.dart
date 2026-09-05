@@ -14,6 +14,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dar
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
 
@@ -123,6 +124,18 @@ class DayGridWidget extends StatefulWidget {
     );
   }
 
+  /// Step 2.3 (adaptive gutter): below this px/hour the 35px gutter is
+  /// crowded, so hour *labels* thin out to every 2nd hour (the hour guide
+  /// lines still render every hour).
+  static const double gutterThinLabelThreshold = 64;
+
+  /// Step 2.3: how many hour-rows to skip between gutter *labels*. Pure so it
+  /// is unit-testable without pumping the grid. Returns 1 (every hour) at or
+  /// above [gutterThinLabelThreshold] and 2 (every 2nd hour) below it.
+  static int gutterLabelStride(double pxPerHour) {
+    return pxPerHour < gutterThinLabelThreshold ? 2 : 1;
+  }
+
   @override
   DayGridWidgetState createState() => DayGridWidgetState();
 }
@@ -134,6 +147,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// default (disposed with the grid).
   late DayGridController _controller;
   DayGridController? _ownedController;
+
+  /// Step 2.3 (pinch-to-zoom): px/hour captured at pinch start so updates
+  /// multiply a stable base by the total pinch ratio (no compounding).
+  double? _pinchStartPxPerHour;
+
+  /// Step 2.3 (pinch-to-zoom): the day-hour at the viewport centre when a
+  /// pinch began, kept pinned to the centre while zooming (anchor-zoom).
+  double? _pinchHourAtCentre;
 
   /// 24 hour rows make up the day.
   static const int timeCellCount = 24;
@@ -196,6 +217,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
           _liveNow = DateTime.now();
         });
       });
+    }
+    if (_ownedController != null) {
+      // C6: restore the last settled zoom for a grid-owned controller.
+      // Externally-injected controllers are restored by their owner.
+      _controller.restoreFromPrefs();
     }
     _resyncInitialScroll();
   }
@@ -391,6 +417,81 @@ class DayGridWidgetState extends State<DayGridWidget> {
     );
   }
 
+  // Step 2.3 (pinch-to-zoom): the two-finger scale claims the gesture arena
+  // and drives the controller's pxPerHour. A single finger never satisfies the
+  // scale recognizer, so vertical scroll, the horizontal day carousel, tile
+  // taps and tap-to-add are left untouched.
+  void _onScaleStart(ScaleStartDetails details) {
+    if (_controller.mode == DayGridMode.zooming) {
+      return; // guard against a re-entrant start.
+    }
+    _controller.mode = DayGridMode.zooming;
+    final startPx = _controller.pxPerHour;
+    _pinchStartPxPerHour = startPx;
+    _pinchHourAtCentre = null;
+    if (_scrollController.hasClients) {
+      final pos = _scrollController.position;
+      if (pos.hasContentDimensions) {
+        // Anchor: remember the hour at the viewport centre so it stays put.
+        _pinchHourAtCentre =
+            (pos.pixels + pos.viewportDimension / 2.0) / startPx;
+      }
+    }
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    final startPx = _pinchStartPxPerHour;
+    if (startPx == null || startPx <= 0) {
+      return;
+    }
+    // Stable base * total ratio: no compounding on an already-mutated value.
+    final newPx = startPx * details.scale;
+    _controller.setPxPerHour(newPx);
+    _anchorZoomToCentre(newPx);
+  }
+
+  void _onScaleEnd(ScaleEndDetails details) {
+    if (_controller.mode != DayGridMode.zooming) {
+      return;
+    }
+    _controller.mode = DayGridMode.idle;
+    _pinchStartPxPerHour = null;
+    _pinchHourAtCentre = null;
+    // Settle to a clean step (clamped to the C8 range) and persist it
+    // (C6: global across all days).
+    final settled = DayGridController.settlePxPerHour(_controller.pxPerHour);
+    _controller.setPxPerHour(settled);
+    _persistSettledZoom();
+  }
+
+  /// Step 2.3 (anchor-zoom): keep the pinch-start centre hour pinned to the
+  /// viewport centre as pxPerHour changes. `jumpTo` is safe here because the
+  /// scale recognizer has already won the arena (the scroll physics are idle).
+  void _anchorZoomToCentre(double pxPerHour) {
+    final anchorHour = _pinchHourAtCentre;
+    if (anchorHour == null || !_scrollController.hasClients) {
+      return;
+    }
+    final pos = _scrollController.position;
+    if (!pos.hasContentDimensions) {
+      return;
+    }
+    final target = (anchorHour * pxPerHour - pos.viewportDimension / 2.0)
+        .clamp(0.0, pos.maxScrollExtent);
+    if ((target - pos.pixels).abs() > 0.5) {
+      _scrollController.jumpTo(target);
+    }
+  }
+
+  /// Step 2.3: best-effort persistence of the settled zoom.
+  Future<void> _persistSettledZoom() async {
+    try {
+      await DayGridPreferences.setPxPerHour(_controller.pxPerHour);
+    } catch (e) {
+      Utility.debugPrint('DayGrid:: persist zoom failed: $e');
+    }
+  }
+
   void _applyPendingScroll(Duration _) {
     final target = _pendingScrollTo;
     _pendingScrollTo = null;
@@ -522,13 +623,19 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 .toList();
 
             // 24-hour gutter: time labels + hour rows at pxPerHour.
+            // Step 2.3 (adaptive): hour guide lines always render every hour;
+            // hour *labels* thin out at low zoom so the 35px gutter stays
+            // legible as the rows shrink.
+            final labelStride = DayGridWidget.gutterLabelStride(pxPerHour);
             final gutterWidgets = <Widget>[];
             for (int hour = 0; hour < timeCellCount; hour++) {
               final timeOfDay = TimeOfDay(hour: hour, minute: 0);
-              gutterWidgets.add(TimeOfDayTimeCellWidget(
-                start: timeOfDay,
-                height: pxPerHour,
-              ));
+              if (hour % labelStride == 0) {
+                gutterWidgets.add(TimeOfDayTimeCellWidget(
+                  start: timeOfDay,
+                  height: pxPerHour,
+                ));
+              }
               gutterWidgets.add(TileTimeCellWidget(
                 start: timeOfDay,
                 left: gutter,
@@ -624,6 +731,16 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTapUp: _onEmptyGridTap,
+                      // Step 2.3 (pinch-to-zoom): the two-finger scale claims
+                      // the gesture arena and drives the controller's
+                      // pxPerHour. This detector already spans the whole grid
+                      // (behind the tiles), so it is a full-area pinch target.
+                      // A single finger never satisfies the scale recognizer,
+                      // so vertical scroll, the horizontal day carousel, tile
+                      // taps and tap-to-add behave exactly as before.
+                      onScaleStart: _onScaleStart,
+                      onScaleUpdate: _onScaleUpdate,
+                      onScaleEnd: _onScaleEnd,
                       child: SizedBox(
                         width: double.infinity,
                         height: timeCellCount * pxPerHour,
