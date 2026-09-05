@@ -60,6 +60,32 @@ class DayGridPage extends StatelessWidget {
     return renderable;
   }
 
+  /// P2 (step 2.4, §6.7): preview (TileCast) grid input — same RSVP /
+  /// declined parity filter as [gridTiles] but NON-VIABLE tiles are kept.
+  /// TileCast surfaces non-viable placements so the user can see *why* the
+  /// proposal conflicts; the grid renders them with non-viable styling
+  /// (contrast §6.1 parity filtering for the live grid).
+  static List<SubCalendarEvent> previewGridTiles(List<TilerEvent> tiles) {
+    final renderable = <SubCalendarEvent>[];
+    for (final eachTile in tiles) {
+      if (eachTile.id == null) continue;
+      final subEvent = eachTile is SubCalendarEvent ? eachTile : null;
+      if (subEvent == null) continue;
+      final isFromTiler = eachTile.isFromTiler;
+      final rsvpStatus = subEvent.rsvp;
+      final isPendingRsvp = !isFromTiler &&
+          (rsvpStatus == RsvpStatus.needsAction ||
+              rsvpStatus == RsvpStatus.tentative);
+      final isDeclined = !isFromTiler && rsvpStatus == RsvpStatus.declined;
+      final shouldShowInMainList = !isPendingRsvp && !isDeclined;
+      // NOTE: non-viable tiles are intentionally NOT filtered here.
+      if (shouldShowInMainList) {
+        renderable.add(subEvent);
+      }
+    }
+    return renderable;
+  }
+
   @override
   Widget build(BuildContext context) {
     final layout = context.watch<DailyViewLayoutCubit>().state;

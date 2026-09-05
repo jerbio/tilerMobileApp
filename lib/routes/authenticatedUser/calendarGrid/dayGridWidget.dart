@@ -76,6 +76,26 @@ class DayGridWidget extends StatefulWidget {
   /// into the new day's layout. When omitted the key is the bare `uniqueId`.
   final String? dayKey;
 
+  /// P2 (step 2.4, §6.7): read-only TileCast (vibe-chat preview) mode,
+  /// mirroring `EnhancedTileBatch.preview`. In preview mode the grid does NOT
+  /// offer tap-to-add (§6.5), does NOT dispatch pull-to-refresh to
+  /// [ScheduleBloc] (the preview tiles belong to `VibeChatBloc`), and a
+  /// settled pinch does NOT persist to [DayGridPreferences] — the preview
+  /// pinch must not overwrite the user's saved zoom. Zoom itself stays
+  /// enabled (shared global pxPerHour). Drag-and-drop (P4) is likewise gated
+  /// on this flag.
+  final bool preview;
+
+  /// P2 (step 2.4, §6.7): the TileCast action currently highlighted in the
+  /// carousel. The matching tile ([SubCalendarEvent.id] `contains` the
+  /// entity id — the same rule as `_tileForAction` /
+  /// `EnhancedTileCard.hasDottedBorder`) renders with the dotted-border
+  /// treatment, is raised to top-z in its C11 cluster, and the grid
+  /// auto-scrolls it into view (~0.15 alignment, matching the list's
+  /// `jumpTo`). Carousel page swipes change only this id; the grid animates
+  /// the highlight + scroll between actions instead of remounting.
+  final String? selectedActionEntityId;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -84,7 +104,20 @@ class DayGridWidget extends StatefulWidget {
     this.now,
     this.day,
     this.dayKey,
+    this.preview = false,
+    this.selectedActionEntityId,
   });
+
+  /// P2 (step 2.4, §6.7): a tile matches the highlighted TileCast action
+  /// when its id contains the action's entity id — the same rule as
+  /// `EnhancedTileBatch._tileForAction` /
+  /// `EnhancedTileCard.hasDottedBorder` (`tile.id?.contains(entityId) ==
+  /// true`). Kept pure so the matching rule is unit-testable and a drift
+  /// from the list rule is detectable (highlight-miss funnel).
+  static bool tileMatchesAction(
+          SubCalendarEvent tile, String? selectedActionEntityId) =>
+      selectedActionEntityId != null &&
+      tile.id?.contains(selectedActionEntityId) == true;
 
   /// P2 (step 2.1): pure tap-to-add time math — the inverse of the layout
   /// mapping `time(y) = y / pxPerHour`, snapped and guarded. Kept separate
@@ -200,6 +233,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// One-shot timer that drops the fading-out ghosts once the fade finishes.
   Timer? _removeTimer;
 
+  // P2 (step 2.4, §6.7): TileCast preview bookkeeping.
+  /// One-shot target px for the highlight auto-scroll (§6.7: align the
+  /// selected tile's top ~15% into the viewport, mirroring the list's
+  /// `jumpTo(alignment: 0.15)`). `null` when no highlight scroll is queued.
+  double? _pendingPreviewScroll;
+
   double get _pxPerHour => _controller.pxPerHour;
 
   @override
@@ -223,6 +262,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
       // Externally-injected controllers are restored by their owner.
       _controller.restoreFromPrefs();
     }
+    if (widget.preview) {
+      // P2 (step 2.4): one-shot TileCast grid funnel (initState runs once
+      // per grid mount, so this fires exactly once per preview session).
+      AnalysticsSignal.send('daygrid_tilecast_shown',
+          additionalInfo: {'actionCount': widget.tiles.length});
+    }
     _resyncInitialScroll();
   }
 
@@ -237,6 +282,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
     if (oldWidget.now != widget.now) {
       _liveNow = widget.now ?? _liveNow;
+    }
+    // P2 (step 2.4, §6.7): a TileCast carousel page swipe changes ONLY the
+    // selected action — the grid animates the highlight + auto-scroll into
+    // view (stable tile keys, no remount) instead of re-syncing the initial
+    // scroll. The *change* (old != new) is what drives it; the initial
+    // presence is not (that's the initial sync's job).
+    if (oldWidget.selectedActionEntityId != widget.selectedActionEntityId) {
+      _onSelectedActionChanged();
     }
     // P2 (step 2.2b): diff the tile set for add/remove enter/exit animations
     // (runs before build so the result is visible in the upcoming frame).
@@ -332,6 +385,87 @@ class DayGridWidgetState extends State<DayGridWidget> {
     return Utility.localDateTimeFromMs(minStart).hour;
   }
 
+  /// P2 (step 2.4, §6.7): the highlighted TileCast action changed (a
+  /// carousel page swipe). Queue an auto-scroll that aligns the new tile's
+  /// top ~15% into the viewport (mirroring `EnhancedTileBatch`'s preview
+  /// `jumpTo(alignment: 0.15)`). The dotted border + top-z raise happen in
+  /// [build] off [DayGridWidget.selectedActionEntityId]; the tile's element
+  /// (stable key) is reused, so nothing remounts.
+  void _onSelectedActionChanged() {
+    final entityId = widget.selectedActionEntityId;
+    if (entityId == null) {
+      return;
+    }
+    final gridDay = _gridDayStart();
+    SubCalendarEvent? match;
+    for (final tile in widget.tiles) {
+      if (tile.id == null ||
+          !tile.id!.isNotEmpty ||
+          !DayGridWidget.tileMatchesAction(tile, entityId)) {
+        continue;
+      }
+      match = tile;
+      break;
+    }
+    if (match == null) {
+      // Silent-highlight-miss funnel: the id-matching rule drifted from the
+      // list's `_tileForAction` (or the preview schedule changed under the
+      // carousel) — the carousel highlights nothing in the grid.
+      if (constant.isDebug) {
+        Utility.debugPrint('DayGrid:: highlight miss: no tile for entity '
+            '"$entityId"');
+      }
+      AnalysticsSignal.send('daygrid_error',
+          additionalInfo: {'reason': 'tilecast_highlight_miss', 'entityId': entityId});
+      return;
+    }
+    final pxPerHour = _pxPerHour;
+    // A matching tile implies a non-empty tile set, so [_gridDayStart] has a
+    // day; the `??` only satisfies the nullable type.
+    final dayStartMs = gridDay?.millisecondsSinceEpoch ?? match.start!;
+    final clampedStart = match.start! < dayStartMs ? dayStartMs : match.start!;
+    final top = ((clampedStart - dayStartMs) /
+            Duration.millisecondsPerHour) *
+        pxPerHour;
+    _pendingPreviewScroll = top * 0.15;
+  }
+
+  /// P2 (step 2.4, §6.7): apply the queued highlight auto-scroll after the
+  /// frame (the position exists only once the content is laid out). Animated
+  /// (§6.6 machinery: `mode == idle`) unless reduced-motion, which jump-cuts.
+  void _applyPreviewScroll(Duration _) {
+    final target = _pendingPreviewScroll;
+    _pendingPreviewScroll = null;
+    if (!mounted || target == null) {
+      return;
+    }
+    if (!_scrollController.hasClients) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) {
+      return;
+    }
+    // C1: clamp — animateTo asserts on out-of-range targets in debug.
+    final clamped = target.clamp(0.0, position.maxScrollExtent);
+    if ((clamped - position.pixels).abs() < 0.5) {
+      return;
+    }
+    final reduce =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    if (_controller.mode != DayGridMode.idle || reduce) {
+      _scrollController.jumpTo(clamped);
+    } else {
+      _scrollController.animateTo(
+        clamped,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOutCubic,
+      );
+    }
+    Utility.debugPrint('DayGrid:: highlight scroll -> '
+        '${clamped.toStringAsFixed(1)}px');
+  }
+
   /// The grid day: midnight of the earliest tile's start date. `null` for
   /// an empty day (nothing renders anyway).
   DateTime? _gridDayStart() {
@@ -394,6 +528,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// has no day and stays read-only. C14: taps while a pinch/drag is active are
   /// ignored.
   void _onEmptyGridTap(TapUpDetails details) {
+    if (widget.preview) {
+      return; // P2 (step 2.4): preview is read-only — no tap-to-add.
+    }
     if (_controller.mode != DayGridMode.idle) {
       return; // C14: a pinch/drag owns the grid — don't start a tile.
     }
@@ -461,6 +598,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // (C6: global across all days).
     final settled = DayGridController.settlePxPerHour(_controller.pxPerHour);
     _controller.setPxPerHour(settled);
+    if (widget.preview) {
+      // P2 (step 2.4): the preview pinch must not overwrite the user's
+      // saved zoom — the shared pxPerHour applies for the session, but
+      // persistence is skipped.
+      return;
+    }
     _persistSettledZoom();
   }
 
@@ -518,6 +661,13 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// [EnhancedTileBatch]: dispatch `GetScheduleEvent(forceRefresh: true)`,
   /// carrying the current state's subEvents/timeline when it holds them.
   Future<void> _onGridRefresh() async {
+    if (widget.preview) {
+      // P2 (step 2.4): the preview tiles belong to VibeChatBloc — a
+      // pull-to-refresh here must not dispatch to ScheduleBloc. (The
+      // RefreshIndicator is not even rendered in preview; this guards the
+      // shared code path.)
+      return;
+    }
     Utility.debugPrint('DayGrid:: pull-to-refresh -> '
         'GetScheduleEvent(forceRefresh: true)');
     await AnalysticsSignal.send('daygrid_pull_refresh');
@@ -563,6 +713,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
       Utility.debugPrint('DayGrid:: rebuild with ${sortedTiles.length} tiles');
     }
 
+    // P2 (step 2.4, §6.7): the TileCast action id to highlight in this
+    // frame (null unless preview mode supplies one).
+    final highlightedEntityId =
+        widget.preview ? widget.selectedActionEntityId : null;
+
     // Step 1.4: every position/height derives from the controller's
     // pxPerHour and the real viewport width — no hard-coded 80 / 270.
     return ListenableBuilder(
@@ -594,9 +749,18 @@ class DayGridWidgetState extends State<DayGridWidget> {
 
             // Renderable tiles: id'd, inside the grid day, and not extended
             // (>=16h / all-day -> the pinned strip, step 1.7).
+            //
+            // P2 (step 2.4, §6.7): preview (TileCast) mode does NOT filter
+            // non-viable tiles — the user must see *why* the proposal
+            // conflicts. Live mode keeps the §6.1 parity (non-viable
+            // excluded).
             final renderable = sortedTiles
                 .where((t) => t.id.isNot_NullEmptyOrWhiteSpace())
                 .where((t) => _renderableInTimeline(t, dayStart))
+                .where((t) =>
+                    widget.preview ||
+                    (t.isViable ?? true) ||
+                    DayGridWidget.tileMatchesAction(t, highlightedEntityId))
                 .toList();
 
             // C11: overlap columns. Cluster the renderable tiles and give
@@ -613,10 +777,23 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   width: tileWidth,
                 );
 
-            // Z-order: the selected tile renders last (on top) — same
+            // Z-order: the tapped tile renders last (on top) — same
             // behaviour as before, without duplicating the widget.
+            // P2 (step 2.4, §6.7): the highlighted TileCast action tile
+            // renders above the unhighlighted tiles (top-z in its C11
+            // cluster), below the user-tapped tile.
+            final highlighted = highlightedEntityId != null
+                ? renderable
+                    .where((t) =>
+                        DayGridWidget.tileMatchesAction(t, highlightedEntityId))
+                    .toList()
+                : <SubCalendarEvent>[];
+            final highlightedIds =
+                highlighted.map((t) => t.id).toSet();
             final unselected = renderable
-                .where((t) => !_selectedEventIds.contains(t.id))
+                .where((t) =>
+                    !_selectedEventIds.contains(t.id) &&
+                    !highlightedIds.contains(t.id))
                 .toList();
             final selected = renderable
                 .where((t) => _selectedEventIds.contains(t.id))
@@ -651,7 +828,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
             final keyPrefix =
                 (widget.dayKey == null || widget.dayKey!.isEmpty) ? '' : 'day_${widget.dayKey}_';
 
-            final tileWidgets = [...unselected, ...selected]
+            final tileWidgets = [...unselected, ...highlighted, ...selected]
                 .map(
                   (tile) {
                     final column = columnLayout[tile.uniqueId];
@@ -667,6 +844,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     left: column?.left ?? tileLeft,
                     tileGridWidth: column?.width ?? tileWidth,
                     animate: animate,
+                    // P2 (step 2.4, §6.7): TileCast preview mode (read-only
+                    // per-tile surface, mirrors `EnhancedTileCard.preview`).
+                    preview: widget.preview,
+                    // P2 (step 2.4, §6.7): the highlighted TileCast
+                    // action's tile gets the dotted-border treatment (same
+                    // rule as `EnhancedTileCard.hasDottedBorder`).
+                    hasDottedBorder:
+                        highlightedIds.contains(tile.id) == true,
                     // P2 (step 2.2b): newly-added tiles slide in (staggered);
                     // existing/static tiles pass null (no enter animation).
                     enterDelay: _enterDelays[tile.uniqueId],
@@ -715,12 +900,20 @@ class DayGridWidgetState extends State<DayGridWidget> {
               WidgetsBinding.instance.addPostFrameCallback(_applyPendingScroll);
             }
 
-            return RefreshIndicator(
-              color: Theme.of(context).colorScheme.tertiary,
-              onRefresh: _onGridRefresh,
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                child: Stack(
+            // P2 (step 2.4, §6.7): apply the queued highlight auto-scroll
+            // (set by [_onSelectedActionChanged] on a carousel page change).
+            if (_pendingPreviewScroll != null) {
+              WidgetsBinding.instance.addPostFrameCallback(
+                  _applyPreviewScroll);
+            }
+
+            // P2 (step 2.4, §6.7): the grid body — pull-to-refresh only in
+            // the live grid; the TileCast preview renders the bare scroll
+            // view (the preview schedule belongs to VibeChatBloc, and
+            // TileCast's own header sheet is the chrome there).
+            final Widget gridBody = SingleChildScrollView(
+              controller: _scrollController,
+              child: Stack(
                   children: <Widget>[
                     // P2 (step 2.1): tap-to-add. A background tap target
                     // behind the tiles (first child => lowest z, so the
@@ -785,7 +978,17 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     ],
                   ],
                 ),
-              ),
+              );
+
+            if (widget.preview) {
+              // P2 (step 2.4, §6.7): read-only preview — no pull-to-refresh
+              // chrome; TileCast's own header sheet is the chrome there.
+              return gridBody;
+            }
+            return RefreshIndicator(
+              color: Theme.of(context).colorScheme.tertiary,
+              onRefresh: _onGridRefresh,
+              child: gridBody,
             );
           },
         );

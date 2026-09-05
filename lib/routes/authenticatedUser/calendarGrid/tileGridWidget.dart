@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -44,6 +45,18 @@ class TileGridWidget extends GridPositionableWidget {
   /// P2 (step 2.2b): `true` for a fading-out ghost of a removed tile — it
   /// renders at full opacity for one frame, then animates to `0`.
   final bool? exiting;
+
+  /// P2 (step 2.4, §6.7): TileCast (vibe-chat) preview mode — the tile is
+  /// read-only. The grid-level gates (no tap-to-add, no refresh dispatch,
+  /// no zoom persist) live in `DayGridWidget`; this flag keeps the per-tile
+  /// surface aligned with `EnhancedTileCard.preview` if a preview-specific
+  /// tile rendering is added later.
+  final bool preview;
+
+  /// P2 (step 2.4, §6.7): the dotted-border treatment for the highlighted
+  /// TileCast action tile — same rule as `EnhancedTileCard.hasDottedBorder`
+  /// (id `contains` the action's entity id).
+  final bool hasDottedBorder;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -56,6 +69,8 @@ class TileGridWidget extends GridPositionableWidget {
       this.animate,
       this.enterDelay,
       this.exiting,
+      this.preview = false,
+      this.hasDottedBorder = false,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -337,7 +352,12 @@ class TileGridWidgetState extends GridPositionableState {
                       }
                     }
                   },
-                  child: _TilerEventInnerGridWidget(tilerEvent: tilerEvent!)),
+                  child: _TilerEventInnerGridWidget(
+                     tilerEvent: tilerEvent!,
+                     hasDottedBorder: (this.widget is TileGridWidget)
+                         ? ((this.widget as TileGridWidget).hasDottedBorder)
+                         : false,
+                   )),
             ),
           ),
         ),
@@ -356,7 +376,13 @@ class TileGridWidgetState extends GridPositionableState {
 class _TilerEventInnerGridWidget extends StatelessWidget {
   final TilerEvent tilerEvent;
 
-  _TilerEventInnerGridWidget({required this.tilerEvent});
+  /// P2 (step 2.4, §6.7): dotted-border treatment for the highlighted
+  /// TileCast action tile (same visual as `EnhancedTileCard.hasDottedBorder`).
+  final bool hasDottedBorder;
+
+  _TilerEventInnerGridWidget(
+      {required this.tilerEvent,
+      this.hasDottedBorder = false});
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +422,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
         ),
       );
     }
-    return Container(
+    final Widget tileBody = Container(
         decoration: uiDecoration,
         padding: gridPadding,
         child: Text(
@@ -409,5 +435,20 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ));
+    if (!hasDottedBorder) {
+      return tileBody;
+    }
+    // P2 (step 2.4, §6.7): the highlighted TileCast action's dotted border —
+    // the same DashedBorderPainter treatment as `EnhancedTileCard`.
+    return CustomPaint(
+      painter: DashedBorderPainter(
+        color: colorScheme.primary,
+        strokeWidth: 3,
+        dashWidth: 8,
+        dashSpace: 4,
+        borderRadius: 10,
+      ),
+      child: tileBody,
+    );
   }
 }
