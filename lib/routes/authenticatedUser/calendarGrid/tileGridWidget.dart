@@ -87,6 +87,17 @@ class TileGridWidget extends GridPositionableWidget {
 class TileGridWidgetState extends GridPositionableState {
   late TilerEvent? tilerEvent;
   static final Duration minDuration = Duration(minutes: 20);
+
+  /// P2 (step 2.3, content reflow §6.2): the caption (10px top/bottom
+  /// padding + a 13px line) needs ~32px to render legibly. Tiles shorter
+  /// than this pixel height collapse to a plain color bar (no name).
+  static const double collapsedTileHeight = 32;
+
+  /// P2 (step 2.3, content reflow §6.2): pure so the reflow threshold is
+  /// unit-testable without pumping a tile — true when [tileHeight] is too
+  /// short for the name caption.
+  static bool tileContentCollapsed(double tileHeight) =>
+      tileHeight < collapsedTileHeight;
   late ThemeData theme;
   late ColorScheme colorScheme;
 
@@ -354,6 +365,9 @@ class TileGridWidgetState extends GridPositionableState {
                   },
                   child: _TilerEventInnerGridWidget(
                      tilerEvent: tilerEvent!,
+                     // P2 (step 2.3, content reflow §6.2): the rendered
+                     // pixel height decides whether the caption fits.
+                     tileHeight: this.widgetHeight,
                      hasDottedBorder: (this.widget is TileGridWidget)
                          ? ((this.widget as TileGridWidget).hasDottedBorder)
                          : false,
@@ -380,9 +394,15 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
   /// TileCast action tile (same visual as `EnhancedTileCard.hasDottedBorder`).
   final bool hasDottedBorder;
 
+  /// P2 (step 2.3, content reflow §6.2): the tile's rendered pixel height.
+  /// Below [TileGridWidgetState.collapsedTileHeight] the body collapses to
+  /// a plain color bar — the name caption would not fit.
+  final double tileHeight;
+
   _TilerEventInnerGridWidget(
       {required this.tilerEvent,
-      this.hasDottedBorder = false});
+      this.hasDottedBorder = false,
+      required this.tileHeight});
 
   @override
   Widget build(BuildContext context) {
@@ -420,6 +440,26 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           color: colorScheme.primary,
           width: 1,
         ),
+      );
+    }
+    // P2 (step 2.3, content reflow §6.2): too short for the caption —
+    // collapse to a plain color bar (no padding, no name).
+    if (TileGridWidgetState.tileContentCollapsed(tileHeight)) {
+      final Widget bar = Container(decoration: uiDecoration);
+      if (!hasDottedBorder) {
+        return bar;
+      }
+      // The preview highlight (dotted border) survives the collapse — it
+      // is the only signal marking the selected TileCast action tile.
+      return CustomPaint(
+        painter: DashedBorderPainter(
+          color: colorScheme.primary,
+          strokeWidth: 3,
+          dashWidth: 8,
+          dashSpace: 4,
+          borderRadius: 10,
+        ),
+        child: bar,
       );
     }
     final Widget tileBody = Container(

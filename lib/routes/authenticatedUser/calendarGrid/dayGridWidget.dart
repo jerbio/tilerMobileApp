@@ -169,6 +169,28 @@ class DayGridWidget extends StatefulWidget {
     return pxPerHour < gutterThinLabelThreshold ? 2 : 1;
   }
 
+  /// Step 2.3 (adaptive lines): below the thin threshold the 35px gutter
+  /// rows are < 64px tall, so a line every hour reads as a solid band —
+  /// the hour *guide lines* thin to every 2nd hour, mirroring the label
+  /// stride. Same threshold, same 1/2 result as [gutterLabelStride]; kept
+  /// as its own function so the two can diverge if the visuals do.
+  static int gutterLineStride(double pxPerHour) {
+    return pxPerHour < gutterThinLabelThreshold ? 2 : 1;
+  }
+
+  /// Step 2.3 (adaptive lines): at/above [gutterFineTickThreshold] (the C4
+  /// fine-snap boundary of 160 px/h) sub-hour ticks become legible at 15
+  /// minutes; between the thresholds they render at 30 minutes; below the
+  /// thin threshold there is no room for sub-hour ticks (null).
+  static const double gutterFineTickThreshold = 160;
+
+  static int? gutterTickIntervalMinutes(double pxPerHour) {
+    if (pxPerHour < gutterThinLabelThreshold) {
+      return null;
+    }
+    return pxPerHour >= gutterFineTickThreshold ? 15 : 30;
+  }
+
   @override
   DayGridWidgetState createState() => DayGridWidgetState();
 }
@@ -800,10 +822,19 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 .toList();
 
             // 24-hour gutter: time labels + hour rows at pxPerHour.
-            // Step 2.3 (adaptive): hour guide lines always render every hour;
-            // hour *labels* thin out at low zoom so the 35px gutter stays
-            // legible as the rows shrink.
+            // Step 2.3 (adaptive): hour guide lines AND labels thin out to
+            // every 2nd hour below the threshold so the 35px gutter stays
+            // legible as the rows shrink; at high zoom, sub-hour tick
+            // hairlines (30 min; 15 min at/above the C4 fine-snap boundary)
+            // fill in the finer structure.
             final labelStride = DayGridWidget.gutterLabelStride(pxPerHour);
+            final lineStride = DayGridWidget.gutterLineStride(pxPerHour);
+            final tickMinutes =
+                DayGridWidget.gutterTickIntervalMinutes(pxPerHour);
+            final tickColor = Theme.of(context)
+                .colorScheme
+                .onSurface
+                .withValues(alpha: 0.15);
             final gutterWidgets = <Widget>[];
             for (int hour = 0; hour < timeCellCount; hour++) {
               final timeOfDay = TimeOfDay(hour: hour, minute: 0);
@@ -813,11 +844,28 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   height: pxPerHour,
                 ));
               }
-              gutterWidgets.add(TileTimeCellWidget(
-                start: timeOfDay,
-                left: gutter,
-                height: pxPerHour,
-              ));
+              if (hour % lineStride == 0) {
+                gutterWidgets.add(TileTimeCellWidget(
+                  start: timeOfDay,
+                  left: gutter,
+                  height: pxPerHour,
+                ));
+              }
+              // Sub-hour tick hairlines (full width, faint) between the
+              // major hour lines.
+              if (tickMinutes != null && lineStride == 1) {
+                for (int minute = tickMinutes; minute < 60;
+                    minute += tickMinutes) {
+                  gutterWidgets.add(Positioned(
+                    key: ValueKey<String>('daygrid_tick_h${hour}m${minute}'),
+                    top: hour * pxPerHour + (minute / 60) * pxPerHour,
+                    left: gutter,
+                    right: 0,
+                    height: 1,
+                    child: ColoredBox(color: tickColor),
+                  ));
+                }
+              }
             }
 
             // P2 (step 2.2): animate position deltas only while idle; during a
