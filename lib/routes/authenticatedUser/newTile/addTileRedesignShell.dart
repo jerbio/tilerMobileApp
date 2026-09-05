@@ -27,6 +27,7 @@ import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileAnalytics.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
@@ -47,8 +48,8 @@ class AddTileFeatureFlags {
       _addTileRedesignEnabled = value;
 
   /// Analytics `flow_version` values.
-  static const String redesignFlowVersion = 'redesign-v1';
-  static const String legacyFlowVersion = 'legacy';
+  static const String redesignFlowVersion = addTileRedesignFlowVersion;
+  static const String legacyFlowVersion = addTileLegacyFlowVersion;
 }
 
 /// Non-swipeable segmented type selector. One control for the
@@ -243,6 +244,7 @@ class AddTileRedesignScreen extends StatefulWidget {
     this.draft,
     this.onSubmitted,
     this.now,
+    this.analytics,
   });
 
   final PreTile? preTile;
@@ -253,6 +255,11 @@ class AddTileRedesignScreen extends StatefulWidget {
   final Future<void> Function(NewTile)? onSubmitted;
   final DateTime? now;
 
+  /// Funnel analytics for this Add flow. Supplied by tests with a recording
+  /// sink; otherwise the shell builds one that emits through the app's
+  /// existing signal service.
+  final AddTileAnalytics? analytics;
+
   @override
   State<AddTileRedesignScreen> createState() => _AddTileRedesignScreenState();
 }
@@ -262,6 +269,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   late final bool _ownsDraft;
   bool _submitting = false;
   late final TextEditingController _nameController;
+  late final AddTileAnalytics _analytics;
   final _nameFocus = FocusNode();
 
   /// Set when a submit attempt (CTA or keyboard) finds an invalid draft; the
@@ -283,6 +291,8 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     }
     _nameController = TextEditingController(text: _draft.name);
     _draft.addListener(_onDraftChanged);
+    _analytics = widget.analytics ?? AddTileAnalytics();
+    _analytics.opened(_draft.type, hasPrefill: draftHasPrefill(_draft));
   }
 
   void _onDraftChanged() {
@@ -300,11 +310,16 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   void _onTypeSelected(AddTileType next) {
     if (next == _draft.type) return;
+    final AddTileType from = _draft.type;
+    // Read dirtiness BEFORE the switch: switchTo* can fill the Fixed default
+    // duration, which would otherwise read as a user edit.
+    final bool fieldsEdited = _draft.isDirty;
     if (next == AddTileType.fixed) {
       _draft.switchToFixed();
     } else {
       _draft.switchToFlexible();
     }
+    _analytics.typeChanged(from: from, to: next, fieldsEdited: fieldsEdited);
   }
 
   void _onNameChanged(String value) {
@@ -404,9 +419,29 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setRestrictionProfile(result.profile);
   }
 
+  /// Root Close. Emits the dismissal signal, then pops.
+  ///
+  /// The D2 dirty-draft confirmation prompt is NOT implemented yet, so this
+  /// still closes immediately; `dirty` is reported so the abandonment data
+  /// exists before that prompt lands.
+  void _onClosePressed() {
+    _analytics.dismissed(_draft.type, dirty: _draft.isDirty);
+    Navigator.of(context).maybePop();
+  }
+
   Future<void> _attemptSubmit() async {
-    if (_submitting) return;
-    if (!_draft.isValid) {
+    if (_submitting) {
+      _analytics.submitResult(_draft.type,
+          outcome: 'cancelled', reasonCode: 'duplicate_submit_blocked');
+      return;
+    }
+    final bool valid = _draft.isValid;
+    _analytics.submitTapped(
+      _draft.type,
+      valid: valid,
+      missingFieldIds: missingFieldsOf(_draft),
+    );
+    if (!valid) {
       // Surface the inline error on the first invalid field (name) and focus
       // it; the error text announces to assistive tech (not color-only).
       setState(() => _showValidationErrors = true);
@@ -421,6 +456,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       );
       if (widget.onSubmitted != null) {
         await widget.onSubmitted!.call(tile);
+        _analytics.submitResult(_draft.type, outcome: 'success');
       } else {
         // Debug-only seam: the default /AddTileRedesign route has no backend
         // orchestrator yet (wired when the redesign replaces the legacy flow).
@@ -442,6 +478,12 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       // is re-enabled in `finally`. The real orchestration surfaces a
       // retryable message; tests inject onSubmitted and assert that the draft
       // survives the failure.
+      //
+      // The exception object is deliberately NOT inspected or logged: its
+      // message can embed request content. Only the enumerated outcome and an
+      // allow-listed reason code are emitted.
+      _analytics.submitResult(_draft.type,
+          outcome: 'api_error', reasonCode: 'api_rejected');
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
@@ -462,7 +504,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         leading: IconButton(
           icon: const Icon(Icons.close),
           tooltip: 'Close',
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: _onClosePressed,
         ),
       ),
       body: Column(
@@ -515,6 +557,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         AddTileMoreOptions(
           draft: _draft,
           onColorTap: _openColorPicker,
+          onExpanded: () => _analytics.advancedOpened(_draft.type),
           onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
         ),
       ],

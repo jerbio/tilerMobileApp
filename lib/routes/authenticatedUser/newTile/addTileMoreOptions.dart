@@ -69,11 +69,16 @@ class AddTileMoreOptions extends StatefulWidget {
     required this.draft,
     this.onColorTap,
     this.onAdvancedPreferredTimeTap,
+    this.onExpanded,
   });
 
   final AddTileDraft draft;
   final VoidCallback? onColorTap;
   final VoidCallback? onAdvancedPreferredTimeTap;
+
+  /// Fired only when the section EXPANDS. Collapsing is not an "opened"
+  /// event, so the analytics funnel does not double-count a toggle.
+  final VoidCallback? onExpanded;
 
   @override
   State<AddTileMoreOptions> createState() => _AddTileMoreOptionsState();
@@ -102,7 +107,11 @@ class _AddTileMoreOptionsState extends State<AddTileMoreOptions> {
             child: InkWell(
               key: const ValueKey('moreOptionsHeader'),
               borderRadius: BorderRadius.circular(8),
-              onTap: () => setState(() => _expanded = !_expanded),
+              onTap: () {
+                final bool nowExpanded = !_expanded;
+                setState(() => _expanded = nowExpanded);
+                if (nowExpanded) widget.onExpanded?.call();
+              },
               child: ConstrainedBox(
                 constraints: const BoxConstraints(minHeight: 44),
                 child: Row(
