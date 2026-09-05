@@ -180,13 +180,24 @@ void main() {
       expect(find.text('Alpha'), findsOneWidget);
       expect(find.text('Beta'), findsOneWidget);
 
-      // New list: B stays, C arrives, A is removed.
+      // New list: B stays, C arrives, A is removed. With §6.6 enter/exit
+      // (Step 2.2b) a removed tile fades out as a short-lived ghost before it
+      // is dropped — it is no longer gone on the very next frame.
       setTiles([b, c]);
       await tester.pump();
+      // C eases in (live) while A fades out (ghost). During the fade the
+      // ghost is still present: 2 live tiles + 1 ghost = 3 TileGridWidgets.
       await tester.pump(const Duration(milliseconds: 100));
-      expect(find.text('Alpha'), findsNothing);
       expect(find.text('Beta'), findsOneWidget);
       expect(find.text('Gamma'), findsOneWidget);
+      expect(find.text('Alpha'), findsOneWidget,
+          reason: 'removed tile fades out as a ghost before being dropped');
+      expect(find.byType(TileGridWidget), findsNWidgets(3));
+
+      // Once the fade + drop timer elapse, the ghost is gone: exactly the 2
+      // live tiles remain.
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.text('Alpha'), findsNothing);
       expect(find.byType(TileGridWidget), findsNWidgets(2));
     });
 
