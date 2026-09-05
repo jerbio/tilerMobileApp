@@ -1,7 +1,7 @@
-// Phase 2.2 — Typed adapters for the legacy map-based Location and Repeat
-// routes.
+// Phase 2.2 / 2.3 — Typed adapters for the legacy map-based secondary routes
+// (Location, Repeat, Color, and the advanced preferred-time profile).
 //
-// The legacy `/LocationRoute` and `/RepetitionRoute` are driven through a
+// These legacy routes are driven through a
 // shared `Map` argument: the parent pushes `arguments: <map>`, the route
 // mutates that SAME map instance in place (by-reference), and the parent
 // reads the result back after pop. These adapters wrap those legacy
@@ -12,7 +12,7 @@
 //     `{ 'location': holder }` (+ optional `'defaults': List<Location>`).
 //     `LocationRoute.onProceed` is the ONLY code path that writes the
 //     `'location'` key (cancel never writes it), so the args map is wrapped
-//     in [_LocationRouteArgs] to observe that write:
+//     in [_ObservedArgs] to observe that write:
 //       proceed -> returns the written Location (applied via
 //                  AddTileDraft.setLocation by the caller)
 //       cancel  -> returns null (no-op; the draft is left untouched)
@@ -43,6 +43,7 @@ import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/repetitionData.dart';
+import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/util.dart';
@@ -169,10 +170,13 @@ Future<Location?> openLocationRoute(
   Location? currentLocation,
   List<Location>? defaults,
 }) async {
-  final _LocationRouteArgs args = _LocationRouteArgs(<String, dynamic>{
-    'location': currentLocation ?? Location.fromDefault(),
-    if (defaults != null && defaults.isNotEmpty) 'defaults': defaults,
-  });
+  final _ObservedArgs args = _ObservedArgs(
+    <String, dynamic>{
+      'location': currentLocation ?? Location.fromDefault(),
+      if (defaults != null && defaults.isNotEmpty) 'defaults': defaults,
+    },
+    watchKey: 'location',
+  );
   try {
     await Navigator.of(context).pushNamed('/LocationRoute', arguments: args);
   } catch (_) {
@@ -180,11 +184,89 @@ Future<Location?> openLocationRoute(
   }
   // [LocationRoute.onProceed] is the only path that writes 'location' —
   // cancel (or any other pop) leaves the flag unset.
-  return args.locationWritten ? (args['location'] as Location?) : null;
+  return args.written ? (args['location'] as Location?) : null;
 }
 
-/// A [Map] that records when the Location route's proceed path writes the
-/// legacy `'location'` result key.
+/// Opens the legacy `/PickColor` route and returns the chosen color.
+///
+/// Legacy argument contract: `{ 'color': current }`, read back after pop. The
+/// legacy parent applied the result ONLY when non-null, so a cancel (which
+/// leaves the seeded value in place) is reported as `null` here and the
+/// caller leaves the draft untouched.
+Future<Color?> openColorRoute(
+  BuildContext context, {
+  Color? current,
+}) async {
+  final _ObservedArgs args =
+      _ObservedArgs(<String, dynamic>{'color': current}, watchKey: 'color');
+  try {
+    await Navigator.of(context).pushNamed('/PickColor', arguments: args);
+  } catch (_) {
+    return null; // route not registered (test harness) — no crash, no change.
+  }
+  return args.written ? (args['color'] as Color?) : null;
+}
+
+/// Opens the legacy `/TimeRestrictionRoute` for the ADVANCED preferred-time
+/// profile (named work/personal hours, custom per-day windows) — the cases
+/// the four simple day parts cannot express.
+///
+/// Legacy argument contract: `'routeRestrictionProfile'` is an in/out slot
+/// seeded with the current profile, plus `'stackRouteHistory'` and the
+/// optional `'namedRestrictionProfiles'` list.
+///
+/// A confirmed `null` is meaningful (it means Anytime), so the write itself is
+/// observed rather than the value: the result is
+/// [AdvancedRestrictionResult.written] only when the route actually wrote the
+/// slot. This is a deliberate, payload-neutral divergence from the legacy
+/// parent, which re-applied the seeded value on cancel too — identical wire
+/// output, but the draft is no longer marked dirty by a cancelled picker.
+Future<AdvancedRestrictionResult> openAdvancedRestrictionRoute(
+  BuildContext context, {
+  RestrictionProfile? current,
+  List<Object>? namedProfiles,
+  String? parentRouteName,
+}) async {
+  final _ObservedArgs args = _ObservedArgs(
+    <String, dynamic>{
+      'routeRestrictionProfile': current,
+      'stackRouteHistory': <String?>[parentRouteName],
+      if (namedProfiles != null && namedProfiles.isNotEmpty)
+        'namedRestrictionProfiles': namedProfiles,
+    },
+    watchKey: 'routeRestrictionProfile',
+  );
+  try {
+    await Navigator.of(context)
+        .pushNamed('/TimeRestrictionRoute', arguments: args);
+  } catch (_) {
+    return const AdvancedRestrictionResult.unchanged();
+  }
+  return args.written
+      ? AdvancedRestrictionResult.written(
+          args['routeRestrictionProfile'] as RestrictionProfile?)
+      : const AdvancedRestrictionResult.unchanged();
+}
+
+/// Outcome of the advanced preferred-time route. Distinguishes "the route
+/// confirmed a value (possibly `null`, meaning Anytime)" from "the route was
+/// dismissed without choosing".
+class AdvancedRestrictionResult {
+  const AdvancedRestrictionResult.written(this.profile) : didWrite = true;
+  const AdvancedRestrictionResult.unchanged()
+      : profile = null,
+        didWrite = false;
+
+  final RestrictionProfile? profile;
+  final bool didWrite;
+}
+
+/// A [Map] that records when a route's proceed path writes [watchKey].
+///
+/// Several legacy routes use a by-reference argument map whose result slot is
+/// seeded with the CURRENT value, so an identity or equality check cannot
+/// tell "confirmed unchanged" from "cancelled" — and for some slots a written
+/// `null` is itself a meaningful answer. Observing the `[]=` call can.
 ///
 /// `LocationRoute.build` receives THIS map (the `arguments` we pushed is
 /// the same instance `ModalRoute.settings.arguments` resolves to) and its
@@ -197,21 +279,26 @@ Future<Location?> openLocationRoute(
 /// All other map behavior (reads, `containsKey`, the template's
 /// `cancelAndProceedData` bookkeeping key) is unchanged, so the legacy
 /// route and any legacy consumer see exactly the same contract.
-class _LocationRouteArgs extends MapMixin<String, dynamic> {
-  _LocationRouteArgs(Map<String, dynamic> initial) : _data = Map.of(initial);
+class _ObservedArgs extends MapMixin<String, dynamic> {
+  _ObservedArgs(Map<String, dynamic> initial, {required this.watchKey})
+      : _data = Map.of(initial);
 
   final Map<String, dynamic> _data;
-  bool _locationWritten = false;
 
-  /// True once the route's proceed path has written the `'location'` key.
-  bool get locationWritten => _locationWritten;
+  /// The legacy result key whose write signals "the route confirmed".
+  final String watchKey;
+
+  bool _written = false;
+
+  /// True once the route's proceed path has written [watchKey].
+  bool get written => _written;
 
   @override
   dynamic operator [](Object? key) => _data[key];
 
   @override
   void operator []=(String key, dynamic value) {
-    if (key == 'location') _locationWritten = true;
+    if (key == watchKey) _written = true;
     _data[key] = value;
   }
 
@@ -223,7 +310,7 @@ class _LocationRouteArgs extends MapMixin<String, dynamic> {
 
   // `MapMixin` requires both mutators. They delegate straight through so the
   // legacy route (and the shared cancel/proceed template's bookkeeping key)
-  // sees an ordinary map; only the `'location'` write is observed above.
+  // sees an ordinary map; only the [watchKey] write is observed above.
   @override
   dynamic remove(Object? key) => _data.remove(key);
 

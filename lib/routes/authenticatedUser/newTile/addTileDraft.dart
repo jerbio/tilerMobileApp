@@ -330,8 +330,13 @@ class AddTileDraft extends ChangeNotifier {
     _notify();
   }
 
+  /// Clamped to a floor of 1 session. The legacy widget reached the same
+  /// value by a different route: its split-count field was digits-only and
+  /// `getSplitCount()` substituted `'1'` for empty input, so no value below 1
+  /// could ever reach the wire. No upper bound is imposed — legacy had none,
+  /// and inventing one here would change the payload.
   void setSplitCount(int value) {
-    _splitCount = value;
+    _splitCount = value < 1 ? 1 : value;
     _userEdited.add(_Field.splitCount);
     _notify();
   }

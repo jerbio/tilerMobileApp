@@ -7,12 +7,17 @@
 //   Scrollable mode-specific form
 //   Persistent primary CTA
 //
-// This slice covers the CHROME: the type selector (before any fields), dynamic
+// The shell owns the CHROME: the type selector (before any fields), dynamic
 // title/explanation/CTA, an independently scrolling form area, a persistent
 // keyboard/safe-area-safe CTA, and a single root Close. The CTA submits through
-// the NewTileRequestMapper. The redesigned form FIELDS land in later work
-// (Flexible and Fixed); this slice keeps a minimal name/duration area so the
-// CTA gating and submission wiring are testable without the field redesign.
+// the NewTileRequestMapper.
+//
+// The Flexible field set (Steps 2.1-2.3) is complete: FlexibleTileForm renders
+// the primary decisions plus Preferred time, Location, and Repeat, and
+// AddTileMoreOptions adds the advanced disclosure for both types. The FIXED
+// field set (date / start / duration / calculated read-only end) lands in
+// Phase 3; until then a minimal name/duration area keeps CTA gating and
+// rigid-payload submission testable.
 //
 // The legacy AddTile carousel/toggle flow remains the default (flag off) until
 // rollout. Strings are English constants for now; they migrate to
@@ -23,6 +28,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
@@ -378,6 +384,26 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     applyRepeatRouteResult(_draft, result);
   }
 
+  /// Opens the legacy `/PickColor` route. Legacy applied the result only when
+  /// non-null, so a cancel leaves the draft's color (and the random-color
+  /// fallback, decision D7) untouched.
+  Future<void> _openColorPicker() async {
+    final Color? picked = await openColorRoute(context, current: _draft.color);
+    if (picked == null || !mounted) return;
+    _draft.setColor(picked);
+  }
+
+  /// Opens the advanced preferred-time profile editor. A confirmed `null` is
+  /// meaningful here — it means Anytime — so the result carries `didWrite`
+  /// rather than relying on nullability.
+  Future<void> _openAdvancedPreferredTime() async {
+    final AdvancedRestrictionResult result = await openAdvancedRestrictionRoute(
+        context,
+        current: _draft.restrictionProfile);
+    if (!result.didWrite || !mounted) return;
+    _draft.setRestrictionProfile(result.profile);
+  }
+
   Future<void> _attemptSubmit() async {
     if (_submitting) return;
     if (!_draft.isValid) {
@@ -478,6 +504,24 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   }
 
   Widget _buildFormArea(AddTileType type) {
+    // The type-specific fields, then the shared More options disclosure
+    // (collapsed by default, so it never competes with the primary
+    // decisions). More options renders a different subset per type.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildTypeForm(type),
+        const SizedBox(height: 12),
+        AddTileMoreOptions(
+          draft: _draft,
+          onColorTap: _openColorPicker,
+          onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTypeForm(AddTileType type) {
     if (type == AddTileType.flexible) {
       return FlexibleTileForm(
         draft: _draft,
