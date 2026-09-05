@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
@@ -12,6 +13,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.d
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileTimeCell.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/travelBandWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
@@ -242,16 +244,21 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// Tiles rendered in the previous frame, by uniqueId (the diff source).
   /// Updated in [build] so the next [didUpdateWidget] diffs against it.
   Map<String, SubCalendarEvent> _lastTilesById = <String, SubCalendarEvent>{};
+
   /// The [DayGridWidget.dayKey] the previous frame rendered; a change means
   /// the day swapped (fresh keys -> no cross-day ghost/enter cascade).
   String? _lastDayKey;
+
   /// Last known (left, width) per uniqueId, captured in build so a removed
   /// tile's fading-out ghost sits where it was.
   final Map<String, _TileLayout> _lastLayoutById = <String, _TileLayout>{};
+
   /// Removed tiles still fading out; dropped by [_removeTimer].
   final Map<String, _RemovingTile> _removingTiles = <String, _RemovingTile>{};
+
   /// Stagger delay per newly-added uniqueId (reset each diff).
   final Map<String, Duration> _enterDelays = <String, Duration>{};
+
   /// One-shot timer that drops the fading-out ghosts once the fade finishes.
   Timer? _removeTimer;
 
@@ -437,8 +444,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
         Utility.debugPrint('DayGrid:: highlight miss: no tile for entity '
             '"$entityId"');
       }
-      AnalysticsSignal.send('daygrid_error',
-          additionalInfo: {'reason': 'tilecast_highlight_miss', 'entityId': entityId});
+      AnalysticsSignal.send('daygrid_error', additionalInfo: {
+        'reason': 'tilecast_highlight_miss',
+        'entityId': entityId
+      });
       return;
     }
     final pxPerHour = _pxPerHour;
@@ -446,8 +455,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // day; the `??` only satisfies the nullable type.
     final dayStartMs = gridDay?.millisecondsSinceEpoch ?? match.start!;
     final clampedStart = match.start! < dayStartMs ? dayStartMs : match.start!;
-    final top = ((clampedStart - dayStartMs) /
-            Duration.millisecondsPerHour) *
+    final top = ((clampedStart - dayStartMs) / Duration.millisecondsPerHour) *
         pxPerHour;
     _pendingPreviewScroll = top * 0.15;
   }
@@ -473,8 +481,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if ((clamped - position.pixels).abs() < 0.5) {
       return;
     }
-    final reduce =
-        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final reduce = MediaQuery.maybeOf(context)?.disableAnimations ?? false;
     if (_controller.mode != DayGridMode.idle || reduce) {
       _scrollController.jumpTo(clamped);
     } else {
@@ -793,11 +800,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // fallback below then uses the full region.
             final columnLayout =
                 OverlapColumns.assign<String, SubCalendarEvent>(
-                  tiles: renderable,
-                  keyOf: (t) => t.uniqueId,
-                  left: tileLeft,
-                  width: tileWidth,
-                );
+              tiles: renderable,
+              keyOf: (t) => t.uniqueId,
+              left: tileLeft,
+              width: tileWidth,
+            );
 
             // Z-order: the tapped tile renders last (on top) — same
             // behaviour as before, without duplicating the widget.
@@ -810,8 +817,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                         DayGridWidget.tileMatchesAction(t, highlightedEntityId))
                     .toList()
                 : <SubCalendarEvent>[];
-            final highlightedIds =
-                highlighted.map((t) => t.id).toSet();
+            final highlightedIds = highlighted.map((t) => t.id).toSet();
             final unselected = renderable
                 .where((t) =>
                     !_selectedEventIds.contains(t.id) &&
@@ -831,10 +837,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
             final lineStride = DayGridWidget.gutterLineStride(pxPerHour);
             final tickMinutes =
                 DayGridWidget.gutterTickIntervalMinutes(pxPerHour);
-            final tickColor = Theme.of(context)
-                .colorScheme
-                .onSurface
-                .withValues(alpha: 0.15);
+            final tickColor =
+                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.15);
             final gutterWidgets = <Widget>[];
             for (int hour = 0; hour < timeCellCount; hour++) {
               final timeOfDay = TimeOfDay(hour: hour, minute: 0);
@@ -854,7 +858,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
               // Sub-hour tick hairlines (full width, faint) between the
               // major hour lines.
               if (tickMinutes != null && lineStride == 1) {
-                for (int minute = tickMinutes; minute < 60;
+                for (int minute = tickMinutes;
+                    minute < 60;
                     minute += tickMinutes) {
                   gutterWidgets.add(Positioned(
                     key: ValueKey<String>('daygrid_tick_h${hour}m${minute}'),
@@ -873,40 +878,89 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // animation). Day-scope the per-tile keys so a tile's element never
             // carries across days.
             final animate = _controller.mode == DayGridMode.idle;
-            final keyPrefix =
-                (widget.dayKey == null || widget.dayKey!.isEmpty) ? '' : 'day_${widget.dayKey}_';
+            final keyPrefix = (widget.dayKey == null || widget.dayKey!.isEmpty)
+                ? ''
+                : 'day_${widget.dayKey}_';
 
-            final tileWidgets = [...unselected, ...highlighted, ...selected]
-                .map(
-                  (tile) {
-                    final column = columnLayout[tile.uniqueId];
-                    return TileGridWidget(
-                    // Stable per-tile identity: add/remove/replace of
-                    // tiles maps to element remove/update — never a stale
-                    // reused state.
-                    key: ValueKey<String>('daygrid_tile_${keyPrefix}${tile.uniqueId}'),
-                    tilerEvent: tile,
-                    onTap: onTileGridTap,
-                    pxPerHour: pxPerHour,
-                    dayStart: dayStart,
-                    left: column?.left ?? tileLeft,
-                    tileGridWidth: column?.width ?? tileWidth,
+            final tileWidgets =
+                [...unselected, ...highlighted, ...selected].map(
+              (tile) {
+                final column = columnLayout[tile.uniqueId];
+                return TileGridWidget(
+                  // Stable per-tile identity: add/remove/replace of
+                  // tiles maps to element remove/update — never a stale
+                  // reused state.
+                  key: ValueKey<String>(
+                      'daygrid_tile_${keyPrefix}${tile.uniqueId}'),
+                  tilerEvent: tile,
+                  onTap: onTileGridTap,
+                  pxPerHour: pxPerHour,
+                  dayStart: dayStart,
+                  left: column?.left ?? tileLeft,
+                  tileGridWidth: column?.width ?? tileWidth,
+                  animate: animate,
+                  // TileCast preview mode (read-only
+                  // per-tile surface, mirrors `EnhancedTileCard.preview`).
+                  preview: widget.preview,
+                  // The highlighted TileCast
+                  // action's tile gets the dotted-border treatment (same
+                  // rule as `EnhancedTileCard.hasDottedBorder`).
+                  hasDottedBorder: highlightedIds.contains(tile.id) == true,
+                  // Newly-added tiles slide in (staggered);
+                  // existing/static tiles pass null (no enter animation).
+                  enterDelay: _enterDelays[tile.uniqueId],
+                );
+              },
+            ).toList();
+
+            // Travel/return bands: the grid-mode equivalent of the list-mode
+            // `TravelConnector` (pre) and `ReturnConnector` travel section
+            // (post). One band per positive travel time, clamped into the grid
+            // day, so the gutter shows the same travel info the day list does.
+            // Built here and rendered below the tiles so tile content is never
+            // covered by a band.
+            final travelBandWidgets = <Widget>[];
+            if (dayStart != null && pxPerHour.isFinite && pxPerHour > 0) {
+              // Previous tile in time = the pre-band "from" fallback (the same
+              // role as `TravelConnector.fromTile`). `renderable` is sorted by
+              // start via [_sortedTiles].
+              final previousTileById = <String, SubCalendarEvent?>{};
+              SubCalendarEvent? previousTile;
+              for (final tile in renderable) {
+                previousTileById[tile.uniqueId] = previousTile;
+                previousTile = tile;
+              }
+              for (final tile in renderable) {
+                final column = columnLayout[tile.uniqueId];
+                final bands = TravelBand.bandsForTile(
+                  tile: tile,
+                  dayStart: dayStart,
+                  pxPerHour: pxPerHour,
+                );
+                if (bands.isEmpty) {
+                  continue;
+                }
+                final colLeft = column?.left ?? tileLeft;
+                final colWidth = column?.width ?? tileWidth;
+                for (final band in bands) {
+                  travelBandWidgets.add(TravelBandWidget(
+                    key: ValueKey<String>(
+                      'daygrid_band_${keyPrefix}${tile.uniqueId}_${band.kind}',
+                    ),
+                    tile: tile,
+                    kind: band.kind,
+                    top: band.top,
+                    height: band.height,
+                    left: colLeft,
+                    width: colWidth,
+                    fromTile: band.kind == TravelBandKind.pre
+                        ? previousTileById[tile.uniqueId]
+                        : null,
                     animate: animate,
-                    // TileCast preview mode (read-only
-                    // per-tile surface, mirrors `EnhancedTileCard.preview`).
-                    preview: widget.preview,
-                    // The highlighted TileCast
-                    // action's tile gets the dotted-border treatment (same
-                    // rule as `EnhancedTileCard.hasDottedBorder`).
-                    hasDottedBorder:
-                        highlightedIds.contains(tile.id) == true,
-                    // Newly-added tiles slide in (staggered);
-                    // existing/static tiles pass null (no enter animation).
-                    enterDelay: _enterDelays[tile.uniqueId],
-                    );
-                  },
-                )
-                .toList();
+                  ));
+                }
+              }
+            }
 
             // Capture this frame's layout + tile set so the
             // next [didUpdateWidget] can diff for add/remove and place
@@ -951,8 +1005,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // Apply the queued highlight auto-scroll
             // (set by [_onSelectedActionChanged] on a carousel page change).
             if (_pendingPreviewScroll != null) {
-              WidgetsBinding.instance.addPostFrameCallback(
-                  _applyPreviewScroll);
+              WidgetsBinding.instance.addPostFrameCallback(_applyPreviewScroll);
             }
 
             // The grid body — pull-to-refresh only in
@@ -962,71 +1015,102 @@ class DayGridWidgetState extends State<DayGridWidget> {
             final Widget gridBody = SingleChildScrollView(
               controller: _scrollController,
               child: Stack(
-                  children: <Widget>[
-                    // Tap-to-add. A background tap target
-                    // behind the tiles (first child => lowest z, so the
-                    // positioned tiles on top win the hit test and keep their
-                    // onTileTap behaviour). The handler no-ops unless a
-                    // [day] is supplied, so the forecast peek (DayCast) stays
-                    // read-only.
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTapUp: _onEmptyGridTap,
-                      // Pinch-to-zoom: the two-finger scale claims
-                      // the gesture arena and drives the controller's
-                      // pxPerHour. This detector already spans the whole grid
-                      // (behind the tiles), so it is a full-area pinch target.
-                      // A single finger never satisfies the scale recognizer,
-                      // so vertical scroll, the horizontal day carousel, tile
-                      // taps and tap-to-add behave exactly as before.
-                      onScaleStart: _onScaleStart,
-                      onScaleUpdate: _onScaleUpdate,
-                      onScaleEnd: _onScaleEnd,
-                      child: SizedBox(
-                        width: double.infinity,
-                        height: timeCellCount * pxPerHour,
-                      ),
+                children: <Widget>[
+                  // Tap-to-add. A background tap target
+                  // behind the tiles (first child => lowest z, so the
+                  // positioned tiles on top win the hit test and keep their
+                  // onTileTap behaviour). The handler no-ops unless a
+                  // [day] is supplied, so the forecast peek (DayCast) stays
+                  // read-only.
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: _onEmptyGridTap,
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: timeCellCount * pxPerHour,
                     ),
-                    ...gutterWidgets,
-                    ...tileWidgets,
-                    ...ghostWidgets,
-                    if (isToday) ...<Widget>[
-                      // 1-2px now-line across the day at the clock's y.
-                      Positioned(
-                        key: const Key('daygrid_now_line'),
-                        top: nowLineTop.clamp(0.0, nowLineMax),
-                        left: 0,
-                        right: 0,
-                        height: 2,
-                        child: ColoredBox(color: nowLineColor),
-                      ),
-                      // Gutter time bubble.
-                      Positioned(
-                        key: const Key('daygrid_now_bubble'),
-                        top: (nowLineTop - 10).clamp(0.0, nowLineMax - 20),
-                        left: 0,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 4, vertical: 1),
-                          decoration: BoxDecoration(
-                            color: nowLineColor,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            nowLabel,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              height: 1.0,
-                              fontWeight: FontWeight.w600,
-                            ),
+                  ),
+                  ...gutterWidgets,
+                  ...travelBandWidgets,
+                  ...tileWidgets,
+                  ...ghostWidgets,
+                  if (isToday) ...<Widget>[
+                    // 1-2px now-line across the day at the clock's y.
+                    Positioned(
+                      key: const Key('daygrid_now_line'),
+                      top: nowLineTop.clamp(0.0, nowLineMax),
+                      left: 0,
+                      right: 0,
+                      height: 2,
+                      child: ColoredBox(color: nowLineColor),
+                    ),
+                    // Gutter time bubble.
+                    Positioned(
+                      key: const Key('daygrid_now_bubble'),
+                      top: (nowLineTop - 10).clamp(0.0, nowLineMax - 20),
+                      left: 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: nowLineColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          nowLabel,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            height: 1.0,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ],
-                ),
-              );
+                  // Pinch-to-zoom overlay: the TOPMOST, translucent full-area
+                  // layer. Translucent hit-testing means EVERY pointer inside
+                  // the day area reaches the scale recognizer — even fingers
+                  // resting on event tiles (which sit below this overlay and
+                  // would otherwise route their pointers away). A single
+                  // finger never satisfies the scale recognizer, so tile
+                  // taps, empty-area tap-to-add, vertical scroll and the
+                  // horizontal day carousel are left untouched; when a
+                  // two-finger pinch does win the arena the tiles' taps are
+                  // cancelled, so no accidental tile selection mid-pinch.
+                  //
+                  // The recognizer resolves as soon as the second pointer
+                  // lands (a plain `ScaleGestureRecognizer` only resolves
+                  // once its span clears `computeScaleSlop`, by which time
+                  // the vertical scroll and/or the day carousel's pan slop
+                  // has already won the arena and the pinch scrolls instead
+                  // of zooms).
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: timeCellCount * pxPerHour,
+                    child: RawGestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      gestures: <Type, GestureRecognizerFactory>{
+                        _ArenaWinningScaleGestureRecognizer:
+                            GestureRecognizerFactoryWithHandlers<
+                                _ArenaWinningScaleGestureRecognizer>(
+                          () => _ArenaWinningScaleGestureRecognizer(),
+                          (_ArenaWinningScaleGestureRecognizer instance) {
+                            instance
+                              ..onStart = _onScaleStart
+                              ..onUpdate = _onScaleUpdate
+                              ..onEnd = _onScaleEnd;
+                          },
+                        ),
+                      },
+                      child: const SizedBox.expand(),
+                    ),
+                  ),
+                ],
+              ),
+            );
 
             if (widget.preview) {
               // Read-only preview — no pull-to-refresh
@@ -1051,6 +1135,38 @@ class DayGridWidgetState extends State<DayGridWidget> {
     _ownedController?.dispose(); // own resources first (dispose order)
     _scrollController.dispose();
     super.dispose();
+  }
+}
+
+// A two-finger scale recognizer that claims the gesture arena the moment the
+// second pointer lands.
+//
+// Must be mounted on the TOPMOST, `HitTestBehavior.translucent` full-area
+// overlay of the grid Stack — only then does it receive BOTH pinch pointers
+// even when the fingers land on event tiles (each pointer is hit-tested
+// independently, and a `ScaleGestureRecognizer` needs two pointers on the
+// SAME recognizer instance to resolve).
+//
+// Flutter's default [ScaleGestureRecognizer] only calls
+// `resolve(GestureDisposition.accepted)` once its span / focal-point delta
+// crosses `computeScaleSlop`. A real pinch usually spreads along a diagonal,
+// so by the time the scale clears that slop the grid's vertical scroll and/or
+// the horizontal day carousel (carousel_slider `PageView`) have already
+// cleared the smaller pan slop and won the arena — the pinch then scrolls or
+// pages instead of zooming. By resolving as soon as two fingers are down (an
+// unambiguous pinch, before any movement) this recognizer pre-empts those
+// competing drag recognizers, so a two-finger gesture always zooms while a
+// single finger still scrolls and taps.
+class _ArenaWinningScaleGestureRecognizer extends ScaleGestureRecognizer {
+  @override
+  void handleEvent(PointerEvent event) {
+    super.handleEvent(event);
+    if (event is PointerDownEvent && pointerCount >= 2) {
+      // Claim the arena for the whole multi-pointer gesture now that two
+      // fingers are down. Redundant (and harmless) if the base state machine
+      // already accepted on this same event.
+      resolve(GestureDisposition.accepted);
+    }
   }
 }
 

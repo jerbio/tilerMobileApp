@@ -22,6 +22,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
@@ -323,6 +324,155 @@ void main() {
 
       await _closeBloc(tester, bloc);
       controller.dispose();
+    });
+
+    group('pinch with fingers landing on tiles', () {
+      // Regression: the scale recognizer must see BOTH pointers even when the
+      // fingers land on event tiles (which sit above the empty-background
+      // layer in the grid Stack). A 0-14h tile pins the initial scroll to 0
+      // (midnight at the viewport top) and covers the whole upper viewport,
+      // so y=300 — previously the clean empty region — is ON the tile.
+      final dayStart = DateTime(2027, 1, 15);
+      final now = DateTime(2026, 5, 15, 14, 30);
+
+      testWidgets('pinch with BOTH fingers on a tile zooms', (tester) async {
+        _setSurface(tester);
+        final bloc = _RecordingScheduleBloc();
+        final controller = DayGridController();
+        controller.setPxPerHour(80);
+
+        await tester.pumpWidget(_buildApp(
+          bloc: bloc,
+          controller: controller,
+          tiles: <SubCalendarEvent>[
+            _tile(
+                't-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
+          ],
+          now: now,
+          day: dayStart,
+        ));
+        await tester.pump();
+
+        // Both fingers start on the 0-14h tile (y 0-1120 at 80 px/h).
+        final g1 = await tester.startGesture(const Offset(150, 300));
+        final g2 = await tester.startGesture(const Offset(350, 300));
+        await tester.pump();
+        for (int i = 0; i < 4; i++) {
+          await g1.moveBy(const Offset(-15, 0));
+          await g2.moveBy(const Offset(15, 0));
+          await tester.pump();
+        }
+        await g1.up();
+        await g2.up();
+        await tester.pump();
+
+        expect(controller.pxPerHour, greaterThan(80));
+        expect(controller.pxPerHour,
+            lessThanOrEqualTo(DayGridController.maxPxPerHour));
+        expect(controller.mode, DayGridMode.idle);
+
+        await _closeBloc(tester, bloc);
+        controller.dispose();
+      });
+
+      testWidgets(
+          'pinch with ONE finger on a tile and one in empty space zooms',
+          (tester) async {
+        _setSurface(tester);
+        final bloc = _RecordingScheduleBloc();
+        final controller = DayGridController();
+        controller.setPxPerHour(80);
+
+        await tester.pumpWidget(_buildApp(
+          bloc: bloc,
+          controller: controller,
+          tiles: <SubCalendarEvent>[
+            _tile('t0-2', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 2)),
+          ],
+          now: now,
+          day: dayStart,
+        ));
+        await tester.pump();
+
+        // g1 on the tile (y 0-160 at 80 px/h), g2 in the empty region below.
+        final g1 = await tester.startGesture(const Offset(150, 50));
+        final g2 = await tester.startGesture(const Offset(350, 300));
+        await tester.pump();
+        for (int i = 0; i < 4; i++) {
+          await g1.moveBy(const Offset(-15, 0));
+          await g2.moveBy(const Offset(15, 0));
+          await tester.pump();
+        }
+        await g1.up();
+        await g2.up();
+        await tester.pump();
+
+        expect(controller.pxPerHour, greaterThan(80));
+        expect(controller.mode, DayGridMode.idle);
+
+        await _closeBloc(tester, bloc);
+        controller.dispose();
+      });
+
+      testWidgets('a single-finger tap on a tile does NOT zoom',
+          (tester) async {
+        _setSurface(tester);
+        final bloc = _RecordingScheduleBloc();
+        final controller = DayGridController();
+        controller.setPxPerHour(80);
+
+        await tester.pumpWidget(_buildApp(
+          bloc: bloc,
+          controller: controller,
+          tiles: <SubCalendarEvent>[
+            _tile(
+                't-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
+          ],
+          now: now,
+          day: dayStart,
+        ));
+        await tester.pump();
+
+        await tester.tapAt(const Offset(250, 300)); // on the tile.
+        await tester.pump();
+
+        expect(controller.pxPerHour, 80);
+        expect(controller.mode, DayGridMode.idle);
+
+        await _closeBloc(tester, bloc);
+        controller.dispose();
+      });
+
+      testWidgets('tap-to-add on the empty background still works',
+          (tester) async {
+        _setSurface(tester);
+        final bloc = _RecordingScheduleBloc();
+        final controller = DayGridController();
+        controller.setPxPerHour(80);
+
+        await tester.pumpWidget(_buildApp(
+          bloc: bloc,
+          controller: controller,
+          tiles: anchorTiles,
+          now: now,
+          day: dayStart,
+        ));
+        await tester.pump();
+
+        // One finger on empty background: the pinch overlay must not
+        // swallow the tap-to-add (a single pointer never satisfies the
+        // scale recognizer).
+        await tester.tapAt(const Offset(200, 320));
+        await tester.pump();
+        // Advance the fake clock past AddTile's 700ms auto-result Timer so
+        // its callback runs and is consumed (same idiom as the tap-to-add
+        // suite).
+        await tester.pump(const Duration(milliseconds: 750));
+        expect(find.byType(AddTile), findsOneWidget);
+
+        await _closeBloc(tester, bloc);
+        controller.dispose();
+      });
     });
   });
 }
