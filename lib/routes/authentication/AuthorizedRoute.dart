@@ -54,6 +54,7 @@ import 'package:tiler_app/components/tutorial/tutorialKeys.dart';
 import 'package:tiler_app/components/tutorial/tutorialOverlay.dart';
 import 'package:tiler_app/services/tutorialPreferencesHelper.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import '../../constants.dart' as Constants;
 
 enum ActivePage { tilelist, search, addTile, procrastinate, review }
 
@@ -423,6 +424,12 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
             return HomeBottomNav(
               onShare: _onShareTap,
               onAddTile: () => displayDialog(MediaQuery.of(context).size),
+              // Debug-only entry to the Add Tile redesign shell (Phase 1).
+              // Long-press the centre add button on a debug build to open the
+              // new UI without affecting the production add-tile path.
+              onAddTileLongPress: Constants.isDebug
+                  ? () => Navigator.of(context).pushNamed('/AddTileRedesign')
+                  : null,
               currentView: scheduleState.currentView,
               onSelectView: _onSelectCalendarView,
             );

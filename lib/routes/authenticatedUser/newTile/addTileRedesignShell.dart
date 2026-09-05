@@ -299,7 +299,23 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         _draft.snapshot,
         now: DateTime.now(),
       );
-      await widget.onSubmitted?.call(tile);
+      if (widget.onSubmitted != null) {
+        await widget.onSubmitted!.call(tile);
+      } else {
+        // Debug-only seam: the default /AddTileRedesign route has no backend
+        // orchestrator yet (wired in later phases). Surface the mapped payload
+        // so the draft -> mapper -> CTA path is verifiable on-device without
+        // writing to the API. No analytics, no side effects.
+        final messenger = ScaffoldMessenger.of(context);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(
+              'Draft mapped (debug): ${tile.Name} | '
+              '${tile.DurationMinute ?? '-'} min | Rigid=${tile.Rigid ?? 'null'}',
+            ),
+          ),
+        );
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
