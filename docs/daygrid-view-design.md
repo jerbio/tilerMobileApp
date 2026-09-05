@@ -1,7 +1,7 @@
 # DayGrid View — Design & Tracking
 
-> Status: **Design locked (all §10 decisions settled) / P1 in flight — Steps 1.1–1.5 done (`64c4785`), 1.6–1.7 open**
-> Last updated: 2026-09-03
+> Status: **Design locked (all §10 decisions settled) / P1 complete (Steps 1.1–1.8); P2 in flight through Step 2.3 pinch-to-zoom (`69b2757`)**
+> Last updated: 2026-09-05
 > Owner: _TBD_
 > Execution plan: §12 (step-by-step TDD plan with per-step trackers, tests, telemetry)
 
@@ -385,8 +385,8 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P1 | Toggle in `HomeTopRightActions` | 64c4785 | Done | Step 1.5; Daily-view only (icon shows target layout); `switchDayGridLayout` l10n (en/es) |
 | P1 | Day-page swap in `DailyTileList` | 64c4785 | Done | Step 1.5; `DayGridPage` wraps day pages (today keeps `EnhancedWithinNowBatch` in list mode); `test/daygrid_layout_swap_test.dart` (4) |
 | P1 | Grid constructor → `List<SubCalendarEvent>` (C1) | 64c4785 | Done | Step 1.3; `DayCast` adapts |
-| P1 | Ribbon collapsed tab, tap-to-expand (C2) | | Not started | replaces `isToday` hard hide |
-| P1 | Compact alert banner strip (C3) | | Not started | reuse detectors + modals |
+| P1 | Ribbon collapsed tab, tap-to-expand (C2) | 4313ded | Done | Step 1.7; `DayRibbonTab` (`dayRibbonTab.dart`) collapses on the current-day page, expands on tap; l10n added (en/es); `test/ribbon_tab_test.dart` |
+| P1 | Compact alert banner strip (C3) | b97b987 | Done | Step 1.7; `dayGridBannerStrip` reuses list-mode conflict/RSVP/extended detectors + modals; hidden when clean; `test/daygrid_banner_strip_test.dart` |
 | P1 | Pinned header for all-day/≥16h tiles (C7) | b97b987 | Done | Step 1.7; all-day/≥16h tiles render in a pinned strip above the timeline (excluded from the grid); `test/daygrid_pinned_header_test.dart` (8) |
 | P1 | Rebuild / `didUpdateWidget` hardening | 64c4785 | Done | Step 1.3; `test/daygrid_widget_rebuild_test.dart` (7) — dupes on `setState` + in-place sort fixed; stale-state tile swap fixed via `ValueKey` + `TileGridWidgetState.didUpdateWidget` |
 | P1 | Responsive tile width | 64c4785 | Done | Step 1.4 — drops hard-coded `80` / `270`; `LayoutBuilder` constraints |
@@ -396,7 +396,7 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P1 | Live now-line (C10) | b8d2fe5 | Done | Step 1.6; today-only, 1px line + gutter time bubble; minute `Timer` + `ValueKey` bump rebuilds the line in place (no full-grid remount); `test/daygrid_refresh_nowline_test.dart` |
 | P1 | GCal-style overlap columns (C11) | 5ccf822 | Done | Step 1.8; pure `OverlapColumns.assign` + `DayGridWidget` wiring; `test/daygrid_overlap_columns_test.dart` (13) — overlapping tiles cluster into shared-width columns; a singleton keeps the full region; tap-to-raise z-order + no-duplicate preserved |
 | P2 | Auto-fit initial zoom (C8) | b8d2fe5 | Done | folded into C10 (step 1.6); `DayGridController.autoFit(viewportHeight)` = `viewportHeight / 4` clamped [40, 240], first-launch only, stored value wins; `_autoFitOnFirstLaunch` in `dayGridPage` |
-| P2 | Zoom-dependent `snapInterval` (C4) | | Not started | seeded 15 min |
+| P2 | Zoom-dependent `snapInterval` (C4) | 64c4785 | Done | `DayGridController.snapInterval` derives the band from `pxPerHour` (coarse/fine thresholds); drives tap-to-add snapping |
 | P2 | Tap-to-add: hit layer + snap highlight | df2e1e8 | Done | Steps C12/C14; behind-tiles tap layer maps y → `time(y)` → `snapInterval` (C4); `test/daygrid_tap_to_add_test.dart` |
 | P2 | Tap-to-add: `PreTile` prefill → `/AddTile` | df2e1e8 | Done | Steps C12/C13; tapped slot → `/AddTile` prefill (start + 1h default duration) |
 | P2 | Moved/resized tile transitions (§6.6) | | Done | Step 2.2; `AnimatedPositioned(top/left)` 300ms `easeInOutCubic`, gated on `mode == idle` (immediate while zooming/dragging), honors `MediaQuery.disableAnimations`; day-scoped `ValueKey` prefix prevents cross-day slides; `test/daygrid_transitions_test.dart` (5) |
@@ -404,7 +404,7 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P2 | Carousel key stability — no remount on data updates (§6.6) | 3378dbd, 2a71cd9 | Done | Root-cause fix: `DailyTileList` rebuilt `carouselKey` from volatile `evaluationId` on every `ScheduleLoadedState`, remounting the whole `CarouselSlider` + every `DayGridWidget` (fresh element has no old positions → tiles hard-cut). Key now changes only when the structural signature (day window + current view day + `_forceRefreshCounter`) changes; `DayGridWidget` gets stable `ValueKey(daygrid_$dayIndex)` in `DayGridPage`; sole remaining remount path is the intentional zero-index navigation in `updateDayCarouselSlide` (user swipe to carousel start) |
 | P2 | TileCast: grid `preview` mode + highlight (§6.7) | | Not started | read-only; dotted border + raise + auto-scroll |
 | P2 | TileCast: `PreviewDailyTileList` layout branch (§6.7) | | Not started | non-viable action tiles NOT filtered |
-| P2 | Pinch scale gesture + focal anchor | | Not started | validate carousel gesture arena first |
+| P2 | Pinch scale gesture + focal anchor | 69b2757 | Done | Step 2.3; two-finger scale on the full-area grid background (behind the tiles) claims the arena - a single finger never satisfies the scale recognizer; `pxPerHour = startPx * pinchScale` clamped [40,240] anchored to the pinch-start centre hour; settle-to-step + debounced persist; `test/daygrid_pinch_zoom_test.dart` (12) |
 | P2 | Adaptive lines/labels | | Not started | |
 | P2 | Tile content reflow | | Not started | |
 | P3 | Travel bands (before/after) | | Not started | |
@@ -685,3 +685,5 @@ gate reviewer's name goes in the tracker Notes column.
 | 2026-09-03 | _TBD_ | §12.0 pre-commit checklist signed off for Step 1.5 (code commit `64c4785`): `flutter analyze` clean in all 26 touched files; full `flutter test` 599 passing / 6 pre-existing unrelated failures (no daygrid/forecast/TileCast regressions); exit criterion green (toggle round-trips across simulated app restart); on-device list/grid + toggle rendering verified. §11 tracker rows for Steps 1.1–1.5 now record `64c4785`. |
 | 2026-09-04 | _TBD_ | §6.6 transitions now fire on in-app schedule updates: root cause was app-level, not grid-level — `DailyTileList` rebuilt `carouselKey` from volatile `evaluationId` on every `ScheduleLoadedState`, remounting the `CarouselSlider` and every `DayGridWidget`, so there was no old position for `AnimatedPositioned` to animate from. `carouselKey` is now stable across pure data updates (only changes when day window / current view day / `_forceRefreshCounter` change, so `initialPage` still re-applies on real structural changes); `DayGridWidget` in `DayGridPage` now carries a stable `ValueKey(daygrid_$dayIndex)`. Step 2.2b (enter stagger + exit ghosts) completed and green. Verified: `daygrid_enter_exit_test.dart`, `daygrid_widget_rebuild_test.dart`, `daygrid_layout_swap_test.dart` all pass; `dart analyze` clean on touched files (3 pre-existing warnings untouched). On-device animation check + commit hash still pending. §11: added/removed row → Done, new carousel-key-stability row added. |
 | 2026-09-04 | _TBD_ | §12.0 sign-off for the carousel-key fix: code committed as `3378dbd` (grid widget/page + `DailyTileList` key-stability), tests + this tracker update committed as `2a71cd9`; on-device verified — schedule updates in grid mode now animate tile enter/exit/position transitions instead of hard-cutting. |
+| 2026-09-04 | _TBD_ | Change-log catch-up for Steps 1.6-2.2 (tracker rows already recorded): 1.6 pull-to-refresh + live now-line + C8 auto-fit (`b8d2fe5`); 1.7 banner strip C3 + pinned header C7 + ribbon tab C2 (`b97b987`, `4313ded`); 1.8 overlap columns C11 (`5ccf822`); 2.1 tap-to-add C12/C13/C14 (`df2e1e8`, `36d4c6f`); 2.2 moved/resized tile transitions §6.6 (`ad8d646`). |
+| 2026-09-05 | _TBD_ | Step 2.3 pinch-to-zoom implemented: two-finger scale on the full-area grid background (behind the tiles) claims the gesture arena (a single finger never satisfies the scale recognizer, so vertical scroll, the horizontal day carousel, and tile taps are unaffected); `pxPerHour = startPx * pinchScale` clamped [40,240] and anchored to the pinch-start centre hour (anchor-zoom); settle-to-step + debounced `DayGridPreferences` persist on end; no gesture fallback needed. Tests: `test/daygrid_pinch_zoom_test.dart` (12); full DayGrid suite + `test/tile_carousel_test.dart` green. On-device verification pending. |
