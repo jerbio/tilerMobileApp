@@ -37,7 +37,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get min => 'Min';
 
   @override
-  String get monday => 'Monday';
+  String get monday => 'Lunes';
 
   @override
   String get tuesday => 'Tuesday';
@@ -52,10 +52,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get friday => 'Friday';
 
   @override
-  String get saturday => 'Saturday';
+  String get saturday => 'Sábado';
 
   @override
-  String get sunday => 'Sunday';
+  String get sunday => 'Domingo';
 
   @override
   String get duration => 'Duration';
@@ -88,7 +88,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get loadingPrediction => 'Cargando prediccion';
 
   @override
-  String get address => 'Address';
+  String get address => 'Dirección';
 
   @override
   String get settings => 'Settings';
@@ -103,7 +103,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get selectADeadline => 'Select a deadline';
 
   @override
-  String get close => 'Close';
+  String get close => 'Cerrar';
 
   @override
   String get tileName => 'Tile Name';
@@ -127,7 +127,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get weekend => 'Weekend';
 
   @override
-  String get anytime => 'Anytime';
+  String get anytime => 'En cualquier momento';
 
   @override
   String get repetition => 'Repetition';
@@ -274,7 +274,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Cancelar';
 
   @override
   String get now => 'Now';
@@ -417,16 +417,16 @@ class AppLocalizationsEs extends AppLocalizations {
       'Failed to revise schedule request';
 
   @override
-  String get daily => 'Daily';
+  String get daily => 'Diariamente';
 
   @override
-  String get weekly => 'Weekly';
+  String get weekly => 'Semanalmente';
 
   @override
-  String get monthly => 'Monthly';
+  String get monthly => 'Mensualmente';
 
   @override
-  String get yearly => 'Yearly';
+  String get yearly => 'Anualmente';
 
   @override
   String get none => 'None';
@@ -476,10 +476,10 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get home => 'Home';
+  String get home => 'Casa';
 
   @override
-  String get work => 'Work';
+  String get work => 'Trabajo';
 
   @override
   String get googleLogo => 'Google Logo';
@@ -647,7 +647,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get getOnIt => 'Get on it';
 
   @override
-  String get done => 'Done';
+  String get done => 'Listo';
 
   @override
   String get late => 'Late';
@@ -869,10 +869,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get deny => 'Deny';
 
   @override
-  String get afternoon => 'Afternoon';
+  String get afternoon => 'Tarde';
 
   @override
-  String get evening => 'Evening';
+  String get evening => 'Noche';
 
   @override
   String get night => 'Night';
@@ -893,7 +893,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get softDeadline => 'Soft Deadline';
 
   @override
-  String get location => 'Location';
+  String get location => 'Ubicación';
 
   @override
   String get dashEmptyString => '--';
@@ -980,7 +980,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get morningPerson => '🌅 Morning person';
 
   @override
-  String get morning => 'Morning';
+  String get morning => 'Mañana';
 
   @override
   String get middayPerson => '🌞 Midday person';
@@ -2950,4 +2950,299 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get aiConsentLinkError => 'No se pudo abrir el enlace.';
+
+  @override
+  String get addTileScreenTitleFlexible => 'Agregar Tile';
+
+  @override
+  String get addTileScreenTitleFixed => 'Agregar bloque';
+
+  @override
+  String get addTileTypeFlexible => 'Tile flexible';
+
+  @override
+  String get addTileTypeFixed => 'Bloque fijo';
+
+  @override
+  String get addTileTypeSelectorLabel => 'Tipo de Tile';
+
+  @override
+  String get addTileExplanationFlexible =>
+      'Tiler encontrará el mejor momento para esto.';
+
+  @override
+  String get addTileExplanationFixed => 'Los bloques ocurren a una hora fija.';
+
+  @override
+  String get addTileFindTime => 'Buscar horario';
+
+  @override
+  String get addTileSubmitting => 'Enviando';
+
+  @override
+  String get addTileNameRequired => 'El nombre es obligatorio';
+
+  @override
+  String get addTileTitleRequired => 'El título es obligatorio';
+
+  @override
+  String get addTileFieldTaskName => 'NOMBRE DE LA TAREA';
+
+  @override
+  String get addTileFieldTitle => 'TÍTULO';
+
+  @override
+  String get addTileFieldDuration => 'DURACIÓN';
+
+  @override
+  String get addTileFieldCompleteBy => 'COMPLETAR ANTES DE';
+
+  @override
+  String get addTileFieldPreferredTime => 'HORARIO PREFERIDO';
+
+  @override
+  String get addTileFieldDate => 'FECHA';
+
+  @override
+  String get addTileFieldStarts => 'COMIENZA';
+
+  @override
+  String get addTileFieldEnds => 'TERMINA';
+
+  @override
+  String get addTileFieldLocation => 'UBICACIÓN';
+
+  @override
+  String get addTileTaskNameHint => '¿Qué quieres hacer?';
+
+  @override
+  String get addTileBlockTitleHint => '¿Qué es este bloque?';
+
+  @override
+  String get addTileValueNotSet => 'Sin definir';
+
+  @override
+  String get addTileAutoCalculated => 'Calculado automáticamente';
+
+  @override
+  String addTileEndsSemantics(String time) {
+    return 'Termina a las $time, calculado a partir del inicio y la duración';
+  }
+
+  @override
+  String addTileTodayDate(String date) {
+    return 'Hoy, $date';
+  }
+
+  @override
+  String get addTileMoreOptions => 'Más opciones';
+
+  @override
+  String get addTilePriority => 'Prioridad';
+
+  @override
+  String get addTilePriorityLow => 'Baja';
+
+  @override
+  String get addTilePriorityMedium => 'Media';
+
+  @override
+  String get addTilePriorityHigh => 'Alta';
+
+  @override
+  String get addTilePriorityLowMeaning => 'Estaría bien';
+
+  @override
+  String get addTilePriorityMediumMeaning => 'Importante';
+
+  @override
+  String get addTilePriorityHighMeaning => 'Debe completarse';
+
+  @override
+  String get addTilePriorityHelper =>
+      'La prioridad ayuda a Tiler a decidir qué proteger primero.';
+
+  @override
+  String get addTileColorAutomatic => 'Automático';
+
+  @override
+  String get addTileColorCustom => 'Personalizado';
+
+  @override
+  String get addTileSplitIntoSessions => 'Dividir en sesiones';
+
+  @override
+  String get addTileSplitHelper =>
+      'Divide esto en sesiones de trabajo separadas.';
+
+  @override
+  String addTileSessionCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sesiones',
+      one: '1 sesión',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get addTileFewerSessions => 'Menos sesiones';
+
+  @override
+  String get addTileMoreSessions => 'Más sesiones';
+
+  @override
+  String get addTileFlexibleCompletion => 'Fecha de finalización flexible';
+
+  @override
+  String get addTileFlexibleCompletionHelper =>
+      'Tiler puede mover esta fecha ligeramente si es necesario.';
+
+  @override
+  String get addTilePreferredTimeCustom => 'Personalizado';
+
+  @override
+  String addTileDurationMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String addTileDurationHours(int hours) {
+    return '$hours h';
+  }
+
+  @override
+  String addTileDurationHoursMinutes(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get addTileRepeat => 'Repetir';
+
+  @override
+  String get addTileRepeatNever => 'No se repite';
+
+  @override
+  String get addTileRepeatWeekdays => 'Días laborables';
+
+  @override
+  String get addTileRepeatDays => 'DÍAS';
+
+  @override
+  String get addTileRepeatsUntil => 'SE REPITE HASTA';
+
+  @override
+  String get addTileRepeatHelper =>
+      'Repetir ayuda a Tiler a programar tareas recurrentes.';
+
+  @override
+  String get addTileLocationSearchHint => 'Buscar ubicaciones';
+
+  @override
+  String get addTileLocationYourPlaces => 'TUS LUGARES';
+
+  @override
+  String get addTileLocationSuggestions => 'SUGERENCIAS';
+
+  @override
+  String get addTileLocationHelper =>
+      'La ubicación ayuda a Tiler a optimizar el trayecto y los horarios.';
+
+  @override
+  String get addTileLocationNoneSaved => 'Aún no tienes lugares guardados';
+
+  @override
+  String get addTileLocationNoneSavedHelper =>
+      'Busca un lugar o escribe un nombre como \"taller de bicis\" para guardarlo.';
+
+  @override
+  String get addTileLocationNoResults => 'No se encontraron lugares';
+
+  @override
+  String get addTileLocationNoResultsHelper =>
+      'Aun así puedes guardar lo que escribiste como nombre del lugar.';
+
+  @override
+  String get addTileLocationSearchFailed => 'No se pudo buscar en este momento';
+
+  @override
+  String get addTileLocationSearchFailedHelper =>
+      'Revisa tu conexión e inténtalo de nuevo, o guarda lo que escribiste como nombre del lugar.';
+
+  @override
+  String addTileLocationUseTyped(String query) {
+    return 'Usar \"$query\"';
+  }
+
+  @override
+  String get addTileLocationUseTypedHelper => 'Dale un nombre y una dirección';
+
+  @override
+  String get addTileLocationFallbackName => 'Ubicación';
+
+  @override
+  String get addTilePlaceAdd => 'Agregar lugar';
+
+  @override
+  String get addTilePlaceEdit => 'Editar lugar';
+
+  @override
+  String get addTilePlaceName => 'NOMBRE';
+
+  @override
+  String get addTilePlaceAddress => 'DIRECCIÓN';
+
+  @override
+  String get addTilePlaceNameHint => 'p. ej. Walmart cerca del trabajo';
+
+  @override
+  String get addTilePlaceAddressHint => 'Calle, ciudad, estado';
+
+  @override
+  String get addTilePlaceSave => 'Guardar lugar';
+
+  @override
+  String get addTilePlaceNameThis => 'Nombrar este lugar';
+
+  @override
+  String get addTilePlaceNameHelper =>
+      'El nombre es la forma de volver a encontrar este lugar. Si nombras dos lugares igual, solo se conserva la dirección más reciente.';
+
+  @override
+  String addTilePlaceNameTaken(String name, String address) {
+    return 'Ya tienes un lugar llamado \"$name\" en $address. Al guardar, ese nombre pasará a esta dirección.';
+  }
+
+  @override
+  String addTilePlaceNameTakenNoAddress(String name) {
+    return 'Ya tienes un lugar llamado \"$name\". Al guardar, ese nombre pasará a esta dirección.';
+  }
+
+  @override
+  String get addTileFieldPriority => 'PRIORIDAD';
+
+  @override
+  String get addTileFieldColor => 'COLOR';
+
+  @override
+  String get addTileColorPresets => 'PREDEFINIDOS';
+
+  @override
+  String get addTileColorAutomaticHelper => 'Tiler elige un color por ti';
+
+  @override
+  String get addTileColorCustomHelper => 'Elige cualquier color';
+
+  @override
+  String get addTileColorHelper =>
+      'El color solo cambia cómo se ve esto en tu agenda.';
+
+  @override
+  String get addTileColorShuffle => 'Probar otro color';
+
+  @override
+  String addTileColorSwatch(int index) {
+    return 'Color $index';
+  }
 }

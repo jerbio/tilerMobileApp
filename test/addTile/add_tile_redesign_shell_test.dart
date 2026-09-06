@@ -155,10 +155,16 @@ void main() {
           viewSize: const Size(320, 500));
       await tester.pump();
 
+      // The form's scroller is the VERTICAL one. Preferred time carries its
+      // own horizontal scroller so its five chips stay on one line, so a bare
+      // byType finder would match both and could drag the wrong axis.
+      final formScroll = find.byWidgetPredicate(
+        (w) => w is SingleChildScrollView && w.scrollDirection == Axis.vertical,
+        description: 'the form area scroll view',
+      );
       final ctaBefore = tester.getRect(cta());
-      expect(find.byType(SingleChildScrollView), findsOneWidget);
-      await tester.drag(
-          find.byType(SingleChildScrollView), const Offset(0, -300));
+      expect(formScroll, findsOneWidget);
+      await tester.drag(formScroll, const Offset(0, -300));
       await tester.pumpAndSettle();
       final ctaAfter = tester.getRect(cta());
       // The CTA is a sibling of the scroll view (pinned), not a child of it.

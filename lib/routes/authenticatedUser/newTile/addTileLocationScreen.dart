@@ -43,6 +43,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
@@ -98,25 +99,32 @@ bool _looksLikeIdentifier(String value) {
 /// Human label for a location row.
 ///
 /// The two stored places are keyed by the lowercase nicknames `home` and
-/// `work`. Anything else uses its description, unless that description is
-/// absent or is a machine identifier, in which case the address is the name.
-String locationDisplayName(Location location) {
+/// `work`; those two are TRANSLATED, because they are fixed wire keys rather
+/// than text a user chose. Every other description is shown verbatim — a name
+/// the user typed is already in their language, and translating it would
+/// rename their place. An absent or machine-identifier description falls back
+/// to the address, then to a generic label.
+///
+/// Takes [AppLocalizations] rather than reading a `BuildContext` so it stays
+/// pure and unit-testable (D29).
+String locationDisplayName(AppLocalizations l10n, Location location) {
   final String raw = (location.description ?? '').trim();
   final String address = (location.address ?? '').trim();
   if (raw.isEmpty || _looksLikeIdentifier(raw)) {
-    return address.isNotEmpty ? address : 'Location';
+    return address.isNotEmpty ? address : l10n.addTileLocationFallbackName;
   }
-  if (raw.toLowerCase() == Location.homeLocationNickName) return 'Home';
-  if (raw.toLowerCase() == Location.workLocationNickName) return 'Work';
+  if (raw.toLowerCase() == Location.homeLocationNickName) return l10n.home;
+  if (raw.toLowerCase() == Location.workLocationNickName) return l10n.work;
   return raw;
 }
 
 /// The address to show BENEATH the name, or `null` when it would merely
 /// repeat it. A device run showed a row reading "Walmart" over "Walmart".
-String? locationSubtitle(Location location) {
+String? locationSubtitle(AppLocalizations l10n, Location location) {
   final String address = (location.address ?? '').trim();
   if (address.isEmpty) return null;
-  if (address.toLowerCase() == locationDisplayName(location).toLowerCase()) {
+  if (address.toLowerCase() ==
+      locationDisplayName(l10n, location).toLowerCase()) {
     return null;
   }
   return address;
@@ -284,6 +292,7 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
     final bool isSearching = _query.isNotEmpty;
@@ -291,7 +300,7 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
     return Scaffold(
       backgroundColor: tokens.background,
       appBar: AppBar(
-        title: const Text('Location'),
+        title: Text(l10n.location),
         // D12: secondary screens go Back to the preserved draft.
         leading: BackButton(
           onPressed: () => Navigator.of(context).maybePop(),
@@ -311,9 +320,9 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
               children: [
                 if (isSearching)
-                  ..._buildSearchArea(tokens, textTheme)
+                  ..._buildSearchArea(l10n, tokens, textTheme)
                 else
-                  ..._buildBrowseArea(tokens, textTheme),
+                  ..._buildBrowseArea(l10n, tokens, textTheme),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -322,7 +331,7 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Location helps Tiler optimize travel and timing.',
+                        l10n.addTileLocationHelper,
                         style: textTheme.bodySmall
                             ?.copyWith(color: tokens.textSecondary),
                       ),
@@ -347,7 +356,8 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
         ),
       );
 
-  List<Widget> _buildSearchArea(TodayStatusTokens tokens, TextTheme textTheme) {
+  List<Widget> _buildSearchArea(
+      AppLocalizations l10n, TodayStatusTokens tokens, TextTheme textTheme) {
     if (_searching) {
       return const [
         Padding(
@@ -361,12 +371,11 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
         _Notice(
           key: const ValueKey('locationSearchError'),
           icon: Icons.cloud_off,
-          title: 'Could not search right now',
-          body: 'Check your connection and try again, or save what you typed '
-              'as the place name.',
+          title: l10n.addTileLocationSearchFailed,
+          body: l10n.addTileLocationSearchFailedHelper,
         ),
         const SizedBox(height: 12),
-        _typedTextSection(),
+        _typedTextSection(l10n),
       ];
     }
 
@@ -381,7 +390,7 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
 
     return [
       if (mine.isNotEmpty) ...[
-        _groupHeading('YOUR PLACES', tokens, textTheme),
+        _groupHeading(l10n.addTileLocationYourPlaces, tokens, textTheme),
         AddTileSection(
           children: [
             for (final (int index, Location result) in mine.indexed)
@@ -390,8 +399,8 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
                 // results sharing a name, and a name-based key collides.
                 key: ValueKey('savedResult_$index'),
                 icon: locationIcon(result),
-                title: locationDisplayName(result),
-                subtitle: locationSubtitle(result),
+                title: locationDisplayName(l10n, result),
+                subtitle: locationSubtitle(l10n, result),
                 onTap: () => _commit(result),
               ),
           ],
@@ -399,15 +408,15 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
         const SizedBox(height: 14),
       ],
       if (suggestions.isNotEmpty) ...[
-        _groupHeading('SUGGESTIONS', tokens, textTheme),
+        _groupHeading(l10n.addTileLocationSuggestions, tokens, textTheme),
         AddTileSection(
           children: [
             for (final (int index, Location result) in suggestions.indexed)
               LocationOptionRow(
                 key: ValueKey('suggestion_$index'),
                 icon: locationIcon(result),
-                title: locationDisplayName(result),
-                subtitle: locationSubtitle(result),
+                title: locationDisplayName(l10n, result),
+                subtitle: locationSubtitle(l10n, result),
                 onTap: () => _commit(result),
               ),
           ],
@@ -418,19 +427,20 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
         _Notice(
           key: const ValueKey('locationSearchEmpty'),
           icon: Icons.search_off,
-          title: 'No places found',
-          body: 'You can still save what you typed as the place name.',
+          title: l10n.addTileLocationNoResults,
+          body: l10n.addTileLocationNoResultsHelper,
         ),
       if (results.isEmpty) const SizedBox(height: 12),
       // Offered whether or not there were results: naming a generic place is
       // a first-class flow, not just a fallback for an empty list.
-      _typedTextSection(),
+      _typedTextSection(l10n),
     ];
   }
 
-  List<Widget> _buildBrowseArea(TodayStatusTokens tokens, TextTheme textTheme) {
+  List<Widget> _buildBrowseArea(
+      AppLocalizations l10n, TodayStatusTokens tokens, TextTheme textTheme) {
     return [
-      _groupHeading('YOUR PLACES', tokens, textTheme),
+      _groupHeading(l10n.addTileLocationYourPlaces, tokens, textTheme),
       if (_loadingSaved)
         const Padding(
           key: ValueKey('savedPlacesLoading'),
@@ -440,9 +450,8 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
       else if (_saved.isEmpty)
         _Notice(
           icon: Icons.place_outlined,
-          title: 'No saved places yet',
-          body: 'Search for a place, or type a name like "bike shop" to save '
-              'one.',
+          title: l10n.addTileLocationNoneSaved,
+          body: l10n.addTileLocationNoneSavedHelper,
         )
       else
         AddTileSection(
@@ -454,8 +463,8 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
                 return LocationOptionRow(
                   key: ValueKey('savedPlace_$nickname'),
                   icon: locationIcon(place),
-                  title: locationDisplayName(place),
-                  subtitle: locationSubtitle(place),
+                  title: locationDisplayName(l10n, place),
+                  subtitle: locationSubtitle(l10n, place),
                   onTap: () => _commit(place),
                 );
               }(),
@@ -465,13 +474,13 @@ class _AddTileLocationScreenState extends State<AddTileLocationScreen> {
   }
 
   /// Saves the raw query as a named place. See [_commitTypedText].
-  Widget _typedTextSection() => AddTileSection(
+  Widget _typedTextSection(AppLocalizations l10n) => AddTileSection(
         children: [
           AddTileNavRow(
             key: const ValueKey('useTypedAddress'),
             icon: Icons.add_location_alt_outlined,
-            title: 'Use "$_query"',
-            subtitle: 'Give it a name and address',
+            title: l10n.addTileLocationUseTyped(_query),
+            subtitle: l10n.addTileLocationUseTypedHelper,
             onTap: _openPlaceEditor,
           ),
         ],
@@ -487,6 +496,7 @@ class _SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     return TextField(
       key: const ValueKey('locationSearchField'),
@@ -494,7 +504,7 @@ class _SearchField extends StatelessWidget {
       onChanged: onChanged,
       textInputAction: TextInputAction.search,
       decoration: InputDecoration(
-        hintText: 'Search locations',
+        hintText: l10n.addTileLocationSearchHint,
         prefixIcon: Icon(Icons.search, color: tokens.textSecondary),
         filled: true,
         fillColor: tokens.surface,

@@ -16,8 +16,10 @@
 // pickers are reached through callbacks the shell owns.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
+import 'package:tiler_app/theme/today_status_tokens.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 
 /// Wall-clock time for the Starts / Ends rows, e.g. `2:00 PM`.
@@ -26,12 +28,13 @@ String formatClockTime(DateTime time) => DateFormat.jm().format(time);
 /// Date row summary. The current day reads as `Today, Sep 5`; any other date
 /// uses the plain localized form. [today] is injected so the "is it today?"
 /// comparison is testable without a clock.
-String formatBlockDate(DateTime date, {required DateTime today}) {
+String formatBlockDate(AppLocalizations l10n, DateTime date,
+    {required DateTime today}) {
   final bool isToday = date.year == today.year &&
       date.month == today.month &&
       date.day == today.day;
   final String formatted = DateFormat.MMMd().format(date);
-  return isToday ? 'Today, $formatted' : formatted;
+  return isToday ? l10n.addTileTodayDate(formatted) : formatted;
 }
 
 /// The fixed-interval form: Title, Date, Starts | Duration, derived Ends, and
@@ -73,9 +76,10 @@ class FixedBlockForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final DateTime start = draft.startTime;
     final DateTime end = draft.calculatedEnd;
-    final String? durationSummary = formatDurationSummary(draft.duration);
+    final String? durationSummary = formatDurationSummary(l10n, draft.duration);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,11 +89,11 @@ class FixedBlockForm extends StatelessWidget {
             AddTileTextFieldRow(
               key: const ValueKey('fixedTitleField'),
               icon: Icons.subject,
-              label: 'TITLE',
+              label: l10n.addTileFieldTitle,
               required: true,
               controller: nameController,
               focusNode: nameFocus,
-              hint: 'What is this block?',
+              hint: l10n.addTileBlockTitleHint,
               error: nameError,
               onChanged: onNameChanged,
               onSubmitted: onNameSubmitted,
@@ -97,9 +101,9 @@ class FixedBlockForm extends StatelessWidget {
             AddTileFieldRow(
               key: const ValueKey('fixedDateRow'),
               icon: Icons.calendar_today_outlined,
-              label: 'DATE',
+              label: l10n.addTileFieldDate,
               required: true,
-              value: formatBlockDate(start, today: today),
+              value: formatBlockDate(l10n, start, today: today),
               onTap: onDateTap,
             ),
             // Starts and Duration share a row in the mockup. On a narrow
@@ -114,23 +118,32 @@ class FixedBlockForm extends StatelessWidget {
             AddTileFieldRow(
               key: const ValueKey('fixedEndRow'),
               icon: Icons.outlined_flag,
-              label: 'ENDS',
+              label: l10n.addTileFieldEnds,
               value: formatClockTime(end),
               // No onTap: the end is derived, so it must not look editable.
-              trailing: const AddTileLockedPill(label: 'Auto-calculated'),
-              semanticLabel: 'Ends at ${formatClockTime(end)}, '
-                  'calculated from start and duration',
+              trailing: AddTileLockedPill(label: l10n.addTileAutoCalculated),
+              semanticLabel: l10n.addTileEndsSemantics(formatClockTime(end)),
             ),
             AddTileFieldRow(
               key: const ValueKey('locationRow'),
               icon: Icons.location_on_outlined,
-              label: 'LOCATION',
-              value: locationSummary(draft.location) ?? 'Add location',
+              label: l10n.addTileFieldLocation,
+              value: locationSummary(draft.location) ?? l10n.addTileValueNotSet,
               valueIsPlaceholder: locationSummary(draft.location) == null,
               onTap: onLocationTap,
-              trailing: onNameLocationTap == null
+              // The name action never replaces the chevron: the row still
+              // navigates (D35).
+              trailing: locationSummary(draft.location) == null ||
+                      onNameLocationTap == null
                   ? null
-                  : NameLocationButton(onTap: onNameLocationTap!),
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        NameLocationButton(onTap: onNameLocationTap!),
+                        Icon(Icons.chevron_right,
+                            color: TodayStatusTokens.of(context).textSecondary),
+                      ],
+                    ),
             ),
           ],
         ),
@@ -156,10 +169,11 @@ class _StartAndDurationRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final Widget startCell = AddTileFieldRow(
       key: const ValueKey('fixedStartRow'),
       icon: Icons.schedule,
-      label: 'STARTS',
+      label: l10n.addTileFieldStarts,
       required: true,
       value: formatClockTime(start),
       onTap: onStartTap,
@@ -167,9 +181,9 @@ class _StartAndDurationRow extends StatelessWidget {
     final Widget durationCell = AddTileFieldRow(
       key: const ValueKey('fixedDurationRow'),
       icon: Icons.timer_outlined,
-      label: 'DURATION',
+      label: l10n.addTileFieldDuration,
       required: true,
-      value: durationSummary ?? 'Not set',
+      value: durationSummary ?? l10n.addTileValueNotSet,
       valueIsPlaceholder: durationSummary == null,
       onTap: onDurationTap,
     );

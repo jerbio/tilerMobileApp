@@ -21,6 +21,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'add_tile_widget_harness.dart';
+import 'l10n_fixture.dart';
 
 // Non-const in this SDK's widget-test context; the value is deterministic.
 final now = DateTime(2026, 9, 4, 14, 0);
@@ -118,15 +119,26 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Not set'), findsOneWidget);
+      // Scoped to the Duration ROW: since D35 the Location row also shows
+      // "Not set" when empty, so a bare text finder matches twice.
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('durationRow')),
+          matching: find.text('Not set'),
+        ),
+        findsOneWidget,
+      );
     });
   });
 
   group('Flexible primary form — summaries (direct)', () {
     test('duration summary formatting is locale-neutral and compact', () {
-      expect(formatDurationSummary(const Duration(minutes: 45)), '45 min');
-      expect(formatDurationSummary(const Duration(hours: 2)), '2 hr');
-      expect(formatDurationSummary(const Duration(hours: 1, minutes: 30)),
+      expect(formatDurationSummary(testL10n, const Duration(minutes: 45)),
+          '45 min');
+      expect(formatDurationSummary(testL10n, const Duration(hours: 2)), '2 hr');
+      expect(
+          formatDurationSummary(
+              testL10n, const Duration(hours: 1, minutes: 30)),
           '1 hr 30 min');
     });
 
@@ -143,7 +155,15 @@ void main() {
           nameFocus: f,
         ),
       );
-      expect(find.text('Not set'), findsOneWidget);
+      // Scoped to the Duration ROW: since D35 the Location row also shows
+      // "Not set" when empty, so a bare text finder matches twice.
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('durationRow')),
+          matching: find.text('Not set'),
+        ),
+        findsOneWidget,
+      );
 
       final d = AddTileDraft.flexible(now: now);
       d.setUserDuration(const Duration(hours: 1, minutes: 30));

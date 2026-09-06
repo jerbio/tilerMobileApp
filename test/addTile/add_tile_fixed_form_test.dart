@@ -19,6 +19,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/fixedBlockForm.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'add_tile_widget_harness.dart';
+import 'l10n_fixture.dart';
 
 final now = DateTime(2026, 9, 5, 14, 0);
 
@@ -197,10 +198,13 @@ void main() {
     });
 
     test('formats the date row, marking today', () {
-      expect(formatBlockDate(DateTime(2026, 9, 5), today: DateTime(2026, 9, 5)),
+      expect(
+          formatBlockDate(testL10n, DateTime(2026, 9, 5),
+              today: DateTime(2026, 9, 5)),
           startsWith('Today, '));
       expect(
-        formatBlockDate(DateTime(2026, 9, 12), today: DateTime(2026, 9, 5)),
+        formatBlockDate(testL10n, DateTime(2026, 9, 12),
+            today: DateTime(2026, 9, 5)),
         isNot(startsWith('Today')),
       );
     });

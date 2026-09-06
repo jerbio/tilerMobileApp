@@ -14,6 +14,7 @@
 // Colors come from the shared scheme and TodayStatusTokens, never from
 // literals, so light/dark both work through semantic tokens (§7.1).
 import 'package:flutter/material.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// A grouped card of related rows, separated by hairline dividers.
@@ -290,15 +291,16 @@ class NameLocationButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     return Semantics(
       button: true,
-      label: 'Name this place',
+      label: l10n.addTilePlaceNameThis,
       child: ExcludeSemantics(
         child: IconButton(
           key: const ValueKey('nameLocationAction'),
           onPressed: onTap,
-          tooltip: 'Name this place',
+          tooltip: l10n.addTilePlaceNameThis,
           icon: Icon(Icons.drive_file_rename_outline,
               size: 20, color: tokens.textSecondary),
         ),

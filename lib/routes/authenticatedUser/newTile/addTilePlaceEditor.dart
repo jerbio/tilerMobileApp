@@ -23,6 +23,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
@@ -180,13 +181,16 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
       backgroundColor: tokens.background,
       appBar: AppBar(
-        title: Text(widget.original == null ? 'Add place' : 'Edit place'),
+        title: Text(widget.original == null
+            ? l10n.addTilePlaceAdd
+            : l10n.addTilePlaceEdit),
         // D12: secondary screens go Back to the preserved draft.
         leading: BackButton(onPressed: () => Navigator.of(context).maybePop()),
       ),
@@ -202,19 +206,19 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
                       key: const ValueKey('placeNameFieldRow'),
                       fieldKey: const ValueKey('placeNameField'),
                       icon: Icons.sell_outlined,
-                      label: 'NAME',
+                      label: l10n.addTilePlaceName,
                       controller: _nameController,
                       focusNode: FocusNode(),
-                      hint: "e.g. Walmart near work",
+                      hint: l10n.addTilePlaceNameHint,
                     ),
                     AddTileTextFieldRow(
                       key: const ValueKey('placeAddressFieldRow'),
                       fieldKey: const ValueKey('placeAddressField'),
                       icon: Icons.location_on_outlined,
-                      label: 'ADDRESS',
+                      label: l10n.addTilePlaceAddress,
                       controller: _addressController,
                       focusNode: FocusNode(),
-                      hint: 'Street, city, state',
+                      hint: l10n.addTilePlaceAddressHint,
                     ),
                   ],
                 ),
@@ -227,8 +231,7 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
                   ),
                 const SizedBox(height: 12),
                 Text(
-                  'A name is how you find this place again. Naming two places '
-                  'the same thing keeps only the newest address.',
+                  l10n.addTilePlaceNameHelper,
                   style: textTheme.bodySmall
                       ?.copyWith(color: tokens.textSecondary),
                 ),
@@ -244,7 +247,7 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
                   child: TextButton(
                     key: const ValueKey('placeCancel'),
                     onPressed: () => Navigator.of(context).maybePop(),
-                    child: const Text('Cancel'),
+                    child: Text(l10n.cancel),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -280,6 +283,7 @@ class _CollisionWarning extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
     return Container(
@@ -297,10 +301,8 @@ class _CollisionWarning extends StatelessWidget {
           Expanded(
             child: Text(
               address.isEmpty
-                  ? 'You already have a place called "$name". Saving will move '
-                      'that name to this address.'
-                  : 'You already have a place called "$name" at $address. '
-                      'Saving will move that name to this address.',
+                  ? l10n.addTilePlaceNameTakenNoAddress(name)
+                  : l10n.addTilePlaceNameTaken(name, address),
               style: textTheme.bodySmall?.copyWith(color: tokens.textPrimary),
             ),
           ),
@@ -324,13 +326,14 @@ class PlaceEditorSaveButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
     return Semantics(
       button: true,
       enabled: enabled,
-      label: 'Save place',
+      label: l10n.addTilePlaceSave,
       child: ExcludeSemantics(
         child: Material(
           color: enabled ? tokens.brand : tokens.surfaceSubtle,
@@ -342,7 +345,7 @@ class PlaceEditorSaveButton extends StatelessWidget {
               constraints: const BoxConstraints(minHeight: 52),
               child: Center(
                 child: Text(
-                  'Save place',
+                  l10n.addTilePlaceSave,
                   style: textTheme.titleMedium?.copyWith(
                     color: enabled ? scheme.onPrimary : tokens.textSecondary,
                     fontWeight: FontWeight.w600,

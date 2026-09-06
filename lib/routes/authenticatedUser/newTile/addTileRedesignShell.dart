@@ -20,19 +20,26 @@
 // rigid-payload submission testable.
 //
 // The legacy AddTile carousel/toggle flow remains the default (flag off) until
-// rollout. Strings are English constants for now; they migrate to
-// app_en.arb/app_es.arb when the content system lands.
+// rollout. Every user-facing string in the redesign comes from
+// app_en.arb/app_es.arb through AppLocalizations; label helpers take the
+// AppLocalizations instance as a parameter rather than reading a BuildContext,
+// so they stay pure, unit-testable, and reusable outside this flow (D29).
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileAnalytics.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileColorScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePriorityScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/fixedBlockForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
@@ -71,16 +78,17 @@ class AddTileTypeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Semantics(
       container: true,
-      label: 'Tile type',
+      label: l10n.addTileTypeSelectorLabel,
       child: Row(
         children: [
           Expanded(
             child: AddTileTypeSegment(
-              label: 'Flexible Tile',
+              label: l10n.addTileTypeFlexible,
               selected: type == AddTileType.flexible,
               onTap: () => onSelected(AddTileType.flexible),
               selectedBackground: scheme.primaryContainer,
@@ -91,7 +99,7 @@ class AddTileTypeSelector extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: AddTileTypeSegment(
-              label: 'Fixed Block',
+              label: l10n.addTileTypeFixed,
               selected: type == AddTileType.fixed,
               onTap: () => onSelected(AddTileType.fixed),
               selectedBackground: scheme.primaryContainer,
@@ -179,10 +187,13 @@ class AddTileBottomAction extends StatelessWidget {
   final bool submitting;
   final VoidCallback onTap;
 
-  String get _label => type == AddTileType.fixed ? 'Add Block' : 'Find time';
+  String _label(AppLocalizations l10n) => type == AddTileType.fixed
+      ? l10n.addTileScreenTitleFixed
+      : l10n.addTileFindTime;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final bool canSubmit = enabled && !submitting;
@@ -196,7 +207,7 @@ class AddTileBottomAction extends StatelessWidget {
         // ("why creation is unavailable", not an inaccessible tooltip).
         // Double-fire while pending is guarded in the submit handler.
         enabled: enabled,
-        label: submitting ? 'Submitting' : _label,
+        label: submitting ? l10n.addTileSubmitting : _label(l10n),
         container: true,
         child: Material(
           color: canSubmit || submitting
@@ -221,7 +232,7 @@ class AddTileBottomAction extends StatelessWidget {
                         ),
                       )
                     : Text(
-                        _label,
+                        _label(l10n),
                         style: textTheme.titleMedium?.copyWith(
                           color:
                               canSubmit ? scheme.onPrimary : scheme.onSurface,
@@ -411,14 +422,23 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   /// Opens the legacy `/RepetitionRoute` through its typed adapter, which
   /// preserves the legacy apply/clear/unchanged result semantics.
+  /// Opens the redesigned Repeat picker (Step 4.2).
+  ///
+  /// Replaces the legacy `/RepetitionRoute` for this flow. The result is
+  /// wrapped so a confirmed "Does not repeat" (a null repetition) stays
+  /// distinguishable from backing out, which must leave the draft alone.
   Future<void> _openRepeatPicker() async {
-    final RepeatRouteResult result = await openRepeatRoute(
-      context,
-      current: _draft.repetitionData,
-      deadline: _draft.endTime,
+    final RepeatPickerResult? result =
+        await Navigator.of(context).push<RepeatPickerResult>(
+      MaterialPageRoute<RepeatPickerResult>(
+        builder: (_) => AddTileRepeatScreen(
+          now: widget.now ?? DateTime.now(),
+          initialRepetition: _draft.repetitionData,
+        ),
+      ),
     );
-    if (!mounted) return;
-    applyRepeatRouteResult(_draft, result);
+    if (result == null || !mounted) return;
+    _draft.setRepetitionData(result.repetition);
   }
 
   /// Fixed Block date. Only the CALENDAR DAY changes — the existing
@@ -476,13 +496,37 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setLocation(edited);
   }
 
-  /// Opens the legacy `/PickColor` route. Legacy applied the result only when
-  /// non-null, so a cancel leaves the draft's color (and the random-color
-  /// fallback, decision D7) untouched.
-  Future<void> _openColorPicker() async {
-    final Color? picked = await openColorRoute(context, current: _draft.color);
+  /// Opens the Priority picker (Step 4.3a). Selection returns immediately —
+  /// a three-way choice has nothing to confirm — and backing out leaves the
+  /// draft's priority as it was.
+  Future<void> _openPriorityPicker() async {
+    final TilePriority? picked = await Navigator.of(context).push<TilePriority>(
+      MaterialPageRoute<TilePriority>(
+        builder: (_) => AddTilePriorityScreen(initial: _draft.priority),
+      ),
+    );
     if (picked == null || !mounted) return;
-    _draft.setColor(picked);
+    _draft.setPriority(picked);
+  }
+
+  /// Opens the redesigned Color picker (Step 4.3b), replacing the legacy
+  /// `/PickColor` route for this flow.
+  ///
+  /// A confirmed `null` is meaningful here — it means Automatic — so the
+  /// result carries `made` rather than relying on nullability, and backing
+  /// out leaves the draft's color untouched. The legacy `openColorRoute`
+  /// adapter could not express "the user chose Automatic" at all, and now has
+  /// no caller — the legacy Add Tile flow pushes `/PickColor` directly. It is
+  /// left in `tileRouteAdapters.dart` with the other now-unreferenced route
+  /// helpers, to be removed together at Phase 5.3.
+  Future<void> _openColorPicker() async {
+    final ColorChoice? choice = await Navigator.of(context).push<ColorChoice>(
+      MaterialPageRoute<ColorChoice>(
+        builder: (_) => AddTileColorScreen(initialColor: _draft.color),
+      ),
+    );
+    if (choice == null || !choice.made || !mounted) return;
+    _draft.setColor(choice.color);
   }
 
   /// Opens the advanced preferred-time profile editor. A confirmed `null` is
@@ -568,11 +612,14 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final type = _draft.type;
-    final String title = type == AddTileType.fixed ? 'Add Block' : 'Add Tile';
+    final String title = type == AddTileType.fixed
+        ? l10n.addTileScreenTitleFixed
+        : l10n.addTileScreenTitleFlexible;
     final String explanation = type == AddTileType.fixed
-        ? 'Blocks happen at a fixed time.'
-        : 'Tiler will find the best time for this.';
+        ? l10n.addTileExplanationFixed
+        : l10n.addTileExplanationFlexible;
     final double keyboardInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
@@ -580,7 +627,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         title: Text(title),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: 'Close',
+          tooltip: l10n.close,
           onPressed: _onClosePressed,
         ),
       ),
@@ -634,27 +681,29 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         AddTileMoreOptions(
           draft: _draft,
           onColorTap: _openColorPicker,
+          onPriorityTap: _openPriorityPicker,
           onExpanded: () => _analytics.advancedOpened(_draft.type),
-          onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
         ),
       ],
     );
   }
 
   Widget _buildTypeForm(AddTileType type) {
+    final l10n = AppLocalizations.of(context)!;
     if (type == AddTileType.flexible) {
       return FlexibleTileForm(
         draft: _draft,
         nameController: _nameController,
         nameFocus: _nameFocus,
         nameError: _showValidationErrors && _draft.name.trim().isEmpty
-            ? 'Name is required'
+            ? l10n.addTileNameRequired
             : null,
         onNameChanged: _onNameChanged,
         onNameSubmitted: (_) => _attemptSubmit(),
         onDurationTap: _openDurationPicker,
         onDeadlineTap: _openDeadlinePicker,
         onPreferredTimeSelected: _onPreferredTimeSelected,
+        onAdvancedPreferredTimeTap: _openAdvancedPreferredTime,
         onLocationTap: _openLocationPicker,
         onNameLocationTap: _draft.location != null ? _nameLocation : null,
         onRepeatTap: _openRepeatPicker,
@@ -668,7 +717,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       nameFocus: _nameFocus,
       today: widget.now ?? DateTime.now(),
       nameError: _showValidationErrors && _draft.name.trim().isEmpty
-          ? 'Title is required'
+          ? l10n.addTileTitleRequired
           : null,
       onNameChanged: _onNameChanged,
       onNameSubmitted: (_) => _attemptSubmit(),

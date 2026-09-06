@@ -27,6 +27,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource
 import 'package:tiler_app/theme/theme_data.dart';
 
 import 'add_tile_widget_harness.dart';
+import 'l10n_fixture.dart';
 
 const _delegates = <LocalizationsDelegate<dynamic>>[
   AppLocalizations.delegate,
@@ -324,7 +325,7 @@ void main() {
     test('locationDisplayName falls back past an identifier', () {
       final guid = lookup('59b9b29c-0678-476f-bea2-a187a9b0ced6',
           address: '745 us-287, lafayette, co');
-      expect(locationDisplayName(guid), '745 us-287, lafayette, co');
+      expect(locationDisplayName(testL10n, guid), '745 us-287, lafayette, co');
     });
   });
 

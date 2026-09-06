@@ -24,6 +24,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// The four simple Preferred time choices offered by the control.
 enum PreferredTimeOfDay { anytime, morning, afternoon, evening }
@@ -134,17 +135,19 @@ RestrictionProfile? applyPreferredTimeSelection(
   return restrictionProfileForPreferredTime(part);
 }
 
-/// English display label (English constants for now; they migrate to
-/// app_en.arb/app_es.arb when the content system lands).
-String preferredTimeLabel(PreferredTimeOfDay part) {
+/// Localized display label for a day part.
+///
+/// Takes [AppLocalizations] rather than a `BuildContext` so it stays pure and
+/// callable from unit tests and from other flows (D29).
+String preferredTimeLabel(AppLocalizations l10n, PreferredTimeOfDay part) {
   switch (part) {
     case PreferredTimeOfDay.anytime:
-      return 'Anytime';
+      return l10n.anytime;
     case PreferredTimeOfDay.morning:
-      return 'Morning';
+      return l10n.morning;
     case PreferredTimeOfDay.afternoon:
-      return 'Afternoon';
+      return l10n.afternoon;
     case PreferredTimeOfDay.evening:
-      return 'Evening';
+      return l10n.evening;
   }
 }

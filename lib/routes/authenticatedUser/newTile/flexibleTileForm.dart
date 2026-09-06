@@ -26,6 +26,7 @@ import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
@@ -39,13 +40,13 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 ///
 /// Returns `null` when the duration is zero or negative (caller shows
 /// "Duration not set" instead).
-String? formatDurationSummary(Duration d) {
+String? formatDurationSummary(AppLocalizations l10n, Duration d) {
   if (d.inMinutes <= 0) return null;
   final hours = d.inHours;
   final minutes = d.inMinutes.remainder(60);
-  if (hours == 0) return '$minutes min';
-  if (minutes == 0) return '$hours hr';
-  return '$hours hr $minutes min';
+  if (hours == 0) return l10n.addTileDurationMinutes(minutes);
+  if (minutes == 0) return l10n.addTileDurationHours(hours);
+  return l10n.addTileDurationHoursMinutes(hours, minutes);
 }
 
 /// Compact Location row summary, or `null` when nothing is selected (the row
@@ -65,19 +66,20 @@ String? locationSummary(Location? location) {
 
 /// Compact Repeat row summary. A disabled or absent rule reads "Does not
 /// repeat" — the user-facing wording for `RepetitionFrequency.none`.
-String repeatSummary(RepetitionData? repetition) {
-  if (repetition == null || !repetition.isEnabled) return 'Does not repeat';
+String repeatSummary(AppLocalizations l10n, RepetitionData? repetition) {
+  if (repetition == null || !repetition.isEnabled)
+    return l10n.addTileRepeatNever;
   switch (repetition.frequency) {
     case RepetitionFrequency.daily:
-      return 'Daily';
+      return l10n.daily;
     case RepetitionFrequency.weekly:
-      return 'Weekly';
+      return l10n.weekly;
     case RepetitionFrequency.monthly:
-      return 'Monthly';
+      return l10n.monthly;
     case RepetitionFrequency.yearly:
-      return 'Yearly';
+      return l10n.yearly;
     case RepetitionFrequency.none:
-      return 'Does not repeat';
+      return l10n.addTileRepeatNever;
   }
 }
 
@@ -102,6 +104,7 @@ class FlexibleTileForm extends StatelessWidget {
     this.onDurationTap,
     this.onDeadlineTap,
     this.onPreferredTimeSelected,
+    this.onAdvancedPreferredTimeTap,
     this.onLocationTap,
     this.onNameLocationTap,
     this.onRepeatTap,
@@ -122,6 +125,11 @@ class FlexibleTileForm extends StatelessWidget {
   /// Fired with the tapped day part. The shell resolves it through
   /// [applyPreferredTimeSelection] so an advanced profile is preserved.
   final ValueChanged<PreferredTimeOfDay>? onPreferredTimeSelected;
+
+  /// Opens the advanced profile editor behind the **Custom** chip. Same
+  /// destination as More options' "Advanced preferred time" row — one editor,
+  /// two entry points, so the chip is a shortcut rather than a second flow.
+  final VoidCallback? onAdvancedPreferredTimeTap;
   final VoidCallback? onLocationTap;
 
   /// Opens the "name this place" affordance. Null when there is no location
@@ -131,9 +139,10 @@ class FlexibleTileForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final durationSummary = formatDurationSummary(draft.duration);
+    final l10n = AppLocalizations.of(context)!;
+    final durationSummary = formatDurationSummary(l10n, draft.duration);
     final deadlineText = draft.endTime == null
-        ? 'Anytime'
+        ? l10n.anytime
         : DateFormat.yMMMd().format(draft.endTime!);
     final String? locationText = locationSummary(draft.location);
 
@@ -147,11 +156,11 @@ class FlexibleTileForm extends StatelessWidget {
             AddTileTextFieldRow(
               key: const ValueKey('taskNameField'),
               icon: Icons.edit_outlined,
-              label: 'TASK NAME',
+              label: l10n.addTileFieldTaskName,
               required: true,
               controller: nameController,
               focusNode: nameFocus,
-              hint: 'What do you want to do?',
+              hint: l10n.addTileTaskNameHint,
               error: nameError,
               onChanged: onNameChanged,
               onSubmitted: onNameSubmitted,
@@ -159,9 +168,9 @@ class FlexibleTileForm extends StatelessWidget {
             AddTileFieldRow(
               key: const ValueKey('durationRow'),
               icon: Icons.schedule,
-              label: 'DURATION',
+              label: l10n.addTileFieldDuration,
               required: true,
-              value: durationSummary ?? 'Not set',
+              value: durationSummary ?? l10n.addTileValueNotSet,
               valueIsPlaceholder: durationSummary == null,
               onTap: onDurationTap,
             ),
@@ -171,7 +180,7 @@ class FlexibleTileForm extends StatelessWidget {
             AddTileFieldRow(
               key: const ValueKey('completeByRow'),
               icon: Icons.event_outlined,
-              label: 'COMPLETE BY',
+              label: l10n.addTileFieldCompleteBy,
               value: deadlineText,
               onTap: onDeadlineTap,
             ),
@@ -184,6 +193,7 @@ class FlexibleTileForm extends StatelessWidget {
         PreferredTimeControl(
           profile: draft.restrictionProfile,
           onSelected: onPreferredTimeSelected,
+          onCustomTap: onAdvancedPreferredTimeTap,
         ),
         const SizedBox(height: 14),
 
@@ -192,24 +202,37 @@ class FlexibleTileForm extends StatelessWidget {
         // options.
         AddTileSection(
           children: [
+            // The title is the FIELD, always — "Location" — with the chosen
+            // place as its value, exactly like the Repeat row beneath it.
+            // It used to flip between "Add location" and the place itself,
+            // with the word "Location" demoted to a subtitle only once a
+            // place was set, so the row named two different things depending
+            // on its state and moved its own label around (D35).
             AddTileNavRow(
               key: const ValueKey('locationRow'),
               icon: Icons.location_on_outlined,
-              title: locationText ?? 'Add location',
-              subtitle: locationText == null ? null : 'Location',
+              title: l10n.location,
+              subtitle: locationText ?? l10n.addTileValueNotSet,
               onTap: onLocationTap,
-              trailing: locationText == null
-                  ? Icon(Icons.add_circle_outline,
-                      color: Theme.of(context).colorScheme.primary)
-                  : (onNameLocationTap == null
-                      ? null
-                      : NameLocationButton(onTap: onNameLocationTap!)),
+              // A chevron, not a circled plus: this row NAVIGATES, and it
+              // navigates to the same place whether or not a location is set
+              // — so the affordance must not change with the state (§7.1).
+              trailing: locationText == null || onNameLocationTap == null
+                  ? null
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        NameLocationButton(onTap: onNameLocationTap!),
+                        Icon(Icons.chevron_right,
+                            color: TodayStatusTokens.of(context).textSecondary),
+                      ],
+                    ),
             ),
             AddTileNavRow(
               key: const ValueKey('repeatRow'),
               icon: Icons.repeat,
-              title: 'Repeat',
-              subtitle: repeatSummary(draft.repetitionData),
+              title: l10n.addTileRepeat,
+              subtitle: repeatSummary(l10n, draft.repetitionData),
               onTap: onRepeatTap,
             ),
           ],
@@ -219,49 +242,73 @@ class FlexibleTileForm extends StatelessWidget {
   }
 }
 
+/// The chip order, SELECTED FIRST.
+///
+/// The row scrolls horizontally (D31), so canonical order would let the
+/// current answer sit off-screen — a control that cannot show its own value.
+/// Promoting the selection to the front makes it unconditionally visible
+/// without a scroll controller or an auto-scroll animation.
+///
+/// `null` stands for the Custom chip, mirroring [preferredTimeOfProfile],
+/// which returns `null` for exactly the profiles Custom represents. The rest
+/// keep their canonical order, so the row is not reshuffled beyond the one
+/// move.
+///
+/// KNOWN COST: tapping a chip moves it leftwards under the user's finger and
+/// shifts the ones it passes. Accepted deliberately — a selection that cannot
+/// be seen is worse than one that moves once when chosen.
+List<PreferredTimeOfDay?> preferredTimeChipOrder(PreferredTimeOfDay? selected) {
+  const List<PreferredTimeOfDay?> canonical = <PreferredTimeOfDay?>[
+    ...PreferredTimeOfDay.values,
+    null, // Custom
+  ];
+  return <PreferredTimeOfDay?>[
+    selected,
+    ...canonical.where((option) => option != selected),
+  ];
+}
+
 /// The compact Preferred time control: Anytime / Morning / Afternoon /
-/// Evening.
+/// Evening / Custom, on ONE line.
 ///
-/// When [profile] is an advanced/custom restriction the control shows a
-/// single read-only **Custom** summary instead of the four choices — tapping
-/// a simple day part must never silently discard advanced values (that is
-/// what [applyPreferredTimeSelection] enforces in the state layer; showing
-/// Custom keeps the UI honest about it).
+/// **Custom** is a peer of the four day parts rather than a state that
+/// replaces them. An advanced profile — one [preferredTimeOfProfile] cannot
+/// express as a day part — simply shows Custom as the selected chip, and
+/// tapping it opens the profile editor. An earlier revision swapped the whole
+/// control for a read-only "Custom" row in that case, which left a user with
+/// an advanced profile no way back to the four simple choices and no way into
+/// the editor from here.
 ///
-/// Wraps so four options survive a narrow width at large text scale, and
-/// selection is conveyed by label + selected semantics, never by color
-/// alone.
+/// Tapping a day part still never discards an advanced profile silently —
+/// [applyPreferredTimeSelection] owns that rule in the state layer.
+///
+/// Selection is conveyed by label + selected semantics, never by color alone.
 class PreferredTimeControl extends StatelessWidget {
   const PreferredTimeControl({
     super.key,
     required this.profile,
     this.onSelected,
+    this.onCustomTap,
   });
 
   final RestrictionProfile? profile;
   final ValueChanged<PreferredTimeOfDay>? onSelected;
 
+  /// Opens the advanced profile editor. Null leaves the Custom chip inert.
+  final VoidCallback? onCustomTap;
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
-    final PreferredTimeOfDay? selected = preferredTimeOfProfile(profile);
-
     final tokens = TodayStatusTokens.of(context);
 
-    if (selected == null) {
-      // Advanced/custom profile: summarize, do not offer to overwrite it.
-      return AddTileSection(
-        children: [
-          AddTileFieldRow(
-            key: const ValueKey('preferredTimeCustom'),
-            icon: Icons.tune,
-            label: 'PREFERRED TIME',
-            value: 'Custom',
-          ),
-        ],
-      );
-    }
+    // A `null` here means the profile is advanced, which is precisely what the
+    // Custom chip stands for — so it selects that chip instead of hiding the
+    // control.
+    final PreferredTimeOfDay? selected = preferredTimeOfProfile(profile);
+    final bool customSelected = selected == null;
 
     return Container(
       decoration: BoxDecoration(
@@ -274,30 +321,50 @@ class PreferredTimeControl extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'PREFERRED TIME',
+            l10n.addTileFieldPreferredTime,
             style: textTheme.labelSmall?.copyWith(
               color: tokens.textSecondary,
               letterSpacing: 0.6,
             ),
           ),
           const SizedBox(height: 10),
-          // Wraps so four options survive a narrow width at large text scale
-          // rather than overflowing (§4.2 revision 4).
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              for (final part in PreferredTimeOfDay.values)
-                _PreferredTimeChip(
-                  key: ValueKey('preferredTime${_suffix(part)}'),
-                  label: preferredTimeLabel(part),
-                  icon: _iconFor(part),
-                  selected: part == selected,
-                  onTap: onSelected == null ? null : () => onSelected!(part),
-                  textTheme: textTheme,
-                  scheme: scheme,
-                ),
-            ],
+          // ONE line, always. Five labelled options do not fit a phone width
+          // at a readable text size, so the row SCROLLS rather than wrapping:
+          // on device the wrapped version read as a lopsided grid, and
+          // shrinking labels to fit would break at large text scale. Scroll
+          // physics stay platform-default so the row bounces at its end and
+          // advertises that there is more.
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                for (final (int position, PreferredTimeOfDay? option)
+                    in preferredTimeChipOrder(selected).indexed) ...[
+                  if (position > 0) const SizedBox(width: 8),
+                  if (option == null)
+                    _PreferredTimeChip(
+                      key: const ValueKey('preferredTimeCustom'),
+                      label: l10n.addTilePreferredTimeCustom,
+                      icon: Icons.tune,
+                      selected: customSelected,
+                      onTap: onCustomTap,
+                      textTheme: textTheme,
+                      scheme: scheme,
+                    )
+                  else
+                    _PreferredTimeChip(
+                      key: ValueKey('preferredTime${_suffix(option)}'),
+                      label: preferredTimeLabel(l10n, option),
+                      icon: _iconFor(option),
+                      selected: option == selected,
+                      onTap:
+                          onSelected == null ? null : () => onSelected!(option),
+                      textTheme: textTheme,
+                      scheme: scheme,
+                    ),
+                ],
+              ],
+            ),
           ),
         ],
       ),

@@ -10,8 +10,13 @@
 //   * Color
 //   * Split into sessions    integer, floor 1, plain-language explanation
 //   * Flexible completion date  toggle + consequence copy
-//   * Advanced preferred time   the profile editor, for cases the four
-//                               simple day parts cannot express
+//
+// ADVANCED PREFERRED TIME IS NOT HERE (D34). §5.4 listed it, and it lived
+// here until the Preferred time control grew a **Custom** chip that opens the
+// same editor. Two rows, two names, one destination is a tautology the user
+// has to resolve — and the More options row was the weaker of the pair,
+// because it could not show that an advanced profile was already in effect.
+// The chip can, and it sits where the decision is actually being made.
 //
 // Fixed Block exposes only Color (plus any recurrence extras Repeat does not
 // already show) — the Flexible-only controls must never render or submit for
@@ -23,35 +28,54 @@
 // exists: offering the toggle in that state would be a control that does
 // nothing.
 //
+// VISUAL LANGUAGE (D32). This section is built from `addTileFormKit.dart`,
+// exactly like the forms above it. It was originally written before that kit
+// existed and drew its own bare label-over-row layout on a transparent
+// background, so opening More options dropped the user out of the card-and-
+// icon-chip language the rest of the screen speaks. Everything advanced now
+// lives in ONE grouped card with hairline dividers — the same shape as the
+// Location/Repeat card — and colors come from `TodayStatusTokens` rather than
+// straight off the `ColorScheme`.
+//
 // Presentation only — every mutation is delegated to [AddTileDraft], and the
 // pickers are reached through the typed adapters in tileRouteAdapters.dart.
-// Strings are English constants for now; they migrate to
-// app_en.arb/app_es.arb when the content system lands.
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileColorScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
+import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// User-facing priority label.
-String priorityLabel(TilePriority priority) {
+String priorityLabel(AppLocalizations l10n, TilePriority priority) {
   switch (priority) {
     case TilePriority.low:
-      return 'Low';
+      return l10n.addTilePriorityLow;
     case TilePriority.medium:
-      return 'Medium';
+      return l10n.addTilePriorityMedium;
     case TilePriority.high:
-      return 'High';
+      return l10n.addTilePriorityHigh;
   }
 }
 
 /// Plain-language split summary — never the legacy "How many times".
-String splitCountSummary(int count) =>
-    count == 1 ? '1 session' : '$count sessions';
+///
+/// Goes through an ICU plural rather than an English `count == 1` test:
+/// languages differ in how many plural forms they have, so the decision
+/// belongs in the .arb, not here.
+String splitCountSummary(AppLocalizations l10n, int count) =>
+    l10n.addTileSessionCount(count);
 
 /// Color summary. Absent means the existing random-color fallback still
 /// applies (decision D7 keeps that behavior for v1), which reads as
 /// "Automatic" rather than exposing the engine's fallback.
-String colorSummary(Color? color) => color == null ? 'Automatic' : 'Custom';
+///
+/// Delegates to the picker's own summary so the row and the screen can never
+/// disagree about what the current value is called.
+String colorSummary(AppLocalizations l10n, Color? color) =>
+    colorChoiceSummary(l10n, color);
 
 /// True when a repetition owns the end date, which makes the flexible
 /// completion date meaningless.
@@ -68,13 +92,16 @@ class AddTileMoreOptions extends StatefulWidget {
     super.key,
     required this.draft,
     this.onColorTap,
-    this.onAdvancedPreferredTimeTap,
+    this.onPriorityTap,
     this.onExpanded,
   });
 
   final AddTileDraft draft;
   final VoidCallback? onColorTap;
-  final VoidCallback? onAdvancedPreferredTimeTap;
+
+  /// Opens the Priority picker. Priority sits behind a row rather than inline
+  /// chips because §4.2 keeps that screen reachable only from More options.
+  final VoidCallback? onPriorityTap;
 
   /// Fired only when the section EXPANDS. Collapsing is not an "opened"
   /// event, so the analytics funnel does not double-count a toggle.
@@ -89,8 +116,9 @@ class _AddTileMoreOptionsState extends State<AddTileMoreOptions> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
     final AddTileDraft draft = widget.draft;
     final bool isFlexible = draft.type == AddTileType.flexible;
 
@@ -100,7 +128,7 @@ class _AddTileMoreOptionsState extends State<AddTileMoreOptions> {
         Semantics(
           button: true,
           expanded: _expanded,
-          label: 'More options',
+          label: l10n.addTileMoreOptions,
           child: Material(
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(8),
@@ -117,11 +145,15 @@ class _AddTileMoreOptionsState extends State<AddTileMoreOptions> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text('More options', style: textTheme.titleSmall),
+                      child: Text(
+                        l10n.addTileMoreOptions,
+                        style: textTheme.titleSmall
+                            ?.copyWith(color: tokens.textPrimary),
+                      ),
                     ),
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,
-                      color: scheme.onSurfaceVariant,
+                      color: tokens.textSecondary,
                     ),
                   ],
                 ),
@@ -131,170 +163,150 @@ class _AddTileMoreOptionsState extends State<AddTileMoreOptions> {
         ),
         if (_expanded) ...[
           const SizedBox(height: 8),
-          if (isFlexible) ...[
-            _Label('Priority', textTheme: textTheme),
-            _PriorityControl(
-              key: const ValueKey('priorityControl'),
-              priority: draft.priority,
-              onSelected: draft.setPriority,
-              textTheme: textTheme,
-              scheme: scheme,
-            ),
-            const SizedBox(height: 12),
-          ],
+          // ONE grouped card, the same shape as the Location/Repeat card on
+          // the main form. Advanced settings are not a different KIND of
+          // thing, so they should not look like one (D32).
+          AddTileSection(
+            children: [
+              if (isFlexible)
+                AddTileFieldRow(
+                  key: const ValueKey('priorityRow'),
+                  icon: Icons.flag_outlined,
+                  label: l10n.addTileFieldPriority,
+                  value: priorityLabel(l10n, draft.priority),
+                  onTap: widget.onPriorityTap,
+                ),
 
-          // Color is the one advanced control both types share.
-          _Label('Color', textTheme: textTheme),
-          _OptionRow(
-            key: const ValueKey('colorRow'),
-            summary: colorSummary(draft.color),
-            onTap: widget.onColorTap,
-            textTheme: textTheme,
-            scheme: scheme,
-          ),
-          const SizedBox(height: 12),
-
-          if (isFlexible) ...[
-            _Label('Split into sessions', textTheme: textTheme),
-            Text(
-              'Break this into separate work sessions.',
-              style:
-                  textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-            ),
-            const SizedBox(height: 4),
-            _SplitCountControl(
-              key: const ValueKey('splitCountControl'),
-              count: draft.splitCount,
-              onChanged: draft.setSplitCount,
-              textTheme: textTheme,
-              scheme: scheme,
-            ),
-            const SizedBox(height: 12),
-
-            // Hidden when Repeat owns the end date — see the file header.
-            if (!repeatOwnsEndDate(draft.repetitionData)) ...[
-              _FlexibleCompletionToggle(
-                key: const ValueKey('flexibleCompletionToggle'),
-                value: draft.isAutoRevisable,
-                onChanged: draft.setAutoRevisable,
-                textTheme: textTheme,
-                scheme: scheme,
+              // Color is the one advanced control both types share.
+              AddTileFieldRow(
+                key: const ValueKey('colorRow'),
+                icon: Icons.palette_outlined,
+                label: l10n.addTileFieldColor,
+                value: colorSummary(l10n, draft.color),
+                // The swatch answers "what color is this tile?" — the word
+                // "Custom" never could. The chevron stays alongside it, since
+                // this row still navigates.
+                trailing: draft.color == null
+                    ? null
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ColorDot(color: draft.color!, size: 22),
+                          const SizedBox(width: 8),
+                          Icon(Icons.chevron_right,
+                              color: tokens.textSecondary),
+                        ],
+                      ),
+                onTap: widget.onColorTap,
               ),
-              const SizedBox(height: 12),
-            ],
 
-            _Label('Advanced preferred time', textTheme: textTheme),
-            _OptionRow(
-              key: const ValueKey('advancedPreferredTimeRow'),
-              summary: 'Set specific hours',
-              onTap: widget.onAdvancedPreferredTimeTap,
-              textTheme: textTheme,
-              scheme: scheme,
-            ),
-          ],
+              if (isFlexible) ...[
+                _SplitCountRow(
+                  key: const ValueKey('splitCountControl'),
+                  count: draft.splitCount,
+                  onChanged: draft.setSplitCount,
+                ),
+
+                // Hidden when Repeat owns the end date — see the file header.
+                if (!repeatOwnsEndDate(draft.repetitionData))
+                  _FlexibleCompletionToggle(
+                    key: const ValueKey('flexibleCompletionToggle'),
+                    value: draft.isAutoRevisable,
+                    onChanged: draft.setAutoRevisable,
+                  ),
+              ],
+            ],
+          ),
         ],
       ],
     );
   }
 }
 
-class _Label extends StatelessWidget {
-  const _Label(this.text, {required this.textTheme});
-  final String text;
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.only(bottom: 4),
-        child: Text(text, style: textTheme.titleSmall),
-      );
-}
-
-/// Low / Medium / High. Selected state reaches assistive tech through
-/// `Semantics.selected`, never through color alone.
-class _PriorityControl extends StatelessWidget {
-  const _PriorityControl({
-    super.key,
-    required this.priority,
-    required this.onSelected,
-    required this.textTheme,
-    required this.scheme,
-  });
-
-  final TilePriority priority;
-  final ValueChanged<TilePriority> onSelected;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final option in TilePriority.values)
-          _ChoiceChip(
-            key: ValueKey('priority${_suffix(option)}'),
-            label: priorityLabel(option),
-            selected: option == priority,
-            onTap: () => onSelected(option),
-            textTheme: textTheme,
-            scheme: scheme,
-          ),
-      ],
-    );
-  }
-
-  static String _suffix(TilePriority p) =>
-      p.name[0].toUpperCase() + p.name.substring(1);
-}
-
-/// A stepper rather than a free-text field: the legacy digits-only input with
-/// an empty-means-one fallback was a validation trap, and the value is
+/// "Split into sessions" as a card row: icon chip, name, consequence copy,
+/// and the stepper.
+///
+/// A stepper rather than a free-text field — the legacy digits-only input
+/// with an empty-means-one fallback was a validation trap, and the value is
 /// realistically a small integer.
-class _SplitCountControl extends StatelessWidget {
-  const _SplitCountControl({
+class _SplitCountRow extends StatelessWidget {
+  const _SplitCountRow({
     super.key,
     required this.count,
     required this.onChanged,
-    required this.textTheme,
-    required this.scheme,
   });
 
   final int count;
   final ValueChanged<int> onChanged;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
     return Semantics(
       container: true,
-      label: 'Split into sessions',
-      value: splitCountSummary(count),
-      child: Row(
-        children: [
-          _StepperButton(
-            key: const ValueKey('splitCountDecrement'),
-            icon: Icons.remove,
-            semanticLabel: 'Fewer sessions',
-            // Disabled at the floor so the control cannot express an
-            // invalid value in the first place.
-            onTap: count > 1 ? () => onChanged(count - 1) : null,
-            scheme: scheme,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(splitCountSummary(count), style: textTheme.bodyMedium),
-          ),
-          _StepperButton(
-            key: const ValueKey('splitCountIncrement'),
-            icon: Icons.add,
-            semanticLabel: 'More sessions',
-            onTap: () => onChanged(count + 1),
-            scheme: scheme,
-          ),
-        ],
+      label: l10n.addTileSplitIntoSessions,
+      value: splitCountSummary(l10n, count),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const AddTileIconChip(icon: Icons.call_split),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    l10n.addTileSplitIntoSessions,
+                    style: textTheme.titleMedium?.copyWith(
+                      color: tokens.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    l10n.addTileSplitHelper,
+                    style: textTheme.bodySmall
+                        ?.copyWith(color: tokens.textSecondary),
+                  ),
+                  const SizedBox(height: 10),
+                  ExcludeSemantics(
+                    child: Row(
+                      children: [
+                        _StepperButton(
+                          key: const ValueKey('splitCountDecrement'),
+                          icon: Icons.remove,
+                          semanticLabel: l10n.addTileFewerSessions,
+                          // Disabled at the floor so the control cannot
+                          // express an invalid value in the first place.
+                          onTap: count > 1 ? () => onChanged(count - 1) : null,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            splitCountSummary(l10n, count),
+                            style: textTheme.bodyMedium
+                                ?.copyWith(color: tokens.textPrimary),
+                          ),
+                        ),
+                        _StepperButton(
+                          key: const ValueKey('splitCountIncrement'),
+                          icon: Icons.add,
+                          semanticLabel: l10n.addTileMoreSessions,
+                          onTap: () => onChanged(count + 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -306,33 +318,32 @@ class _StepperButton extends StatelessWidget {
     required this.icon,
     required this.semanticLabel,
     required this.onTap,
-    required this.scheme,
   });
 
   final IconData icon;
   final String semanticLabel;
   final VoidCallback? onTap;
-  final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
     final bool enabled = onTap != null;
     return Semantics(
       button: true,
       enabled: enabled,
       label: semanticLabel,
       child: Material(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
+        color: tokens.surfaceSubtle,
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           onTap: onTap,
           child: SizedBox(
             width: 44,
             height: 44,
             child: Icon(
               icon,
-              color: enabled ? scheme.onSurface : scheme.onSurfaceVariant,
+              color: enabled ? tokens.textPrimary : tokens.textSecondary,
             ),
           ),
         ),
@@ -348,142 +359,59 @@ class _FlexibleCompletionToggle extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    required this.textTheme,
-    required this.scheme,
   });
 
   final bool value;
   final ValueChanged<bool> onChanged;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
     return Semantics(
       toggled: value,
-      label: 'Flexible completion date',
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => onChanged(!value),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 44),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Flexible completion date',
-                        style: textTheme.titleSmall),
-                    Text(
-                      'Tiler may move this date slightly if needed.',
-                      style: textTheme.bodySmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              // Excluded from semantics: the row itself already exposes the
-              // toggled state and the tap target.
-              ExcludeSemantics(
-                child: Switch(value: value, onChanged: onChanged),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A tappable advanced row: summary plus a navigation chevron.
-class _OptionRow extends StatelessWidget {
-  const _OptionRow({
-    super.key,
-    required this.summary,
-    required this.onTap,
-    required this.textTheme,
-    required this.scheme,
-  });
-
-  final String summary;
-  final VoidCallback? onTap;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: summary,
+      label: l10n.addTileFlexibleCompletion,
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
         child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
+          onTap: () => onChanged(!value),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(summary, style: textTheme.bodyMedium),
-                ),
-                if (onTap != null)
-                  Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Shared selectable chip for the Priority control.
-class _ChoiceChip extends StatelessWidget {
-  const _ChoiceChip({
-    super.key,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-    required this.textTheme,
-    required this.scheme,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: Material(
-        color:
-            selected ? scheme.primaryContainer : scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+            constraints: const BoxConstraints(minHeight: 64),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Center(
-                widthFactor: 1,
-                child: Text(
-                  label,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: selected ? scheme.primary : scheme.onSurface,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                children: [
+                  const AddTileIconChip(icon: Icons.event_available_outlined),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l10n.addTileFlexibleCompletion,
+                          style: textTheme.titleMedium?.copyWith(
+                            color: tokens.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          l10n.addTileFlexibleCompletionHelper,
+                          style: textTheme.bodySmall
+                              ?.copyWith(color: tokens.textSecondary),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  // Excluded from semantics: the row itself already exposes
+                  // the toggled state and the tap target.
+                  ExcludeSemantics(
+                    child: Switch(value: value, onChanged: onChanged),
+                  ),
+                ],
               ),
             ),
           ),
