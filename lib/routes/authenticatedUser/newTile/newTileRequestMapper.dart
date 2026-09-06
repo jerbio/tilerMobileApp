@@ -97,7 +97,19 @@ class NewTileRequestMapper {
             .join(',');
       }
       tile.RepeatData = d.repetitionData!.isForever.toString();
-      tile.RepeatType = d.repetitionData!.frequency.name;
+      // `RepeatType` is the NUMERIC frequency and `RepeatFrequency` the name;
+      // the web client sends both (`"RepeatType":"1"` with
+      // `"RepeatFrequency":"Weekly"`). Legacy mobile sent the name for both,
+      // so `RepeatType` went up as "weekly" (D27).
+      //
+      // The number is the enum's declaration index — `{daily, weekly, monthly,
+      // yearly, none}` puts weekly at 1, which is what the captured payload
+      // carries. Only weekly is confirmed against real data; the others follow
+      // from the ordering and are pinned in add_tile_repeat_payload_test.dart.
+      //
+      // DELIBERATE DIVERGENCE from the legacy inline builder in addTile.dart,
+      // which still sends the name here.
+      tile.RepeatType = d.repetitionData!.frequency.index.toString();
     }
 
     DateTime startTime = d.now;

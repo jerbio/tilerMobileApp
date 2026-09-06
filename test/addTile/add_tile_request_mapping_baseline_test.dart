@@ -165,7 +165,10 @@ void main() {
       expect(tile.RestrictiveWeek, isNotNull);
       // Repetition passthrough.
       expect(tile.RepeatFrequency, 'weekly');
-      expect(tile.RepeatType, 'weekly');
+      // DIVERGES from the legacy inline builder by design (D27): RepeatType is
+      // the numeric frequency, matching the web client. See
+      // add_tile_repeat_payload_test.dart.
+      expect(tile.RepeatType, '1');
       expect(tile.RepeatData, 'false');
       expect(tile.RepeatWeeklyData, '1,3,5');
       expect(tile.RepeatEndYear, '2026');
@@ -256,7 +259,8 @@ void main() {
       expect(tile.RepeatEndMonth, '10');
       expect(tile.RepeatEndDay, '15');
       expect(tile.RepeatFrequency, 'weekly');
-      expect(tile.RepeatType, 'weekly');
+      // DIVERGES from the legacy inline builder by design (D27) 2014 see above.
+      expect(tile.RepeatType, '1');
       expect(tile.RepeatData, 'false');
       expect(tile.RepeatWeeklyData, '1,3,5');
       // Repetition present => auto-revisable forced false.
