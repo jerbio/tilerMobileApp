@@ -2,6 +2,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 
@@ -57,6 +58,35 @@ class TileGridWidget extends GridPositionableWidget {
   /// TileCast action tile — same rule as `EnhancedTileCard.hasDottedBorder`
   /// (id `contains` the action's entity id).
   final bool hasDottedBorder;
+
+  /// Long-press lift for drag-and-drop reschedule. [localOffset] is the
+  /// lift point in DAY-CONTENT coordinates (the detector sits inside
+  /// the scroll content, so the grid derives `y / pxPerHour` from it).
+  /// A quick vertical drag still loses the arena to the grid's scroll
+  /// view (the long press never elapses) and scrolls normally.
+  final void Function(Offset localOffset)? onLongPressStart;
+
+  /// Drag move while the tile is lifted — [localPosition] is the
+  /// finger's point in DAY-CONTENT coordinates (the detector sits
+  /// inside the scroll content, so the grid derives `y / pxPerHour`).
+  final void Function(Offset localPosition)? onDragUpdate;
+
+  /// Drop (the finger lifted during a long-press drag).
+  final VoidCallback? onDragEnd;
+
+  /// Dim the tile while it is the drag source (the grid's ghost shows
+  /// the drop slot) — `true` while its long-press drag is active.
+  final bool dimmed;
+
+  /// Suppress the ordinary tile tap (opening the detail) while a drag
+  /// owns the surface or cancelled just before the tap could fire.
+  final bool suppressTap;
+
+  /// Local start-time override (ms) for optimistic rendering while a
+  /// drag commit is in flight: the tile holds its dropped slot until
+  /// the parent re-serves data with the confirmed time. `null` means
+  /// the model owns the position.
+  final int? localStartMsOverride;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -71,6 +101,12 @@ class TileGridWidget extends GridPositionableWidget {
       this.exiting,
       this.preview = false,
       this.hasDottedBorder = false,
+      this.onLongPressStart,
+      this.onDragUpdate,
+      this.onDragEnd,
+      this.dimmed = false,
+      this.suppressTap = false,
+      this.localStartMsOverride,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -108,6 +144,11 @@ class TileGridWidgetState extends GridPositionableState {
   /// Exit: flipped one frame after a ghost mounts; drives the 1 -> 0 fade-out.
   bool _fading = false;
   Timer? _enterTimer;
+
+  /// The lift point of the active long-press drag (DAY-CONTENT
+  /// coordinates — the detector sits inside the scroll content); the
+  /// baseline the grid inverts into the drop time (`y / pxPerHour`).
+  Offset? _longPressLiftOffset;
 
   @override
   void initState() {
@@ -189,8 +230,18 @@ class TileGridWidgetState extends GridPositionableState {
           'DayGrid:: invalid pxPerHour $pxPerHour');
       final dayStartMs = dayStart.millisecondsSinceEpoch;
       final dayEndMs = dayStartMs + Duration.millisecondsPerDay;
-      final startMs = this.tilerEvent!.start ?? 0;
-      final endMs = this.tilerEvent!.end ?? startMs;
+      // The local start override (optimistic drag settle) wins over the
+      // model's start while it is set; the duration is preserved.
+      final overrideStartMs = grid.localStartMsOverride;
+      final modelStartMs = this.tilerEvent!.start ?? 0;
+      final startMs = overrideStartMs ?? modelStartMs;
+      // When the start override is applied, shift the end by the same
+      // delta so the tile's duration is preserved (leaving the end at the
+      // model time would invert a downward-move and collapse the tile to
+      // a plain color bar — no name).
+      final endMs = (overrideStartMs != null && this.tilerEvent!.end != null)
+          ? this.tilerEvent!.end! + (overrideStartMs - modelStartMs)
+          : (this.tilerEvent!.end ?? startMs);
       // Cross-midnight clamp into the grid day.
       final clampedStart = startMs < dayStartMs ? dayStartMs : startMs;
       final clampedEnd = endMs > dayEndMs ? dayEndMs : endMs;
@@ -241,7 +292,17 @@ class TileGridWidgetState extends GridPositionableState {
         oldWidget.tileGridWidth !=
             (this.widget as TileGridWidget).tileGridWidth ||
         oldWidget.dayStart != (this.widget as TileGridWidget).dayStart;
-    if (!eventChanged && !zoomChanged && !geometryChanged) {
+    // Drag inputs: the optimistic start override moves the tile (drop
+    // settle / rollback), dimming and tap suppression change its surface.
+    final dragInputsChanged = oldWidget.dimmed !=
+        (this.widget as TileGridWidget).dimmed ||
+    oldWidget.suppressTap != (this.widget as TileGridWidget).suppressTap ||
+    oldWidget.localStartMsOverride !=
+        (this.widget as TileGridWidget).localStartMsOverride;
+    if (!eventChanged &&
+        !zoomChanged &&
+        !geometryChanged &&
+        !dragInputsChanged) {
       return; // same tile, same zoom, same geometry: nothing to re-derive.
     }
     // A different tile/zoom/geometry now owns this element: re-sync
@@ -265,6 +326,42 @@ class TileGridWidgetState extends GridPositionableState {
     return (duration.inMilliseconds /
             this.widget.durationPerCell.inMilliseconds) *
         this.widget.height;
+  }
+
+  // Drag-and-drop: move/drop/cancel of the long-press lift (the
+  /// callbacks are only non-null when the grid wired this tile as
+  /// draggable — Tiler-owned, live, non-what-if).
+  void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+    (this.widget as TileGridWidget)
+        .onDragUpdate
+        ?.call(details.localPosition);
+  }
+
+  void _onLongPressEnd() {
+    _longPressLiftOffset = null;
+    (this.widget as TileGridWidget).onDragEnd?.call();
+  }
+
+  /// The long-press lift callback (haptic tick + grid hand-off of the
+  /// lift point); a no-op when the grid did not wire this tile as
+  /// draggable.
+  void _handleLongPressLift(Offset localOffset) {
+    final onLongPressStart =
+        (this.widget is TileGridWidget)
+            ? (this.widget as TileGridWidget).onLongPressStart
+            : null;
+    if (onLongPressStart == null) {
+      return;
+    }
+    HapticFeedback.mediumImpact();
+    onLongPressStart(localOffset);
+  }
+
+  void _onLongPressCancel() {
+    // A cancelled lift (e.g. the scroll view won the arena) never
+    // dropped anything; the grid's drop handler no-ops it.
+    _longPressLiftOffset = null;
+    (this.widget as TileGridWidget).onDragEnd?.call();
   }
 
   void onTapPreviewTile(TilerEvent tile) {
@@ -312,6 +409,18 @@ class TileGridWidgetState extends GridPositionableState {
       final hasEnter = (this.widget is TileGridWidget)
           ? ((this.widget as TileGridWidget).enterDelay != null)
           : false;
+      // Long-press drag wiring — non-null / true only when the grid
+      // marked this tile draggable (Tiler-owned, live, non-what-if).
+      final bool dimmed = (this.widget is TileGridWidget)
+          ? (this.widget as TileGridWidget).dimmed
+          : false;
+      final bool suppressTap = (this.widget is TileGridWidget)
+          ? (this.widget as TileGridWidget).suppressTap
+          : false;
+      final void Function(Offset localOffset)? onLongPressStart =
+          (this.widget is TileGridWidget)
+              ? (this.widget as TileGridWidget).onLongPressStart
+              : null;
       final double opacityTarget;
       final double scaleTarget;
       final Duration fadeDuration;
@@ -326,6 +435,14 @@ class TileGridWidgetState extends GridPositionableState {
         scaleTarget = _revealed ? 1.0 : (animate ? 0.86 : 1.0);
         fadeDuration = animate
             ? const Duration(milliseconds: 200)
+            : Duration.zero;
+      } else if (dimmed) {
+        // The drag source dims (the grid's ghost shows the drop slot);
+        // the haptic + dimmed surface marks the tile as "lifted".
+        opacityTarget = 0.35;
+        scaleTarget = 1.0;
+        fadeDuration = animate
+            ? const Duration(milliseconds: 150)
             : Duration.zero;
       } else {
         opacityTarget = 1.0;
@@ -353,16 +470,50 @@ class TileGridWidgetState extends GridPositionableState {
             child: Container(
               height: this.widgetHeight,
               width: widgetWidth,
-              child: InkWell(
-                  onTap: () {
-                    onTapPreviewTile(tilerEvent!);
-                    if (this.widget is TileGridWidget) {
-                      if ((this.widget as TileGridWidget).onTap != null) {
-                        (this.widget as TileGridWidget).onTap!(
-                            tilerEvent: this.tilerEvent);
-                      }
-                    }
-                  },
+              child: GestureDetector(
+                  // A plain tap that was cancelled by a drag attempt
+                  // must not open the tile detail (suppressTap is held
+                  // briefly after a failed lift); a live drag owns the
+                  // surface and swallows the tap too.
+                  onTap: suppressTap
+                      ? null
+                      : () {
+                          onTapPreviewTile(tilerEvent!);
+                          if (this.widget is TileGridWidget) {
+                            if ((this.widget as TileGridWidget).onTap !=
+                                null) {
+                              (this.widget as TileGridWidget).onTap!(
+                                  tilerEvent: this.tilerEvent);
+                            }
+                          }
+                        },
+                  // Long-press lift + drag (day-content coordinates —
+                  // the detector sits inside the scroll content). A
+                  // QUICK drag loses the arena to the grid's scroll
+                  // view (the long press never elapses) and scrolls
+                  // instead of dragging; the long press also fires a
+                  // light haptic tick. Non-null callbacks are wired by
+                  // the grid ONLY for draggable (Tiler-owned, live,
+                  // non-what-if) tiles, so third-party and preview
+                  // tiles keep the plain tap/scroll behaviour.
+                  onLongPress: onLongPressStart == null
+                      ? null
+                      : () => _handleLongPressLift(
+                          _longPressLiftOffset ?? Offset.zero),
+                  onLongPressStart: onLongPressStart == null
+                      ? null
+                      : (LongPressStartDetails d) {
+                          _longPressLiftOffset = d.localPosition;
+                        },
+                  onLongPressMoveUpdate: onLongPressStart == null
+                      ? null
+                      : _onLongPressMoveUpdate,
+                  onLongPressEnd: onLongPressStart == null
+                      ? null
+                      : (_) => _onLongPressEnd(),
+                  onLongPressCancel: onLongPressStart == null
+                      ? null
+                      : _onLongPressCancel,
                   child: _TilerEventInnerGridWidget(
                      tilerEvent: tilerEvent!,
                      // The rendered

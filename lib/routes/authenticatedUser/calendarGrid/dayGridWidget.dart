@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/data/adHoc/simeplAdditionTIle.dart';
+import 'package:tiler_app/data/editTileEvent.dart';
+import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
+import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/overlapColumns.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileGridWidget.dart';
@@ -16,6 +21,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/timeOfDayTimeCel
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/travelBandWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/api/subCalendarEventApi.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/util.dart';
@@ -45,6 +51,34 @@ class DayGridTapSeed {
     required this.start,
     required this.duration,
     this.prefilledFromNow = false,
+  });
+}
+
+/// The resolved drop target of a drag-and-drop reschedule — the
+/// inverse of the layout mapping `time(y) = y / pxPerHour`, snapped
+/// and constraint-checked. Kept separate from the widget so the
+/// y→time inversion, snap, day clamp and range window are
+/// unit-testable without pumping the grid.
+class DayGridDragSeed {
+  /// The snapped start of the dropped slot.
+  final DateTime start;
+
+  /// The new end (snapped start + the tile's original duration).
+  final DateTime end;
+
+  /// True when [start]/[end] fall inside the tile's allowed window
+  /// (`rangeStart/rangeEnd`, falling back to
+  /// `calendarEventStart/End`).
+  final bool withinRange;
+
+  /// Why the drop is blocked (`null` when [withinRange]).
+  final String? blockReason;
+
+  const DayGridDragSeed({
+    required this.start,
+    required this.end,
+    required this.withinRange,
+    this.blockReason,
   });
 }
 
@@ -98,6 +132,11 @@ class DayGridWidget extends StatefulWidget {
   /// the highlight + scroll between actions instead of remounting.
   final String? selectedActionEntityId;
 
+  /// Injectable sub-event persistence API — the drag commit path calls
+  /// [SubCalendarEventApi.updateSubEvent]. When omitted a live API is
+  /// created lazily on first commit.
+  final SubCalendarEventApi? subCalendarEventApi;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -108,6 +147,7 @@ class DayGridWidget extends StatefulWidget {
     this.dayKey,
     this.preview = false,
     this.selectedActionEntityId,
+    this.subCalendarEventApi,
   });
 
   /// A tile matches the highlighted TileCast action
@@ -156,6 +196,59 @@ class DayGridWidget extends StatefulWidget {
       start: start,
       duration: const Duration(hours: 1),
       prefilledFromNow: prefilled,
+    );
+  }
+
+  /// [dropTopPx] is the tile's top in day-content coordinates (0 at
+  /// midnight of [dayStart]), snapped DOWN to [snapInterval] (shared
+  /// with tap-to-add) and clamped so the whole tile stays inside the
+  /// visible day. The duration is preserved. The result is validated
+  /// against the tile's allowed window — a violation is reported,
+  /// never silently clamped.
+  static DayGridDragSeed computeDragSeed({
+    required SubCalendarEvent tile,
+    required DateTime dayStart,
+    required double dropTopPx,
+    required double pxPerHour,
+    required Duration snapInterval,
+  }) {
+    assert(pxPerHour.isFinite && pxPerHour > 0,
+        'DayGrid:: invalid pxPerHour $pxPerHour');
+    final dayStartMs = dayStart.millisecondsSinceEpoch;
+    final dayEndMs = dayStartMs + Duration.millisecondsPerDay;
+    final durationMs = tile.duration.inMilliseconds;
+
+    final clampedDy = dropTopPx.clamp(0.0, 24.0 * pxPerHour);
+    final rawMs = clampedDy / pxPerHour * Duration.millisecondsPerHour;
+    final snapMs = snapInterval.inMilliseconds;
+    final snappedMs = (rawMs / snapMs).floor() * snapMs;
+    var startMs = dayStartMs + snappedMs;
+    // Keep the whole tile inside the visible day (no partial tiles).
+    if (startMs + durationMs > dayEndMs) {
+      startMs = dayEndMs - durationMs;
+    }
+    if (startMs < dayStartMs) {
+      startMs = dayStartMs;
+    }
+    final endMs = startMs + durationMs;
+
+    // The allowed window: rangeStart/rangeEnd when present, otherwise
+    // the parent calendar event's slot; absent both → unbounded.
+    double? windowStart = tile.rangeStart;
+    double? windowEnd = tile.rangeEnd;
+    if (windowStart == null || windowEnd == null) {
+      windowStart = tile.calendarEventStart ?? windowStart;
+      windowEnd = tile.calendarEventEnd ?? windowEnd;
+    }
+    final within =
+        (windowStart == null || windowEnd == null) ||
+            (startMs >= windowStart && endMs <= windowEnd);
+
+    return DayGridDragSeed(
+      start: DateTime.fromMillisecondsSinceEpoch(startMs),
+      end: DateTime.fromMillisecondsSinceEpoch(endMs),
+      withinRange: within,
+      blockReason: within ? null : 'out_of_range',
     );
   }
 
@@ -268,6 +361,53 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// `jumpTo(alignment: 0.15)`). `null` when no highlight scroll is queued.
   double? _pendingPreviewScroll;
 
+  // Drag-and-drop reschedule bookkeeping.
+  /// The tile being lifted by a long-press drag; `null` when idle.
+  SubCalendarEvent? _dragTile;
+
+  /// The dragged tile's original top (day-content px).
+  double _dragOriginalTopPx = 0;
+
+  /// The finger's content-space y when the long press began — the
+  /// baseline for the drag delta.
+  double _dragStartContentY = 0;
+
+  /// The resolved drop slot (snapped + range-checked) the ghost is
+  /// resting on (`null` while idle).
+  DayGridDragSeed? _dragTargetStart;
+
+  /// One-shot timer driving the edge auto-scroll while a drag is
+  /// active.
+  Timer? _edgeScrollTimer;
+
+  /// The in-flight settle move — the dragged tile holds the dropped
+  /// slot (optimistically) until the parent re-serves data with a
+  /// changed time for the tile, or a rollback fires.
+  _SettlingMove? _settlingMove;
+
+  /// `true` while a long-press drag gesture owns a finger. Together
+  /// with [_settlingMove] it is the in-flight/duplicate-drop guard:
+  /// a second drop issued while either is active is ignored (no
+  /// double-write race).
+  bool _dragging = false;
+
+  /// The dragged tile's column (left, width) at lift — the ghost's
+  /// horizontal geometry (re-derived per build for the ghost's left).
+  double _dragGhostLeft = 0;
+  double _dragGhostWidth = 270;
+
+  /// True while an ordinary tap that was cancelled by a failed drag
+  /// attempt must be swallowed (the long-press detector eats the tap
+  /// only for recognizers it started; a cancelled long press would
+  /// otherwise still fire the tile's `onTap`).
+  bool _dragSuppressTap = false;
+
+  /// The last snapped drop start (haptic tick when it changes).
+  DateTime? _lastDragSnapStart;
+
+  /// Lazily created persistence API (the injected one wins).
+  SubCalendarEventApi? _subCalendarEventApi;
+
   double get _pxPerHour => _controller.pxPerHour;
 
   @override
@@ -323,6 +463,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // Diff the tile set for add/remove enter/exit animations
     // (runs before build so the result is visible in the upcoming frame).
     _diffTiles(oldWidget, widget);
+    // Reconcile the in-flight settle override with the new tile set
+    // (the server confirmation/rollback clears it).
+    _syncSettlingMove(widget.tiles);
     if (identical(oldWidget.tiles, widget.tiles)) {
       return; // same instance: parent rebuilt with the same data.
     }
@@ -343,6 +486,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
       // Day changed: fresh keys, no cross-day ghost or enter cascade.
       _removingTiles.clear();
       _enterDelays.clear();
+      _dragTile = null; // a drag can never span a day swap.
       _lastDayKey = newDayKey;
       return;
     }
@@ -664,6 +808,412 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
   }
 
+  // -------------------------------------------------------------------
+  // Drag-and-drop reschedule (long-press lift → snapped ghost → drop).
+  //
+  // The gesture lives on the tile itself (see [TileGridWidget]'s
+  // long-press-drag detector) so a quick vertical drag still loses the
+  // arena to the grid's scroll view and scrolls normally. A long press
+  // lifts ONLY Tiler-owned, non-what-if tiles of the live grid (the
+  // preview stays read-only, and third-party tiles are not resizable).
+  // -------------------------------------------------------------------
+
+  /// Long-press lift: the tile becomes the drag target and the ghost
+  /// appears on the tile's current slot (the lift point is the seed, so
+  /// no move has happened yet).
+  void _onTileLongPressStart(
+      SubCalendarEvent tile, Offset localOffset, double left, double width) {
+    if (widget.preview ||
+        _controller.mode != DayGridMode.idle ||
+        _dragging ||
+        !_renderableInTimeline(tile, _gridDayStart()) ||
+        tile.isWhatIf == true ||
+        !tile.isFromTiler) {
+      return; // read-only surfaces and non-Tiler tiles never lift.
+    }
+    _dragging = true;
+    _controller.mode = DayGridMode.dragging;
+    _dragTile = tile;
+    _dragSuppressTap = true; // swallow the tap this long press cancels.
+    _lastDragSnapStart = null;
+    final dayStart = _gridDayStart()!;
+    _dragOriginalTopPx =
+        _topPx(dayStart: dayStart, startMs: tile.start!);
+    _dragStartContentY = localOffset.dy;
+    _dragGhostLeft = left;
+    _dragGhostWidth = width;
+    // The finger is still at the lift point: pass the recorded lift
+    // offset (the detector-local baseline) so the drag delta starts
+    // at zero and the ghost sits on the tile's current slot.
+    _dragTargetStart = _dragSeedForOffset(_dragStartContentY);
+    _syncDragState();
+  }
+
+  /// Drag move: re-derive the snapped drop slot from the finger's
+  /// content-space offset (the same y→time inversion as tap-to-add).
+  void _onTileDragUpdate(Offset localPosition) {
+    final tile = _dragTile;
+    if (tile == null || _controller.mode != DayGridMode.dragging) {
+      return;
+    }
+    _dragTargetStart = _dragSeedForOffset(localPosition.dy);
+    final snapped = _dragTargetStart;
+    if (snapped != null &&
+        !snapped.start.isAtSameMomentAs(
+            _lastDragSnapStart ?? DateTime.fromMillisecondsSinceEpoch(-1))) {
+      _lastDragSnapStart = snapped.start;
+      HapticFeedback.lightImpact(); // snap tick.
+    }
+    _syncDragState();
+  }
+
+  /// Drop: commit an in-range move, or cancel (tile returns, nothing
+  /// persisted) when the drop fell outside the tile's allowed window.
+  void _onTileDragEnd(SubCalendarEvent tile) {
+    if (_controller.mode != DayGridMode.dragging || _dragTile != tile) {
+      _dragTile = null;
+      _dragging = false;
+      _controller.mode = DayGridMode.idle;
+      _syncDragState();
+      return;
+    }
+    final seed = _dragTargetStart;
+    final originalTopPx = _dragOriginalTopPx;
+    final dayStart = _gridDayStart()!;
+    _dragTile = null;
+    _dragging = false;
+    _lastDragSnapStart = null;
+    if (seed != null && !seed.withinRange) {
+      // Blocked: the tile never moves (no request, no event).
+      _dragTargetStart = null;
+      _controller.mode = DayGridMode.idle;
+      _syncDragState();
+      AnalysticsSignal.send('daygrid_drag_blocked', additionalInfo: {
+        'tileId': tile.uniqueId,
+        'reason': seed.blockReason
+      });
+      return;
+    }
+    if (seed == null ||
+        _topPx(dayStart: dayStart, startMs: seed.start.millisecondsSinceEpoch) ==
+            originalTopPx) {
+      // Dropped back on (or at the lift offset of) its own slot —
+      // a no-op move never issues a request.
+      _dragTargetStart = null;
+      _controller.mode = DayGridMode.idle;
+      _syncDragState();
+      return;
+    }
+    _commitDragMove(tile, seed);
+  }
+
+  /// The snapped drop slot for a finger offset [dy] in day-content px
+  /// (the lift point is the baseline: `dy - _dragStartContentY` is the
+  /// vertical drag delta applied to the tile's current top).
+  DayGridDragSeed? _dragSeedForOffset(double dy) {
+    final tile = _dragTile;
+    final dayStart = _gridDayStart();
+    if (tile == null || dayStart == null) {
+      return null;
+    }
+    final dropTopPx = _dragOriginalTopPx + (dy - _dragStartContentY);
+    final seed = DayGridWidget.computeDragSeed(
+      tile: tile,
+      dayStart: dayStart,
+      dropTopPx: dropTopPx,
+      pxPerHour: _pxPerHour,
+      snapInterval: _controller.snapInterval,
+    );
+    return seed;
+  }
+
+  /// Day-content px top for a start (ms) on [dayStart] (cross-midnight
+  /// clamp mirrors [TileGridWidget._recomputePosition]).
+  double _topPx({required DateTime dayStart, required int startMs}) {
+    final dayStartMs = dayStart.millisecondsSinceEpoch;
+    final clampedStart = startMs < dayStartMs ? dayStartMs : startMs;
+    return ((clampedStart - dayStartMs) / Duration.millisecondsPerHour) *
+        _pxPerHour;
+  }
+
+  /// Drop commit — a HARD PIN: [EditTilerEvent] carries the snapped
+  /// Start/End AND the same CalStart/CalEnd so the scheduler cannot
+  /// re-fit the move elsewhere. The request rides
+  /// [EvaluateSchedule](callBack:) on the schedule state the grid
+  /// dispatched on (the [playBackButtons] `setAsNowTile` pattern): the
+  /// tile holds the dropped slot optimistically while in flight.
+  void _commitDragMove(SubCalendarEvent tile, DayGridDragSeed seed) {
+    // In-flight/duplicate-drop guard: a second drop while the first
+    // request is in flight (or another drag owns a finger) is ignored.
+    if (_settlingMove != null || _dragging) {
+      _dragTargetStart = null;
+      _controller.mode = DayGridMode.idle;
+      _syncDragState();
+      return;
+    }
+    final edit = EditTilerEvent()
+      ..id = tile.id
+      ..name = tile.name
+      ..splitCount = tile.split
+      ..startTime = seed.start
+      ..endTime = seed.end
+      ..calStartTime = seed.start // hard pin (C5).
+      ..calEndTime = seed.end
+      ..thirdPartyType =
+          tile.thirdpartyType?.name // 'tiler' — the lift gate above.
+      ..thirdPartyId = tile.thirdpartyId
+      ..thirdPartyUserId = tile.thirdPartyUserId;
+
+    final scheduleState = context.read<ScheduleBloc>().state;
+    List<SubCalendarEvent> preDragSubEvents = <SubCalendarEvent>[];
+    List<Timeline> renderedTimelines = <Timeline>[];
+    Timeline lookupTimeline = Utility.todayTimeline();
+    ScheduleStatus scheduleStatus = ScheduleStatus();
+    if (scheduleState is ScheduleEvaluationState) {
+      preDragSubEvents = scheduleState.subEvents;
+      renderedTimelines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    } else if (scheduleState is ScheduleLoadedState) {
+      preDragSubEvents = scheduleState.subEvents;
+      renderedTimelines = scheduleState.timelines;
+      lookupTimeline = scheduleState.lookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    } else if (scheduleState is ScheduleLoadingState) {
+      preDragSubEvents = scheduleState.subEvents;
+      renderedTimelines = scheduleState.timelines;
+      lookupTimeline = scheduleState.previousLookupTimeline;
+      scheduleStatus = scheduleState.scheduleStatus;
+    }
+    // The bloc may not hold the rendered schedule (e.g. tiles are served
+    // straight through the widget): fall back to what is actually on
+    // screen so the optimistic re-evaluation and rollback restore the
+    // real pre-drag tiles.
+    if (preDragSubEvents.isEmpty) {
+      preDragSubEvents = widget.tiles;
+    }
+
+    final dayStart = _gridDayStart();
+    final request = (widget.subCalendarEventApi ??
+            (_subCalendarEventApi ??
+                (_subCalendarEventApi = SubCalendarEventApi(
+                    getContextCallBack: () => context))))
+        .updateSubEvent(edit);
+    final move = _SettlingMove(
+      tileId: tile.uniqueId,
+      topPx: _topPx(
+          dayStart: dayStart!,
+          startMs: seed.start.millisecondsSinceEpoch),
+      preDragTop: _topPx(dayStart: dayStart, startMs: tile.start!),
+      preDragSubEvents: preDragSubEvents,
+    );
+    setState(() {
+      // Optimistic settle: the tile holds the dropped slot (no
+      // animation while mode != idle; the ghost goes away).
+      _settlingMove = move;
+      _dragTargetStart = null;
+      _controller.mode = DayGridMode.idle;
+    });
+    request.then((confirmed) {
+      // The position settles when the parent re-serves data with a
+      // changed time for the tile ([_syncSettlingMove] clears it).
+      AnalysticsSignal.send('daygrid_drag_commit', additionalInfo: {
+        'tileId': tile.uniqueId,
+        'start': seed.start.millisecondsSinceEpoch,
+        'end': seed.end.millisecondsSinceEpoch,
+      });
+    }).catchError((Object e) {
+      Utility.debugPrint('DayGrid:: drag commit failed: $e');
+      AnalysticsSignal.send('daygrid_drag_rollback', additionalInfo: {
+        'tileId': tile.uniqueId
+      });
+      _rollbackDragMove();
+      _showDragErrorToast();
+    });
+    context.read<ScheduleBloc>().add(EvaluateSchedule(
+        renderedSubEvents: preDragSubEvents,
+        renderedTimelines: renderedTimelines,
+        renderedScheduleTimeline: lookupTimeline,
+        scheduleStatus: scheduleStatus,
+        isAlreadyLoaded: true,
+        callBack: request));
+  }
+
+  /// Rollback: restore the pre-drag schedule state (the tile slides
+  /// back to its pre-drag slot via the layout transition) and drop the
+  /// optimistic override.
+  void _rollbackDragMove() {
+    final move = _settlingMove;
+    _settlingMove = null;
+    if (!mounted) {
+      return;
+    }
+    if (move != null) {
+      context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
+          subEvents: move.preDragSubEvents,
+          timelines: <Timeline>[],
+          lookupTimeline: Utility.todayTimeline(),
+          previousLookupTimeline: Utility.initialScheduleTimeline,
+          scheduleStatus: ScheduleStatus()));
+    }
+    _syncDragState();
+  }
+
+  /// Localized failure toast (best-effort — a missing localization
+  /// never blocks the rollback itself).
+  void _showDragErrorToast() {
+    try {
+      final l10n = AppLocalizations.of(context);
+      Fluttertoast.showToast(
+        msg: l10n?.failedToUpdateTile ?? 'Failed to move the tile.',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
+    } catch (e) {
+      Utility.debugPrint('DayGrid:: drag toast failed: $e');
+    }
+  }
+
+  /// Reconcile the in-flight settle override with a freshly re-served
+  /// tile set: once the model carries the settled time for the moved
+  /// tile (server confirmation) — or the rollback restored the
+  /// pre-drag time — the position is model-owned again and the
+  /// override clears (the layout transition settles the tile).
+  void _syncSettlingMove(List<SubCalendarEvent> tiles) {
+    final move = _settlingMove;
+    if (move == null) {
+      return;
+    }
+    final dayStart = _gridDayStart();
+    SubCalendarEvent? tile;
+    for (final t in tiles) {
+      if (t.uniqueId == move.tileId) {
+        tile = t;
+        break;
+      }
+    }
+    if (tile == null || dayStart == null) {
+      return; // the tile is gone from the day — the override is moot.
+    }
+    final modelTop = _topPx(dayStart: dayStart, startMs: tile.start ?? 0);
+    if ((modelTop - move.preDragTop).abs() >= 0.5) {
+      // The model moved off its pre-drag position — the parent has
+      // re-served with a confirmed or corrected time. Release the
+      // optimistic hold; the position becomes model-owned and the
+      // layout transition slides the tile to the new slot.
+      _settlingMove = null;
+      _controller.mode = DayGridMode.idle;
+    }
+  }
+
+  /// The optimistic start (ms) override for [tile] while a settle move
+  /// is in flight (`null` when the model owns the position).
+  int? _settledStartOverride(SubCalendarEvent tile) {
+    final move = _settlingMove;
+    if (move == null || move.tileId != tile.uniqueId) {
+      return null;
+    }
+    final dayStart = _gridDayStart();
+    if (dayStart == null) {
+      return null;
+    }
+    return (dayStart.millisecondsSinceEpoch +
+            (move.topPx / _pxPerHour * Duration.millisecondsPerHour))
+        .toInt();
+  }
+
+  /// One setState for drag-bookkeeping changes (mode, target, flags).
+  void _syncDragState() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
+
+  /// The live drag ghost: a snap line at the snapped slot, a dashed
+  /// slot outline at the tile's column, and a floating time chip with
+  /// the snapped start (out-of-range drops turn the ghost red — the
+  /// drop itself is still blocked).
+  Widget _dragGhost() {
+    final tile = _dragTile;
+    final seed = _dragTargetStart;
+    final dayStart = _gridDayStart();
+    if (tile == null || seed == null || dayStart == null) {
+      return const SizedBox.shrink();
+    }
+    final top =
+        _topPx(dayStart: dayStart, startMs: seed.start.millisecondsSinceEpoch);
+    final height = (seed.end.difference(seed.start).inMilliseconds /
+            Duration.millisecondsPerHour) *
+        _pxPerHour;
+    final label = TimeOfDay.fromDateTime(seed.start).format(context);
+    final blocked = !seed.withinRange;
+    final accent = blocked
+        ? Theme.of(context).colorScheme.error
+        : Theme.of(context).colorScheme.primary;
+    return AnimatedPositioned(
+      key: const Key('daygrid_drag_ghost'),
+      top: top,
+      left: 0,
+      right: 0,
+      height: height.clamp(1.0, double.infinity),
+      duration: const Duration(milliseconds: 80),
+      curve: Curves.easeOut,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: <Widget>[
+          // Snap line across the day at the slot's top.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 2,
+              color: accent.withValues(alpha: 0.8),
+            ),
+          ),
+          // Slot outline at the tile's column.
+          Positioned(
+            top: 1,
+            left: _dragGhostLeft,
+            width: _dragGhostWidth.clamp(1.0, double.infinity),
+            height: (height - 1).clamp(1.0, double.infinity),
+            child: Container(
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(10),
+                border:
+                    Border.all(color: accent.withValues(alpha: 0.8), width: 1.5),
+              ),
+            ),
+          ),
+          // Floating time chip on the snap line.
+          Positioned(
+            top: -9,
+            left: _dragGhostLeft.clamp(0.0, double.infinity),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              decoration: BoxDecoration(
+                color: accent,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  height: 1.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _applyPendingScroll(Duration _) {
     final target = _pendingScrollTo;
     _pendingScrollTo = null;
@@ -886,6 +1436,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 [...unselected, ...highlighted, ...selected].map(
               (tile) {
                 final column = columnLayout[tile.uniqueId];
+                // The dragged tile dims (the ghost shows its drop slot);
+                // the optimistic start override holds the moved tile at
+                // its dropped slot while the commit request is in flight.
+                final isDragSource = _dragTile != null &&
+                    _dragTile!.uniqueId == tile.uniqueId;
+                final settleOverride = _settledStartOverride(tile);
                 return TileGridWidget(
                   // Stable per-tile identity: add/remove/replace of
                   // tiles maps to element remove/update — never a stale
@@ -909,6 +1465,19 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   // Newly-added tiles slide in (staggered);
                   // existing/static tiles pass null (no enter animation).
                   enterDelay: _enterDelays[tile.uniqueId],
+                  // Long-press drag-and-drop (lift/move/drop) — the
+                  // tile's own detector loses quick drags to the grid's
+                  // scroll view (scrolls instead of dragging).
+                  onLongPressStart: (offset) =>
+                      _onTileLongPressStart(
+                          tile, offset, column?.left ?? tileLeft,
+                          column?.width ?? tileWidth),
+                  onDragUpdate: _onTileDragUpdate,
+                  onDragEnd: () => _onTileDragEnd(tile),
+                  dimmed: isDragSource,
+                  suppressTap:
+                      isDragSource && (_dragging || _dragSuppressTap),
+                  localStartMsOverride: settleOverride,
                 );
               },
             ).toList();
@@ -919,6 +1488,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // day, so the gutter shows the same travel info the day list does.
             // Built here and rendered below the tiles so tile content is never
             // covered by a band.
+            // Bands dim while a drag (or its commit request) is in
+            // flight — the real travel times depend on the new
+            // neighbors and only the server knows post-EvaluateSchedule.
+            final bandDimming = _dragging || _settlingMove != null;
             final travelBandWidgets = <Widget>[];
             if (dayStart != null && pxPerHour.isFinite && pxPerHour > 0) {
               // Previous tile in time = the pre-band "from" fallback (the same
@@ -957,6 +1530,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
                         ? previousTileById[tile.uniqueId]
                         : null,
                     animate: animate,
+                    dimmed: bandDimming,
                   ));
                 }
               }
@@ -1033,6 +1607,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   ...gutterWidgets,
                   ...travelBandWidgets,
                   ...tileWidgets,
+                  if (_dragTile != null && _dragTargetStart != null)
+                    _dragGhost(),
                   ...ghostWidgets,
                   if (isToday) ...<Widget>[
                     // 1-2px now-line across the day at the clock's y.
@@ -1132,6 +1708,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
   void dispose() {
     _nowLineTimer?.cancel(); // no leaked minute timers
     _removeTimer?.cancel(); // no leaked ghost-cleanup timers
+    _edgeScrollTimer?.cancel(); // no leaked drag auto-scroll timers
     _ownedController?.dispose(); // own resources first (dispose order)
     _scrollController.dispose();
     super.dispose();
@@ -1183,4 +1760,35 @@ class _RemovingTile {
   final double left;
   final double width;
   _RemovingTile(this.tile, this.left, this.width);
+}
+
+/// The in-flight drag-and-drop settle move.
+///
+/// While non-null the dragged tile renders at [topPx] (its dropped,
+/// snapped slot) even though the model still carries the pre-drag
+/// time — the position only becomes model-owned once the parent
+/// re-serves data with a changed time for the tile (or a rollback
+/// fires and [_SettlingMove.tileId]'s start is restored).
+class _SettlingMove {
+  /// The moved tile's [TilerEvent.uniqueId].
+  final String tileId;
+
+  /// The optimistic settled top (day-content px at the drop).
+  final double topPx;
+
+  /// The pre-drag subEvents of the schedule state the commit dispatched
+  /// on — restored via [ReloadLocalScheduleEvent] when the request fails.
+  final List<SubCalendarEvent> preDragSubEvents;
+
+  /// The tile's pre-drag top (day-content px). The optimistic hold is
+  /// released once the model moves off this position (the server has
+  /// re-served with a confirmed or corrected time).
+  final double preDragTop;
+
+  _SettlingMove({
+    required this.tileId,
+    required this.topPx,
+    required this.preDragTop,
+    required this.preDragSubEvents,
+  });
 }

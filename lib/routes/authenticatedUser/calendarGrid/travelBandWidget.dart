@@ -160,6 +160,12 @@ class TravelBandWidget extends StatelessWidget {
   /// respected inside the widget.
   final bool animate;
 
+  /// Dim the band while a drag (or its commit request) is in flight —
+  /// the band's real travel times depend on the tile's new neighbours
+  /// and only the server knows post-`EvaluateSchedule` (the list-mode
+  /// "recalculating" treatment, without fabricating estimates).
+  final bool dimmed;
+
   /// The band height (px) at which the band expands from icon + hairline
   /// to the duration / "leave by" pill.
   static const double expandedHeightThreshold = 56;
@@ -182,6 +188,7 @@ class TravelBandWidget extends StatelessWidget {
     required this.width,
     this.fromTile,
     this.animate = true,
+    this.dimmed = false,
   }) : super(key: key);
 
   // ---------------------------------------------------------------------------
@@ -366,12 +373,12 @@ class TravelBandWidget extends StatelessWidget {
           end: Alignment.bottomCenter,
           colors: kind == TravelBandKind.pre
               ? [
-                  colorScheme.outline.withOpacity(0.3),
-                  color.withOpacity(0.5),
+                  colorScheme.outline.withValues(alpha: 0.3),
+                  color.withValues(alpha: 0.5),
                 ]
               : [
-                  color.withOpacity(0.5),
-                  colorScheme.outline.withOpacity(0.3),
+                  color.withValues(alpha: 0.5),
+                  colorScheme.outline.withValues(alpha: 0.3),
                 ],
         ),
       ),
@@ -384,7 +391,7 @@ class TravelBandWidget extends StatelessWidget {
     final pill = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -406,7 +413,7 @@ class TravelBandWidget extends StatelessWidget {
               size: 12,
               color: _isTardy
                   ? TileColors.late
-                  : colorScheme.onSurface.withOpacity(0.5),
+                  : colorScheme.onSurface.withValues(alpha: 0.5),
             ),
             const SizedBox(width: 3),
             Flexible(
@@ -420,7 +427,7 @@ class TravelBandWidget extends StatelessWidget {
                   fontWeight: _isTardy ? FontWeight.w600 : FontWeight.w400,
                   color: _isTardy
                       ? TileColors.late
-                      : colorScheme.onSurface.withOpacity(0.6),
+                      : colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -447,11 +454,16 @@ class TravelBandWidget extends StatelessWidget {
       duration: anim ? const Duration(milliseconds: 300) : Duration.zero,
       curve: Curves.easeInOutCubic,
       // A non-tappable band (no valid destination) leaves `onTap` null so
-      // taps fall through to the grid's tap-to-add background.
+      // taps fall through to the grid's tap-to-add background. Dimmed
+      // while a drag (or its commit request) is in flight — the real
+      // travel times only settle once the server re-evaluates.
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: _canOpenDirections ? _onTap : null,
-        child: Stack(
+        child: AnimatedOpacity(
+          opacity: dimmed ? 0.35 : 1.0,
+          duration: const Duration(milliseconds: 200),
+          child: Stack(
           children: [
             Positioned(
               left: 0,
@@ -476,6 +488,7 @@ class TravelBandWidget extends StatelessWidget {
                 child: pill,
               ),
           ],
+        ),
         ),
       ),
     );
