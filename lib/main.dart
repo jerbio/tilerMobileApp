@@ -26,6 +26,8 @@ import 'package:tiler_app/routes/authenticatedUser/forecast/forecastDuration.dar
 import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart';
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
@@ -214,7 +216,12 @@ class _TilerAppState extends State<TilerApp> {
                   // the long-press on the home "add" button; production entry
                   // points continue to use /AddTile until rollout.
                   '/AddTileRedesign': (BuildContext context) =>
-                      new AddTileRedesignScreen(),
+                      new AddTileRedesignScreen(
+                        locationSource: ApiAddTileLocationSource(
+                          locationApi:
+                              LocationApi(getContextCallBack: () => context),
+                        ),
+                      ),
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),
                   '/LocationRoute': (BuildContext context) =>

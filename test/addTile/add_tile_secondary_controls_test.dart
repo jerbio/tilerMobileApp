@@ -19,6 +19,7 @@ import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
@@ -136,8 +137,8 @@ void main() {
       await tester.pump();
 
       // "Complete by" and "Preferred time" are distinct labeled sections...
-      expect(find.text('Complete by'), findsOneWidget);
-      expect(find.text('Preferred time'), findsOneWidget);
+      expect(find.text('COMPLETE BY'), findsOneWidget);
+      expect(find.text('PREFERRED TIME'), findsOneWidget);
       // ...each carrying its own, separately reachable "Anytime" value.
       expect(find.text('Anytime'), findsNWidgets(2),
           reason: 'deadline Anytime and preferred-time Anytime are distinct');
@@ -289,6 +290,123 @@ void main() {
     });
   });
 
+  group('Naming a chosen location from the Add form', () {
+    // Naming moved off the Location picker (tap there commits immediately), so
+    // the Add form is where a place gets named — the minority case, kept out
+    // of the one-tap path.
+
+    testWidgets('an unnamed location offers a name action', (tester) async {
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setLocation(
+        Location.fromLatitudeAndLongitude(latitude: 39.7, longitude: -104.9)
+          ..address = '532 Wylie Street, Denver, CO',
+      );
+      await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('nameLocationAction')), findsOneWidget);
+    });
+
+    testWidgets('no name action when there is no location', (tester) async {
+      await pumpScreen(tester, AddTileRedesignScreen(now: now));
+      await tester.pump();
+      expect(find.byKey(const ValueKey('nameLocationAction')), findsNothing);
+    });
+
+    testWidgets('the edit affordance opens the shared place editor',
+        (tester) async {
+      // D19: one editor, two entry points. The Add form opens the same
+      // Name + Address surface the picker uses, rather than a naming-only
+      // dialog that could not supply an address.
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setLocation(
+        Location.fromLatitudeAndLongitude(latitude: 39.7, longitude: -104.9)
+          ..address = '532 Wylie Street, Denver, CO'
+          ..description = 'Some Place'
+          ..id = 'loc-123',
+      );
+      await pumpScreen(
+        tester,
+        AddTileRedesignScreen(
+          draft: draft,
+          now: now,
+          locationSource: _EditorOnlySource(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('placeNameField')), findsOneWidget);
+      expect(find.byKey(const ValueKey('placeAddressField')), findsOneWidget,
+          reason: 'the address must be editable here too — that is the whole '
+              'point of one shared editor');
+    });
+
+    testWidgets('editing name and address updates the draft', (tester) async {
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setLocation(
+        Location.fromLatitudeAndLongitude(latitude: 39.7, longitude: -104.9)
+          ..address = '532 Wylie Street, Denver, CO'
+          ..description = 'Some Place'
+          ..id = 'loc-123',
+      );
+      await pumpScreen(
+        tester,
+        AddTileRedesignScreen(
+          draft: draft,
+          now: now,
+          locationSource: _EditorOnlySource(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const ValueKey('placeNameField')), "Ashley's Home");
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.tap(find.byKey(const ValueKey('placeSave')));
+      await tester.pumpAndSettle();
+
+      expect(draft.location!.description, "Ashley's Home");
+      expect(draft.location!.id, '', reason: 'a renamed place is a new one');
+      expect(draft.location!.address, '532 Wylie Street, Denver, CO',
+          reason: 'an untouched address must survive a rename');
+    });
+
+    testWidgets('cancelling the editor changes nothing', (tester) async {
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setLocation(
+        Location.fromLatitudeAndLongitude(latitude: 39.7, longitude: -104.9)
+          ..address = '532 Wylie Street, Denver, CO'
+          ..description = 'Some Place'
+          ..id = 'loc-123',
+      );
+      await pumpScreen(
+        tester,
+        AddTileRedesignScreen(
+          draft: draft,
+          now: now,
+          locationSource: _EditorOnlySource(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byKey(const ValueKey('placeNameField')), 'Discarded');
+      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.tap(find.byKey(const ValueKey('placeCancel')));
+      await tester.pumpAndSettle();
+
+      expect(draft.location!.description, 'Some Place');
+      expect(draft.location!.id, 'loc-123');
+    });
+  });
+
   group('Type switching preserves secondary values', () {
     test('preferred time is dormant for Fixed and restores on switch back', () {
       final draft = AddTileDraft.flexible(now: now);
@@ -322,4 +440,17 @@ void main() {
       expect(draft.repetitionData, same(rep));
     });
   });
+}
+
+/// Minimal source for the Add-form editor tests: no saved places, no search,
+/// and no name ever collides.
+class _EditorOnlySource implements AddTileLocationSource {
+  @override
+  Future<List<Location>> savedPlaces() async => const <Location>[];
+
+  @override
+  Future<List<Location>> search(String query) async => const <Location>[];
+
+  @override
+  Future<Location?> findByName(String name) async => null;
 }

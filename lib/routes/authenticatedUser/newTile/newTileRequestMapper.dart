@@ -21,6 +21,7 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
 
 /// Immutable snapshot of the legacy Add Tile form state relevant to request
 /// mapping. Mirrors the fields the legacy widget read at submit time.
@@ -143,7 +144,21 @@ class NewTileRequestMapper {
 
     if (d.location != null) {
       tile.LocationAddress = d.location!.address;
-      tile.LocationTag = d.location!.description;
+      // `LocationTag` IS the backend Name, and the backend upserts places by
+      // name (D20). Shipping a provider's business name therefore makes every
+      // "Walmart Supercenter" overwrite the last one, leaving a single saved
+      // place pointing at whichever branch was used most recently.
+      //
+      // So the name is sent only when it is the USER'S. A provider pick ships
+      // its address and identifiers instead, and the backend derives the name
+      // from the address — unique per store, and readable, because provider
+      // addresses already embed the business name.
+      //
+      // DELIBERATE DIVERGENCE from the legacy mapping, which sent the tag
+      // unconditionally. Encoded in add_tile_location_name_ownership_test.dart.
+      if (locationNameIsUserOwned(d.location!)) {
+        tile.LocationTag = d.location!.description;
+      }
       tile.LocationId = d.location!.id;
       tile.LocationSource = d.location!.source;
       tile.LocationIsVerified = d.location!.isVerified.toString();

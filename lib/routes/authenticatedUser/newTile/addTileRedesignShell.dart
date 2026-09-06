@@ -29,7 +29,11 @@ import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileAnalytics.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/fixedBlockForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
@@ -245,6 +249,7 @@ class AddTileRedesignScreen extends StatefulWidget {
     this.onSubmitted,
     this.now,
     this.analytics,
+    this.locationSource,
   });
 
   final PreTile? preTile;
@@ -259,6 +264,10 @@ class AddTileRedesignScreen extends StatefulWidget {
   /// sink; otherwise the shell builds one that emits through the app's
   /// existing signal service.
   final AddTileAnalytics? analytics;
+
+  /// Data source for the redesigned Location picker. Null in bare widget
+  /// tests, where tapping Location is a no-op rather than a crash.
+  final AddTileLocationSource? locationSource;
 
   @override
   State<AddTileRedesignScreen> createState() => _AddTileRedesignScreenState();
@@ -378,10 +387,23 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   /// Opens the legacy `/LocationRoute` through its typed adapter. A cancelled
   /// route returns `null` and the draft is left untouched (not dirtied).
+  /// Opens the redesigned Location picker (Phase 4.1). A cancelled Back
+  /// returns `null` and the draft is left untouched.
+  ///
+  /// [locationSource] is injected by tests; the app supplies the real API +
+  /// geolocator source. The legacy `/LocationRoute` remains the destination
+  /// for the "Add custom location" path inside the new screen and for the five
+  /// non-redesign callers, until Phase 5.3 cleanup.
   Future<void> _openLocationPicker() async {
-    final Location? picked = await openLocationRoute(
-      context,
-      currentLocation: _draft.location,
+    final AddTileLocationSource? source = widget.locationSource;
+    if (source == null) return; // no source wired (test harness) — no-op.
+    final Location? picked = await Navigator.of(context).push<Location>(
+      MaterialPageRoute<Location>(
+        builder: (_) => AddTileLocationScreen(
+          source: source,
+          initialLocation: _draft.location,
+        ),
+      ),
     );
     if (picked == null || !mounted) return;
     _draft.setLocation(picked);
@@ -397,6 +419,61 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     );
     if (!mounted) return;
     applyRepeatRouteResult(_draft, result);
+  }
+
+  /// Fixed Block date. Only the CALENDAR DAY changes — the existing
+  /// wall-clock start time is carried onto the new day, so picking a date
+  /// never silently moves the block's time.
+  Future<void> _openDatePicker() async {
+    final DateTime start = _draft.startTime;
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: start,
+      firstDate: start.subtract(const Duration(days: 180)),
+      lastDate: start.add(const Duration(days: 180)),
+    );
+    if (picked == null || !mounted) return;
+    _draft.setUserStartTime(
+      DateTime(picked.year, picked.month, picked.day, start.hour, start.minute),
+    );
+  }
+
+  /// Fixed Block start time. Only the wall-clock TIME changes; the calendar
+  /// day is preserved. The end row re-derives itself from the draft.
+  Future<void> _openStartTimePicker() async {
+    final DateTime start = _draft.startTime;
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: start.hour, minute: start.minute),
+    );
+    if (picked == null || !mounted) return;
+    _draft.setUserStartTime(
+      DateTime(start.year, start.month, start.day, picked.hour, picked.minute),
+    );
+  }
+
+  /// Names the chosen location.
+  ///
+  /// Naming lives HERE rather than in the picker: tapping a place there
+  /// commits immediately, which keeps the common case one tap. Naming is the
+  /// minority case, so it is an affordance on the chosen value instead of a
+  /// step every selection pays for.
+  Future<void> _nameLocation() async {
+    final Location? current = _draft.location;
+    final AddTileLocationSource? source = widget.locationSource;
+    if (current == null || source == null) return;
+    final Location? edited = await Navigator.of(context).push<Location>(
+      MaterialPageRoute<Location>(
+        builder: (_) => AddTilePlaceEditorScreen(
+          source: source,
+          initialName: (current.description ?? '').trim(),
+          initialAddress: (current.address ?? '').trim(),
+          original: current,
+        ),
+      ),
+    );
+    if (edited == null || !mounted) return;
+    _draft.setLocation(edited);
   }
 
   /// Opens the legacy `/PickColor` route. Legacy applied the result only when
@@ -579,41 +656,28 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         onDeadlineTap: _openDeadlinePicker,
         onPreferredTimeSelected: _onPreferredTimeSelected,
         onLocationTap: _openLocationPicker,
+        onNameLocationTap: _draft.location != null ? _nameLocation : null,
         onRepeatTap: _openRepeatPicker,
       );
     }
-    // The Fixed form (date / start / duration / calculated read-only end)
-    // lands in Phase 3. A minimal name/duration area keeps CTA gating and
-    // rigid-payload submission testable in this slice.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextField(
-          controller: _nameController,
-          focusNode: _nameFocus,
-          textInputAction: TextInputAction.done,
-          onChanged: (value) {
-            _draft.name = value;
-            if (_showValidationErrors && value.trim().isNotEmpty) {
-              setState(() => _showValidationErrors = false);
-            }
-          },
-          onSubmitted: (_) => _attemptSubmit(),
-          decoration: const InputDecoration(
-            labelText: 'Title',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text('Duration *', style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 4),
-        Text(
-          _draft.duration.inMinutes > 0
-              ? '${_draft.duration.inMinutes} min'
-              : 'Duration not set',
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
+    // Fixed Block: a locked interval. Date / Starts / Duration are editable
+    // and Ends is derived (Phase 3.1).
+    return FixedBlockForm(
+      draft: _draft,
+      nameController: _nameController,
+      nameFocus: _nameFocus,
+      today: widget.now ?? DateTime.now(),
+      nameError: _showValidationErrors && _draft.name.trim().isEmpty
+          ? 'Title is required'
+          : null,
+      onNameChanged: _onNameChanged,
+      onNameSubmitted: (_) => _attemptSubmit(),
+      onDateTap: _openDatePicker,
+      onStartTap: _openStartTimePicker,
+      onDurationTap: _openDurationPicker,
+      onLocationTap: _openLocationPicker,
+      onNameLocationTap: _draft.location != null ? _nameLocation : null,
+      onRepeatTap: _openRepeatPicker,
     );
   }
 }

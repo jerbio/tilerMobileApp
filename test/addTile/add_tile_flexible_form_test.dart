@@ -98,8 +98,8 @@ void main() {
       await tester.pump();
 
       final nameTop = tester.getRect(find.byType(TextField)).top;
-      final howLongTop = tester.getRect(find.text('How long? *')).top;
-      final completeByTop = tester.getRect(find.text('Complete by')).top;
+      final howLongTop = tester.getRect(find.text('DURATION *')).top;
+      final completeByTop = tester.getRect(find.text('COMPLETE BY')).top;
       expect(nameTop, lessThan(howLongTop));
       expect(howLongTop, lessThan(completeByTop));
       expect(find.text('Find time'), findsOneWidget);
@@ -118,7 +118,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.text('Duration not set'), findsOneWidget);
+      expect(find.text('Not set'), findsOneWidget);
     });
   });
 
@@ -143,7 +143,7 @@ void main() {
           nameFocus: f,
         ),
       );
-      expect(find.text('Duration not set'), findsOneWidget);
+      expect(find.text('Not set'), findsOneWidget);
 
       final d = AddTileDraft.flexible(now: now);
       d.setUserDuration(const Duration(hours: 1, minutes: 30));

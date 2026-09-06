@@ -27,7 +27,9 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
+import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// Formats a [Duration] as a compact, locale-neutral summary for the
 /// duration row. Examples:
@@ -101,6 +103,7 @@ class FlexibleTileForm extends StatelessWidget {
     this.onDeadlineTap,
     this.onPreferredTimeSelected,
     this.onLocationTap,
+    this.onNameLocationTap,
     this.onRepeatTap,
   });
 
@@ -120,89 +123,96 @@ class FlexibleTileForm extends StatelessWidget {
   /// [applyPreferredTimeSelection] so an advanced profile is preserved.
   final ValueChanged<PreferredTimeOfDay>? onPreferredTimeSelected;
   final VoidCallback? onLocationTap;
+
+  /// Opens the "name this place" affordance. Null when there is no location
+  /// to name. Naming lives here because the picker commits on tap.
+  final VoidCallback? onNameLocationTap;
   final VoidCallback? onRepeatTap;
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-
     final durationSummary = formatDurationSummary(draft.duration);
     final deadlineText = draft.endTime == null
         ? 'Anytime'
         : DateFormat.yMMMd().format(draft.endTime!);
+    final String? locationText = locationSummary(draft.location);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Name
-        TextField(
-          controller: nameController,
-          focusNode: nameFocus,
-          textInputAction: TextInputAction.done,
-          onChanged: onNameChanged,
-          onSubmitted: onNameSubmitted,
-          decoration: InputDecoration(
-            labelText: 'What do you want to do?',
-            errorText: nameError,
-            border: OutlineInputBorder(),
-          ),
+        // The three primary decisions, grouped as one surface (§4.1: hierarchy
+        // from content and spacing, not a card per field).
+        AddTileSection(
+          children: [
+            AddTileTextFieldRow(
+              key: const ValueKey('taskNameField'),
+              icon: Icons.edit_outlined,
+              label: 'TASK NAME',
+              required: true,
+              controller: nameController,
+              focusNode: nameFocus,
+              hint: 'What do you want to do?',
+              error: nameError,
+              onChanged: onNameChanged,
+              onSubmitted: onNameSubmitted,
+            ),
+            AddTileFieldRow(
+              key: const ValueKey('durationRow'),
+              icon: Icons.schedule,
+              label: 'DURATION',
+              required: true,
+              value: durationSummary ?? 'Not set',
+              valueIsPlaceholder: durationSummary == null,
+              onTap: onDurationTap,
+            ),
+            // COMPLETE BY is the DEADLINE. Its "Anytime" means "no deadline",
+            // a different concept from Preferred time's "Anytime" below; the
+            // two carry distinct labels so they are never conflated.
+            AddTileFieldRow(
+              key: const ValueKey('completeByRow'),
+              icon: Icons.event_outlined,
+              label: 'COMPLETE BY',
+              value: deadlineText,
+              onTap: onDeadlineTap,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
 
-        // 2. Duration
-        Text('How long? *', style: textTheme.titleSmall),
-        const SizedBox(height: 4),
-        _FormRow(
-          key: const ValueKey('durationRow'),
-          summary: durationSummary ?? 'Duration not set',
-          summaryColor: durationSummary != null ? null : scheme.error,
-          onTap: onDurationTap,
-          textTheme: textTheme,
-          scheme: scheme,
-        ),
-        const SizedBox(height: 12),
-
-        // 3. Complete by — the DEADLINE. Its "Anytime" means "no deadline",
-        // a different concept from Preferred time's "Anytime" below; the two
-        // carry distinct section labels so they are never conflated.
-        Text('Complete by', style: textTheme.titleSmall),
-        const SizedBox(height: 4),
-        _FormRow(
-          key: const ValueKey('completeByRow'),
-          summary: deadlineText,
-          onTap: onDeadlineTap,
-          textTheme: textTheme,
-          scheme: scheme,
-        ),
-        const SizedBox(height: 12),
-
-        // 4. Preferred time — WHICH PART OF THE DAY the work may be
-        // scheduled in. Its "Anytime" means "no day-part restriction".
-        Text('Preferred time', style: textTheme.titleSmall),
-        const SizedBox(height: 4),
+        // Preferred time — WHICH PART OF THE DAY the work may be scheduled in.
+        // Its "Anytime" means "no day-part restriction".
         PreferredTimeControl(
           profile: draft.restrictionProfile,
           onSelected: onPreferredTimeSelected,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 14),
 
-        // 5. Secondary shortcuts. Location and Repeat stay on the main form
+        // Secondary shortcuts. Location and Repeat stay on the main form
         // (they materially change scheduling); everything else is under More
-        // options, which arrives in Step 2.3.
-        _FormRow(
-          key: const ValueKey('locationRow'),
-          summary: locationSummary(draft.location) ?? 'Add location',
-          onTap: onLocationTap,
-          textTheme: textTheme,
-          scheme: scheme,
-        ),
-        _FormRow(
-          key: const ValueKey('repeatRow'),
-          summary: repeatSummary(draft.repetitionData),
-          onTap: onRepeatTap,
-          textTheme: textTheme,
-          scheme: scheme,
+        // options.
+        AddTileSection(
+          children: [
+            AddTileNavRow(
+              key: const ValueKey('locationRow'),
+              icon: Icons.location_on_outlined,
+              title: locationText ?? 'Add location',
+              subtitle: locationText == null ? null : 'Location',
+              onTap: onLocationTap,
+              trailing: locationText == null
+                  ? Icon(Icons.add_circle_outline,
+                      color: Theme.of(context).colorScheme.primary)
+                  : (onNameLocationTap == null
+                      ? null
+                      : NameLocationButton(onTap: onNameLocationTap!)),
+            ),
+            AddTileNavRow(
+              key: const ValueKey('repeatRow'),
+              icon: Icons.repeat,
+              title: 'Repeat',
+              subtitle: repeatSummary(draft.repetitionData),
+              onTap: onRepeatTap,
+            ),
+          ],
         ),
       ],
     );
@@ -237,31 +247,77 @@ class PreferredTimeControl extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final PreferredTimeOfDay? selected = preferredTimeOfProfile(profile);
 
+    final tokens = TodayStatusTokens.of(context);
+
     if (selected == null) {
       // Advanced/custom profile: summarize, do not offer to overwrite it.
-      return _FormRow(
-        key: const ValueKey('preferredTimeCustom'),
-        summary: 'Custom',
-        textTheme: textTheme,
-        scheme: scheme,
+      return AddTileSection(
+        children: [
+          AddTileFieldRow(
+            key: const ValueKey('preferredTimeCustom'),
+            icon: Icons.tune,
+            label: 'PREFERRED TIME',
+            value: 'Custom',
+          ),
+        ],
       );
     }
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        for (final part in PreferredTimeOfDay.values)
-          _PreferredTimeChip(
-            key: ValueKey('preferredTime${_suffix(part)}'),
-            label: preferredTimeLabel(part),
-            selected: part == selected,
-            onTap: onSelected == null ? null : () => onSelected!(part),
-            textTheme: textTheme,
-            scheme: scheme,
+    return Container(
+      decoration: BoxDecoration(
+        color: tokens.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: tokens.cardBorder),
+      ),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'PREFERRED TIME',
+            style: textTheme.labelSmall?.copyWith(
+              color: tokens.textSecondary,
+              letterSpacing: 0.6,
+            ),
           ),
-      ],
+          const SizedBox(height: 10),
+          // Wraps so four options survive a narrow width at large text scale
+          // rather than overflowing (§4.2 revision 4).
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final part in PreferredTimeOfDay.values)
+                _PreferredTimeChip(
+                  key: ValueKey('preferredTime${_suffix(part)}'),
+                  label: preferredTimeLabel(part),
+                  icon: _iconFor(part),
+                  selected: part == selected,
+                  onTap: onSelected == null ? null : () => onSelected!(part),
+                  textTheme: textTheme,
+                  scheme: scheme,
+                ),
+            ],
+          ),
+        ],
+      ),
     );
+  }
+
+  /// Day-part icons. Decorative — each chip's meaning is carried by its
+  /// label and selected semantics, so the icons are hidden from assistive
+  /// technology by the chip itself.
+  static IconData _iconFor(PreferredTimeOfDay part) {
+    switch (part) {
+      case PreferredTimeOfDay.anytime:
+        return Icons.check_circle;
+      case PreferredTimeOfDay.morning:
+        return Icons.wb_twilight;
+      case PreferredTimeOfDay.afternoon:
+        return Icons.wb_sunny_outlined;
+      case PreferredTimeOfDay.evening:
+        return Icons.nightlight_outlined;
+    }
   }
 
   static String _suffix(PreferredTimeOfDay part) {
@@ -276,6 +332,7 @@ class _PreferredTimeChip extends StatelessWidget {
   const _PreferredTimeChip({
     super.key,
     required this.label,
+    required this.icon,
     required this.selected,
     required this.onTap,
     required this.textTheme,
@@ -283,6 +340,7 @@ class _PreferredTimeChip extends StatelessWidget {
   });
 
   final String label;
+  final IconData icon;
   final bool selected;
   final VoidCallback? onTap;
   final TextTheme textTheme;
@@ -290,88 +348,46 @@ class _PreferredTimeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
     return Semantics(
       button: true,
       selected: selected,
       label: label,
-      child: Material(
-        color:
-            selected ? scheme.primaryContainer : scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Center(
-                widthFactor: 1,
-                child: Text(
-                  label,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: selected ? scheme.primary : scheme.onSurface,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  ),
+      child: ExcludeSemantics(
+        child: Material(
+          color: selected ? tokens.brandTint : tokens.surface,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: onTap,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: selected ? tokens.brand : tokens.cardBorder,
+                  width: selected ? 1.5 : 1,
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A single tappable row in the form: a summary value and an optional
-/// trailing chevron (navigation affordance). 44px minimum touch target.
-class _FormRow extends StatelessWidget {
-  const _FormRow({
-    super.key,
-    required this.summary,
-    this.summaryColor,
-    this.onTap,
-    required this.textTheme,
-    required this.scheme,
-  });
-
-  final String summary;
-  final Color? summaryColor;
-  final VoidCallback? onTap;
-  final TextTheme textTheme;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: summary,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(8),
-          onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      summary,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: summaryColor ?? scheme.onSurface,
-                      ),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    icon,
+                    size: 18,
+                    color: selected ? tokens.brand : tokens.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    label,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: selected ? tokens.brand : tokens.textPrimary,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
-                ),
-                if (onTap != null)
-                  Icon(
-                    Icons.chevron_right,
-                    color: scheme.onSurfaceVariant,
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
