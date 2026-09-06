@@ -94,6 +94,10 @@ Finder cta() => find.byKey(const ValueKey('addTileCta'));
 AddTileBottomAction _ctaWidget(WidgetTester tester) =>
     tester.widget<AddTileBottomAction>(cta());
 
+/// A template that ignores its argument, standing in for a translation that
+/// dropped the `{emphasis}` placeholder.
+String _noPlaceholder(String _) => 'A sentence with no placeholder at all.';
+
 void main() {
   // Non-const: this SDK's DateTime constructor is not const in widget-test
   // context; the value is still deterministic.
@@ -108,6 +112,115 @@ void main() {
           tester.getRect(find.bySemanticsLabel('Tile type')).top;
       final nameTop = tester.getRect(find.byType(TextField)).top;
       expect(selectorTop, lessThan(nameTop));
+    });
+
+    testWidgets('the two segments share ONE track, flush (D37)',
+        (tester) async {
+      // The header mockup draws a single pill holding both segments. The
+      // earlier version was two rounded buttons with an 8px gap, which read
+      // as two independent toggles rather than one either/or choice — the gap
+      // said "unrelated" about the only strictly exclusive decision here.
+      await pumpShell(tester, AddTileRedesignScreen(now: now));
+      await tester.pump();
+
+      final Finder segments = find.byType(AddTileTypeSegment);
+      expect(segments, findsNWidgets(2));
+
+      final Rect first = tester.getRect(segments.at(0));
+      final Rect second = tester.getRect(segments.at(1));
+      expect(second.left, closeTo(first.right, 0.5),
+          reason: 'a gap between segments reads as two separate controls');
+      expect(first.top, closeTo(second.top, 0.5));
+    });
+
+    testWidgets('each segment carries its mode icon (D37)', (tester) async {
+      await pumpShell(tester, AddTileRedesignScreen(now: now));
+      await tester.pump();
+
+      for (final AddTileType type in AddTileType.values) {
+        expect(
+          find.descendant(
+            of: find.byType(AddTileTypeSelector),
+            matching: find.byIcon(AddTileTypeSelector.iconFor(type)),
+          ),
+          findsOneWidget,
+          reason: '$type is missing its icon',
+        );
+      }
+    });
+
+    testWidgets('the explanation emphasises one phrase (D37)', (tester) async {
+      await pumpShell(tester, AddTileRedesignScreen(now: now));
+      await tester.pump();
+
+      final Text sentence = tester.widget<Text>(find.descendant(
+        of: find.byKey(const ValueKey('modeExplanation')),
+        matching: find.byType(Text),
+      ));
+      expect(sentence.textSpan, isNotNull,
+          reason: 'the sentence must be rich text so one phrase can be '
+              'set heavier');
+
+      // The whole sentence still reads as one string — the emphasis is a
+      // style, not a structural split a screen reader would announce apart.
+      expect(sentence.textSpan!.toPlainText(),
+          'Tiler will find the best time for this.');
+
+      final List<InlineSpan> spans = (sentence.textSpan! as TextSpan).children!;
+      final InlineSpan emphasised = spans.firstWhere(
+        (span) => span is TextSpan && span.text == 'best time',
+        orElse: () => const TextSpan(text: ''),
+      );
+      expect((emphasised as TextSpan).style?.fontWeight, FontWeight.w600);
+    });
+
+    testWidgets('the explanation follows the selected mode (D37)',
+        (tester) async {
+      await pumpShell(tester, AddTileRedesignScreen(now: now));
+      await tester.pump();
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('modeExplanation')),
+          matching:
+              find.byIcon(AddTileTypeSelector.iconFor(AddTileType.flexible)),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.text('Fixed Block'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Blocks happen at a fixed time.'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('modeExplanation')),
+          matching: find.byIcon(AddTileTypeSelector.iconFor(AddTileType.fixed)),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a translation that drops {emphasis} still renders (D37)',
+        (tester) async {
+      // gen-l10n would catch a missing placeholder at build time, but the
+      // widget must not throw if one ever reaches it — a header that crashes
+      // is worse than one that loses a bold.
+      await pumpShell(
+        tester,
+        const Scaffold(
+          body: AddTileModeExplanation(
+            key: ValueKey('degraded'),
+            icon: Icons.auto_awesome,
+            template: _noPlaceholder,
+            emphasis: 'best time',
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+      expect(
+          find.text('A sentence with no placeholder at all.'), findsOneWidget);
     });
 
     testWidgets('flexible default: title/explanation/CTA reflect Flexible',

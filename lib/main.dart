@@ -27,6 +27,8 @@ import 'package:tiler_app/routes/authenticatedUser/forecast/forecastPreview.dart
 import 'package:tiler_app/routes/authenticatedUser/forecast/procrastinateAll.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
+import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
@@ -220,6 +222,10 @@ class _TilerAppState extends State<TilerApp> {
                         locationSource: ApiAddTileLocationSource(
                           locationApi:
                               LocationApi(getContextCallBack: () => context),
+                        ),
+                        predictionSource: ApiAddTilePredictionSource(
+                          scheduleApi:
+                              ScheduleApi(getContextCallBack: () => context),
                         ),
                       ),
                   '/SearchTile': (BuildContext context) =>

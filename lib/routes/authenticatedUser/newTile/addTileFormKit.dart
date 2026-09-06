@@ -356,6 +356,7 @@ class AddTileTextFieldRow extends StatelessWidget {
     this.hint,
     this.error,
     this.required = false,
+    this.busy = false,
     this.onChanged,
     this.onSubmitted,
   });
@@ -370,6 +371,13 @@ class AddTileTextFieldRow extends StatelessWidget {
   final String? hint;
   final String? error;
   final bool required;
+
+  /// Shows a small spinner beside the field while something is being fetched
+  /// FOR this field's value — today, the name-driven prediction. It sits on
+  /// the row rather than over the screen because the form stays fully usable
+  /// while it runs; a blocking indicator would be a lie about that.
+  final bool busy;
+
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
@@ -430,6 +438,18 @@ class AddTileTextFieldRow extends StatelessWidget {
               ],
             ),
           ),
+          if (busy)
+            Padding(
+              padding: const EdgeInsets.only(left: 8, top: 18),
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: tokens.textSecondary,
+                ),
+              ),
+            ),
         ],
       ),
     );

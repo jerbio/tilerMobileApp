@@ -47,6 +47,7 @@ class FixedBlockForm extends StatelessWidget {
     required this.nameFocus,
     required this.today,
     this.nameError,
+    this.predicting = false,
     this.onNameChanged,
     this.onNameSubmitted,
     this.onDateTap,
@@ -65,6 +66,9 @@ class FixedBlockForm extends StatelessWidget {
   final DateTime today;
 
   final String? nameError;
+
+  /// A name-driven prediction is in flight for this draft.
+  final bool predicting;
   final ValueChanged<String>? onNameChanged;
   final ValueChanged<String>? onNameSubmitted;
   final VoidCallback? onDateTap;
@@ -95,6 +99,7 @@ class FixedBlockForm extends StatelessWidget {
               focusNode: nameFocus,
               hint: l10n.addTileBlockTitleHint,
               error: nameError,
+              busy: predicting,
               onChanged: onNameChanged,
               onSubmitted: onNameSubmitted,
             ),

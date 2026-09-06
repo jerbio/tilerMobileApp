@@ -2959,11 +2959,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addTileTypeSelectorLabel => 'Tile type';
 
   @override
-  String get addTileExplanationFlexible =>
-      'Tiler will find the best time for this.';
+  String addTileExplanationFlexible(String emphasis) {
+    return 'Tiler will find the $emphasis for this.';
+  }
 
   @override
-  String get addTileExplanationFixed => 'Blocks happen at a fixed time.';
+  String addTileExplanationFixed(String emphasis) {
+    return 'Blocks happen at $emphasis.';
+  }
 
   @override
   String get addTileFindTime => 'Find time';
@@ -3236,4 +3239,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String addTileColorSwatch(int index) {
     return 'Color $index';
   }
+
+  @override
+  String get addTileExplanationFlexibleEmphasis => 'best time';
+
+  @override
+  String get addTileExplanationFixedEmphasis => 'a fixed time';
 }

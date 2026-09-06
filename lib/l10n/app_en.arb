@@ -1973,8 +1973,8 @@
     "addTileTypeFlexible": "Flexible Tile",
     "addTileTypeFixed": "Fixed Block",
     "addTileTypeSelectorLabel": "Tile type",
-    "addTileExplanationFlexible": "Tiler will find the best time for this.",
-    "addTileExplanationFixed": "Blocks happen at a fixed time.",
+    "addTileExplanationFlexible": "Tiler will find the {emphasis} for this.",
+    "addTileExplanationFixed": "Blocks happen at {emphasis}.",
     "addTileFindTime": "Find time",
     "addTileSubmitting": "Submitting",
     "addTileNameRequired": "Name is required",
@@ -2067,5 +2067,16 @@
   "@addTileColorSwatch": {
     "description": "Accessible name for a preset color swatch, numbered by position.",
     "placeholders": { "index": { "type": "int" } }
-  }
+  },
+
+  "@addTileExplanationFlexible": {
+    "description": "Mode explanation under the type selector. {emphasis} is set in a heavier weight; translators may place it anywhere in the sentence.",
+    "placeholders": { "emphasis": { "type": "String" } }
+  },
+  "@addTileExplanationFixed": {
+    "description": "Mode explanation under the type selector. {emphasis} is set in a heavier weight; translators may place it anywhere in the sentence.",
+    "placeholders": { "emphasis": { "type": "String" } }
+  },
+  "addTileExplanationFlexibleEmphasis": "best time",
+  "addTileExplanationFixedEmphasis": "a fixed time"
 }

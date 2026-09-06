@@ -86,6 +86,20 @@ Location selectedLocation(String description) =>
 
 /// A profile the four simple day parts cannot express: weekdays only, and a
 /// window that is not one of the canonical day-part windows.
+/// Scrolls the name affordance into view, then taps it.
+///
+/// The header grew at D37, so the Location row now sits below the fold on the
+/// standard test viewport and a bare `tap()` misses the hit test — silently,
+/// because `tap` only warns.
+Future<void> tapNameAction(WidgetTester tester) async {
+  final Finder action = find.byKey(const ValueKey('nameLocationAction'));
+  await tester.scrollUntilVisible(action, 120,
+      scrollable: find.byType(Scrollable).first);
+  await tester.pumpAndSettle();
+  await tester.tap(action);
+  await tester.pumpAndSettle();
+}
+
 Finder chevronInLocationRow() => find.descendant(
       of: find.byKey(const ValueKey('locationRow')),
       matching: find.byIcon(Icons.chevron_right),
@@ -569,8 +583,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
-      await tester.pumpAndSettle();
+      await tapNameAction(tester);
 
       expect(find.byKey(const ValueKey('placeNameField')), findsOneWidget);
       expect(find.byKey(const ValueKey('placeAddressField')), findsOneWidget,
@@ -596,8 +609,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
-      await tester.pumpAndSettle();
+      await tapNameAction(tester);
       await tester.enterText(
           find.byKey(const ValueKey('placeNameField')), "Ashley's Home");
       await tester.pumpAndSettle(const Duration(seconds: 1));
@@ -628,8 +640,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byKey(const ValueKey('nameLocationAction')));
-      await tester.pumpAndSettle();
+      await tapNameAction(tester);
       await tester.enterText(
           find.byKey(const ValueKey('placeNameField')), 'Discarded');
       await tester.pumpAndSettle(const Duration(seconds: 1));

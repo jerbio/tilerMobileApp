@@ -21,6 +21,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Widgets and helpers intended for reuse beyond Add Tile.
 const List<String> _sharedPickerFiles = <String>[
   'addTileColorScreen.dart',
+  'addTilePredictionSource.dart',
   'addTilePriorityScreen.dart',
   'addTileRepeatScreen.dart',
   'repeatOptions.dart',

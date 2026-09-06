@@ -5256,17 +5256,17 @@ abstract class AppLocalizations {
   /// **'Tile type'**
   String get addTileTypeSelectorLabel;
 
-  /// No description provided for @addTileExplanationFlexible.
+  /// Mode explanation under the type selector. {emphasis} is set in a heavier weight; translators may place it anywhere in the sentence.
   ///
   /// In en, this message translates to:
-  /// **'Tiler will find the best time for this.'**
-  String get addTileExplanationFlexible;
+  /// **'Tiler will find the {emphasis} for this.'**
+  String addTileExplanationFlexible(String emphasis);
 
-  /// No description provided for @addTileExplanationFixed.
+  /// Mode explanation under the type selector. {emphasis} is set in a heavier weight; translators may place it anywhere in the sentence.
   ///
   /// In en, this message translates to:
-  /// **'Blocks happen at a fixed time.'**
-  String get addTileExplanationFixed;
+  /// **'Blocks happen at {emphasis}.'**
+  String addTileExplanationFixed(String emphasis);
 
   /// No description provided for @addTileFindTime.
   ///
@@ -5741,6 +5741,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Color {index}'**
   String addTileColorSwatch(int index);
+
+  /// No description provided for @addTileExplanationFlexibleEmphasis.
+  ///
+  /// In en, this message translates to:
+  /// **'best time'**
+  String get addTileExplanationFlexibleEmphasis;
+
+  /// No description provided for @addTileExplanationFixedEmphasis.
+  ///
+  /// In en, this message translates to:
+  /// **'a fixed time'**
+  String get addTileExplanationFixedEmphasis;
 }
 
 class _AppLocalizationsDelegate

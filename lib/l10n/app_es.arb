@@ -773,8 +773,8 @@
     "addTileTypeFlexible": "Tile flexible",
     "addTileTypeFixed": "Bloque fijo",
     "addTileTypeSelectorLabel": "Tipo de Tile",
-    "addTileExplanationFlexible": "Tiler encontrará el mejor momento para esto.",
-    "addTileExplanationFixed": "Los bloques ocurren a una hora fija.",
+    "addTileExplanationFlexible": "Tiler encontrará el {emphasis} para esto.",
+    "addTileExplanationFixed": "Los bloques ocurren a {emphasis}.",
     "addTileFindTime": "Buscar horario",
     "addTileSubmitting": "Enviando",
     "addTileNameRequired": "El nombre es obligatorio",
@@ -854,5 +854,8 @@
   "addTileColorCustomHelper": "Elige cualquier color",
   "addTileColorHelper": "El color solo cambia cómo se ve esto en tu agenda.",
   "addTileColorShuffle": "Probar otro color",
-  "addTileColorSwatch": "Color {index}"
+  "addTileColorSwatch": "Color {index}",
+
+  "addTileExplanationFlexibleEmphasis": "mejor momento",
+  "addTileExplanationFixedEmphasis": "una hora fija"
 }

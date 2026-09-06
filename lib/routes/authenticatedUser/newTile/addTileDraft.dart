@@ -380,6 +380,31 @@ class AddTileDraft extends ChangeNotifier {
     return true;
   }
 
+  /// Applies a name-based location prediction.
+  ///
+  /// Does NOT mark location as user-edited: a predicted place must stay
+  /// replaceable by a later prediction, and must not make the draft dirty —
+  /// the user has not chosen anything yet.
+  bool applySuggestedLocation(Location value) {
+    if (!canAcceptSuggestion(AddTileSuggestedField.location)) return false;
+    _location = value;
+    _notify();
+    return true;
+  }
+
+  /// Applies a name-based preferred-time prediction.
+  ///
+  /// `null` is meaningful — it is Anytime — so this can legitimately clear a
+  /// previously predicted profile when a new name predicts nothing.
+  bool applySuggestedRestrictionProfile(RestrictionProfile? value) {
+    if (!canAcceptSuggestion(AddTileSuggestedField.restrictionProfile)) {
+      return false;
+    }
+    _restrictionProfile = value;
+    _notify();
+    return true;
+  }
+
   // ------------------------------------------------------------------
   // Validation — stable reason codes per the analytics schema
   // ------------------------------------------------------------------

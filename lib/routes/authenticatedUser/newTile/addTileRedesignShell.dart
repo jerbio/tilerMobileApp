@@ -24,6 +24,8 @@
 // app_en.arb/app_es.arb through AppLocalizations; label helpers take the
 // AppLocalizations instance as a parameter rather than reading a BuildContext,
 // so they stay pure, unit-testable, and reusable outside this flow (D29).
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
@@ -37,6 +39,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePriorityScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileMoreOptions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
@@ -45,6 +48,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/tileRouteAdapters.dart';
+import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// Local, dependency-free feature flag (no remote-config coupling) so the new
 /// shell can be validated in isolation. Remote/rollout gating arrives later.
@@ -66,6 +70,12 @@ class AddTileFeatureFlags {
 /// Non-swipeable segmented type selector. One control for the
 /// Flexible Tile / Fixed Block decision — the legacy carousel + toggle
 /// duplication is removed. Selected state is exposed to assistive tech.
+///
+/// Drawn as ONE track holding two segments (D37), matching the header
+/// mockup. An earlier revision was two separate rounded buttons with a gap,
+/// which read as two independent toggles rather than as a single either/or
+/// choice — the gap said "these are unrelated" about the one decision on the
+/// screen that is strictly exclusive.
 class AddTileTypeSelector extends StatelessWidget {
   const AddTileTypeSelector({
     super.key,
@@ -76,38 +86,53 @@ class AddTileTypeSelector extends StatelessWidget {
   final AddTileType type;
   final ValueChanged<AddTileType> onSelected;
 
+  /// Decorative mode icons. Each segment states its mode in words, so the
+  /// icon reinforces rather than carries (§11).
+  static IconData iconFor(AddTileType type) => type == AddTileType.fixed
+      ? Icons.calendar_today_outlined
+      : Icons.auto_awesome;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final scheme = Theme.of(context).colorScheme;
+    final tokens = TodayStatusTokens.of(context);
     final textTheme = Theme.of(context).textTheme;
     return Semantics(
       container: true,
       label: l10n.addTileTypeSelectorLabel,
-      child: Row(
-        children: [
-          Expanded(
-            child: AddTileTypeSegment(
-              label: l10n.addTileTypeFlexible,
-              selected: type == AddTileType.flexible,
-              onTap: () => onSelected(AddTileType.flexible),
-              selectedBackground: scheme.primaryContainer,
-              selectedForeground: scheme.primary,
-              textTheme: textTheme,
+      child: Container(
+        padding: const EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: tokens.surface,
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: tokens.cardBorder),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: AddTileTypeSegment(
+                label: l10n.addTileTypeFlexible,
+                icon: iconFor(AddTileType.flexible),
+                selected: type == AddTileType.flexible,
+                onTap: () => onSelected(AddTileType.flexible),
+                selectedBackground: tokens.brandTint,
+                selectedForeground: tokens.brand,
+                textTheme: textTheme,
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: AddTileTypeSegment(
-              label: l10n.addTileTypeFixed,
-              selected: type == AddTileType.fixed,
-              onTap: () => onSelected(AddTileType.fixed),
-              selectedBackground: scheme.primaryContainer,
-              selectedForeground: scheme.primary,
-              textTheme: textTheme,
+            Expanded(
+              child: AddTileTypeSegment(
+                label: l10n.addTileTypeFixed,
+                icon: iconFor(AddTileType.fixed),
+                selected: type == AddTileType.fixed,
+                onTap: () => onSelected(AddTileType.fixed),
+                selectedBackground: tokens.brandTint,
+                selectedForeground: tokens.brand,
+                textTheme: textTheme,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -121,6 +146,7 @@ class AddTileTypeSelector extends StatelessWidget {
 class AddTileTypeSegment extends StatelessWidget {
   const AddTileTypeSegment({
     required this.label,
+    required this.icon,
     required this.selected,
     required this.onTap,
     required this.selectedBackground,
@@ -129,6 +155,7 @@ class AddTileTypeSegment extends StatelessWidget {
   });
 
   final String label;
+  final IconData icon;
   final bool selected;
   final VoidCallback onTap;
   final Color selectedBackground;
@@ -137,7 +164,8 @@ class AddTileTypeSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onSurface = Theme.of(context).colorScheme.onSurface;
+    final tokens = TodayStatusTokens.of(context);
+    final Color foreground = selected ? selectedForeground : tokens.textPrimary;
     return Semantics(
       button: true,
       selected: selected,
@@ -145,24 +173,118 @@ class AddTileTypeSegment extends StatelessWidget {
       child: ExcludeSemantics(
         child: Material(
           color: selected ? selectedBackground : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(28),
           child: InkWell(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(28),
             onTap: onTap,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 44),
+              constraints: const BoxConstraints(minHeight: 48),
               child: Center(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: textTheme.titleSmall?.copyWith(
-                    color: selected ? selectedForeground : onSurface,
-                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(icon, size: 18, color: foreground),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.titleSmall?.copyWith(
+                            color: foreground,
+                            fontWeight:
+                                selected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The mode explanation beneath the type selector: a leading mode icon and a
+/// sentence with one phrase set in a heavier weight.
+///
+/// The sentence is ONE localized string carrying an `{emphasis}` placeholder,
+/// not three concatenated fragments, so a translator controls word order and
+/// may put the emphasised phrase anywhere in it — including first or last,
+/// which several languages need.
+///
+/// The split is made on a SENTINEL rather than on the emphasis text, so an
+/// emphasis phrase that also appears elsewhere in the sentence cannot be
+/// bolded twice. If a translation drops the placeholder the sentinel never
+/// appears, and the whole sentence renders unemphasised rather than throwing.
+class AddTileModeExplanation extends StatelessWidget {
+  const AddTileModeExplanation({
+    super.key,
+    required this.icon,
+    required this.template,
+    required this.emphasis,
+  });
+
+  final IconData icon;
+
+  /// Produces the sentence with its argument substituted for `{emphasis}`.
+  final String Function(String) template;
+
+  /// The phrase to set in a heavier weight.
+  final String emphasis;
+
+  static const String _sentinel = '\u0000';
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final TextStyle base = (textTheme.bodyMedium ?? const TextStyle())
+        .copyWith(color: tokens.textSecondary);
+
+    final List<String> parts = template(_sentinel).split(_sentinel);
+    final Widget sentence = parts.length == 2
+        ? Text.rich(
+            TextSpan(
+              style: base,
+              children: <InlineSpan>[
+                TextSpan(text: parts.first),
+                TextSpan(
+                  text: emphasis,
+                  style: base.copyWith(
+                    color: tokens.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                TextSpan(text: parts.last),
+              ],
+            ),
+            textAlign: TextAlign.center,
+          )
+        : Text(template(emphasis), style: base, textAlign: TextAlign.center);
+
+    return Semantics(
+      // The emphasis is visual only; assistive tech gets the plain sentence.
+      label: template(emphasis),
+      child: ExcludeSemantics(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: Icon(icon, size: 16, color: tokens.brand),
+            ),
+            const SizedBox(width: 8),
+            Flexible(child: sentence),
+          ],
         ),
       ),
     );
@@ -261,6 +383,7 @@ class AddTileRedesignScreen extends StatefulWidget {
     this.now,
     this.analytics,
     this.locationSource,
+    this.predictionSource,
   });
 
   final PreTile? preTile;
@@ -279,6 +402,10 @@ class AddTileRedesignScreen extends StatefulWidget {
   /// Data source for the redesigned Location picker. Null in bare widget
   /// tests, where tapping Location is a no-op rather than a crash.
   final AddTileLocationSource? locationSource;
+
+  /// Name-driven prediction (legacy parity — see addTilePredictionSource.dart).
+  /// Null disables prediction entirely, which is what most widget tests want.
+  final AddTilePredictionSource? predictionSource;
 
   @override
   State<AddTileRedesignScreen> createState() => _AddTileRedesignScreenState();
@@ -321,6 +448,9 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
 
   @override
   void dispose() {
+    // Cancelled before the draft goes, so a debounce that fires during
+    // teardown cannot reach a disposed draft.
+    _predictionDebounce?.cancel();
     _draft.removeListener(_onDraftChanged);
     _nameController.dispose();
     _nameFocus.dispose();
@@ -346,6 +476,81 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.name = value;
     if (_showValidationErrors && value.trim().isNotEmpty) {
       setState(() => _showValidationErrors = false);
+    }
+    _schedulePrediction(value);
+  }
+
+  // ------------------------------------------------------------------
+  // Name-driven prediction (legacy parity)
+  // ------------------------------------------------------------------
+
+  Timer? _predictionDebounce;
+  bool _predicting = false;
+
+  /// Guards against a slow prediction landing after a newer one — the same
+  /// generation counter the Location picker uses, for the same reason: these
+  /// responses have no request id, so ordering cannot be recovered from them.
+  int _predictionGeneration = 0;
+
+  /// Debounces, then asks. Mirrors legacy's cancel-and-reschedule: each
+  /// keystroke replaces the pending request rather than queueing another.
+  void _schedulePrediction(String name) {
+    _predictionDebounce?.cancel();
+    if (widget.predictionSource == null) return;
+    if (!shouldRequestPrediction(name)) return;
+
+    // Nothing to fill means nothing to ask. Legacy skipped only when duration
+    // AND location were both manual, while still writing the restriction
+    // profile it fetched — so it could overwrite a field it had not checked.
+    // The condition here is the honest one: ask only while some field can
+    // still accept an answer (D38).
+    if (!_canAcceptAnyPrediction()) return;
+
+    _predictionDebounce = Timer(predictionDebounce, () => _runPrediction(name));
+  }
+
+  bool _canAcceptAnyPrediction() =>
+      _draft.canAcceptSuggestion(AddTileSuggestedField.duration) ||
+      _draft.canAcceptSuggestion(AddTileSuggestedField.location) ||
+      _draft.canAcceptSuggestion(AddTileSuggestedField.restrictionProfile);
+
+  Future<void> _runPrediction(String name) async {
+    final AddTilePredictionSource? source = widget.predictionSource;
+    if (source == null) return;
+    final int generation = ++_predictionGeneration;
+    if (mounted) setState(() => _predicting = true);
+
+    AddTilePrediction prediction = AddTilePrediction.empty;
+    try {
+      prediction = await source.predict(name);
+    } catch (_) {
+      // A prediction is a convenience layered on a form the user can always
+      // fill in themselves, so a failure must be INVISIBLE — not a snackbar
+      // on a screen where nothing they did has gone wrong.
+      //
+      // Caught here as well as inside ApiAddTilePredictionSource: the source
+      // is an injectable seam, and a screen must not depend on every
+      // implementation of it being well-behaved. Without this the busy
+      // affordance below would also never clear.
+      //
+      // The exception is deliberately not logged — the request carries the
+      // tile name the user typed, and its message can echo that back.
+    }
+
+    if (!mounted || generation != _predictionGeneration) return;
+    setState(() => _predicting = false);
+
+    // Each field is applied through the draft, which refuses any the user has
+    // since edited — so a prediction in flight while the user picks a
+    // duration cannot undo that pick.
+    if (prediction.duration != null) {
+      _draft.applySuggestedDuration(prediction.duration!);
+    }
+    if (prediction.location != null) {
+      _draft.applySuggestedLocation(prediction.location!);
+    }
+    if (prediction.restrictionProfile != null) {
+      _draft.applySuggestedRestrictionProfile(prediction.restrictionProfile);
     }
   }
 
@@ -617,9 +822,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     final String title = type == AddTileType.fixed
         ? l10n.addTileScreenTitleFixed
         : l10n.addTileScreenTitleFlexible;
-    final String explanation = type == AddTileType.fixed
-        ? l10n.addTileExplanationFixed
-        : l10n.addTileExplanationFlexible;
+
     final double keyboardInset = MediaQuery.of(context).viewInsets.bottom;
 
     return Scaffold(
@@ -633,16 +836,22 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: AddTileTypeSelector(type: type, onSelected: _onTypeSelected),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: Text(
-              explanation,
-              style: Theme.of(context).textTheme.bodyMedium,
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 2),
+            child: AddTileModeExplanation(
+              key: const ValueKey('modeExplanation'),
+              icon: AddTileTypeSelector.iconFor(type),
+              template: type == AddTileType.fixed
+                  ? l10n.addTileExplanationFixed
+                  : l10n.addTileExplanationFlexible,
+              emphasis: type == AddTileType.fixed
+                  ? l10n.addTileExplanationFixedEmphasis
+                  : l10n.addTileExplanationFlexibleEmphasis,
             ),
           ),
           Expanded(
@@ -695,6 +904,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         draft: _draft,
         nameController: _nameController,
         nameFocus: _nameFocus,
+        predicting: _predicting,
         nameError: _showValidationErrors && _draft.name.trim().isEmpty
             ? l10n.addTileNameRequired
             : null,
@@ -715,6 +925,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       draft: _draft,
       nameController: _nameController,
       nameFocus: _nameFocus,
+      predicting: _predicting,
       today: widget.now ?? DateTime.now(),
       nameError: _showValidationErrors && _draft.name.trim().isEmpty
           ? l10n.addTileTitleRequired
