@@ -5753,6 +5753,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'a fixed time'**
   String get addTileExplanationFixedEmphasis;
+
+  /// No description provided for @addTileFieldRepeat.
+  ///
+  /// In en, this message translates to:
+  /// **'REPEAT'**
+  String get addTileFieldRepeat;
 }
 
 class _AppLocalizationsDelegate

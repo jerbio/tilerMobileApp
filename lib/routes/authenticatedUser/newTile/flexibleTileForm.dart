@@ -126,8 +126,8 @@ class FlexibleTileForm extends StatelessWidget {
   final VoidCallback? onDurationTap;
   final VoidCallback? onDeadlineTap;
 
-  /// Fired with the tapped day part. The shell resolves it through
-  /// [applyPreferredTimeSelection] so an advanced profile is preserved.
+  /// Fired with the tapped day part. The shell applies it directly; choosing
+  /// a day part while Custom is selected REPLACES the advanced profile (D40).
   final ValueChanged<PreferredTimeOfDay>? onPreferredTimeSelected;
 
   /// Opens the advanced profile editor behind the **Custom** chip. Same
@@ -284,8 +284,9 @@ List<PreferredTimeOfDay?> preferredTimeChipOrder(PreferredTimeOfDay? selected) {
 /// an advanced profile no way back to the four simple choices and no way into
 /// the editor from here.
 ///
-/// Tapping a day part still never discards an advanced profile silently —
-/// [applyPreferredTimeSelection] owns that rule in the state layer.
+/// Tapping a day part while Custom is selected replaces the advanced profile
+/// (D40). That is not silent: Custom is rendered as the selected chip, so the
+/// user can see what they are replacing.
 ///
 /// Selection is conveyed by label + selected semantics, never by color alone.
 class PreferredTimeControl extends StatelessWidget {

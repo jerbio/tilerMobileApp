@@ -116,24 +116,28 @@ PreferredTimeOfDay? preferredTimeOfProfile(RestrictionProfile? profile) {
   return null;
 }
 
-/// The profile to store after the user selects [part] while [current] is the
-/// draft's current profile.
-///
-/// - `current` is absent/Anytime/simple → the selection applies
-///   (`anytime` → `null`, part → that part's payload).
-/// - `current` is advanced/custom (not expressible as one of the four
-///   choices) → it is PRESERVED, returned unchanged. A simple day-part
-///   selection must never silently overwrite advanced values; changing them
-///   requires the advanced editor (later phase).
-RestrictionProfile? applyPreferredTimeSelection(
-  RestrictionProfile? current,
-  PreferredTimeOfDay part,
-) {
-  if (current != null && preferredTimeOfProfile(current) == null) {
-    return current;
-  }
-  return restrictionProfileForPreferredTime(part);
-}
+// REMOVED: `applyPreferredTimeSelection` (D40).
+//
+// It used to PRESERVE an advanced profile and discard the day-part selection,
+// on the principle that a simple choice must never silently overwrite
+// advanced values. That was sound while an advanced profile HID the four
+// chips — the branch was unreachable, so nothing was silently anything.
+//
+// D31 put the chips back on screen beside a selected **Custom**, and the rule
+// became the bug the user reported: "once custom is selected I cannot switch
+// to anytime, morning, afternoon and evening". Four visible, enabled controls
+// took the tap and did nothing.
+//
+// The original concern is now answered by the UI rather than by the state
+// layer: Custom renders as the selected chip, so choosing a day part instead
+// of it is a deliberate, informed replacement — the same gesture as switching
+// between any two options in a radio group. Callers use
+// [restrictionProfileForPreferredTime] directly.
+//
+// COST ACCEPTED: replacing an advanced profile discards it, and re-entering
+// custom hours means a trip back through the advanced editor. A dead control
+// is the worse failure — it was the same shape as the Weekdays chips that
+// read on device as "cannot unselect the week days".
 
 /// Localized display label for a day part.
 ///

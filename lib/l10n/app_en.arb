@@ -2078,5 +2078,7 @@
     "placeholders": { "emphasis": { "type": "String" } }
   },
   "addTileExplanationFlexibleEmphasis": "best time",
-  "addTileExplanationFixedEmphasis": "a fixed time"
+  "addTileExplanationFixedEmphasis": "a fixed time",
+
+  "addTileFieldRepeat": "REPEAT"
 }

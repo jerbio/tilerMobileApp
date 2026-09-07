@@ -3245,4 +3245,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get addTileExplanationFixedEmphasis => 'a fixed time';
+
+  @override
+  String get addTileFieldRepeat => 'REPEAT';
 }

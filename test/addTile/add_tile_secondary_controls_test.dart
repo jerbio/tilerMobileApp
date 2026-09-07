@@ -149,22 +149,27 @@ void main() {
       expect(preferredTimeOfProfile(advancedProfile()), isNull);
     });
 
-    test('a simple selection never overwrites an advanced profile', () {
+    test('a day part replaces an advanced profile (D40)', () {
+      // The old rule PRESERVED the advanced profile and dropped the
+      // selection. That was safe while the four chips were hidden under an
+      // advanced profile — the branch was unreachable. D31 put them back on
+      // screen, and the rule turned four visible, enabled chips into dead
+      // controls.
       final advanced = advancedProfile();
-      expect(
-        applyPreferredTimeSelection(advanced, PreferredTimeOfDay.morning),
-        same(advanced),
-        reason: 'advanced values change only through the advanced editor',
-      );
+      expect(preferredTimeOfProfile(advanced), isNull,
+          reason: 'precondition: this profile is not a simple day part');
+
+      final next =
+          restrictionProfileForPreferredTime(PreferredTimeOfDay.morning);
+      expect(preferredTimeOfProfile(next), PreferredTimeOfDay.morning);
+      expect(next, isNot(same(advanced)));
     });
 
     test('a selection replaces an absent or simple profile', () {
-      final simple =
-          restrictionProfileForPreferredTime(PreferredTimeOfDay.morning);
       final next =
-          applyPreferredTimeSelection(simple, PreferredTimeOfDay.evening);
+          restrictionProfileForPreferredTime(PreferredTimeOfDay.evening);
       expect(preferredTimeOfProfile(next), PreferredTimeOfDay.evening);
-      expect(applyPreferredTimeSelection(null, PreferredTimeOfDay.anytime),
+      expect(restrictionProfileForPreferredTime(PreferredTimeOfDay.anytime),
           isNull);
     });
   });
@@ -296,6 +301,42 @@ void main() {
       expect(chip.left, greaterThanOrEqualTo(0));
       expect(chip.right, lessThanOrEqualTo(AddTileTestMatrix.narrow.width),
           reason: 'Evening is selected, so it must be on screen unscrolled');
+    });
+
+    testWidgets('a day part can be chosen while Custom is selected (D40)',
+        (tester) async {
+      // The reported bug: "once custom is selected I cannot switch to
+      // anytime, morning, afternoon and evening". The chips rendered, took
+      // the tap, and the state layer discarded it.
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setRestrictionProfile(advancedProfile());
+      await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+      expect(chipIsSelected(tester, 'preferredTimeCustom'), isTrue,
+          reason: 'precondition: Custom is the selected chip');
+
+      await tester.tap(find.byKey(const ValueKey('preferredTimeMorning')));
+      await tester.pumpAndSettle();
+
+      expect(preferredTimeOfProfile(draft.restrictionProfile),
+          PreferredTimeOfDay.morning);
+      expect(chipIsSelected(tester, 'preferredTimeMorning'), isTrue);
+      expect(chipIsSelected(tester, 'preferredTimeCustom'), isFalse);
+    });
+
+    testWidgets('Anytime is reachable from Custom too (D40)', (tester) async {
+      // Anytime maps to a NULL profile, so it is the one day part whose
+      // selection could be mistaken for "nothing happened".
+      final draft = AddTileDraft.flexible(now: now);
+      draft.setRestrictionProfile(advancedProfile());
+      await pumpScreen(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('preferredTimeAnytime')));
+      await tester.pumpAndSettle();
+
+      expect(draft.restrictionProfile, isNull);
+      expect(chipIsSelected(tester, 'preferredTimeAnytime'), isTrue);
     });
 
     testWidgets('an advanced profile selects Custom, not a day part',

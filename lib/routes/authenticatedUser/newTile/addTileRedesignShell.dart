@@ -592,13 +592,16 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.endTime = DateTime(picked.year, picked.month, picked.day, 23, 59);
   }
 
-  /// Applies a simple day-part choice. [applyPreferredTimeSelection] keeps an
+  /// Applies a simple day-part choice. [restrictionProfileForPreferredTime] keeps an
   /// advanced/custom profile intact, so this can never silently discard one.
   void _onPreferredTimeSelected(PreferredTimeOfDay part) {
-    final RestrictionProfile? next =
-        applyPreferredTimeSelection(_draft.restrictionProfile, part);
-    if (identical(next, _draft.restrictionProfile)) return;
-    _draft.setRestrictionProfile(next);
+    // Re-tapping the answer already in effect is not an edit — without this
+    // it would build an equal-but-distinct profile and mark the draft dirty.
+    // Compared by MEANING rather than by identity, which is what the old
+    // `identical` check relied on back when the rule could return the very
+    // same instance (D40).
+    if (preferredTimeOfProfile(_draft.restrictionProfile) == part) return;
+    _draft.setRestrictionProfile(restrictionProfileForPreferredTime(part));
   }
 
   /// Opens the legacy `/LocationRoute` through its typed adapter. A cancelled

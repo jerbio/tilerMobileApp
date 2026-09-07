@@ -150,6 +150,35 @@ class FixedBlockForm extends StatelessWidget {
                       ],
                     ),
             ),
+
+            // Step 3.2 — Repeat. The header above has always claimed
+            // "Location and Repeat remain direct rows" and the constructor
+            // has always taken an [onRepeatTap], but no row was ever built,
+            // so a RECURRING BLOCK was unreachable in the redesign while the
+            // legacy flow supported one.
+            //
+            // It opens the SAME picker the Flexible form uses. That is not
+            // just convenience: `repeatSemanticsIdenticalAcrossModes` holds
+            // because the mapper ships identical repetition fields for both
+            // modes, so one picker is the honest representation of one
+            // concept.
+            //
+            // The Block's own interval is unaffected. An enabled repetition
+            // otherwise overrides `endTime` with the recurrence end, but the
+            // mapper's rigid branch runs last and restores start + duration —
+            // pinned in add_tile_fixed_secondary_test.dart, because a Block
+            // whose end silently moved months out would be wrong on the
+            // server with nothing on screen to reveal it.
+            AddTileFieldRow(
+              key: const ValueKey('repeatRow'),
+              icon: Icons.repeat,
+              label: l10n.addTileFieldRepeat,
+              // "Does not repeat" is a real answer, not an unset field, so it
+              // is not dimmed — the same call the Complete by row makes about
+              // its "Anytime".
+              value: repeatSummary(l10n, draft.repetitionData),
+              onTap: onRepeatTap,
+            ),
           ],
         ),
       ],

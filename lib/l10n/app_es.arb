@@ -857,5 +857,7 @@
   "addTileColorSwatch": "Color {index}",
 
   "addTileExplanationFlexibleEmphasis": "mejor momento",
-  "addTileExplanationFixedEmphasis": "una hora fija"
+  "addTileExplanationFixedEmphasis": "una hora fija",
+
+  "addTileFieldRepeat": "REPETIR"
 }
