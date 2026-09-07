@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
+import 'package:tiler_app/theme/tile_theme_extension.dart';
 
 /// Traffic alert widget shown inline with travel info
 /// Displays warnings like "Traffic detected - rerouting suggested"
@@ -18,34 +19,12 @@ class TrafficAlertWidget extends StatelessWidget {
     this.onDismiss,
   }) : super(key: key);
 
-  Color _getBackgroundColor() {
+  Color _accentColor(TileThemeExtension tileTheme) {
     switch (type) {
       case TrafficAlertType.warning:
-        return TileColors.warning.withOpacity(0.12);
+        return tileTheme.statusAttention;
       case TrafficAlertType.severe:
-        return TileColors.late.withOpacity(0.12);
-      case TrafficAlertType.info:
-        return TileColors.travel.withOpacity(0.12);
-    }
-  }
-
-  Color _getBorderColor() {
-    switch (type) {
-      case TrafficAlertType.warning:
-        return TileColors.warning.withOpacity(0.3);
-      case TrafficAlertType.severe:
-        return TileColors.late.withOpacity(0.3);
-      case TrafficAlertType.info:
-        return TileColors.travel.withOpacity(0.3);
-    }
-  }
-
-  Color _getIconColor() {
-    switch (type) {
-      case TrafficAlertType.warning:
-        return TileColors.warning;
-      case TrafficAlertType.severe:
-        return TileColors.late;
+        return tileTheme.statusDanger;
       case TrafficAlertType.info:
         return TileColors.travel;
     }
@@ -66,6 +45,7 @@ class TrafficAlertWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final Color accent = _accentColor(theme.extension<TileThemeExtension>()!);
 
     return GestureDetector(
       onTap: onTap,
@@ -73,10 +53,10 @@ class TrafficAlertWidget extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: _getBackgroundColor(),
+          color: accent.withOpacity(0.12),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: _getBorderColor(),
+            color: accent.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -85,13 +65,13 @@ class TrafficAlertWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: _getIconColor().withOpacity(0.15),
+                color: accent.withOpacity(0.15),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 _getIcon(),
                 size: 16,
-                color: _getIconColor(),
+                color: accent,
               ),
             ),
             const SizedBox(width: 12),

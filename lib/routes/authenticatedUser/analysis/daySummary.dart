@@ -5,7 +5,6 @@ import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/routes/authenticatedUser/todayStatusScreen.dart';
 import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/data/timeline.dart';
-import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/util.dart';
@@ -156,7 +155,7 @@ class _DaySummaryState extends State<DaySummary> {
           margin: iconMargin,
           child: _buildMetricChip(
             icon: Icons.check_circle,
-            iconColor: TileColors.completedTeal,
+            iconColor: tileThemeExtension.statusSuccess,
             count: completeCount,
             isPending: isPending,
           ),
@@ -170,7 +169,7 @@ class _DaySummaryState extends State<DaySummary> {
           margin: iconMargin,
           child: _buildMetricChip(
             icon: Icons.car_crash_outlined,
-            iconColor: TileColors.warning,
+            iconColor: tileThemeExtension.statusDanger,
             count: tardyCount,
             isPending: isPending,
           ),

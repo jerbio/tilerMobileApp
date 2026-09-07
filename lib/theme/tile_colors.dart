@@ -53,11 +53,11 @@ class TileColors {
   static const Color surfaceContainerLight = Color(0xFFF0F0F0);
   static const Color surfaceContainerHighLight = Color(0xFFEDE8E9);
   static const Color surfaceContainerHighestLight = Color(0xFFE6E0E2);
-  static const Color surfaceDark = Color.fromRGBO(35, 39, 44, 1);
+  static const Color surfaceDark = Color(0xFF0B0D12);
   static const Color surfaceContainerLowestLight = lightContent;
-  static const Color surfaceContainerLowestDark = Color(0xFF1E2227);
+  static const Color surfaceContainerLowestDark = Color(0xFF151820);
   static const Color surfaceContainerLowLight = Color(0xFFF9F9FA);
-  static const Color surfaceContainerLowDark = Color(0xFF1D1B20);
+  static const Color surfaceContainerLowDark = Color(0xFF1B1E26);
   static const Color surfaceContainerDark = Color(0xFF252930);
   static const Color surfaceContainerHighDark = Color(0xFF2D3136);
   static const Color surfaceContainerHighestDark = Color(0xFF343A40);
@@ -72,7 +72,7 @@ class TileColors {
   static const Color outlineLight = Color(0xFF79747E);
   static const Color outlineDark = Color(0xFF938F99);
   static const Color outlineVariantLight = Color(0xFFCAC4D0);
-  static const Color outlineVariantDark = Color(0xFF49454F);
+  static const Color outlineVariantDark = Color(0xFF2A2E36);
   static const Color inverseSurfaceLight = Colors.black54;
   static const Color inverseSurfaceDark = Color(0xFFE6E1E5);
   static const Color onInverseSurfaceDark = Color(0xFF23272C);
