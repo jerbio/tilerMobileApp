@@ -15,6 +15,18 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
+/// The persistence outcome of the tile's most recent drag-to-reschedule,
+/// shown as a small overlay badge on the tile (no timer — the badge lingers
+/// until the next drag interaction resets it). Shared by
+/// `TileGridWidget`/`_TilerEventInnerGridWidget` and driven by the grid
+/// (`DayGridWidget`) around the `updateSubEvent` request.
+enum TileSaveStatus {
+  idle,
+  saving,
+  saved,
+  error,
+}
+
 class TileGridWidget extends GridPositionableWidget {
   final TilerEvent tilerEvent;
   final double? tileGridHeight;
@@ -87,6 +99,13 @@ class TileGridWidget extends GridPositionableWidget {
   /// the parent re-serves data with the confirmed time. `null` means
   /// the model owns the position.
   final int? localStartMsOverride;
+
+  /// The drag-to-reschedule persistence outcome for THIS tile (the grid
+  /// passes `idle` for every other tile). Rendered as a small overlay
+  /// badge on the tile body — `saving` shows a spinner, `saved` a check,
+  /// `error` a warning. Never alters the tile's size, caption or
+  /// overlap layout (overlay-only).
+  final TileSaveStatus saveStatus;
   TileGridWidget(
       {Key? key,
       required this.tilerEvent,
@@ -107,6 +126,7 @@ class TileGridWidget extends GridPositionableWidget {
       this.dimmed = false,
       this.suppressTap = false,
       this.localStartMsOverride,
+      this.saveStatus = TileSaveStatus.idle,
       Duration durationPerUnitTime = GridPositionableWidget.durationPerHeight})
       : super(
             key: key,
@@ -519,6 +539,11 @@ class TileGridWidgetState extends GridPositionableState {
                      // The rendered
                      // pixel height decides whether the caption fits.
                      tileHeight: this.widgetHeight,
+                     // The drag-to-reschedule persistence outcome
+                     // (overlay badge only — never alters size/caption/layout).
+                     saveStatus: (this.widget is TileGridWidget)
+                         ? ((this.widget as TileGridWidget).saveStatus)
+                         : TileSaveStatus.idle,
                      hasDottedBorder: (this.widget is TileGridWidget)
                          ? ((this.widget as TileGridWidget).hasDottedBorder)
                          : false,
@@ -550,10 +575,15 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
   /// a plain color bar — the name caption would not fit.
   final double tileHeight;
 
+  /// The drag-to-reschedule persistence outcome — rendered as a small
+  /// overlay badge on the tile body. [TileSaveStatus.idle] renders nothing.
+  final TileSaveStatus saveStatus;
+
   _TilerEventInnerGridWidget(
       {required this.tilerEvent,
       this.hasDottedBorder = false,
-      required this.tileHeight});
+      required this.tileHeight,
+      this.saveStatus = TileSaveStatus.idle});
 
   @override
   Widget build(BuildContext context) {
@@ -595,51 +625,126 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
     }
     // Too short for the caption —
     // collapse to a plain color bar (no padding, no name).
+    Widget body;
     if (TileGridWidgetState.tileContentCollapsed(tileHeight)) {
       final Widget bar = Container(decoration: uiDecoration);
       if (!hasDottedBorder) {
-        return bar;
-      }
-      // The preview highlight (dotted border) survives the collapse — it
-      // is the only signal marking the selected TileCast action tile.
-      return CustomPaint(
-        painter: DashedBorderPainter(
-          color: colorScheme.primary,
-          strokeWidth: 3,
-          dashWidth: 8,
-          dashSpace: 4,
-          borderRadius: 10,
-        ),
-        child: bar,
-      );
-    }
-    final Widget tileBody = Container(
-        decoration: uiDecoration,
-        padding: gridPadding,
-        child: Text(
-          name,
-          overflow: TextOverflow.ellipsis,
-          style: new TextStyle(
-            fontSize: 13.0,
-            fontFamily: TileTextStyles.rubikFontName,
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
+        body = bar;
+      } else {
+        // The preview highlight (dotted border) survives the collapse — it
+        // is the only signal marking the selected TileCast action tile.
+        body = CustomPaint(
+          painter: DashedBorderPainter(
+            color: colorScheme.primary,
+            strokeWidth: 3,
+            dashWidth: 8,
+            dashSpace: 4,
+            borderRadius: 10,
           ),
-        ));
-    if (!hasDottedBorder) {
-      return tileBody;
+          child: bar,
+        );
+      }
+    } else {
+      final Widget tileBody = Container(
+          decoration: uiDecoration,
+          padding: gridPadding,
+          child: Text(
+            name,
+            overflow: TextOverflow.ellipsis,
+            style: new TextStyle(
+              fontSize: 13.0,
+              fontFamily: TileTextStyles.rubikFontName,
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ));
+      if (!hasDottedBorder) {
+        body = tileBody;
+      } else {
+        // The highlighted TileCast action's dotted border —
+        // the same DashedBorderPainter treatment as `EnhancedTileCard`.
+        body = CustomPaint(
+          painter: DashedBorderPainter(
+            color: colorScheme.primary,
+            strokeWidth: 3,
+            dashWidth: 8,
+            dashSpace: 4,
+            borderRadius: 10,
+          ),
+          child: tileBody,
+        );
+      }
     }
-    // The highlighted TileCast action's dotted border —
-    // the same DashedBorderPainter treatment as `EnhancedTileCard`.
-    return CustomPaint(
-      painter: DashedBorderPainter(
-        color: colorScheme.primary,
-        strokeWidth: 3,
-        dashWidth: 8,
-        dashSpace: 4,
-        borderRadius: 10,
+    // Overlay-only save badge: a `Stack` (the body is the top-left,
+    // non-positioned child, so the tile's size/caption/overlap layout and
+    // drag hit-testing are untouched) with a small `Positioned` chip in the
+    // top-right. Rendered only when the drag commit has a save state;
+    // `TileSaveStatus.idle` returns the bare body.
+    if (saveStatus == TileSaveStatus.idle) {
+      return body;
+    }
+    return Stack(
+      children: [
+        body,
+        Positioned(top: 4, right: 4, child: _saveStatusBadge(context)),
+      ],
+    );
+  }
+
+  /// The small save-state chip: a spinner while the commit is in flight,
+  /// a check on success, a warning on rollback/failure. No localization —
+  /// icon + color only. Overlay-only, so it never changes the tile's
+  /// geometry (see `build`).
+  Widget _saveStatusBadge(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final Widget child;
+    final Color background;
+    switch (saveStatus) {
+      case TileSaveStatus.saving:
+        child = SizedBox(
+          width: 10,
+          height: 10,
+          child: CircularProgressIndicator(
+            strokeWidth: 1.5,
+            valueColor:
+                AlwaysStoppedAnimation<Color>(colorScheme.onSurface),
+          ),
+        );
+        background = Colors.white.withValues(alpha: 0.92);
+        break;
+      case TileSaveStatus.saved:
+        child = Icon(
+          Icons.check_circle_outline,
+          size: 14,
+          color: colorScheme.primary,
+        );
+        background = Colors.white.withValues(alpha: 0.92);
+        break;
+      case TileSaveStatus.error:
+      case TileSaveStatus.idle:
+        child = Icon(
+          Icons.warning_amber_rounded,
+          size: 14,
+          color: Colors.white,
+        );
+        background = colorScheme.error;
+        break;
+    }
+    return Container(
+      key: const Key('daygrid_tile_save_badge'),
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: background,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
       ),
-      child: tileBody,
+      child: child,
     );
   }
 }

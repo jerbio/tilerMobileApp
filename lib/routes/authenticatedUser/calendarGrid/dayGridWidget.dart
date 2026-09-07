@@ -391,6 +391,18 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// double-write race).
   bool _dragging = false;
 
+  /// The uniqueId of the tile the save badge belongs to; `null` when no
+  /// drag commit has a save state. The badge overlays this tile only.
+  String? _savingTileId;
+
+  /// The drag-to-reschedule persistence outcome shown on [_savingTileId]'s
+  /// tile: `saving` while the `updateSubEvent` request is in flight
+  /// (driven by the field, cleared when the request settles — never leaves
+  /// an active spinner at teardown), `saved`/`error` linger until the next
+  /// drag lift/commit resets the state (no timer, mirroring the app's
+  /// existing save-state behaviour).
+  TileSaveStatus _saveStatus = TileSaveStatus.idle;
+
   /// The dragged tile's column (left, width) at lift — the ghost's
   /// horizontal geometry (re-derived per build for the ghost's left).
   double _dragGhostLeft = 0;
@@ -438,6 +450,12 @@ class DayGridWidgetState extends State<DayGridWidget> {
           additionalInfo: {'actionCount': widget.tiles.length});
     }
     _resyncInitialScroll();
+    // DRAG-DBG (temporary): mount/remount marker (badge diagnosis). A MOUNT
+    // that appears AFTER a commit with status=idle/savingId=null means the
+    // re-serve remounted this State (resetting the badge fields).
+    Utility.debugPrint('DayGrid::DRAG-DBG MOUNT dayKey=${widget.dayKey} '
+        'tiles=${widget.tiles.length} status=$_saveStatus '
+        'savingId=$_savingTileId');
   }
 
   @override
@@ -836,6 +854,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     _dragTile = tile;
     _dragSuppressTap = true; // swallow the tap this long press cancels.
     _lastDragSnapStart = null;
+    _clearSaveState(); // a new lift resets the previous commit's badge.
     final dayStart = _gridDayStart()!;
     _dragOriginalTopPx =
         _topPx(dayStart: dayStart, startMs: tile.start!);
@@ -885,6 +904,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
     _lastDragSnapStart = null;
     if (seed != null && !seed.withinRange) {
       // Blocked: the tile never moves (no request, no event).
+      Utility.debugPrint(
+          'DayGrid::DRAG-DBG drop=BLOCKED tile=${tile.uniqueId} reason=${seed.blockReason}');
       _dragTargetStart = null;
       _controller.mode = DayGridMode.idle;
       _syncDragState();
@@ -899,11 +920,15 @@ class DayGridWidgetState extends State<DayGridWidget> {
             originalTopPx) {
       // Dropped back on (or at the lift offset of) its own slot —
       // a no-op move never issues a request.
+      Utility.debugPrint(
+          'DayGrid::DRAG-DBG drop=NOOP tile=${tile.uniqueId} seedTop=${seed == null ? 'null' : _topPx(dayStart: dayStart, startMs: seed.start.millisecondsSinceEpoch)} origTop=$originalTopPx');
       _dragTargetStart = null;
       _controller.mode = DayGridMode.idle;
       _syncDragState();
       return;
     }
+    Utility.debugPrint(
+        'DayGrid::DRAG-DBG drop=COMMIT tile=${tile.uniqueId} start=${seed.start} end=${seed.end} within=${seed.withinRange}');
     _commitDragMove(tile, seed);
   }
 
@@ -943,6 +968,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// dispatched on (the [playBackButtons] `setAsNowTile` pattern): the
   /// tile holds the dropped slot optimistically while in flight.
   void _commitDragMove(SubCalendarEvent tile, DayGridDragSeed seed) {
+    Utility.debugPrint(
+        'DayGrid::DRAG-DBG commit=ENTER tile=${tile.uniqueId} start=${seed.start} end=${seed.end}');
+    // A new commit resets the previous commit's badge (the lift already
+    // clears it too; the duplicate-drop guard below still runs after).
+    _clearSaveState();
     // In-flight/duplicate-drop guard: a second drop while the first
     // request is in flight (or another drag owns a finger) is ignored.
     if (_settlingMove != null || _dragging) {
@@ -1013,20 +1043,44 @@ class DayGridWidgetState extends State<DayGridWidget> {
       _settlingMove = move;
       _dragTargetStart = null;
       _controller.mode = DayGridMode.idle;
+      // Show the `saving` spinner on this tile while the commit is in
+      // flight (the spinner itself is driven by the in-flight settle
+      // move, so it can never outlive the request).
+      _savingTileId = tile.uniqueId;
+      _saveStatus = TileSaveStatus.saving;
     });
     request.then((confirmed) {
       // The position settles when the parent re-serves data with a
-      // changed time for the tile ([_syncSettlingMove] clears it).
+      // changed time for the tile ([_syncSettlingMove] clears it). The
+      // request has settled — the `saving` spinner clears and the
+      // `saved` badge shows on the moved tile (no timer; it lingers
+      // until the next drag interaction).
       AnalysticsSignal.send('daygrid_drag_commit', additionalInfo: {
         'tileId': tile.uniqueId,
         'start': seed.start.millisecondsSinceEpoch,
         'end': seed.end.millisecondsSinceEpoch,
       });
+      Utility.debugPrint('DayGrid::DRAG-DBG commit=SAVED tile=${tile.uniqueId} '
+          'mounted=$mounted match=${_savingTileId == tile.uniqueId}');
+      if (mounted && _savingTileId == tile.uniqueId) {
+        setState(() {
+          _saveStatus = TileSaveStatus.saved;
+        });
+      }
     }).catchError((Object e) {
       Utility.debugPrint('DayGrid:: drag commit failed: $e');
       AnalysticsSignal.send('daygrid_drag_rollback', additionalInfo: {
         'tileId': tile.uniqueId
       });
+      // The request failed — the `error` badge shows on the moved tile
+      // (the rollback slides it back to its pre-drag slot).
+      Utility.debugPrint('DayGrid::DRAG-DBG commit=ERROR tile=${tile.uniqueId} '
+          'mounted=$mounted match=${_savingTileId == tile.uniqueId}');
+      if (mounted && _savingTileId == tile.uniqueId) {
+        setState(() {
+          _saveStatus = TileSaveStatus.error;
+        });
+      }
       _rollbackDragMove();
       _showDragErrorToast();
     });
@@ -1128,6 +1182,51 @@ class DayGridWidgetState extends State<DayGridWidget> {
       return;
     }
     setState(() {});
+  }
+
+  /// Reset the drag-commit save badge to idle. Called at the start of the
+  /// next lift and commit, so a lingering `saved`/`error` chip clears on
+  /// the next drag interaction (no timer). No-op when already idle.
+  void _clearSaveState() {
+    if (_saveStatus == TileSaveStatus.idle) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _saveStatus = TileSaveStatus.idle;
+    });
+  }
+
+  /// The [TileSaveStatus] to pass to [tile]'s [TileGridWidget]. `saving`
+  /// is derived from the in-flight settle move (so it can never linger as
+  /// an active spinner); `saved`/`error` are read from the field. `idle`
+  /// for every other tile (only the committed tile carries a badge).
+  TileSaveStatus _saveStatusFor(SubCalendarEvent tile) {
+    final id = _savingTileId;
+    // DRAG-DBG (temporary): is the grid actually asking this tile to render a
+    // badge? If this never fires after a commit+re-serve, the tile's
+    // uniqueId changed on re-serve (or the State was remounted).
+    if (id != null && id == tile.uniqueId && _saveStatus != TileSaveStatus.idle) {
+      Utility.debugPrint(
+          'DayGrid::DRAG-DBG badge=ASKED tile=${tile.uniqueId} status=$_saveStatus');
+    }
+    if (id == null || id != tile.uniqueId) {
+      return TileSaveStatus.idle;
+    }
+    // `saving` only while the commit is actually in flight (the optimistic
+    // settle move is still held). Once the request settles the field holds
+    // `saved`/`error` and takes precedence — even before the parent
+    // re-serves data and clears [_settlingMove] — so the spinner never
+    // lingers past the response.
+    if (_saveStatus == TileSaveStatus.saving) {
+      final move = _settlingMove;
+      if (move != null && move.tileId == tile.uniqueId) {
+        return TileSaveStatus.saving;
+      }
+    }
+    return _saveStatus;
   }
 
   /// The live drag ghost: a snap line at the snapped slot, a dashed
@@ -1478,6 +1577,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   suppressTap:
                       isDragSource && (_dragging || _dragSuppressTap),
                   localStartMsOverride: settleOverride,
+                  // Drag-commit save badge (overlay-only): the committed
+                  // tile shows saving/saved/error; every other tile idle.
+                  saveStatus: _saveStatusFor(tile),
                 );
               },
             ).toList();

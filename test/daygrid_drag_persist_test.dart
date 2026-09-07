@@ -343,5 +343,139 @@ group('drag rollback + race', () {
 
       await tester.runAsync(() => bloc.close());
     });
+
+    testWidgets(
+        'save badge: spinner while in flight → saved badge on confirmation',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final inFlight = Completer<SubCalendarEvent>();
+      api.pending = inFlight.future;
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2027, 1, 15, 9), DateTime(2027, 1, 15, 10))
+        ],
+        now: now,
+        day: dayStart,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      // Drop 'a' at 10:30 — the request stays in flight.
+      final g1 = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await g1.moveBy(const Offset(0, 120));
+      await tester.pump();
+      await g1.up();
+      await tester.pump();
+
+      // While the commit is in flight the tile shows the `saving`
+      // spinner badge (a live CircularProgressIndicator).
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byKey(const Key('daygrid_tile_save_badge')), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+
+      // Confirm the request — the spinner is replaced by the `saved`
+      // badge (no timer; it lingers until the next drag interaction).
+      inFlight.complete(SubCalendarEvent(
+        id: 'a',
+        name: 'a',
+        start: DateTime(2027, 1, 15, 10, 30).millisecondsSinceEpoch,
+        end: DateTime(2027, 1, 15, 11, 30).millisecondsSinceEpoch,
+      ));
+      // Flush the completion microtask (the `.then` that sets `saved`)
+      // before the next frame is rendered.
+      await tester.runAsync(() async {});
+      await tester.pump();
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byKey(const Key('daygrid_tile_save_badge')), findsOneWidget);
+      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+
+      await tester.runAsync(() => bloc.close());
+    });
+
+    testWidgets('save badge: a failed commit shows the error badge',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      api.error = TilerError(Code: '422', Message: 'boom');
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2027, 1, 15, 9), DateTime(2027, 1, 15, 10))
+        ],
+        now: now,
+        day: dayStart,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      final gesture = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await gesture.moveBy(const Offset(0, 120)); // → 10:30.
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+      // In flight: the spinner badge is up (no error badge yet).
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+
+      // Deliver the delayed failure — the rollback runs and the `error`
+      // badge replaces the spinner.
+      await tester.pump(const Duration(milliseconds: 60));
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byKey(const Key('daygrid_tile_save_badge')), findsOneWidget);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+      // …and the tile is back at its pre-drag slot.
+      expect(_tileTop(tester, 'a'), closeTo(720, 0.5));
+
+      await tester.runAsync(() => bloc.close());
+    });
+
+    testWidgets('save badge (error) clears on the next drag lift (reset)',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      api.error = TilerError(Code: '422', Message: 'boom');
+      // The grid day is today (matches [now]) so both tiles sit at their
+      // real content positions; after the initial scroll to 720 (9:00),
+      // 'a' (9:00) is at viewport y 0 and 'b' (13:00) at viewport y 400.
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2026, 5, 15, 9), DateTime(2026, 5, 15, 10)),
+          _tile('b', DateTime(2026, 5, 15, 13), DateTime(2026, 5, 15, 14)),
+        ],
+        now: now,
+        day: DateTime(2026, 5, 15),
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      // A failed drop on 'a' leaves the `error` badge lingering.
+      final g1 = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await g1.moveBy(const Offset(0, 120)); // → 10:30.
+      await tester.pump();
+      await g1.up();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 60)); // deliver error.
+      expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+
+      // A new long-press lift on a DIFFERENT tile ('b') resets the badge
+      // back to idle. (A second long-press on the same spot isn't
+      // guaranteed to be re-recognised by the gesture arena.) The lift
+      // clears the badge before the drop could commit a new move.
+      final bCenter = tester.getCenter(find.text('b'));
+      final g2 = await tester.startGesture(bCenter);
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.byKey(const Key('daygrid_tile_save_badge')), findsNothing);
+      expect(find.byIcon(Icons.warning_amber_rounded), findsNothing);
+      await g2.up();
+      await tester.pump();
+
+      await tester.runAsync(() => bloc.close());
+    });
   });
 }
