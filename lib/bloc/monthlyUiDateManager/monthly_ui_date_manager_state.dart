@@ -12,16 +12,15 @@ class MonthlyUiDateManagerState extends Equatable {
   });
 
   @override
-  List<Object> get props => [selectedDate,tempDate,year];
+  List<Object> get props => [selectedDate, tempDate, year];
 
   MonthlyUiDateManagerState copyWith({
     DateTime? selectedDate,
     DateTime? tempDate,
     int? year,
-
   }) {
     return MonthlyUiDateManagerState(
-      tempDate: tempDate??this.tempDate,
+      tempDate: tempDate ?? this.tempDate,
       selectedDate: selectedDate ?? this.selectedDate,
       year: year ?? this.year,
     );

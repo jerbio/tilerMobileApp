@@ -5759,6 +5759,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'REPEAT'**
   String get addTileFieldRepeat;
+
+  /// No description provided for @addTileDurationQuick.
+  ///
+  /// In en, this message translates to:
+  /// **'QUICK'**
+  String get addTileDurationQuick;
+
+  /// No description provided for @addTileDurationCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'CUSTOM'**
+  String get addTileDurationCustom;
+
+  /// No description provided for @addTileDurationHourLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Hour'**
+  String get addTileDurationHourLabel;
+
+  /// No description provided for @addTileDurationMinuteLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Min'**
+  String get addTileDurationMinuteLabel;
+
+  /// No description provided for @addTileSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add this right now. Your details are saved.'**
+  String get addTileSubmitFailed;
+
+  /// No description provided for @addTileRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get addTileRetry;
 }
 
 class _AppLocalizationsDelegate

@@ -22,7 +22,6 @@ class _TextMessageInputState extends State<TextMessageInput> {
   late ColorScheme colorScheme;
   late TileThemeExtension tileThemeExtension;
 
-
   @override
   void didChangeDependencies() {
     theme = Theme.of(context);
@@ -33,13 +32,12 @@ class _TextMessageInputState extends State<TextMessageInput> {
 
   @override
   Widget build(BuildContext context) {
-    final localization= AppLocalizations.of(context)!;
+    final localization = AppLocalizations.of(context)!;
     return BlocBuilder<VibeChatBloc, VibeChatState>(
       builder: (context, state) {
         final isSending = state.step == VibeChatStep.sending;
         final isTranscribing = state.step == VibeChatStep.transcribing;
         final hasText = widget.controller.text.trim().isNotEmpty;
-
 
         return Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,57 +84,59 @@ class _TextMessageInputState extends State<TextMessageInput> {
   }
 
   Widget _buildActionButton(
-      VibeChatState state,
-      bool isSending,
-      bool isTranscribing,
-      bool hasText,
-      ) {
+    VibeChatState state,
+    bool isSending,
+    bool isTranscribing,
+    bool hasText,
+  ) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: (isSending || isTranscribing)
           ? Container(
-        width: 36,
-        height: 36,
-        alignment: Alignment.center,
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              colorScheme.primary,
-            ),
-          ),
-        ),
-      )
+              width: 36,
+              height: 36,
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colorScheme.primary,
+                  ),
+                ),
+              ),
+            )
           : IconButton(
-        onPressed: state.step != VibeChatStep.loaded
-          ? null
-          : (hasText ? _handleSendMessage : () => context.read<VibeChatBloc>().add(StartRecordingEvent())),
-        icon: Icon(
-          hasText ? Icons.arrow_upward_rounded : Icons.mic_none_rounded,
-        ),
-        iconSize: 20,
-        style: IconButton.styleFrom(
-          backgroundColor: hasText
-              ? colorScheme.primary
-              : tileThemeExtension.surfaceContainerGreater,
-          foregroundColor: hasText
-              ? colorScheme.onPrimary
-              : tileThemeExtension.onSurfaceVariantSecondary,
-          minimumSize: Size(36, 36),
-          maximumSize: Size(36, 36),
-          shape: CircleBorder(),
-        ),
-      ),
+              onPressed: state.step != VibeChatStep.loaded
+                  ? null
+                  : (hasText
+                      ? _handleSendMessage
+                      : () => context
+                          .read<VibeChatBloc>()
+                          .add(StartRecordingEvent())),
+              icon: Icon(
+                hasText ? Icons.arrow_upward_rounded : Icons.mic_none_rounded,
+              ),
+              iconSize: 20,
+              style: IconButton.styleFrom(
+                backgroundColor: hasText
+                    ? colorScheme.primary
+                    : tileThemeExtension.surfaceContainerGreater,
+                foregroundColor: hasText
+                    ? colorScheme.onPrimary
+                    : tileThemeExtension.onSurfaceVariantSecondary,
+                minimumSize: Size(36, 36),
+                maximumSize: Size(36, 36),
+                shape: CircleBorder(),
+              ),
+            ),
     );
   }
 
   void _handleSendMessage() {
     context.read<VibeChatBloc>().add(
-      SendAMessageEvent(widget.controller.text.trim()),
-    );
+          SendAMessageEvent(widget.controller.text.trim()),
+        );
   }
-
-
 }

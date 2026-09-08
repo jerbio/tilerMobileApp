@@ -5,7 +5,8 @@ class OnboardingSubWidget extends StatelessWidget {
   final String? questionText;
   final String? questionSubText;
   final Widget? child;
-  const OnboardingSubWidget({this.questionText, this.child, this.title, this.questionSubText});
+  const OnboardingSubWidget(
+      {this.questionText, this.child, this.title, this.questionSubText});
 
   @override
   Widget build(BuildContext context) {
@@ -13,15 +14,12 @@ class OnboardingSubWidget extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if(title!=null)
+        if (title != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 30.0),
             child: Text(
               title!,
-              style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w600
-              ),
+              style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
             ),
           ),
         Text(
@@ -30,9 +28,9 @@ class OnboardingSubWidget extends StatelessWidget {
             fontSize: 18.0,
             fontWeight: FontWeight.w400,
           ),
-          textAlign: title!=null?TextAlign.center:TextAlign.left,
+          textAlign: title != null ? TextAlign.center : TextAlign.left,
         ),
-        if(questionSubText!=null)
+        if (questionSubText != null)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 40.0),
             child: Text(

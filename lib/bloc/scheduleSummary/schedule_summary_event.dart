@@ -33,7 +33,6 @@ class CompleteTaskEvent extends ScheduleSummaryEvent {
   List<Object> get props => [subEvent];
 }
 
-
 class LogOutScheduleDaySummaryEvent extends ScheduleSummaryEvent {
   LogOutScheduleDaySummaryEvent();
 

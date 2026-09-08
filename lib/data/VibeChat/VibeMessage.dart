@@ -54,8 +54,8 @@ class VibeMessage {
           : null,
       actions: json['actions'] != null && (json['actions'] as List).isNotEmpty
           ? (json['actions'] as List)
-          .map((action) => VibeAction.fromJson(action))
-          .toList()
+              .map((action) => VibeAction.fromJson(action))
+              .toList()
           : null,
     );
   }

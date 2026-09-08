@@ -317,8 +317,7 @@ class _PreviewAddWidgetState extends State<PreviewAddWidget> {
           Navigator.pop(context);
         }
         this.context.read<ForecastBloc>().add(ResetEvent());
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => AddTile(preTile: preTile)));
+        Navigator.pushNamed(context, '/AddTileRedesign', arguments: preTile);
       },
     );
   }

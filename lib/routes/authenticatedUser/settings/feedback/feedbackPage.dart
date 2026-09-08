@@ -41,8 +41,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
     });
 
     try {
-      final settingsApi =
-          SettingsApi(getContextCallBack: () => context);
+      final settingsApi = SettingsApi(getContextCallBack: () => context);
       await settingsApi.sendFeedback(
         category: _selectedCategory,
         title: _titleController.text.trim(),

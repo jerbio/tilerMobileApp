@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
@@ -129,6 +130,19 @@ class FixedBlockForm extends StatelessWidget {
               trailing: AddTileLockedPill(label: l10n.addTileAutoCalculated),
               semanticLabel: l10n.addTileEndsSemantics(formatClockTime(end)),
             ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // Location and Repeat sit in their OWN card, matching the Flexible
+        // form. The card above is the INTERVAL — title, day, start, length,
+        // and the end derived from them — and every row in it answers "when
+        // is this block?". These two do not: they qualify a block that is
+        // already fully specified. Grouping them with the interval implied
+        // the six rows were peers and made the card the longest thing on
+        // the screen (D48).
+        AddTileSection(
+          children: [
             AddTileFieldRow(
               key: const ValueKey('locationRow'),
               icon: Icons.location_on_outlined,

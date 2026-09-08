@@ -56,14 +56,14 @@ class OnboardingPillTag extends StatelessWidget {
           ],
           Flexible(
             child: Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 10,
-            ),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              borderRadius: BorderRadius.circular(200),
-            ),
+              padding: EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(200),
+              ),
               child: Text(
                 text,
                 maxLines: truncateText ? 1 : null,

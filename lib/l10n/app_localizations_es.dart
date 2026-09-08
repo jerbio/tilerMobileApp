@@ -3257,4 +3257,23 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get addTileFieldRepeat => 'REPETIR';
+
+  @override
+  String get addTileDurationQuick => 'RÁPIDO';
+
+  @override
+  String get addTileDurationCustom => 'PERSONALIZADO';
+
+  @override
+  String get addTileDurationHourLabel => 'Hora';
+
+  @override
+  String get addTileDurationMinuteLabel => 'Min';
+
+  @override
+  String get addTileSubmitFailed =>
+      'No se pudo agregar en este momento. Tus datos se guardaron.';
+
+  @override
+  String get addTileRetry => 'Reintentar';
 }

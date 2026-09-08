@@ -15,7 +15,6 @@ class UpdateSelectedWeek extends WeeklyUiDateManagerEvent {
   List<Object> get props => [selectedDate];
 }
 
-
 class UpdateTempDate extends WeeklyUiDateManagerEvent {
   final DateTime tempDate;
 

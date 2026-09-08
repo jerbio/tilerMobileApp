@@ -20,8 +20,8 @@ class AppleSignInApi {
     const charset =
         '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(
-        length, (_) => charset[random.nextInt(charset.length)]).join();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)])
+        .join();
   }
 
   /// SHA-256 hex digest of [input] — the value passed to Apple as the `nonce`.

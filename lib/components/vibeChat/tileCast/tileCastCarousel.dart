@@ -121,14 +121,13 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
     }
 
     // Determine which full-list index is currently "selected" for the list.
-    final bool isCompositePage =
-        _nonHighlightable.isNotEmpty &&
-            currentCarouselPage >= _highlightable.length;
+    final bool isCompositePage = _nonHighlightable.isNotEmpty &&
+        currentCarouselPage >= _highlightable.length;
     final int selectedFullIndex = isCompositePage
         ? -1
         : (_highlightable.isNotEmpty
-            ? actions.indexOf(
-                _highlightable[currentCarouselPage.clamp(0, _highlightable.length - 1)])
+            ? actions.indexOf(_highlightable[
+                currentCarouselPage.clamp(0, _highlightable.length - 1)])
             : -1);
 
     showModalBottomSheet<void>(
@@ -216,8 +215,8 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
     );
   }
 
-  Widget _buildPage(
-      BuildContext context, VibePreviewAction action, List<SubCalendarEvent> tiles) {
+  Widget _buildPage(BuildContext context, VibePreviewAction action,
+      List<SubCalendarEvent> tiles) {
     final tile = _tileForAction(action, tiles);
     final displayDate = tile?.startTime ?? Utility.currentTime();
     return _buildPageFallback(context, displayDate,
@@ -301,8 +300,7 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
         _highlightable = actions.where((a) => a.isHighlightable).toList();
         _nonHighlightable = actions.where((a) => !a.isHighlightable).toList();
         final bool hasComposite = _nonHighlightable.isNotEmpty;
-        final int totalPages =
-            _highlightable.length + (hasComposite ? 1 : 0);
+        final int totalPages = _highlightable.length + (hasComposite ? 1 : 0);
         final int compositePageIndex = totalPages - 1;
 
         // If all actions are non-highlightable the carousel is just the one
@@ -324,8 +322,8 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
           headerNonViable = false;
           headerIndex = compositePageIndex;
         } else {
-          final pageAction =
-              _highlightable[_currentCarouselPage.clamp(0, _highlightable.length - 1)];
+          final pageAction = _highlightable[
+              _currentCarouselPage.clamp(0, _highlightable.length - 1)];
           final nonViableEntityIds = _nonViableEntityIds(actions, tiles);
           headerAction = pageAction;
           headerTitleOverride = null;
@@ -349,8 +347,7 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
                   if (hasComposite && pageIndex == compositePageIndex) {
                     return _buildCompositePage(context, _nonHighlightable);
                   }
-                  return _buildPage(
-                      context, _highlightable[pageIndex], tiles);
+                  return _buildPage(context, _highlightable[pageIndex], tiles);
                 },
               ),
             ),
@@ -371,9 +368,8 @@ class _TileCastCarouselState extends State<TileCastCarousel> {
                 onNext: _currentCarouselPage < totalPages - 1
                     ? () => _navigateTo(_currentCarouselPage + 1)
                     : null,
-                onOpenList: () => _openActionList(
-                    context, actions, _currentCarouselPage,
-                    _nonViableEntityIds(actions, tiles)),
+                onOpenList: () => _openActionList(context, actions,
+                    _currentCarouselPage, _nonViableEntityIds(actions, tiles)),
               ),
             ),
           ],

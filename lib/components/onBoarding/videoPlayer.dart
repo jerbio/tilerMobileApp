@@ -4,7 +4,8 @@ import 'package:video_player/video_player.dart';
 class VideoPlayerWidget extends StatefulWidget {
   final String videoPath;
 
-  const VideoPlayerWidget({Key? key, required this.videoPath}) : super(key: key);
+  const VideoPlayerWidget({Key? key, required this.videoPath})
+      : super(key: key);
 
   @override
   _VideoPlayerWidgetState createState() => _VideoPlayerWidgetState();
@@ -45,13 +46,14 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   Widget build(BuildContext context) {
     if (!_isInitialized) {
-      return Center(child: CircularProgressIndicator(color: colorScheme.tertiary));
+      return Center(
+          child: CircularProgressIndicator(color: colorScheme.tertiary));
     }
 
     return ConstrainedBox(
         constraints: BoxConstraints(
-        maxHeight: 400,
-        maxWidth: double.infinity,
+          maxHeight: 400,
+          maxWidth: double.infinity,
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
@@ -59,7 +61,6 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             aspectRatio: _controller.value.aspectRatio,
             child: VideoPlayer(_controller),
           ),
-        )
-    );
+        ));
   }
 }

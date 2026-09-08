@@ -8,12 +8,9 @@ class QuickActionChipsRow extends StatelessWidget {
   final VoidCallback? onReOptimize;
   final bool preview;
 
-  const QuickActionChipsRow({
-    Key? key,
-    this.onShowRoute,
-    this.onReOptimize,
-    this.preview = false
-  }) : super(key: key);
+  const QuickActionChipsRow(
+      {Key? key, this.onShowRoute, this.onReOptimize, this.preview = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

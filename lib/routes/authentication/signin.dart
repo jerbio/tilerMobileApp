@@ -62,8 +62,8 @@ class SignInRouteState extends State<SignInRoute> {
 
   @override
   void didChangeDependencies() {
-   theme=Theme.of(context);
-   colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
 

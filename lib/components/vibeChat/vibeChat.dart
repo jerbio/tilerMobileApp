@@ -14,13 +14,13 @@ class VibeChat extends StatefulWidget {
   State<VibeChat> createState() => _VibeChatState();
 }
 
-class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
+class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin {
   late final ScrollController _scrollController;
   late final ScrollController _sessionsScrollController;
   late final TextEditingController _messageController;
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late AppLocalizations localization ;
+  late AppLocalizations localization;
   VibeChatStep? _previousStep;
   String? _previousSession;
   bool _hasTypedText = false;
@@ -99,11 +99,9 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
     if (state.step == VibeChatStep.loadingPreview) {
       Navigator.pop(context);
     }
-    if (
-        (_previousStep == VibeChatStep.sending && state.step == VibeChatStep.loaded)
-        ||
-        _previousSession != state.currentSession?.id
-    ) {
+    if ((_previousStep == VibeChatStep.sending &&
+            state.step == VibeChatStep.loaded) ||
+        _previousSession != state.currentSession?.id) {
       _messageController.clear();
     }
     _previousSession = state.currentSession?.id;
@@ -143,45 +141,51 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: const Divider(),
             ),
-
             Expanded(
               child: state.step == VibeChatStep.loadingSessions
                   ? const Center(child: CircularProgressIndicator())
                   : state.sessions.isEmpty
-                  ? Center(child: Text(localization.noChatHistory))
-                  : ListView.builder(
-                controller: _sessionsScrollController,
-                itemCount: state.sessions.length + (state.hasMoreSessions ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (index == state.sessions.length) {
-                    return  Center(child: CircularProgressIndicator());
-                  }
-                  final session = state.sessions[index];
-                  final isSelected = session.id == state.currentSession?.id;
-                  return ListTile(
-                    selected: isSelected,
-                    selectedTileColor: colorScheme.surfaceContainerHighest,
-                    title: Text(
-                      session.title ?? '${localization.unknownChat}  ${index + 1}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: session.creationTimeInMs != null
-                        ? Text(
-                      DateFormat('yyyy-MM-dd').format(
-                        DateTime.fromMillisecondsSinceEpoch(session.creationTimeInMs!),
-                      ),
-                      style: TextStyle(fontSize: 12),
-                    )
-                        : null,
-                    onTap: () {
-                      if(state.currentSession?.id != session.id)
-                        context.read<VibeChatBloc>().add(SelectSessionEvent(session),);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
+                      ? Center(child: Text(localization.noChatHistory))
+                      : ListView.builder(
+                          controller: _sessionsScrollController,
+                          itemCount: state.sessions.length +
+                              (state.hasMoreSessions ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == state.sessions.length) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                            final session = state.sessions[index];
+                            final isSelected =
+                                session.id == state.currentSession?.id;
+                            return ListTile(
+                              selected: isSelected,
+                              selectedTileColor:
+                                  colorScheme.surfaceContainerHighest,
+                              title: Text(
+                                session.title ??
+                                    '${localization.unknownChat}  ${index + 1}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              subtitle: session.creationTimeInMs != null
+                                  ? Text(
+                                      DateFormat('yyyy-MM-dd').format(
+                                        DateTime.fromMillisecondsSinceEpoch(
+                                            session.creationTimeInMs!),
+                                      ),
+                                      style: TextStyle(fontSize: 12),
+                                    )
+                                  : null,
+                              onTap: () {
+                                if (state.currentSession?.id != session.id)
+                                  context.read<VibeChatBloc>().add(
+                                        SelectSessionEvent(session),
+                                      );
+                                Navigator.pop(context);
+                              },
+                            );
+                          },
+                        ),
             ),
           ],
         ),
@@ -189,10 +193,8 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
     );
   }
 
-
-
-  PreferredSizeWidget _buildAppBar(VibeChatState state){
-    return  AppBar(
+  PreferredSizeWidget _buildAppBar(VibeChatState state) {
+    return AppBar(
       backgroundColor: colorScheme.surface,
       leading: IconButton(
         icon: Icon(Icons.arrow_back),
@@ -223,6 +225,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       ],
     );
   }
+
   Widget _buildAnimatedLoadingWidget(bool isTranscribing) {
     if (isTranscribing) {
       final status = _formatStatus('transcribing');
@@ -248,6 +251,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       },
     );
   }
+
   Widget _buildAnimatedLine() {
     return ClipRect(
       child: SizedBox(
@@ -298,6 +302,7 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       ),
     );
   }
+
   Widget _buildAnimatedLoadingText(String status) {
     return AnimatedBuilder(
       animation: _dotAnimationController,
@@ -320,12 +325,11 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
 
   @override
   Widget build(BuildContext context) {
-
     return BlocConsumer<VibeChatBloc, VibeChatState>(
       listener: _handleBlocStateChanges,
       builder: (context, state) {
         return Scaffold(
-          endDrawer: _buildDrawer(context,state),
+          endDrawer: _buildDrawer(context, state),
           appBar: _buildAppBar(state),
           body: Container(
             decoration: BoxDecoration(
@@ -343,15 +347,19 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                     scrollController: _scrollController,
                   ),
                 ),
-                if (state.shouldShowAcceptButton && (state.step == VibeChatStep.loaded || state.step == VibeChatStep.loadingPreview || state.step == VibeChatStep.previewLoaded))
+                if (state.shouldShowAcceptButton &&
+                    (state.step == VibeChatStep.loaded ||
+                        state.step == VibeChatStep.loadingPreview ||
+                        state.step == VibeChatStep.previewLoaded))
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: ElevatedButton(
                         onPressed: () {
-                          context.read<VibeChatBloc>().add(AcceptChangesEvent());
-
+                          context
+                              .read<VibeChatBloc>()
+                              .add(AcceptChangesEvent());
                         },
                         style: ElevatedButton.styleFrom(
                           foregroundColor: colorScheme.primary,
@@ -360,14 +368,18 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
                       ),
                     ),
                   ),
-                if (state.step == VibeChatStep.sending || state.step == VibeChatStep.transcribing)
-                  _buildAnimatedLoadingWidget(state.step==VibeChatStep.transcribing),
+                if (state.step == VibeChatStep.sending ||
+                    state.step == VibeChatStep.transcribing)
+                  _buildAnimatedLoadingWidget(
+                      state.step == VibeChatStep.transcribing),
                 if (!_hasTypedText && state.step != VibeChatStep.sending)
                   PromptSuggestions(
                     suggestions: state.autoSuggestions,
                     isLoading: state.isLoadingAutoSuggestions,
                     onPromptTap: (prompt) {
-                      context.read<VibeChatBloc>().add(SendAMessageEvent(prompt));
+                      context
+                          .read<VibeChatBloc>()
+                          .add(SendAMessageEvent(prompt));
                     },
                   ),
                 MessageInput(
@@ -380,7 +392,6 @@ class _VibeChatState extends State<VibeChat> with TickerProviderStateMixin  {
       },
     );
   }
-
 
   String _formatStatus(String status) {
     final map = {

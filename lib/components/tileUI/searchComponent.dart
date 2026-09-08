@@ -33,15 +33,15 @@ class SearchWidgetState extends State<SearchWidget> {
   final Container blankResult = Container();
   late ThemeData theme;
   late ColorScheme colorScheme;
-  late  TileThemeExtension tileThemeExtension;
+  late TileThemeExtension tileThemeExtension;
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
-
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
   }
+
   Future<void> onInputChangeDefault() async {
     Function collapseResultContainer = (seletedObject) {
       setState(() {
@@ -66,8 +66,7 @@ class SearchWidgetState extends State<SearchWidget> {
               topLeft: Radius.circular(10),
               topRight: Radius.circular(10),
               bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10)
-          ),
+              bottomRight: Radius.circular(10)),
           boxShadow: [
             BoxShadow(
               color: tileThemeExtension.shadowSearch.withValues(alpha: 0.2),
@@ -96,11 +95,14 @@ class SearchWidgetState extends State<SearchWidget> {
                     alignment: Alignment.topLeft,
                     children: [
                       Shimmer.fromColors(
-                          baseColor: colorScheme.primaryContainer.withAlpha(100),
-                          highlightColor: colorScheme.surfaceContainerLowest.withAlpha(100),
+                          baseColor:
+                              colorScheme.primaryContainer.withAlpha(100),
+                          highlightColor:
+                              colorScheme.surfaceContainerLowest.withAlpha(100),
                           child: Container(
                             decoration: BoxDecoration(
-                                color: colorScheme.onSurface.withValues(alpha: 0.8),
+                                color: colorScheme.onSurface
+                                    .withValues(alpha: 0.8),
                                 borderRadius: BorderRadius.circular(8)),
                           )),
                       Container(

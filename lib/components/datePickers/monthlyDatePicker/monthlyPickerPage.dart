@@ -10,8 +10,8 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 class MonthPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return BlocBuilder<MonthlyUiDateManagerBloc, MonthlyUiDateManagerState>(
       builder: (context, state) {
         return InkWell(
@@ -26,10 +26,8 @@ class MonthPickerPage extends StatelessWidget {
               SizedBox(width: 6.0),
               Transform.rotate(
                 angle: 1.5 * 3.14159,
-                child: Icon(
-                    Icons.arrow_back_ios_new_sharp,
-                    size: 24.0, color: colorScheme.onSurface
-                ),
+                child: Icon(Icons.arrow_back_ios_new_sharp,
+                    size: 24.0, color: colorScheme.onSurface),
               ),
             ],
           ),

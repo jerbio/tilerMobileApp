@@ -166,8 +166,7 @@ class TileCastPreviewLoader {
 
   int _focusIndexFor(List<VibePreviewAction> actions, String? actionId) {
     if (actionId == null) return 0;
-    final idx =
-        actions.indexWhere((a) => a.action?.id == actionId);
+    final idx = actions.indexWhere((a) => a.action?.id == actionId);
     return idx >= 0 ? idx : 0;
   }
 }

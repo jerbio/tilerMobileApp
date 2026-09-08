@@ -10,8 +10,8 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 class WeekPickerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme= Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return BlocBuilder<WeeklyUiDateManagerBloc, WeeklyUiDateManagerState>(
       builder: (context, state) {
         return InkWell(

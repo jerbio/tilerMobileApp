@@ -45,9 +45,9 @@ class TileAddressState extends State<TileAddress> {
 
   @override
   Widget build(BuildContext context) {
-    final theme= Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     bool isAddressTexturl = false;
     String? addressString = widget.subEvent.addressDescription != null
         ? widget.subEvent.addressDescription
@@ -93,8 +93,10 @@ class TileAddressState extends State<TileAddress> {
               width: 25,
               height: 25,
               decoration: widget.isMonthlyView
-                  ? TileDecorations.tileIconContainerBoxDecorationMonthly(colorScheme.onSurface)
-                  : TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
+                  ? TileDecorations.tileIconContainerBoxDecorationMonthly(
+                      colorScheme.onSurface)
+                  : TileDecorations.tileIconContainerBoxDecoration(
+                      colorScheme.onSurface),
               margin: const EdgeInsets.fromLTRB(0, 0, 20, 0),
               child: Icon(
                 !isAddressTexturl
@@ -113,10 +115,9 @@ class TileAddressState extends State<TileAddress> {
                       child: Text(
                         addressString,
                         overflow: TextOverflow.ellipsis,
-                        style:  TextStyle(
+                        style: TextStyle(
                             fontFamily: TileTextStyles.rubikFontName,
-                            fontSize: 15
-                        ),
+                            fontSize: 15),
                       ),
                     ),
                   )

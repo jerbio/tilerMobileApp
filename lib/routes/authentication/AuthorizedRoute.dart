@@ -423,8 +423,9 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
           builder: (context, scheduleState) {
             return HomeBottomNav(
               onShare: _onShareTap,
-              onAddTile: () => Navigator.of(context).pushNamed('/AddTileRedesign'),
-              // onAddTile: () => displayDialog(MediaQuery.of(context).size),
+              // onAddTile: () =>
+              //     Navigator.of(context).pushNamed('/AddTileRedesign'),
+              onAddTile: () => displayDialog(MediaQuery.of(context).size),
               // Debug-only entry to the Add Tile redesign shell (Phase 1).
               // Long-press the centre add button on a debug build to open the
               // new UI without affecting the production add-tile path.

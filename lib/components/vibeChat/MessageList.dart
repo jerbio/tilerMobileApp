@@ -14,7 +14,6 @@ class MessageList extends StatefulWidget {
   final VibeChatState state;
   final ScrollController scrollController;
 
-
   const MessageList({
     Key? key,
     required this.state,
@@ -46,7 +45,7 @@ class _MessageListState extends State<MessageList> {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=Theme.of(context).extension<TileThemeExtension>()!;
+    tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
     localization = AppLocalizations.of(context)!;
   }
 
@@ -79,8 +78,10 @@ class _MessageListState extends State<MessageList> {
             Expanded(
               child: ListView.builder(
                 findChildIndexCallback: (Key key) {
-                  final id = (key as ValueKey<String>).value.replaceFirst('msg_', '');
-                  final index = widget.state.messages.indexWhere((m) => m.id == id);
+                  final id =
+                      (key as ValueKey<String>).value.replaceFirst('msg_', '');
+                  final index =
+                      widget.state.messages.indexWhere((m) => m.id == id);
                   if (index == -1) return null;
                   return widget.state.messages.length - 1 - index;
                 },
@@ -88,7 +89,8 @@ class _MessageListState extends State<MessageList> {
                 padding: EdgeInsets.all(16),
                 itemCount: widget.state.messages.length,
                 itemBuilder: (context, index) {
-                  final message = widget.state.messages[widget.state.messages.length - 1 - index];
+                  final message = widget
+                      .state.messages[widget.state.messages.length - 1 - index];
                   final isUser = message.origin == MessageOrigin.user;
                   return TweenAnimationBuilder<double>(
                     key: ValueKey('msg_${message.id}'),
@@ -103,17 +105,16 @@ class _MessageListState extends State<MessageList> {
                         ),
                       );
                     },
-                    child: Column(
-                      children: [
-                        _buildMessage(context, message.content ?? '', isUser),
-                        if (message.actions != null && message.actions!.isNotEmpty)
-                          ActionsList(
-                            actions:message.actions!,
-                            requestId:message.requestId,
-                            state:widget.state,
-                          ),
-                ]
-                    ),
+                    child: Column(children: [
+                      _buildMessage(context, message.content ?? '', isUser),
+                      if (message.actions != null &&
+                          message.actions!.isNotEmpty)
+                        ActionsList(
+                          actions: message.actions!,
+                          requestId: message.requestId,
+                          state: widget.state,
+                        ),
+                    ]),
                   );
                 },
               ),
@@ -122,10 +123,13 @@ class _MessageListState extends State<MessageList> {
         ),
         if (!_isAtBottom)
           Positioned(
-            bottom: 12, right: 12,
-            child:ElevatedButton(
+            bottom: 12,
+            right: 12,
+            child: ElevatedButton(
               onPressed: () => widget.scrollController.animateTo(
-                0, duration: Duration(milliseconds: 100), curve: Curves.easeOut,
+                0,
+                duration: Duration(milliseconds: 100),
+                curve: Curves.easeOut,
               ),
               style: ElevatedButton.styleFrom(
                 shape: CircleBorder(),
@@ -173,7 +177,8 @@ class _MessageListState extends State<MessageList> {
   }
 
   String _linkifyText(String text) {
-    final urlRegex = RegExp(r'(?<!\[)(?<!\()https?://[^\s\)\]]+', caseSensitive: false);
+    final urlRegex =
+        RegExp(r'(?<!\[)(?<!\()https?://[^\s\)\]]+', caseSensitive: false);
     return text.replaceAllMapped(urlRegex, (match) {
       final url = match.group(0)!;
       return '[$url]($url)';
@@ -188,12 +193,15 @@ class _MessageListState extends State<MessageList> {
       child: Builder(
         builder: (innerContext) => GestureDetector(
           onLongPress: () {
-            final RenderBox renderBox = innerContext.findRenderObject() as RenderBox;
+            final RenderBox renderBox =
+                innerContext.findRenderObject() as RenderBox;
             final offset = renderBox.localToGlobal(Offset.zero);
             showMenu(
               context: innerContext,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              position: RelativeRect.fromLTRB(offset.dx, offset.dy - 50, offset.dx + 100, offset.dy),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              position: RelativeRect.fromLTRB(
+                  offset.dx, offset.dy - 50, offset.dx + 100, offset.dy),
               items: [
                 PopupMenuItem(
                   height: 36,
@@ -211,48 +219,46 @@ class _MessageListState extends State<MessageList> {
               ],
             );
           },
-        child: Container(
-          margin: EdgeInsets.only(bottom: 12),
-          padding: EdgeInsets.all(12),
-          constraints: BoxConstraints(maxWidth: screenWidth * 0.65),
-          decoration: BoxDecoration(
-            color: isUser
-                ? colorScheme.surfaceContainerHighest
-                : colorScheme.primary,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(isUser ? 16 : 4),
-              topRight: Radius.circular(isUser ? 4 : 16),
-              bottomLeft: Radius.circular(16),
-              bottomRight: Radius.circular(16),
+          child: Container(
+            margin: EdgeInsets.only(bottom: 12),
+            padding: EdgeInsets.all(12),
+            constraints: BoxConstraints(maxWidth: screenWidth * 0.65),
+            decoration: BoxDecoration(
+              color: isUser
+                  ? colorScheme.surfaceContainerHighest
+                  : colorScheme.primary,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(isUser ? 16 : 4),
+                topRight: Radius.circular(isUser ? 4 : 16),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
             ),
-          ),
-
-
             child: GptMarkdown(
-            _linkifyText(text),
-            style: TextStyle(
-              color: isUser ? colorScheme.onSurface : colorScheme.onPrimary,
-            ),
-            linkBuilder: (context, text, url, style) => GestureDetector(
-              onTap: () async {
-                final uri = Uri.tryParse(url);
-                if (uri != null && await canLaunchUrl(uri)) {
-                  await launchUrl(uri, mode: LaunchMode.externalApplication);
-                }
-              },
-              child: Text(
-                url,
-                style: const TextStyle(
-                  color: TileColors.vibeChatLinkColor,
-                  decoration: TextDecoration.underline,
-                  decorationColor: TileColors.vibeChatLinkColor,
+              _linkifyText(text),
+              style: TextStyle(
+                color: isUser ? colorScheme.onSurface : colorScheme.onPrimary,
+              ),
+              linkBuilder: (context, text, url, style) => GestureDetector(
+                onTap: () async {
+                  final uri = Uri.tryParse(url);
+                  if (uri != null && await canLaunchUrl(uri)) {
+                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }
+                },
+                child: Text(
+                  url,
+                  style: const TextStyle(
+                    color: TileColors.vibeChatLinkColor,
+                    decoration: TextDecoration.underline,
+                    decorationColor: TileColors.vibeChatLinkColor,
+                  ),
                 ),
               ),
             ),
-                      ),
           ),
         ),
-       ),
+      ),
     );
   }
 }

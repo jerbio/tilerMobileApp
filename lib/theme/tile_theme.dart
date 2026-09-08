@@ -9,7 +9,6 @@ class TileThemeNew {
   static const String evaluatingScheduleAsset =
       'assets/lottie/tiler-evaluating-card-swap.json';
 
-
   static Widget getShimmerPending(BuildContext context, Color highlightColor) {
     return Shimmer.fromColors(
       baseColor: Colors.transparent,
@@ -17,7 +16,7 @@ class TileThemeNew {
       child: Container(
         width: MediaQuery.of(context).size.width,
         child: ColoredBox(
-          color:TileColors.shimmerBackground,
+          color: TileColors.shimmerBackground,
           child: Container(
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
@@ -27,15 +26,11 @@ class TileThemeNew {
     );
   }
 
-
-  static AppBar CancelAndProceedAppBar(
-      {required  String title}) {
+  static AppBar CancelAndProceedAppBar({required String title}) {
     return AppBar(
       title: Text(title),
       centerTitle: true,
       automaticallyImplyLeading: false,
     );
   }
-
-
 }

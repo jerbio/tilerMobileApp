@@ -30,8 +30,8 @@ class _TileTimeCellState extends TimeCellWidgetState {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Positioned(
       top: topPosition,
       left: this.leftPosition,
@@ -44,7 +44,8 @@ class _TileTimeCellState extends TimeCellWidgetState {
                       width: TileDimensions.thickness)),
             ),
         height: this.widgetHeight,
-        width: MediaQuery.sizeOf(context).width - TileDimensions.timeOfDayCellWidth,
+        width: MediaQuery.sizeOf(context).width -
+            TileDimensions.timeOfDayCellWidth,
         child: this.widget.child,
       ),
     );

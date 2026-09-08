@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:tiler_app/components/pendingWidget.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_theme.dart';
+
 //ey: not used
 class NavigationTemplateWidget extends StatefulWidget {
   Function? onCancel;
@@ -41,8 +42,8 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
   }
 
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     bool isKeyboardShown = _keyboardIsVisible();
     Widget? proceedButton;
     Widget cancelButton = Align(
@@ -60,10 +61,13 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               end: Alignment.centerRight,
               colors: [
                 colorScheme.primary,
-                HSLColor.fromColor(colorScheme.primary,)
-                    .withLightness(
-                        HSLColor.fromColor(colorScheme.primary,).lightness +
-                            0.3)
+                HSLColor.fromColor(
+                  colorScheme.primary,
+                )
+                    .withLightness(HSLColor.fromColor(
+                          colorScheme.primary,
+                        ).lightness +
+                        0.3)
                     .toColor()
               ],
             )),
@@ -111,12 +115,15 @@ class NavigationTemplateWidgetState extends State<NavigationTemplateWidget> {
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
               colors: [
-                HSLColor.fromColor(colorScheme.primary,)
-                    .withLightness(
-                        HSLColor.fromColor(colorScheme.primary,).lightness +
-                            0.3)
+                HSLColor.fromColor(
+                  colorScheme.primary,
+                )
+                    .withLightness(HSLColor.fromColor(
+                          colorScheme.primary,
+                        ).lightness +
+                        0.3)
                     .toColor(),
-              colorScheme.primary,
+                colorScheme.primary,
               ],
             )),
         child: ElevatedButton(

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class AnimatedLine extends StatefulWidget {
   Duration duration;
   Color color;

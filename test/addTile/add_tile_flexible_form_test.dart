@@ -17,6 +17,7 @@ import 'package:intl/intl.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 

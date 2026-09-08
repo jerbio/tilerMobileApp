@@ -8,7 +8,6 @@ import 'package:tiler_app/theme/tile_text_styles.dart';
 import '../../constants.dart';
 import 'timeScrub.dart';
 
-
 class SleepTileWidget extends StatefulWidget {
   late Timeline timeline;
   SleepTileWidgetState? _state;
@@ -50,22 +49,20 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme=theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>();
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final tileThemeExtension = theme.extension<TileThemeExtension>();
     var timeline = widget.timeline;
 
     var sleepName = Container(
       margin: const EdgeInsets.fromLTRB(25, 0, 00, 0),
-      child: Text(
-        'Sleep',
-        style:TextStyle(
+      child: Text('Sleep',
+          style: TextStyle(
             fontFamily: TileTextStyles.rubikFontName,
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color:  TileColors.lightContent,
-        )
-      ),
+            color: TileColors.lightContent,
+          )),
     );
 
     var sleepIcon = Container(
@@ -124,10 +121,12 @@ class SleepTileWidgetState extends State<SleepTileWidget> {
                     color: colorScheme.onInverseSurface,
                     width: 5,
                   ),
-                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                  borderRadius:
+                      BorderRadius.circular(TileDimensions.borderRadius),
                   boxShadow: [
                     BoxShadow(
-                      color: tileThemeExtension!.shadowSecondary.withValues(alpha: 0.5),
+                      color: tileThemeExtension!.shadowSecondary
+                          .withValues(alpha: 0.5),
                       spreadRadius: 10,
                       blurRadius: 20,
                       offset: Offset(0, 1),

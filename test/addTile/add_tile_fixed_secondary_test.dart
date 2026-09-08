@@ -19,6 +19,7 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -144,6 +145,57 @@ void main() {
 
       expect(draft.repetitionData, isNotNull);
       expect(draft.repetitionData!.frequency, RepetitionFrequency.daily);
+    });
+  });
+
+  group('Fixed Block — hierarchy', () {
+    /// The card a given row lives in.
+    AddTileSection cardOf(WidgetTester tester, String key) =>
+        tester.widget<AddTileSection>(find
+            .ancestor(
+              of: find.byKey(ValueKey(key)),
+              matching: find.byType(AddTileSection),
+            )
+            .first);
+
+    testWidgets('Location and Repeat sit apart from the interval (D48)',
+        (tester) async {
+      // The card above is the INTERVAL — title, day, start, length, and the
+      // end derived from them. Every row in it answers "when is this
+      // block?". Location and Repeat do not: they qualify a block that is
+      // already fully specified, so grouping all six implied they were
+      // peers.
+      final draft = AddTileDraft.fixed(now: now);
+      await pumpShell(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+      await scrollTo(tester, find.byKey(const ValueKey('repeatRow')));
+
+      final AddTileSection interval = cardOf(tester, 'fixedEndRow');
+      final AddTileSection location = cardOf(tester, 'locationRow');
+      final AddTileSection repeat = cardOf(tester, 'repeatRow');
+
+      expect(identical(location, repeat), isTrue,
+          reason: 'Location and Repeat belong together');
+      expect(identical(location, interval), isFalse,
+          reason: 'they must not share the interval card');
+    });
+
+    testWidgets('the interval card holds only the interval', (tester) async {
+      final draft = AddTileDraft.fixed(now: now);
+      await pumpShell(tester, AddTileRedesignScreen(draft: draft, now: now));
+      await tester.pump();
+
+      final AddTileSection interval = cardOf(tester, 'fixedEndRow');
+      for (final String key in <String>[
+        'fixedTitleField',
+        'fixedDateRow',
+        'fixedStartRow',
+        'fixedDurationRow',
+      ]) {
+        expect(identical(cardOf(tester, key), interval), isTrue,
+            reason: '$key answers "when is this block?" and belongs with '
+                'the derived end');
+      }
     });
   });
 

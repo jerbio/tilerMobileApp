@@ -39,7 +39,7 @@ class TileWidget extends StatefulWidget {
   late SubCalendarEvent subEvent;
   TileWidgetState? _state;
   bool preview;
-  TileWidget(subEvent,{this.preview = false}) : super(key: Key(subEvent.id)) {
+  TileWidget(subEvent, {this.preview = false}) : super(key: Key(subEvent.id)) {
     assert(subEvent != null);
     this.subEvent = subEvent;
   }
@@ -478,23 +478,25 @@ class TileWidgetState extends State<TileWidget>
           color: colorScheme.onSurface!,
           size: 20.0,
         ),
-        onPressed:widget.preview?null: () {
-          if (isEditable) {
-            AnalysticsSignal.send('SUB_TILE_EDIT');
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => EditTile(
-                          tileId: (this.widget.subEvent.isFromTiler
-                                  ? this.widget.subEvent.id
-                                  : this.widget.subEvent.thirdpartyId) ??
-                              "",
-                          tileSource: this.widget.subEvent.thirdpartyType,
-                          thirdPartyUserId:
-                              this.widget.subEvent.thirdPartyUserId,
-                        )));
-          }
-        });
+        onPressed: widget.preview
+            ? null
+            : () {
+                if (isEditable) {
+                  AnalysticsSignal.send('SUB_TILE_EDIT');
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EditTile(
+                                tileId: (this.widget.subEvent.isFromTiler
+                                        ? this.widget.subEvent.id
+                                        : this.widget.subEvent.thirdpartyId) ??
+                                    "",
+                                tileSource: this.widget.subEvent.thirdpartyType,
+                                thirdPartyUserId:
+                                    this.widget.subEvent.thirdPartyUserId,
+                              )));
+                }
+              });
 
     List<Widget> allElements = [
       Container(
@@ -599,17 +601,20 @@ class TileWidgetState extends State<TileWidget>
     if (widget.subEvent.tileShareDesignatedId.isNot_NullEmptyOrWhiteSpace()) {
       allElements.add(
         GestureDetector(
-          onTap: widget.preview?null: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    TileShareDetailWidget.byDesignatedTileShareId(
-                  designatedTileShareId: widget.subEvent.tileShareDesignatedId,
-                ),
-              ),
-            );
-          },
+          onTap: widget.preview
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          TileShareDetailWidget.byDesignatedTileShareId(
+                        designatedTileShareId:
+                            widget.subEvent.tileShareDesignatedId,
+                      ),
+                    ),
+                  );
+                },
           child: Icon(
             Icons.share,
             color: colorScheme.onSurface,

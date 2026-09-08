@@ -31,6 +31,7 @@ import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePredictionSour
 import 'package:tiler_app/services/api/scheduleApi.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRedesignShell.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/customTimeRestrictions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationRoute.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repetitionRoute.dart';
@@ -217,17 +218,29 @@ class _TilerAppState extends State<TilerApp> {
                   // the legacy /AddTile screen. Reachable in debug builds via
                   // the long-press on the home "add" button; production entry
                   // points continue to use /AddTile until rollout.
-                  '/AddTileRedesign': (BuildContext context) =>
-                      new AddTileRedesignScreen(
-                        locationSource: ApiAddTileLocationSource(
-                          locationApi:
-                              LocationApi(getContextCallBack: () => context),
-                        ),
-                        predictionSource: ApiAddTilePredictionSource(
-                          scheduleApi:
-                              ScheduleApi(getContextCallBack: () => context),
-                        ),
+                  '/AddTileRedesign': (BuildContext context) {
+                    final scheduleApi =
+                        ScheduleApi(getContextCallBack: () => context);
+                    // The legacy result slot, so a caller that pushed this
+                    // route reads back the created tile the same way it does
+                    // from /AddTile.
+                    final newTileParams =
+                        ModalRoute.of(context)?.settings.arguments;
+                    return AddTileRedesignScreen(
+                      locationSource: ApiAddTileLocationSource(
+                        locationApi:
+                            LocationApi(getContextCallBack: () => context),
                       ),
+                      predictionSource: ApiAddTilePredictionSource(
+                        scheduleApi: scheduleApi,
+                      ),
+                      submission:
+                          ApiAddTileSubmission(scheduleApi: scheduleApi),
+                      newTileParams: newTileParams is Map<String, dynamic>
+                          ? newTileParams
+                          : null,
+                    );
+                  },
                   '/SearchTile': (BuildContext context) =>
                       new EventNameSearchWidget(context: context),
                   '/LocationRoute': (BuildContext context) =>

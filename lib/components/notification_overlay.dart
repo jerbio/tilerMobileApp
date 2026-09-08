@@ -107,11 +107,12 @@ class _NotificationOverlayWidgetState extends State<_NotificationOverlayWidget>
       }
     });
   }
+
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
-    tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
+    tileThemeExtension = theme.extension<TileThemeExtension>()!;
     super.didChangeDependencies();
   }
 

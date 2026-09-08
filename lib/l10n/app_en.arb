@@ -2080,5 +2080,14 @@
   "addTileExplanationFlexibleEmphasis": "best time",
   "addTileExplanationFixedEmphasis": "a fixed time",
 
-  "addTileFieldRepeat": "REPEAT"
+  "addTileFieldRepeat": "REPEAT",
+
+  "addTileDurationQuick": "QUICK",
+  "addTileDurationCustom": "CUSTOM",
+
+  "addTileDurationHourLabel": "Hour",
+  "addTileDurationMinuteLabel": "Min",
+
+  "addTileSubmitFailed": "Could not add this right now. Your details are saved.",
+  "addTileRetry": "Retry"
 }

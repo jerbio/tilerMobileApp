@@ -11,11 +11,13 @@ import 'package:tiler_app/services/api/settingsApi.dart';
 part 'tile_preferences_event.dart';
 part 'tile_preferences_state.dart';
 
-class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesState> {
+class TilePreferencesBloc
+    extends Bloc<TilePreferencesEvent, TilePreferencesState> {
   final SettingsApi settingsApi;
   String? localTimeZone;
 
-  TilePreferencesBloc({required this.settingsApi}) : super(PreferencesInitial()) {
+  TilePreferencesBloc({required this.settingsApi})
+      : super(PreferencesInitial()) {
     on<FetchProfiles>(_fetchProfiles);
     on<UpdateWorkProfile>(_updateWork);
     on<UpdatePersonalProfile>(_updatePersonal);
@@ -28,7 +30,8 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
     });
   }
 
-  Future<void> _fetchProfiles(FetchProfiles event, Emitter<TilePreferencesState> emit) async {
+  Future<void> _fetchProfiles(
+      FetchProfiles event, Emitter<TilePreferencesState> emit) async {
     emit(PreferencesLoading());
     try {
       final profiles = await settingsApi.getUserRestrictionProfile();
@@ -46,7 +49,8 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
     }
   }
 
-  void _updateEndOfDay(UpdateEndOfDay event, Emitter<TilePreferencesState> emit) {
+  void _updateEndOfDay(
+      UpdateEndOfDay event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;
       emit(PreferencesLoaded(
@@ -60,7 +64,8 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
     }
   }
 
-  void _updateSleepDuration(UpdateSleepDuration event, Emitter<TilePreferencesState> emit) {
+  void _updateSleepDuration(
+      UpdateSleepDuration event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;
       final updatedUserSettings = current.userSettings;
@@ -76,30 +81,29 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
           );
 
           emit(PreferencesLoaded(
-            workProfile: current.workProfile,
-            personalProfile: current.personalProfile,
-            endOfDay: current.endOfDay,
-            userSettings: newUserSettings,
-            localTimeZone: current.localTimeZone,
-            hasChanges: true
-          ));
+              workProfile: current.workProfile,
+              personalProfile: current.personalProfile,
+              endOfDay: current.endOfDay,
+              userSettings: newUserSettings,
+              localTimeZone: current.localTimeZone,
+              hasChanges: true));
         } else {
           updatedUserSettings.scheduleProfile!.sleepDuration = event.durationMs;
 
           emit(PreferencesLoaded(
-            workProfile: current.workProfile,
-            personalProfile: current.personalProfile,
-            endOfDay: current.endOfDay,
-            userSettings: updatedUserSettings,
-            localTimeZone: current.localTimeZone,
-            hasChanges: true
-          ));
+              workProfile: current.workProfile,
+              personalProfile: current.personalProfile,
+              endOfDay: current.endOfDay,
+              userSettings: updatedUserSettings,
+              localTimeZone: current.localTimeZone,
+              hasChanges: true));
         }
       }
     }
   }
 
-  void _updateTravelMedium(UpdateTravelMedium event, Emitter<TilePreferencesState> emit) {
+  void _updateTravelMedium(
+      UpdateTravelMedium event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;
       final updatedUserSettings = current.userSettings;
@@ -116,15 +120,15 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
           );
 
           emit(PreferencesLoaded(
-            workProfile: current.workProfile,
-            personalProfile: current.personalProfile,
-            endOfDay: current.endOfDay,
-            userSettings: newUserSettings,
-            localTimeZone: current.localTimeZone,
-            hasChanges: true
-          ));
+              workProfile: current.workProfile,
+              personalProfile: current.personalProfile,
+              endOfDay: current.endOfDay,
+              userSettings: newUserSettings,
+              localTimeZone: current.localTimeZone,
+              hasChanges: true));
         } else {
-          updatedUserSettings.scheduleProfile!.travelMedium = event.travelMedium;
+          updatedUserSettings.scheduleProfile!.travelMedium =
+              event.travelMedium;
 
           emit(PreferencesLoaded(
               workProfile: current.workProfile,
@@ -132,13 +136,14 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
               endOfDay: current.endOfDay,
               userSettings: updatedUserSettings,
               localTimeZone: current.localTimeZone,
-              hasChanges: true
-          ));
+              hasChanges: true));
         }
       }
     }
   }
-  void _updateWork(UpdateWorkProfile event, Emitter<TilePreferencesState> emit) {
+
+  void _updateWork(
+      UpdateWorkProfile event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;
       emit(PreferencesLoaded(
@@ -147,12 +152,12 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
           userSettings: current.userSettings,
           endOfDay: current.endOfDay,
           localTimeZone: current.localTimeZone,
-          hasChanges: true
-      ));
+          hasChanges: true));
     }
   }
 
-  void _updatePersonal(UpdatePersonalProfile event, Emitter<TilePreferencesState> emit) {
+  void _updatePersonal(
+      UpdatePersonalProfile event, Emitter<TilePreferencesState> emit) {
     if (state is PreferencesLoaded) {
       final current = state as PreferencesLoaded;
       emit(PreferencesLoaded(
@@ -161,26 +166,22 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
           userSettings: current.userSettings,
           endOfDay: current.endOfDay,
           localTimeZone: current.localTimeZone,
-          hasChanges: true
-      ));
+          hasChanges: true));
     }
   }
 
-  Future<void> _proceedUpdate(ProceedUpdate event, Emitter<TilePreferencesState> emit) async {
+  Future<void> _proceedUpdate(
+      ProceedUpdate event, Emitter<TilePreferencesState> emit) async {
     if (state is! PreferencesLoaded) return;
     final current = state as PreferencesLoaded;
     try {
       if (current.workProfile != null) {
-        await settingsApi.updateRestrictionProfile(
-            current.workProfile!,
-            restrictionProfileType: 'work'
-        );
+        await settingsApi.updateRestrictionProfile(current.workProfile!,
+            restrictionProfileType: 'work');
       }
       if (current.personalProfile != null) {
-        await settingsApi.updateRestrictionProfile(
-            current.personalProfile!,
-            restrictionProfileType: 'personal'
-        );
+        await settingsApi.updateRestrictionProfile(current.personalProfile!,
+            restrictionProfileType: 'personal');
       }
       if (current.userSettings != null) {
         await settingsApi.updateUserSettings(current.userSettings!);
@@ -193,7 +194,6 @@ class TilePreferencesBloc extends Bloc<TilePreferencesEvent, TilePreferencesStat
       }
 
       emit(UpdateSuccess());
-
     } catch (e) {
       emit(PreferencesError(e.toString()));
     }

@@ -144,7 +144,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> resumeTile(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToResumeTile;
+    error.Message =
+        LocalizationService.instance.translations.failedToResumeTile;
     return sendPostRequest('api/Schedule/Event/Resume', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -164,7 +165,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> setAsNow(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToMoveUpTask;
+    error.Message =
+        LocalizationService.instance.translations.failedToMoveUpTask;
     return sendPostRequest('api/Schedule/Event/Now', {
       'EventID': subEvent.id,
       'ThirdPartyType': subEvent.thirdpartyType?.name ?? ""
@@ -184,7 +186,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> updateSubEvent(EditTilerEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToUpdateTile;
+    error.Message =
+        LocalizationService.instance.translations.failedToUpdateTile;
     var queryParameters = {
       'EventID': subEvent.id,
       'EventName': subEvent.name,
@@ -222,7 +225,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future<SubCalendarEvent> complete(SubCalendarEvent subEvent) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToSendRequest;
+    error.Message =
+        LocalizationService.instance.translations.failedToSendRequest;
     print(subEvent);
     print(subEvent.id);
     return sendPostRequest('api/Schedule/Event/Complete', {
@@ -248,7 +252,8 @@ class SubCalendarEventApi extends AppApi {
 
   Future completeTiles(String id, String type, String userId) async {
     TilerError error = new TilerError();
-    error.Message = LocalizationService.instance.translations.failedToSendRequest;
+    error.Message =
+        LocalizationService.instance.translations.failedToSendRequest;
     return sendPostRequest('api/Schedule/Events/Complete', {
       'EventID': id,
       'ThirdPartyType': type,

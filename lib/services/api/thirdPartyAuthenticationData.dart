@@ -18,7 +18,11 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
   ThirdPartyAuthenticationData.initializedWithRestData(String accessToken,
       String tokenType, this.providerKey, int expirationTime, String provider)
       : super.initializedWithRestData(
-            accessToken, tokenType, expirationTime, provider,);
+          accessToken,
+          tokenType,
+          expirationTime,
+          provider,
+        );
 
   ThirdPartyAuthenticationData.initializedWithLocalStorage(
       String accessToken,
@@ -89,12 +93,12 @@ class ThirdPartyAuthenticationData extends AuthenticationData {
     if (response.statusCode == 200) {
       var jsonResult = jsonDecode(response.body);
       var retValue = ThirdPartyAuthenticationData.initializedWithRestData(
-          jsonResult['access_token'],
-          jsonResult['token_type'],
-          providerKey,
-          jsonResult['expires_in'],
-          provider,
-          );
+        jsonResult['access_token'],
+        jsonResult['token_type'],
+        providerKey,
+        jsonResult['expires_in'],
+        provider,
+      );
       return retValue;
     } else {
       var jsonResult = jsonDecode(response.body);

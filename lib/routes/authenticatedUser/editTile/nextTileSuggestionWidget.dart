@@ -4,7 +4,6 @@ import 'package:tiler_app/data/nextTileSuggestions.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTile.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
 
-
 class NextTileSuggestionWidget extends StatefulWidget {
   NextTileSuggestion nextTileSuggestion;
   NextTileSuggestionWidget({required this.nextTileSuggestion});
@@ -16,8 +15,8 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
   final int _maxLengthOfSuggestion = 80;
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
-    final colorScheme= theme.colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     String suggestionName = this.widget.nextTileSuggestion.name!;
 
@@ -55,14 +54,16 @@ class _NextTileSuggestionWidgetState extends State<NextTileSuggestionWidget> {
                         suggestionNumber.toString(),
                         style: TextStyle(
                             fontSize: 90,
-                            color: colorScheme.onSurface.withValues(alpha: 0.05)),
+                            color:
+                                colorScheme.onSurface.withValues(alpha: 0.05)),
                       ),
                     )
                   : SizedBox.shrink(),
               Center(
-                  child: Text(
-                      suggestionText, style:TextStyle(fontSize: 20),
-                  ),
+                child: Text(
+                  suggestionText,
+                  style: TextStyle(fontSize: 20),
+                ),
               ),
             ],
           )));

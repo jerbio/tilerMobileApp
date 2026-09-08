@@ -10,7 +10,6 @@ import 'package:tiler_app/theme/tile_colors.dart';
 import 'package:tiler_app/theme/tile_decorations.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 
-
 class WeeklyDetailsTile extends StatefulWidget {
   late SubCalendarEvent subEvent;
   WeeklyDetailsTileState? _state;
@@ -32,10 +31,11 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
   late ColorScheme colorScheme;
   @override
   void didChangeDependencies() {
-    theme=Theme.of(context);
-    colorScheme=theme.colorScheme;
+    theme = Theme.of(context);
+    colorScheme = theme.colorScheme;
     super.didChangeDependencies();
   }
+
   @override
   Widget build(BuildContext context) {
     return renderTileElement();
@@ -47,8 +47,8 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
     int redColor = subEvent.colorRed ?? 127;
     int blueColor = subEvent.colorBlue ?? 127;
     int greenColor = subEvent.colorGreen ?? 127;
-    var tileBackGroundColor = Color.fromRGBO(
-        redColor, greenColor, blueColor, 0.2);
+    var tileBackGroundColor =
+        Color.fromRGBO(redColor, greenColor, blueColor, 0.2);
     Widget editButton = IconButton(
         icon: Icon(
           Icons.edit_outlined,
@@ -60,30 +60,26 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) =>
-                        EditTile(
+                    builder: (context) => EditTile(
                           tileId: (this.widget.subEvent.isFromTiler
-                              ? this.widget.subEvent.id
-                              : this.widget.subEvent.thirdpartyId) ??
+                                  ? this.widget.subEvent.id
+                                  : this.widget.subEvent.thirdpartyId) ??
                               "",
                           tileSource: this.widget.subEvent.thirdpartyType,
                           thirdPartyUserId:
-                          this.widget.subEvent.thirdPartyUserId,
+                              this.widget.subEvent.thirdPartyUserId,
                         )));
           }
         });
     List<Widget> allElements = [
       Container(
-        width: MediaQuery
-            .of(context)
-            .size
-            .width,
+        width: MediaQuery.of(context).size.width,
         margin: const EdgeInsets.fromLTRB(0, 0, 0, 10),
         padding: const EdgeInsets.fromLTRB(0, 0, 20, 0),
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right:5.0),
+              padding: const EdgeInsets.only(right: 5.0),
               child: TileName(widget.subEvent),
             ),
             Positioned(
@@ -105,7 +101,6 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
     }
 
     Widget tileTimeFrame = Container(
-
       padding: const EdgeInsets.fromLTRB(20, 0, 0, 0),
       child: Row(
         children: [
@@ -113,12 +108,15 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration: TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
+            decoration: TileDecorations.tileIconContainerBoxDecoration(
+                colorScheme.onSurface),
             child: Icon(
-              (widget.subEvent.isRigid ?? false) ? Icons.lock_outline : Icons
-                  .access_time_sharp,
-              color: (widget.subEvent.isTardy ?? false) ? TileColors
-                  .late : colorScheme.onSurface,
+              (widget.subEvent.isRigid ?? false)
+                  ? Icons.lock_outline
+                  : Icons.access_time_sharp,
+              color: (widget.subEvent.isTardy ?? false)
+                  ? TileColors.late
+                  : colorScheme.onSurface,
               size: TileDimensions.tileIconSize,
             ),
           ),
@@ -126,8 +124,9 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
             child: TimeFrameWidget(
               timeRange: widget.subEvent,
-              textColor: (widget.subEvent.isTardy ?? false) ? TileColors
-                  .late : colorScheme.onSurface,
+              textColor: (widget.subEvent.isTardy ?? false)
+                  ? TileColors.late
+                  : colorScheme.onSurface,
             ),
           ),
         ],
@@ -142,9 +141,7 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
             child: TimeScrubWidget(
               timeline: widget.subEvent,
               isTardy: widget.subEvent.isTardy ?? false,
-            )
-        )
-    ));
+            ))));
 
     allElements.add(Container(
         margin: const EdgeInsets.fromLTRB(0, 2, 0, 0),
@@ -154,8 +151,7 @@ class WeeklyDetailsTileState extends State<WeeklyDetailsTile> {
           forcedOption: (widget.subEvent.isRigid == true
               ? [PlaybackOptions.Delete]
               : null),
-        )
-    ));
+        )));
 
     return Material(
       type: MaterialType.transparency,

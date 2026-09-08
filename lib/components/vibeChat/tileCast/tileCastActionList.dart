@@ -7,7 +7,8 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 /// carousel. Highlights the currently selected action and reports taps back via
 /// [onSelect] so the carousel can jump to that page (no chat round-trip).
 class TileCastActionList extends StatelessWidget {
-  static ValueKey<String> itemKey(int index) => ValueKey('tilecast_item_$index');
+  static ValueKey<String> itemKey(int index) =>
+      ValueKey('tilecast_item_$index');
   static ValueKey<String> nonViableBadgeKey(int index) =>
       ValueKey('tilecast_item_nonviable_$index');
   static ValueKey<String> compositeGroupIconKey(int index) =>

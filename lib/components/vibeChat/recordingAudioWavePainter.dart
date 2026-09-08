@@ -21,7 +21,14 @@ class recordingAudioWavePainter extends CustomPainter {
       final phase = i * 0.5;
       final heightScale = 0.5 + (i * 0.3);
 
-      _drawSymmetricWave(canvas, size, time, phase, layerOpacity, heightScale,);
+      _drawSymmetricWave(
+        canvas,
+        size,
+        time,
+        phase,
+        layerOpacity,
+        heightScale,
+      );
     }
 
     _drawSymmetricWave(canvas, size, time, 0, 0.8, 1.0);
@@ -45,16 +52,18 @@ class recordingAudioWavePainter extends CustomPainter {
     topPath.moveTo(0, centerY);
     bottomPath.moveTo(0, centerY);
 
-    for (double x = 0; x <= width;x++) {
+    for (double x = 0; x <= width; x++) {
       final percentAcrossScreen = x / width;
 
-      final pulseScale = math.sin(time + percentAcrossScreen * math.pi * 2 + phase) *
-          (0.3 + amplitude * 0.7);
+      final pulseScale =
+          math.sin(time + percentAcrossScreen * math.pi * 2 + phase) *
+              (0.3 + amplitude * 0.7);
 
       final blobShape = math.exp(-math.pow((percentAcrossScreen - 0.5) * 3, 2));
 
       final baseHeight = 0.15 + (amplitude * amplitude * 0.85);
-      final height = pulseScale * baseHeight * size.height * 0.4 * blobShape * heightScale;
+      final height =
+          pulseScale * baseHeight * size.height * 0.4 * blobShape * heightScale;
       topPath.lineTo(x, centerY - height);
       bottomPath.lineTo(x, centerY + height);
     }

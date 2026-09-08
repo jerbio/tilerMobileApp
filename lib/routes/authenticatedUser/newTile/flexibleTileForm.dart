@@ -28,26 +28,10 @@ import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
-
-/// Formats a [Duration] as a compact, locale-neutral summary for the
-/// duration row. Examples:
-///   45 min  → "45 min"
-///   2 hr    → "2 hr"
-///   1 hr 30 → "1 hr 30 min"
-///
-/// Returns `null` when the duration is zero or negative (caller shows
-/// "Duration not set" instead).
-String? formatDurationSummary(AppLocalizations l10n, Duration d) {
-  if (d.inMinutes <= 0) return null;
-  final hours = d.inHours;
-  final minutes = d.inMinutes.remainder(60);
-  if (hours == 0) return l10n.addTileDurationMinutes(minutes);
-  if (minutes == 0) return l10n.addTileDurationHours(hours);
-  return l10n.addTileDurationHoursMinutes(hours, minutes);
-}
 
 /// Compact Location row summary, or `null` when nothing is selected (the row
 /// then reads "Add location").

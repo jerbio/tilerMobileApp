@@ -20,7 +20,8 @@ class ChatApi extends AppApi {
   ChatApi({Function? getContextCallBack})
       : super(getContextCallBack: getContextCallBack);
 
-  Future<List<VibeSession>> getVibeSessions({String? sessionId, int batchSize = 15, int index = 0}) async {
+  Future<List<VibeSession>> getVibeSessions(
+      {String? sessionId, int batchSize = 15, int index = 0}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -49,11 +50,13 @@ class ChatApi extends AppApi {
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
 
-          if (jsonResult['Content'] != null && jsonResult['Content']['vibeSession'] != null) {
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['vibeSession'] != null) {
             return [VibeSession.fromJson(jsonResult['Content']['vibeSession'])];
           }
 
-          if (jsonResult['Content'] != null && jsonResult['Content']['vibeSessions'] != null) {
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['vibeSessions'] != null) {
             return (jsonResult['Content']['vibeSessions'] as List)
                 .map((session) => VibeSession.fromJson(session))
                 .toList();
@@ -77,7 +80,8 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<List<VibeMessage>> getMessages({required String sessionId,int batchSize = 10, int index = 0}) async {
+  Future<List<VibeMessage>> getMessages(
+      {required String sessionId, int batchSize = 10, int index = 0}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -100,7 +104,8 @@ class ChatApi extends AppApi {
         http.Response response = await http.get(uri, headers: headers);
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['chats'] != null) {
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['chats'] != null) {
             return (jsonResult['Content']['chats'] as List)
                 .map((message) => VibeMessage.fromJson(message))
                 .toList();
@@ -136,7 +141,8 @@ class ChatApi extends AppApi {
         } else {
           queryParams['ActionIds'] = actionIds;
         }
-        Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Action', queryParams);
+        Uri uri =
+            Uri.https(Constants.tilerDomain, 'api/Vibe/Action', queryParams);
         var headers = this.getHeaders();
 
         if (headers == null) {
@@ -223,7 +229,8 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<VibeResponse?> sendChatMessage(String message, String? sessionId) async {
+  Future<VibeResponse?> sendChatMessage(
+      String message, String? sessionId) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -231,11 +238,11 @@ class ChatApi extends AppApi {
 
         Map<String, dynamic> requestBody = {
           'ChatMessage': message,
-          'SessionId': sessionId??'',
+          'SessionId': sessionId ?? '',
         };
 
         final queryParameters =
-        await injectRequestParams(requestBody, includeLocationParams: true);
+            await injectRequestParams(requestBody, includeLocationParams: true);
 
         Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Chat');
         var headers = this.getHeaders();
@@ -252,14 +259,14 @@ class ChatApi extends AppApi {
           body: jsonEncode(queryParameters),
         );
 
-        if (response.statusCode == 200 || response.statusCode==60000001) {
+        if (response.statusCode == 200 || response.statusCode == 60000001) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['vibeResponse'] != null) {
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['vibeResponse'] != null) {
             return VibeResponse.fromJson(jsonResult['Content']['vibeResponse']);
           }
           return null;
         } else {
-
           throw TilerError(
               Message: LocalizationService
                   .instance.translations.responseHandlingError);
@@ -277,7 +284,7 @@ class ChatApi extends AppApi {
     }
   }
 
-  Future<VibeRequest?> executeVibeRequest({ required String requestId}) async {
+  Future<VibeRequest?> executeVibeRequest({required String requestId}) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
@@ -288,8 +295,7 @@ class ChatApi extends AppApi {
         };
 
         final queryParameters =
-        await injectRequestParams(requestBody, includeLocationParams: true);
-
+            await injectRequestParams(requestBody, includeLocationParams: true);
 
         Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Request/Execute');
         var headers = this.getHeaders();
@@ -306,10 +312,10 @@ class ChatApi extends AppApi {
           body: jsonEncode(queryParameters),
         );
 
-
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['vibeRequest'] != null) {
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['vibeRequest'] != null) {
             return VibeRequest.fromJson(jsonResult['Content']['vibeRequest']);
           }
           return null;
@@ -341,8 +347,8 @@ class ChatApi extends AppApi {
         var headers = this.getHeaders();
         if (headers == null) {
           throw TilerError(
-              Message: LocalizationService.instance.translations.authenticationIssues
-          );
+              Message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
 
         var request = http.MultipartRequest('POST', uri);
@@ -362,55 +368,63 @@ class ChatApi extends AppApi {
 
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          return jsonResult['Content']?['transcription'] ?? jsonResult.toString();
+          return jsonResult['Content']?['transcription'] ??
+              jsonResult.toString();
         } else {
           throw TilerError(
-              Message: LocalizationService.instance.translations.responseHandlingError
-          );
+              Message: LocalizationService
+                  .instance.translations.responseHandlingError);
         }
       } else {
         throw TilerError(
-            Message: LocalizationService.instance.translations.userIsNotAuthenticated
-        );
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
       throw TilerError(
           Message: e is TilerError
               ? e.Message
-              : LocalizationService.instance.translations.errorOccurred
-      );
+              : LocalizationService.instance.translations.errorOccurred);
     }
   }
 
-  Future<List<VibeRequestPreview>> getVibeRequestPreviews(String vibeRequestId) async {
+  Future<List<VibeRequestPreview>> getVibeRequestPreviews(
+      String vibeRequestId) async {
     try {
       var isAuthenticated = await this.authentication.isUserAuthenticated();
       if (isAuthenticated.item1) {
         await checkAndReplaceCredentialCache();
 
-        Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Request/$vibeRequestId/Preview');
+        Uri uri = Uri.https(
+            Constants.tilerDomain, 'api/Vibe/Request/$vibeRequestId/Preview');
 
         var headers = this.getHeaders();
         if (headers == null) {
           throw TilerError(
-              Message: LocalizationService.instance.translations.authenticationIssues);
+              Message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
 
         http.Response response = await http.get(uri, headers: headers);
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['preview'] != null) {
-            return [VibeRequestPreview.fromJson(jsonResult['Content']['preview'])];
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['preview'] != null) {
+            return [
+              VibeRequestPreview.fromJson(jsonResult['Content']['preview'])
+            ];
           }
 
           return [];
         } else {
           throw TilerError(
-              Message: LocalizationService.instance.translations.responseHandlingError);
+              Message: LocalizationService
+                  .instance.translations.responseHandlingError);
         }
       } else {
         throw TilerError(
-            Message: LocalizationService.instance.translations.userIsNotAuthenticated);
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
       throw TilerError(
@@ -426,29 +440,35 @@ class ChatApi extends AppApi {
       if (isAuthenticated.item1) {
         await checkAndReplaceCredentialCache();
 
-        Uri uri = Uri.https(Constants.tilerDomain, 'api/Vibe/Preview/$previewId');
+        Uri uri =
+            Uri.https(Constants.tilerDomain, 'api/Vibe/Preview/$previewId');
 
         var headers = this.getHeaders();
         if (headers == null) {
           throw TilerError(
-              Message: LocalizationService.instance.translations.authenticationIssues);
+              Message: LocalizationService
+                  .instance.translations.authenticationIssues);
         }
 
         http.Response response = await http.get(uri, headers: headers);
 
         if (response.statusCode == 200) {
           var jsonResult = jsonDecode(response.body);
-          if (jsonResult['Content'] != null && jsonResult['Content']['preview'] != null) {
-            return VibePreviewSummary.fromJson(jsonResult['Content']['preview']);
+          if (jsonResult['Content'] != null &&
+              jsonResult['Content']['preview'] != null) {
+            return VibePreviewSummary.fromJson(
+                jsonResult['Content']['preview']);
           }
           return null;
         } else {
           throw TilerError(
-              Message: LocalizationService.instance.translations.responseHandlingError);
+              Message: LocalizationService
+                  .instance.translations.responseHandlingError);
         }
       } else {
         throw TilerError(
-            Message: LocalizationService.instance.translations.userIsNotAuthenticated);
+            Message: LocalizationService
+                .instance.translations.userIsNotAuthenticated);
       }
     } catch (e) {
       throw TilerError(
@@ -480,8 +500,8 @@ class ChatApi extends AppApi {
       if (language != null && language.isNotEmpty) {
         queryParams['Language'] = language;
       }
-      Uri uri = Uri.https(
-          Constants.tilerDomain, 'api/Vibe/Session/AutoSuggestions', queryParams);
+      Uri uri = Uri.https(Constants.tilerDomain,
+          'api/Vibe/Session/AutoSuggestions', queryParams);
 
       var headers = this.getHeaders();
       if (headers == null) {
@@ -538,4 +558,3 @@ class ChatApi extends AppApi {
     }
   }
 }
-

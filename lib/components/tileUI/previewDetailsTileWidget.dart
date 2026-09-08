@@ -33,6 +33,7 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
   }
+
   @override
   Widget build(BuildContext context) {
     return renderTileElement();
@@ -78,7 +79,8 @@ class PreviewDetailsTileWidgetState extends State<PreviewDetailsTileWidget> {
             margin: EdgeInsets.fromLTRB(0, 0, 10, 0),
             width: 25,
             height: 25,
-            decoration: TileDecorations.tileIconContainerBoxDecoration(colorScheme.onSurface),
+            decoration: TileDecorations.tileIconContainerBoxDecoration(
+                colorScheme.onSurface),
             child: Icon(
               (widget.subEvent.isRigid ?? false)
                   ? Icons.lock_outline

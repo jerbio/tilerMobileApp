@@ -19,19 +19,20 @@ class TilerActionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
-    return   ColorFiltered(
+    return ColorFiltered(
       colorFilter: ColorFilter.mode(
         preview
-            ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+            ? tileThemeExtension.vibeChatPreviewDisableColor
+                .withValues(alpha: 0.6)
             : Colors.transparent,
         BlendMode.srcATop,
       ),
       child: GestureDetector(
-        onTap:preview?null: onTap,
+        onTap: preview ? null : onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(

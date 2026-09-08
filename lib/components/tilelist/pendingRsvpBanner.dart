@@ -17,13 +17,13 @@ class PendingRsvpBanner extends StatefulWidget {
   final VoidCallback? onRsvpUpdated;
   final bool preview;
 
-  const PendingRsvpBanner({
-    Key? key,
-    required this.pendingTiles,
-    this.declinedTiles = const [],
-    this.onRsvpUpdated,
-    this.preview = false
-  }) : super(key: key);
+  const PendingRsvpBanner(
+      {Key? key,
+      required this.pendingTiles,
+      this.declinedTiles = const [],
+      this.onRsvpUpdated,
+      this.preview = false})
+      : super(key: key);
 
   /// Detect tiles with pending RSVP status (needsAction or tentative)
   /// Only includes tiles from third-party calendars (non-Tiler tiles)
@@ -154,11 +154,10 @@ class _PendingRsvpBannerState extends State<PendingRsvpBanner> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => PendingRsvpModal(
-        pendingTiles: widget.pendingTiles,
-        declinedTiles: widget.declinedTiles,
-        onRsvpUpdated: widget.onRsvpUpdated,
-        preview:  widget.preview
-      ),
+          pendingTiles: widget.pendingTiles,
+          declinedTiles: widget.declinedTiles,
+          onRsvpUpdated: widget.onRsvpUpdated,
+          preview: widget.preview),
     );
   }
 
@@ -309,7 +308,7 @@ class PendingRsvpModal extends StatelessWidget {
     required this.pendingTiles,
     this.declinedTiles = const [],
     this.onRsvpUpdated,
-    this.preview=false,
+    this.preview = false,
   }) : super(key: key);
 
   void _navigateToEditTile(BuildContext context, SubCalendarEvent tile) {
@@ -617,7 +616,7 @@ class PendingRsvpModal extends StatelessWidget {
     return Opacity(
       opacity: isDeclined ? 0.5 : 1.0,
       child: InkWell(
-        onTap: preview?null:() => _navigateToEditTile(context, tile),
+        onTap: preview ? null : () => _navigateToEditTile(context, tile),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           decoration: isUrgent
@@ -744,7 +743,9 @@ class PendingRsvpModal extends StatelessWidget {
                         icon: Icons.edit_outlined,
                         label: l10n.editTile,
                         color: colorScheme.primary,
-                        onTap: preview?null:() => _navigateToEditTile(context, tile),
+                        onTap: preview
+                            ? null
+                            : () => _navigateToEditTile(context, tile),
                       ),
                     ],
                   ),

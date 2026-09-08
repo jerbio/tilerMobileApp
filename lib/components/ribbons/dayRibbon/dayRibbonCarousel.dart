@@ -21,7 +21,7 @@ class DayRibbonCarousel extends StatefulWidget {
   DayRibbonCarousel(DateTime? initialDate,
       {this.onDateChange,
       this.autoUpdateAnchorDate = false,
-      this.preview=false,
+      this.preview = false,
       this.numberOfDays = 5}) {
     if (initialDate == null) {
       initialDate = Utility.currentTime().dayDate;
@@ -54,13 +54,15 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
     batchCount = 28 * this.widget.numberOfDays;
     numberOfDays = this.widget.numberOfDays;
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     theme = Theme.of(context);
     colorScheme = theme.colorScheme;
-    tileThemeExtension=Theme.of(context).extension<TileThemeExtension>()!;
+    tileThemeExtension = Theme.of(context).extension<TileThemeExtension>()!;
   }
+
   updateSelectedDate(DateTime date) {
     setState(() {
       this.selectedDate = date.dayDate;
@@ -105,7 +107,8 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
         dateTime: dateTime,
         showMonth: dateTime.day == 1,
         onTapped: onDateButtonTapped,
-        isSelected: this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
+        isSelected:
+            this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
       ),
     );
   }
@@ -375,22 +378,24 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
           if (initialCarouselIndex < 0) {
             initialCarouselIndex = 0;
           }
-          return  IgnorePointer(
+          return IgnorePointer(
             ignoring: widget.preview,
             child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  widget.preview
-                      ? tileThemeExtension.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
-                      : Colors.transparent,
-                  BlendMode.srcATop,
-                ),
+              colorFilter: ColorFilter.mode(
+                widget.preview
+                    ? tileThemeExtension.vibeChatPreviewDisableColor
+                        .withValues(alpha: 0.6)
+                    : Colors.transparent,
+                BlendMode.srcATop,
+              ),
               child: Container(
                 margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerLowest,
                   boxShadow: [
                     BoxShadow(
-                      color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.08),
+                      color: tileThemeExtension.shadowSecondary
+                          .withValues(alpha: 0.08),
                       blurRadius: 7,
                       offset: const Offset(0, 7),
                     ),

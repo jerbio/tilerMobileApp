@@ -859,5 +859,14 @@
   "addTileExplanationFlexibleEmphasis": "mejor momento",
   "addTileExplanationFixedEmphasis": "una hora fija",
 
-  "addTileFieldRepeat": "REPETIR"
+  "addTileFieldRepeat": "REPETIR",
+
+  "addTileDurationQuick": "RÁPIDO",
+  "addTileDurationCustom": "PERSONALIZADO",
+
+  "addTileDurationHourLabel": "Hora",
+  "addTileDurationMinuteLabel": "Min",
+
+  "addTileSubmitFailed": "No se pudo agregar en este momento. Tus datos se guardaron.",
+  "addTileRetry": "Reintentar"
 }

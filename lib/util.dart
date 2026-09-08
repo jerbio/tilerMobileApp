@@ -667,7 +667,8 @@ class Utility {
           : false;
       List<String> descriptions = autoTileParam['descriptions'];
       List<Duration> durations = autoTileParam['durations'];
-      List<String> imageAsset = List<String>.from(autoTileParam['assets'] ?? []);
+      List<String> imageAsset =
+          List<String>.from(autoTileParam['assets'] ?? []);
 
       for (int descriptionIndex = 0;
           descriptionIndex < descriptions.length;

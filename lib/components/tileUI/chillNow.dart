@@ -5,6 +5,7 @@ import 'package:tiler_app/util.dart';
 
 import '../../constants.dart';
 import 'timeScrub.dart';
+
 //ey: not used
 class ChillTimeWidget extends StatefulWidget {
   late Timeline timeline;
@@ -113,7 +114,8 @@ class ChillTimeWidgetState extends State<ChillTimeWidget> {
                     color: Colors.white,
                     width: 5,
                   ),
-                  borderRadius: BorderRadius.circular(TileDimensions.borderRadius),
+                  borderRadius:
+                      BorderRadius.circular(TileDimensions.borderRadius),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.grey.withOpacity(0.5),

@@ -207,8 +207,8 @@ class DeletionConfirmationWidgetState extends State<DeletionConfirmationWidget>
                   backgroundColor: colorScheme.error.withValues(alpha: 0.15),
                   foregroundColor: colorScheme.error,
                   shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
                 child: Text(
                   AppLocalizations.of(context)?.deleteNow ?? 'Delete Now',

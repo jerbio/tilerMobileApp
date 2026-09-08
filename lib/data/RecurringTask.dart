@@ -14,8 +14,8 @@ class RecurringTask {
   }
 
   Map<String, dynamic> toJson() => {
-    'Name': name,
-    'Frequency': frequency,
-    'DurationInMs': durationInMs,
-  };
+        'Name': name,
+        'Frequency': frequency,
+        'DurationInMs': durationInMs,
+      };
 }

@@ -19,7 +19,7 @@ class ConflictSummaryBanner extends StatelessWidget {
     Key? key,
     required this.conflictGroups,
     this.onTap,
-    this.preview=false,
+    this.preview = false,
   }) : super(key: key);
 
   @override
@@ -32,7 +32,7 @@ class ConflictSummaryBanner extends StatelessWidget {
         conflictGroups.fold(0, (sum, group) => sum + (group.tiles.length));
 
     return GestureDetector(
-      onTap: preview?null:onTap,
+      onTap: preview ? null : onTap,
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -141,13 +141,13 @@ class StackedConflictCards extends StatefulWidget {
   final VoidCallback? onResolve;
   final bool preview;
 
-  const StackedConflictCards({
-    Key? key,
-    required this.conflictGroup,
-    this.onTileTap,
-    this.onResolve,
-    this.preview=false
-  }) : super(key: key);
+  const StackedConflictCards(
+      {Key? key,
+      required this.conflictGroup,
+      this.onTileTap,
+      this.onResolve,
+      this.preview = false})
+      : super(key: key);
 
   @override
   State<StackedConflictCards> createState() => _StackedConflictCardsState();
@@ -471,22 +471,26 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
     }
 
     return GestureDetector(
-      onTap: widget.preview ? null:() {
-        if (widget.onTileTap != null) {
-          widget.onTileTap!(tile);
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EditTile(
-                tileId: (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
-                tileSource: tile.thirdpartyType,
-                thirdPartyUserId: tile.thirdPartyUserId,
-              ),
-            ),
-          );
-        }
-      },
+      onTap: widget.preview
+          ? null
+          : () {
+              if (widget.onTileTap != null) {
+                widget.onTileTap!(tile);
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditTile(
+                      tileId:
+                          (tile.isFromTiler ? tile.id : tile.thirdpartyId) ??
+                              "",
+                      tileSource: tile.thirdpartyType,
+                      thirdPartyUserId: tile.thirdPartyUserId,
+                    ),
+                  ),
+                );
+              }
+            },
       child: Opacity(
         opacity: rsvpStyle.opacity,
         child: Container(
@@ -660,19 +664,22 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
     return Column(
       children: [
         GestureDetector(
-          onTap: widget.preview ? null: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => EditTile(
-                  tileId:
-                      (tile.isFromTiler ? tile.id : tile.thirdpartyId) ?? "",
-                  tileSource: tile.thirdpartyType,
-                  thirdPartyUserId: tile.thirdPartyUserId,
-                ),
-              ),
-            );
-          },
+          onTap: widget.preview
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditTile(
+                        tileId:
+                            (tile.isFromTiler ? tile.id : tile.thirdpartyId) ??
+                                "",
+                        tileSource: tile.thirdpartyType,
+                        thirdPartyUserId: tile.thirdPartyUserId,
+                      ),
+                    ),
+                  );
+                },
           child: Opacity(
             opacity: rsvpStyle.opacity,
             child: Container(
@@ -918,7 +925,7 @@ class _StackedConflictCardsState extends State<StackedConflictCards>
                       ),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: PlayBack(tile,preview: widget.preview),
+                    child: PlayBack(tile, preview: widget.preview),
                   )
                 : const SizedBox.shrink(),
           ),

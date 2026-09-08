@@ -20,11 +20,10 @@ class TileDimensions {
   static const double bottomPortraitPadding = 200;
   static const double bottomLandscapePadding = 150;
   static SizedBox bottomPortraitPaddingForTileBatchListOfTiles =
-  SizedBox(height: bottomPortraitPadding);
+      SizedBox(height: bottomPortraitPadding);
   static SizedBox bottomLandScapePaddingForTileBatchListOfTiles =
-  SizedBox(height: bottomLandscapePadding);
+      SizedBox(height: bottomLandscapePadding);
   static Radius inputFieldRadius = const Radius.circular(50.0);
   static BorderRadius inputFieldBorderRadius =
-  BorderRadius.all(inputFieldRadius);
-
+      BorderRadius.all(inputFieldRadius);
 }

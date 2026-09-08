@@ -35,7 +35,14 @@ import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileAnalytics.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileColorScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationSource.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
@@ -380,6 +387,8 @@ class AddTileRedesignScreen extends StatefulWidget {
     this.preTile,
     this.draft,
     this.onSubmitted,
+    this.submission,
+    this.newTileParams,
     this.now,
     this.analytics,
     this.locationSource,
@@ -391,7 +400,18 @@ class AddTileRedesignScreen extends StatefulWidget {
 
   /// Submission seam: injected (stubbed in tests); wired to the
   /// existing orchestration when the redesign replaces the legacy flow.
+  /// Test seam. When supplied it REPLACES the real submission entirely, so
+  /// a test can assert the mapped payload or a failure without a network.
   final Future<void> Function(NewTile)? onSubmitted;
+
+  /// The real backend path. Absent in the harness, where the CTA falls back
+  /// to reporting the mapped payload.
+  final AddTileSubmission? submission;
+
+  /// The legacy by-reference result slot. Callers that pushed this route
+  /// read `newTileParams['newTile']` after it pops, exactly as they do for
+  /// the legacy Add Tile screen.
+  final Map<String, dynamic>? newTileParams;
   final DateTime? now;
 
   /// Funnel analytics for this Add flow. Supplied by tests with a recording
@@ -554,42 +574,44 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     }
   }
 
-  /// Opens the existing duration dial (legacy `/DurationDial` route with a
-  /// by-reference argument map) so the returned semantics are unchanged. A
-  /// cancelled picker leaves the draft untouched.
+  /// Opens the redesigned Duration picker (Step 4.3c), replacing the legacy
+  /// `/DurationDial` route for this flow.
+  ///
+  /// The dial is not merely restyled away — it was BROKEN here. It seeds from
+  /// `params['initialDuration']` while this adapter wrote `params['duration']`,
+  /// so it always opened at zero, and confirming without touching it wrote a
+  /// zero duration back: the CTA then failed validation with nothing on
+  /// screen to explain why (D41).
   Future<void> _openDurationPicker() async {
-    final Map<String, dynamic> params = {'duration': _draft.duration};
-    try {
-      await Navigator.of(context).pushNamed('/DurationDial', arguments: params);
-    } catch (_) {
-      return; // route not registered (test harness) — no crash, no change.
-    }
-    final Duration? result = params['duration'] as Duration?;
-    if (result != null && result != _draft.duration) {
-      _draft.setUserDuration(result);
-    }
+    final Duration? picked = await Navigator.of(context).push<Duration>(
+      MaterialPageRoute<Duration>(
+        builder: (_) => AddTileDurationScreen(initialDuration: _draft.duration),
+      ),
+    );
+    if (picked == null || !mounted || picked == _draft.duration) return;
+    _draft.setUserDuration(picked);
   }
 
-  /// Opens the platform date picker with the legacy +/-180-day window. Wire
-  /// semantics are preserved: the deadline is the end (23:59) of the chosen
-  /// day; cancelling leaves Complete by untouched (it may remain Anytime).
+  /// Opens the platform date picker with the legacy +/-180-day window.
+  ///
+  /// The platform picker is kept deliberately (D42) — it carries locale,
+  /// calendar system, RTL, keyboard entry and screen-reader support that a
+  /// house-styled replacement would have to re-earn. The rule worth stating
+  /// is what happens to the picked value, which lives in
+  /// [deadlineForPickedDay]: the deadline is the END of the chosen day.
+  /// Cancelling leaves Complete by untouched (it may remain Anytime).
   Future<void> _openDeadlinePicker() async {
-    final DateTime base = _draft.endTime ??
-        DateTime(
-          _draft.startTime.year,
-          _draft.startTime.month,
-          _draft.startTime.day,
-          23,
-          59,
-        );
+    final DateTime base =
+        _draft.endTime ?? deadlineForPickedDay(_draft.startTime);
+    final window = addTileDateWindow(base);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: base,
-      firstDate: base.subtract(const Duration(days: 180)),
-      lastDate: base.add(const Duration(days: 180)),
+      firstDate: window.first,
+      lastDate: window.last,
     );
     if (picked == null || !mounted) return;
-    _draft.endTime = DateTime(picked.year, picked.month, picked.day, 23, 59);
+    _draft.endTime = deadlineForPickedDay(picked);
   }
 
   /// Applies a simple day-part choice. [restrictionProfileForPreferredTime] keeps an
@@ -654,16 +676,15 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   /// never silently moves the block's time.
   Future<void> _openDatePicker() async {
     final DateTime start = _draft.startTime;
+    final window = addTileDateWindow(start);
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: start,
-      firstDate: start.subtract(const Duration(days: 180)),
-      lastDate: start.add(const Duration(days: 180)),
+      firstDate: window.first,
+      lastDate: window.last,
     );
     if (picked == null || !mounted) return;
-    _draft.setUserStartTime(
-      DateTime(picked.year, picked.month, picked.day, start.hour, start.minute),
-    );
+    _draft.setUserStartTime(applyPickedDate(start, picked));
   }
 
   /// Fixed Block start time. Only the wall-clock TIME changes; the calendar
@@ -675,9 +696,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       initialTime: TimeOfDay(hour: start.hour, minute: start.minute),
     );
     if (picked == null || !mounted) return;
-    _draft.setUserStartTime(
-      DateTime(start.year, start.month, start.day, picked.hour, picked.minute),
-    );
+    _draft.setUserStartTime(applyPickedTime(start, picked));
   }
 
   /// Names the chosen location.
@@ -748,6 +767,50 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
     _draft.setRestrictionProfile(result.profile);
   }
 
+  /// Tells the rest of the app about a tile the server just created.
+  ///
+  /// Mirrors what the legacy screen does inline after `addNewTile`: hand the
+  /// event to the tile bloc, ask the schedule to re-evaluate, and write the
+  /// result into the caller's slot. Done HERE rather than in the route
+  /// builder because it runs after an await, and this is the only layer with
+  /// a `State` that can say whether the screen is still alive.
+  void _applyCreatedTile(SubCalendarEvent? created) {
+    if (created == null) return;
+    widget.newTileParams?['newTile'] = created;
+    context
+        .read<SubCalendarTileBloc>()
+        .add(NewSubCalendarTileBlocEvent(subEvent: created));
+    final scheduleState = context.read<ScheduleBloc>().state;
+    if (scheduleState is ScheduleEvaluationState) {
+      context.read<ScheduleBloc>().add(GetScheduleEvent(
+            isAlreadyLoaded: true,
+            previousSubEvents: scheduleState.subEvents,
+            scheduleTimeline: scheduleState.lookupTimeline,
+            previousTimeline: scheduleState.lookupTimeline,
+          ));
+    }
+  }
+
+  /// A submission failure has to SAY something.
+  ///
+  /// Previously the catch recorded an analytics outcome and showed nothing,
+  /// so a network failure re-enabled the button and left the user to guess.
+  /// The draft is preserved either way, which is what makes retry the right
+  /// offer.
+  void _showSubmissionFailure() {
+    final l10n = AppLocalizations.of(context)!;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        key: const ValueKey('addTileSubmitError'),
+        content: Text(l10n.addTileSubmitFailed),
+        action: SnackBarAction(
+          label: l10n.addTileRetry,
+          onPressed: _attemptSubmit,
+        ),
+      ),
+    );
+  }
+
   /// Root Close. Emits the dismissal signal, then pops.
   ///
   /// The D2 dirty-draft confirmation prompt is NOT implemented yet, so this
@@ -786,12 +849,23 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       if (widget.onSubmitted != null) {
         await widget.onSubmitted!.call(tile);
         _analytics.submitResult(_draft.type, outcome: 'success');
+      } else if (widget.submission != null) {
+        final AddTileSubmissionResult result =
+            await widget.submission!.create(tile);
+        if (!mounted) return;
+        if (result.failed) {
+          _analytics.submitResult(_draft.type,
+              outcome: 'api_error', reasonCode: result.reasonCode);
+          _showSubmissionFailure();
+          return;
+        }
+        _applyCreatedTile(result.tile);
+        _analytics.submitResult(_draft.type, outcome: 'success');
+        Navigator.of(context).pop(result.tile);
       } else {
-        // Debug-only seam: the default /AddTileRedesign route has no backend
-        // orchestrator yet (wired when the redesign replaces the legacy flow).
-        // Surface the mapped payload so the draft -> mapper -> CTA path is
-        // verifiable on-device without writing to the API. No analytics, no
-        // side effects.
+        // Harness fallback: no orchestrator was supplied, so report the
+        // mapped payload instead of writing anything. This is what the
+        // route did for every caller before the backend was wired (D49).
         final messenger = ScaffoldMessenger.of(context);
         messenger.showSnackBar(
           SnackBar(
@@ -813,6 +887,7 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       // allow-listed reason code are emitted.
       _analytics.submitResult(_draft.type,
           outcome: 'api_error', reasonCode: 'api_rejected');
+      if (mounted) _showSubmissionFailure();
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

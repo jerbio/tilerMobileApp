@@ -19,9 +19,9 @@ class CreatedTileSheet extends StatefulWidget {
 class _CreatedTileSheetState extends State<CreatedTileSheet> {
   @override
   Widget build(BuildContext context) {
-    final theme=Theme.of(context);
+    final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final tileThemeExtension=theme.extension<TileThemeExtension>()!;
+    final tileThemeExtension = theme.extension<TileThemeExtension>()!;
     return Container(
       child: Column(
         children: [
@@ -51,13 +51,11 @@ class _CreatedTileSheetState extends State<CreatedTileSheet> {
                       size: 20.0,
                     ),
                   ),
-                  Text(
-                    this.widget.subEvent.startTime.humanDate(context),
-                    style:TextStyle(
-                      fontFamily: TileTextStyles.rubikFontName,
-                      fontSize: 15,
-                    )
-                  )
+                  Text(this.widget.subEvent.startTime.humanDate(context),
+                      style: TextStyle(
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: 15,
+                      ))
                 ],
               )),
           FractionallySizedBox(

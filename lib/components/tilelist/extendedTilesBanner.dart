@@ -14,7 +14,7 @@ class ExtendedTilesBanner extends StatelessWidget {
   const ExtendedTilesBanner({
     Key? key,
     required this.extendedTiles,
-    this.preview=false,
+    this.preview = false,
   }) : super(key: key);
 
   /// Detect all-day or extended tiles (over 16 hours duration)
@@ -33,7 +33,10 @@ class ExtendedTilesBanner extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => ExtendedTilesModal(extendedTiles: extendedTiles,preview: preview,),
+      builder: (context) => ExtendedTilesModal(
+        extendedTiles: extendedTiles,
+        preview: preview,
+      ),
     );
   }
 
@@ -236,7 +239,8 @@ class ExtendedTilesModal extends StatelessWidget {
                 final endTime = tile.endTime;
 
                 return InkWell(
-                  onTap: preview?null:() => _navigateToEditTile(context, tile),
+                  onTap:
+                      preview ? null : () => _navigateToEditTile(context, tile),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -307,7 +311,9 @@ class ExtendedTilesModal extends StatelessWidget {
                         ColorFiltered(
                           colorFilter: ColorFilter.mode(
                             preview
-                                ? tileThemeExtension!.vibeChatPreviewDisableColor.withValues(alpha: 0.6)
+                                ? tileThemeExtension!
+                                    .vibeChatPreviewDisableColor
+                                    .withValues(alpha: 0.6)
                                 : Colors.transparent,
                             BlendMode.srcATop,
                           ),

@@ -53,11 +53,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   Future<void> checkOnboarding() async {
     await Future.delayed(Duration(seconds: 3));
-    final checker = widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
+    final checker =
+        widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
     bool nextPage = await checker();
     if (mounted) {
-      final authorizedBuilder = widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
-      final onboardingBuilder = widget.onboardingRouteBuilder ?? (_) => OnboardingView();
+      final authorizedBuilder =
+          widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
+      final onboardingBuilder =
+          widget.onboardingRouteBuilder ?? (_) => OnboardingView();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(

@@ -14,16 +14,15 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
   final double maxHeight;
   final bool preview;
 
-  StickyDayHeaderDelegate({
-    this.date,
-    this.dayData,
-    this.onShowRoute,
-    this.onReOptimize,
-    this.isLoading = false,
-    this.minHeight = 160,
-    this.maxHeight = 160,
-    this.preview = false
-  });
+  StickyDayHeaderDelegate(
+      {this.date,
+      this.dayData,
+      this.onShowRoute,
+      this.onReOptimize,
+      this.isLoading = false,
+      this.minHeight = 160,
+      this.maxHeight = 160,
+      this.preview = false});
 
   @override
   Widget build(
@@ -33,7 +32,11 @@ class StickyDayHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          DaySummaryHeader(date: date, dayData: dayData,preview: preview,),
+          DaySummaryHeader(
+            date: date,
+            dayData: dayData,
+            preview: preview,
+          ),
           QuickActionChipsRow(
             preview: preview,
             onShowRoute: onShowRoute,
