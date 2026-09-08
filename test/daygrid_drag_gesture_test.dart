@@ -375,6 +375,117 @@ test('rangeStart/rangeEnd window is enforced (no silent clamp)', () {
       );
       expect(seed.withinRange, isTrue);
     });
+
+    test('rangeStart == rangeEnd (single-instant anchor) falls back to the '
+        'calendarEvent window (real-data shape)', () {
+      final anchor = dayStart.add(const Duration(hours: 8));
+      // Real data carries rangeStart == rangeEnd == the parent event's start
+      // instant — a zero-length "window" — with a real multi-day parent-event
+      // slot in calendarEventStart/End. A duration-bearing tile can never fit
+      // the zero-length range, so the drop must not be permanently blocked.
+      final t = tile(9, 0, 10, 0,
+          rangeStart: anchor.millisecondsSinceEpoch.toDouble(),
+          rangeEnd: anchor.millisecondsSinceEpoch.toDouble(),
+          calendarEventStart: anchor.millisecondsSinceEpoch.toDouble(),
+          calendarEventEnd:
+              dayStart.add(const Duration(days: 3)).millisecondsSinceEpoch
+                  .toDouble());
+
+      // 10:45 → 10:45, end 11:45. Under the old zero-length range window this
+      // was permanently blocked; under the parent-event fallback the whole
+      // tile is inside the multi-day slot → allowed.
+      final seed = DayGridWidget.computeDragSeed(
+        tile: t,
+        dayStart: dayStart,
+        dropTopPx: (10 + 45 / 60.0) * 80,
+        pxPerHour: 80,
+        snapInterval: const Duration(minutes: 15),
+      );
+      expect(seed.start, DateTime(2027, 1, 15, 10, 45));
+      expect(seed.end, DateTime(2027, 1, 15, 11, 45));
+      expect(seed.withinRange, isTrue);
+      expect(seed.blockReason, isNull);
+    });
+
+    test('rangeStart == rangeEnd with no calendarEvent window → unbounded', () {
+      final anchor = dayStart.add(const Duration(hours: 8));
+      final t = tile(9, 0, 10, 0,
+          rangeStart: anchor.millisecondsSinceEpoch.toDouble(),
+          rangeEnd: anchor.millisecondsSinceEpoch.toDouble());
+      final seed = DayGridWidget.computeDragSeed(
+        tile: t,
+        dayStart: dayStart,
+        dropTopPx: (10 + 45 / 60.0) * 80,
+        pxPerHour: 80,
+        snapInterval: const Duration(minutes: 15),
+      );
+      expect(seed.withinRange, isTrue);
+    });
+
+    test('a drop beyond the parent-event window is still blocked '
+        '(no over-permission)', () {
+      final anchor = dayStart.add(const Duration(hours: 8));
+      final parentEnd = dayStart.add(const Duration(hours: 11));
+      final t = tile(9, 0, 10, 0,
+          rangeStart: anchor.millisecondsSinceEpoch.toDouble(),
+          rangeEnd: anchor.millisecondsSinceEpoch.toDouble(),
+          calendarEventStart: anchor.millisecondsSinceEpoch.toDouble(),
+          calendarEventEnd:
+              parentEnd.millisecondsSinceEpoch.toDouble());
+
+      // 10:45 → end 11:45 > 11:00 → genuinely outside the parent slot → blocked.
+      final blocked = DayGridWidget.computeDragSeed(
+        tile: t,
+        dayStart: dayStart,
+        dropTopPx: (10 + 45 / 60.0) * 80,
+        pxPerHour: 80,
+        snapInterval: const Duration(minutes: 15),
+      );
+      expect(blocked.withinRange, isFalse);
+      expect(blocked.blockReason, 'out_of_range');
+
+      // 08:30 + 1h = 09:30 ≤ 11:00 → allowed.
+      final ok = DayGridWidget.computeDragSeed(
+        tile: t,
+        dayStart: dayStart,
+        dropTopPx: (8 + 30 / 60.0) * 80,
+        pxPerHour: 80,
+        snapInterval: const Duration(minutes: 15),
+      );
+      expect(ok.withinRange, isTrue);
+    });
+
+    test('bottomZoneStartY parks the bottom zone at the visible bottom',
+        () {
+      // No occlusion: the zone hugs the raw viewport bottom (600 - 48).
+      expect(
+        DayGridWidget.bottomZoneStartY(600, bottomOcclusion: 0),
+        closeTo(552, 1e-9),
+      );
+      // A 56px bottom bar pulls the zone's top up by 56 (544 - 48).
+      expect(
+        DayGridWidget.bottomZoneStartY(600, bottomOcclusion: 56),
+        closeTo(496, 1e-9),
+      );
+      // Bar + a 34px home-indicator inset (effective bottom 510 - 48).
+      expect(
+        DayGridWidget.bottomZoneStartY(600, bottomOcclusion: 56 + 34),
+        closeTo(462, 1e-9),
+      );
+      // Occlusion larger than the viewport clamps to a full occlusion
+      // (zone top at 0 — no reachable bottom zone).
+      expect(
+        DayGridWidget.bottomZoneStartY(600, bottomOcclusion: 10000),
+        closeTo(0, 1e-9),
+      );
+      // A viewport shorter than the zone does not overflow.
+      expect(
+        DayGridWidget.bottomZoneStartY(40, bottomOcclusion: 0),
+        closeTo(0, 1e-9),
+      );
+      // A zero-height viewport is a no-op.
+      expect(DayGridWidget.bottomZoneStartY(0, bottomOcclusion: 0), 0);
+    });
   });
 // ---------------------------------------------------------------------
   // Grid-level drag behaviour.
@@ -707,6 +818,200 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       expect(tester.widget<TravelBandWidget>(find.byType(TravelBandWidget))
               .dimmed,
           isFalse);
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets('drag into the top edge zone auto-scrolls the grid up',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2027, 1, 15, 9), DateTime(2027, 1, 15, 10))
+        ],
+        now: now,
+        day: dayStart,
+        controller: controller,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      // Lift the 9:00 tile (content top 720; the finger at viewport y 40
+      // is content y 760).
+      final gesture = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(kLongPressTimeout);
+      expect(find.byKey(const Key('daygrid_drag_ghost')), findsOneWidget);
+
+      // The finger 20px into the top edge zone (viewport y 20 < 48):
+      // the drop slot snaps to 8:45 (content top 700) and the edge
+      // auto-scroll arms.
+      await gesture.moveBy(const Offset(0, -20));
+      await tester.pump();
+      final ghostBefore = tester.widget<AnimatedPositioned>(
+          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      expect(ghostBefore, closeTo(700, 0.5));
+
+      // Let the auto-scroll run: each tick moves the grid toward the
+      // finger until the top of the content is reached.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+
+      // The grid scrolled UP: the source tile (content top 720) slid
+      // DOWN the viewport (its caption was at dy 10 at scroll 720).
+      expect(tester.getTopLeft(find.text('a')).dy, greaterThan(100));
+      // The ghost tracks the finger's (unchanged) viewport point: its
+      // drop slot rolled earlier as the grid scrolled.
+      final ghostAfter = tester.widget<AnimatedPositioned>(
+          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      expect(ghostAfter, lessThan(ghostBefore));
+      expect(controller.mode, DayGridMode.dragging); // still mid-drag.
+
+      // Dropping now commits the scrolled-into slot (00:00 at the top
+      // of the content).
+      await gesture.up();
+      await tester.pump();
+      expect(controller.mode, DayGridMode.idle);
+      expect(api.captured!.startTime, DateTime(2027, 1, 15, 0));
+
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets('drag into the bottom edge zone auto-scrolls the grid down',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('b', DateTime(2027, 1, 15, 14), DateTime(2027, 1, 15, 15))
+        ],
+        now: now,
+        day: dayStart,
+        controller: controller,
+      ));
+      await tester.pump(); // initial scroll → 1120 (the first tile's start).
+
+      // Lift the 14:00 tile (content top 1120; at scroll 1120 the tile
+      // fills viewport 0–80 and the finger at viewport y 60 — inside the
+      // tile, outside both edge zones — is content y 1180).
+      final gesture = await tester.startGesture(const Offset(200, 60));
+      await tester.pump(kLongPressTimeout);
+      expect(find.byKey(const Key('daygrid_drag_ghost')), findsOneWidget);
+
+      // The finger 500px down → viewport y 560, inside the bottom edge
+      // zone (560 > 600 - 48): the auto-scroll arms.
+      await gesture.moveBy(const Offset(0, 500));
+      await tester.pump();
+      final ghostBefore = tester.widget<AnimatedPositioned>(
+          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      // 20:15 raw → already on a 15-min snap (content top 1620).
+      expect(ghostBefore, closeTo(1620, 0.5));
+
+      // Let the auto-scroll run toward the bottom of the content.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+
+      // The grid scrolled DOWN: the source tile (content top 1120) slid
+      // UP the viewport (its caption was at dy 10 at scroll 1120).
+      expect(tester.getTopLeft(find.text('b')).dy, lessThan(10));
+      // The ghost tracks the finger's viewport point: its drop slot
+      // rolled later as the grid scrolled (22:45 at the content bottom).
+      final ghostAfter = tester.widget<AnimatedPositioned>(
+          find.byKey(const Key('daygrid_drag_ghost'))).top!;
+      expect(ghostAfter, greaterThan(ghostBefore));
+      expect(controller.mode, DayGridMode.dragging); // still mid-drag.
+
+      // Dropping now commits the scrolled-into slot (22:45 near the
+      // bottom of the content).
+      await gesture.up();
+      await tester.pump();
+      expect(controller.mode, DayGridMode.idle);
+      expect(api.captured!.startTime, DateTime(2027, 1, 15, 22, 45));
+
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets(
+        'bottom auto-scroll reaches the visible edge behind a bottom nav',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      // Simulates the real calendar host: `Scaffold(extendBody: true)` with a
+      // ~56px bottom bar, so the grid's scroll viewport extends BEHIND the
+      // bar. The default test surface is 800x600, so the viewport is 600 tall
+      // and the bar occludes the bottom 56px (visible bottom = 544). The
+      // bottom auto-scroll zone must therefore sit at (544 - 48) = 496..544 —
+      // a finger at viewport y 510 is reachable (above the bar) and inside
+      // the zone, yet it was in the dead zone before the fix (510 < 552).
+      await tester.pumpWidget(MaterialApp(
+        theme: TileThemeData.lightTheme,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BlocProvider<ScheduleBloc>(
+          create: (_) => bloc,
+          child: Scaffold(
+            extendBody: true,
+            body: DayGridWidget(
+              tiles: [
+                _tile(
+                    'b',
+                    DateTime(2027, 1, 15, 14),
+                    DateTime(2027, 1, 15, 15))
+              ],
+              now: now,
+              day: dayStart,
+              controller: controller,
+              subCalendarEventApi: api,
+            ),
+            bottomNavigationBar: const SizedBox(height: 56),
+          ),
+        ),
+      ));
+      await tester.pump(); // initial scroll -> 1120 (the first tile's start).
+
+      // Lift the 14:00 tile (content top 1120; at scroll 1120 the tile fills
+      // viewport 0-80, the finger at viewport y 60 is inside the tile).
+      final gesture = await tester.startGesture(const Offset(200, 60));
+      await tester.pump(kLongPressTimeout);
+      expect(find.byKey(const Key('daygrid_drag_ghost')), findsOneWidget);
+
+      // Move the finger 450px down -> viewport y 510: inside the bottom zone
+      // (510 > 496) and reachable (510 < 544, above the bar). Before the fix
+      // this y was below the old threshold (552) and the grid would NOT
+      // auto-scroll.
+      await gesture.moveBy(const Offset(0, 450));
+      await tester.pump();
+
+      final captionBefore = tester.getTopLeft(find.text('b')).dy;
+      // Let the auto-scroll run toward the bottom of the content.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pump();
+
+      // The grid scrolled DOWN: the source tile (content top 1120) slid UP
+      // the viewport (its caption was at dy 10 at scroll 1120).
+      final captionAfter = tester.getTopLeft(find.text('b')).dy;
+      expect(captionAfter, lessThan(captionBefore));
+      expect(controller.mode, DayGridMode.dragging); // still mid-drag.
+
+      // Dropping commits a later slot (the finger scrolled the day down).
+      await gesture.up();
+      await tester.pump();
+      expect(controller.mode, DayGridMode.idle);
+      expect(
+        api.captured!.startTime!.isAfter(DateTime(2027, 1, 15, 14)),
+        isTrue,
+      );
+
       await _closeBloc(tester, bloc);
     });
   });

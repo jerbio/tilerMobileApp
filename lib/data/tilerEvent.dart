@@ -205,9 +205,9 @@ class TilerEvent extends TilerObj with TimeRange {
   Color? get color {
     if (this.colorRed != null &&
         this.colorGreen != null &&
-        this.colorGreen != null) {
+        this.colorBlue != null) {
       return Color.fromRGBO(
-          this.colorRed!, this.colorGreen!, this.colorGreen!, 1);
+          this.colorRed!, this.colorGreen!, this.colorBlue!, 1);
     }
     return null;
   }

@@ -34,6 +34,17 @@ import 'package:tiler_app/util.dart';
 ///   - `DayCast` passes `peekDay.subEvents`,
 ///   - the daily page passes its filtered schedule list.
 
+/// `HH:mm:ss` format of a time for the `DayGrid::drag::` logs — accepts a
+/// [DateTime] or an epoch-ms `int` (`--:--` when null).
+String _dragLogTime(Object? t) {
+  if (t == null) {
+    return '--:--';
+  }
+  final dt = t is DateTime ? t : DateTime.fromMillisecondsSinceEpoch(t as int);
+  String two(int v) => v.toString().padLeft(2, '0');
+  return '${two(dt.hour)}:${two(dt.minute)}:${two(dt.second)}';
+}
+
 /// The resolved start time + default duration for a tap-to-add.
 class DayGridTapSeed {
   /// The seeded tile start time (snapped + clamped to the day; "now" when the
@@ -137,6 +148,15 @@ class DayGridWidget extends StatefulWidget {
   /// created lazily on first commit.
   final SubCalendarEventApi? subCalendarEventApi;
 
+  /// The px of the scroll viewport's bottom that sit behind a bottom
+  /// navigation bar (and the system home-indicator inset) — used to park
+  /// the bottom drag auto-scroll zone against the *visible* bottom edge
+  /// rather than the raw viewport bottom. When omitted the grid
+  /// auto-detects it from the enclosing [Scaffold] (a bottom bar is only
+  /// counted when the body extends behind it via `extendBody`); a
+  /// non-null value pins the clearance (used by tests).
+  final double? edgeScrollBottomClearance;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -148,7 +168,33 @@ class DayGridWidget extends StatefulWidget {
     this.preview = false,
     this.selectedActionEntityId,
     this.subCalendarEventApi,
+    this.edgeScrollBottomClearance,
   });
+
+  /// The top/bottom edge zones (px inside the scroll viewport) that
+  /// trigger the drag edge auto-scroll.
+  static const double edgeScrollZonePx = 48.0;
+
+  /// Pure bottom-edge auto-scroll math: the viewport-space y that starts
+  /// the bottom auto-scroll zone. The zone is [edgeScrollZonePx] tall and
+  /// hugs the *visible* bottom of the scroll viewport — [viewportHeight]
+  /// minus [bottomOcclusion] (the px of the viewport that sit behind a
+  /// bottom navigation bar + the system home-indicator inset). When the
+  /// body does not extend behind a bottom bar, [bottomOcclusion] is 0 and
+  /// the zone hugs the raw viewport bottom (the historical behaviour).
+  /// Kept pure so the clearance/occlusion math is unit-testable without
+  /// pumping the grid. Returns a value in `0..viewportHeight`.
+  static double bottomZoneStartY(
+    double viewportHeight, {
+    required double bottomOcclusion,
+  }) {
+    if (viewportHeight <= 0) {
+      return 0.0;
+    }
+    final occlusion = bottomOcclusion.clamp(0.0, viewportHeight);
+    final effectiveBottom = viewportHeight - occlusion;
+    return (effectiveBottom - edgeScrollZonePx).clamp(0.0, viewportHeight);
+  }
 
   /// A tile matches the highlighted TileCast action
   /// when its id contains the action's entity id — the same rule as
@@ -232,17 +278,33 @@ class DayGridWidget extends StatefulWidget {
     }
     final endMs = startMs + durationMs;
 
-    // The allowed window: rangeStart/rangeEnd when present, otherwise
-    // the parent calendar event's slot; absent both → unbounded.
-    double? windowStart = tile.rangeStart;
-    double? windowEnd = tile.rangeEnd;
+    // The allowed window. A usable *range* window needs both bounds with a
+    // positive span (rangeEnd > rangeStart). Real data frequently carries
+    // rangeStart == rangeEnd — the parent event's anchor instant, not a span
+    // (see the biggerJson fixtures, where rangeStart == rangeEnd == the
+    // parent's calendarEventStart and calendarEventEnd spans days) — so a
+    // degenerate range must NOT block the drop. When the range window is
+    // unusable (absent, single-instant, or inverted), fall back to the
+    // parent calendar event's slot (calendarEventStart/End), the real
+    // scheduling window; if that is also unusable the tile is unbounded
+    // (the drop is still clamped to the visible day above).
+    final rangeUsable = tile.rangeStart != null &&
+        tile.rangeEnd != null &&
+        tile.rangeEnd! > tile.rangeStart!;
+    final double? windowStart =
+        rangeUsable ? tile.rangeStart : tile.calendarEventStart;
+    final double? windowEnd =
+        rangeUsable ? tile.rangeEnd : tile.calendarEventEnd;
+    final bool within;
     if (windowStart == null || windowEnd == null) {
-      windowStart = tile.calendarEventStart ?? windowStart;
-      windowEnd = tile.calendarEventEnd ?? windowEnd;
+      // No usable window at all → unbounded (clamped to the visible day).
+      within = true;
+    } else if (windowEnd <= windowStart) {
+      // Degenerate (single-instant) or inverted window → unbounded.
+      within = true;
+    } else {
+      within = startMs >= windowStart && endMs <= windowEnd;
     }
-    final within =
-        (windowStart == null || windowEnd == null) ||
-            (startMs >= windowStart && endMs <= windowEnd);
 
     return DayGridDragSeed(
       start: DateTime.fromMillisecondsSinceEpoch(startMs),
@@ -376,9 +438,30 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// resting on (`null` while idle).
   DayGridDragSeed? _dragTargetStart;
 
-  /// One-shot timer driving the edge auto-scroll while a drag is
-  /// active.
+  /// Periodic timer driving the edge auto-scroll while a drag is
+  /// active; `null` when the finger is outside the edge zones (or idle).
   Timer? _edgeScrollTimer;
+
+  /// The finger's viewport-space y (px from the top of the scroll
+  /// viewport: day-content y - scroll offset) while a drag is active —
+  /// the edge-zone input for the auto-scroll; `null` while idle.
+  double? _dragFingerViewportY;
+
+  /// Cached bottom-bar occlusion (px of the scroll viewport's bottom that
+  /// sit behind a bottom navigation + the home-indicator inset).
+  /// Recomputed in [didChangeDependencies] so it tracks MediaQuery inset
+  /// changes; `null` until first computed.
+  double? _edgeScrollBottomClearanceCache;
+
+  /// The top/bottom edge zones (px inside the scroll viewport) that
+  /// trigger the drag edge auto-scroll. Single source of truth lives on
+  /// [DayGridWidget.edgeScrollZonePx] (aliased here for the existing call
+  /// sites).
+  static const double _edgeScrollZonePx = DayGridWidget.edgeScrollZonePx;
+
+  /// The auto-scroll tick cadence (~display refresh; each tick moves the
+  /// grid toward the finger by its edge-zone depth).
+  static const Duration _edgeScrollTickInterval = Duration(milliseconds: 16);
 
   /// The in-flight settle move — the dragged tile holds the dropped
   /// slot (optimistically) until the parent re-serves data with a
@@ -450,12 +533,15 @@ class DayGridWidgetState extends State<DayGridWidget> {
           additionalInfo: {'actionCount': widget.tiles.length});
     }
     _resyncInitialScroll();
-    // DRAG-DBG (temporary): mount/remount marker (badge diagnosis). A MOUNT
-    // that appears AFTER a commit with status=idle/savingId=null means the
-    // re-serve remounted this State (resetting the badge fields).
-    Utility.debugPrint('DayGrid::DRAG-DBG MOUNT dayKey=${widget.dayKey} '
-        'tiles=${widget.tiles.length} status=$_saveStatus '
-        'savingId=$_savingTileId');
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh the bottom-bar occlusion when the MediaQuery insets (or the
+    // enclosing Scaffold's bottom bar) change, so the bottom auto-scroll
+    // zone tracks the visible bottom edge.
+    _edgeScrollBottomClearanceCache = _computeEdgeScrollBottomClearance();
   }
 
   @override
@@ -487,10 +573,25 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (identical(oldWidget.tiles, widget.tiles)) {
       return; // same instance: parent rebuilt with the same data.
     }
-    // New data: a selection may now point at a tile that is gone, and the
-    // initial scroll syncs to the first tile again (previous UX).
+    // New data: a selection may now point at a tile that is gone.
     _selectedEventIds.clear();
-    _resyncInitialScroll();
+    // Re-sync the initial scroll ONLY when the data is structurally new:
+    // a day swap (different dayKey → fresh grid for a new day) or the first
+    // tiles arriving on an empty grid (initial data load). Post-commit tile
+    // refreshes (same day, same element) must NOT jump the scroll — the
+    // user's position is preserved so a drag-commit or pull-to-refresh
+    // loading cycle does not snap the grid back to the top.
+    final bool dayChanged = oldWidget.dayKey != widget.dayKey;
+    final bool wasEmpty = oldWidget.tiles.isEmpty;
+    if (dayChanged || wasEmpty) {
+      _resyncInitialScroll();
+    } else {
+      // Scroll-preservation evidence: the re-served tile set did NOT
+      // jump the grid (grep `DayGrid::scroll::keep`).
+      Utility.debugPrint(
+          'DayGrid::scroll::keep pixels=${_scrollController.hasClients ? _scrollController.position.pixels.toStringAsFixed(1) : 'n/a'} '
+          '(tile refresh — no initial scroll resync)');
+    }
   }
 
   /// Compare the current tile set with the previous frame
@@ -856,8 +957,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     _lastDragSnapStart = null;
     _clearSaveState(); // a new lift resets the previous commit's badge.
     final dayStart = _gridDayStart()!;
-    _dragOriginalTopPx =
-        _topPx(dayStart: dayStart, startMs: tile.start!);
+    _dragOriginalTopPx = _topPx(dayStart: dayStart, startMs: tile.start!);
     _dragStartContentY = localOffset.dy;
     _dragGhostLeft = left;
     _dragGhostWidth = width;
@@ -866,6 +966,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // at zero and the ghost sits on the tile's current slot.
     _dragTargetStart = _dragSeedForOffset(_dragStartContentY);
     _syncDragState();
+    Utility.debugPrint('DayGrid::drag::lift ${tile.uniqueId}: '
+        'start=${_dragLogTime(tile.start)} end=${_dragLogTime(tile.end)} '
+        'duration=${tile.duration.inMinutes}m '
+        'topPx=${_dragOriginalTopPx.toStringAsFixed(1)} '
+        'seedStart=${_dragLogTime(_dragTargetStart?.start)}');
+    // A lift that already sits inside an edge zone (a tile at the very
+    // top/bottom of the viewport) arms the auto-scroll immediately.
+    _syncEdgeScroll(_fingerViewportY(localOffset.dy));
   }
 
   /// Drag move: re-derive the snapped drop slot from the finger's
@@ -884,6 +992,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
       HapticFeedback.lightImpact(); // snap tick.
     }
     _syncDragState();
+    // Re-arm (or stop) the edge auto-scroll from the finger's
+    // viewport-space point.
+    _syncEdgeScroll(_fingerViewportY(localPosition.dy));
   }
 
   /// Drop: commit an in-range move, or cancel (tile returns, nothing
@@ -896,6 +1007,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
       _syncDragState();
       return;
     }
+    _stopEdgeScroll(); // the drag no longer owns the finger.
     final seed = _dragTargetStart;
     final originalTopPx = _dragOriginalTopPx;
     final dayStart = _gridDayStart()!;
@@ -905,7 +1017,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (seed != null && !seed.withinRange) {
       // Blocked: the tile never moves (no request, no event).
       Utility.debugPrint(
-          'DayGrid::DRAG-DBG drop=BLOCKED tile=${tile.uniqueId} reason=${seed.blockReason}');
+          'DayGrid::drag::blocked ${tile.uniqueId}: reason=${seed.blockReason}');
       _dragTargetStart = null;
       _controller.mode = DayGridMode.idle;
       _syncDragState();
@@ -916,19 +1028,23 @@ class DayGridWidgetState extends State<DayGridWidget> {
       return;
     }
     if (seed == null ||
-        _topPx(dayStart: dayStart, startMs: seed.start.millisecondsSinceEpoch) ==
+        _topPx(
+                dayStart: dayStart,
+                startMs: seed.start.millisecondsSinceEpoch) ==
             originalTopPx) {
       // Dropped back on (or at the lift offset of) its own slot —
       // a no-op move never issues a request.
       Utility.debugPrint(
-          'DayGrid::DRAG-DBG drop=NOOP tile=${tile.uniqueId} seedTop=${seed == null ? 'null' : _topPx(dayStart: dayStart, startMs: seed.start.millisecondsSinceEpoch)} origTop=$originalTopPx');
+          'DayGrid::drag::noop ${tile.uniqueId}: dropped on its own slot');
       _dragTargetStart = null;
       _controller.mode = DayGridMode.idle;
       _syncDragState();
       return;
     }
-    Utility.debugPrint(
-        'DayGrid::DRAG-DBG drop=COMMIT tile=${tile.uniqueId} start=${seed.start} end=${seed.end} within=${seed.withinRange}');
+    Utility.debugPrint('DayGrid::drag::drop ${tile.uniqueId}: '
+        'start=${_dragLogTime(seed.start)} end=${_dragLogTime(seed.end)} '
+        'duration=${seed.end.difference(seed.start).inMinutes}m '
+        'within=${seed.withinRange}');
     _commitDragMove(tile, seed);
   }
 
@@ -952,6 +1068,129 @@ class DayGridWidgetState extends State<DayGridWidget> {
     return seed;
   }
 
+  /// Viewport-space y (px from the top of the scroll viewport) of the
+  /// finger dragging [_dragTile]. The tile's drag callbacks report
+  /// positions LOCAL TO THE TILE (the detector's origin is the tile's
+  /// top), so the tile's content top ([_dragOriginalTopPx], static while
+  /// the drag owns the finger) plus the local y is the day-content y —
+  /// minus the scroll offset, the viewport y. `null` when nothing is
+  /// dragged or the grid has no attached scroll position.
+  double? _fingerViewportY(double localDy) {
+    final tile = _dragTile;
+    if (tile == null || !_scrollController.hasClients) {
+      return null;
+    }
+    final contentY = _dragOriginalTopPx + localDy;
+    return contentY - _scrollController.position.pixels;
+  }
+
+  /// The px of the scroll viewport's bottom that sit behind a bottom
+  /// navigation bar + the system home-indicator inset (0 when the body
+  /// does not extend behind a bottom bar). Pinned by
+  /// [DayGridWidget.edgeScrollBottomClearance] when set; otherwise
+  /// auto-detected from the enclosing [Scaffold].
+  double _edgeScrollBottomClearance() {
+    final cached = _edgeScrollBottomClearanceCache;
+    if (cached != null) {
+      return cached;
+    }
+    return _computeEdgeScrollBottomClearance();
+  }
+
+  double _computeEdgeScrollBottomClearance() {
+    final override = widget.edgeScrollBottomClearance;
+    if (override != null) {
+      return override;
+    }
+    final scaffold = context.findAncestorWidgetOfExactType<Scaffold>();
+    final occluded = scaffold != null &&
+        scaffold.extendBody &&
+        scaffold.bottomNavigationBar != null;
+    final navHeight = occluded ? kBottomNavigationBarHeight : 0.0;
+    final bottomInset = MediaQuery.maybeOf(context)?.padding.bottom ?? 0.0;
+    return navHeight + bottomInset;
+  }
+
+  /// The viewport-space y that starts the bottom auto-scroll zone for a
+  /// scroll viewport of [viewportHeight] — the raw bottom pulled up by the
+  /// detected bottom-bar occlusion (see [_edgeScrollBottomClearance]).
+  double _bottomZoneStartY(double viewportHeight) {
+    return DayGridWidget.bottomZoneStartY(
+      viewportHeight,
+      bottomOcclusion: _edgeScrollBottomClearance(),
+    );
+  }
+
+  /// Re-arms (or stops) the edge auto-scroll for a finger at
+  /// viewport-space y [viewportY]: inside the top zone the grid scrolls
+  /// up, inside the bottom zone it scrolls down — toward the finger.
+  void _syncEdgeScroll(double? viewportY) {
+    _dragFingerViewportY = viewportY;
+    final inEdge = viewportY != null &&
+        _scrollController.hasClients &&
+        viewportY > 0 &&
+        (viewportY < _edgeScrollZonePx ||
+            viewportY >
+                _bottomZoneStartY(
+                    _scrollController.position.viewportDimension));
+    if (inEdge) {
+      _edgeScrollTimer ??=
+          Timer.periodic(_edgeScrollTickInterval, (_) => _edgeScrollStep());
+    } else {
+      _stopEdgeScroll();
+    }
+  }
+
+  /// One auto-scroll tick: move the grid toward the finger by its
+  /// edge-zone depth (a deeper finger scrolls faster; the step is capped
+  /// by the zone so a tick never teleports the grid) and re-derive the
+  /// drop slot from the finger's (now changed) content position — the
+  /// ghost tracks the finger's viewport point as the grid moves.
+  void _edgeScrollStep() {
+    final viewportY = _dragFingerViewportY;
+    if (!mounted || viewportY == null || !_scrollController.hasClients) {
+      _stopEdgeScroll();
+      return;
+    }
+    final position = _scrollController.position;
+    final viewportHeight = position.viewportDimension;
+    final bottomZoneStart = _bottomZoneStartY(viewportHeight);
+    final inTop = viewportY < _edgeScrollZonePx;
+    final inBottom = viewportY > bottomZoneStart;
+    if (!inTop && !inBottom) {
+      _stopEdgeScroll(); // left the zone; the next drag update re-arms it.
+      return;
+    }
+    final zoneDepth =
+        (inTop ? _edgeScrollZonePx - viewportY : viewportY - bottomZoneStart)
+            .abs();
+    final step = zoneDepth.clamp(0.0, _edgeScrollZonePx);
+    final target = inTop ? position.pixels - step : position.pixels + step;
+    final clamped =
+        target.clamp(position.minScrollExtent, position.maxScrollExtent);
+    if (clamped == position.pixels) {
+      _stopEdgeScroll(); // at the content edge — nothing left to scroll.
+      return;
+    }
+    position.jumpTo(clamped);
+    // The content moved under the (stationary) finger: re-derive the
+    // drop slot so the ghost follows the finger's viewport point.
+    // `_dragSeedForOffset` takes the same TILE-LOCAL dy as the drag
+    // callbacks: finger content y (viewport y + new scroll offset)
+    // minus the tile's content top.
+    _dragTargetStart =
+        _dragSeedForOffset(viewportY + clamped - _dragOriginalTopPx);
+    _syncDragState();
+  }
+
+  /// Stop the edge auto-scroll (drag end/cancel, the finger left the
+  /// edge zone, or the content edge was reached).
+  void _stopEdgeScroll() {
+    _edgeScrollTimer?.cancel();
+    _edgeScrollTimer = null;
+    _dragFingerViewportY = null;
+  }
+
   /// Day-content px top for a start (ms) on [dayStart] (cross-midnight
   /// clamp mirrors [TileGridWidget._recomputePosition]).
   double _topPx({required DateTime dayStart, required int startMs}) {
@@ -961,15 +1200,18 @@ class DayGridWidgetState extends State<DayGridWidget> {
         _pxPerHour;
   }
 
-  /// Drop commit — a HARD PIN: [EditTilerEvent] carries the snapped
-  /// Start/End AND the same CalStart/CalEnd so the scheduler cannot
-  /// re-fit the move elsewhere. The request rides
+  /// Drop commit — the sub-event's Start/End move to the snapped slot;
+  /// the parent calendar-event window (CalStart/CalEnd) is PRESERVED
+  /// from the tile's original `calendarEventStart/End` so the scheduler
+  /// keeps the sub-event inside its original (often multi-day) slot —
+  /// the tile's height (its own start/end span) is untouched by the
+  /// commit. Only a tile without a usable parent window keeps the hard
+  /// pin (CalStart/CalEnd = the snapped slot) so the request always
+  /// carries a usable window. The request rides
   /// [EvaluateSchedule](callBack:) on the schedule state the grid
   /// dispatched on (the [playBackButtons] `setAsNowTile` pattern): the
   /// tile holds the dropped slot optimistically while in flight.
   void _commitDragMove(SubCalendarEvent tile, DayGridDragSeed seed) {
-    Utility.debugPrint(
-        'DayGrid::DRAG-DBG commit=ENTER tile=${tile.uniqueId} start=${seed.start} end=${seed.end}');
     // A new commit resets the previous commit's badge (the lift already
     // clears it too; the duplicate-drop guard below still runs after).
     _clearSaveState();
@@ -981,18 +1223,29 @@ class DayGridWidgetState extends State<DayGridWidget> {
       _syncDragState();
       return;
     }
+    final hasParentWindow = tile.calendarEventStartTime != null &&
+        tile.calendarEventEndTime != null;
     final edit = EditTilerEvent()
       ..id = tile.id
       ..name = tile.name
       ..splitCount = tile.split
       ..startTime = seed.start
       ..endTime = seed.end
-      ..calStartTime = seed.start // hard pin (C5).
-      ..calEndTime = seed.end
+      // Preserve the parent calendar-event window — only Start/End move.
+      // No usable parent window: hard pin the snapped slot (C5).
+      ..calStartTime =
+          hasParentWindow ? tile.calendarEventStartTime! : seed.start
+      ..calEndTime = hasParentWindow ? tile.calendarEventEndTime! : seed.end
       ..thirdPartyType =
           tile.thirdpartyType?.name // 'tiler' — the lift gate above.
       ..thirdPartyId = tile.thirdpartyId
       ..thirdPartyUserId = tile.thirdPartyUserId;
+    Utility.debugPrint('DayGrid::drag::commit ${tile.uniqueId}: '
+        'start=${_dragLogTime(edit.startTime)} '
+        'end=${_dragLogTime(edit.endTime)} '
+        'calStart=${_dragLogTime(edit.calStartTime)} '
+        'calEnd=${_dragLogTime(edit.calEndTime)} '
+        '${hasParentWindow ? 'parentWindow' : 'hardPin'}');
 
     final scheduleState = context.read<ScheduleBloc>().state;
     List<SubCalendarEvent> preDragSubEvents = <SubCalendarEvent>[];
@@ -1026,14 +1279,13 @@ class DayGridWidgetState extends State<DayGridWidget> {
     final dayStart = _gridDayStart();
     final request = (widget.subCalendarEventApi ??
             (_subCalendarEventApi ??
-                (_subCalendarEventApi = SubCalendarEventApi(
-                    getContextCallBack: () => context))))
+                (_subCalendarEventApi =
+                    SubCalendarEventApi(getContextCallBack: () => context))))
         .updateSubEvent(edit);
     final move = _SettlingMove(
       tileId: tile.uniqueId,
       topPx: _topPx(
-          dayStart: dayStart!,
-          startMs: seed.start.millisecondsSinceEpoch),
+          dayStart: dayStart!, startMs: seed.start.millisecondsSinceEpoch),
       preDragTop: _topPx(dayStart: dayStart, startMs: tile.start!),
       preDragSubEvents: preDragSubEvents,
     );
@@ -1049,6 +1301,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
       _savingTileId = tile.uniqueId;
       _saveStatus = TileSaveStatus.saving;
     });
+    Utility.debugPrint('DayGrid::drag::hold ${tile.uniqueId}: '
+        'topPx=${move.topPx.toStringAsFixed(1)} '
+        'preDragTop=${move.preDragTop.toStringAsFixed(1)} '
+        'overrideStart=${_dragLogTime(seed.start)} '
+        'overrideEnd=${_dragLogTime(seed.end)}');
     request.then((confirmed) {
       // The position settles when the parent re-serves data with a
       // changed time for the tile ([_syncSettlingMove] clears it). The
@@ -1060,8 +1317,6 @@ class DayGridWidgetState extends State<DayGridWidget> {
         'start': seed.start.millisecondsSinceEpoch,
         'end': seed.end.millisecondsSinceEpoch,
       });
-      Utility.debugPrint('DayGrid::DRAG-DBG commit=SAVED tile=${tile.uniqueId} '
-          'mounted=$mounted match=${_savingTileId == tile.uniqueId}');
       if (mounted && _savingTileId == tile.uniqueId) {
         setState(() {
           _saveStatus = TileSaveStatus.saved;
@@ -1069,13 +1324,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
       }
     }).catchError((Object e) {
       Utility.debugPrint('DayGrid:: drag commit failed: $e');
-      AnalysticsSignal.send('daygrid_drag_rollback', additionalInfo: {
-        'tileId': tile.uniqueId
-      });
+      AnalysticsSignal.send('daygrid_drag_rollback',
+          additionalInfo: {'tileId': tile.uniqueId});
       // The request failed — the `error` badge shows on the moved tile
       // (the rollback slides it back to its pre-drag slot).
-      Utility.debugPrint('DayGrid::DRAG-DBG commit=ERROR tile=${tile.uniqueId} '
-          'mounted=$mounted match=${_savingTileId == tile.uniqueId}');
       if (mounted && _savingTileId == tile.uniqueId) {
         setState(() {
           _saveStatus = TileSaveStatus.error;
@@ -1103,6 +1355,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
       return;
     }
     if (move != null) {
+      Utility.debugPrint('DayGrid::drag::rollback ${move.tileId}: '
+          'preDragTop=${move.preDragTop.toStringAsFixed(1)} '
+          '-> restoring pre-drag tiles');
       context.read<ScheduleBloc>().add(ReloadLocalScheduleEvent(
           subEvents: move.preDragSubEvents,
           timelines: <Timeline>[],
@@ -1155,6 +1410,13 @@ class DayGridWidgetState extends State<DayGridWidget> {
       // re-served with a confirmed or corrected time. Release the
       // optimistic hold; the position becomes model-owned and the
       // layout transition slides the tile to the new slot.
+      Utility.debugPrint('DayGrid::drag::settle ${move.tileId}: '
+          'modelTop=${modelTop.toStringAsFixed(1)} '
+          'preDragTop=${move.preDragTop.toStringAsFixed(1)} '
+          'modelStart=${_dragLogTime(tile.start)} '
+          'modelEnd=${_dragLogTime(tile.end)} '
+          'duration=${tile.duration.inMinutes}m '
+          '-> releasing override');
       _settlingMove = null;
       _controller.mode = DayGridMode.idle;
     }
@@ -1205,13 +1467,6 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// for every other tile (only the committed tile carries a badge).
   TileSaveStatus _saveStatusFor(SubCalendarEvent tile) {
     final id = _savingTileId;
-    // DRAG-DBG (temporary): is the grid actually asking this tile to render a
-    // badge? If this never fires after a commit+re-serve, the tile's
-    // uniqueId changed on re-serve (or the State was remounted).
-    if (id != null && id == tile.uniqueId && _saveStatus != TileSaveStatus.idle) {
-      Utility.debugPrint(
-          'DayGrid::DRAG-DBG badge=ASKED tile=${tile.uniqueId} status=$_saveStatus');
-    }
     if (id == null || id != tile.uniqueId) {
       return TileSaveStatus.idle;
     }
@@ -1281,8 +1536,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(10),
-                border:
-                    Border.all(color: accent.withValues(alpha: 0.8), width: 1.5),
+                border: Border.all(
+                    color: accent.withValues(alpha: 0.8), width: 1.5),
               ),
             ),
           ),
@@ -1291,8 +1546,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
             top: -9,
             left: _dragGhostLeft.clamp(0.0, double.infinity),
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
               decoration: BoxDecoration(
                 color: accent,
                 borderRadius: BorderRadius.circular(4),
@@ -1387,9 +1641,9 @@ class DayGridWidgetState extends State<DayGridWidget> {
       }
     }
 
-    if (constant.isDebug) {
-      Utility.debugPrint('DayGrid:: rebuild with ${sortedTiles.length} tiles');
-    }
+    // if (constant.isDebug) {
+    //   Utility.debugPrint('DayGrid:: rebuild with ${sortedTiles.length} tiles');
+    // }
 
     // The TileCast action id to highlight in this
     // frame (null unless preview mode supplies one).
@@ -1538,8 +1792,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 // The dragged tile dims (the ghost shows its drop slot);
                 // the optimistic start override holds the moved tile at
                 // its dropped slot while the commit request is in flight.
-                final isDragSource = _dragTile != null &&
-                    _dragTile!.uniqueId == tile.uniqueId;
+                final isDragSource =
+                    _dragTile != null && _dragTile!.uniqueId == tile.uniqueId;
                 final settleOverride = _settledStartOverride(tile);
                 return TileGridWidget(
                   // Stable per-tile identity: add/remove/replace of
@@ -1567,15 +1821,15 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   // Long-press drag-and-drop (lift/move/drop) — the
                   // tile's own detector loses quick drags to the grid's
                   // scroll view (scrolls instead of dragging).
-                  onLongPressStart: (offset) =>
-                      _onTileLongPressStart(
-                          tile, offset, column?.left ?? tileLeft,
-                          column?.width ?? tileWidth),
+                  onLongPressStart: (offset) => _onTileLongPressStart(
+                      tile,
+                      offset,
+                      column?.left ?? tileLeft,
+                      column?.width ?? tileWidth),
                   onDragUpdate: _onTileDragUpdate,
                   onDragEnd: () => _onTileDragEnd(tile),
                   dimmed: isDragSource,
-                  suppressTap:
-                      isDragSource && (_dragging || _dragSuppressTap),
+                  suppressTap: isDragSource && (_dragging || _dragSuppressTap),
                   localStartMsOverride: settleOverride,
                   // Drag-commit save badge (overlay-only): the committed
                   // tile shows saving/saved/error; every other tile idle.
@@ -1688,8 +1942,24 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // the live grid; the TileCast preview renders the bare scroll
             // view (the preview schedule belongs to VibeChatBloc, and
             // TileCast's own header sheet is the chrome there).
+            // The px of the scroll viewport's bottom that sit behind a bottom
+            // navigation bar + home-indicator (0 when the body does not extend
+            // behind a bottom bar). Reused so the scrollable content and the
+            // bottom auto-scroll zone stop at the same visible edge.
+            final bottomClearance = _edgeScrollBottomClearance();
             final Widget gridBody = SingleChildScrollView(
               controller: _scrollController,
+              // The scroll content is exactly one 24h day tall (the tap-to-add
+              // background SizedBox, see below). With `Scaffold(extendBody:
+              // true)` the raw scroll viewport is taller than the visible area,
+              // so at max extent the bottom of the day is pinned BEHIND the
+              // bottom bar and unreachable — the last ~56px + home-indicator
+              // (~the final hour) never scrolled into view. Growing the
+              // scrollable content by the detected clearance lifts the day end
+              // up to the visible bottom edge. `bottomClearance` is 0 when the
+              // body does not extend behind a bottom bar, so hosts without one
+              // are unchanged.
+              padding: EdgeInsets.only(bottom: bottomClearance),
               child: Stack(
                 children: <Widget>[
                   // Tap-to-add. A background tap target

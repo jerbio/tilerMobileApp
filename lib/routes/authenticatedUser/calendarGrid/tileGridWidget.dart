@@ -597,7 +597,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       gridPadding = EdgeInsets.fromLTRB(10, 5, 0, 0);
     }
     Color color = Color.fromRGBO(tilerEvent.colorRed ?? 255,
-        tilerEvent.colorGreen ?? 255, tilerEvent.colorGreen ?? 255, 1);
+        tilerEvent.colorGreen ?? 255, tilerEvent.colorBlue ?? 255, 1);
     String name = this.tilerEvent.name ?? "--no--name";
     Decoration uiDecoration = BoxDecoration(
       color: color,
@@ -684,6 +684,11 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
       return body;
     }
     return Stack(
+      // `expand` so the (top-left, non-positioned) body fills the full
+      // allocated tile slot instead of shrinking to its caption text
+      // width — otherwise the `right: 4` badge anchors to the full-width
+      // slot and floats off to the side of the narrower box.
+      fit: StackFit.expand,
       children: [
         body,
         Positioned(top: 4, right: 4, child: _saveStatusBadge(context)),
