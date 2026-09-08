@@ -40,7 +40,8 @@ class Connections extends StatelessWidget {
           _buildIntegrationRow(
             iconPath: 'assets/icons/settings/microsoft.svg',
             title: localization.microsoft,
-            isComingSoon: true,
+            onTap: () =>
+                _navigateToIntegration(context, IntegrationType.microsoft),
             colorScheme: colorScheme,
             tileThemeExtension: tileThemeExtension,
             localization: localization,
