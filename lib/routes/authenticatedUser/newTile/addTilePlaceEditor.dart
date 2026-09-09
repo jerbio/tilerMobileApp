@@ -109,6 +109,18 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
   late final TextEditingController _addressController =
       TextEditingController(text: (widget.initialAddress ?? '').trim());
 
+  /// Owned by the State, NOT constructed in `build` (D56).
+  ///
+  /// A `FocusNode()` created inline is a new node on every rebuild, and this
+  /// screen rebuilds on every keystroke (the name listener drives the
+  /// collision warning). Each rebuild detached the field from its old node
+  /// and attached it to a fresh one, discarding the selection and composing
+  /// region the platform keyboard relies on — so BACKSPACE deleted nothing,
+  /// while select-all-then-delete still worked because replacing the whole
+  /// value needs no prior caret. It also leaked a node per rebuild.
+  final FocusNode _nameFocus = FocusNode();
+  final FocusNode _addressFocus = FocusNode();
+
   Timer? _debounce;
 
   /// The saved place currently colliding with the typed name, if any.
@@ -130,6 +142,8 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
     _nameController.removeListener(_onNameChanged);
     _nameController.dispose();
     _addressController.dispose();
+    _nameFocus.dispose();
+    _addressFocus.dispose();
     super.dispose();
   }
 
@@ -219,7 +233,7 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
                       icon: Icons.sell_outlined,
                       label: l10n.addTilePlaceName,
                       controller: _nameController,
-                      focusNode: FocusNode(),
+                      focusNode: _nameFocus,
                       hint: l10n.addTilePlaceNameHint,
                     ),
                     AddTileTextFieldRow(
@@ -228,7 +242,7 @@ class _AddTilePlaceEditorScreenState extends State<AddTilePlaceEditorScreen> {
                       icon: Icons.location_on_outlined,
                       label: l10n.addTilePlaceAddress,
                       controller: _addressController,
-                      focusNode: FocusNode(),
+                      focusNode: _addressFocus,
                       hint: l10n.addTilePlaceAddressHint,
                     ),
                   ],
