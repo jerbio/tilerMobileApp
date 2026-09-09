@@ -1,9 +1,9 @@
 # DayGrid View — Design & Tracking
 
-> Status: **Design locked (all §10 decisions settled) / P1 complete (Steps 1.1–1.8); P2 complete (Steps 2.1–2.4); P3 Step 3.1 complete (travel bands, `a269b88` + `c95123f`); P4 Steps 4.1–4.2 complete (drag-and-drop, `7c3db43` + `fcf514e` + `993424a`; 36 DnD tests green)**
-> Last updated: 2026-09-08
+> Status: **Design locked (§10 decisions settled except C17, proposed pending confirmation) / P1 complete (Steps 1.1–1.8); P2 complete (Steps 2.1–2.4); P3 Step 3.1 complete (travel bands, `a269b88` + `c95123f`); P4 Steps 4.1–4.2 complete (drag-and-drop, `7c3db43` + `fcf514e` + `993424a`; 36 DnD tests green; **P4 GA gate skipped/deferred 2026-09-09 — resume after the P5 addendum**); P5 (§14 chrome addendum: top-chrome layout + date-picker (C16) + day-summary entry point (C17)) design refined 2026-09-09, root cause verified against current code, NOT implemented**
+> Last updated: 2026-09-09
 > Owner: _TBD_
-> Execution plan: §12 (step-by-step TDD plan with per-step trackers, tests, telemetry)
+> Execution plan: §12 (P1–P4 step-by-step TDD plan) · §15 (P5 chrome-layout addendum step-by-step TDD plan, 5 steps)
 
 Living document for surfacing the calendar **DayGrid** view in the main UI and
 layering on future UI enhancements (pinch-to-zoom, drag-and-drop, travel-time
@@ -349,8 +349,9 @@ No new backend contracts required — client rendering + gesture layer only.
 2. **P2 — Tap-to-add + pinch-to-zoom + position transitions + TileCast.** Tap-to-add lands first — it proves the `time(y)` inversion with near-zero gesture risk. Then scale gesture + focal anchoring + adaptive labels + persist-on-settle (validate the carousel gesture-arena risk early). §6.6 slide/fade transitions land here too — they depend on P1's stable keys + `didUpdateWidget`, and must gate off during the new zoom gesture. §6.7 TileCast grid support closes the phase: it needs the `preview` flag, highlight raise (C11), and §6.6 highlight/scroll animation, but none of P3/P4.
 3. **P3 — Travel bands (read-only).** Positioned before/after segments, zoom-aware, tap-to-directions.
 4. **P4 — Drag-and-drop.** Long-press ghost → snap → `updateSubEvent` optimistic → rollback; travel bands react to settled result.
+5. **P5 — Chrome layout refinement (addendum, §14/§15, not started).** Grid-mode-only: reserve real layout space above the grid for the day selector + a new search/settings/day-label row, converting grid-mode's top chrome from `Stack`-overlay to `Column`+`Expanded`. Independent of P1–P4; can land whenever scheduled. Requires explicit user approval per step before any commit (§14.6).
 
-P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add, pinch) and travel bands existing (P3) so the drag result reads correctly.
+P4 last (of P1–P4) is deliberate: depends on coordinate inversion proven in P2 (tap-to-add, pinch) and travel bands existing (P3) so the drag result reads correctly. P5 is unordered relative to P1–P4 — it only touches chrome composition, not grid math.
 
 ---
 
@@ -373,6 +374,8 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | C13 | Tap-to-add default duration | fixed 1h vs snap-interval vs fit-to-gap | **Fixed 1h default** (user adjusts in `AddTile`) | **Decided 2026-09-03** |
 | C14 | Tap-to-add on past days | block vs prefill "now" | **Prefill "now"** (matches `AddTile` default) | **Decided 2026-09-03** |
 | C15 | TileCast grid layout source | always list in preview vs follow user's layout choice | **Follow `DailyViewLayoutCubit`** — grid users review proposals in the grid (§6.7); preview is read-only, zoom-persist skipped | **Decided 2026-09-03** |
+| C16 | Grid-mode day-label tap target | reuse Weekly/Monthly's bespoke picker dialog vs plain `showDatePicker` | **Plain `showDatePicker`** (§14.7) — matches the existing single-date-pick idiom used elsewhere in the app; dispatches `DateChangeEvent` to `UiDateManagerBloc` like the ribbon does | **Decided 2026-09-09** |
+| C17 | Day-summary entry point scope in grid mode | today-only (parity with list mode) vs every day | **Today-only** (§14.6) — matches `EnhancedWithinNowBatch`'s current exclusivity; every-day is a **separate, deferred** product decision, not required to unblock P5 | **Proposed 2026-09-09 — pending user confirmation** |
 
 ---
 
@@ -416,6 +419,12 @@ P4 last is deliberate: depends on coordinate inversion proven in P2 (tap-to-add,
 | P4 | Coordinate→time snap + constraints | 7c3db43 | Done | Step 4.1; drop Y → `time(y)` snap to the C4 zoom-dependent `snapInterval` (duration preserved); constraint violations block the drop (no silent clamp) |
 | P4 | Optimistic `updateSubEvent` + rollback | 7c3db43, fcf514e, 993424a | Done | Step 4.2; `updateSubEvent(EditTilerEvent{Start, End, CalStart, CalEnd})` hard-pinned (C5; parent `CalStart/CalEnd` window preserved when present) inside `EvaluateSchedule(renderedSubEvents, callBack:)` (the `setAsNowTile` pattern); save badge spinner → saved / error (`fcf514e`, `tileSaveStatusBadge_test.dart`); on error `ReloadLocalScheduleEvent` + rollback to the pre-drag slot; a second drop while the first is in flight is ignored (no race); day-agnostic — past-day drops persist the past-day slot, never clamped to `now` (3 past-day tests, uncommitted at 2026-09-08); `test/daygrid_drag_persist_test.dart` (14) |
 | P4 | Travel recompute on settle | 7c3db43 | Done | bands are server-derived — no client-side estimate is fabricated; after settle they refresh from the re-evaluated `EvaluateSchedule` render (per §6.4) |
+| P5 | Extract `HomeTopRightActionsRow` + `DayRibbonCarousel.topMargin` | | Not started | Step 15.1; pure refactor, list/Weekly/Monthly pixel-identical |
+| P5 | `DayGridTopChromeRow` (day label + actions) | | Not started | Step 15.2; grid-mode-only, built in isolation |
+| P5 | `AuthorizedRoute` `Column` wiring + `DailyTileList` flexible height (§14.4) | | Not started | Step 15.3; gated on `DailyViewLayoutCubit == grid && currentView == Daily` |
+| P5 | Day-label tap → `showDatePicker` → `DateChangeEvent` (C16) | | Not started | Step 15.2 (widget) + 15.4 (bloc wiring); §14.7 |
+| P5 | Day summary entry point in grid mode, today-only (C17) | | Not started | Step 15.4; reuses `DaySummaryHeader`/`TodayStatusScreen` unmodified; §14.6 |
+| P5 | On-device QA + tutorial spotlight recheck | | Not started | Step 15.5; small-height/tablet/notched devices |
 
 ---
 
@@ -636,7 +645,7 @@ gate reviewer's name goes in the tracker Notes column.
 | Fixes-detection | Rollback spike alerts on the analytics dashboard; debug logs carry subEvent id + timeline for repro |
 | Exit | failure-injection test proves visual state never diverges from bloc state |
 
-**P4 gate / GA:** rollback rate < 2% of drags over a dogfood cycle; **independent engineer pre-commit verification (§12.0) repeated end-to-end**; then default the toggle's discoverability nudge (one-time tooltip on the top-right toggle).
+**P4 gate / GA — _**skipped / deferred 2026-09-09** (user decision):_ rollback rate < 2% of drags over a dogfood cycle; **independent engineer pre-commit verification (§12.0) repeated end-to-end**; then default the toggle's discoverability nudge (one-time tooltip on the top-right toggle). Step 4.2's engineering work remains Done (36/36 DnD tests green, `7c3db43` + `fcf514e` + `993424a`) — what is parked is the gate's field-quality + second-engineer-verification criteria, so DnD stays behind the grid-layout toggle. The gate resumes after the P5 chrome addendum (§14/§15) is through; the criteria above are unchanged, pick up from here.
 
 ### 12.5 Cross-cutting: test & telemetry inventory
 
@@ -695,4 +704,309 @@ gate reviewer's name goes in the tracker Notes column.
 | 2026-09-05 | a269b88 | Pinch-on-tile fix: root cause was hit-testing, not arena resolution — with the scale recognizer on the grid's bottom background layer, pointers landing on event tiles routed to the tiles, so a finger-on-tile pinch never gave the recognizer both pointers and the arena was lost to the tiles. Fix in `dayGridWidget.dart`: the scale recognizer now lives on a topmost `Positioned` full-area overlay with `HitTestBehavior.translucent`, using `_ArenaWinningScaleGestureRecognizer` (resolves accepted the moment the 2nd pointer lands, pre-empting vertical scroll + horizontal carousel pan); single-finger input passes through to tiles/background, and a won pinch cancels tile taps. Debug `print`s removed. Tests: `test/daygrid_pinch_zoom_test.dart` extended 12 → 16 (pinch with both fingers on a tile; one finger on tile + one on background; single-finger tap on tile does not zoom; tap-to-add on empty background still works) — all 16 green; 145 tests across 16 DayGrid/grid suites green; `flutter analyze` clean on touched files. On-device verification pending. |
 | 2026-09-05 | c95123f | Travel-band visibility fix: at the default zoom (80 px/hr) 3–6 min travel times produced 4–8 px band heights — below the 18 px icon threshold — so bands rendered only a 2 px gradient hairline, essentially invisible. Root cause confirmed on-device via debug overlay (red rectangles in the gutter at the correct position). Fix in `travelBandWidget.dart`: the band's effective height is clamped to `iconHeightThreshold` (18 px); for pre-bands the extra height extends upward into the empty gutter space above the tile, for post-bands it extends downward below the tile. The travel-medium icon and hairline now always render. Test updated: `test/daygrid_travel_band_test.dart` icon-threshold test now expects the icon visible at all heights ≥ 1 px (min-height clamp). All 34 tests (18 travel + 16 pinch) green; `flutter analyze` clean. |
 | 2026-09-05 | a269b88, c95123f | P3 Step 3.1 — travel bands (read-only) — tracker catch-up: the step landed bundled in `a269b88` (pinch-on-tile fix) but was never recorded in §11. New `travelBandWidget.dart`: pure `TravelBand.bandsForTile` gutter-band math (pre/post bands sized by `height(travelTimeBefore/After)`, clamped to the visible day like the tiles; no band when travel is null/0), zoom-aware collapse/expand (hairline → + travel-medium icon at 18px → + duration / "leave-by" pill at 56px, mirroring `CompactTravelIndicator`; the `c95123f` min-height clamp keeps short bands visible at the default 80 px/h), tap-to-directions reusing the `TravelConnector` / `ReturnConnector` Google Maps URL construction (`daygrid_travel_band_tap`; no directions for home-return bands per `ReturnConnector._isHome`; non-tappable bands pass taps through to the tap-to-add layer), `isTardy` → `TileColors.late`. Wired into `dayGridWidget.dart`; `test/daygrid_travel_band_test.dart` (18). §11 P3 rows → Done. P3 gate still open: on-device visual QA on a dense schedule (bands + GCal columns + now-line coexisting) + independent second-engineer verification (§12.0). |
+| 2026-09-08 | _TBD_ | New §14 addendum recorded (design-only, no code changes): (14.1) in grid mode the grid must start **below** the day selector, never run behind/under it (with `time(y)` anchor math accounting for the inset); (14.2) the search + settings buttons move into their own horizontal section that also shows the currently selected day; both refinements are explicitly **grid-mode-scoped** — the Daily list view's chrome and behavior must remain unchanged. Deferred; not slotted into any P1–P4 step until scheduled. |
 | 2026-09-08 | _TBD_ | P4 DnD verification + tracker sync: confirmed drag/settle/persist is **day-agnostic** — it applies to the selected grid day (past, Today, future), past-day drops persist the past-day slot and are not clamped to `now`, and Today-specific behavior is limited to now-line/live-now visuals + AddTile "now" prefill (C14). §6.3 gains the day-agnostic bullet; the four §11 P4 rows (LongPressDraggable + ghost; coordinate→time snap + constraints; optimistic `updateSubEvent` + rollback; travel recompute on settle) → Done with `7c3db43` + `fcf514e` + `993424a`; §12.5 drag inventory updated to gesture 22 + persist 14 = 36 tests (incl. 3 new past-day persist tests — uncommitted at this entry). `flutter test test/daygrid_drag_persist_test.dart test/daygrid_drag_gesture_test.dart`: 36/36 green. P4 GA gate still open: rollback rate < 2% dogfood + independent second-engineer verification (§12.0). |
+| 2026-09-09 | _TBD_ | §14 addendum root-caused against the current tree (still design-only, no code changes): `AuthorizedRoute.renderAuthorizedUserPageView()` composes the whole Daily page as one `Stack` — `_buildTileList()` (full-height `CarouselSlider` of `DayGridPage`s), `_ribbonCarousel()` (`Align.topCenter` → `DayRibbonTab`/`DayRibbonCarousel`), and `HomeTopRightActions` (`Positioned(top:0,right:8)`) all overlap the same coordinate space; `DayGridWidget`'s `SingleChildScrollView` starts at content y=0 with no top padding/inset and its existing `_edgeScrollBottomClearance()` pattern (bottom-only) has no top counterpart. Chosen design direction (§14.4): convert grid-mode's top chrome from Stack-overlay to real flex layout (`Column` + `Expanded`) so the grid's own scroll viewport genuinely starts below the chrome — this needs zero changes to the already-tested auto-scroll/pinch-focal/tap-to-add math (all viewport-relative), versus bolting an inset constant through every one of those call sites. List mode / Weekly / Monthly keep the exact current `Stack` untouched. New §15 adds a 4-step TDD plan (chrome extraction → new top-chrome row → Column wiring → on-device QA), gated on `DailyViewLayoutCubit == grid && currentView == Daily`. Per user instruction, no step in §15 is committed without explicit user review/approval of the diff first. |
+| 2026-09-09 | _TBD_ | Two more addendum requirements folded in per user request: (1) the grid-mode day label (§14.3) must be tappable to jump to an arbitrary date — root-caused that Daily has no such affordance today (only bounded ribbon-day taps + go-to-today); chosen design (C16, §14.7) reuses the app's existing plain `showDatePicker` idiom and dispatches `DateChangeEvent` to `UiDateManagerBloc` exactly like `DayRibbonCarousel.onDateButtonTapped` does — no new bloc/event. (2) grid mode needs a path to the day summary (`TodayStatusScreen`) — root-caused that this is currently reachable **only** via `DaySummaryHeader` inside `EnhancedWithinNowBatch` (today, list mode only); `DayStatusWidget` in `status.dart` is confirmed unrelated/dead code (old `DayStatusApi` model, never mounted). Chosen design (C17, §14.6, **proposed pending confirmation**): mount the same `DaySummaryHeader` widget (unmodified) inside `DayGridPage`, today-only, matching current list-mode parity; showing it on every day is called out as a separate, deferred decision. §15 gained a new Step 15.4 (day-summary entry point + date-picker bloc wiring) between the Column-wiring step and on-device QA, and Step 15.2's scope grew to include the date-picker tap seam on `DayGridTopChromeRow`; the QA step renumbered to 15.5. §10 gained C16 (decided) and C17 (proposed, pending confirmation). Still design-only — no code changes. |
+| 2026-09-09 | _TBD_ | P4 GA gate (Step 4.2's closeout: rollback rate < 2% of drags over a dogfood cycle + independent second-engineer verification, §12.4) marked **skipped / deferred** at user direction — parked to make way for the P5 chrome addendum (§14/§15), to be resumed after the addendum is done. Step 4.2's implementation stays Done (`7c3db43` + `fcf514e` + `993424a`, 36/36 DnD tests green); DnD remains behind the grid-layout toggle until the gate resumes. The §12.4 P4 gate line and the §1 status line were annotated with the deferral; the gate's criteria are unchanged. |
+---
+
+## 14. Addendum — grid-mode chrome layout refinement (design refined 2026-09-09, NOT implemented)
+
+> Status: **Design refined and root-caused against the current tree — no code changes
+> made.** These are chrome/layout adjustments to the Daily view header in **grid mode
+> only** and must **not** change the behavior (or visual contract) of the Daily
+> **list** view, or of Weekly/Monthly. Implementation plan: §15.
+
+### 14.1 Verified root cause (2026-09-09)
+
+`AuthorizedRoute.renderAuthorizedUserPageView()` ([AuthorizedRoute.dart](../lib/routes/authentication/AuthorizedRoute.dart))
+builds the entire Daily page as **one `Stack`**, three layers deep, all sharing the
+same coordinate space:
+
+```dart
+return Stack(children: [
+  _buildTileList(scheduleState.currentView),   // layer 0: full-height CarouselSlider of DayGridPage/day pages
+  _ribbonCarousel(scheduleState.currentView),  // layer 1: Align.topCenter -> DayRibbonTab | DayRibbonCarousel
+  HomeTopRightActions(...),                    // layer 2: Positioned(top: 0, right: 8) -> Row of IconButtons
+]);
+```
+
+- **Layer 0 — `_buildTileList()`.** For Daily this is `DailyTileList`'s `CarouselSlider`,
+  sized via `CarouselOptions(height: MediaQuery.of(context).size.height, viewportFraction: 1.0)`
+  ([dailyTileList.dart](../lib/components/tilelist/dailyView/dailyTileList.dart)) — i.e. it
+  deliberately claims the **full screen height**, starting at y=0. Each page is a
+  `DayGridPage` ([dayGridPage.dart](../lib/components/tilelist/dailyView/dayGridPage.dart)),
+  which in grid mode is itself a plain `Column` (`DayGridBannerStrip` → `DayGridPinnedHeader`
+  → `Expanded(DayGridWidget)`) — so the *page* is well-behaved; the problem is that the page
+  starts at the very top of the screen with nothing reserved above it.
+- **Layer 1 — `_ribbonCarousel()`.** For today, `DayRibbonTab` ([dayRibbonTab.dart](../lib/components/ribbons/dayRibbon/dayRibbonTab.dart)):
+  `Align(Alignment.topCenter, child: Column([handle, if(expanded) SizedBox(height: 180, child: DayRibbonCarousel)]))`,
+  handle ≈ 8px top margin + 6px vertical padding + one text row (≈40–44px collapsed,
+  ≈220–224px expanded). For any other day, `DayRibbonCarousel` directly
+  ([dayRibbonCarousel.dart](../lib/components/ribbons/dayRibbon/dayRibbonCarousel.dart)):
+  `margin: EdgeInsets.fromLTRB(0, 50, 0, 0)`, `height: 130` — i.e. it bakes its own
+  50px top offset in *because* it expects to be painted over content, not laid out in-flow.
+- **Layer 2 — `HomeTopRightActions`.** [homeTopRightActions.dart](../lib/components/homeTopRightActions.dart):
+  `Positioned(top: 0, right: 8, child: Row([layout toggle?, go-to-today?, search, settings]))`,
+  ≈48px tall (standard `IconButton` hit target). Also `Positioned`, also assumes overlay.
+- **`DayGridWidget`'s scroll view** ([dayGridWidget.dart](../lib/routes/authenticatedUser/calendarGrid/dayGridWidget.dart))
+  starts its `SingleChildScrollView` content at y=0 with **no top padding**. It already has a
+  *bottom*-only clearance pattern worth mirroring: `edgeScrollBottomClearance` (constructor
+  override) / `_computeEdgeScrollBottomClearance()` (falls back to
+  `MediaQuery.maybeOf(context)?.padding.bottom`), consumed by the scroll `padding`, the
+  edge-auto-scroll-during-drag bounds, and the viewport-height reads used by auto-scroll-to-now
+  (`_keepAnchorHourOnscreen`) and the pinch focal-anchor math. There is **no top-side
+  equivalent** anywhere in that file today.
+
+**Net effect:** in grid mode, the first visible hour rows of `DayGridWidget` render directly
+behind layers 1 and 2 — confirmed, not a hypothetical — because layer 0 is never actually
+given a reduced/offset viewport; it is simply painted first and then drawn over.
+
+### 14.2 Required behavior — grid must sit *below* the day selector
+
+- The day selector (ribbon / collapsed tab) and the new §14.3 chrome row become **solid
+  chrome that reserves real vertical space** above the grid in grid mode — the grid's
+  scrollable region begins strictly below them; the first visible hour row must never be
+  covered.
+- **Out of scope:** the list view. `EnhancedTileBatch` / `EnhancedWithinNowBatch` pages, and
+  Weekly/Monthly, keep their current `Stack`-overlay layout and behavior byte-for-byte.
+
+### 14.3 Required behavior — search + settings as their own row, with the selected day
+
+- The **search** and **settings** buttons (and the existing layout-toggle / go-to-today
+  buttons currently grouped with them in `HomeTopRightActions`) move into their **own
+  horizontal section**, separate from the day selector/ribbon strip.
+- That same section displays the **currently selected day** (`UiDateManagerBloc.currentDate`),
+  so the user always sees which day the grid is showing alongside the actions. Reuse
+  `DateTimeHuman.humanDate(context)` ([util.dart](../lib/util.dart)) for the label — it
+  already renders Today/Tomorrow/localized dates and is the existing convention for this
+  (see repo memory: reuse over inventing a second date-formatting path).
+- The day selector (ribbon / collapsed tab, C2) remains its own strip below this row;
+  day-change interactions (`DateChangeEvent`, go-to-today, ribbon tap) are unchanged.
+- **The day label is tappable (C16, new 2026-09-09):** tapping it opens a date picker so
+  the user can jump to an arbitrary date, not just the days visible in the ribbon/tab
+  window or "today". See §14.7 for the chosen design.
+- **Out of scope:** the list view keeps its existing header arrangement unchanged.
+
+### 14.4 Proposed technical design
+
+**Chosen shape: convert grid-mode's top chrome from `Stack`-overlay to real flex layout,
+not an inset bolted onto the scroll view.** Rationale: `DayGridWidget`'s auto-scroll-to-now,
+pinch focal-anchor, and tap-to-add math are already viewport-relative (`position.viewportDimension`,
+`position.pixels`) and covered by 12+ green test files (§12.5); if the chrome genuinely reserves
+space above the grid via `Expanded`, the grid's own viewport origin is correct by construction
+and **none of that math needs to change**. An inset-padding approach would require threading a
+new `topInsetClearance` through every one of those call sites (mirroring the existing
+`edgeScrollBottomClearance` pattern) purely to compensate for an overlay that didn't need to
+overlay in the first place — more surface area, more ways to drift out of sync on zoom changes.
+
+```dart
+// AuthorizedRoute.renderAuthorizedUserPageView(), Daily case only:
+if (scheduleState.currentView == AuthorizedRouteTileListPage.Daily &&
+    context.watch<DailyViewLayoutCubit>().state == DailyViewLayout.grid) {
+  return Column(children: [
+    DayGridTopChromeRow(...),           // NEW — §14.3: day label + search/settings/toggle/go-to-today
+    _ribbonCarousel(scheduleState.currentView), // unchanged widget, now laid out in-flow, not Align-overlaid
+    Expanded(child: _buildTileList(scheduleState.currentView)),
+  ]);
+}
+// else: existing Stack(...) untouched (list mode, Weekly, Monthly)
+```
+
+Touch points this implies:
+
+| File | Change |
+|---|---|
+| `lib/components/homeTopRightActions.dart` | Extract the inner `Row` of icons into a reusable, non-`Positioned` piece (e.g. `HomeTopRightActionsRow`) so both the legacy `Positioned` call site (list/Weekly/Monthly, untouched) and the new §14.3 row can share the icon logic without duplicating it. |
+| `lib/components/dayGridTopChromeRow.dart` | New — grid-mode-only row: leading day label (`DateTimeHuman.humanDate`) + trailing `HomeTopRightActionsRow`. |
+| `lib/components/ribbons/dayRibbon/dayRibbonCarousel.dart` | Add an in-flow variant (e.g. `topMargin: double` param, default `50` preserved for existing overlay call sites) so the Column composition doesn't double-reserve the 50px the widget currently bakes in for its overlay context. |
+| [AuthorizedRoute.dart](../lib/routes/authentication/AuthorizedRoute.dart) | Branch `renderAuthorizedUserPageView()` on `DailyViewLayoutCubit` (Daily only) between the existing `Stack` and the new `Column`; keep the branch's `false` path byte-for-byte identical to today. |
+| `lib/components/tilelist/dailyView/dailyTileList.dart` | `CarouselOptions.height` currently hard-codes `MediaQuery.of(context).size.height`, which conflicts with being hosted inside `Expanded` (bounded-but-not-yet-known height). Needs a `height` override param (grid-mode caller passes `constraints.maxHeight` via `LayoutBuilder`); list-mode call sites keep passing the full screen height unchanged. |
+| `lib/routes/authenticatedUser/calendarGrid/dayGridWidget.dart` | **No change required** under this design — see rationale above. |
+
+### 14.5 Guard rails
+
+- Both refinements are **strictly grid-mode-scoped**, gated on
+  `context.watch<DailyViewLayoutCubit>().state == DailyViewLayout.grid && scheduleState.currentView == AuthorizedRouteTileListPage.Daily`.
+  Any other combination (list mode, Weekly, Monthly) must take the exact pre-existing `Stack` path.
+- Existing list-mode/chrome tests must stay green **without modification**:
+  `ribbon_tab_test.dart`, `daygrid_layout_swap_test.dart` (list path), the banner-strip and
+  pinned-header tests, and `test/tile_carousel_test.dart`.
+- Tutorial spotlight keys (`TutorialKeys.topRightActionsKey`, `TutorialKeys.scheduleViewKey`)
+  must still resolve to sane on-screen positions once the icons move from `Positioned` overlay
+  to in-flow `Row` — same `GlobalKey`, different (now correct) geometry; verify the tutorial
+  overlay manually on-device, it is not covered by the widget tests below.
+- No new analytics tags are required beyond what's noted per step in §15; the existing
+  `daygrid_*` tag scheme (e.g. `daygrid_ribbon_expanded`) is unaffected — this is a pure
+  layout change, no new user action is introduced.
+- Verify on at least: a small-height phone (short viewport, ribbon expanded — does the chrome
+  + expanded ribbon leave a usable grid viewport?), a tablet, and a device with top safe-area
+  insets (notch/status bar via `SafeArea(bottom: false)` already wraps the whole page).
+- The §14.6/§14.7 additions (day-summary entry point, tap-to-pick-date) are **also
+  grid-mode-scoped** and must not add any new widget/behavior to list mode, Weekly, or
+  Monthly — `DaySummaryHeader`'s existing list-mode usage in `EnhancedWithinNowBatch`
+  stays exactly as-is; grid mode gets its own instance/entry point.
+- Not part of any P1–P4 step in §11/§12; tracked as its own phase, **P5**, in §11's tracker
+  and executed via the step-by-step plan in §15.
+
+### 14.6 Day summary navigation from grid mode (new 2026-09-09)
+
+**Root cause (verified 2026-09-09):** the day summary (`TodayStatusScreen`) is reachable
+from exactly one place in the app today — [DaySummaryHeader](../lib/components/tilelist/dailyView/components/daySummaryHeader.dart)'s
+`onTap` → `_navigateToSummary()`, which pushes
+`TodayStatusScreen(timeline: Timeline(dayStart, dayEnd))`. That header is only ever
+mounted by [StickyDayHeaderDelegate](../lib/components/tilelist/dailyView/components/stickyDayHeaderDelegate.dart),
+which only [EnhancedWithinNowBatch](../lib/components/tilelist/dailyView/enhancedWithinNowBatch.dart)
+uses — i.e. **today's list-mode page only**. `DayGridPage` (grid mode, any day) never
+mounts it, so grid-mode users currently have **no path at all** to the day summary.
+(`DayStatusWidget` in [status.dart](../lib/components/status.dart), referenced from
+`AuthorizedRoute` but never added to the widget tree, is an unrelated, already-dead
+widget from an older `DayStatusApi` model — not to be confused with `DaySummaryHeader`/
+`TodayStatusScreen`, which use the current `TimelineSummary` / `ScheduleSummaryBloc`
+pipeline.)
+
+**Required behavior (grid mode only):**
+
+- Grid mode gets an entry point to the same `TodayStatusScreen`, using the same
+  `DaySummaryHeader` widget (no fork/rewrite) so the metrics (non-viable / complete /
+  tardy counts) and the `ScheduleSummaryBloc` data pipeline are identical to list mode.
+- **C17 (proposed default, pending confirmation): today-only, matching current parity.**
+  Render `DaySummaryHeader` at the top of `DayGridPage`'s `Column` (above
+  `DayGridBannerStrip`) **only for the day-page whose `dayIndex` is today** — exactly
+  the set of days that already get it in list mode via `EnhancedWithinNowBatch`. Other
+  days' `DayGridPage`s render without it, matching `EnhancedTileBatch`'s current
+  (summary-less) list-mode treatment of non-today days.
+  - *Rejected/deferred alternative:* show it on every day (the widget is already
+    `dayIndex`-driven and would technically support this) — deferred because it would
+    give grid mode a capability list mode doesn't have for non-today days, which is a
+    product decision beyond "fix the chrome", and `ScheduleSummaryBloc`'s current fetch
+    pattern is not verified to be efficient for arbitrary non-today days. Revisit as a
+    follow-up decision (not blocking P5) if wanted.
+- **Out of scope:** list mode's `EnhancedWithinNowBatch` / `EnhancedTileBatch` keep their
+  exact current `DaySummaryHeader` wiring, untouched.
+
+### 14.7 Tap the day label to pick a different date (C16, new 2026-09-09)
+
+**Root cause / gap (verified 2026-09-09):** Daily has no "jump to an arbitrary date"
+affordance today. The only date-navigation inputs are: swiping the carousel, tapping a
+visible `DayButton` in the ribbon (bounded to the currently-loaded window — see
+`DayRibbonCarousel.onDateButtonTapped` → `DateChangeEvent`), and the "go to today" icon.
+Weekly/Monthly *do* have a tap-a-header-to-pick pattern (`WeekPickerPage`/`MonthPickerPage`
+→ `WeeklyPickerDialog`/`MonthlyPickerDialog`), but those are bespoke grid dialogs wired to
+their own `WeeklyUiDateManagerBloc`/`MonthlyUiDateManagerBloc` — not reusable as-is for
+Daily's `UiDateManagerBloc`.
+
+**Chosen design:** reuse Flutter's built-in `showDatePicker` — already the established
+idiom elsewhere in this codebase for plain "pick one date" needs (`dateInput.dart`,
+`editTile/editDate.dart`, `newTile/addTile.dart`, `accountInfo.dart`, etc.) — rather than
+building a bespoke calendar dialog like Weekly/Monthly's. Daily only needs a single-date
+jump, not a week/month grid concept, so the plain picker is the smaller, more consistent
+addition.
+
+- Tapping the day label in `DayGridTopChromeRow` (§14.3) calls
+  `showDatePicker(context: context, initialDate: currentViewDate, firstDate: ..., lastDate: ...)`.
+- On a non-null result, dispatch to `UiDateManagerBloc` exactly like the ribbon does:
+  `DateChangeEvent(selectedDate: picked, previousSelectedDate: currentViewDate, dateChangeTrigger: DateChangeTrigger.buttonPress)`
+  (mirrors [DayRibbonCarousel.onDateButtonTapped](../lib/components/ribbons/dayRibbon/dayRibbonCarousel.dart)).
+  No new bloc/event is needed.
+- `firstDate`/`lastDate` bounds: reuse whatever range the app already treats as navigable
+  (check existing `showDatePicker` call sites for a shared min/max convention before
+  inventing a new one; default to a generous multi-year window if none exists).
+- **Out of scope:** list mode's day header (if any) is unchanged — this affordance lives
+  only on the new grid-mode `DayGridTopChromeRow`.
+- Analytics: `daygrid_date_picker_opened` / `daygrid_date_picker_selected`, following the
+  existing `daygrid_*` tag convention.
+
+### 14.8 Approval / commit policy for this addendum's implementation
+
+Per explicit user instruction: **no step in §15 is committed to version control without the
+user first reviewing and approving the diff.** Each step below still follows the TDD loop and
+pre-commit checklist in §12.0, but the implementer stops after the "Refactor" pass and the
+test run, presents the diff, and waits for explicit approval before running `git commit`
+(or any push). This is stricter than the existing §12.0 sign-off convention (which assumes
+an engineer commits their own verified work) — treat §15 as review-gated on top of it.
+
+---
+
+## 15. Step-by-step implementation plan (TDD) — P5 chrome-layout addendum
+
+Same TDD loop and logging/telemetry conventions as §12.0, with **one addition that
+overrides §12.0's commit assumption for this phase only**:
+
+> **No `git commit` / `git add` / `git push` for any §15 step without the user explicitly
+> approving the diff first.** After Red → Green → Refactor and a full local test run, stop,
+> summarize the diff and test results, and wait. Do not batch multiple steps' changes into
+> one approval request — each step is reviewed and (if approved) committed on its own before
+> the next step starts, so the user can course-correct early.
+
+All five steps are gated the same way: they only change behavior when
+`DailyViewLayoutCubit.state == DailyViewLayout.grid && ScheduleBloc.currentView == AuthorizedRouteTileListPage.Daily`.
+Every step's exit criteria include a regression check that list mode, Weekly, and Monthly are
+byte-for-byte unchanged.
+
+### Step 15.1 — Extract reusable chrome pieces (pure refactor, no behavior change)
+
+**Goal:** make the existing overlay-only widgets reusable in an in-flow layout without
+changing anything about how they render today. Zero visual/behavioral change in this step —
+it's scaffolding for 15.2/15.3.
+
+| | |
+|---|---|
+| Touched | `homeTopRightActions.dart` (extract inner `Row` into `HomeTopRightActionsRow`, `HomeTopRightActions` becomes a thin `Positioned(child: HomeTopRightActionsRow(...))` wrapper), `dayRibbonCarousel.dart` (add `topMargin` param, default `50` so all existing call sites are unaffected) |
+| Tests first | `test/home_top_right_actions_test.dart` (new or extended) — `HomeTopRightActionsRow` renders the same icons/callbacks as before with no `Positioned` ancestor required; `HomeTopRightActions` (legacy wrapper) still renders identically (golden/property check: same icons, same tap callbacks). `test/day_ribbon_carousel_test.dart` — `topMargin: 0` renders with no top margin; omitting the param preserves the existing `50` |
+| Logging | none (pure refactor) |
+| Feedback | none — regression-only step |
+| Exit | full existing suite green with **zero** other files touched; new tests for the two extracted params green; `flutter analyze` clean |
+
+### Step 15.2 — `DayGridTopChromeRow` (day label + actions + date picker), built in isolation
+
+**Goal:** the new §14.3 row — day label (`DateTimeHuman.humanDate`) leading, `HomeTopRightActionsRow` trailing — built and tested standalone, **not yet wired into `AuthorizedRoute`**. Includes the §14.7 (C16) tap-to-pick-date behavior on the label, since it lives on the same widget.
+
+| | |
+|---|---|
+| New files | `lib/components/dayGridTopChromeRow.dart` |
+| Tests first | `test/day_grid_top_chrome_row_test.dart` — renders today's label as "Today" (via `DateTimeHuman.humanDate`), a future/past date as its localized date; layout-toggle/go-to-today/search/settings taps invoke the right callbacks; go-to-today icon hidden when the shown day is today (mirrors current `HomeTopRightActions.isViewingToday` rule); tapping the day label invokes a mockable `showDatePicker` seam (inject via a constructor param so the test doesn't need the real platform dialog) and, given a non-null result, invokes a `onDateSelected(DateTime)` callback with that date — the widget itself does not know about `UiDateManagerBloc` (kept for step 15.3/15.4 wiring, testable in isolation here) |
+| Logging | `daygrid_date_picker_opened` on tap, `daygrid_date_picker_selected` when a date comes back (both fire from this widget's callback path — see §14.7) |
+| Feedback | none yet (not reachable from the app) |
+| Exit | widget tests green in isolation, incl. the date-picker seam; not referenced by `AuthorizedRoute` yet (verified by grep/diff — this step must not change `AuthorizedRoute.dart`) |
+
+### Step 15.3 — Wire the `Column` composition (the actual fix)
+
+**Goal:** the §14.4 branch in `AuthorizedRoute.renderAuthorizedUserPageView()`; `DailyTileList`'s `CarouselOptions.height` becomes flexible for the grid-mode caller.
+
+| | |
+|---|---|
+| Touched | `AuthorizedRoute.dart` (Daily+grid branch → `Column([DayGridTopChromeRow, _ribbonCarousel(...), Expanded(_buildTileList(...))])`; all other combinations keep the existing `Stack`), `dailyTileList.dart` (`CarouselOptions.height` accepts an override; default keeps `MediaQuery.of(context).size.height` for existing/list callers) |
+| Tests first | `test/daygrid_chrome_layout_test.dart` — pump the Daily page in grid mode inside a bounded-height test harness: `DayGridTopChromeRow` and the ribbon/tab are laid out above the grid (assert `dy` ordering via `tester.getTopLeft`/`getBottomLeft`, not just presence); the grid's own viewport `Rect` never overlaps the chrome's `Rect`; no `RenderFlex`/overflow exceptions at a short test viewport (e.g. 480px tall) with the ribbon expanded. Separately: pump Daily **list** mode and Weekly/Monthly and assert the widget tree still contains the original `Stack` (e.g. via `find.byType(Stack)` ancestor check on `HomeTopRightActions`) — **regression proof that non-grid paths are untouched** |
+| Logging | `debugPrint` (debug-only) if the `Expanded` region resolves to a non-positive height (defensive assert — should never happen once `CarouselOptions.height` is fixed, but cheap to catch a regression) |
+| Feedback | none new — this is a visual-correctness fix, not a new user action. Watch existing `daygrid_ribbon_expanded` / `daygrid_layout_toggled` continue to fire normally post-change (confirms the new composition didn't break the interactions it rehosts) |
+| Exit | new layout test green; full existing suite green (esp. `ribbon_tab_test.dart`, `daygrid_layout_swap_test.dart`, banner/pinned-header tests, `tile_carousel_test.dart` — all **unmodified**); `flutter analyze` clean |
+
+### Step 15.4 — Day summary entry point (C17) + date-picker wiring (C16)
+
+**Goal:** connect the two new §14.6/§14.7 behaviors end-to-end: `DayGridTopChromeRow.onDateSelected` dispatches `DateChangeEvent` to `UiDateManagerBloc` (mirroring `DayRibbonCarousel.onDateButtonTapped`); `DayGridPage` mounts `DaySummaryHeader` for today's day-page only (C17 default).
+
+| | |
+|---|---|
+| Touched | `AuthorizedRoute.dart` (wire `DayGridTopChromeRow.onDateSelected` → `UiDateManagerBloc.add(DateChangeEvent(...))`), `dayGridPage.dart` (mount `DaySummaryHeader` above `DayGridBannerStrip` when `dayIndex == Utility.currentTime().universalDayIndex`) |
+| Tests first | `test/daygrid_date_picker_navigation_test.dart` — selecting a date from the (mocked) picker dispatches `DateChangeEvent` with the right `selectedDate`/`previousSelectedDate`/`dateChangeTrigger`; a null picker result dispatches nothing. `test/daygrid_day_summary_entry_test.dart` — today's `DayGridPage` renders `DaySummaryHeader` and tapping it navigates to `TodayStatusScreen` with the expected `Timeline` (same assertion shape as any existing `DaySummaryHeader` navigation test); a non-today `DayGridPage` does **not** render `DaySummaryHeader` (C17 default) |
+| Logging | `daygrid_date_picker_selected` already fires from 15.2; add `daygrid_summary_opened` on `DaySummaryHeader` tap from grid mode (list mode's existing tap is unaffected/untagged — do not retrofit tagging onto list mode in this step) |
+| Feedback | **Conversion signals to watch:** date-picker open→select ratio (abandoned picker = wrong default `initialDate`/bounds); `daygrid_summary_opened` rate in grid mode vs. list mode's existing (untagged) baseline usage, as a rough parity check for C17 |
+| Exit | both new test files green; full existing suite green (`DaySummaryHeader`'s own existing tests untouched — it is reused, not modified); `flutter analyze` clean |
+
+### Step 15.5 — On-device QA + tutorial spotlight recheck
+
+**Goal:** the one part of this addendum that can't be proven by widget tests alone — real device geometry and the tutorial overlay.
+
+| | |
+|---|---|
+| Touched | none expected (verification step); fix-forward here only if QA finds a real bug, scoped back into 15.3's files |
+| Manual checks | Short-viewport phone with the ribbon expanded (does a usable grid viewport remain?); tablet; a device with top safe-area insets; rotate/resize (foldables/split-screen) if available; toggle list ⇄ grid repeatedly and confirm no flash/jump; trigger the onboarding tutorial and confirm `TutorialKeys.topRightActionsKey` / `TutorialKeys.scheduleViewKey` spotlights land on the (now relocated) widgets correctly; open the date picker and pick a past/future date and confirm the carousel/grid/ribbon all follow; confirm the day summary opens from grid mode on today and is absent on other days (C17) |
+| Logging | none new |
+| Feedback | qualitative dogfood note in the tracker (§11 P5 row Notes) — record any device/geometry edge case found, even if not yet fixed |
+| Exit | on-device checklist above completed and recorded in §11; any bugs found are filed as follow-up steps (not silently patched without going back through Red/Green/Refactor + approval) |
+
+**P5 gate:** all five steps individually reviewed and approved by the user before commit;
+independent engineer (or user) re-check of Step 15.5's manual checklist before marking §11's
+P5 rows Done.
