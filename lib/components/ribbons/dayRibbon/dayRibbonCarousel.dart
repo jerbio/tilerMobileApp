@@ -18,11 +18,19 @@ class DayRibbonCarousel extends StatefulWidget {
   DateTime _initialDate = Utility.currentTime().dayDate;
   Function? onDateChange;
   final bool preview;
+
+  /// P5 Step 15.1: the top margin baked into this widget's overlay layout.
+  /// The default (50) matches the value every existing overlay call site
+  /// (list/Weekly/Monthly, via AuthorizedRoute) has always relied on, so
+  /// those call sites are pixel-identical. Grid mode (Step 15.3) passes its
+  /// own value so the Column composition doesn't double-reserve this inset.
+  final double topMargin;
   DayRibbonCarousel(DateTime? initialDate,
       {this.onDateChange,
       this.autoUpdateAnchorDate = false,
       this.preview=false,
-      this.numberOfDays = 5}) {
+      this.numberOfDays = 5,
+      this.topMargin = 50}) {
     if (initialDate == null) {
       initialDate = Utility.currentTime().dayDate;
     }
@@ -385,7 +393,7 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
                   BlendMode.srcATop,
                 ),
               child: Container(
-                margin: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                margin: EdgeInsets.fromLTRB(0, widget.topMargin, 0, 0),
                 decoration: BoxDecoration(
                   color: colorScheme.surfaceContainerLowest,
                   boxShadow: [
