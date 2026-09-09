@@ -631,6 +631,154 @@ group('drag rollback + race', () {
     });
   });
 
+  group('past day (all days, not only today/future)', () {
+    // A grid day strictly BEFORE `now` (2026-05-15 14:30). The drag
+    // approach must not special-case today: every time computation stays
+    // relative to the grid day (midnight of the earliest tile), and
+    // nothing may snap a past slot to "now".
+    final pastDay = DateTime(2026, 5, 14);
+
+    testWidgets(
+        'drop on a PAST day persists the past-day slot (not today/now)',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2026, 5, 14, 9), DateTime(2026, 5, 14, 10))
+        ],
+        now: now,
+        day: pastDay,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      // Long-press + drag 120px (90min) → 10:30.
+      final gesture = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await gesture.moveBy(const Offset(0, 120));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+
+      // The persisted request stays on the PAST day — a today-specific
+      // clamp (e.g. to `now`) would shift these into 2026-05-15.
+      final edit = api.captured!;
+      expect(edit.id, 'a');
+      expect(edit.startTime, DateTime(2026, 5, 14, 10, 30));
+      expect(edit.endTime, DateTime(2026, 5, 14, 11, 30));
+      // No parent window → the hard pin carries the same past-day slot.
+      expect(edit.calStartTime, DateTime(2026, 5, 14, 10, 30));
+      expect(edit.calEndTime, DateTime(2026, 5, 14, 11, 30));
+
+      // Same relative layout math as any day: the optimistic hold sits at
+      // 10:30 → content y 840.
+      expect(_tileTop(tester, 'a'), closeTo(840, 0.5));
+
+      // The re-evaluation renders the pre-drag (past-day) schedule while
+      // in flight — not a re-baseline against today.
+      final evaluate = bloc.events.whereType<EvaluateSchedule>().toList();
+      expect(evaluate, hasLength(1));
+      final rendered =
+          evaluate.first.renderedSubEvents.where((t) => t.id == 'a').toList();
+      expect(rendered.first.start,
+          DateTime(2026, 5, 14, 9).millisecondsSinceEpoch);
+
+      await tester.runAsync(() => bloc.close());
+    });
+
+    testWidgets(
+        're-served confirmation on a PAST day releases the optimistic hold',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2026, 5, 14, 9), DateTime(2026, 5, 14, 10))
+        ],
+        now: now,
+        day: pastDay,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      // Drop 'a' at 10:30 — the optimistic hold renders at content y 840.
+      final gesture = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await gesture.moveBy(const Offset(0, 120));
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+      expect(_tileTop(tester, 'a'), closeTo(840, 0.5));
+
+      // The parent re-serves with the confirmed PAST-DAY time — the
+      // override clears and the position becomes model-owned at the same
+      // slot (the layout math is relative to the grid day, not today).
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2026, 5, 14, 10, 30),
+              DateTime(2026, 5, 14, 11, 30))
+        ],
+        now: now,
+        day: pastDay,
+      ));
+      await tester.pump(); // post-frame: scroll resync (must be a no-op).
+      await tester.pump(const Duration(milliseconds: 300)); // settle.
+      expect(_tileTop(tester, 'a'), closeTo(840, 0.5));
+
+      await tester.runAsync(() => bloc.close());
+    });
+
+    testWidgets('API failure on a PAST day rolls back to the pre-drag slot',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi()
+        ..error = TilerError(Code: '422', Message: 'range violation');
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('a', DateTime(2026, 5, 14, 9), DateTime(2026, 5, 14, 10))
+        ],
+        now: now,
+        day: pastDay,
+      ));
+      await tester.pump(); // initial scroll → 720.
+
+      final gesture = await tester.startGesture(const Offset(200, 40));
+      await tester.pump(const Duration(milliseconds: 500));
+      await gesture.moveBy(const Offset(0, 120)); // → 10:30.
+      await tester.pump();
+      await gesture.up();
+      await tester.pump();
+      expect(_tileTop(tester, 'a'), closeTo(840, 0.5)); // optimistic hold.
+
+      // Deliver the delayed failure → the rollback path runs.
+      await tester.pump(const Duration(milliseconds: 60));
+
+      // The failure restores the PRE-DRAG past-day schedule state…
+      final rollbacks =
+          bloc.events.whereType<ReloadLocalScheduleEvent>().toList();
+      expect(rollbacks, hasLength(1));
+      final restored =
+          rollbacks.first.subEvents.where((t) => t.id == 'a').toList();
+      expect(restored, hasLength(1));
+      expect(restored.first.start,
+          DateTime(2026, 5, 14, 9).millisecondsSinceEpoch);
+
+      // …and the tile slides back to its pre-drag slot (content y 720).
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(_tileTop(tester, 'a'), closeTo(720, 0.5));
+      expect(api.updateCount, 1);
+
+      await tester.runAsync(() => bloc.close());
+    });
+  });
+
   group('scroll preservation on tile refresh', () {
     testWidgets(
         'post-commit tile reload does NOT snap the grid back to the top',
