@@ -92,10 +92,9 @@ class IntegrationWidgetRoute extends StatelessWidget {
     // P4-2: the page is shared by the Google and Microsoft connect flows —
     // the AppBar title reflects the provider of the bloc above it.
     final integrationType = context.read<IntegrationsBloc>().integrationType;
-    final appBarTitle =
-        integrationType == IntegrationType.microsoft
-            ? localization.microsoft
-            : localization.googleCalender;
+    final appBarTitle = integrationType == IntegrationType.microsoft
+        ? localization.microsoft
+        : localization.googleCalender;
 
     return CancelAndProceedTemplateWidget(
       routeName: routeName,

@@ -111,12 +111,12 @@ class RedirectHandler {
         }
         // Navigate to the integrations page for the provider that owns the
         // new integration; the fresh bloc triggers the list refresh.
-        _navigateToConnectedIntegration(
-            context, calendarReturn.integrationId);
+        _navigateToConnectedIntegration(context, calendarReturn.integrationId);
         break;
       case CalendarConnectOutcome.declined:
         if (localization != null) {
-          notification.showToast(context,
+          notification.showToast(
+              context,
               localization.calendarConnectionDeclined,
               NotificationOverlayMessageType.warning);
         }
@@ -131,8 +131,7 @@ class RedirectHandler {
               'Calendar connect failed: reason=${calendarReturn.reason}');
         }
         if (localization != null) {
-          notification.showToast(context,
-              localization.calendarConnectionError,
+          notification.showToast(context, localization.calendarConnectionError,
               NotificationOverlayMessageType.error);
         }
         break;
@@ -193,8 +192,6 @@ class RedirectHandler {
       ),
     );
   }
-
-  
 
   static void _routeToTileShare(BuildContext context, String uriString) {
     var decodedString = Uri.decodeFull(uriString);

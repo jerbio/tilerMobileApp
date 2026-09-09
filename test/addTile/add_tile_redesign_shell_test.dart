@@ -285,18 +285,45 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('CTA stays above a simulated keyboard inset', (tester) async {
+    testWidgets('CTA sits ON the keyboard, not a keyboard-height above it',
+        (tester) async {
+      // The previous version of this test asked only whether the CTA was
+      // ABOVE the keyboard line, which is true whether the inset is applied
+      // once or twice — so it stayed green while the shell double-counted it
+      // and shoved the CTA into the middle of the screen (D51).
       const keyboard = 320.0;
       await pumpShell(tester, AddTileRedesignScreen(now: now),
           viewSize: AddTileTestMatrix.largePhone,
           viewInsets: const EdgeInsets.only(bottom: keyboard));
       await tester.pump();
 
-      final ctaWidget = tester.widget(cta());
-      expect(
-          isCoveredByKeyboardBottom(tester, ctaWidget, bottomHeight: keyboard),
-          isFalse,
-          reason: 'The persistent CTA must be visible above the keyboard');
+      final double keyboardTop = AddTileTestMatrix.largePhone.height - keyboard;
+      final Rect ctaRect = tester.getRect(cta());
+
+      expect(ctaRect.bottom, lessThanOrEqualTo(keyboardTop + 0.5),
+          reason: 'the CTA must not be under the keyboard');
+      expect(ctaRect.bottom, greaterThan(keyboardTop - 8),
+          reason: 'the CTA is floating well above the keyboard, which means '
+              'the inset was counted twice');
+    });
+
+    testWidgets('the form keeps usable height with the keyboard up',
+        (tester) async {
+      // The other half of the double-count: the second inset was taken out
+      // of the Expanded, collapsing the form to a single visible row.
+      const keyboard = 320.0;
+      await pumpShell(tester, AddTileRedesignScreen(now: now),
+          viewSize: AddTileTestMatrix.largePhone,
+          viewInsets: const EdgeInsets.only(bottom: keyboard));
+      await tester.pump();
+
+      final Rect form = tester.getRect(find.byWidgetPredicate(
+        (w) => w is SingleChildScrollView && w.scrollDirection == Axis.vertical,
+      ));
+      final double available = AddTileTestMatrix.largePhone.height - keyboard;
+
+      expect(form.height, greaterThan(available * 0.4),
+          reason: 'the form area collapsed to ${form.height} of $available');
     });
   });
 

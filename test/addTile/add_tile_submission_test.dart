@@ -5,6 +5,8 @@
 // pins it field-for-field against the legacy flow — so what needed covering is
 // the ORCHESTRATION around the call: what reaches the caller, what the user is
 // told when it fails, and that a failure leaves the draft intact.
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -32,6 +34,20 @@ const _delegates = <LocalizationsDelegate<dynamic>>[
 
 Locale _resolve(Locale? requested, Iterable<Locale> supported) =>
     supported.first;
+
+/// A submission that never answers, so the in-flight state can be inspected.
+class HangingSubmission implements AddTileSubmission {
+  final Completer<AddTileSubmissionResult> completer =
+      Completer<AddTileSubmissionResult>();
+
+  final List<NewTile> sent = <NewTile>[];
+
+  @override
+  Future<AddTileSubmissionResult> create(NewTile tile) {
+    sent.add(tile);
+    return completer.future;
+  }
+}
 
 /// A submission that records what it was asked to send and answers with
 /// whatever the test wants.
@@ -239,6 +255,64 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(attempts, 2);
+    });
+  });
+
+  group('While a submission is in flight', () {
+    testWidgets('the form cannot be edited', (tester) async {
+      // The CTA already refused a second tap, but every field behind it
+      // stayed live: a user could keep typing after the payload had gone,
+      // see something the server never received, and lose those edits with
+      // no indication when the screen popped.
+      final hanging = HangingSubmission();
+      final AddTileDraft draft = submittableFixed();
+      await pumpShell(tester, draft: draft, submission: hanging);
+
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pump();
+      expect(hanging.sent, hasLength(1),
+          reason: 'precondition: the request is in flight');
+
+      await tester.enterText(
+          find.byKey(const ValueKey('fixedTitleField')), 'Changed after send');
+      await tester.pump();
+
+      expect(draft.name, 'Weekend run',
+          reason: 'the draft must match what was actually sent');
+    });
+
+    testWidgets('a picker cannot be opened', (tester) async {
+      final hanging = HangingSubmission();
+      await pumpShell(tester, draft: submittableFixed(), submission: hanging);
+
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pump();
+
+      await tester.tap(find.byKey(const ValueKey('fixedDateRow')));
+      await tester.pump();
+
+      expect(find.byType(DatePickerDialog), findsNothing,
+          reason: 'a value changed here could never reach the server');
+    });
+
+    testWidgets('editing is possible again once it fails', (tester) async {
+      // The lock must lift, or a failed submission would leave the user
+      // holding an uneditable form.
+      final AddTileDraft draft = submittableFixed();
+      final hanging = HangingSubmission();
+      await pumpShell(tester, draft: draft, submission: hanging);
+
+      await tester.tap(find.byKey(const ValueKey('addTileCta')));
+      await tester.pump();
+      hanging.completer
+          .complete(const AddTileSubmissionResult.failure('api_rejected'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+          find.byKey(const ValueKey('fixedTitleField')), 'Second attempt');
+      await tester.pump();
+
+      expect(draft.name, 'Second attempt');
     });
   });
 

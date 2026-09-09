@@ -30,7 +30,6 @@ import 'package:flutter/material.dart';
 import 'package:tiler_app/data/adHoc/preTile.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
-import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileAnalytics.dart';
@@ -841,6 +840,9 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       return;
     }
     setState(() => _submitting = true);
+    // Drops the keyboard immediately. `ExcludeFocus` below keeps it down for
+    // the duration of the request (D50).
+    FocusManager.instance.primaryFocus?.unfocus();
     try {
       final NewTile tile = NewTileRequestMapper.buildFromSnapshot(
         _draft.snapshot,
@@ -901,8 +903,6 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         ? l10n.addTileScreenTitleFixed
         : l10n.addTileScreenTitleFlexible;
 
-    final double keyboardInset = MediaQuery.of(context).viewInsets.bottom;
-
     return Scaffold(
       appBar: AppBar(
         title: Text(title),
@@ -933,23 +933,48 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
             ),
           ),
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: _buildFormArea(type),
+            // The form is READ-ONLY while a submission is in flight (D50).
+            // The CTA already refused a second tap, but every field behind
+            // it stayed live: a user could keep typing, or open a picker and
+            // change a value, after the payload had gone. What they then saw
+            // was not what was sent — and on success the screen pops and
+            // those edits vanish with no indication they were never applied.
+            //
+            // Two widgets, because they block different things and BOTH
+            // matter: `AbsorbPointer` stops taps, and `ExcludeFocus` stops
+            // typing. Pointer absorption alone leaves an already-focused
+            // text field taking keystrokes — the keyboard is still up, and
+            // it does not route through the pointer system at all.
+            //
+            // Blanket widgets rather than an `enabled` flag threaded to every
+            // field: one statement cannot miss a control, including the ones
+            // added later.
+            child: ExcludeFocus(
+              excluding: _submitting,
+              child: AbsorbPointer(
+                absorbing: _submitting,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: _buildFormArea(type),
+                ),
+              ),
             ),
           ),
-          // Persistent, keyboard-safe CTA: sits above the bottom safe area
-          // (SafeArea in AddTileBottomAction) and above the keyboard (this
-          // viewInsets padding).
-          Padding(
-            padding: EdgeInsets.only(bottom: keyboardInset),
-            child: AddTileBottomAction(
-              key: const ValueKey('addTileCta'),
-              type: type,
-              enabled: _draft.isValid,
-              submitting: _submitting,
-              onTap: _attemptSubmit,
-            ),
+          // Persistent CTA, above the bottom safe area (the SafeArea inside
+          // AddTileBottomAction).
+          //
+          // NO keyboard padding here (D51). `Scaffold.resizeToAvoidBottomInset`
+          // defaults to true, so the body has ALREADY been shortened by the
+          // keyboard height; adding `viewInsets.bottom` again counted it
+          // twice — which pushed the CTA a full keyboard-height up the screen
+          // and stole that height from the Expanded above, collapsing the
+          // form to a single visible row.
+          AddTileBottomAction(
+            key: const ValueKey('addTileCta'),
+            type: type,
+            enabled: _draft.isValid,
+            submitting: _submitting,
+            onTap: _attemptSubmit,
           ),
         ],
       ),
