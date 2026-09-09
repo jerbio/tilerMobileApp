@@ -30,6 +30,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/preferredTimeOfDay.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -37,15 +38,15 @@ import 'package:tiler_app/theme/today_status_tokens.dart';
 /// then reads "Add location").
 ///
 /// A `Location.fromDefault()` ghost is the draft's *absent* state, not a
-/// choice — `isNotNullAndNotDefault` is the legacy predicate for "the user
-/// actually has a location", so it gates the summary here too.
+/// choice. [locationHasContent] is what distinguishes the two — see the note
+/// there for why the legacy `isNotNullAndNotDefault` predicate could not
+/// (D53).
 String? locationSummary(Location? location) {
-  if (location == null || !location.isNotNullAndNotDefault) return null;
-  final String? description = location.description?.trim();
-  if (description != null && description.isNotEmpty) return description;
-  final String? address = location.address?.trim();
-  if (address != null && address.isNotEmpty) return address;
-  return null;
+  if (location == null || !locationHasContent(location)) return null;
+  final String description = (location.description ?? '').trim();
+  if (description.isNotEmpty) return description;
+  final String address = (location.address ?? '').trim();
+  return address.isEmpty ? null : address;
 }
 
 /// Compact Repeat row summary. A disabled or absent rule reads "Does not

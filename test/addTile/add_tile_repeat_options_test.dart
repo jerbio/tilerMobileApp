@@ -30,12 +30,14 @@ RepetitionData repetition(RepetitionFrequency f, {Set<int>? days}) =>
     );
 
 void main() {
-  group('The row set (D22, D23)', () {
-    test('offers six rows, Yearly included and Custom absent', () {
+  group('The row set (D22, D52)', () {
+    test('offers five rows: no Weekdays, no Custom, Yearly kept', () {
+      // Weekdays was a PRESET for weekly + Mon-Fri, not a frequency, and one
+      // tap apart from Weekly it produced an identical state. There is now
+      // exactly one way to say weekly (D52).
       expect(RepeatOption.values, [
         RepeatOption.doesNotRepeat,
         RepeatOption.daily,
-        RepeatOption.weekdays,
         RepeatOption.weekly,
         RepeatOption.monthly,
         RepeatOption.yearly,
@@ -45,7 +47,7 @@ void main() {
     test('labels avoid engine wording', () {
       expect(repeatOptionLabel(testL10n, RepeatOption.doesNotRepeat),
           'Does not repeat');
-      expect(repeatOptionLabel(testL10n, RepeatOption.weekdays), 'Weekdays');
+      expect(repeatOptionLabel(testL10n, RepeatOption.weekly), 'Weekly');
       expect(repeatOptionLabel(testL10n, RepeatOption.yearly), 'Yearly');
     });
   });
@@ -59,21 +61,16 @@ void main() {
       );
     });
 
-    test('Weekdays is weekly + Mon-Fri (Sunday = 0)', () {
+    test('Weekly with NO days chosen carries no days (D52)', () {
+      // An empty selection is a real answer: weekly, no particular day. The
+      // mapper omits `RepeatWeeklyData` entirely for it, so the backend
+      // decides — which is not the same as pre-ticking Mon-Fri on the user's
+      // behalf and sending five choices they never made.
       final built = buildRepetition(
-          option: RepeatOption.weekdays, days: const {}, now: now)!;
+          option: RepeatOption.weekly, days: const {}, now: now)!;
       expect(built.frequency, RepetitionFrequency.weekly);
-      expect(built.weeklyRepetition, <int>{1, 2, 3, 4, 5});
+      expect(built.weeklyRepetition, isEmpty);
       expect(built.isEnabled, isTrue);
-    });
-
-    test('Weekdays ignores any day set handed to it', () {
-      // Selecting the Weekdays ROW always means Mon-Fri, whatever was
-      // selected before. Editing chips is what moves you to Weekly (see the
-      // screen), so a leftover set must never quietly redefine the preset.
-      final built = buildRepetition(
-          option: RepeatOption.weekdays, days: const {0, 6}, now: now)!;
-      expect(built.weeklyRepetition, <int>{1, 2, 3, 4, 5});
     });
 
     test('Weekly carries the user-selected days', () {
@@ -123,29 +120,23 @@ void main() {
       expect(repeatOptionOf(disabled), RepeatOption.doesNotRepeat);
     });
 
-    test('weekly + exactly Mon-Fri reads back as Weekdays', () {
-      expect(
-        repeatOptionOf(
-            repetition(RepetitionFrequency.weekly, days: {1, 2, 3, 4, 5})),
-        RepeatOption.weekdays,
-      );
-    });
-
-    test('weekly + any other day set reads as Weekly', () {
-      expect(
-        repeatOptionOf(repetition(RepetitionFrequency.weekly, days: {1, 3, 5})),
-        RepeatOption.weekly,
-      );
-      expect(
-        repeatOptionOf(repetition(RepetitionFrequency.weekly, days: {})),
-        RepeatOption.weekly,
-      );
-      expect(
-        repeatOptionOf(
-            repetition(RepetitionFrequency.weekly, days: {1, 2, 3, 4, 5, 6})),
-        RepeatOption.weekly,
-        reason: 'Mon-Fri plus Saturday is not the Weekdays preset',
-      );
+    test('EVERY weekly day set reads back as Weekly (D52)', () {
+      // Mon-Fri used to read back as a separate `weekdays` row, which meant
+      // the same frequency answered to two different names depending on the
+      // days. One frequency, one row.
+      for (final Set<int> days in <Set<int>>[
+        <int>{},
+        <int>{1, 3, 5},
+        <int>{1, 2, 3, 4, 5},
+        <int>{1, 2, 3, 4, 5, 6},
+        <int>{0, 6},
+      ]) {
+        expect(
+          repeatOptionOf(repetition(RepetitionFrequency.weekly, days: days)),
+          RepeatOption.weekly,
+          reason: '$days must read as Weekly',
+        );
+      }
     });
 
     test('the other frequencies read back as themselves', () {
@@ -167,11 +158,19 @@ void main() {
         expect(repeatOptionOf(built), option, reason: '$option must survive');
       }
     });
+
+    test('Weekly round-trips with no days too (D52)', () {
+      // The default state. It has to survive the round trip, or reopening
+      // the picker would silently move the user to another row.
+      final built = buildRepetition(
+          option: RepeatOption.weekly, days: const {}, now: now);
+      expect(repeatOptionOf(built), RepeatOption.weekly);
+      expect(built!.weeklyRepetition, isEmpty);
+    });
   });
 
   group('Which rows show day chips', () {
-    test('only Weekdays and Weekly have a day dimension', () {
-      expect(optionHasDays(RepeatOption.weekdays), isTrue);
+    test('only Weekly has a day dimension', () {
       expect(optionHasDays(RepeatOption.weekly), isTrue);
       for (final option in [
         RepeatOption.doesNotRepeat,
@@ -183,14 +182,11 @@ void main() {
       }
     });
 
-    test('editing away from the Weekdays preset yields a plain Weekly', () {
-      // Chips are always editable (see the note in repeatOptions.dart): a
-      // read-only Weekdays row read on device as "cannot unselect the week
-      // days". Customising the preset produces a set that no longer reads
-      // back as Weekdays, which is what makes the row follow the selection.
-      final Set<int> edited = Set<int>.from(weekdayPresetDays)..remove(1);
-      final built =
-          buildRepetition(option: RepeatOption.weekly, days: edited, now: now);
+    test('the chosen days reach the repetition verbatim (D52)', () {
+      // No preset to edit away from any more: whatever is ticked is what is
+      // sent, including a set that happens to be Mon-Fri.
+      final built = buildRepetition(
+          option: RepeatOption.weekly, days: const {2, 3, 4, 5}, now: now);
       expect(repeatOptionOf(built), RepeatOption.weekly);
       expect(built!.weeklyRepetition, <int>{2, 3, 4, 5});
     });

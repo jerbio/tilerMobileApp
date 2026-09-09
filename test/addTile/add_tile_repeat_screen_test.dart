@@ -16,6 +16,9 @@ import 'package:tiler_app/data/repetitionData.dart';
 import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileRepeatScreen.dart';
+import 'package:tiler_app/data/request/NewTile.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/repeatOptions.dart';
 import 'package:tiler_app/theme/theme_data.dart';
 
@@ -148,71 +151,77 @@ void main() {
           reason: 'no stale day selection may survive into the result');
     });
 
-    testWidgets('Weekdays shows the preset', (tester) async {
+    testWidgets('Weekly starts with NO days chosen (D52)', (tester) async {
+      // The picker used to pre-tick Mon-Fri, which put five choices in the
+      // payload the user never made. An empty selection is the honest
+      // default: weekly, no particular day.
       await pumpRepeat(tester);
-      await choose(tester, RepeatOption.weekdays);
+      await choose(tester, RepeatOption.weekly);
 
       expect(find.byKey(const ValueKey('repeatDaysSection')), findsOneWidget);
       await done(tester);
-      expect(_result!.weeklyRepetition, <int>{1, 2, 3, 4, 5});
+
+      expect(_result!.frequency, RepetitionFrequency.weekly);
+      expect(_result!.weeklyRepetition, isEmpty);
     });
 
-    testWidgets(
-        'editing a Weekdays chip drops to Weekly rather than doing '
-        'nothing (device report 2026-09-06)', (tester) async {
-      // The chips were inert on Weekdays, with nothing to say so — reported
-      // as "cannot unselect the week days". A preset must be a shortcut, not
-      // a dead end: touching it customises the selection, which BY
-      // DEFINITION is no longer "weekdays".
+    testWidgets('no day set means no RepeatWeeklyData on the wire (D52)',
+        (tester) async {
+      // The point of the empty default: the backend picks the day rather
+      // than receiving five it was never given.
       await pumpRepeat(tester);
-      await choose(tester, RepeatOption.weekdays);
+      await choose(tester, RepeatOption.weekly);
+      await done(tester);
 
+      final draft = AddTileDraft.flexible(now: now);
+      draft.name = 'Weekly thing';
+      draft.setUserDuration(const Duration(hours: 1));
+      draft.setRepetitionData(_result);
+      final NewTile tile =
+          NewTileRequestMapper.buildFromSnapshot(draft.snapshot, now: now);
+
+      expect(tile.RepeatFrequency, 'weekly');
+      expect(tile.RepeatWeeklyData, isNull,
+          reason: 'an empty selection must not ship a day list');
+    });
+
+    testWidgets('ticked days are the ones sent (D52)', (tester) async {
+      await pumpRepeat(tester);
+      await choose(tester, RepeatOption.weekly);
+
+      await tester.tap(find.byKey(const ValueKey('repeatDay_1')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('repeatDay_3')));
+      await tester.pumpAndSettle();
+      await done(tester);
+
+      expect(_result!.weeklyRepetition, <int>{1, 3},
+          reason: 'Sunday = 0, so this is Monday and Wednesday');
+    });
+
+    testWidgets('the last day can be unticked again (D52)', (tester) async {
+      // There is no floor any more. Emptying the set returns to the
+      // default meaning rather than being refused.
+      await pumpRepeat(tester);
+      await choose(tester, RepeatOption.weekly);
+
+      await tester.tap(find.byKey(const ValueKey('repeatDay_1')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('repeatDay_1')));
       await tester.pumpAndSettle();
       await done(tester);
 
-      expect(_result!.frequency, RepetitionFrequency.weekly);
-      expect(_result!.weeklyRepetition, <int>{2, 3, 4, 5},
-          reason: 'Monday came off and the row became Weekly');
+      expect(_result!.weeklyRepetition, isEmpty);
     });
-
-    testWidgets('adding a weekend day to Weekdays also drops to Weekly',
-        (tester) async {
-      await pumpRepeat(tester);
-      await choose(tester, RepeatOption.weekdays);
-
-      await tester.tap(find.byKey(const ValueKey('repeatDay_6')));
-      await tester.pumpAndSettle();
-      await done(tester);
-
-      expect(_result!.weeklyRepetition, <int>{1, 2, 3, 4, 5, 6});
-    });
-
-    testWidgets('re-selecting exactly Mon-Fri reads back as Weekdays',
-        (tester) async {
-      // Round trip: leave the preset by editing, then return to it.
-      await pumpRepeat(tester);
-      await choose(tester, RepeatOption.weekdays);
-      await tester.tap(find.byKey(const ValueKey('repeatDay_6')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('repeatDay_6')));
-      await tester.pumpAndSettle();
-      await done(tester);
-
-      expect(_result!.weeklyRepetition, <int>{1, 2, 3, 4, 5});
-      expect(repeatOptionOf(_result), RepeatOption.weekdays,
-          reason: 'the set is the preset again, so it reads as Weekdays');
-    });
-
     testWidgets('shown and editable for Weekly', (tester) async {
       await pumpRepeat(tester);
       await choose(tester, RepeatOption.weekly);
 
-      // Seeded from the preset; drop Tue and Thu to leave Mon/Wed/Fri.
-      await tester.tap(find.byKey(const ValueKey('repeatDay_2')));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(const ValueKey('repeatDay_4')));
-      await tester.pumpAndSettle();
+      // Nothing is pre-ticked (D52), so tick Mon/Wed/Fri directly.
+      for (final int day in <int>[1, 3, 5]) {
+        await tester.tap(find.byKey(ValueKey('repeatDay_$day')));
+        await tester.pumpAndSettle();
+      }
       await done(tester);
 
       expect(_result!.frequency, RepetitionFrequency.weekly);

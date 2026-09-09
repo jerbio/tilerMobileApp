@@ -2024,7 +2024,6 @@
     "@addTileDurationHoursMinutes": {"description":"Duration combining hours and minutes.","placeholders":{"hours":{"type":"int","example":"1"},"minutes":{"type":"int","example":"30"}}},
     "addTileRepeat": "Repeat",
     "addTileRepeatNever": "Does not repeat",
-    "addTileRepeatWeekdays": "Weekdays",
     "addTileRepeatDays": "DAYS",
     "addTileRepeatsUntil": "REPEATS UNTIL",
     "addTileRepeatHelper": "Repeat helps Tiler schedule recurring tasks.",

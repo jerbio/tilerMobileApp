@@ -3118,9 +3118,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addTileRepeatNever => 'Does not repeat';
 
   @override
-  String get addTileRepeatWeekdays => 'Weekdays';
-
-  @override
   String get addTileRepeatDays => 'DAYS';
 
   @override

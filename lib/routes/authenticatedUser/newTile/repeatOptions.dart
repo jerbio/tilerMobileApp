@@ -21,11 +21,7 @@ import 'package:tiler_app/data/repetitionFrequency.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// The rows the Repeat picker offers, in display order.
-enum RepeatOption { doesNotRepeat, daily, weekdays, weekly, monthly, yearly }
-
-/// Mon-Fri, 0-based from Sunday (D25). The Weekdays preset is exactly this
-/// set — no more, no less.
-const Set<int> weekdayPresetDays = <int>{1, 2, 3, 4, 5};
+enum RepeatOption { doesNotRepeat, daily, weekly, monthly, yearly }
 
 /// Label functions take [AppLocalizations] rather than reading it from a
 /// `BuildContext`, so they stay pure, stay unit-testable without pumping a
@@ -36,8 +32,7 @@ String repeatOptionLabel(AppLocalizations l10n, RepeatOption option) {
       return l10n.addTileRepeatNever;
     case RepeatOption.daily:
       return l10n.daily;
-    case RepeatOption.weekdays:
-      return l10n.addTileRepeatWeekdays;
+
     case RepeatOption.weekly:
       return l10n.weekly;
     case RepeatOption.monthly:
@@ -49,8 +44,7 @@ String repeatOptionLabel(AppLocalizations l10n, RepeatOption option) {
 
 /// Whether [option] has a day dimension at all. Chips are hidden for the rest,
 /// so a stale selection can never sit beside an option it means nothing for.
-bool optionHasDays(RepeatOption option) =>
-    option == RepeatOption.weekdays || option == RepeatOption.weekly;
+bool optionHasDays(RepeatOption option) => option == RepeatOption.weekly;
 
 // NOTE: there is deliberately no `optionDaysAreEditable`. An earlier revision
 // made the Weekdays chips read-only, which on device read as "cannot unselect
@@ -124,10 +118,7 @@ RepeatOption repeatOptionOf(RepetitionData? repetition) {
     case RepetitionFrequency.daily:
       return RepeatOption.daily;
     case RepetitionFrequency.weekly:
-      final Set<int> days = repetition.weeklyRepetition ?? const <int>{};
-      return _sameDays(days, weekdayPresetDays)
-          ? RepeatOption.weekdays
-          : RepeatOption.weekly;
+      return RepeatOption.weekly;
     case RepetitionFrequency.monthly:
       return RepeatOption.monthly;
     case RepetitionFrequency.yearly:
@@ -136,9 +127,6 @@ RepeatOption repeatOptionOf(RepetitionData? repetition) {
       return RepeatOption.doesNotRepeat;
   }
 }
-
-bool _sameDays(Set<int> a, Set<int> b) =>
-    a.length == b.length && a.containsAll(b);
 
 /// Builds the [RepetitionData] for a chosen row.
 ///
@@ -158,7 +146,6 @@ RepetitionData? buildRepetition({
 
   final RepetitionFrequency frequency = switch (option) {
     RepeatOption.daily => RepetitionFrequency.daily,
-    RepeatOption.weekdays => RepetitionFrequency.weekly,
     RepeatOption.weekly => RepetitionFrequency.weekly,
     RepeatOption.monthly => RepetitionFrequency.monthly,
     RepeatOption.yearly => RepetitionFrequency.yearly,
@@ -166,7 +153,6 @@ RepetitionData? buildRepetition({
   };
 
   final Set<int> effectiveDays = switch (option) {
-    RepeatOption.weekdays => Set<int>.from(weekdayPresetDays),
     RepeatOption.weekly => Set<int>.from(days),
     _ => <int>{},
   };

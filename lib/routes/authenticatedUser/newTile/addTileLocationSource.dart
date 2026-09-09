@@ -5,6 +5,7 @@
 // the other formed a cycle, which on a case-insensitive filesystem surfaced as
 // the same class appearing to come from two differently-cased paths.
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
 import 'package:tiler_app/services/api/locationApi.dart';
 
 /// The data this screen needs, behind an interface so widget tests never
@@ -44,10 +45,12 @@ class ApiAddTileLocationSource implements AddTileLocationSource {
       _byNickName(Location.homeLocationNickName),
       _byNickName(Location.workLocationNickName),
     ]);
-    return resolved
-        .whereType<Location>()
-        .where((l) => l.isNotNullAndNotDefault)
-        .toList();
+    // Filtered on CONTENT, not on `isNotNullAndNotDefault` (D53). Home and
+    // work are by definition DEFAULT places, so that predicate excluded
+    // exactly the two entries this list exists to show whenever the server
+    // reported them as such. An unset slot has no name and no address, so
+    // content still drops it.
+    return resolved.whereType<Location>().where(locationHasContent).toList();
   }
 
   Future<Location?> _byNickName(String nickName) async {

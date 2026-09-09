@@ -5526,12 +5526,6 @@ abstract class AppLocalizations {
   /// **'Does not repeat'**
   String get addTileRepeatNever;
 
-  /// No description provided for @addTileRepeatWeekdays.
-  ///
-  /// In en, this message translates to:
-  /// **'Weekdays'**
-  String get addTileRepeatWeekdays;
-
   /// No description provided for @addTileRepeatDays.
   ///
   /// In en, this message translates to:

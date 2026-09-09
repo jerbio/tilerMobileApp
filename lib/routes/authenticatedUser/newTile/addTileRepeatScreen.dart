@@ -74,41 +74,23 @@ class _AddTileRepeatScreenState extends State<AddTileRepeatScreen> {
       );
 
   void _selectOption(RepeatOption option) {
-    setState(() {
-      _option = option;
-      // Switching to Weekly with nothing chosen would send an empty day set,
-      // so seed it from the preset — the user can then edit it down.
-      if (option == RepeatOption.weekly && _days.isEmpty) {
-        _days = Set<int>.from(weekdayPresetDays);
-      }
-    });
+    // No seeding (D52). Weekly starts with NO days chosen, and an empty
+    // selection is a real answer — it ships a weekly repetition with no
+    // `RepeatWeeklyData`, letting the backend decide the day. Pre-ticking
+    // Mon-Fri put five choices in the payload the user never made.
+    setState(() => _option = option);
   }
 
   void _toggleDay(int index) {
     if (!optionHasDays(_option)) return;
     setState(() {
-      // Editing the Weekdays preset drops to Weekly rather than doing nothing.
-      // The chips used to be inert here, which read on device as "cannot
-      // unselect the week days" — a preset should be a shortcut, not a dead
-      // end, and a customised selection is by definition no longer "weekdays".
-      if (_option == RepeatOption.weekdays) {
-        _days = Set<int>.from(weekdayPresetDays);
-        _option = RepeatOption.weekly;
-      }
+      // Every chip toggles freely, including the last one. Emptying the set
+      // is not a broken state: it means "weekly, no particular day", which
+      // is what the payload carries when `RepeatWeeklyData` is absent (D52).
       if (_days.contains(index)) {
-        // Never leave Weekly with no days at all: an empty set would ship as
-        // a weekly repetition that never occurs.
-        if (_days.length > 1) _days.remove(index);
+        _days.remove(index);
       } else {
         _days.add(index);
-      }
-      // Landing back on exactly Mon-Fri is the preset again, so the row
-      // follows the selection rather than stranding the user on Weekly.
-      if (_option == RepeatOption.weekly &&
-          repeatOptionOf(buildRepetition(
-                  option: RepeatOption.weekly, days: _days, now: widget.now)) ==
-              RepeatOption.weekdays) {
-        _option = RepeatOption.weekdays;
       }
     });
   }
@@ -176,9 +158,7 @@ class _AddTileRepeatScreenState extends State<AddTileRepeatScreen> {
                   const SizedBox(height: 14),
                   _DaysSection(
                     key: const ValueKey('repeatDaysSection'),
-                    days: _option == RepeatOption.weekdays
-                        ? weekdayPresetDays
-                        : _days,
+                    days: _days,
                     // Always editable now: touching a Weekdays chip drops to
                     // Weekly and applies the edit, so no chip is ever inert.
                     editable: true,

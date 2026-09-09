@@ -818,7 +818,6 @@
     "addTileDurationHoursMinutes": "{hours} h {minutes} min",
     "addTileRepeat": "Repetir",
     "addTileRepeatNever": "No se repite",
-    "addTileRepeatWeekdays": "Días laborables",
     "addTileRepeatDays": "DÍAS",
     "addTileRepeatsUntil": "SE REPITE HASTA",
     "addTileRepeatHelper": "Repetir ayuda a Tiler a programar tareas recurrentes.",
