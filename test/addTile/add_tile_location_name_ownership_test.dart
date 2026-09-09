@@ -18,6 +18,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tiler_app/data/location.dart';
 import 'package:tiler_app/data/request/NewTile.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileLocationScreen.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTilePlaceEditor.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/locationOwnership.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/newTileRequestMapper.dart';
 
@@ -103,7 +105,9 @@ void main() {
       expect(tile.LocationTag, isNull,
           reason: 'a provider business name is not the user\'s place name');
       expect(tile.LocationAddress, 'walmart supercenter 745 us-287, lafayette');
-      expect(tile.LocationId, 'ChIJ8Q3uS38fU4gR4XvGNU2LRm8');
+      expect(tile.LocationId, isNull,
+          reason: 'a provider pick\'s id is a thirdPartyId, not a Tiler '
+              'record id, so it means nothing in LocationId (D54)');
       expect(tile.LocationSource, 'google');
       expect(tile.LocationIsVerified, 'true');
     });
@@ -112,6 +116,58 @@ void main() {
       final tile = mapWith(userPlace('Walmart near work', '745 us-287'));
       expect(tile.LocationTag, 'Walmart near work');
       expect(tile.LocationAddress, '745 us-287');
+    });
+
+    test('a renamed provider address DOES ship the name (D54)', () {
+      // The case the captured web payload exposed: LocationSource 'google'
+      // alongside LocationTag 'work'. `source` reports where the ADDRESS came
+      // from and says nothing about who authored the NAME, so gating the tag
+      // on it alone silently dropped every nickname the user gave a
+      // Google-resolved address — the whole point of D19.
+      final Location place = providerPlace(
+          'Walmart Supercenter', '66 s logan st, denver, co 80209, usa');
+      applyLocationName(place, 'work');
+
+      final tile = mapWith(place);
+      expect(tile.LocationTag, 'work');
+      expect(tile.LocationAddress, '66 s logan st, denver, co 80209, usa');
+      expect(tile.LocationSource, 'google',
+          reason: 'the address still came from the provider');
+    });
+
+    test('a renamed place ships no LocationId (D54)', () {
+      // The record no longer matches what is being sent, so the backend
+      // should upsert by name rather than mutate the old row.
+      final Location place = userPlace('Old name', '745 us-287');
+      place.id = 'tiler-guid';
+      applyLocationName(place, 'New name');
+
+      expect(mapWith(place).LocationId, isNull);
+    });
+
+    test('an untouched saved place ships its LocationId (D54)', () {
+      final Location place = userPlace('work', '745 us-287');
+      place.id = 'tiler-guid';
+
+      expect(mapWith(place).LocationId, 'tiler-guid');
+    });
+
+    test('editing the address makes the source the USER (D54)', () {
+      // `source` informs the backend of the address's origin. Once the user
+      // types one, that origin is no longer the provider.
+      final Location place = providerPlace('Walmart', 'old address');
+      final Location edited = buildEditedPlace(
+        name: 'Walmart near work',
+        address: '745 us-287',
+        original: place,
+      );
+
+      final tile = mapWith(edited);
+      expect(tile.LocationSource, 'none');
+      expect(tile.LocationAddress, '745 us-287');
+      expect(tile.LocationTag, 'Walmart near work');
+      expect(tile.LocationId, isNull,
+          reason: 'an edited address is a different place');
     });
 
     test('two same-brand stores no longer collide', () {

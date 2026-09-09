@@ -61,17 +61,23 @@ void main() {
       expect(tile.Priority, 'medium');
       expect(tile.Count, '1');
       expect(tile.ColorSelection, '-1');
-      // BASELINE QUIRK (documented finding): the widget initializes _location to
-      // Location.fromDefault(), which is NON-NULL. Location.fromDefault() sets
-      // isDefault/latitude but NOT id/address/description/source/isVerified, so
-      // the ghost location emits all-null location content and the STRING "null"
-      // for LocationIsVerified. The current code therefore always sends
-      // LocationIsVerified='null' even when the user never picks a location.
+      // BASELINE QUIRK, now FIXED (D55). The widget initializes _location to
+      // Location.fromDefault(), which is NON-NULL but carries no address,
+      // name, id or source. Legacy still walked the location branch for it and
+      // emitted the literal STRING "null" for LocationIsVerified on every
+      // tile where the user never picked a location.
+      //
+      // The mapper now skips the branch entirely when a location has no
+      // content, which is the backend's own contract — both address and tag
+      // absent means a null location. DELIBERATE DIVERGENCE from legacy,
+      // recorded here rather than preserved: "null" as a value is not a
+      // behaviour worth keeping bug-compatible.
       expect(tile.LocationAddress, isNull);
       expect(tile.LocationTag, isNull);
       expect(tile.LocationSource, isNull);
-      expect(tile.LocationId, isNull); // ghost location carries no id
-      expect(tile.LocationIsVerified, 'null'); // string "null", always sent
+      expect(tile.LocationId, isNull);
+      expect(tile.LocationIsVerified, isNull,
+          reason: 'legacy sent the string "null" here');
       expect(tile.RestrictionProfileId, isNull);
     });
 

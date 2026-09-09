@@ -54,8 +54,19 @@ Location buildEditedPlace({
 
   result.description = trimmedName;
   result.address = trimmedAddress;
-  if (nameChanged) result.id = '';
-  if (addressChanged || original == null) result.isVerified = false;
+  if (nameChanged) {
+    result.id = '';
+    result.userRenamed = true;
+  }
+  if (addressChanged || original == null) {
+    result.isVerified = false;
+    result.userEditedAddress = true;
+    // `source` reports where the ADDRESS came from. Once the user has typed
+    // it, that origin is the user — not the provider that supplied whatever
+    // was there before (D54).
+    result.source = 'none';
+    result.id = '';
+  }
   if (trimmedName.isNotEmpty || trimmedAddress.isNotEmpty) {
     result.isDefault = false;
     result.isNull = false;

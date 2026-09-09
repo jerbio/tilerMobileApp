@@ -62,6 +62,8 @@ Location applyLocationName(Location location, String name) {
   if (trimmed == (location.description ?? '').trim()) return location;
   location.description = trimmed;
   location.id = '';
+  // The name is now the user's, whatever the address's origin (D54).
+  location.userRenamed = true;
   if (trimmed.isNotEmpty) {
     location.isDefault = false;
     location.isNull = false;

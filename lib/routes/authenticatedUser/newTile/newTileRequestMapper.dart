@@ -154,24 +154,60 @@ class NewTileRequestMapper {
 
     tile.ColorSelection = (-1).toString();
 
-    if (d.location != null) {
-      tile.LocationAddress = d.location!.address;
+    // A location with neither a name nor an address is NOT a location, so
+    // nothing location-shaped is sent for it (D55). That is the backend's own
+    // contract — both fields absent means a null location — and it is
+    // reachable from the UI by clearing the name of a place that never had an
+    // address.
+    if (d.location != null && locationHasContent(d.location)) {
+      // Empty strings are PRESENT on the wire, which is not the same as
+      // absent: the backend copies whichever field is supplied into the other
+      // and upserts places by name, so a blank tag would create a place
+      // called "". Deleting the name in the editor used to do exactly that.
+      final String tag = (d.location!.description ?? '').trim();
+      final String address = (d.location!.address ?? '').trim();
+
+      if (address.isNotEmpty) {
+        tile.LocationAddress = address;
+      }
       // `LocationTag` IS the backend Name, and the backend upserts places by
       // name (D20). Shipping a provider's business name therefore makes every
       // "Walmart Supercenter" overwrite the last one, leaving a single saved
       // place pointing at whichever branch was used most recently.
       //
-      // So the name is sent only when it is the USER'S. A provider pick ships
-      // its address and identifiers instead, and the backend derives the name
-      // from the address — unique per store, and readable, because provider
-      // addresses already embed the business name.
+      // So the name is sent when it is the USER'S — which is true either
+      // because the place is not provider-sourced, OR because the user
+      // renamed it. D20 tested only the first and dropped the second: a
+      // Google-resolved address given a nickname in the place editor lost
+      // that nickname entirely, which is exactly the flow D19 exists for.
+      // The web client sends the tag in that case (captured payload,
+      // 2026-09-09) and so do we now (D54).
       //
       // DELIBERATE DIVERGENCE from the legacy mapping, which sent the tag
       // unconditionally. Encoded in add_tile_location_name_ownership_test.dart.
-      if (locationNameIsUserOwned(d.location!)) {
-        tile.LocationTag = d.location!.description;
+      if (tag.isNotEmpty &&
+          (locationNameIsUserOwned(d.location!) || d.location!.userRenamed)) {
+        tile.LocationTag = tag;
       }
-      tile.LocationId = d.location!.id;
+
+      // `LocationId` identifies a TILER record to update. It is sent only
+      // when there is one and it still describes what is being sent:
+      //
+      //   * a provider pick's `id` is a `thirdPartyId`, not a Tiler id, so it
+      //     would be meaningless here;
+      //   * once the user edits the name or the address, the record no longer
+      //     matches what is being sent, and the backend should upsert by name
+      //     rather than mutate the old row.
+      //
+      // Legacy sent it unconditionally (D54).
+      if (!locationIsProviderSourced(d.location!) &&
+          !d.location!.userRenamed &&
+          !d.location!.userEditedAddress) {
+        tile.LocationId = d.location!.id;
+      }
+
+      // `source` reports where the ADDRESS came from; the place editor sets
+      // it to 'none' when the user types one (D54).
       tile.LocationSource = d.location!.source;
       tile.LocationIsVerified = d.location!.isVerified.toString();
     }

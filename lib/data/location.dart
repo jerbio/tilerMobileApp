@@ -18,6 +18,23 @@ class Location extends TilerObj {
   String? source;
   String? thirdPartyId;
 
+  /// CLIENT-SIDE ONLY: the user renamed this place during this edit.
+  ///
+  /// Describes an INTERACTION, not the record, so it is deliberately absent
+  /// from [toJson] and from [Location.fromJson] — a location read back from
+  /// the server has, by definition, not just been edited by anyone.
+  ///
+  /// The request mapper needs it because `source` reports where the ADDRESS
+  /// came from and says nothing about who authored the NAME: a user can type
+  /// their own nickname for an address Google resolved (D54).
+  bool userRenamed = false;
+
+  /// CLIENT-SIDE ONLY: the user typed or changed this place's address.
+  ///
+  /// When true the address no longer originates from the provider, so
+  /// [source] is set to `'none'` at the point of editing.
+  bool userEditedAddress = false;
+
   bool get isNotNullAndNotDefault {
     if (isNull != null && isDefault != null) {
       return !isNull! && !isDefault!;
