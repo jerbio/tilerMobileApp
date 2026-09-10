@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
+import 'package:tiler_app/components/tilelist/dailyView/components/daySummaryHeader.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStrip.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
@@ -93,6 +95,17 @@ class DayGridPage extends StatelessWidget {
       final parityTiles = gridTiles(tiles);
       return Column(
         children: [
+          // C17: the grid-mode day-summary entry point. Today's day-page only
+          // mounts the (unmodified) [DaySummaryHeader] list mode surfaces, so
+          // tapping it opens TodayStatusScreen from grid mode too — same
+          // TimelineSummary / ScheduleSummaryBloc pipeline. Other days get
+          // no header (the "show it on every day" case is a separate,
+          // deferred decision).
+          if (dayIndex == Utility.currentTime().universalDayIndex)
+            DaySummaryHeader(
+              date: Utility.getTimeFromIndex(dayIndex),
+              dayData: TimelineSummary()..dayIndex = dayIndex,
+            ),
           // Compact alert strip — the list-mode detectors
           // surfaced as a condensed chip row above the grid.
           DayGridBannerStrip(tiles: tiles),

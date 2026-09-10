@@ -42,6 +42,12 @@ class GridDailyPageBody extends StatelessWidget {
   /// list.
   final Widget Function(double maxHeight)? gridBodyBuilder;
 
+  /// Seam for the day-label date picker, passed through to
+  /// [DayGridTopChromeRow]. When non-null it is called instead of Flutter's
+  /// built-in `showDatePicker`, so tests drive a mocked picker and never need
+  /// the real platform dialog.
+  final DayGridDatePicker? pickDate;
+
   const GridDailyPageBody({
     super.key,
     required this.currentDate,
@@ -49,6 +55,7 @@ class GridDailyPageBody extends StatelessWidget {
     required this.onSettings,
     required this.onGoToToday,
     this.gridBodyBuilder,
+    this.pickDate,
   });
 
   @override
@@ -63,6 +70,28 @@ class GridDailyPageBody extends StatelessWidget {
         onDayGridLayoutToggle: () => context
             .read<DailyViewLayoutCubit>()
             .toggle(dayIndex: currentDate.universalDayIndex),
+        pickDate: pickDate,
+        onDateSelected: (pickedDate) {
+          // C16: dispatch the picked day through UiDateManagerBloc, mirroring
+          // DayRibbonCarousel.onDateButtonTapped — same DateChangeEvent /
+          // DateChangeTrigger.buttonPress, guarded on the day actually
+          // changing. previousSelectedDate is the bloc's current date (the
+          // canonical shown day), falling back to the grid's currentDate.
+          final uiDateManagerBloc = context.read<UiDateManagerBloc>();
+          DateTime previousDate = currentDate;
+          final currentState = uiDateManagerBloc.state;
+          if (currentState is UiDateManagerUpdated) {
+            previousDate = currentState.currentDate;
+          }
+          if (pickedDate.millisecondsSinceEpoch !=
+              previousDate.millisecondsSinceEpoch) {
+            uiDateManagerBloc.add(DateChangeEvent(
+              previousSelectedDate: previousDate,
+              selectedDate: pickedDate,
+              dateChangeTrigger: DateChangeTrigger.buttonPress,
+            ));
+          }
+        },
       ),
       _DailyRibbonInFlow(),
       Expanded(
