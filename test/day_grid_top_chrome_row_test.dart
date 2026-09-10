@@ -1,11 +1,11 @@
 // day_grid_top_chrome_row_test.dart
 //
-// P5 Step 15.2: DayGridTopChromeRow is the new grid-mode top chrome row
-// (design §14.3 + §14.7/C16) — a leading, tappable day label
+// DayGridTopChromeRow is the grid-mode top chrome row —
+// a leading, tappable day label
 // (DateTimeHuman.humanDate) plus the shared HomeTopRightActionsRow trailing
 // icon cluster, laid out in-flow (no Stack/Positioned). It is built and tested
-// in ISOLATION: it is not yet referenced by AuthorizedRoute (Step 15.3) and it
-// knows nothing about UiDateManagerBloc (Step 15.4). The day label opens a
+// in ISOLATION: it is not yet referenced by AuthorizedRoute and it
+// knows nothing about UiDateManagerBloc. The day label opens a
 // date picker through an injectable seam (pickDate) so these tests never need
 // the real platform dialog.
 
@@ -194,7 +194,7 @@ void main() {
     });
   });
 
-  group('DayGridTopChromeRow — date-picker seam (C16)', () {
+  group('DayGridTopChromeRow — date-picker seam', () {
     testWidgets(
         'tapping the label opens the picker with the shown date as initialDate',
         (tester) async {
@@ -287,8 +287,7 @@ void main() {
       }
 
       // onDateSelected intentionally left null: the row must still open the
-      // picker and simply have nowhere to report the result (Step 15.4 wires
-      // it up). This must not throw.
+      // picker and simply have nowhere to report the result. This must not throw.
       await tester.pumpWidget(_wrap(_chrome(currentDate: shown, pickDate: mockPickDate)));
       await tester.pump();
 

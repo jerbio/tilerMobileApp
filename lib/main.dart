@@ -176,7 +176,7 @@ class _TilerAppState extends State<TilerApp> {
                   })),
           BlocProvider(create: (context) => WeeklyUiDateManagerBloc()),
           BlocProvider(create: (context) => MonthlyUiDateManagerBloc()),
-          // P1 (step 1.5): Daily-view list/grid layout (restored + persisted).
+          // Daily-view list/grid layout (restored + persisted).
           BlocProvider(create: (context) => DailyViewLayoutCubit()),
           BlocProvider(
               create: (context) => PreviewSummaryBloc(getContextCallBack: () {

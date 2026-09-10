@@ -340,7 +340,7 @@ class _EnhancedTileCardState extends State<EnhancedTileCard> {
     final isCurrent = widget.subEvent.isCurrentTimeWithin;
     final isPaused = widget.subEvent.isPaused ?? false;
 
-    // Temporal orientation (P2/P3): mute cards whose occurrence has already
+    // Temporal orientation: mute cards whose occurrence has already
     // ended so active/upcoming work stands out. Editing stays available via
     // the existing whole-card tap, so no extra affordance is added.
     final bool isPastTile = resolveTileTemporalState(

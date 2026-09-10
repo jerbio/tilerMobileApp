@@ -19,11 +19,11 @@ class DayRibbonCarousel extends StatefulWidget {
   Function? onDateChange;
   final bool preview;
 
-  /// P5 Step 15.1: the top margin baked into this widget's overlay layout.
+  /// The top margin baked into this widget's overlay layout.
   /// The default (50) matches the value every existing overlay call site
   /// (list/Weekly/Monthly, via AuthorizedRoute) has always relied on, so
-  /// those call sites are pixel-identical. Grid mode (Step 15.3) passes its
-  /// own value so the Column composition doesn't double-reserve this inset.
+  /// those call sites are pixel-identical. Grid mode passes its own value so
+  /// the Column composition doesn't double-reserve this inset.
   final double topMargin;
   DayRibbonCarousel(DateTime? initialDate,
       {this.onDateChange,

@@ -1,8 +1,8 @@
 // home_top_right_actions_test.dart
 //
-// P5 Step 15.1: extracts the icon Row out of the overlay-only
+// Extracts the icon Row out of the overlay-only
 // HomeTopRightActions into a reusable, non-Positioned HomeTopRightActionsRow
-// so the grid-mode DayGridTopChromeRow (Step 15.2) can reuse the same icon
+// so the grid-mode DayGridTopChromeRow can reuse the same icon
 // logic. These tests pin that the extracted row is standalone (no Stack or
 // Positioned ancestor required) and behaves identically to what
 // HomeTopRightActions rendered before the extraction; the legacy

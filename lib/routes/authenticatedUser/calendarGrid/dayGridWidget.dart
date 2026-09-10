@@ -1232,7 +1232,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
       ..startTime = seed.start
       ..endTime = seed.end
       // Preserve the parent calendar-event window — only Start/End move.
-      // No usable parent window: hard pin the snapped slot (C5).
+      // No usable parent window: hard pin the snapped slot.
       ..calStartTime =
           hasParentWindow ? tile.calendarEventStartTime! : seed.start
       ..calEndTime = hasParentWindow ? tile.calendarEventEndTime! : seed.end

@@ -160,14 +160,14 @@ void main() {
           isNull);
     });
 
-    test('30-minute ticks between the thin and the C4 fine-snap thresholds',
+    test('30-minute ticks between the thin and the fine-snap thresholds',
         () {
       expect(DayGridWidget.gutterTickIntervalMinutes(64), 30);
       expect(DayGridWidget.gutterTickIntervalMinutes(80), 30);
       expect(DayGridWidget.gutterTickIntervalMinutes(159.9), 30);
     });
 
-    test('15-minute ticks at/above the C4 fine-snap threshold (160)', () {
+    test('15-minute ticks at/above the fine-snap threshold (160)', () {
       expect(DayGridWidget.gutterTickIntervalMinutes(160), 15);
       expect(DayGridWidget.gutterTickIntervalMinutes(240), 15);
     });
@@ -179,7 +179,7 @@ void main() {
           TileGridWidgetState.tileContentCollapsed(
               TileGridWidgetState.collapsedTileHeight - 0.1),
           isTrue);
-      // The 20-min minimum height at the C8 floor zoom (40 px/h = 13.33px).
+      // The 20-min minimum height at the floor zoom (40 px/h = 13.33px).
       expect(TileGridWidgetState.tileContentCollapsed(13.33), isTrue);
     });
 

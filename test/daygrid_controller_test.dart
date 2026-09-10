@@ -7,7 +7,7 @@ void main() {
       final controller = DayGridController();
       expect(controller.pxPerHour, 80);
       expect(controller.mode, DayGridMode.idle);
-      // C4: seeded at 15 min for the default zoom.
+      // Seeded at 15 min for the default zoom.
       expect(controller.snapInterval, const Duration(minutes: 15));
       expect(controller.hasExplicitZoom, isFalse);
       controller.dispose();

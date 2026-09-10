@@ -132,11 +132,11 @@ void main() {
       expect(DayGridController.settlePxPerHour(82), 80); // 80 is nearer
     });
 
-    test('clamps below the C8 minimum to 40', () {
+    test('clamps below the minimum to 40', () {
       expect(DayGridController.settlePxPerHour(10), 40);
     });
 
-    test('clamps above the C8 maximum to 240', () {
+    test('clamps above the maximum to 240', () {
       expect(DayGridController.settlePxPerHour(999), 240);
     });
   });

@@ -3,10 +3,10 @@ import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/util.dart';
 
-/// C9: the user's Daily-view layout choice (list or grid), restored from
+/// The user's Daily-view layout choice (list or grid), restored from
 /// [DayGridPreferences] on construction and persisted on every toggle.
 ///
-/// Logging (step 1.5): restore logs stored-vs-default; every toggle emits
+/// Logging: restore logs stored-vs-default; every toggle emits
 /// the `daygrid_layout_toggled` analytics tag with the new layout and the
 /// day index the toggle happened on.
 class DailyViewLayoutCubit extends Cubit<DailyViewLayout> {

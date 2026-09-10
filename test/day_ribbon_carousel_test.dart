@@ -1,10 +1,10 @@
 // day_ribbon_carousel_test.dart
 //
-// P5 Step 15.1: DayRibbonCarousel currently bakes a fixed 50px top margin into
+// DayRibbonCarousel currently bakes a fixed 50px top margin into
 // its overlay layout (AuthorizedRoute renders it on top of the day view's
-// Stack). Grid mode (P5) needs the ribbon in-flow inside a Column, where that
-// margin must be reducible. This step adds a `topMargin` parameter defaulting
-// to `50` so every existing overlay call site is pixel-identical; these tests
+// Stack). Grid mode needs the ribbon in-flow inside a Column, where that
+// margin must be reducible. A `topMargin` parameter defaulting
+// to `50` keeps every existing overlay call site pixel-identical; these tests
 // pin the default and the override.
 
 import 'package:flutter/material.dart';

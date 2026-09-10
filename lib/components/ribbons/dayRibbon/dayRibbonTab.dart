@@ -1,4 +1,4 @@
-// DayGrid P1 step 1.7 (C2) — today's day ribbon becomes a collapsed
+// Today's day ribbon becomes a collapsed
 // tap-to-expand tab instead of the hard hide (SizedBox.shrink) that
 // AuthorizedRoute._ribbonCarousel applied when viewing today.
 //
@@ -24,8 +24,7 @@ import 'package:tiler_app/theme/tile_theme_extension.dart';
 /// it (in the app the ribbon is a Stack overlay and never pushes content).
 const double _expandedRibbonHeight = 180;
 
-/// Collapsed tap-to-expand wrapper around [DayRibbonCarousel] for today
-/// (step 1.7, C2).
+/// Collapsed tap-to-expand wrapper around [DayRibbonCarousel] for today.
 class DayRibbonTab extends StatefulWidget {
   /// The date the ribbon should anchor on — today, per the parent contract.
   final DateTime dayRibbonDate;

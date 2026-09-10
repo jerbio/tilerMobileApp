@@ -6,7 +6,7 @@ import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/util.dart';
 
 /// Signature of the injectable date-picker seam used by
-/// [DayGridTopChromeRow] (C16, §14.7). Mirrors the relevant parameters of
+/// [DayGridTopChromeRow]. Mirrors the relevant parameters of
 /// Flutter's built-in `showDatePicker`: it receives the context plus the
 /// initial / first / last dates and returns the picked date, or null when the
 /// user cancels.
@@ -17,7 +17,7 @@ typedef DayGridDatePicker = Future<DateTime?> Function(
   required DateTime lastDate,
 });
 
-/// Grid-mode top chrome row (P5 Step 15.2, design §14.3 + §14.7/C16).
+/// Grid-mode top chrome row.
 ///
 /// Leading: the currently-selected day, rendered via
 /// [DateTimeHuman.humanDate] (Today / Tomorrow / Yesterday / a localized date).
@@ -26,14 +26,14 @@ typedef DayGridDatePicker = Future<DateTime?> Function(
 /// [HomeTopRightActions] overlay shows, now laid out in-flow rather than as a
 /// [Positioned] Stack overlay.
 ///
-/// The day label is tappable (C16): tapping it opens a date picker so the user
+/// The day label is tappable: tapping it opens a date picker so the user
 /// can jump to an arbitrary date, not just the days visible in the ribbon/tab
 /// window or "today". On a confirmed selection the row calls [onDateSelected]
 /// with the picked date; cancelling (a null result) invokes nothing.
 ///
-/// This widget deliberately knows nothing about `UiDateManagerBloc` — that
-/// wiring is added in Step 15.4 so the row stays testable in isolation (it is
-/// also not yet referenced by `AuthorizedRoute`, which is Step 15.3).
+/// This widget deliberately knows nothing about `UiDateManagerBloc` — the
+/// date-picker wiring is injected via [onDateSelected], so the row stays
+/// testable in isolation.
 class DayGridTopChromeRow extends StatelessWidget {
   /// Spotlight / test key for the tappable day label.
   static const Key dayLabelKey = ValueKey('dayGridTopChromeDayLabel');
@@ -53,10 +53,10 @@ class DayGridTopChromeRow extends StatelessWidget {
 
   /// Invoked with the picked date when the user confirms a date in the picker.
   /// NOT invoked when the user cancels (null result). Wired to
-  /// `UiDateManagerBloc` in Step 15.4.
+  /// `UiDateManagerBloc` by its parent.
   final ValueChanged<DateTime>? onDateSelected;
 
-  /// Seam for the date-picker dialog (C16). When non-null it is called instead
+  /// Seam for the date-picker dialog. When non-null it is called instead
   /// of Flutter's built-in `showDatePicker`, so tests never need the real
   /// platform dialog.
   final DayGridDatePicker? pickDate;
@@ -73,7 +73,7 @@ class DayGridTopChromeRow extends StatelessWidget {
     this.pickDate,
   });
 
-  /// Tappable day-label handler (C16): opens the date picker and, on a
+  /// Tappable day-label handler: opens the date picker and, on a
   /// confirmed selection, reports the picked date via [onDateSelected].
   Future<void> _onDayLabelTapped(BuildContext context) async {
     AnalysticsSignal.send(
@@ -81,7 +81,7 @@ class DayGridTopChromeRow extends StatelessWidget {
       additionalInfo: {'dayIndex': currentDate.universalDayIndex},
     );
 
-    // §14.7: the codebase has no single shared min/max for showDatePicker
+    // The codebase has no single shared min/max for showDatePicker
     // (existing call sites range from ±180 days to ±999999 days). Default to a
     // generous multi-year window centred on the shown day so the initial date
     // is always in range and the user can jump to (nearly) any date.

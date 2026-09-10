@@ -32,7 +32,15 @@ DateTime? endOfDayDateTimeFor(DateTime day, TimeOfDay? timeOfDay) {
 
 class DailyTileList extends TileList {
   static final String routeName = '/DailyTileList';
-  DailyTileList({Key? key}) : super(key: key);
+
+  /// The viewport height the day carousel should claim. When
+  /// non-null (grid mode, hosted inside a bounded `Expanded` region) the caller
+  /// passes that region's height so the `CarouselSlider` doesn't claim the
+  /// full screen and overflow the region. When null (the default — list mode
+  /// and every other caller) it keeps the existing full-screen height, so
+  /// existing call sites are byte-for-byte unchanged.
+  final double? carouselHeight;
+  DailyTileList({Key? key, this.carouselHeight}) : super(key: key);
 
   @override
   _DailyTileListState createState() => _DailyTileListState();
@@ -55,11 +63,11 @@ class _DailyTileListState extends TileListState {
   Map<String, ScheduleLoadedState> incrementalIdToMapping = {};
   int? carouselSliderIndex = null;
 
-  /// P2 (step 2.2): the carousel's *structural* signature — the day window +
+  /// The carousel's *structural* signature — the day window +
   /// current view day + forced-refresh counter. Used to keep [carouselKey]
   /// stable across pure schedule-data updates so the `CarouselSlider` (and
   /// every `DayGridWidget` inside it) is NOT remounted on every update. A
-  /// remount would wipe the grid's position-transition state (§6.6): a fresh
+  /// remount would wipe the grid's position-transition state: a fresh
   /// `DayGridWidget` has no "old position" to animate from, so tiles hard-cut
   /// to their new spots instead of sliding. The carousel is only remounted
   /// when this signature actually changes (day window / current day / refresh),
@@ -333,7 +341,7 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          // P1 (step 1.5): day pages are switchable (list | grid); the
+          // Day pages are switchable (list | grid); the
           // layout comes from DailyViewLayoutCubit.
           DayGridPage upcomingTileBatch = DayGridPage(
             dayIndex: dayIndex,
@@ -352,7 +360,7 @@ class _DailyTileListState extends TileListState {
           }
           var allTiles = tiles.toList();
           Key key = Key(dayIndex.toString());
-          // P1 (step 1.5): day pages are switchable (list | grid).
+          // Day pages are switchable (list | grid).
           DayGridPage precedingDayTileBatch = DayGridPage(
             dayIndex: dayIndex,
             key: key,
@@ -426,7 +434,7 @@ class _DailyTileListState extends TileListState {
     DateTime currentTime = Utility.currentTime();
     if (todayTiles.length > 0) {
       EnhancedWithinNowBatch todayBatch = processTodayTiles(todayTiles);
-      // P1 (step 1.5): today's page is switchable too; list mode keeps the
+      // Today's page is switchable too; list mode keeps the
       // within-now batch, grid mode renders the day grid.
       DayGridPage todayPage = DayGridPage(
         dayIndex: currentTime.universalDayIndex,
@@ -644,7 +652,11 @@ class _DailyTileListState extends TileListState {
         carouselController: tileListDayCarouselController,
         items: carouselItems,
         options: CarouselOptions(
-          height: MediaQuery.of(context).size.height,
+          // Honor the bounded grid-mode height when provided;
+          // otherwise keep the full-screen height so list-mode callers are
+          // unchanged.
+          height: (widget as DailyTileList).carouselHeight ??
+              MediaQuery.of(context).size.height,
           viewportFraction: 1,
           initialPage: initialCarouselIndex,
           enableInfiniteScroll: false,
@@ -889,11 +901,11 @@ class _DailyTileListState extends TileListState {
                   previousTimeline = state.previousLookupTimeline!;
                 }
                 if (statusId != null) {
-                  // P2 (step 2.2): keep the carousel key STABLE across pure
+                  // Keep the carousel key STABLE across pure
                   // schedule-data updates. The old code rebuilt it from the
                   // volatile `evaluationId` (which changes every update), which
                   // remounted the whole `CarouselSlider` and, with it, every
-                  // `DayGridWidget` — killing the §6.6 position transitions.
+                  // `DayGridWidget` — killing the position transitions.
                   // Only remount when the structure (visible day window,
                   // current view day, or a forced refresh) actually changed.
                   final int windowStart =

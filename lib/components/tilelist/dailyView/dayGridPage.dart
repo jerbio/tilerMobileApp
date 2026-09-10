@@ -10,7 +10,7 @@ import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.da
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/util.dart';
 
-/// One day page of the Daily carousel (P1, step 1.5).
+/// One day page of the Daily carousel.
 ///
 /// Renders the day either as the list view ([EnhancedTileBatch]) or the
 /// day grid ([DayGridWidget]) depending on [DailyViewLayoutCubit]. The grid
@@ -60,11 +60,11 @@ class DayGridPage extends StatelessWidget {
     return renderable;
   }
 
-  /// P2 (step 2.4, §6.7): preview (TileCast) grid input — same RSVP /
+  /// Preview (TileCast) grid input — same RSVP /
   /// declined parity filter as [gridTiles] but NON-VIABLE tiles are kept.
   /// TileCast surfaces non-viable placements so the user can see *why* the
   /// proposal conflicts; the grid renders them with non-viable styling
-  /// (contrast §6.1 parity filtering for the live grid).
+  /// (contrast the parity filtering used by the live grid).
   static List<SubCalendarEvent> previewGridTiles(List<TilerEvent> tiles) {
     final renderable = <SubCalendarEvent>[];
     for (final eachTile in tiles) {
@@ -93,10 +93,10 @@ class DayGridPage extends StatelessWidget {
       final parityTiles = gridTiles(tiles);
       return Column(
         children: [
-          // Step 1.7 (C3): compact alert strip — the list-mode detectors
+          // Compact alert strip — the list-mode detectors
           // surfaced as a condensed chip row above the grid.
           DayGridBannerStrip(tiles: tiles),
-          // Step 1.7 (C7): pinned >=16h / all-day tiles — excluded from
+          // Pinned >=16h / all-day tiles — excluded from
           // the grid timeline, kept visible here.
           DayGridPinnedHeader(tiles: parityTiles),
           // The grid fills the remaining height (the page is hosted in a
@@ -105,15 +105,15 @@ class DayGridPage extends StatelessWidget {
           Expanded(
             child: DayGridWidget(
               // Stable element identity: keeps the grid's enter/exit/position
-              // transition state (P2 2.2b) across rebuilds so an in-place
+              // transition state across rebuilds so an in-place
               // schedule update animates instead of remounting the whole grid.
               key: ValueKey<String>('daygrid_$dayIndex'),
               tiles: parityTiles,
-              // P2 (step 2.1): the page's calendar day, so an empty day can
+              // The page's calendar day, so an empty day can
               // still tap-to-add (the grid derives its own date only from
               // tiles, which is null on an empty day).
               day: Utility.getTimeFromIndex(dayIndex),
-              // P2 (step 2.2): scope the per-tile keys to this day so a tile
+              // Scope the per-tile keys to this day so a tile
               // never re-animates (flies) across a day-page swap.
               dayKey: 'day_$dayIndex',
             ),

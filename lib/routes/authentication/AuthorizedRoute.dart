@@ -31,6 +31,7 @@ import 'package:tiler_app/components/homeFab.dart';
 import 'package:tiler_app/components/homeBottomNav.dart';
 import 'package:tiler_app/components/calendarViewSwitcher/calendarViewSwitcherController.dart';
 import 'package:tiler_app/components/homeTopRightActions.dart';
+import 'package:tiler_app/components/dayGridPageBody.dart';
 import 'package:tiler_app/data/previewSummary.dart';
 import 'package:tiler_app/data/locationProfile.dart';
 import 'package:tiler_app/data/timeline.dart';
@@ -41,6 +42,7 @@ import 'package:tiler_app/services/accessManager.dart';
 import 'package:tiler_app/services/aiChatConsentGate.dart';
 import 'package:tiler_app/services/aiConsentPreferencesHelper.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
+import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/services/api/chatApi.dart';
 import 'package:tiler_app/services/api/previewApi.dart';
 import 'package:tiler_app/services/api/scheduleApi.dart';
@@ -470,6 +472,30 @@ class AuthorizedRouteState extends State<AuthorizedRoute>
                 currentViewDate = uiDateState.currentDate;
               }
               final bool isViewingToday = currentViewDate.isToday;
+
+              // In Daily + grid mode the top chrome is
+              // a real in-flow Column (day label + actions, then the ribbon,
+              // then the grid) instead of the legacy Stack overlay — so the
+              // grid's scroll viewport genuinely starts BELOW the chrome and
+              // never runs behind/under the day selector. Every other
+              // combination (list mode, Weekly, Monthly) keeps the exact
+              // pre-existing Stack below.
+              if (scheduleState.currentView ==
+                      AuthorizedRouteTileListPage.Daily &&
+                  context.watch<DailyViewLayoutCubit>().state ==
+                      DailyViewLayout.grid) {
+                return GridDailyPageBody(
+                  currentDate: currentViewDate,
+                  onSearch: _onSearchTap,
+                  onSettings: _onSettingsTap,
+                  onGoToToday: () {
+                    BlocProvider.of<UiDateManagerBloc>(context)
+                        .onDateButtonTapped(
+                      Utility.currentTime(minuteLimitAccuracy: false),
+                    );
+                  },
+                );
+              }
 
               return Stack(children: [
                 _buildTileList(scheduleState.currentView),
