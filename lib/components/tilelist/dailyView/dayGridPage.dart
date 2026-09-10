@@ -9,6 +9,7 @@ import 'package:tiler_app/data/timelineSummary.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStrip.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
+import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/util.dart';
 
@@ -88,6 +89,35 @@ class DayGridPage extends StatelessWidget {
     return renderable;
   }
 
+  /// C17 follow-up (§15.4 Logging): fires the `daygrid_summary_opened`
+  /// analytics tag when the grid-mode [DaySummaryHeader] is tapped (the
+  /// header itself is unmodified and shared with list mode — the tag is
+  /// attached at this grid-mode mount site only, so list mode's existing
+  /// tap stays untagged). [dayIndex] is the day the tap happened on
+  /// (analytics context, matches the `daygrid_*` payload convention).
+  /// Returns the debug line so the tag can be asserted headlessly.
+  ///
+  /// [summaryOpenTagFireCount] is a production-inert observable: the debug
+  /// line flows through the non-interceptable built-in `print` (via
+  /// `Utility.debugPrint`) and `AnalysticsSignal.send` is a no-op in this
+  /// build, so a test cannot observe the fire through those two channels. The
+  /// counter is the reliable seam a widget test increments on a REAL header
+  /// tap to prove the tag fires (not just that navigation still works). It is
+  /// never read or branched-on by any production UI logic.
+  static int summaryOpenTagFireCount = 0;
+
+  static String gridSummaryOpenTag(int dayIndex) {
+    summaryOpenTagFireCount++;
+    final String line =
+        'DayGrid:: daygrid_summary_opened (dayIndex: $dayIndex)';
+    Utility.debugPrint(line);
+    AnalysticsSignal.send(
+      'daygrid_summary_opened',
+      additionalInfo: {'dayIndex': dayIndex},
+    );
+    return line;
+  }
+
   @override
   Widget build(BuildContext context) {
     final layout = context.watch<DailyViewLayoutCubit>().state;
@@ -102,9 +132,18 @@ class DayGridPage extends StatelessWidget {
           // no header (the "show it on every day" case is a separate,
           // deferred decision).
           if (dayIndex == Utility.currentTime().universalDayIndex)
+            // onOpen (grid-mode-only) fires the daygrid_summary_opened tag from the
+            // header's OWN deepest tap recognizer, immediately before
+            // navigation — so the tag fires exactly once per real tap that
+            // also opens the summary (no arena ambiguity; no stray pointer-up
+            // overcounting the way an outer wrapper would). The shared
+            // [DaySummaryHeader] stays behaviour-identical for every other
+            // caller (list mode / preview) because onOpen is optional and
+            // null there.
             DaySummaryHeader(
               date: Utility.getTimeFromIndex(dayIndex),
               dayData: TimelineSummary()..dayIndex = dayIndex,
+              onOpen: () => gridSummaryOpenTag(dayIndex),
             ),
           // Compact alert strip — the list-mode detectors
           // surfaced as a condensed chip row above the grid.

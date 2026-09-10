@@ -185,4 +185,70 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  group('DayGridPage grid-mode summary-open tag (C17 follow-up, §15.4 Logging)', () {
+    test('gridSummaryOpenTag builds the daygrid_summary_opened tag + dayIndex payload', () {
+      final int todayIndex = Utility.currentTime().universalDayIndex;
+      final String line = DayGridPage.gridSummaryOpenTag(todayIndex);
+
+      expect(line, contains('daygrid_summary_opened'),
+          reason: 'the tag name must follow the daygrid_<area>_<event> scheme');
+      expect(line, contains('dayIndex: $todayIndex'),
+          reason: 'the analytics payload must carry the tapped day index');
+      expect(line, startsWith('DayGrid::'),
+          reason: 'debug lines carry the DayGrid:: prefix for grep-ability (§12.0)');
+    });
+
+    testWidgets(
+        'grid-mode header tap fires the daygrid_summary_opened tag AND navigates',
+        (tester) async {
+      // Proves the (grid-mode-only) tag actually FIRES on a REAL header tap —
+      // not just that navigation still works. The grid mount site passes
+      // onOpen to the shared [DaySummaryHeader], and the header calls it from
+      // its own deepest tap recognizer immediately before navigating — so the
+      // tag fires exactly once per real tap that also opens the summary (no
+      // arena ambiguity, no stray pointer-up overcounting). The tag's debug
+      // line flows through the non-interceptable built-in `print` and
+      // AnalysticsSignal.send is a no-op here, so the test observes the fire
+      // via [DayGridPage.summaryOpenTagFireCount] (reset first, then tapped).
+      final cubit = DailyViewLayoutCubit();
+      addTearDown(cubit.close);
+      final int todayIndex = Utility.currentTime().universalDayIndex;
+
+      await tester.pumpWidget(_buildApp(
+        cubit: cubit,
+        dayIndex: todayIndex,
+        tiles: _someTiles(Utility.currentTime()),
+      ));
+      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
+
+      expect(find.byType(DaySummaryHeader), findsOneWidget);
+
+      // The grid mount site must wire the tag into the header's onOpen seam.
+      expect(
+        tester.widget<DaySummaryHeader>(find.byType(DaySummaryHeader)).onOpen,
+        isNotNull,
+        reason:
+            'the grid mount site must pass onOpen so the header tap fires the tag',
+      );
+
+      DayGridPage.summaryOpenTagFireCount = 0;
+      await tester.tap(find.byType(DaySummaryHeader));
+      await tester.pump(); // route push -> TodayStatusScreen (loading)
+      await tester.pump(); // commit the pushed route into the tree
+
+      expect(
+        DayGridPage.summaryOpenTagFireCount,
+        1,
+        reason:
+            'a single real header tap must fire the daygrid_summary_opened tag once',
+      );
+
+      expect(find.byType(TodayStatusScreen), findsOneWidget,
+          reason:
+              'the tag listener must not block the header navigation tap');
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
