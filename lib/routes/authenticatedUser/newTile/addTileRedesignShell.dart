@@ -39,6 +39,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileSubmission.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
@@ -582,9 +583,18 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
   /// zero duration back: the CTA then failed validation with nothing on
   /// screen to explain why (D41).
   Future<void> _openDurationPicker() async {
+    // A Block's duration is measured from a start the user chose, so the
+    // picker shows and edits the resulting end (D61). Flexible has no
+    // fixed start — its `startTime` is the creation moment — so it gets a
+    // plain duration picker.
+    final DateTime? start =
+        _draft.type == AddTileType.fixed ? _draft.startTime : null;
     final Duration? picked = await Navigator.of(context).push<Duration>(
       MaterialPageRoute<Duration>(
-        builder: (_) => AddTileDurationScreen(initialDuration: _draft.duration),
+        builder: (_) => AddTileDurationScreen(
+          initialDuration: _draft.duration,
+          startTime: start,
+        ),
       ),
     );
     if (picked == null || !mounted || picked == _draft.duration) return;
@@ -949,15 +959,29 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
             // Blanket widgets rather than an `enabled` flag threaded to every
             // field: one statement cannot miss a control, including the ones
             // added later.
-            child: ExcludeFocus(
-              excluding: _submitting,
-              child: AbsorbPointer(
-                absorbing: _submitting,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: _buildFormArea(type),
+            child: Stack(
+              children: [
+                // While the name-driven prediction is in flight the WHOLE
+                // form sweeps, not the title row: the prediction fills
+                // duration, location and preferred time, so the page is
+                // what is about to change (D63).
+                if (_predicting)
+                  Positioned.fill(
+                    child: const AddTilePendingSweep(
+                      key: ValueKey('predictionShimmer'),
+                    ),
+                  ),
+                ExcludeFocus(
+                  excluding: _submitting,
+                  child: AbsorbPointer(
+                    absorbing: _submitting,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: _buildFormArea(type),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           // Persistent CTA, above the bottom safe area (the SafeArea inside
@@ -1007,7 +1031,6 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
         draft: _draft,
         nameController: _nameController,
         nameFocus: _nameFocus,
-        predicting: _predicting,
         nameError: _showValidationErrors && _draft.name.trim().isEmpty
             ? l10n.addTileNameRequired
             : null,
@@ -1028,7 +1051,6 @@ class _AddTileRedesignScreenState extends State<AddTileRedesignScreen> {
       draft: _draft,
       nameController: _nameController,
       nameFocus: _nameFocus,
-      predicting: _predicting,
       today: widget.now ?? DateTime.now(),
       nameError: _showValidationErrors && _draft.name.trim().isEmpty
           ? l10n.addTileTitleRequired

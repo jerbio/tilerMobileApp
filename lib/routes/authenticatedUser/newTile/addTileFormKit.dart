@@ -14,6 +14,7 @@
 // Colors come from the shared scheme and TodayStatusTokens, never from
 // literals, so light/dark both work through semantic tokens (§7.1).
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
@@ -177,6 +178,10 @@ class AddTileFieldRow extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
+      // The tap has to live on THIS node: the InkWell below is excluded from
+      // semantics, so without it a screen reader announced a button it could
+      // not activate (D62).
+      onTap: onTap,
       label: semanticLabel ??
           '$label${required ? ', required' : ''}, $value'
               '${error != null ? ', $error' : ''}',
@@ -228,6 +233,7 @@ class AddTileNavRow extends StatelessWidget {
 
     return Semantics(
       button: onTap != null,
+      onTap: onTap, // D62
       label: subtitle == null ? title : '$title, $subtitle',
       child: ExcludeSemantics(
         child: Material(
@@ -295,6 +301,7 @@ class NameLocationButton extends StatelessWidget {
     final tokens = TodayStatusTokens.of(context);
     return Semantics(
       button: true,
+      onTap: onTap, // D62
       label: l10n.addTilePlaceNameThis,
       child: ExcludeSemantics(
         child: IconButton(
@@ -343,6 +350,41 @@ class AddTileLockedPill extends StatelessWidget {
   }
 }
 
+/// A shimmer sweep across an entire surface while something is being
+/// fetched that will change several fields at once — the name-driven
+/// prediction, which fills duration, location and preferred time (D63).
+///
+/// Laid UNDER the surface in a `Stack`, the way the preview add sheet does
+/// with `getShimmerPending`. A shimmer rather than a spinner because the
+/// form stays fully usable while the fetch runs, and a spinner read as a
+/// wait to sit through. The whole surface rather than a mark on the title
+/// row because the title is the one field NOT about to change; sweeping
+/// the page says "the form is about to update" rather than "this field is
+/// busy". Only the highlight is visible: the base is the page background,
+/// so between sweeps the page is indistinguishable from idle. It neither
+/// takes taps nor speaks.
+class AddTilePendingSweep extends StatelessWidget {
+  const AddTilePendingSweep({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = TodayStatusTokens.of(context);
+    return IgnorePointer(
+      child: ExcludeSemantics(
+        child: Shimmer.fromColors(
+          baseColor: tokens.background,
+          highlightColor: tokens.brand.withValues(alpha: 0.18),
+          child: const ColoredBox(
+            // Any opaque colour: the shader mask replaces it.
+            color: Colors.white,
+            child: SizedBox.expand(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// An editable text field styled as a form row (the mockups' Title / Task
 /// name rows).
 class AddTileTextFieldRow extends StatelessWidget {
@@ -356,7 +398,6 @@ class AddTileTextFieldRow extends StatelessWidget {
     this.hint,
     this.error,
     this.required = false,
-    this.busy = false,
     this.onChanged,
     this.onSubmitted,
   });
@@ -371,12 +412,6 @@ class AddTileTextFieldRow extends StatelessWidget {
   final String? hint;
   final String? error;
   final bool required;
-
-  /// Shows a small spinner beside the field while something is being fetched
-  /// FOR this field's value — today, the name-driven prediction. It sits on
-  /// the row rather than over the screen because the form stays fully usable
-  /// while it runs; a blocking indicator would be a lie about that.
-  final bool busy;
 
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
@@ -435,21 +470,10 @@ class AddTileTextFieldRow extends StatelessWidget {
                     focusedBorder: InputBorder.none,
                   ),
                 ),
+                const SizedBox(height: 2),
               ],
             ),
           ),
-          if (busy)
-            Padding(
-              padding: const EdgeInsets.only(left: 8, top: 18),
-              child: SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: tokens.textSecondary,
-                ),
-              ),
-            ),
         ],
       ),
     );

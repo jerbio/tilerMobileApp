@@ -17,14 +17,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDraft.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDurationScreen.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 import 'package:tiler_app/routes/authenticatedUser/newTile/flexibleTileForm.dart';
-
-/// Wall-clock time for the Starts / Ends rows, e.g. `2:00 PM`.
-String formatClockTime(DateTime time) => DateFormat.jm().format(time);
 
 /// Date row summary. The current day reads as `Today, Sep 5`; any other date
 /// uses the plain localized form. [today] is injected so the "is it today?"
@@ -48,7 +46,6 @@ class FixedBlockForm extends StatelessWidget {
     required this.nameFocus,
     required this.today,
     this.nameError,
-    this.predicting = false,
     this.onNameChanged,
     this.onNameSubmitted,
     this.onDateTap,
@@ -67,9 +64,6 @@ class FixedBlockForm extends StatelessWidget {
   final DateTime today;
 
   final String? nameError;
-
-  /// A name-driven prediction is in flight for this draft.
-  final bool predicting;
   final ValueChanged<String>? onNameChanged;
   final ValueChanged<String>? onNameSubmitted;
   final VoidCallback? onDateTap;
@@ -100,7 +94,6 @@ class FixedBlockForm extends StatelessWidget {
               focusNode: nameFocus,
               hint: l10n.addTileBlockTitleHint,
               error: nameError,
-              busy: predicting,
               onChanged: onNameChanged,
               onSubmitted: onNameSubmitted,
             ),

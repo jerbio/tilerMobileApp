@@ -153,7 +153,7 @@ void main() {
       // being filed under SUGGESTIONS beside strangers' businesses — and the
       // mapper, keying on the same predicate, dropped its name from the
       // payload.
-      final Location home = lookup('home', address: '1292 milo cir')
+      final Location home = lookup('home', address: '482 sample ln')
         ..userId = 'user-1'
         ..id = 'tiler-guid-home';
       final source = FakeLocationSource(searchResults: [

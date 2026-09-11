@@ -43,6 +43,8 @@ import 'package:duration_picker/duration_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileDateTimeChoices.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/theme/today_status_tokens.dart';
 
 /// Formats a [Duration] as a compact, locale-aware summary. Examples:
@@ -118,11 +120,36 @@ Duration snapAddTileDuration(Duration d) {
 bool crossesDurationDetent(Duration previous, Duration next) =>
     snapAddTileDuration(previous) != snapAddTileDuration(next);
 
+/// The duration implied by choosing a wall-clock END for a block that
+/// starts at [start] (D61).
+///
+/// A clock time at or before the start reads as the FOLLOWING day: a block
+/// from 2 PM cannot end at 1 PM today, and on a clock face an earlier time
+/// means tomorrow. That also lets a late block run past midnight, and it
+/// makes the same clock time a full day — the picker's ceiling. (The legacy
+/// dial silently ignored such a pick.) The result is clamped and snapped
+/// like every other input, so the Ends readout and the duration sent agree.
+Duration durationForPickedEnd(DateTime start, TimeOfDay picked) {
+  DateTime end = applyPickedTime(start, picked);
+  if (!end.isAfter(start)) end = end.add(const Duration(days: 1));
+  return snapAddTileDuration(clampAddTileDuration(end.difference(start)));
+}
+
+/// The signature of the platform time picker, injectable by tests.
+typedef PickTimeOfDay = Future<TimeOfDay?> Function(
+    BuildContext context, TimeOfDay initialTime);
+
+Future<TimeOfDay?> _showPlatformTimePicker(
+        BuildContext context, TimeOfDay initialTime) =>
+    showTimePicker(context: context, initialTime: initialTime);
+
 class AddTileDurationScreen extends StatefulWidget {
   const AddTileDurationScreen({
     super.key,
     required this.initialDuration,
+    this.startTime,
     this.onSelected,
+    this.pickEndTime = _showPlatformTimePicker,
   });
 
   /// The duration in effect. An unset (zero) draft opens on the smallest
@@ -130,9 +157,21 @@ class AddTileDurationScreen extends StatefulWidget {
   /// a legible starting point.
   final Duration initialDuration;
 
+  /// When the duration is a BLOCK's length, the time the block starts.
+  ///
+  /// With it the screen shows where the block will end and lets that end be
+  /// edited directly, as the legacy `EndTimeDurationDial` did (D61). Without
+  /// it — the Flexible flow, which has no fixed start — the screen is a
+  /// plain duration picker. The picker stays shared either way.
+  final DateTime? startTime;
+
   /// Invoked with the chosen duration. Injected by tests; in the app the
   /// screen pops with the value.
   final void Function(Duration)? onSelected;
+
+  /// Opens the time picker for the Ends row. The platform picker by
+  /// default (D42); a test seam otherwise.
+  final PickTimeOfDay pickEndTime;
 
   @override
   State<AddTileDurationScreen> createState() => _AddTileDurationScreenState();
@@ -182,6 +221,36 @@ class _AddTileDurationScreenState extends State<AddTileDurationScreen> {
   void _setWheelHeld(bool held) {
     if (_wheelHeld == held) return;
     setState(() => _wheelHeld = held);
+  }
+
+  /// Where the block ends at the PENDING duration.
+  DateTime get _end => widget.startTime!.add(_custom);
+
+  /// Edits the end, which edits the duration: the wheel follows the picked
+  /// end exactly as the end follows the wheel.
+  Future<void> _pickEnd() async {
+    final DateTime start = widget.startTime!;
+    final DateTime current = _end;
+    final TimeOfDay? picked = await widget.pickEndTime(
+      context,
+      TimeOfDay(hour: current.hour, minute: current.minute),
+    );
+    if (picked == null || !mounted) return;
+    final Duration next = durationForPickedEnd(start, picked);
+    if (next == _custom) return;
+    setState(() => _custom = next);
+  }
+
+  /// The Ends value. Says "next day" when start + duration crosses
+  /// midnight, since 2 AM alone reads as a time BEFORE a 2 PM start.
+  String _endLabel(AppLocalizations l10n) {
+    final DateTime start = widget.startTime!;
+    final DateTime end = _end;
+    final String clock = formatClockTime(end);
+    final bool sameDay = end.year == start.year &&
+        end.month == start.month &&
+        end.day == start.day;
+    return sameDay ? clock : l10n.addTileDurationEndsNextDay(clock);
   }
 
   void _commit(Duration duration) {
@@ -289,6 +358,33 @@ class _AddTileDurationScreenState extends State<AddTileDurationScreen> {
                     ),
                   ),
                 ),
+                // Only when the duration is a block's length: where it
+                // ends, measured from the start named in the heading, and
+                // editable in its own right (D61).
+                if (widget.startTime != null) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    l10n.addTileDurationEndsFromStart(
+                        formatClockTime(widget.startTime!)),
+                    style: textTheme.labelSmall?.copyWith(
+                        color: tokens.textSecondary, letterSpacing: 0.6),
+                  ),
+                  const SizedBox(height: 8),
+                  AddTileSection(
+                    children: [
+                      AddTileFieldRow(
+                        key: const ValueKey('durationEndRow'),
+                        icon: Icons.outlined_flag,
+                        label: l10n.addTileFieldEnds,
+                        value: _endLabel(l10n),
+                        onTap: _pickEnd,
+                        semanticLabel: l10n.addTileDurationEndsSemantics(
+                            _endLabel(l10n),
+                            formatClockTime(widget.startTime!)),
+                      ),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),
@@ -375,12 +471,17 @@ class DurationPresetChip extends StatelessWidget {
 /// which on this screen would have rendered it in colors belonging to neither
 /// the picker nor the form. Rather than fork the package, the subtree gets a
 /// `Theme` whose those two slots point at the redesign's own tokens.
-/// How much larger the wheel PAINTS than the box it is given.
+/// The dial radius as a fraction of its box: the wheel paints exactly the
+/// square it is laid out in.
 ///
-/// `DialPainter` draws at `size.shortestSide * 0.75` from the centre and
-/// does not clip, so the visible circle is 1.5x its layout box. Everything
-/// about sizing this control follows from that one number.
-const double _wheelPaintOvershoot = 1.5;
+/// The package's default is 0.75 — it paints 1.5x its box and never clips.
+/// An earlier version of this screen worked around that by handing the
+/// picker a box of painted/1.5, which fitted the DRAWING but left the ring
+/// untouchable: hit-testing never extends past a widget's bounds, so the
+/// outer third of the wheel, where the handle lives, took no gestures at
+/// all (D60). With the ratio at 0.5 the box, the paint and the touch area
+/// are the same square.
+const double _wheelRadiusRatio = 0.5;
 
 /// The largest the wheel is allowed to grow on a wide screen.
 const double _maxWheelDiameter = 320;
@@ -410,13 +511,11 @@ class DurationWheel extends StatelessWidget {
           colorScheme: theme.colorScheme.copyWith(secondary: tokens.brand),
           scaffoldBackgroundColor: tokens.surfaceSubtle,
         ),
-        // `DialPainter` draws a circle of `size.shortestSide * 0.75` and
-        // does NOT clip, so the visible wheel is 1.5x the box it is given.
-        // The painted diameter is therefore what gets fitted to the card,
-        // and the box handed to the picker is derived back from it. An
-        // earlier attempt used a FittedBox, which measures LAYOUT size and
-        // so happily scaled a 300pt box while the painter carried on
-        // drawing 450pt over the rest of the screen.
+        // The wheel is fitted to the card by its PAINTED diameter, and with
+        // `_wheelRadiusRatio` at 0.5 that is also its layout box and its
+        // touch area. (An earlier attempt used a FittedBox, which measures
+        // LAYOUT size and so happily scaled a 300pt box while the painter
+        // carried on drawing 450pt over the rest of the screen.)
         child: LayoutBuilder(
           builder: (context, constraints) {
             final double painted = constraints.maxWidth.isFinite
@@ -429,9 +528,10 @@ class DurationWheel extends StatelessWidget {
                 child: DurationPicker(
                   duration: value,
                   onChange: onChanged,
-                  width: painted / _wheelPaintOvershoot,
-                  height: painted / _wheelPaintOvershoot,
-                  dialSize: painted / _wheelPaintOvershoot,
+                  width: painted,
+                  height: painted,
+                  dialSize: painted,
+                  dialRadiusRatio: _wheelRadiusRatio,
                   // The captions inside the wheel, which the package
                   // otherwise renders in hardcoded English (D30).
                   hourLabel: l10n.addTileDurationHourLabel,

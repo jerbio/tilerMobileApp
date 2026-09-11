@@ -183,7 +183,7 @@ void main() {
         ..id = 'tiler-guid-home'
         ..userId = 'user-1'
         ..description = 'home'
-        ..address = '1292 milo cir #1292, lafayette, co 80026, usa'
+        ..address = '482 sample ln #3, boulder, co 80301, usa'
         ..source = 'google'
         ..thirdPartyId = 'ChIJ-some-place-id'
         ..isVerified = true;

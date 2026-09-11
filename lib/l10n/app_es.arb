@@ -866,6 +866,10 @@
   "addTileDurationHourLabel": "Hora",
   "addTileDurationMinuteLabel": "Min",
 
+  "addTileDurationEndsFromStart": "DESDE {start}",
+  "addTileDurationEndsNextDay": "{time}, día siguiente",
+  "addTileDurationEndsSemantics": "Termina a las {end}, desde un inicio a las {start}. Cambiar la hora de fin",
+
   "addTileSubmitFailed": "No se pudo agregar en este momento. Tus datos se guardaron.",
   "addTileRetry": "Reintentar"
 }

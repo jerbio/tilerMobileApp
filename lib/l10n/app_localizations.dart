@@ -5778,6 +5778,24 @@ abstract class AppLocalizations {
   /// **'Min'**
   String get addTileDurationMinuteLabel;
 
+  /// Heading over the Ends row on the Duration picker when a block start is known; the end is measured from this time.
+  ///
+  /// In en, this message translates to:
+  /// **'FROM {start}'**
+  String addTileDurationEndsFromStart(String start);
+
+  /// The Ends value when start + duration crosses midnight.
+  ///
+  /// In en, this message translates to:
+  /// **'{time}, next day'**
+  String addTileDurationEndsNextDay(String time);
+
+  /// Screen-reader label for the editable Ends row on the Duration picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Ends at {end}, from a start of {start}. Change the end time'**
+  String addTileDurationEndsSemantics(String end, String start);
+
   /// No description provided for @addTileSubmitFailed.
   ///
   /// In en, this message translates to:

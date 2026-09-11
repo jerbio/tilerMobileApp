@@ -346,6 +346,9 @@ void main() {
       expect(picker.markerColor, isNull);
       expect(picker.dialSize, 300.0,
           reason: 'the size the legacy dial has always drawn at');
+      expect(mountedPainter(tester).radiusRatio, 0.75,
+          reason: 'the legacy dials paint 1.5x their box; a changed default '
+              'would shrink every one of them');
       expect(tester.takeException(), isNull);
     });
 
@@ -465,11 +468,12 @@ void main() {
     testWidgets('the wheel RESERVES exactly the space it paints',
         (tester) async {
       // The defect that survived two attempts to fix it: `DialPainter`
-      // draws a circle of `size.shortestSide * 0.75` from the centre and
-      // does not clip, so the visible wheel is 1.5x its layout box. Layout
-      // assertions alone could never see it — the box was well behaved while
-      // the paint covered the screen. This asserts the RELATIONSHIP instead:
-      // the reserved space must equal the painted diameter.
+      // draws a circle of `size.shortestSide * radiusRatio` from the centre
+      // and does not clip, so at the package default the visible wheel is
+      // 1.5x its layout box. Layout assertions alone could never see it —
+      // the box was well behaved while the paint covered the screen. This
+      // asserts the RELATIONSHIP instead: the reserved space must equal the
+      // painted diameter, whatever ratio the painter is actually given.
       await pumpDuration(tester, viewSize: AddTileTestMatrix.narrow);
 
       final Finder wheel = find.byKey(const ValueKey('durationWheel'));
@@ -479,11 +483,12 @@ void main() {
       final DurationPicker picker =
           tester.widget<DurationPicker>(find.byType(DurationPicker));
       final Rect reserved = tester.getRect(wheel);
-      final double painted = picker.dialSize * 1.5;
+      final double painted =
+          picker.dialSize * mountedPainter(tester).radiusRatio * 2;
 
       expect(reserved.width, closeTo(painted, 1),
-          reason: 'the wheel paints 1.5x its box, so reserving only the box '
-              'lets it spill over everything around it');
+          reason: 'reserving less than the wheel paints lets it spill over '
+              'everything around it');
     });
 
     testWidgets('the painted wheel fits the screen', (tester) async {
@@ -496,7 +501,8 @@ void main() {
       final DurationPicker picker =
           tester.widget<DurationPicker>(find.byType(DurationPicker));
       final Rect reserved = tester.getRect(wheel);
-      final double painted = picker.dialSize * 1.5;
+      final double painted =
+          picker.dialSize * mountedPainter(tester).radiusRatio * 2;
       final double centre = reserved.center.dx;
 
       expect(centre - painted / 2, greaterThanOrEqualTo(-0.5));
@@ -519,7 +525,8 @@ void main() {
       final DurationPicker picker =
           tester.widget<DurationPicker>(find.byType(DurationPicker));
       final Rect reserved = tester.getRect(wheel);
-      final double painted = picker.dialSize * 1.5;
+      final double painted =
+          picker.dialSize * mountedPainter(tester).radiusRatio * 2;
       final Rect done =
           tester.getRect(find.byKey(const ValueKey('durationDone')));
 
@@ -689,9 +696,10 @@ void main() {
       await tester.ensureVisible(wheel);
       await tester.pumpAndSettle();
 
-      // Measured against the GESTURE area, not the painted one: the dial
-      // listens inside a box of painted/1.5, so points taken from the
-      // painted rect can land outside the detector entirely.
+      // Measured against the gesture area, inside its inner third — this
+      // test is about the LIST not stealing the pan, so it deliberately
+      // stays away from the ring. Touchability of the ring itself is the
+      // next group's concern.
       final Rect gestureBox = tester.getRect(find.descendant(
         of: wheel,
         matching: find.byType(GestureDetector),
@@ -716,6 +724,77 @@ void main() {
         isNot(const Duration(minutes: 30)),
         reason: 'the drag reached the list instead of the dial',
       );
+    });
+  });
+
+  group('The whole painted wheel is touchable', () {
+    // Reported on device: circling on the shaded ring did nothing; only
+    // strokes near the centre of the dial turned it.
+    //
+    // The painter drew the ring at 0.75 of the box from the centre, so the
+    // ring lay at 0.44–0.50 of the painted diameter — but hit-testing stops
+    // at every ancestor's bounds, and the box the picker was given ended at
+    // 0.33. The part of the control that LOOKS like the handle was the one
+    // part that could not be touched (D60).
+
+    /// The painted diameter, as the mounted painter will actually draw it.
+    double paintedDiameter(WidgetTester tester) {
+      final DurationPicker picker =
+          tester.widget<DurationPicker>(find.byType(DurationPicker));
+      return picker.dialSize * mountedPainter(tester).radiusRatio * 2;
+    }
+
+    testWidgets('a drag that starts ON THE RING turns the dial',
+        (tester) async {
+      await pumpDuration(tester,
+          initial: const Duration(minutes: 30),
+          viewSize: AddTileTestMatrix.narrow);
+
+      final Finder wheel = find.byKey(const ValueKey('durationWheel'));
+      await tester.ensureVisible(wheel);
+      await tester.pumpAndSettle();
+
+      final Offset centre = tester.getCenter(wheel);
+      // The handle sits at ~0.45 of the painted diameter from the centre;
+      // that is where a finger lands when it aims for the ring.
+      final double r = paintedDiameter(tester) * 0.45;
+
+      final TestGesture gesture =
+          await tester.startGesture(centre + Offset(0, r));
+      await gesture.moveTo(centre + Offset(-r * 0.7, r * 0.7));
+      await tester.pump();
+      await gesture.moveTo(centre + Offset(-r, 0));
+      await tester.pump();
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<DurationWheel>(find.byKey(const ValueKey('durationWheel')))
+            .value,
+        isNot(const Duration(minutes: 30)),
+        reason: 'the ring is painted but not touchable',
+      );
+    });
+
+    testWidgets('the gesture area covers the painted wheel', (tester) async {
+      // The mechanism behind the drag test: the detector must be at least
+      // as large as what the painter draws, or the outer band is dead.
+      await pumpDuration(tester, viewSize: AddTileTestMatrix.narrow);
+
+      final Finder wheel = find.byKey(const ValueKey('durationWheel'));
+      await tester.ensureVisible(wheel);
+      await tester.pumpAndSettle();
+
+      final Rect gestureBox = tester.getRect(find.descendant(
+        of: wheel,
+        matching: find.byType(GestureDetector),
+      ));
+      final double painted = paintedDiameter(tester);
+
+      expect(gestureBox.width, greaterThanOrEqualTo(painted - 0.5),
+          reason: 'the dial listens in a box smaller than it paints');
+      expect(gestureBox.height, greaterThanOrEqualTo(painted - 0.5));
     });
   });
 

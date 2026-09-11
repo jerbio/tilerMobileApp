@@ -2087,6 +2087,13 @@
   "addTileDurationHourLabel": "Hour",
   "addTileDurationMinuteLabel": "Min",
 
+  "addTileDurationEndsFromStart": "FROM {start}",
+  "@addTileDurationEndsFromStart": {"description":"Heading over the Ends row on the Duration picker when a block start is known; the end is measured from this time.","placeholders":{"start":{"type":"String","example":"2:00 PM"}}},
+  "addTileDurationEndsNextDay": "{time}, next day",
+  "@addTileDurationEndsNextDay": {"description":"The Ends value when start + duration crosses midnight.","placeholders":{"time":{"type":"String","example":"2:00 AM"}}},
+  "addTileDurationEndsSemantics": "Ends at {end}, from a start of {start}. Change the end time",
+  "@addTileDurationEndsSemantics": {"description":"Screen-reader label for the editable Ends row on the Duration picker.","placeholders":{"end":{"type":"String","example":"4:00 PM"},"start":{"type":"String","example":"2:00 PM"}}},
+
   "addTileSubmitFailed": "Could not add this right now. Your details are saved.",
   "addTileRetry": "Retry"
 }

@@ -3259,6 +3259,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addTileDurationMinuteLabel => 'Min';
 
   @override
+  String addTileDurationEndsFromStart(String start) {
+    return 'FROM $start';
+  }
+
+  @override
+  String addTileDurationEndsNextDay(String time) {
+    return '$time, next day';
+  }
+
+  @override
+  String addTileDurationEndsSemantics(String end, String start) {
+    return 'Ends at $end, from a start of $start. Change the end time';
+  }
+
+  @override
   String get addTileSubmitFailed =>
       'Could not add this right now. Your details are saved.';
 

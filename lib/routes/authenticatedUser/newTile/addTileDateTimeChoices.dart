@@ -31,6 +31,14 @@
 //
 // Plain date/time values only, no Add Tile state, so any flow can use them.
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+/// Wall-clock time for the Starts / Ends rows, e.g. `2:00 PM`.
+///
+/// Here rather than on the Fixed form because the SHARED Duration picker
+/// renders an end time too (D61), and a shared picker cannot import the
+/// form.
+String formatClockTime(DateTime time) => DateFormat.jm().format(time);
 
 /// The result of picking a DATE for a value that also carries a time.
 ///

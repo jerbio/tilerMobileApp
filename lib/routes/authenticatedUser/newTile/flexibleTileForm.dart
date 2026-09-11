@@ -84,7 +84,6 @@ class FlexibleTileForm extends StatelessWidget {
     required this.nameController,
     required this.nameFocus,
     this.nameError,
-    this.predicting = false,
     this.onNameChanged,
     this.onNameSubmitted,
     this.onDurationTap,
@@ -100,9 +99,6 @@ class FlexibleTileForm extends StatelessWidget {
   final TextEditingController nameController;
   final FocusNode nameFocus;
   final String? nameError;
-
-  /// A name-driven prediction is in flight for this draft.
-  final bool predicting;
 
   /// Invoked on every keystroke in the name field so the shell can keep the
   /// draft in sync (and clear an inline "required" error once addressed).
@@ -151,7 +147,6 @@ class FlexibleTileForm extends StatelessWidget {
               focusNode: nameFocus,
               hint: l10n.addTileTaskNameHint,
               error: nameError,
-              busy: predicting,
               onChanged: onNameChanged,
               onSubmitted: onNameSubmitted,
             ),

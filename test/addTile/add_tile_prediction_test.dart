@@ -12,7 +12,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:tiler_app/data/location.dart';
+import 'package:tiler_app/routes/authenticatedUser/newTile/addTileFormKit.dart';
 import 'package:tiler_app/data/restrictionDay.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
@@ -100,6 +102,13 @@ Future<void> typeName(WidgetTester tester, String name) async {
 }
 
 /// Lets the debounce elapse and the response settle.
+/// The busy affordance while a prediction runs: a shimmer sweep across the
+/// WHOLE form, not a spinner and not a mark on the title row (D63). The
+/// prediction fills several fields — duration, location, preferred time —
+/// so the page as a whole is what is about to change, and the form stays
+/// fully usable throughout.
+Finder get predictionShimmer => find.byKey(const ValueKey('predictionShimmer'));
+
 Future<void> settlePrediction(WidgetTester tester) async {
   await tester.pump(predictionDebounce + const Duration(milliseconds: 50));
   await tester.pumpAndSettle();
@@ -367,7 +376,7 @@ void main() {
       expect(source.calls, 1);
       expect(tester.takeException(), isNull);
       expect(find.byType(SnackBar), findsNothing);
-      expect(find.byType(CircularProgressIndicator), findsNothing,
+      expect(predictionShimmer, findsNothing,
           reason: 'the busy affordance must clear even when the call fails');
     });
 
@@ -383,11 +392,77 @@ void main() {
       await typeName(tester, 'gym session');
       await tester.pump(predictionDebounce + const Duration(milliseconds: 50));
 
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(predictionShimmer, findsOneWidget);
+      expect(
+          find.descendant(
+              of: predictionShimmer, matching: find.byType(Shimmer)),
+          findsOneWidget,
+          reason: 'the affordance must actually shimmer');
+      expect(find.byType(CircularProgressIndicator), findsNothing,
+          reason: 'the spinner was replaced, not joined');
 
       await tester.pump(const Duration(seconds: 3));
       await tester.pumpAndSettle();
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(predictionShimmer, findsNothing);
+    });
+
+    testWidgets('the shimmer is the whole form, not the title row',
+        (tester) async {
+      // Requested to match the preview add sheet, which sweeps its entire
+      // surface while a result is pending. Two earlier cuts marked only the
+      // title row (a 2px baseline, then the row's background); both said
+      // "the title is busy" when the truth is that duration, location and
+      // preferred time are the fields about to change.
+      final draft = AddTileDraft.flexible(now: now);
+      final source = _FakePredictionSource(
+        const <String, AddTilePrediction>{},
+        delay: const Duration(seconds: 2),
+      );
+
+      await pumpShell(tester, draft: draft, source: source);
+      await typeName(tester, 'gym session');
+      await tester.pump(predictionDebounce + const Duration(milliseconds: 50));
+
+      final Rect sweep = tester.getRect(predictionShimmer);
+      final Rect form =
+          tester.getRect(find.byType(SingleChildScrollView).first);
+      expect(sweep.top, lessThanOrEqualTo(form.top + 0.5),
+          reason: 'the sweep must reach at least the top of the form');
+      expect(sweep.bottom, greaterThanOrEqualTo(form.bottom - 0.5),
+          reason: 'and its bottom');
+      expect(sweep.width, closeTo(form.width, 1));
+
+      // It must lie under EVERY field the prediction can fill, not only
+      // the one being typed into.
+      // Rows below the fold are scrolled to first: the sweep fills the
+      // VIEWPORT, so what matters is that each row is under it once seen.
+      // Fixed pumps, not pumpAndSettle — the shimmer never settles.
+      for (final String key in <String>[
+        'taskNameField',
+        'durationRow',
+        'locationRow',
+      ]) {
+        await tester.ensureVisible(find.byKey(ValueKey(key)));
+        await tester.pump(const Duration(milliseconds: 300));
+        final Rect field = tester.getRect(find.byKey(ValueKey(key)));
+        expect(tester.getRect(predictionShimmer).contains(field.center), isTrue,
+            reason: '$key is one of the fields about to change');
+      }
+
+      // And it sits BEHIND the content: the title row itself carries no
+      // shimmer of its own, and the field stays usable.
+      expect(
+          find.descendant(
+              of: find.byType(AddTileTextFieldRow),
+              matching: find.byType(Shimmer)),
+          findsNothing);
+      await tester.enterText(
+          find.byKey(const ValueKey('taskNameField')), 'gym sessions');
+      expect(draft.name, 'gym sessions');
+      expect(tester.takeException(), isNull);
+
+      await tester.pump(const Duration(seconds: 3));
+      await tester.pumpAndSettle();
     });
 
     testWidgets('no prediction source means no prediction', (tester) async {
