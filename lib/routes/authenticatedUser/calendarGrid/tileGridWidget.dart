@@ -474,12 +474,17 @@ class TileGridWidgetState extends GridPositionableState {
         fadeDuration = Duration.zero;
       }
 
-      // Slide to the new top/left instead of teleporting. A
-      // stable key (set by the parent) reuses this element so the delta
-      // animates; gated off while zooming/dragging and by reduced motion.
+      // Slide/resize to the new geometry instead of teleporting: top, left,
+      // width AND height all animate (an overlap re-cluster narrows the
+      // neighbours; a duration change re-heights) so no dimension ever
+      // snaps. A stable key (set by the parent) reuses this element so the
+      // delta animates; gated off while zooming/dragging and by reduced
+      // motion.
       return AnimatedPositioned(
         top: topPosition,
         left: leftPosition,
+        width: widgetWidth,
+        height: this.widgetHeight,
         duration: animate ? const Duration(milliseconds: 300) : Duration.zero,
         curve: Curves.easeInOutCubic,
         child: AnimatedOpacity(
@@ -491,8 +496,6 @@ class TileGridWidgetState extends GridPositionableState {
             duration: fadeDuration,
             alignment: Alignment.center,
             child: Container(
-              height: this.widgetHeight,
-              width: widgetWidth,
               child: GestureDetector(
                   // A plain tap that was cancelled by a drag attempt
                   // must not open the tile detail (suppressTap is held
@@ -638,7 +641,22 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
                 width: 3,
                 color: style.accent,
               ),
-            if (content != null) Expanded(child: content),
+            // The caption/time-range decision is made on the TARGET height
+            // (`tileHeight`), but the box itself animates there (width/height
+            // on AnimatedPositioned) — so mid-transition the box can be
+            // shorter than its content. Lay the content out at its natural
+            // size and clip, instead of overflowing the Column.
+            if (content != null)
+              Expanded(
+                child: ClipRect(
+                  child: OverflowBox(
+                    alignment: Alignment.topLeft,
+                    minHeight: 0,
+                    maxHeight: double.infinity,
+                    child: content,
+                  ),
+                ),
+              ),
           ],
         ),
       );

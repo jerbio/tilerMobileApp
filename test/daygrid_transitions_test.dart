@@ -158,6 +158,69 @@ void main() {
       expect(dyBetween(tester, 'Alpha', 'Beta'), closeTo(480, 1));
     });
 
+    testWidgets(
+        'an overlapping tile added later shrinks the existing tile WIDTH over time (rule 4)',
+        (tester) async {
+      // Alpha alone at 8am owns the full column width.
+      List<SubCalendarEvent> tiles = <SubCalendarEvent>[
+        buildTile(
+          id: 'a',
+          name: 'Alpha',
+          start: day.add(const Duration(hours: 8)),
+          end: day.add(const Duration(hours: 9)),
+        ),
+      ];
+      final rebuild = await pumpGrid(tester, () => tiles);
+      Rect alphaRect() => tester.getRect(find.ancestor(
+            of: find.text('Alpha'),
+            matching: find.byType(AnimatedPositioned),
+          ).first);
+      final double fullWidth = alphaRect().width;
+
+      // Add Beta overlapping Alpha: the cluster splits into two columns, so
+      // Alpha's target width is ~half. Both width AND height must animate
+      // alongside top/left — never snap.
+      tiles = <SubCalendarEvent>[
+        ...tiles,
+        buildTile(
+          id: 'b',
+          name: 'Beta',
+          start: day.add(const Duration(hours: 8, minutes: 30)),
+          end: day.add(const Duration(hours: 9, minutes: 30)),
+        ),
+      ];
+      rebuild();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final double mid = alphaRect().width;
+      expect(mid, lessThan(fullWidth), reason: 'should have started shrinking');
+      expect(mid, greaterThan(fullWidth / 2 + 4),
+          reason: 'should not have snapped to the half width');
+
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(alphaRect().width, closeTo(fullWidth / 2, 6));
+
+      // Height animates too: extend Alpha to 2h.
+      final double h1 = alphaRect().height;
+      tiles = <SubCalendarEvent>[
+        buildTile(
+          id: 'a',
+          name: 'Alpha',
+          start: day.add(const Duration(hours: 8)),
+          end: day.add(const Duration(hours: 10)),
+        ),
+        tiles[1],
+      ];
+      rebuild();
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+      final double hMid = alphaRect().height;
+      expect(hMid, greaterThan(h1));
+      expect(hMid, lessThan(h1 * 2 - 4));
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(alphaRect().height, closeTo(h1 * 2, 2));
+    });
+
     testWidgets('the moved tile reuses its element (stable key, no duplicate)',
         (tester) async {
       List<SubCalendarEvent> tiles = tilesWithBetaAt(10);
