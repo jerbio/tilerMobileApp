@@ -469,6 +469,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// baseline for the drag delta.
   double _dragStartContentY = 0;
 
+  /// The scroll offset when the drag lifted. Pointer MOVE events are
+  /// routed through the hit-test transform captured at pointer DOWN, so
+  /// the tile-local positions the drag callbacks report stay relative to
+  /// where the tile was at lift time — they do NOT follow the content as
+  /// the edge auto-scroll moves it under the finger. Every conversion of
+  /// a tile-local dy to content/viewport space adds `pixels - this`.
+  double _dragStartPixels = 0;
+
   /// The resolved drop slot (snapped + range-checked) the ghost is
   /// resting on (`null` while idle).
   DayGridDragSeed? _dragTargetStart;
@@ -1006,6 +1014,8 @@ class DayGridWidgetState extends State<DayGridWidget> {
     final dayStart = _gridDayStart()!;
     _dragOriginalTopPx = _topPx(dayStart: dayStart, startMs: tile.start!);
     _dragStartContentY = localOffset.dy;
+    _dragStartPixels =
+        _scrollController.hasClients ? _scrollController.position.pixels : 0;
     _dragGhostLeft = left;
     _dragGhostWidth = width;
     // The finger is still at the lift point: pass the recorded lift
@@ -1030,7 +1040,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (tile == null || _controller.mode != DayGridMode.dragging) {
       return;
     }
-    _dragTargetStart = _dragSeedForOffset(localPosition.dy);
+    // Tile-local dy → the tile's lift-time frame; add the scroll delta so
+    // the slot tracks the finger's TRUE content point after an auto-scroll.
+    _dragTargetStart =
+        _dragSeedForOffset(localPosition.dy + _scrollDeltaSinceLift());
     final snapped = _dragTargetStart;
     if (snapped != null &&
         !snapped.start.isAtSameMomentAs(
@@ -1127,8 +1140,16 @@ class DayGridWidgetState extends State<DayGridWidget> {
     if (tile == null || !_scrollController.hasClients) {
       return null;
     }
-    final contentY = _dragOriginalTopPx + localDy;
-    return contentY - _scrollController.position.pixels;
+    // localDy is relative to the tile's LIFT-TIME position (see
+    // [_dragStartPixels]): content y = originalTop + localDy + scroll delta;
+    // viewport y = content y - pixels = originalTop + localDy - liftPixels.
+    return _dragOriginalTopPx + localDy - _dragStartPixels;
+  }
+
+  /// How far the grid has scrolled since the drag lifted.
+  double _scrollDeltaSinceLift() {
+    if (!_scrollController.hasClients) return 0;
+    return _scrollController.position.pixels - _dragStartPixels;
   }
 
   /// The px of the scroll viewport's bottom that sit behind a bottom
@@ -1173,9 +1194,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
   /// up, inside the bottom zone it scrolls down — toward the finger.
   void _syncEdgeScroll(double? viewportY) {
     _dragFingerViewportY = viewportY;
+    // A finger ABOVE the viewport (over the fixed top bar) or BELOW it is
+    // "deep in" that edge zone, not outside it — the step is capped anyway.
     final inEdge = viewportY != null &&
         _scrollController.hasClients &&
-        viewportY > 0 &&
         (viewportY < _edgeScrollZonePx ||
             viewportY >
                 _bottomZoneStartY(

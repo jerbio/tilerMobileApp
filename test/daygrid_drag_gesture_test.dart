@@ -878,6 +878,116 @@ testWidgets('travel bands dim while a drag is active', (tester) async {
       await _closeBloc(tester, bloc);
     });
 
+    testWidgets(
+        'a jittering finger held ABOVE the grid (over the top bar) keeps auto-scrolling to the top',
+        (tester) async {
+      // P6 hosts the grid under a fixed 48px top bar. A finger dragged to
+      // the very top of the screen sits ABOVE the grid viewport (negative
+      // viewport y) — that must count as "deep in the top zone", not as
+      // "left the zone", otherwise the auto-scroll stops after a moment.
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      await tester.pumpWidget(MaterialApp(
+        theme: TileThemeData.lightTheme,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: BlocProvider<ScheduleBloc>(
+          create: (_) => bloc,
+          child: Scaffold(
+            body: Column(children: [
+              const SizedBox(height: 48), // the fixed top bar
+              Expanded(
+                child: DayGridWidget(
+                  tiles: [
+                    _tile('a', DateTime(2027, 1, 15, 9),
+                        DateTime(2027, 1, 15, 10))
+                  ],
+                  now: now,
+                  day: dayStart,
+                  controller: controller,
+                  subCalendarEventApi: api,
+                  edgeScrollBottomClearance: 0,
+                ),
+              ),
+            ]),
+          ),
+        ),
+      ));
+      await tester.pump(); // initial scroll → 720 (grid top at screen y 48).
+
+      // Lift the 9:00 tile (screen y 48 + 40).
+      final gesture = await tester.startGesture(const Offset(200, 88));
+      await tester.pump(kLongPressTimeout);
+      expect(find.byKey(const Key('daygrid_drag_ghost')), findsOneWidget);
+
+      // Push the finger up over the top bar (screen y 20 → viewport y -28)
+      // and hold it there with real-finger jitter for a while.
+      await gesture.moveBy(const Offset(0, -68));
+      await tester.pump();
+      final scroll = tester
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
+          .controller!;
+      for (int i = 0; i < 40; i++) {
+        await gesture.moveBy(Offset(0, i.isEven ? 0.5 : -0.5));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(scroll.position.pixels, 0.0,
+          reason: 'must keep scrolling to the very top, not stop early');
+      expect(controller.mode, DayGridMode.dragging);
+
+      await gesture.up();
+      await tester.pump();
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets(
+        'a jittering finger held BELOW the grid keeps auto-scrolling to the bottom',
+        (tester) async {
+      final bloc = _RecordingScheduleBloc();
+      final api = _FakeSubCalendarEventApi();
+      final controller = DayGridController()..setPxPerHour(80);
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        api: api,
+        tiles: [
+          _tile('b', DateTime(2027, 1, 15, 14), DateTime(2027, 1, 15, 15))
+        ],
+        now: now,
+        day: dayStart,
+        controller: controller,
+      ));
+      await tester.pump(); // initial scroll → 1120.
+      final viewportH = tester.getSize(find.byType(DayGridWidget)).height;
+
+      final gesture = await tester.startGesture(const Offset(200, 60));
+      await tester.pump(kLongPressTimeout);
+      expect(find.byKey(const Key('daygrid_drag_ghost')), findsOneWidget);
+
+      // Finger past the bottom of the grid viewport, held with jitter.
+      await gesture.moveBy(Offset(0, viewportH - 60 + 30));
+      await tester.pump();
+      final scroll = tester
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
+          .controller!;
+      for (int i = 0; i < 60; i++) {
+        await gesture.moveBy(Offset(0, i.isEven ? 0.5 : -0.5));
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      expect(scroll.position.pixels, closeTo(scroll.position.maxScrollExtent, 0.5),
+          reason: 'must keep scrolling to the very bottom, not stop early');
+      expect(controller.mode, DayGridMode.dragging);
+
+      await gesture.up();
+      await tester.pump();
+      await _closeBloc(tester, bloc);
+    });
+
     testWidgets('drag into the bottom edge zone auto-scrolls the grid down',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
