@@ -1373,6 +1373,10 @@
         },
         "extendedEventsTapToView": "Tap to view all-day and long events",
         "extendedEventsTitle": "Extended Events",
+        "dayGridAllDay": "All day",
+        "@dayGridAllDay": {
+          "description": "Trailing label on the day-grid pinned card for a tile that spans the whole day"
+        },
         "extendedEventsSubtitle": "{count, plural, =1{1 event over 16 hours} other{{count} events over 16 hours}}",
         "@extendedEventsSubtitle": {
           "placeholders": {

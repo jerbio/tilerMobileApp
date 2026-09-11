@@ -8,11 +8,11 @@ import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileCardStyle.dart';
 import 'package:tiler_app/constants.dart' as constant;
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
-import 'package:tiler_app/util.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
 /// The persistence outcome of the tile's most recent drag-to-reschedule,
@@ -154,6 +154,15 @@ class TileGridWidgetState extends GridPositionableState {
   /// short for the name caption.
   static bool tileContentCollapsed(double tileHeight) =>
       tileHeight < collapsedTileHeight;
+
+  /// The second (time-range) line needs a name line + an 11px line + the
+  /// card's vertical padding — tiles shorter than this render the name only.
+  static const double timeRangeTileHeight = 48;
+
+  /// Pure: true when [tileHeight] has room for the time-range line under
+  /// the name.
+  static bool tileTimeRangeVisible(double tileHeight) =>
+      tileHeight >= timeRangeTileHeight;
   late ThemeData theme;
   late ColorScheme colorScheme;
 
@@ -161,6 +170,7 @@ class TileGridWidgetState extends GridPositionableState {
   /// Enter: false until the stagger delay elapses (only when [TileGridWidget
   /// .enterDelay] is set); drives the 0 -> 1 fade/scale reveal.
   bool _revealed = true;
+
   /// Exit: flipped one frame after a ghost mounts; drives the 1 -> 0 fade-out.
   bool _fading = false;
   Timer? _enterTimer;
@@ -315,10 +325,10 @@ class TileGridWidgetState extends GridPositionableState {
     // Drag inputs: the optimistic start override moves the tile (drop
     // settle / rollback), dimming and tap suppression change its surface.
     final dragInputsChanged = oldWidget.dimmed !=
-        (this.widget as TileGridWidget).dimmed ||
-    oldWidget.suppressTap != (this.widget as TileGridWidget).suppressTap ||
-    oldWidget.localStartMsOverride !=
-        (this.widget as TileGridWidget).localStartMsOverride;
+            (this.widget as TileGridWidget).dimmed ||
+        oldWidget.suppressTap != (this.widget as TileGridWidget).suppressTap ||
+        oldWidget.localStartMsOverride !=
+            (this.widget as TileGridWidget).localStartMsOverride;
     if (!eventChanged &&
         !zoomChanged &&
         !geometryChanged &&
@@ -352,9 +362,7 @@ class TileGridWidgetState extends GridPositionableState {
   /// callbacks are only non-null when the grid wired this tile as
   /// draggable — Tiler-owned, live, non-what-if).
   void _onLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
-    (this.widget as TileGridWidget)
-        .onDragUpdate
-        ?.call(details.localPosition);
+    (this.widget as TileGridWidget).onDragUpdate?.call(details.localPosition);
   }
 
   void _onLongPressEnd() {
@@ -366,10 +374,9 @@ class TileGridWidgetState extends GridPositionableState {
   /// lift point); a no-op when the grid did not wire this tile as
   /// draggable.
   void _handleLongPressLift(Offset localOffset) {
-    final onLongPressStart =
-        (this.widget is TileGridWidget)
-            ? (this.widget as TileGridWidget).onLongPressStart
-            : null;
+    final onLongPressStart = (this.widget is TileGridWidget)
+        ? (this.widget as TileGridWidget).onLongPressStart
+        : null;
     if (onLongPressStart == null) {
       return;
     }
@@ -447,23 +454,20 @@ class TileGridWidgetState extends GridPositionableState {
       if (isExiting) {
         opacityTarget = _fading ? 0.0 : 1.0;
         scaleTarget = 1.0;
-        fadeDuration = animate
-            ? const Duration(milliseconds: 200)
-            : Duration.zero;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 200) : Duration.zero;
       } else if (hasEnter) {
         opacityTarget = _revealed ? 1.0 : (animate ? 0.0 : 1.0);
         scaleTarget = _revealed ? 1.0 : (animate ? 0.86 : 1.0);
-        fadeDuration = animate
-            ? const Duration(milliseconds: 200)
-            : Duration.zero;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 200) : Duration.zero;
       } else if (dimmed) {
         // The drag source dims (the grid's ghost shows the drop slot);
         // the haptic + dimmed surface marks the tile as "lifted".
         opacityTarget = 0.35;
         scaleTarget = 1.0;
-        fadeDuration = animate
-            ? const Duration(milliseconds: 150)
-            : Duration.zero;
+        fadeDuration =
+            animate ? const Duration(milliseconds: 150) : Duration.zero;
       } else {
         opacityTarget = 1.0;
         scaleTarget = 1.0;
@@ -476,8 +480,7 @@ class TileGridWidgetState extends GridPositionableState {
       return AnimatedPositioned(
         top: topPosition,
         left: leftPosition,
-        duration:
-            animate ? const Duration(milliseconds: 300) : Duration.zero,
+        duration: animate ? const Duration(milliseconds: 300) : Duration.zero,
         curve: Curves.easeInOutCubic,
         child: AnimatedOpacity(
           opacity: opacityTarget,
@@ -500,8 +503,7 @@ class TileGridWidgetState extends GridPositionableState {
                       : () {
                           onTapPreviewTile(tilerEvent!);
                           if (this.widget is TileGridWidget) {
-                            if ((this.widget as TileGridWidget).onTap !=
-                                null) {
+                            if ((this.widget as TileGridWidget).onTap != null) {
                               (this.widget as TileGridWidget).onTap!(
                                   tilerEvent: this.tilerEvent);
                             }
@@ -525,29 +527,27 @@ class TileGridWidgetState extends GridPositionableState {
                       : (LongPressStartDetails d) {
                           _longPressLiftOffset = d.localPosition;
                         },
-                  onLongPressMoveUpdate: onLongPressStart == null
-                      ? null
-                      : _onLongPressMoveUpdate,
+                  onLongPressMoveUpdate:
+                      onLongPressStart == null ? null : _onLongPressMoveUpdate,
                   onLongPressEnd: onLongPressStart == null
                       ? null
                       : (_) => _onLongPressEnd(),
-                  onLongPressCancel: onLongPressStart == null
-                      ? null
-                      : _onLongPressCancel,
+                  onLongPressCancel:
+                      onLongPressStart == null ? null : _onLongPressCancel,
                   child: _TilerEventInnerGridWidget(
-                     tilerEvent: tilerEvent!,
-                     // The rendered
-                     // pixel height decides whether the caption fits.
-                     tileHeight: this.widgetHeight,
-                     // The drag-to-reschedule persistence outcome
-                     // (overlay badge only — never alters size/caption/layout).
-                     saveStatus: (this.widget is TileGridWidget)
-                         ? ((this.widget as TileGridWidget).saveStatus)
-                         : TileSaveStatus.idle,
-                     hasDottedBorder: (this.widget is TileGridWidget)
-                         ? ((this.widget as TileGridWidget).hasDottedBorder)
-                         : false,
-                   )),
+                    tilerEvent: tilerEvent!,
+                    // The rendered
+                    // pixel height decides whether the caption fits.
+                    tileHeight: this.widgetHeight,
+                    // The drag-to-reschedule persistence outcome
+                    // (overlay badge only — never alters size/caption/layout).
+                    saveStatus: (this.widget is TileGridWidget)
+                        ? ((this.widget as TileGridWidget).saveStatus)
+                        : TileSaveStatus.idle,
+                    hasDottedBorder: (this.widget is TileGridWidget)
+                        ? ((this.widget as TileGridWidget).hasDottedBorder)
+                        : false,
+                  )),
             ),
           ),
         ),
@@ -591,31 +591,30 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final tileThemeExtension = theme.extension<TileThemeExtension>()!;
 
-    EdgeInsets gridPadding = EdgeInsets.all(10);
-    if (this.tilerEvent.duration.inMilliseconds <=
-        TileGridWidgetState.minDuration.inMilliseconds) {
-      gridPadding = EdgeInsets.fromLTRB(10, 5, 0, 0);
-    }
     Color color = Color.fromRGBO(tilerEvent.colorRed ?? 255,
         tilerEvent.colorGreen ?? 255, tilerEvent.colorBlue ?? 255, 1);
     String name = this.tilerEvent.name ?? "--no--name";
+    // Pastel card: tile color tinted over surface, full color kept for the
+    // leading accent bar, text on the theme's surface tokens.
+    final TileCardStyle style = TileCardStyle.from(color, colorScheme);
+    const double cardRadius = 12;
     Decoration uiDecoration = BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.all(Radius.circular(10)),
+      color: style.background,
+      borderRadius: BorderRadius.all(Radius.circular(cardRadius)),
       boxShadow: [
         BoxShadow(
-          color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.1),
-          spreadRadius: 0.5,
-          blurRadius: 1,
+          color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.06),
+          blurRadius: 2,
           offset: Offset(0, 1),
         ),
       ],
     );
+    bool showAccent = true;
     if (tilerEvent.isWhatIf == true) {
-      color = Utility.randomColor;
       name = AppLocalizations.of(context)!.foreCastTile;
+      showAccent = false;
       uiDecoration = BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(cardRadius),
         color: colorScheme.surfaceContainerLowest,
         border: Border.all(
           color: colorScheme.primary,
@@ -623,57 +622,105 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
         ),
       );
     }
+
+    // The card shell: decoration + clip + the 3px accent bar down the left
+    // edge. [content] is null for the collapsed (too-short) bar.
+    Widget shell(Widget? content) {
+      return Container(
+        decoration: uiDecoration,
+        clipBehavior: Clip.antiAlias,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (showAccent)
+              Container(
+                key: const Key('daygrid_tile_accent'),
+                width: 3,
+                color: style.accent,
+              ),
+            if (content != null) Expanded(child: content),
+          ],
+        ),
+      );
+    }
+
+    Widget withHighlight(Widget child) {
+      if (!hasDottedBorder) return child;
+      // The highlighted TileCast action's dotted border —
+      // the same DashedBorderPainter treatment as `EnhancedTileCard`; it
+      // survives the collapse because it is the only signal marking the
+      // selected TileCast action tile.
+      return CustomPaint(
+        painter: DashedBorderPainter(
+          color: colorScheme.primary,
+          strokeWidth: 3,
+          dashWidth: 8,
+          dashSpace: 4,
+          borderRadius: cardRadius,
+        ),
+        child: child,
+      );
+    }
+
     // Too short for the caption —
     // collapse to a plain color bar (no padding, no name).
     Widget body;
     if (TileGridWidgetState.tileContentCollapsed(tileHeight)) {
-      final Widget bar = Container(decoration: uiDecoration);
-      if (!hasDottedBorder) {
-        body = bar;
-      } else {
-        // The preview highlight (dotted border) survives the collapse — it
-        // is the only signal marking the selected TileCast action tile.
-        body = CustomPaint(
-          painter: DashedBorderPainter(
-            color: colorScheme.primary,
-            strokeWidth: 3,
-            dashWidth: 8,
-            dashSpace: 4,
-            borderRadius: 10,
-          ),
-          child: bar,
-        );
-      }
+      body = withHighlight(shell(null));
     } else {
-      final Widget tileBody = Container(
-          decoration: uiDecoration,
-          padding: gridPadding,
-          child: Text(
-            name,
-            overflow: TextOverflow.ellipsis,
-            style: new TextStyle(
-              fontSize: 13.0,
-              fontFamily: TileTextStyles.rubikFontName,
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
-          ));
-      if (!hasDottedBorder) {
-        body = tileBody;
-      } else {
-        // The highlighted TileCast action's dotted border —
-        // the same DashedBorderPainter treatment as `EnhancedTileCard`.
-        body = CustomPaint(
-          painter: DashedBorderPainter(
-            color: colorScheme.primary,
-            strokeWidth: 3,
-            dashWidth: 8,
-            dashSpace: 4,
-            borderRadius: 10,
-          ),
-          child: tileBody,
-        );
+      // No glyph on the card: location/meeting details live in the tap-out
+      // bottom sheet (PreviewDetailsTileWidget), not on the grid tile.
+      final bool showTimeRange =
+          TileGridWidgetState.tileTimeRangeVisible(tileHeight) &&
+              tilerEvent.start != null &&
+              tilerEvent.end != null;
+      String? timeRange;
+      if (showTimeRange) {
+        final localizations = MaterialLocalizations.of(context);
+        String fmt(int ms) => localizations.formatTimeOfDay(
+              TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(ms)),
+            );
+        timeRange = TileCardStyle.compactTimeRange(
+            fmt(tilerEvent.start!), fmt(tilerEvent.end!));
       }
+      final Widget content = Padding(
+        padding: const EdgeInsets.fromLTRB(8, 10, 8, 6),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13.0,
+                height: 1.25,
+                fontFamily: TileTextStyles.rubikFontName,
+                color: style.title,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            if (timeRange != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 1),
+                child: Text(
+                  timeRange,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.0,
+                    height: 1.2,
+                    fontFamily: TileTextStyles.rubikFontName,
+                    color: style.subtitle,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+      body = withHighlight(shell(content));
     }
     // Overlay-only save badge: a `Stack` (the body is the top-left,
     // non-positioned child, so the tile's size/caption/overlap layout and
@@ -711,8 +758,7 @@ class _TilerEventInnerGridWidget extends StatelessWidget {
           height: 10,
           child: CircularProgressIndicator(
             strokeWidth: 1.5,
-            valueColor:
-                AlwaysStoppedAnimation<Color>(colorScheme.onSurface),
+            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.onSurface),
           ),
         );
         background = Colors.white.withValues(alpha: 0.92);

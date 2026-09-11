@@ -59,14 +59,21 @@ class _TimeOfDayTimeCellState extends TimeCellWidgetState {
           width: widgetWidth,
           child: Stack(
             children: [
-              Positioned(right: 0, child: Text("$formattedTimeOfDay")),
+              // Small, muted label sitting just above the hour line; the
+              // line itself starts at the gutter edge (TileTimeCellWidget).
               Positioned(
-                  right: 0,
-                  child: Container(
-                    color: colorScheme.primary,
-                    height: TileDimensions.thickness,
-                    width: 20,
-                  ))
+                right: 4,
+                top: 2,
+                child: Text(
+                  "$formattedTimeOfDay",
+                  style: TextStyle(
+                    fontSize: 11,
+                    height: 1.0,
+                    color: colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

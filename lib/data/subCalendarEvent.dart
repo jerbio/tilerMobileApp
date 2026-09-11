@@ -65,8 +65,10 @@ class SubCalendarEvent extends TilerEvent {
   }
 
   bool get isAllDay {
+    // Fallback: longer than the active day (16h). Same unit on both sides —
+    // the previous ms-vs-µs comparison made this effectively never true.
     return _isAllDay ??
-        this.duration.inMilliseconds > Utility.activeDayDuration.inMicroseconds;
+        this.duration.inMilliseconds > Utility.activeDayDuration.inMilliseconds;
   }
 
   bool get isBeforeNow {

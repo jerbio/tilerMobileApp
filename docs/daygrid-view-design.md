@@ -1,9 +1,9 @@
 # DayGrid View — Design & Tracking
 
-> Status: **Design locked (§10 decisions settled — C16 + C17 decided 2026-09-09) / P1 complete (Steps 1.1–1.8); P2 complete (Steps 2.1–2.4); P3 Step 3.1 complete (travel bands, `a269b88` + `c95123f`); P4 Steps 4.1–4.2 complete (drag-and-drop, `7c3db43` + `fcf514e` + `993424a`; 36 DnD tests green; **P4 GA gate skipped/deferred 2026-09-09 — resume after the P5 addendum**); P5 (§14 chrome addendum: top-chrome layout + date-picker (C16) + day-summary entry point (C17)) design refined 2026-09-09, root cause verified against current code, NOT implemented**
-> Last updated: 2026-09-09
+> Status: **Design locked (§10 decisions settled — C16 + C17 decided 2026-09-09) / P1 complete (Steps 1.1–1.8); P2 complete (Steps 2.1–2.4); P3 Step 3.1 complete (travel bands, `a269b88` + `c95123f`); P4 Steps 4.1–4.2 complete (drag-and-drop, `7c3db43` + `fcf514e` + `993424a`; 36 DnD tests green; **P4 GA gate skipped/deferred 2026-09-09 — resume after the P5 addendum**); P5 (§14 chrome addendum: top-chrome layout + date-picker (C16) + day-summary entry point (C17)) Steps 15.1–15.4 implemented (`b4f1d0a`, `d93d1f6`, `6786fd1`, `0830cad`, `dc6b853`), Step 15.5 on-device QA in progress); **P6 (§16 visual redesign per the 2026-09-11 mock: scroll-collapsing header, restyled grid/tiles, in-column travel band, any-day summary entry, no-snap contract) — decisions C18–C27 locked 2026-09-11, NOT implemented**
+> Last updated: 2026-09-11
 > Owner: _TBD_
-> Execution plan: §12 (P1–P4 step-by-step TDD plan) · §15 (P5 chrome-layout addendum step-by-step TDD plan, 5 steps)
+> Execution plan: §12 (P1–P4 step-by-step TDD plan) · §15 (P5 chrome-layout addendum step-by-step TDD plan, 5 steps) · §16 (P6 visual-redesign step-by-step TDD plan, 8 steps)
 
 Living document for surfacing the calendar **DayGrid** view in the main UI and
 layering on future UI enhancements (pinch-to-zoom, drag-and-drop, travel-time
@@ -425,6 +425,14 @@ P4 last (of P1–P4) is deliberate: depends on coordinate inversion proven in P2
 | P5 | Day-label tap → `showDatePicker` → `DateChangeEvent` (C16) | "Wired date of header to uidate manager" (hash volatile — amended through checkpoint cycles) | Done | Step 15.2 (widget, `d93d1f6`) + 15.4 (bloc wiring): `GridDailyPageBody` forwards the `pickDate` seam to `DayGridTopChromeRow` and its `onDateSelected` dispatches `DateChangeEvent` (`DateChangeTrigger.buttonPress`) to `UiDateManagerBloc`, mirroring `DayRibbonCarousel.onDateButtonTapped`; cancelled (null) and same-day picks are no-ops; the `daygrid_date_picker_opened`/`daygrid_date_picker_selected` logs from 15.2 now fire in production via this path; `test/daygrid_date_picker_navigation_test.dart` (3); §14.7 |
 | P5 | Day summary entry point in grid mode, today-only (C17) | "Wired date of header to uidate manager" (hash volatile — amended through checkpoint cycles) | Done | Step 15.4; `DayGridPage` mounts the unmodified `DaySummaryHeader` above the grid only when the shown day is today; tapping it opens `TodayStatusScreen` with the day's `Timeline` (same `TimelineSummary`/`ScheduleSummaryBloc` pipeline as list mode); `test/daygrid_day_summary_entry_test.dart` (3); §14.6 |
 | P5 | On-device QA + tutorial spotlight recheck | _TBD_ | In progress | Step 15.5; headless verification done 2026-09-10 — tutorial-spotlight recheck (code): `scheduleViewKey` attached to the outer full-body `Container` (`AuthorizedRoute.dart:568`), geometry identical in list & grid mode; `topRightActionsKey` attached to the shared `HomeTopRightActionsRow` `Row` (`homeTopRightActions.dart:40`), present in both the legacy `Positioned` overlay and the grid in-flow chrome (same `GlobalKey`, now-correct in-flow geometry); `onboarding_tour_sync_test.dart` id→key contract + `topRightActionsKey` live-mount pass. Layout-contract (`daygrid_chrome_layout_test.dart`: no viewport overlap, no RenderFlex overflow at the 480px short viewport, non-grid legacy-`Stack` regression), date-picker + C17 (`daygrid_date_picker_navigation_test.dart` 3, `daygrid_day_summary_entry_test.dart` 3), and grid regressions (`ribbon_tab`, `daygrid_layout_swap`, `daygrid_banner_strip`, `daygrid_pinned_header`, `tile_carousel`, `day_ribbon_carousel`) all green; `flutter analyze` clean on the four grid files. The reported grid-mode overflow is **not reproduced** at the headless viewports — a real-device geometry case, remains an open on-device item. On-device QA (small-height/tablet/notched) pending user hardware |
+| P6 | Grid body restyle (gutter, hour lines, now-line accent, tile card, pinned card) | _TBD_ | Not started | Step 16.1; pure paint inside `_TilerEventInnerGridWidget` / gutter cells / `DayGridPinnedHeader`; keys + `_TileLayout` untouched |
+| P6 | Tile width/height transitions (closes an existing snap gap) | _TBD_ | Not started | Step 16.2; `AnimatedPositioned` currently animates only `top`/`left` (`tileGridWidget.dart:476`) |
+| P6 | `CustomScrollView(center:)` host + negative-extent header slot | _TBD_ | Not started | Step 16.3; C18 — grid stays anchored at `pixels == 0`, header lives in `[minScrollExtent, 0)`; zero scroll↔time math changes |
+| P6 | `DayGridScrollHeader` (big date, subtitle, compact swipeable day strip, conflict + RSVP banner rows) | _TBD_ | Not started | Step 16.4; C21/C23; built in isolation |
+| P6 | Top bar rework: toggle · date pill ▾ · day-summary (any day) · search · settings, cross-fade by reveal progress | _TBD_ | Not started | Step 16.5; C19/C20; retires the today-only `DaySummaryHeader` mount from `DayGridPage` (C17 superseded) |
+| P6 | Travel in-column band tier | _TBD_ | Not started | Step 16.6; 4th zoom tier drawn beneath tiles, not an overlap-column participant |
+| P6 | Bottom-nav labels | _TBD_ | Not started | Step 16.7; C25; not grid-scoped — separate small commit |
+| P6 | No-snap regression harness + on-device QA | _TBD_ | Not started | Step 16.8; C27; `test/daygrid_no_snap_test.dart` |
 
 ---
 
@@ -684,6 +692,7 @@ gate reviewer's name goes in the tracker Notes column.
 
 | Date | Author | Change |
 |---|---|---|
+| 2026-09-11 | _TBD_ | P5 status corrected (15.1–15.4 done, 15.5 in progress). P6 visual redesign designed from the 2026-09-11 three-state mock: decisions C18–C27 locked (§16.1), no-snap contract (§16.2), 8-step TDD plan (§16.3). Free-time blocks explicitly rejected (C22). |
 | 2026-07-19 | _TBD_ | Initial design captured (options analysis, parametric core, zoom/drag/travel designs, phasing, concerns). |
 | 2026-09-03 | _TBD_ | Code-review findings folded in: P1 hardening list (rebuild safety, `didUpdateWidget`, responsive width, filtering parity, refresh, cross-midnight, overlap), pinch gesture-arena risk, C7 escalated to P1 blocker, C10–C14 added. New §6.5 tap-to-add design; tap-to-add slotted into P2. |
 | 2026-09-03 | _TBD_ | Decisions locked: C1 constructor refactor, C2 ribbon-as-tab, C3 compact banner strip, C4 zoom-dependent snap (15 min seed), C6 global zoom, C7 exclude+pin, C13 1h tap-to-add default. Sections 6.1/6.2/6.5, touch list, phasing, and tracking updated to match. |
@@ -718,7 +727,7 @@ gate reviewer's name goes in the tracker Notes column.
 | 2026-09-10 | _TBD_ | C17 follow-up — `daygrid_summary_opened` now fires on grid-mode `DaySummaryHeader` taps with a reliable, testable seam. Seam: `DayGridPage.gridSummaryOpenTag(dayIndex)` (prints the `DayGrid::` debug line + `AnalysticsSignal.send('daygrid_summary_opened', {'dayIndex': ...})` + increments the production-inert `DayGridPage.summaryOpenTagFireCount` seam) is passed as the new optional `DaySummaryHeader.onOpen`; the header calls it from its **own deepest tap recognizer** immediately before navigating (non-preview only). Rationale (verified by a throwaway probe): an outer competing `GestureDetector.onTap` never fires because the header's deeper recognizer wins the tap arena, and a raw `Listener.onPointerUp` would overcount (fires on any pointer-up — long-press / drag-release that does not navigate). `onOpen` fires exactly once per real tap that also opens the summary, and is null for every other caller (list mode / preview), so the shared header is behaviour-identical for them. The counter is the reliable test seam because the debug line flows through the non-interceptable built-in `print` via `Utility.debugPrint` and `AnalysticsSignal.send` is a no-op in this build. Removed the dead `gridSummaryOpenTagWith` helper and the temporary `test/zz_gesture_probe_test.dart` probe. Strengthened `test/daygrid_day_summary_entry_test.dart`: the widget test asserts the grid mount wires `onOpen` (non-null) AND that the tag **fires** on a real tap (counter resets to 0, real header tap, then asserts == 1) AND navigation still occurs on the same tap; the unit test asserts the returned line's `daygrid_<area>_<event>` shape + `dayIndex` payload + `DayGrid::` prefix. Grid-only and list-mode-untagged preserved. Targeted daygrid tests green (29 across five daygrid suites incl. the 5-entry file), `flutter analyze` clean on the touched files. |
 ---
 
-## 14. Addendum — grid-mode chrome layout refinement (design refined 2026-09-09, NOT implemented)
+## 14. Addendum — grid-mode chrome layout refinement (design refined 2026-09-09; implemented via §15, Steps 15.1–15.4 done)
 
 > Status: **Design refined and root-caused against the current tree — no code changes
 > made.** These are chrome/layout adjustments to the Daily view header in **grid mode
@@ -1017,3 +1026,164 @@ it's scaffolding for 15.2/15.3.
 **P5 gate:** all five steps individually reviewed and approved by the user before commit;
 independent engineer (or user) re-check of Step 15.5's manual checklist before marking §11's
 P5 rows Done.
+
+---
+
+## 16. P6 — Visual redesign (mock 2026-09-11, decisions locked 2026-09-11, NOT implemented)
+
+> Source: the three-state mock (1. Top of Day · 2. Mid Day scrolled · 3. Extended
+> Events scrolled), image in `docs/assets/` (add when committed). Scope is **grid mode
+> only** except Step 16.7 (bottom-nav labels), which is app-wide and committed on its own.
+> Same review-before-commit policy as §14.8 / §15: **no step is committed without the
+> user approving the diff.**
+
+### 16.1 Decisions (C18–C27)
+
+| # | Decision | Notes |
+|---|---|---|
+| **C18** | **Scroll-driven header collapse via a `center`-anchored `CustomScrollView`.** The big header (date, subtitle, day strip, banners) is a sliver placed *before* the `center` sliver, i.e. in **negative scroll extent** `[minScrollExtent, 0)`. The grid Stack is the `center` sliver and stays anchored at `pixels == 0`. | Chosen over threading a `contentTopInset` through the 9 `position.pixels` / `viewportDimension` call sites in `dayGridWidget.dart` (lines 744, 866, 914, 1084, 1135, 1156, 1168, 1171, 1585). With `center`, **none of the scroll↔time math changes** — `pixels` still equals grid-y. A header height change moves `minScrollExtent`, never the grid. The three auto-scroll paths already clamp to `0.0` (743/915/1584) so they can never reveal the header; the drag edge auto-scroll (1170) clamps to `minScrollExtent` and must be changed to `0.0` so a drag near the top edge does not pull the header down. Header reveal progress = `(-pixels / headerExtent).clamp(0, 1)`. |
+| **C19** | List/grid toggle stays in the fixed top bar, left slot, in both header states. | Mock 1 omits it; treated as an omission. |
+| **C20** | **Day-summary entry point moves to the fixed top bar, adjacent to the date pill, for ANY day.** Tapping it pushes `TodayStatusScreen(timeline: Timeline(dayStart, dayEnd))` for the *shown* day. | Supersedes C17's today-only `DaySummaryHeader` mount in `DayGridPage` (removed in Step 16.5). Verified 2026-09-11: `TodayStatusScreen` fetches `getTimelineSummary(widget.timeline)` directly (`todayStatusScreen.dart:74`) — no today-only assumption, no `ScheduleSummaryBloc` day-index coupling, so any-day is free. `daygrid_summary_opened` tag moves with it (payload gains `isToday`). List mode's `DaySummaryHeader` is untouched. |
+| **C21** | Banner rows: **conflicts AND pending RSVP**, each its own full-width row (`N conflicts · Review →`, `N RSVPs · Respond →`), in the scrolling header. Extended tiles stay in the pinned card (`DayGridPinnedHeader`, already outside the scroll). | Reuse the three detectors `DayGridBannerStrip` already wires (`ConflictGroup.detectGroups`, `PendingRsvpBanner.detectPendingRsvpTiles`, `ExtendedTilesBanner.detectExtendedTiles`) and the same modals. `DayGridBannerStrip` chips are retired in grid mode. |
+| **C22** | **No free-time blocks in the grid.** Rejected 2026-09-11. | Tap-to-add on empty space (C12–C14) stays as the affordance. `FreeSlot` model remains list-only. |
+| **C23** | Day strip = `DayRibbonCarousel` **restyled compact** (circle day number + weekday abbrev, selected = filled primary), **swipeable**, laid out in the scrolling header. | Reuse the carousel + `DateChangeEvent` wiring; new compact `DayButton` variant behind a param so list/Weekly/Monthly ribbons are pixel-identical. `DayRibbonTab` (C2) is retired in grid mode only. |
+| **C24** | **No glyph on the grid tile card** (revised 2026-09-11 after on-device review). Location / meeting-link details stay in the tap-out bottom sheet (`PreviewDetailsTileWidget`, which already renders the address row). The card shows accent bar + name + time range only. | Earlier draft put the location-type icon on the card; rejected on-device — it read as clutter and duplicated the sheet. No emoji extraction, no category icons either. |
+| **C25** | Bottom-nav text labels (`Today` / `Tiler` / `Share`) under the icons. | App-wide, not grid-scoped — Step 16.7, its own commit. |
+| **C26** | Initial landing unchanged: auto-scroll to the first tile hour / `defaultScrollHour` (header collapsed). The header is revealed by scrolling up; the top bar's date pill + summary button keep the collapsed state fully navigable. | Alternative (deferred): land at `minScrollExtent` (header visible) when the first tile starts within the first N hours. Revisit after on-device QA if the collapsed landing feels wrong. |
+| **C27** | **No-snap contract** — §16.2 is normative for every step; Step 16.8 encodes it as tests. | |
+
+### 16.2 No-snap contract (normative)
+
+"Snap" = any single-frame, non-animated change of ≥ 4 px in the on-screen position of a
+visible tile, hour line, or the grid viewport origin that the user did not cause with a
+gesture. Verified-existing protections: `didUpdateWidget` keeps `pixels` on tile
+refresh (`dayGridWidget.dart:575`, `DayGrid::scroll::keep`); stable carousel key across
+`ScheduleLoadedState`; `ScheduleLoadingState` carries previous `subEvents` (no spinner
+swap); `top`/`left` animate 300 ms; enter/exit animations.
+
+Rules every P6 step must satisfy:
+
+1. **Fixed top bar.** `DayGridTopChromeRow` never changes height. Its contents cross-fade
+   (opacity only) by header-reveal progress. No `Visibility`/conditional children that
+   change its extent.
+2. **Header in negative extent (C18).** Anything in the scrolling header may change
+   height freely — it moves `minScrollExtent`, not the grid. Inside the header, banner
+   rows appear/disappear via `AnimatedSize` (200 ms) so the reveal area itself does not
+   pop when the user *is* looking at it.
+3. **Pinned card outside the scroll** (`DayGridPinnedHeader`) is the one chrome element
+   that *does* shrink the grid viewport when it appears. Wrap in `AnimatedSize`; it is
+   rare (an all-day tile appearing on the shown day) and the animation is the mitigation.
+4. **Tile geometry animates in all four dimensions** — `top`, `left`, `width`, `height`
+   — under the same 300 ms / `easeInOutCubic` / `mode == idle` / reduced-motion gate.
+   (Today `width`/`height` are plain `Container` props inside the `AnimatedPositioned`.)
+5. **Restyle never touches identity.** Tile `ValueKey('day_$dayIndex/<uniqueId>')`,
+   `_TileLayout`, `_diffTiles`, `_lastLayoutById` are not modified by any paint step.
+6. **Travel bands are not layout participants.** The in-column band draws *beneath*
+   tiles (lower z, full column width); it never enters `OverlapColumns.assign`, so a
+   travel recompute after settle cannot re-cluster tiles.
+7. **Auto-scroll never reveals the header** (clamp lower bound `0.0` everywhere,
+   including the drag edge-scroll top zone). Only a user pull-down reveals it.
+8. **Day swap is the only full re-sync** (unchanged): a different `dayKey` gets a fresh
+   grid and the initial scroll; same-day refreshes never re-sync.
+
+### 16.3 Step-by-step implementation plan (TDD) — P6
+
+Same Red → Green → Refactor loop, logging conventions, and per-step approval gate as §15.
+Order is chosen risk-first: pure paint (biggest visual win, zero structural risk) → the
+one structural change (scroll host) → new chrome → new rendering tiers → harness.
+
+#### Step 16.1 — Grid body restyle (pure paint)
+
+**Goal:** mock 2's look inside the grid: neutral hour lines and grey labels, narrower
+gutter, distinct now-line accent, pastel tile cards, restyled pinned card. No layout,
+identity, or gesture changes.
+
+| | |
+|---|---|
+| Touched | `tileTimeCell.dart` (hour line `colorScheme.outlineVariant`-class token, 1 px; half-hour tick lighter), `timeOfDayTimeCell.dart` (label `onSurfaceVariant`, smaller), `dayGridWidget.dart` (now-line: keep `error` but add a 6 px dot at the gutter + 2 px line so it reads against grey lines; gutter width via `TileDimensions.timeOfDayCellWidth` — reduce only if the label still fits at the widest locale/AM-PM width), `tileGridWidget.dart` → `_TilerEventInnerGridWidget` (bg = tile color @ ~18 % alpha over `surface`; 3 px left accent bar in full tile color; no glyph (C24); title `onSurface` w600; second line `h:mm – h:mm` in `onSurfaceVariant` when `!tileContentCollapsed`; radius 12; the existing 32 px collapse threshold and the non-viable / dotted-border / preview treatments preserved), `dayGridPinnedHeader.dart` (card: tile color bg, white title, "All day" trailing, calendar glyph),  |
+| Tests first | `test/daygrid_tile_card_style_test.dart` — time-range line present above the collapse threshold and absent below it; no icon rendered inside the card even when the tile has an address (C24); accent bar + tinted bg derive from the tile color (assert the tint math as a pure fn `TileCardStyle.from(color, scheme)`); dotted-border highlight and non-viable styling still applied. Existing `daygrid_adaptive_test.dart` (collapse threshold) and `daygrid_refresh_nowline_test.dart` (now-line keys) unchanged and green. |
+| Logging | none (paint only) |
+| Feedback | none new |
+| Exit | all existing grid suites green **unmodified**; `flutter analyze` clean for touched files; on-device screenshot vs mock 2 (side-by-side) attached to the approval request |
+
+#### Step 16.2 — Tile width/height transitions (no-snap rule 4)
+
+**Goal:** close the existing gap where overlap re-clustering snaps neighbor widths.
+
+| | |
+|---|---|
+| Touched | `tileGridWidget.dart` — replace the fixed `Container(height/width)` inside `AnimatedPositioned` with animated `width`/`height` on the `AnimatedPositioned` itself (same duration/curve/gates); `_RemovingTile` ghosts keep their last width |
+| Tests first | extend `test/daygrid_transitions_test.dart` — adding an overlapping tile shrinks the existing tile's width over the 300 ms window (assert the width at t=150 ms is strictly between old and new); zero-duration under `disableAnimations` and while `mode != idle` |
+| Exit | `daygrid_transitions_test.dart`, `daygrid_enter_exit_test.dart`, `daygrid_overlap_columns_test.dart`, all DnD tests green |
+
+#### Step 16.3 — `CustomScrollView(center:)` host with an (initially empty) header slot (C18)
+
+**Goal:** the single structural change, landed with **no visible difference** so it can
+be verified purely by the existing suite: swap `SingleChildScrollView` for a
+`center`-anchored `CustomScrollView`, add a `header` seam, and expose reveal progress.
+The header itself is Step 16.4.
+
+| | |
+|---|---|
+| Touched | `dayGridWidget.dart` — `SingleChildScrollView(padding: bottom)` → `CustomScrollView(controller, center: _gridCenterKey, slivers: [ if (header != null) SliverToBoxAdapter(header), SliverToBoxAdapter(key: _gridCenterKey, child: <existing Stack>), SliverToBoxAdapter(SizedBox(height: bottomClearance)) ])`; new ctor params `Widget? header`, `ValueChanged<double>? onHeaderRevealChanged` (progress `(-pixels / -minScrollExtent).clamp(0, 1)`, emitted from the scroll listener, deduped); drag edge auto-scroll top clamp `minScrollExtent` → `0.0` (line 1170); `RefreshIndicator` stays outermost (it triggers at `minScrollExtent`, i.e. after a full reveal — intended). `dayGridPage.dart` passes `header: null` for now. |
+| Tests first | `test/daygrid_scroll_host_test.dart` — (a) with `header == null`, `minScrollExtent == 0` and every existing scroll assertion holds; (b) with a 240 px test header, `pixels == 0` still puts 12 AM at the top of the viewport (grid anchored), `minScrollExtent == -240`, auto-scroll-to-now / `_pendingScrollTo` / drag edge-scroll never go below `0.0`; (c) **the core no-snap test:** scroll to grid y = 600, then rebuild with a 300 px header — `pixels` still 600 and the tile at 10 AM has the same on-screen `Rect`; (d) pull-down reveals the header and `onHeaderRevealChanged` reports 0 → 1 monotonically; (e) `RefreshIndicator` still fires after a full reveal. The 4 grid tests that `find.byType(SingleChildScrollView)` (`daygrid_drag_persist_test`, `daygrid_layout_swap_test`, `daygrid_pinch_zoom_test`, `daygrid_widget_rebuild_test`) are re-pointed at `CustomScrollView` — **that finder swap is the only permitted edit to existing tests in P6.** |
+| Logging | `DayGrid::scroll::reveal p=<0..1>` (debug, throttled to changes ≥ 0.05) |
+| Exit | all 12+ grid suites green (4 with the finder edit only); pinch focal, tap-to-add, DnD, auto-scroll-to-now behave byte-identically on-device; `flutter analyze` clean |
+
+#### Step 16.4 — `DayGridScrollHeader` (big date, subtitle, compact day strip, banner rows), in isolation
+
+**Goal:** mock 1's header, built and tested standalone, not yet mounted.
+
+| | |
+|---|---|
+| New files | `lib/components/dayGridScrollHeader.dart`; compact `DayButton` variant (`dayButton.dart`, param `compact: false` default → existing ribbons untouched) |
+| Touched | `dayRibbonCarousel.dart` (`compact` passthrough; the `topMargin: 0` path already exists), `dayGridBannerStrip.dart` (detector logic factored into `DayGridAlerts.detect(tiles) → {conflictGroups, pendingRsvp, extended}` so the header and the pinned card share one pass; the chip renderer is deleted in Step 16.5) |
+| Content | line 1: big date (`DateTimeHuman` prefix for Today/Tomorrow, e.g. "Today · Thu, Sep 11"); line 2 subtitle from the alert counts (`3 conflicts · 1 RSVP need attention` / `All clear`, l10n en+es); compact swipeable day strip (C23); banner rows (C21) each `AnimatedSize`-wrapped, tap → existing modal (conflict stack / `PendingRsvpModal`) |
+| Tests first | `test/daygrid_scroll_header_test.dart` — subtitle pluralization + "All clear"; conflict row present iff conflicts, RSVP row iff pending RSVP, both when both; tapping rows opens the same modals list mode does (mock the navigator); day-strip tap dispatches `DateChangeEvent` exactly as `DayRibbonCarousel` (reuse `day_ribbon_carousel_test.dart` patterns); `compact: false` ribbons render pixel-identically (existing ribbon tests unmodified). |
+| Logging | `daygrid_header_conflicts_tapped`, `daygrid_header_rsvp_tapped` |
+| Exit | new tests green; not referenced by `dayGridPage.dart` yet (grep-verified) |
+
+#### Step 16.5 — Top bar rework + mount the header + any-day summary (C19/C20) — the visible switch
+
+**Goal:** wire it all: header mounted into the grid's negative extent; top bar becomes
+`[toggle] [date pill ▾] [summary] … [search] [settings]`; the pill cross-fades by reveal
+progress; summary opens `TodayStatusScreen` for the shown day; C17's today-only
+`DaySummaryHeader` mount and the `DayGridBannerStrip` chips are retired from grid mode.
+
+| | |
+|---|---|
+| Touched | `dayGridTopChromeRow.dart` (layout per above; pill = existing C16 picker seam + chevron, `Opacity` driven by a `ValueListenable<double>` reveal progress — at progress 1 (header fully visible) the pill fades to ~0 so the big date is not duplicated, at 0 it is fully visible; new summary `IconButton` → `Navigator.push(TodayStatusScreen(timeline: day))` + `daygrid_summary_opened {dayIndex, isToday}`), `dayGridPageBody.dart` (owns a `ValueNotifier<double> headerReveal`; forwards only the *current* day-page's `onHeaderRevealChanged`), `dayGridPage.dart` (pass `header: DayGridScrollHeader(...)`; remove the `DaySummaryHeader` mount + `DayGridBannerStrip`; keep `DayGridPinnedHeader` wrapped in `AnimatedSize`), `dayGridBannerStrip.dart` (delete the chip renderer, keep `DayGridAlerts`), `dayRibbonTab.dart` (no change — simply no longer used in grid mode) |
+| Tests first | `test/daygrid_chrome_layout_test.dart` (extend; do not rewrite the legacy-Stack regression group): top bar height constant across reveal 0 → 1 and across today/non-today; pill opacity 1 at reveal 0, ≈0 at reveal 1; summary button present for today **and** for a non-today day, and pushes `TodayStatusScreen` with that day's timeline. `daygrid_day_summary_entry_test.dart` — retarget the C17 assertions at the new button ("renders for today" / "not for non-today" become "summary button for any day"). `daygrid_banner_strip_test.dart` — retarget at `DayGridAlerts` + header rows. List-mode `DaySummaryHeader` tests untouched. |
+| Logging | `daygrid_summary_opened` (moved), `daygrid_date_picker_opened/selected` (unchanged) |
+| Feedback | summary-open rate now split by `isToday` — the first signal on whether any-day summary earns its slot |
+| Exit | all suites green; on-device: reveal/collapse is continuous (no threshold pop), no duplicate date at either end, toggle list ⇄ grid shows no flash |
+
+#### Step 16.6 — Travel in-column band tier
+
+**Goal:** mock 2's `Travel • 24 min  2:00 – 2:24 PM` band inside the tile column for tall
+enough travel windows; the existing gutter icon tier remains for short ones (mock 3).
+
+| | |
+|---|---|
+| Touched | `travelBandWidget.dart` — new tier above `expandedHeightThreshold` (56 px): a full-column-width pastel band (tertiary-tinted bg, car glyph, `Travel • N min`, time range) positioned at the travel window's `top(t)`/`height(d)`, **rendered in the `travelBandWidgets` layer beneath tiles** (rule 6); the P3 gutter pill is replaced by this band at that tier; tap-to-directions unchanged |
+| Tests first | extend `test/daygrid_travel_band_test.dart` — tier selection by height (hairline < 18 / icon ≥ 18 / column band ≥ 56); band `Rect` spans the tile column; band is z-below any tile it overlaps; `OverlapColumns.assign` input unchanged with/without travel (rule 6); home-return no-directions rule preserved |
+| Exit | travel + DnD suites green; settle-recompute on-device shows the band re-sizing without any tile re-clustering |
+
+#### Step 16.7 — Bottom-nav labels (C25, app-wide, own commit)
+
+| | |
+|---|---|
+| Touched | `homeBottomNav.dart` — `Text` label under each of the 3 items (`Today`/view label, `Tiler`, `Share`), l10n en+es; if the bar grows, the grid's `_computeEdgeScrollBottomClearance` already reads the real `Scaffold` bottom-bar height, so DnD bottom-edge clearance self-corrects |
+| Tests first | `test/home_layout_test.dart` — extend the `HomeBottomNav` group with label assertions. The pre-existing failing `HomeFab always shows the chat icon` case is fixed in the same step: expect `Icons.auto_awesome`, matching `homeFab.dart:24`. |
+| Exit | `home_layout_test.dart` fully green; grid DnD bottom-edge tests green |
+
+#### Step 16.8 — No-snap regression harness + on-device QA
+
+| | |
+|---|---|
+| New | `test/daygrid_no_snap_test.dart` — pump `GridDailyPageBody` at a bounded height, scroll the grid to y = 600, then for each perturbation assert `pixels` unchanged **and** every visible tile's `Rect` moves only via animation (sample at t = 0 / 150 / 300 ms; no ≥ 4 px jump at t = 0): (1) same-tile refresh, (2) add a non-overlapping tile, (3) add an overlapping tile (widths animate, rule 4), (4) remove a tile, (5) conflicts 3 → 0 (header shrinks; `minScrollExtent` changes, grid does not), (6) RSVP appears, (7) all-day tile appears (pinned card `AnimatedSize`), (8) `pxPerHour` change while `mode == zooming` (immediate by design — asserts the gate), (9) `now` ticks a minute. |
+| Manual | short phone with the header revealed + 2 banner rows (is the grid still usable?); tablet; notch device; toggle list ⇄ grid ×10; pull-to-refresh from mid-day; DnD near the top edge (header must not reveal); tutorial spotlights (`topRightActionsKey` now spans 5 icons) |
+| Exit | harness green; QA notes recorded in §11 P6 rows; C26 (initial landing) re-evaluated with a one-line verdict |
+
+**P6 gate:** each step reviewed + approved before commit; 16.7 is committed separately from
+the grid steps; §11 P6 rows flipped to Done only after 16.8's manual checklist is recorded.

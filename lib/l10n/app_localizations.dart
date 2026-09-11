@@ -3473,6 +3473,12 @@ abstract class AppLocalizations {
   /// **'Extended Events'**
   String get extendedEventsTitle;
 
+  /// Trailing label on the day-grid pinned card for a tile that spans the whole day
+  ///
+  /// In en, this message translates to:
+  /// **'All day'**
+  String get dayGridAllDay;
+
   /// No description provided for @extendedEventsSubtitle.
   ///
   /// In en, this message translates to:

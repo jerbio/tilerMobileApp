@@ -385,6 +385,7 @@
     },
     "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
     "extendedEventsTitle": "Eventos Extendidos",
+    "dayGridAllDay": "Todo el día",
     "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
     "@extendedEventsSubtitle": {
       "placeholders": {

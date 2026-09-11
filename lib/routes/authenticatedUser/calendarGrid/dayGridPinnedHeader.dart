@@ -40,72 +40,82 @@ class DayGridPinnedHeader extends StatelessWidget {
     if (excluded.isEmpty) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context)!;
     final hm = DateFormat.Hm();
+    final colorScheme = Theme.of(context).colorScheme;
+    // Pinned card: tertiary-tinted, calendar glyph, one row per extended
+    // tile with "All day" (or the time range) trailing.
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      key: const Key('daygrid_pinned_card'),
+      margin: const EdgeInsets.fromLTRB(12, 6, 12, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.indigo.shade400,
-        borderRadius: BorderRadius.circular(12),
+        color: colorScheme.tertiary,
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.withAlpha(77),
+            color: colorScheme.tertiary.withValues(alpha: 0.25),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.white,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
+          Padding(
+            padding: const EdgeInsets.only(top: 1),
+            child: Icon(
+              Icons.calendar_today_rounded,
+              color: colorScheme.onTertiary,
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   l10n.extendedEventsTitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: TileTextStyles.rubikFontName,
-                    fontSize: 13,
+                    fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: colorScheme.onTertiary,
                   ),
                 ),
-              ),
-            ],
-          ),
-          for (final tile in excluded)
-            Padding(
-              padding: const EdgeInsets.only(top: 6, left: 24),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      tile.name ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontFamily: TileTextStyles.rubikFontName,
-                        fontSize: 12,
-                        color: Colors.white,
-                      ),
+                for (final tile in excluded)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tile.name ?? '',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: TileTextStyles.rubikFontName,
+                              fontSize: 13,
+                              color: colorScheme.onTertiary.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          tile.isAllDay
+                              ? l10n.dayGridAllDay
+                              : '${hm.format(DateTime.fromMillisecondsSinceEpoch(tile.start!))} - ${hm.format(DateTime.fromMillisecondsSinceEpoch(tile.end!))}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: colorScheme.onTertiary.withValues(alpha: 0.85),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${hm.format(DateTime.fromMillisecondsSinceEpoch(tile.start!))} - ${hm.format(DateTime.fromMillisecondsSinceEpoch(tile.end!))}',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.white.withAlpha(204),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
+          ),
         ],
       ),
     );

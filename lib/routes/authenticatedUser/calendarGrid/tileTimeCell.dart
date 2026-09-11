@@ -54,9 +54,11 @@ class _TileTimeCellState extends TimeCellWidgetState {
             child: Container(
               decoration: (this.widget as TileTimeCellWidget).decoration ??
                   BoxDecoration(
+                    // Neutral hairline so the grid reads as a calm ruler
+                    // and the now-line (error) stays the only accent.
                     border: Border(
                         top: BorderSide(
-                            color: colorScheme.primary,
+                            color: colorScheme.outlineVariant,
                             width: TileDimensions.thickness)),
                   ),
               height: this.widgetHeight,

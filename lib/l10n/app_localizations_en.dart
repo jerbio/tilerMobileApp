@@ -1938,6 +1938,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get extendedEventsTitle => 'Extended Events';
 
   @override
+  String get dayGridAllDay => 'All day';
+
+  @override
   String extendedEventsSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
