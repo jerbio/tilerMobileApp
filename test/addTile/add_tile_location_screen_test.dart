@@ -146,6 +146,30 @@ void main() {
       expect(find.byKey(const ValueKey('suggestion_1')), findsOneWidget);
     });
 
+    testWidgets('a saved place geocoded by Google is still YOURS (D58)',
+        (tester) async {
+      // The user's own "home" comes back as `source: 'google'`, because
+      // that is who resolved its street address when it was saved. It was
+      // being filed under SUGGESTIONS beside strangers' businesses — and the
+      // mapper, keying on the same predicate, dropped its name from the
+      // payload.
+      final Location home = lookup('home', address: '1292 milo cir')
+        ..userId = 'user-1'
+        ..id = 'tiler-guid-home';
+      final source = FakeLocationSource(searchResults: [
+        home,
+        lookup('Home Depot', id: 'ChIJ-depot'),
+      ]);
+      await runSearch(tester, source, 'home');
+
+      expect(find.text('YOUR PLACES'), findsOneWidget);
+      expect(find.byKey(const ValueKey('savedResult_0')), findsOneWidget,
+          reason: 'home belongs to the user and must be listed as theirs');
+      expect(find.byKey(const ValueKey('suggestion_0')), findsOneWidget,
+          reason: 'the unowned Home Depot is still a suggestion');
+      expect(find.byKey(const ValueKey('suggestion_1')), findsNothing);
+    });
+
     testWidgets('a group with no members is not rendered', (tester) async {
       final source = FakeLocationSource(searchResults: [lookup('Barber Edge')]);
       await runSearch(tester, source, 'barber');
@@ -155,7 +179,12 @@ void main() {
           reason: 'an empty group must not leave a dangling heading');
     });
 
-    test('isSavedPlace keys on source, not on id shape', () {
+    test('isSavedPlace keys on OWNERSHIP, not on source alone (D58)', () {
+      expect(
+        isSavedPlace(lookup('home')..userId = 'user-1'),
+        isTrue,
+        reason: 'a Google-resolved address the user saved is still theirs',
+      );
       expect(isSavedPlace(saved('Barber shop')), isTrue);
       expect(isSavedPlace(lookup('Barber Edge')), isFalse);
       // Absent/empty source is treated as saved: that is the legacy meaning of

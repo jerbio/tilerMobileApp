@@ -24,10 +24,22 @@ import 'package:tiler_app/data/location.dart';
 const Set<String> providerLocationSources = <String>{'google'};
 
 /// Whether [location] came from a map provider rather than the user.
+///
+/// A RAW provider lookup, not merely a provider-resolved address (D58).
+/// `source` records where the address was geocoded and a saved place keeps
+/// that provenance forever — the user's own "home" comes back as
+/// `source: 'google'` because Google resolved the street address when it was
+/// saved. Reading `source` alone therefore mistook the user's places for
+/// search hits, dropped their names from the payload, and made the backend
+/// file a second place named after the address.
+///
+/// Ownership is what distinguishes the two: a saved place carries the
+/// user's id, a search hit belongs to nobody.
 bool locationIsProviderSourced(Location location) =>
     providerLocationSources.contains(
       (location.source ?? '').trim().toLowerCase(),
-    );
+    ) &&
+    (location.userId ?? '').trim().isEmpty;
 
 /// Whether [location]'s name belongs to the USER.
 ///

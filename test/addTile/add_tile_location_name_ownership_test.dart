@@ -170,6 +170,44 @@ void main() {
           reason: 'an edited address is a different place');
     });
 
+    test('a SAVED place whose address came from Google keeps its name (D58)',
+        () {
+      // The reported payload: the screen said "home", the wire carried the
+      // street address, `LocationSource: "google"` and NO tag — so the
+      // backend would have created a second place named after the address.
+      //
+      // `source` records where the ADDRESS was resolved, and a saved place
+      // keeps that provenance forever. It says nothing about whether the
+      // place is the user's. `userId` does.
+      final Location home = Location.fromDefault()
+        ..id = 'tiler-guid-home'
+        ..userId = 'user-1'
+        ..description = 'home'
+        ..address = '1292 milo cir #1292, lafayette, co 80026, usa'
+        ..source = 'google'
+        ..thirdPartyId = 'ChIJ-some-place-id'
+        ..isVerified = true;
+
+      expect(locationIsProviderSourced(home), isFalse,
+          reason: 'a place the user owns is not a raw provider lookup');
+
+      final tile = mapWith(home);
+      expect(tile.LocationTag, 'home');
+      expect(tile.LocationId, 'tiler-guid-home',
+          reason: 'it is an untouched Tiler record, so the id identifies it');
+      expect(tile.LocationSource, 'google',
+          reason: 'the address provenance is still reported honestly');
+    });
+
+    test('a raw provider result still ships no name (D58)', () {
+      // D20 must keep holding: the thing that distinguishes a search hit
+      // from a saved place is ownership, not the source string.
+      final Location hit = providerPlace('Walmart Supercenter', '745 us-287');
+      expect(hit.userId, isNull, reason: 'precondition: nobody owns it');
+      expect(locationIsProviderSourced(hit), isTrue);
+      expect(mapWith(hit).LocationTag, isNull);
+    });
+
     test('two same-brand stores no longer collide', () {
       // The defect this change exists to fix: both results are called
       // "Walmart Supercenter", so shipping that name made the second

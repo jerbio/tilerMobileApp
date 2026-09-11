@@ -41,10 +41,17 @@ class ApiAddTileLocationSource implements AddTileLocationSource {
 
   @override
   Future<List<Location>> savedPlaces() async {
-    final List<Location?> resolved = await Future.wait(<Future<Location?>>[
-      _byNickName(Location.homeLocationNickName),
-      _byNickName(Location.workLocationNickName),
-    ]);
+    // SEQUENTIAL, never `Future.wait` (D59). `LocationApi` is single-flight
+    // with last-wins coalescing — a search-as-you-type debounce: a request
+    // arriving while one is pending is queued, the drain re-issues only the
+    // LAST queued one, and every waiter is handed that result. Fired
+    // together, `work` queued behind `home`, both were answered with the
+    // work list, and the home lookup found no "home" in it. Only Work ever
+    // survived. Legacy chains these two for exactly this reason.
+    final List<Location?> resolved = <Location?>[
+      await _byNickName(Location.homeLocationNickName),
+      await _byNickName(Location.workLocationNickName),
+    ];
     // Filtered on CONTENT, not on `isNotNullAndNotDefault` (D53). Home and
     // work are by definition DEFAULT places, so that predicate excluded
     // exactly the two entries this list exists to show whenever the server
