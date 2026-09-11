@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -47,6 +48,9 @@ Widget _buildApp({
     home: MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => cubit),
+        // The grid page's scroll header hosts the day strip, which reads
+        // UiDateManagerBloc (always provided in the app).
+        BlocProvider(create: (_) => UiDateManagerBloc()),
         BlocProvider(create: (_) => ScheduleBloc(getContextCallBack: () => null)),
         BlocProvider(
             create: (_) =>

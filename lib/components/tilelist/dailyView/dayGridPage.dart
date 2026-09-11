@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
-import 'package:tiler_app/components/tilelist/dailyView/components/daySummaryHeader.dart';
+import 'package:tiler_app/components/dayGridPageBody.dart';
+import 'package:tiler_app/components/dayGridScrollHeader.dart';
 import 'package:tiler_app/components/tilelist/dailyView/enhancedTileBatch.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
-import 'package:tiler_app/data/timelineSummary.dart';
-import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStrip.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridWidget.dart';
-import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/services/dayGridPreferences.dart';
 import 'package:tiler_app/util.dart';
 
@@ -89,68 +87,25 @@ class DayGridPage extends StatelessWidget {
     return renderable;
   }
 
-  /// C17 follow-up (§15.4 Logging): fires the `daygrid_summary_opened`
-  /// analytics tag when the grid-mode [DaySummaryHeader] is tapped (the
-  /// header itself is unmodified and shared with list mode — the tag is
-  /// attached at this grid-mode mount site only, so list mode's existing
-  /// tap stays untagged). [dayIndex] is the day the tap happened on
-  /// (analytics context, matches the `daygrid_*` payload convention).
-  /// Returns the debug line so the tag can be asserted headlessly.
-  ///
-  /// [summaryOpenTagFireCount] is a production-inert observable: the debug
-  /// line flows through the non-interceptable built-in `print` (via
-  /// `Utility.debugPrint`) and `AnalysticsSignal.send` is a no-op in this
-  /// build, so a test cannot observe the fire through those two channels. The
-  /// counter is the reliable seam a widget test increments on a REAL header
-  /// tap to prove the tag fires (not just that navigation still works). It is
-  /// never read or branched-on by any production UI logic.
-  static int summaryOpenTagFireCount = 0;
-
-  static String gridSummaryOpenTag(int dayIndex) {
-    summaryOpenTagFireCount++;
-    final String line =
-        'DayGrid:: daygrid_summary_opened (dayIndex: $dayIndex)';
-    Utility.debugPrint(line);
-    AnalysticsSignal.send(
-      'daygrid_summary_opened',
-      additionalInfo: {'dayIndex': dayIndex},
-    );
-    return line;
-  }
-
   @override
   Widget build(BuildContext context) {
     final layout = context.watch<DailyViewLayoutCubit>().state;
     if (layout == DailyViewLayout.grid) {
       final parityTiles = gridTiles(tiles);
+      final DateTime day = Utility.getTimeFromIndex(dayIndex);
+      final DayGridScope? scope = DayGridScope.maybeOf(context);
       return Column(
         children: [
-          // C17: the grid-mode day-summary entry point. Today's day-page only
-          // mounts the (unmodified) [DaySummaryHeader] list mode surfaces, so
-          // tapping it opens TodayStatusScreen from grid mode too — same
-          // TimelineSummary / ScheduleSummaryBloc pipeline. Other days get
-          // no header (the "show it on every day" case is a separate,
-          // deferred decision).
-          if (dayIndex == Utility.currentTime().universalDayIndex)
-            // onOpen (grid-mode-only) fires the daygrid_summary_opened tag from the
-            // header's OWN deepest tap recognizer, immediately before
-            // navigation — so the tag fires exactly once per real tap that
-            // also opens the summary (no arena ambiguity; no stray pointer-up
-            // overcounting the way an outer wrapper would). The shared
-            // [DaySummaryHeader] stays behaviour-identical for every other
-            // caller (list mode / preview) because onOpen is optional and
-            // null there.
-            DaySummaryHeader(
-              date: Utility.getTimeFromIndex(dayIndex),
-              dayData: TimelineSummary()..dayIndex = dayIndex,
-              onOpen: () => gridSummaryOpenTag(dayIndex),
-            ),
-          // Compact alert strip — the list-mode detectors
-          // surfaced as a condensed chip row above the grid.
-          DayGridBannerStrip(tiles: tiles),
           // Pinned >=16h / all-day tiles — excluded from
-          // the grid timeline, kept visible here.
-          DayGridPinnedHeader(tiles: parityTiles),
+          // the grid timeline, kept visible here (outside the scroll, so it
+          // stays put). AnimatedSize: the one chrome element that can
+          // resize the grid viewport does so smoothly (no-snap rule 3).
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: Alignment.topCenter,
+            child: DayGridPinnedHeader(tiles: parityTiles),
+          ),
           // The grid fills the remaining height (the page is hosted in a
           // bounded viewport); its internal scroll view keeps the day
           // pannable.
@@ -161,13 +116,26 @@ class DayGridPage extends StatelessWidget {
               // schedule update animates instead of remounting the whole grid.
               key: ValueKey<String>('daygrid_$dayIndex'),
               tiles: parityTiles,
+              // The shared, already-restored zoom (see DayGridScope) — a
+              // page never re-lays its tiles out on mount, and zoom is
+              // live across days. Null (isolated tests) → grid-owned.
+              controller: scope?.controller,
               // The page's calendar day, so an empty day can
               // still tap-to-add (the grid derives its own date only from
               // tiles, which is null on an empty day).
-              day: Utility.getTimeFromIndex(dayIndex),
+              day: day,
               // Scope the per-tile keys to this day so a tile
               // never re-animates (flies) across a day-page swap.
               dayKey: 'day_$dayIndex',
+              // The scrolling header (big date, alert subtitle, compact day
+              // strip, conflict / RSVP rows) lives in the grid's negative
+              // scroll extent — revealed by pulling down, never resizing
+              // the grid (C18). The unfiltered day tiles feed the alert
+              // detectors, exactly as the retired chip strip received them.
+              header: DayGridScrollHeader(currentDate: day, tiles: tiles),
+              onHeaderRevealChanged: scope == null
+                  ? null
+                  : (progress) => scope.report(dayIndex, progress),
             ),
           ),
         ],

@@ -1393,6 +1393,7 @@
           }
         },
         "dayGridHeaderReview": "Review",
+        "dayGridDaySummary": "Day summary",
         "dayGridHeaderRespond": "Respond",
         "@dayGridAllDay": {
           "description": "Trailing label on the day-grid pinned card for a tile that spans the whole day"

@@ -377,7 +377,11 @@ class DayGridWidget extends StatefulWidget {
 }
 
 class DayGridWidgetState extends State<DayGridWidget> {
-  ScrollController _scrollController = ScrollController();
+  /// Created in [initState] with `initialScrollOffset` = the initial
+  /// auto-scroll target, so a freshly mounted grid (a carousel day page
+  /// sliding into view) PAINTS its first frame already at the first tile
+  /// hour instead of at 12 AM and then jumping post-frame.
+  late final ScrollController _scrollController;
 
   /// The `center` sliver of the scroll host -- the 24h grid Stack. Anchors
   /// `pixels == 0` at the grid top regardless of any [DayGridWidget.header].
@@ -539,9 +543,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScrollChanged);
     _ownedController = null;
     _controller = widget.controller ?? (_ownedController = DayGridController());
+    // First frame lands on the initial target (no post-frame jump). The
+    // position clamps it to the content once laid out; a later
+    // `_applyPendingScroll` is then a no-op unless the target moved.
+    _scrollController =
+        ScrollController(initialScrollOffset: _initialScrollTarget());
+    _scrollController.addListener(_onScrollChanged);
     _liveNow = widget.now ?? DateTime.now();
     if (widget.now == null) {
       _nowLineTimer = Timer.periodic(const Duration(minutes: 1), (_) {
@@ -689,10 +698,16 @@ class DayGridWidgetState extends State<DayGridWidget> {
     }
   }
 
+  /// The initial auto-scroll target: the first tile's start hour (or
+  /// [defaultScrollHour] on an empty day) at the current zoom.
+  double _initialScrollTarget() {
+    final firstHour = _firstTileStartHour();
+    return _pxPerHour * (firstHour ?? defaultScrollHour);
+  }
+
   /// Queue an initial scroll to the first tile's start hour.
   void _resyncInitialScroll() {
-    final firstHour = _firstTileStartHour();
-    _pendingScrollTo = _pxPerHour * (firstHour ?? defaultScrollHour);
+    _pendingScrollTo = _initialScrollTarget();
   }
 
   int? _firstTileStartHour() {

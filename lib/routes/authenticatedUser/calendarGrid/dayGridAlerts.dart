@@ -1,13 +1,11 @@
-// The compact alert banner strip for the day grid.
+// Grid-mode alert detection + modals (P6: the chip strip is retired; the
+// scroll header's banner rows and the pinned card consume these instead).
 //
 // Reuses the list-mode detectors (ConflictGroup.detectGroups,
 // ExtendedTilesBanner.detectExtendedTiles,
-// PendingRsvpBanner.detectPendingRsvpTiles) and surfaces them as a single
-// condensed chip row via CombinedAlertsBanner(inline: true). Chip taps open
-// the list-mode modals: stacked conflict cards, ExtendedTilesModal,
-// PendingRsvpModal. Hidden (nothing renders) when the day is clean.
+// PendingRsvpBanner.detectPendingRsvpTiles) so grid mode surfaces exactly
+// the alerts list mode does, and opens the same modals.
 import 'package:flutter/material.dart';
-import 'package:tiler_app/components/tilelist/combinedAlertsBanner.dart';
 import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/components/tilelist/extendedTilesBanner.dart';
 import 'package:tiler_app/components/tilelist/pendingRsvpBanner.dart';
@@ -15,18 +13,8 @@ import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 
-/// Compact grid-mode alert strip.
-///
-/// Renders nothing when [tiles] carry no conflicts, extended (>=16h /
-/// all-day) tiles, or pending/declined RSVP tiles.
-class DayGridBannerStrip extends StatelessWidget {
-  final List<TilerEvent> tiles;
-
-  const DayGridBannerStrip({
-    super.key,
-    this.tiles = const <TilerEvent>[],
-  });
-
+/// Static alert detectors + modal openers shared by the grid-mode chrome.
+abstract final class DayGridAlerts {
   /// Conflict detection — mirrors the list-mode input rules
   /// (EnhancedTileBatch's rendered-tile set: no >=16h, no declined, no
   /// pending-RSVP, viable tiles with an id) and delegates to
@@ -75,42 +63,6 @@ class DayGridBannerStrip extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _ConflictModal(conflictGroups: conflictGroups),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final conflictGroups = detectConflicts(tiles);
-    final extendedTiles = detectExtendedTiles(tiles);
-    final pendingRsvpTiles = detectPendingRsvpTiles(tiles);
-    final declinedTiles = detectDeclinedTiles(tiles);
-
-    if (conflictGroups.isEmpty &&
-        extendedTiles.isEmpty &&
-        pendingRsvpTiles.isEmpty &&
-        declinedTiles.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: CombinedAlertsBanner(
-        inline: true,
-        conflictGroups: conflictGroups,
-        onConflictTap: () => showConflictModal(context, conflictGroups),
-        extendedTiles: extendedTiles,
-        onExtendedTap: () =>
-            CombinedAlertsBannerHelpers.showExtendedTilesModal(
-                context, extendedTiles, preview: false),
-        pendingRsvpTiles: pendingRsvpTiles,
-        declinedTiles: declinedTiles,
-        onRsvpTap: () => CombinedAlertsBannerHelpers.showPendingRsvpModal(
-          context,
-          pendingRsvpTiles,
-          preview: false,
-          declinedTiles: declinedTiles,
-        ),
-      ),
     );
   }
 }

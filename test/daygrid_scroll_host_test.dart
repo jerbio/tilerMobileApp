@@ -137,6 +137,36 @@ void main() {
 
   final day = DateTime(2027, 1, 15);
 
+  group('DayGrid initial scroll lands on the FIRST frame (no post-frame jump)',
+      () {
+    testWidgets(
+        'the scroll controller is created at the first-tile-hour offset',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController(); // 80 px/h
+      addTearDown(controller.dispose);
+      // A carousel day page sliding into view mounts fresh: its first
+      // painted frame must already be at 9 AM (720 px), not at 12 AM.
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        controller: controller,
+        tiles: [
+          _tile('nine', day.add(const Duration(hours: 9)),
+              day.add(const Duration(hours: 10))),
+        ],
+        header: _header(240),
+      ));
+
+      final scrollController = _scrollControllerOf(tester);
+      expect(scrollController.initialScrollOffset, 720.0,
+          reason: 'the initial offset is baked into the controller, so the '
+              'very first layout is at the target — no visible jump');
+      expect(scrollController.position.pixels, 720.0);
+      await _closeBloc(tester, bloc);
+    });
+  });
+
   group('DayGrid scroll host (center-anchored CustomScrollView)', () {
     testWidgets('no header → minScrollExtent is 0 (legacy behaviour)',
         (tester) async {

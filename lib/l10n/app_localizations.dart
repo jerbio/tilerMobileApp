@@ -3503,6 +3503,12 @@ abstract class AppLocalizations {
   /// **'Review'**
   String get dayGridHeaderReview;
 
+  /// No description provided for @dayGridDaySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Day summary'**
+  String get dayGridDaySummary;
+
   /// No description provided for @dayGridHeaderRespond.
   ///
   /// In en, this message translates to:

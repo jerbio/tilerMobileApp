@@ -1969,6 +1969,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dayGridHeaderReview => 'Review';
 
   @override
+  String get dayGridDaySummary => 'Day summary';
+
+  @override
   String get dayGridHeaderRespond => 'Respond';
 
   @override

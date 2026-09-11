@@ -1974,6 +1974,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dayGridHeaderReview => 'Revisar';
 
   @override
+  String get dayGridDaySummary => 'Resumen del día';
+
+  @override
   String get dayGridHeaderRespond => 'Responder';
 
   @override

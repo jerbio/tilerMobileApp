@@ -1,25 +1,25 @@
 // daygrid_day_summary_entry_test.dart
 //
-// C17: grid mode gets the same day-summary entry point list mode surfaces —
-// the (unmodified) [DaySummaryHeader]. `DayGridPage` mounts it ONLY for the
-// day that is today; any other day's grid page shows no header. Tapping the
-// header opens [TodayStatusScreen] carrying that day's start->end [Timeline]
-// (the same TimelineSummary / ScheduleSummaryBloc pipeline list mode uses).
+// C20 (supersedes C17): grid mode's day-summary entry point is the summary
+// button in the fixed top bar ([DayGridTopChromeRow]), adjacent to the day
+// pill — present for ANY shown day, not just today. Tapping it opens
+// [TodayStatusScreen] carrying that day's start->end [Timeline] (the same
+// TimelineSummary pipeline list mode's DaySummaryHeader uses), and fires the
+// grid-mode-only `daygrid_summary_opened` tag with a `dayIndex` + `isToday`
+// payload.
 //
-// The grid body (banner strip, pinned header, and the real [DayGridWidget]) is
-// the production path; the page is hosted in a bounded viewport exactly like
-// daygrid_pinned_header_test.dart, with ScheduleBloc + ScheduleSummaryBloc
-// provided so the header's bloc reads resolve.
-
+// The grid page itself no longer mounts DaySummaryHeader (the today-only
+// C17 mount is retired); list mode's DaySummaryHeader is untouched.
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:tiler_app/bloc/dailyViewLayout/daily_view_layout_cubit.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
+import 'package:tiler_app/bloc/uiDateManager/ui_date_manager_bloc.dart';
+import 'package:tiler_app/components/dayGridTopChromeRow.dart';
 import 'package:tiler_app/components/tilelist/dailyView/components/daySummaryHeader.dart';
 import 'package:tiler_app/components/tilelist/dailyView/dayGridPage.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
@@ -40,24 +40,16 @@ SubCalendarEvent _tile(String id, String name, DateTime start, DateTime end) {
   return tile;
 }
 
-/// Grid-mode page in a bounded viewport (the grid uses an `Expanded` region, so
-/// the page needs a bounded-height parent). [dayIndex] is parameterised so a
-/// test can render today (header present) or any other day (header absent).
-Widget _buildApp({
-  required DailyViewLayoutCubit cubit,
-  required int dayIndex,
-  required List<TilerEvent> tiles,
-}) {
-  // The providers sit ABOVE MaterialApp so the blocs are also visible to any
-  // route pushed onto MaterialApp's navigator — the DaySummaryHeader opens
-  // TodayStatusScreen via Navigator.push, and that route builds above `home`.
+/// Providers sit ABOVE MaterialApp so the blocs are also visible to the
+/// route pushed onto MaterialApp's navigator (TodayStatusScreen).
+Widget _wrap(Widget body) {
   return MultiBlocProvider(
     providers: [
-      BlocProvider<DailyViewLayoutCubit>.value(value: cubit),
+      BlocProvider(create: (_) => DailyViewLayoutCubit()),
+      BlocProvider(create: (_) => UiDateManagerBloc()),
       BlocProvider(create: (_) => ScheduleBloc(getContextCallBack: () => null)),
       BlocProvider(
-          create: (_) =>
-              ScheduleSummaryBloc(getContextCallBack: () => null)),
+          create: (_) => ScheduleSummaryBloc(getContextCallBack: () => null)),
     ],
     child: MaterialApp(
       theme: TileThemeData.lightTheme,
@@ -68,186 +60,96 @@ Widget _buildApp({
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: DayGridPage(
-          dayIndex: dayIndex,
-          tiles: tiles,
-          key: Key('day_$dayIndex'),
-        ),
-      ),
+      home: Scaffold(body: body),
     ),
   );
 }
 
-/// One mid-day tile for the day under test, so the grid/banner/pinned strips
-/// have a normal (non-empty) input, mirroring the pinned-header harness.
-List<TilerEvent> _someTiles(DateTime day) {
-  return <TilerEvent>[
-    _tile('regular', 'RegularEvent',
-        DateTime(day.year, day.month, day.day, 9),
-        DateTime(day.year, day.month, day.day, 10)),
-  ];
-}
+Widget _topBar(DateTime day) => DayGridTopChromeRow(
+      currentDate: day,
+      onSearch: () {},
+      onSettings: () {},
+      onGoToToday: () {},
+    );
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
   setUp(() {
-    // Force grid layout so DayGridPage takes its grid-mode Column branch.
     SharedPreferences.setMockInitialValues({'dayGridLayout': 'grid'});
   });
 
-  group('DayGridPage grid-mode DaySummaryHeader (C17)', () {
-    testWidgets('renders the summary header for today', (tester) async {
-      final cubit = DailyViewLayoutCubit();
-      addTearDown(cubit.close);
-      final int todayIndex = Utility.currentTime().universalDayIndex;
-
-      await tester.pumpWidget(_buildApp(
-        cubit: cubit,
-        dayIndex: todayIndex,
-        tiles: _someTiles(Utility.currentTime()),
-      ));
-      await tester.pump(const Duration(milliseconds: 300));
+  group('Top-bar day summary entry (C20)', () {
+    testWidgets('the summary button is present for today', (tester) async {
+      await tester.pumpWidget(_wrap(_topBar(Utility.currentTime().dayDate)));
       await tester.pump();
-
-      expect(find.byType(DaySummaryHeader), findsOneWidget,
-          reason: "today's grid page must surface the day-summary entry");
-      expect(tester.takeException(), isNull);
+      expect(find.byKey(DayGridTopChromeRow.summaryButtonKey), findsOneWidget);
     });
 
-    testWidgets('does NOT render the summary header for a non-today day',
+    testWidgets('the summary button is present for a non-today day',
         (tester) async {
-      final cubit = DailyViewLayoutCubit();
-      addTearDown(cubit.close);
-      final int todayIndex = Utility.currentTime().universalDayIndex;
-      final DateTime fiveDaysAgo =
-          Utility.getTimeFromIndex(todayIndex - 5);
-
-      await tester.pumpWidget(_buildApp(
-        cubit: cubit,
-        dayIndex: todayIndex - 5,
-        tiles: _someTiles(fiveDaysAgo),
-      ));
-      await tester.pump(const Duration(milliseconds: 300));
+      final DateTime fiveDaysAgo = Utility.getTimeFromIndex(
+          Utility.currentTime().universalDayIndex - 5);
+      await tester.pumpWidget(_wrap(_topBar(fiveDaysAgo)));
       await tester.pump();
-
-      expect(find.byType(DaySummaryHeader), findsNothing,
-          reason: 'only today carries the day-summary entry in grid mode');
-      expect(tester.takeException(), isNull);
+      expect(find.byKey(DayGridTopChromeRow.summaryButtonKey), findsOneWidget);
     });
 
     testWidgets(
-        'tapping the header opens TodayStatusScreen with the day start->end Timeline',
+        'tapping it opens TodayStatusScreen with the SHOWN day start->end Timeline',
         (tester) async {
-      final cubit = DailyViewLayoutCubit();
-      addTearDown(cubit.close);
-      final int todayIndex = Utility.currentTime().universalDayIndex;
-
-      await tester.pumpWidget(_buildApp(
-        cubit: cubit,
-        dayIndex: todayIndex,
-        tiles: _someTiles(Utility.currentTime()),
-      ));
-      await tester.pump(const Duration(milliseconds: 300));
+      final int dayIndex = Utility.currentTime().universalDayIndex - 5;
+      final DateTime day = Utility.getTimeFromIndex(dayIndex);
+      await tester.pumpWidget(_wrap(_topBar(day)));
       await tester.pump();
 
-      expect(find.byType(DaySummaryHeader), findsOneWidget);
-
-      await tester.tap(find.byType(DaySummaryHeader));
+      DayGridTopChromeRow.summaryOpenTagFireCount = 0;
+      await tester.tap(find.byKey(DayGridTopChromeRow.summaryButtonKey));
       await tester.pump(); // route push -> TodayStatusScreen (loading)
       await tester.pump(); // commit the pushed route's content into the tree
 
-      expect(find.byType(TodayStatusScreen), findsOneWidget,
-          reason: 'tapping the header must navigate to TodayStatusScreen');
+      expect(find.byType(TodayStatusScreen), findsOneWidget);
       final TodayStatusScreen screen =
           tester.widget<TodayStatusScreen>(find.byType(TodayStatusScreen));
+      expect(screen.timeline.start, day.millisecondsSinceEpoch,
+          reason: 'the pushed Timeline must start at the shown day start');
+      expect(screen.timeline.end, day.endOfDay.millisecondsSinceEpoch,
+          reason: 'the pushed Timeline must end at the shown day end');
+      expect(DayGridTopChromeRow.summaryOpenTagFireCount, 1,
+          reason: 'one real tap fires daygrid_summary_opened exactly once');
 
-      // The header builds the Timeline from its dayIndex: start of day ->
-      // end of day, matching DaySummaryHeader._navigateToSummary.
-      final DateTime dayStart = Utility.getTimeFromIndex(todayIndex);
-      final DateTime dayEnd = dayStart.endOfDay;
-      expect(
-        screen.timeline.start,
-        dayStart.millisecondsSinceEpoch,
-        reason: 'the pushed Timeline must start at the day start',
-      );
-      expect(
-        screen.timeline.end,
-        dayEnd.millisecondsSinceEpoch,
-        reason: 'the pushed Timeline must end at the day end',
-      );
-
-      // Let the (auth-gated, no-network) summary load settle, then confirm the
-      // navigation surfaced no build/layout exception.
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump();
       expect(tester.takeException(), isNull);
     });
+
+    test('summaryOpenTag carries the dayIndex + isToday payload', () {
+      final int todayIndex = Utility.currentTime().universalDayIndex;
+      final String line =
+          DayGridTopChromeRow.summaryOpenTag(todayIndex, isToday: true);
+      expect(line, startsWith('DayGrid::'));
+      expect(line, contains('daygrid_summary_opened'));
+      expect(line, contains('dayIndex: $todayIndex'));
+      expect(line, contains('isToday: true'));
+    });
   });
 
-  group('DayGridPage grid-mode summary-open tag (C17 follow-up, §15.4 Logging)', () {
-    test('gridSummaryOpenTag builds the daygrid_summary_opened tag + dayIndex payload', () {
+  group('DayGridPage no longer mounts DaySummaryHeader (C17 retired)', () {
+    testWidgets("today's grid page has no DaySummaryHeader", (tester) async {
       final int todayIndex = Utility.currentTime().universalDayIndex;
-      final String line = DayGridPage.gridSummaryOpenTag(todayIndex);
-
-      expect(line, contains('daygrid_summary_opened'),
-          reason: 'the tag name must follow the daygrid_<area>_<event> scheme');
-      expect(line, contains('dayIndex: $todayIndex'),
-          reason: 'the analytics payload must carry the tapped day index');
-      expect(line, startsWith('DayGrid::'),
-          reason: 'debug lines carry the DayGrid:: prefix for grep-ability (§12.0)');
-    });
-
-    testWidgets(
-        'grid-mode header tap fires the daygrid_summary_opened tag AND navigates',
-        (tester) async {
-      // Proves the (grid-mode-only) tag actually FIRES on a REAL header tap —
-      // not just that navigation still works. The grid mount site passes
-      // onOpen to the shared [DaySummaryHeader], and the header calls it from
-      // its own deepest tap recognizer immediately before navigating — so the
-      // tag fires exactly once per real tap that also opens the summary (no
-      // arena ambiguity, no stray pointer-up overcounting). The tag's debug
-      // line flows through the non-interceptable built-in `print` and
-      // AnalysticsSignal.send is a no-op here, so the test observes the fire
-      // via [DayGridPage.summaryOpenTagFireCount] (reset first, then tapped).
-      final cubit = DailyViewLayoutCubit();
-      addTearDown(cubit.close);
-      final int todayIndex = Utility.currentTime().universalDayIndex;
-
-      await tester.pumpWidget(_buildApp(
-        cubit: cubit,
+      final DateTime today = Utility.currentTime();
+      await tester.pumpWidget(_wrap(DayGridPage(
         dayIndex: todayIndex,
-        tiles: _someTiles(Utility.currentTime()),
-      ));
+        key: Key('day_$todayIndex'),
+        tiles: <TilerEvent>[
+          _tile('regular', 'RegularEvent',
+              DateTime(today.year, today.month, today.day, 9),
+              DateTime(today.year, today.month, today.day, 10)),
+        ],
+      )));
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump();
 
-      expect(find.byType(DaySummaryHeader), findsOneWidget);
-
-      // The grid mount site must wire the tag into the header's onOpen seam.
-      expect(
-        tester.widget<DaySummaryHeader>(find.byType(DaySummaryHeader)).onOpen,
-        isNotNull,
-        reason:
-            'the grid mount site must pass onOpen so the header tap fires the tag',
-      );
-
-      DayGridPage.summaryOpenTagFireCount = 0;
-      await tester.tap(find.byType(DaySummaryHeader));
-      await tester.pump(); // route push -> TodayStatusScreen (loading)
-      await tester.pump(); // commit the pushed route into the tree
-
-      expect(
-        DayGridPage.summaryOpenTagFireCount,
-        1,
-        reason:
-            'a single real header tap must fire the daygrid_summary_opened tag once',
-      );
-
-      expect(find.byType(TodayStatusScreen), findsOneWidget,
-          reason:
-              'the tag listener must not block the header navigation tap');
+      expect(find.byType(DaySummaryHeader), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

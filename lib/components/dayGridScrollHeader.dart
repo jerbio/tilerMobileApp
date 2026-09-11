@@ -6,7 +6,7 @@ import 'package:tiler_app/components/tilelist/conflictAlert.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
-import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridBannerStrip.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridAlerts.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 
@@ -66,12 +66,12 @@ class DayGridScrollHeader extends StatelessWidget {
     final locale = Localizations.localeOf(context).toString();
 
     final List<ConflictGroup> conflictGroups =
-        DayGridBannerStrip.detectConflicts(tiles);
+        DayGridAlerts.detectConflicts(tiles);
     final int conflicts = conflictCount(conflictGroups);
     final List<SubCalendarEvent> pendingRsvpTiles =
-        DayGridBannerStrip.detectPendingRsvpTiles(tiles);
+        DayGridAlerts.detectPendingRsvpTiles(tiles);
     final List<SubCalendarEvent> declinedTiles =
-        DayGridBannerStrip.detectDeclinedTiles(tiles);
+        DayGridAlerts.detectDeclinedTiles(tiles);
 
     return Container(
       color: colorScheme.surface,
@@ -124,7 +124,7 @@ class DayGridScrollHeader extends StatelessWidget {
                     onTap: () {
                       AnalysticsSignal.send('daygrid_header_conflicts_tapped',
                           additionalInfo: {'count': conflicts});
-                      DayGridBannerStrip.showConflictModal(
+                      DayGridAlerts.showConflictModal(
                           context, conflictGroups);
                     },
                   ),
