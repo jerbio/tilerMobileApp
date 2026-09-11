@@ -3479,6 +3479,36 @@ abstract class AppLocalizations {
   /// **'All day'**
   String get dayGridAllDay;
 
+  /// Day-grid scroll header subtitle when the day has no conflicts or pending RSVPs
+  ///
+  /// In en, this message translates to:
+  /// **'All clear'**
+  String get dayGridHeaderAllClear;
+
+  /// No description provided for @dayGridHeaderConflictCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 conflict} other{{count} conflicts}}'**
+  String dayGridHeaderConflictCount(int count);
+
+  /// Day-grid scroll header subtitle; summary is e.g. '2 conflicts · 1 RSVP', count is the total number of items
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{summary} needs attention} other{{summary} need attention}}'**
+  String dayGridHeaderNeedAttention(int count, String summary);
+
+  /// No description provided for @dayGridHeaderReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review'**
+  String get dayGridHeaderReview;
+
+  /// No description provided for @dayGridHeaderRespond.
+  ///
+  /// In en, this message translates to:
+  /// **'Respond'**
+  String get dayGridHeaderRespond;
+
   /// No description provided for @extendedEventsSubtitle.
   ///
   /// In en, this message translates to:

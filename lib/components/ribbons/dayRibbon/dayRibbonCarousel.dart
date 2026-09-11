@@ -25,12 +25,22 @@ class DayRibbonCarousel extends StatefulWidget {
   /// those call sites are pixel-identical. Grid mode passes its own value so
   /// the Column composition doesn't double-reserve this inset.
   final double topMargin;
+
+  /// Compact in-flow strip (grid-mode scroll header): a short, undecorated
+  /// row of compact [DayButton]s (no 130px surface, no shadow, no today
+  /// top-border). Default `false` keeps every legacy call site
+  /// pixel-identical.
+  final bool compact;
+
+  /// The compact strip's height.
+  static const double compactHeight = 68;
   DayRibbonCarousel(DateTime? initialDate,
       {this.onDateChange,
       this.autoUpdateAnchorDate = false,
       this.preview=false,
       this.numberOfDays = 5,
-      this.topMargin = 50}) {
+      this.topMargin = 50,
+      this.compact = false}) {
     if (initialDate == null) {
       initialDate = Utility.currentTime().dayDate;
     }
@@ -97,6 +107,15 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
   }
 
   Widget renderDayButton(DateTime dateTime) {
+    if (widget.compact) {
+      return DayButton(
+        dateTime: dateTime,
+        compact: true,
+        onTapped: onDateButtonTapped,
+        isSelected:
+            this.selectedDate.universalDayIndex == dateTime.universalDayIndex,
+      );
+    }
     return Container(
       decoration: dateTime.isToday
           ? BoxDecoration(
@@ -394,18 +413,23 @@ class _DayRibbonCarouselState extends State<DayRibbonCarousel> {
                 ),
               child: Container(
                 margin: EdgeInsets.fromLTRB(0, widget.topMargin, 0, 0),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerLowest,
-                  boxShadow: [
-                    BoxShadow(
-                      color: tileThemeExtension.shadowSecondary.withValues(alpha: 0.08),
-                      blurRadius: 7,
-                      offset: const Offset(0, 7),
-                    ),
-                  ],
-                ),
+                // Compact: the scroll header supplies the surface; no
+                // shadow, no 130px band.
+                decoration: widget.compact
+                    ? null
+                    : BoxDecoration(
+                        color: colorScheme.surfaceContainerLowest,
+                        boxShadow: [
+                          BoxShadow(
+                            color: tileThemeExtension.shadowSecondary
+                                .withValues(alpha: 0.08),
+                            blurRadius: 7,
+                            offset: const Offset(0, 7),
+                          ),
+                        ],
+                      ),
                 width: MediaQuery.of(context).size.width,
-                height: 130,
+                height: widget.compact ? DayRibbonCarousel.compactHeight : 130,
                 child: Stack(
                   children: [
                     Container(

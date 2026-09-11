@@ -1374,6 +1374,26 @@
         "extendedEventsTapToView": "Tap to view all-day and long events",
         "extendedEventsTitle": "Extended Events",
         "dayGridAllDay": "All day",
+        "dayGridHeaderAllClear": "All clear",
+        "@dayGridHeaderAllClear": {
+          "description": "Day-grid scroll header subtitle when the day has no conflicts or pending RSVPs"
+        },
+        "dayGridHeaderConflictCount": "{count, plural, =1{1 conflict} other{{count} conflicts}}",
+        "@dayGridHeaderConflictCount": {
+          "placeholders": {
+            "count": {"type": "int"}
+          }
+        },
+        "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} needs attention} other{{summary} need attention}}",
+        "@dayGridHeaderNeedAttention": {
+          "description": "Day-grid scroll header subtitle; summary is e.g. '2 conflicts · 1 RSVP', count is the total number of items",
+          "placeholders": {
+            "count": {"type": "int"},
+            "summary": {"type": "String"}
+          }
+        },
+        "dayGridHeaderReview": "Review",
+        "dayGridHeaderRespond": "Respond",
         "@dayGridAllDay": {
           "description": "Trailing label on the day-grid pinned card for a tile that spans the whole day"
         },

@@ -1946,6 +1946,37 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dayGridAllDay => 'Todo el día';
 
   @override
+  String get dayGridHeaderAllClear => 'Todo en orden';
+
+  @override
+  String dayGridHeaderConflictCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count conflictos',
+      one: '1 conflicto',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayGridHeaderNeedAttention(int count, String summary) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$summary necesitan atención',
+      one: '$summary necesita atención',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayGridHeaderReview => 'Revisar';
+
+  @override
+  String get dayGridHeaderRespond => 'Responder';
+
+  @override
   String extendedEventsSubtitle(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

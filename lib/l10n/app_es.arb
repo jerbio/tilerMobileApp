@@ -386,6 +386,11 @@
     "extendedEventsTapToView": "Toca para ver eventos de todo el día y eventos largos",
     "extendedEventsTitle": "Eventos Extendidos",
     "dayGridAllDay": "Todo el día",
+    "dayGridHeaderAllClear": "Todo en orden",
+    "dayGridHeaderConflictCount": "{count, plural, =1{1 conflicto} other{{count} conflictos}}",
+    "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} necesita atención} other{{summary} necesitan atención}}",
+    "dayGridHeaderReview": "Revisar",
+    "dayGridHeaderRespond": "Responder",
     "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
     "@extendedEventsSubtitle": {
       "placeholders": {
