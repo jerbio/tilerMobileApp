@@ -3509,6 +3509,18 @@ abstract class AppLocalizations {
   /// **'Day summary'**
   String get dayGridDaySummary;
 
+  /// No description provided for @bottomNavToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get bottomNavToday;
+
+  /// No description provided for @bottomNavTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler'**
+  String get bottomNavTiler;
+
   /// No description provided for @dayGridHeaderRespond.
   ///
   /// In en, this message translates to:

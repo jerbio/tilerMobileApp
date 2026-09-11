@@ -89,6 +89,7 @@ class HomeBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -108,62 +109,105 @@ class HomeBottomNav extends StatelessWidget {
         ),
         child: BottomAppBar(
           color: colorScheme.surfaceContainerHigh,
+          // Tighter vertical padding than the M3 default (12) so the
+          // icon + text label pairs fit the default bar height.
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              // ── Left: Calendar view switcher ──────────────────────────────
-              Builder(
-                builder: (buttonContext) => IconButton(
-                  icon: Icon(currentView.navIcon, color: colorScheme.primary),
-                  onPressed: () => _showViewMenu(buttonContext),
-                  tooltip: AppLocalizations.of(context)!.switchCalendarView,
+              // Left: calendar view switcher.
+              _LabeledNavItem(
+                label: currentView == AuthorizedRouteTileListPage.Daily
+                    ? l10n.bottomNavToday
+                    : currentView.label(l10n),
+                child: Builder(
+                  builder: (buttonContext) => IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon:
+                        Icon(currentView.navIcon, color: colorScheme.primary),
+                    onPressed: () => _showViewMenu(buttonContext),
+                    tooltip: l10n.switchCalendarView,
+                  ),
                 ),
               ),
 
-              // ── Centre: Tiler logo ────────────────────────────────────────
-              GestureDetector(
-                key: TutorialKeys.bottomNavAddTileKey,
-                onTap: onAddTile,
-                child: Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    // border: Border.all(
-                    //   color: colorScheme.primary,
-                    //   width: 2,
-                    // ),
-                  ),
-                  child: Center(
-                    child: AutoSwitchingWidget(
-                      duration: const Duration(milliseconds: 1000),
-                      children: [
-                        Transform.scale(
-                          scale: 0.9,
-                          child: Image.asset(
-                              'assets/images/wire_tilerLogo_BlueBottom.png'),
-                        ),
-                        Transform.scale(
-                          scale: 0.9,
-                          child: Image.asset(
-                              'assets/images/wire_tilerLogo_RedBottom.png'),
-                        ),
-                      ],
+              // Centre: Tiler logo (add tile).
+              _LabeledNavItem(
+                label: l10n.bottomNavTiler,
+                child: GestureDetector(
+                  key: TutorialKeys.bottomNavAddTileKey,
+                  onTap: onAddTile,
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(shape: BoxShape.circle),
+                    child: Center(
+                      child: AutoSwitchingWidget(
+                        duration: const Duration(milliseconds: 1000),
+                        children: [
+                          Transform.scale(
+                            scale: 0.9,
+                            child: Image.asset(
+                                'assets/images/wire_tilerLogo_BlueBottom.png'),
+                          ),
+                          Transform.scale(
+                            scale: 0.9,
+                            child: Image.asset(
+                                'assets/images/wire_tilerLogo_RedBottom.png'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
 
-              // ── Right: Share ──────────────────────────────────────────────
-              IconButton(
-                icon: Icon(Icons.share, color: colorScheme.primary),
-                onPressed: onShare,
-                tooltip: AppLocalizations.of(context)!.share,
+              // Right: share.
+              _LabeledNavItem(
+                label: l10n.share,
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(Icons.share, color: colorScheme.primary),
+                  onPressed: onShare,
+                  tooltip: l10n.share,
+                ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A bottom-nav item: the tappable [child] with a small text [label]
+/// beneath it (C25).
+class _LabeledNavItem extends StatelessWidget {
+  final Widget child;
+  final String label;
+
+  const _LabeledNavItem({required this.child, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        child,
+        Text(
+          label,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            fontSize: 11,
+            height: 1.1,
+            fontWeight: FontWeight.w500,
+            color: colorScheme.primary,
+          ),
+        ),
+      ],
     );
   }
 }

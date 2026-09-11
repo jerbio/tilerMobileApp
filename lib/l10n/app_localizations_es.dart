@@ -1977,6 +1977,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dayGridDaySummary => 'Resumen del día';
 
   @override
+  String get bottomNavToday => 'Hoy';
+
+  @override
+  String get bottomNavTiler => 'Tiler';
+
+  @override
   String get dayGridHeaderRespond => 'Responder';
 
   @override

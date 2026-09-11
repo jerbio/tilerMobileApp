@@ -121,14 +121,14 @@ void main() {
   // ─────────────────────────────────────────────────────────────────────────
 
   group('HomeFab', () {
-    testWidgets('always shows the chat icon', (tester) async {
+    testWidgets('always shows the sparkle icon', (tester) async {
       await tester.pumpWidget(_wrap(HomeFab(onPressed: () {})));
       await tester.pump();
 
       expect(
-        find.byWidgetPredicate((w) => w is Icon && w.icon == Icons.chat_outlined),
+        find.byWidgetPredicate((w) => w is Icon && w.icon == Icons.auto_awesome),
         findsOneWidget,
-        reason: 'HomeFab must display the chat icon',
+        reason: 'HomeFab must display the sparkle (auto_awesome) icon',
       );
     });
 
@@ -190,6 +190,27 @@ void main() {
           reason: 'Bottom nav must have 2 IconButton items (share + calendar)');
       expect(find.byType(GestureDetector), findsAtLeastNWidgets(1),
           reason: 'Bottom nav must have at least 1 GestureDetector for the centre logo');
+    });
+
+    testWidgets('each item carries a text label (Today / Tiler / Share)',
+        (tester) async {
+      await tester.pumpWidget(buildNav());
+      await tester.pump();
+
+      expect(find.text('Today'), findsOneWidget);
+      expect(find.text('Tiler'), findsOneWidget);
+      expect(find.text('Share'), findsOneWidget);
+      expect(tester.takeException(), isNull, reason: 'labels must fit the bar');
+    });
+
+    testWidgets('the left label follows the active view (Weekly)',
+        (tester) async {
+      await tester.pumpWidget(
+          buildNav(currentView: AuthorizedRouteTileListPage.Weekly));
+      await tester.pump();
+
+      expect(find.text('Weekly'), findsOneWidget);
+      expect(find.text('Today'), findsNothing);
     });
 
     testWidgets('center item contains the animated Tiler logo', (tester) async {

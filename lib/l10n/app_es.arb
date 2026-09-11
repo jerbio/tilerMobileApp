@@ -391,6 +391,8 @@
     "dayGridHeaderNeedAttention": "{count, plural, =1{{summary} necesita atención} other{{summary} necesitan atención}}",
     "dayGridHeaderReview": "Revisar",
     "dayGridDaySummary": "Resumen del día",
+    "bottomNavToday": "Hoy",
+    "bottomNavTiler": "Tiler",
     "dayGridHeaderRespond": "Responder",
     "extendedEventsSubtitle": "{count, plural, =1{1 evento de más de 16 horas} other{{count} eventos de más de 16 horas}}",
     "@extendedEventsSubtitle": {
