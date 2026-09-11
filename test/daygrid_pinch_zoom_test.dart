@@ -282,8 +282,7 @@ void main() {
       final before = controller.pxPerHour;
 
       // One finger, vertical: this must go to the scroll view, not the scale.
-      await tester.drag(
-          find.byType(SingleChildScrollView), const Offset(0, -300));
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -300));
       await tester.pumpAndSettle();
 
       expect(controller.pxPerHour, before); // no zoom from a single finger.
@@ -345,8 +344,7 @@ void main() {
           bloc: bloc,
           controller: controller,
           tiles: <SubCalendarEvent>[
-            _tile(
-                't-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
+            _tile('t-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
           ],
           now: now,
           day: dayStart,
@@ -425,8 +423,7 @@ void main() {
           bloc: bloc,
           controller: controller,
           tiles: <SubCalendarEvent>[
-            _tile(
-                't-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
+            _tile('t-big', DateTime(2027, 1, 15, 0), DateTime(2027, 1, 15, 14)),
           ],
           now: now,
           day: dayStart,

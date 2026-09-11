@@ -248,8 +248,8 @@ void main() {
       await tester.pumpWidget(buildTestApp(child: gridViewport([lateTile])));
       await tester.pump(const Duration(milliseconds: 100));
 
-      final scrollable = tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
+      final scrollable =
+          tester.widget<CustomScrollView>(find.byType(CustomScrollView));
       final controller = scrollable.controller!;
       expect(controller.hasClients, isTrue);
       expect(controller.position.hasContentDimensions, isTrue);

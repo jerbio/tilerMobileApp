@@ -70,8 +70,8 @@ class _FakeSubCalendarEventApi extends SubCalendarEventApi {
       final err = error!;
       // Delivered on a later fake-async tick so the optimistic settle
       // (the dropped slot) is an observable frame before the rollback.
-      return Future<SubCalendarEvent>.delayed(
-          const Duration(milliseconds: 50), () {
+      return Future<SubCalendarEvent>.delayed(const Duration(milliseconds: 50),
+          () {
         throw err;
       });
     }
@@ -143,12 +143,14 @@ Widget _buildApp({
     ),
   );
 }
+
 /// The tile's own position (content y, scroll-independent): the nearest
 /// `AnimatedPositioned` ancestor of the tile's name caption.
 double _tileTop(WidgetTester tester, String name) {
   final positioned = tester.widget<AnimatedPositioned>(
     find
-        .ancestor(of: find.text(name), matching: find.byType(AnimatedPositioned))
+        .ancestor(
+            of: find.text(name), matching: find.byType(AnimatedPositioned))
         .first,
   );
   return positioned.top!;
@@ -159,9 +161,7 @@ double _tileTop(WidgetTester tester, String name) {
 /// duration-derived height the [TileGridWidget] computes. (Same stable
 /// key the layout-math tests measure.)
 double _tileHeight(WidgetTester tester, String name) =>
-    tester
-        .getSize(find.byKey(ValueKey<String>('daygrid_tile_$name')))
-        .height;
+    tester.getSize(find.byKey(ValueKey<String>('daygrid_tile_$name'))).height;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -211,9 +211,8 @@ void main() {
       final evaluate = bloc.events.whereType<EvaluateSchedule>().toList();
       expect(evaluate, hasLength(1));
       expect(evaluate.first.callBack, isNotNull);
-      final rendered = evaluate.first.renderedSubEvents
-          .where((t) => t.id == 'a')
-          .toList();
+      final rendered =
+          evaluate.first.renderedSubEvents.where((t) => t.id == 'a').toList();
       expect(rendered, hasLength(1));
       expect(rendered.first.start,
           DateTime(2027, 1, 15, 9).millisecondsSinceEpoch);
@@ -239,10 +238,8 @@ void main() {
         api: api,
         tiles: [
           _tile('a', DateTime(2027, 1, 15, 9), DateTime(2027, 1, 15, 10),
-              calendarEventStart:
-                  parentStart.millisecondsSinceEpoch.toDouble(),
-              calendarEventEnd:
-                  parentEnd.millisecondsSinceEpoch.toDouble())
+              calendarEventStart: parentStart.millisecondsSinceEpoch.toDouble(),
+              calendarEventEnd: parentEnd.millisecondsSinceEpoch.toDouble())
         ],
         now: now,
         day: dayStart,
@@ -265,13 +262,14 @@ void main() {
       // ...and the parent window is preserved: the multi-day slot, NOT
       // the dragged 1-hour slot (the tile's height survives the save).
       // (The getter builds UTC DateTimes — compare the same shape.)
-      expect(edit.calStartTime,
+      expect(
+          edit.calStartTime,
           DateTime.fromMillisecondsSinceEpoch(
               parentStart.millisecondsSinceEpoch,
               isUtc: true));
-      expect(edit.calEndTime,
-          DateTime.fromMillisecondsSinceEpoch(
-              parentEnd.millisecondsSinceEpoch,
+      expect(
+          edit.calEndTime,
+          DateTime.fromMillisecondsSinceEpoch(parentEnd.millisecondsSinceEpoch,
               isUtc: true));
 
       await tester.runAsync(() => bloc.close());
@@ -366,7 +364,7 @@ void main() {
           reason: 'the optimistic hold must keep the 50-minute height');
       // The commit did not re-sync the initial scroll.
       final scrollController = tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
           .controller!;
       expect(scrollController.position.pixels, closeTo(720, 1),
           reason: 'the commit must not snap the grid');
@@ -377,8 +375,8 @@ void main() {
         bloc: bloc,
         api: api,
         tiles: [
-          _tile('a', DateTime(2027, 1, 15, 10, 30),
-              DateTime(2027, 1, 15, 11, 20))
+          _tile(
+              'a', DateTime(2027, 1, 15, 10, 30), DateTime(2027, 1, 15, 11, 20))
         ],
         now: now,
         day: dayStart,
@@ -394,7 +392,7 @@ void main() {
       await tester.runAsync(() => bloc.close());
     });
   });
-group('drag rollback + race', () {
+  group('drag rollback + race', () {
     testWidgets(
         'API failure → rollback: pre-drag state dispatched, tile returns',
         (tester) async {
@@ -478,9 +476,7 @@ group('drag rollback + race', () {
       await g2.up();
       await tester.pump();
       expect(api.updateCount, 1, reason: 'the in-flight request wins');
-      expect(
-          bloc.events.whereType<EvaluateSchedule>(),
-          hasLength(1));
+      expect(bloc.events.whereType<EvaluateSchedule>(), hasLength(1));
       expect(_tileTop(tester, 'b'), closeTo(880, 0.5)); // 'b' never moved.
 
       // Let the first request settle — 'a' holds its confirmed slot.
@@ -638,8 +634,7 @@ group('drag rollback + race', () {
     // nothing may snap a past slot to "now".
     final pastDay = DateTime(2026, 5, 14);
 
-    testWidgets(
-        'drop on a PAST day persists the past-day slot (not today/now)',
+    testWidgets('drop on a PAST day persists the past-day slot (not today/now)',
         (tester) async {
       final bloc = _RecordingScheduleBloc();
       final api = _FakeSubCalendarEventApi();
@@ -720,8 +715,8 @@ group('drag rollback + race', () {
         bloc: bloc,
         api: api,
         tiles: [
-          _tile('a', DateTime(2026, 5, 14, 10, 30),
-              DateTime(2026, 5, 14, 11, 30))
+          _tile(
+              'a', DateTime(2026, 5, 14, 10, 30), DateTime(2026, 5, 14, 11, 30))
         ],
         now: now,
         day: pastDay,
@@ -799,7 +794,7 @@ group('drag rollback + race', () {
       await tester.pump(); // initial scroll → 720.
 
       final scrollController = tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
           .controller!;
       expect(scrollController.position.pixels, closeTo(720, 1),
           reason: 'initial scroll lands at the first tile (9am)');
@@ -829,14 +824,12 @@ group('drag rollback + race', () {
       // The scroll position is still at 3pm — NOT snapped back to the first
       // tile (now 10am = 800px) or to the default 8am (640px).
       expect(scrollController.position.pixels, closeTo(1200, 1),
-          reason:
-              'post-commit reload must NOT reset the user scroll position');
+          reason: 'post-commit reload must NOT reset the user scroll position');
 
       await tester.runAsync(() => bloc.close());
     });
 
-    testWidgets(
-        'initial empty → tiles arrival DOES scroll to the first tile',
+    testWidgets('initial empty → tiles arrival DOES scroll to the first tile',
         (tester) async {
       // Verifies the wasEmpty guard: when the grid starts with no tiles and
       // data arrives, the initial scroll IS applied (the "first load" case).
@@ -852,7 +845,7 @@ group('drag rollback + race', () {
       await tester.pump(); // empty day: initial scroll → default 8am (640).
 
       final scrollController = tester
-          .widget<SingleChildScrollView>(find.byType(SingleChildScrollView))
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
           .controller!;
       expect(scrollController.position.pixels, closeTo(640, 1),
           reason: 'empty day → defaultScrollHour (8am)');

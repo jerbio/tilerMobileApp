@@ -157,6 +157,20 @@ class DayGridWidget extends StatefulWidget {
   /// non-null value pins the clearance (used by tests).
   final double? edgeScrollBottomClearance;
 
+  /// Optional chrome laid out ABOVE the 24h grid in the same scroll view,
+  /// in NEGATIVE scroll extent (C18). The grid Stack is the scroll view's
+  /// `center` sliver, so `pixels == 0` is always the top of the grid: the
+  /// header lives in `[minScrollExtent, 0)` and is revealed only by the
+  /// user pulling down. A header height change moves `minScrollExtent`,
+  /// never the grid -- none of the scroll/time math below knows the header
+  /// exists.
+  final Widget? header;
+
+  /// Reports how much of [header] is revealed, `0` (fully above the
+  /// viewport) to `1` (fully visible, `pixels == minScrollExtent`). Fires
+  /// only on change. Drives the top bar's cross-fade.
+  final ValueChanged<double>? onHeaderRevealChanged;
+
   const DayGridWidget({
     super.key,
     this.tiles = const <SubCalendarEvent>[],
@@ -169,7 +183,17 @@ class DayGridWidget extends StatefulWidget {
     this.selectedActionEntityId,
     this.subCalendarEventApi,
     this.edgeScrollBottomClearance,
+    this.header,
+    this.onHeaderRevealChanged,
   });
+
+  /// Pure: header reveal progress for a scroll [pixels] given
+  /// [minScrollExtent] (<= 0): `0` at `pixels >= 0`, `1` at
+  /// `pixels == minScrollExtent`; always `0` when there is no header.
+  static double headerRevealProgress(double pixels, double minScrollExtent) {
+    if (minScrollExtent >= 0) return 0.0;
+    return (pixels / minScrollExtent).clamp(0.0, 1.0);
+  }
 
   /// The top/bottom edge zones (px inside the scroll viewport) that
   /// trigger the drag edge auto-scroll.
@@ -355,6 +379,13 @@ class DayGridWidget extends StatefulWidget {
 class DayGridWidgetState extends State<DayGridWidget> {
   ScrollController _scrollController = ScrollController();
 
+  /// The `center` sliver of the scroll host -- the 24h grid Stack. Anchors
+  /// `pixels == 0` at the grid top regardless of any [DayGridWidget.header].
+  final GlobalKey _gridCenterKey = GlobalKey(debugLabel: 'daygrid_center');
+
+  /// Last reported header reveal progress (dedupes the callback).
+  double _lastHeaderReveal = 0.0;
+
   /// The zoom source. Either the caller's controller or a grid-owned
   /// default (disposed with the grid).
   late DayGridController _controller;
@@ -508,6 +539,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScrollChanged);
     _ownedController = null;
     _controller = widget.controller ?? (_ownedController = DayGridController());
     _liveNow = widget.now ?? DateTime.now();
@@ -1166,10 +1198,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
             .abs();
     final step = zoneDepth.clamp(0.0, _edgeScrollZonePx);
     final target = inTop ? position.pixels - step : position.pixels + step;
-    final clamped =
-        target.clamp(position.minScrollExtent, position.maxScrollExtent);
+    // Lower bound 0.0 (not minScrollExtent): a drag near the top edge
+    // must never pull the header into view.
+    final clamped = target.clamp(0.0, position.maxScrollExtent);
     if (clamped == position.pixels) {
-      _stopEdgeScroll(); // at the content edge — nothing left to scroll.
+      _stopEdgeScroll(); // at the content edge -- nothing left to scroll.
       return;
     }
     position.jumpTo(clamped);
@@ -1567,6 +1600,19 @@ class DayGridWidgetState extends State<DayGridWidget> {
     );
   }
 
+  /// Reports header reveal progress (C18) when it changes.
+  void _onScrollChanged() {
+    final cb = widget.onHeaderRevealChanged;
+    if (cb == null || !_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions) return;
+    final progress = DayGridWidget.headerRevealProgress(
+        position.pixels, position.minScrollExtent);
+    if ((progress - _lastHeaderReveal).abs() < 0.001) return;
+    _lastHeaderReveal = progress;
+    cb(progress);
+  }
+
   void _applyPendingScroll(Duration _) {
     final target = _pendingScrollTo;
     _pendingScrollTo = null;
@@ -1947,20 +1993,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
             // behind a bottom bar). Reused so the scrollable content and the
             // bottom auto-scroll zone stop at the same visible edge.
             final bottomClearance = _edgeScrollBottomClearance();
-            final Widget gridBody = SingleChildScrollView(
-              controller: _scrollController,
-              // The scroll content is exactly one 24h day tall (the tap-to-add
-              // background SizedBox, see below). With `Scaffold(extendBody:
-              // true)` the raw scroll viewport is taller than the visible area,
-              // so at max extent the bottom of the day is pinned BEHIND the
-              // bottom bar and unreachable — the last ~56px + home-indicator
-              // (~the final hour) never scrolled into view. Growing the
-              // scrollable content by the detected clearance lifts the day end
-              // up to the visible bottom edge. `bottomClearance` is 0 when the
-              // body does not extend behind a bottom bar, so hosts without one
-              // are unchanged.
-              padding: EdgeInsets.only(bottom: bottomClearance),
-              child: Stack(
+            // Center-anchored scroll host (C18): the grid Stack is the
+            // `center` sliver so `pixels == 0` is always the top of the day;
+            // the optional header sliver sits BEFORE it, in negative extent.
+            final Widget gridStack = Stack(
                 children: <Widget>[
                   // Tap-to-add. A background tap target
                   // behind the tiles (first child => lowest z, so the
@@ -2057,7 +2093,27 @@ class DayGridWidgetState extends State<DayGridWidget> {
                     ),
                   ),
                 ],
-              ),
+              );
+            final Widget gridBody = CustomScrollView(
+              controller: _scrollController,
+              center: _gridCenterKey,
+              slivers: <Widget>[
+                if (widget.header != null)
+                  SliverToBoxAdapter(child: widget.header),
+                SliverToBoxAdapter(key: _gridCenterKey, child: gridStack),
+                // The scroll content is exactly one 24h day tall (the
+                // tap-to-add background SizedBox above). With
+                // `Scaffold(extendBody: true)` the raw scroll viewport is
+                // taller than the visible area, so at max extent the bottom
+                // of the day is pinned BEHIND the bottom bar and unreachable
+                // -- the last ~56px + home-indicator (~the final hour) never
+                // scrolled into view. Growing the scrollable content by the
+                // detected clearance lifts the day end up to the visible
+                // bottom edge. `bottomClearance` is 0 when the body does not
+                // extend behind a bottom bar, so hosts without one are
+                // unchanged.
+                SliverToBoxAdapter(child: SizedBox(height: bottomClearance)),
+              ],
             );
 
             if (widget.preview) {
@@ -2082,6 +2138,7 @@ class DayGridWidgetState extends State<DayGridWidget> {
     _removeTimer?.cancel(); // no leaked ghost-cleanup timers
     _edgeScrollTimer?.cancel(); // no leaked drag auto-scroll timers
     _ownedController?.dispose(); // own resources first (dispose order)
+    _scrollController.removeListener(_onScrollChanged);
     _scrollController.dispose();
     super.dispose();
   }
