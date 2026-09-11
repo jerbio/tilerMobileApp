@@ -87,6 +87,20 @@
     "enableLocations":"Enable location permissions",
     "noMatchWasFound":"No match was found",
     "atLeastThreeLettersForLookup": "...Tiler needs three characters for a lookup",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "via {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "Some calendars couldn't be searched.",
+    "searchUnavailableMessage": "Search is temporarily unavailable. Please try again.",
+    "searchRetry": "Retry",
     "noLocationMatchWasFound":"No location match was found",
     "noLocation":"No location",
     "clearedColon":"Cleared: ",

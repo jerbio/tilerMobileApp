@@ -572,6 +572,48 @@ abstract class AppLocalizations {
   /// **'...Tiler needs three characters for a lookup'**
   String get atLeastThreeLettersForLookup;
 
+  /// No description provided for @searchSourceBadgeTiler.
+  ///
+  /// In en, this message translates to:
+  /// **'Tiler'**
+  String get searchSourceBadgeTiler;
+
+  /// No description provided for @searchSourceBadgeGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Google'**
+  String get searchSourceBadgeGoogle;
+
+  /// No description provided for @searchSourceBadgeMicrosoft.
+  ///
+  /// In en, this message translates to:
+  /// **'Microsoft'**
+  String get searchSourceBadgeMicrosoft;
+
+  /// No description provided for @searchConnectedAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'via {account}'**
+  String searchConnectedAccount(String account);
+
+  /// No description provided for @searchPartialFailureWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Some calendars couldn\'t be searched.'**
+  String get searchPartialFailureWarning;
+
+  /// No description provided for @searchUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Search is temporarily unavailable. Please try again.'**
+  String get searchUnavailableMessage;
+
+  /// No description provided for @searchRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get searchRetry;
+
   /// No description provided for @noLocationMatchWasFound.
   ///
   /// In en, this message translates to:

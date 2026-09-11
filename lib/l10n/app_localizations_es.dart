@@ -259,6 +259,31 @@ class AppLocalizationsEs extends AppLocalizations {
       '...Tiler needs three characters for a lookup';
 
   @override
+  String get searchSourceBadgeTiler => 'Tiler';
+
+  @override
+  String get searchSourceBadgeGoogle => 'Google';
+
+  @override
+  String get searchSourceBadgeMicrosoft => 'Microsoft';
+
+  @override
+  String searchConnectedAccount(String account) {
+    return 'vía $account';
+  }
+
+  @override
+  String get searchPartialFailureWarning =>
+      'No se pudieron buscar algunos calendarios.';
+
+  @override
+  String get searchUnavailableMessage =>
+      'La búsqueda no está disponible temporalmente. Inténtalo de nuevo.';
+
+  @override
+  String get searchRetry => 'Reintentar';
+
+  @override
   String get noLocationMatchWasFound => 'No location match was found';
 
   @override

@@ -6,6 +6,7 @@ import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
 import 'package:tiler_app/bloc/scheduleSummary/schedule_summary_bloc.dart';
 import 'package:tiler_app/components/tileUI/deletion_confirmation_widget.dart';
 import 'package:tiler_app/components/tileUI/searchComponent.dart';
+import 'package:tiler_app/data/calendarSearch.dart';
 import 'package:tiler_app/data/scheduleStatus.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
@@ -64,13 +65,27 @@ class EventNameSearchState extends SearchWidgetState {
   // Cached tile list so we can rebuild result widgets without a network call
   List<TilerEvent> _searchTiles = [];
 
+  // Cached multi-source rows (set when the Search endpoint succeeds) so a
+  // deletion-confirmation refresh can rebuild the capability-gated rows.
+  List<CalendarSearchItem>? _searchItems;
+
+  // The last committed search query, used by the partial/unavailable retry.
+  String _currentSearchQuery = '';
+
   // Rebuilds resultViewContainer (inherited from SearchWidgetState) from cached tiles.
   // Called whenever _tileIdPendingDeletion changes so the correct tile shows the
   // confirmation widget without requiring a fresh network request.
   void _refreshResultView() {
-    if (_searchTiles.isEmpty) return;
-    final widgets =
-        _searchTiles.map((tile) => tileToEventNameWidget(tile)).toList();
+    final items = _searchItems;
+    final List<Widget> widgets;
+    if (items != null && items.isNotEmpty) {
+      widgets = items.map((item) => searchItemToWidget(item)).toList();
+    } else if (_searchTiles.isNotEmpty) {
+      widgets =
+          _searchTiles.map((tile) => tileToEventNameWidget(tile)).toList();
+    } else {
+      return;
+    }
     setState(() {
       nameSearchResult = widgets;
       resultViewContainer = GestureDetector(
@@ -356,6 +371,14 @@ class EventNameSearchState extends SearchWidgetState {
       onTap: () => createSetAsNowCallBack(tile.id!)!(),
     );
   }
+
+  /// Renders one multi-source [CalendarSearchItem] row by bridging it to the
+  /// app's [TilerEvent] (via [CalendarSearchItem.toTilerEvent]) and reusing the
+  /// existing capability-aware [tileToEventNameWidget] renderer. This keeps the
+  /// capability gating, deletion-confirmation swap, and identity callbacks
+  /// identical to the legacy single-source rows.
+  Widget searchItemToWidget(CalendarSearchItem item) =>
+      tileToEventNameWidget(item.toTilerEvent());
 
   Widget tileToEventNameWidget(TilerEvent tile) {
     // If this tile is pending deletion, show deletion confirmation instead

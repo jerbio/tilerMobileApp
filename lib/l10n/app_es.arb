@@ -1,6 +1,20 @@
 {
     "helloWorld": "¡Hola Mundo!",
     "todayStatusPlacedTitle": "Programadas correctamente",
+    "searchSourceBadgeTiler": "Tiler",
+    "searchSourceBadgeGoogle": "Google",
+    "searchSourceBadgeMicrosoft": "Microsoft",
+    "searchConnectedAccount": "vía {account}",
+    "@searchConnectedAccount": {
+        "placeholders": {
+            "account": {
+                "type": "String"
+            }
+        }
+    },
+    "searchPartialFailureWarning": "No se pudieron buscar algunos calendarios.",
+    "searchUnavailableMessage": "La búsqueda no está disponible temporalmente. Inténtalo de nuevo.",
+    "searchRetry": "Reintentar",
     "todayStatusAttentionTitle": "Necesitan atención",
     "todayStatusLateTitle": "Con retraso",
     "todayStatusAttentionHelper": "Estas no cupieron en el tiempo disponible de hoy.",

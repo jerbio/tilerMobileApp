@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:tiler_app/data/request/TilerError.dart';
+import 'package:tiler_app/data/calendarSearch.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/data/timeline.dart';
 import 'package:tiler_app/services/api/appApi.dart';
@@ -102,5 +103,53 @@ class TileNameApi extends AppApi {
       return retValue;
     }
     throw TilerError();
+  }
+
+  /// Multi-source calendar event search (`GET api/CalendarEvent/Search`).
+  ///
+  /// Returns a typed [CalendarSearchResult]:
+  /// - `success` when the PostBack envelope is available (it may still carry a
+  ///   partial-failure warning via `envelope.hasPartialFailure`).
+  /// - `flagOff` on a plain 404 — the endpoint's feature flag is off for this
+  ///   user; callers fall back to the legacy `api/CalendarEvent/Name` search.
+  /// - `unavailable` on a 502 total source failure (typed
+  ///   [CalendarSearchUnavailableError]).
+  /// - `error` on any other failure (400, network, timeout).
+  ///
+  /// Mobile has no client-side rollout flag, so a plain 404 (never an error) is the
+  /// signal to preserve the legacy name-search behavior.
+  Future<CalendarSearchResult> searchCalendarEvents(
+    String query, {
+    List<String>? sources,
+  }) async {
+    if (!(await this.authentication.isUserAuthenticated()).item1) {
+      return CalendarSearchResult.error(
+          LocalizationService.instance.translations.userIsNotAuthenticated);
+    }
+    await checkAndReplaceCredentialCache();
+
+    String url = Constants.tilerDomain;
+    final queryParameters =
+        buildCalendarSearchQueryParameters(query, sources: sources);
+    Uri uri = Uri.https(url, 'api/CalendarEvent/Search', queryParameters);
+    var header = this.getHeaders();
+    if (header == null) {
+      return CalendarSearchResult.error('Issues with authentication');
+    }
+
+    try {
+      var response = await httpClient.get(uri, headers: header).timeout(
+        AppApi.requestTimeout,
+        onTimeout: () {
+          throw TilerError(
+              Message:
+                  LocalizationService.instance.translations.requestTimeout);
+        },
+      );
+      return parseCalendarSearchResponse(response.statusCode, response.body);
+    } on TilerError catch (e) {
+      // A timeout / network failure is a real error, NOT a flag-off fallback.
+      return CalendarSearchResult.error(e.Message ?? 'Network error');
+    }
   }
 }
