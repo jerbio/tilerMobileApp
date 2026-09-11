@@ -182,17 +182,26 @@ class _PreloadedRestrictionsRouteState
           child: ElevatedButton(
             style: buttonStyle,
             onPressed: () {
-              List<String> stackRouteHistory = [];
-              if (this.widget.params != null &&
-                  this.widget.params!.containsKey('stackRouteHistory')) {
-                stackRouteHistory = this.widget.params!['stackRouteHistory'];
-              }
+              // Copied element by element rather than assigned. This map
+              // arrives from callers that build it by hand, so its list may
+              // be a `List<String?>` or a `List<dynamic>`; assigning it into
+              // a `List<String>` threw before anything could be read (D57).
+              final List<String> stackRouteHistory = <String>[
+                ...?(this.widget.params?['stackRouteHistory'] as List?)
+                    ?.whereType<String>(),
+              ];
 
-              this.widget.params!['restrictionProfile'] = _restrictionProfile;
+              // `handleParamLoading` has already set `params` to at least an
+              // empty map, so this is reachable — but not `!`, because a
+              // route pushed with no arguments has nowhere to return a
+              // result, which is not a reason to throw (D57).
+              final Map params = this.widget.params ?? <String, dynamic>{};
+              this.widget.params = params;
+              params['restrictionProfile'] = _restrictionProfile;
               stackRouteHistory.add(_PreloadedRestrictionsRoute.routeName);
 
               Navigator.pushNamed(context, '/CustomRestrictionsRoute',
-                      arguments: this.widget.params)
+                      arguments: params)
                   .then((resultMap) async {
                 RestrictionProfile? restrictionProfile;
                 bool isAnytime = true;

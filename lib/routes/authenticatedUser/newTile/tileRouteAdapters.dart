@@ -230,7 +230,12 @@ Future<AdvancedRestrictionResult> openAdvancedRestrictionRoute(
   final _ObservedArgs args = _ObservedArgs(
     <String, dynamic>{
       'routeRestrictionProfile': current,
-      'stackRouteHistory': <String?>[parentRouteName],
+      // A `List<String>`, never `List<String?>`: the legacy route assigns
+      // this straight into a `List<String>` local, so a nullable element
+      // type throws before it can read anything (D57).
+      'stackRouteHistory': <String>[
+        if (parentRouteName != null) parentRouteName,
+      ],
       if (namedProfiles != null && namedProfiles.isNotEmpty)
         'namedRestrictionProfiles': namedProfiles,
     },
