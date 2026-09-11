@@ -6,6 +6,7 @@ import 'package:tiler_app/data/travelDetail.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/analyticsSignal.dart';
 import 'package:tiler_app/theme/tile_colors.dart';
+import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileCardStyle.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -123,11 +124,15 @@ class TravelBand {
 /// gutter (gradient hairline + travel-medium icon) with the same
 /// tap-to-directions behaviour as the list connectors.
 ///
-/// Zoom-aware: below [expandedHeightThreshold] the band collapses to the
-/// icon + hairline; above it a duration / "leave by" pill is added inside
-/// the tile's column. The pill can only sit in the empty band region
-/// between tiles (same-column tiles are time-disjoint), so the band never
-/// overlaps tile content.
+/// Zoom-aware tiers by band height:
+///   * `< 18px`  — a 2px gutter hairline only;
+///   * `>= 18px` — hairline + the 14px travel-medium icon in the gutter;
+///   * `>= 56px` — a full-column pastel card inside the tile column
+///     (`Travel • 24 min` + the travel window, e.g. `2:00 – 2:24 PM`),
+///     replacing the gutter tier. The card is drawn in the grid's travel
+///     layer BENEATH the tiles and never enters the overlap layout (no-snap
+///     rule 6): the band region between time-disjoint tiles is empty, so
+///     the card does not cover tile content.
 ///
 /// The parent ([DayGridWidget]) passes the geometry computed by
 /// [TravelBand.bandsForTile] and places this widget in the grid's
@@ -166,9 +171,12 @@ class TravelBandWidget extends StatelessWidget {
   /// "recalculating" treatment, without fabricating estimates).
   final bool dimmed;
 
-  /// The band height (px) at which the band expands from icon + hairline
-  /// to the duration / "leave by" pill.
+  /// The band height (px) at which the band expands from the gutter
+  /// icon + hairline tier to the full-column card.
   static const double expandedHeightThreshold = 56;
+
+  /// Test/spotlight key for the expanded full-column card.
+  static const Key cardKey = ValueKey('daygrid_travel_band_card');
 
   /// The minimum band height (px) at which the travel-medium icon stays
   /// legible.
@@ -271,6 +279,27 @@ class TravelBandWidget extends StatelessWidget {
     }
     return l10n.travelDurationHoursMinutes(hours, remainingMinutes);
   }
+  /// The travel window this band covers: pre = `[tile.start - d, tile.start]`,
+  /// post = `[tile.end, tile.end + d]`. `null` without a tile bound.
+  (int, int)? get _windowMs {
+    final d = _durationMs;
+    if (d == null || d <= 0) return null;
+    if (kind == TravelBandKind.pre) {
+      final end = tile.start;
+      if (end == null) return null;
+      return ((end - d).round(), end);
+    }
+    final start = tile.end;
+    if (start == null) return null;
+    return (start, (start + d).round());
+  }
+
+  /// `Travel • 24 min` — the card title.
+  static String cardTitle(BuildContext context, double? durationMs) {
+    final l10n = AppLocalizations.of(context)!;
+    return '${l10n.travel} • ${formatDuration(context, durationMs)}';
+  }
+
   // ---------------------------------------------------------------------------
   // Tap-to-directions (mirror TravelConnector / ReturnConnector)
   // ---------------------------------------------------------------------------
@@ -384,67 +413,73 @@ class TravelBandWidget extends StatelessWidget {
       ),
     );
 
-    // The expanded pill (duration + leave-by + directions affordance),
-    // the same visual language as `CompactTravelIndicator`.
-    final leaveBy =
-        kind == TravelBandKind.pre ? TravelBand.leaveByTime(tile) : null;
-    final pill = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            formatDuration(context, _durationMs),
-            style: TextStyle(
-              fontFamily: TileTextStyles.rubikFontName,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: color,
-            ),
-          ),
-          if (leaveBy != null) ...[
-            const SizedBox(width: 6),
-            Icon(
-              Icons.schedule,
-              size: 12,
-              color: _isTardy
-                  ? TileColors.late
-                  : colorScheme.onSurface.withValues(alpha: 0.5),
-            ),
-            const SizedBox(width: 3),
-            Flexible(
-              child: Text(
-                AppLocalizations.of(context)!.leaveByTime(
-                    MaterialLocalizations.of(context)
-                        .formatTimeOfDay(TimeOfDay.fromDateTime(leaveBy))),
-                style: TextStyle(
-                  fontFamily: TileTextStyles.rubikFontName,
-                  fontSize: 11,
-                  fontWeight: _isTardy ? FontWeight.w600 : FontWeight.w400,
-                  color: _isTardy
-                      ? TileColors.late
-                      : colorScheme.onSurface.withValues(alpha: 0.6),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+    // The expanded full-column card (mock tier): pastel band inside the
+    // tile column with the travel-medium glyph, `Travel • N min`, and the
+    // travel window. Replaces the gutter hairline + icon at this tier.
+    Widget? card;
+    if (expanded) {
+      final window = _windowMs;
+      String? windowLabel;
+      if (window != null) {
+        final localizations = MaterialLocalizations.of(context);
+        String fmt(int ms) => localizations.formatTimeOfDay(
+            TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(ms)));
+        windowLabel =
+            TileCardStyle.compactTimeRange(fmt(window.$1), fmt(window.$2));
+      }
+      card = Container(
+        key: cardKey,
+        padding: const EdgeInsets.fromLTRB(8, 6, 10, 6),
+        decoration: BoxDecoration(
+          color: Color.alphaBlend(
+              color.withValues(alpha: 0.16), colorScheme.surface),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    cardTitle(context, _durationMs),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: TileTextStyles.rubikFontName,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  if (windowLabel != null)
+                    Text(
+                      windowLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: TileTextStyles.rubikFontName,
+                        fontSize: 11,
+                        color: _isTardy
+                            ? TileColors.late
+                            : colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                ],
               ),
             ),
+            if (_canOpenDirections) ...[
+              const SizedBox(width: 6),
+              Icon(Icons.navigation_outlined, size: 14, color: color),
+            ],
           ],
-          if (_canOpenDirections) ...[
-            const SizedBox(width: 6),
-            Icon(
-              Icons.navigation_outlined,
-              size: 12,
-              color: color,
-            ),
-          ],
-        ],
-      ),
-    );
+        ),
+      );
+    }
 
     return AnimatedPositioned(
       top: effectiveTop,
@@ -465,14 +500,16 @@ class TravelBandWidget extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           child: Stack(
           children: [
-            Positioned(
-              left: 0,
-              top: 0,
-              width: 2,
-              height: effectiveHeight,
-              child: line,
-            ),
-            if (showIcon)
+            // Gutter tier (hairline + icon) — only below the card tier.
+            if (!expanded)
+              Positioned(
+                left: 0,
+                top: 0,
+                width: 2,
+                height: effectiveHeight,
+                child: line,
+              ),
+            if (!expanded && showIcon)
               Positioned(
                 left: 4,
                 top: (effectiveHeight - 14) / 2,
@@ -480,12 +517,13 @@ class TravelBandWidget extends StatelessWidget {
                 height: 14,
                 child: Icon(icon, size: 14, color: color),
               ),
-            if (expanded)
+            if (card != null)
               Positioned(
-                left: gutterSpan + 2,
-                top: (effectiveHeight - 24) / 2,
-                width: (width - 4).clamp(0.0, double.infinity),
-                child: pill,
+                left: gutterSpan,
+                top: 0,
+                width: width,
+                height: effectiveHeight,
+                child: card,
               ),
           ],
         ),

@@ -628,6 +628,71 @@ void main() {
           findsOneWidget);
     });
 
+    testWidgets(
+        'at >= 56px the band is a full-column card (title + window), not a gutter icon',
+        (tester) async {
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            height: 56,
+            left: 40,
+            width: 300,
+          ));
+      final card = find.byKey(TravelBandWidget.cardKey);
+      expect(card, findsOneWidget);
+      // The card spans exactly the tile column (left..left+width): it is
+      // drawn beneath the tiles and never enters the overlap layout.
+      final Rect rect = tester.getRect(card);
+      expect(rect.left, closeTo(40, 0.5));
+      expect(rect.width, closeTo(300, 0.5));
+      expect(rect.height, closeTo(56, 0.5));
+      // Title + travel window (pre band: 09:30 -> 10:00).
+      expect(find.text('Travel • 30 min'), findsOneWidget);
+      expect(find.text('9:30 – 10:00 AM'), findsOneWidget);
+      // The gutter hairline/icon tier is replaced, not stacked: the only
+      // travel-medium icon is the one inside the card.
+      final icons = tester
+          .widgetList<Icon>(find.descendant(
+            of: find.byKey(const ValueKey<String>('band_pre_56')),
+            matching: find.byType(Icon),
+          ))
+          .toList();
+      expect(icons.where((i) => i.icon != Icons.navigation_outlined),
+          hasLength(1));
+      expect(
+          tester.getRect(find.byWidget(
+              icons.firstWhere((i) => i.icon != Icons.navigation_outlined))),
+          predicate<Rect>((r) => r.left >= 40, 'icon sits inside the column'));
+    });
+
+    testWidgets('below 56px there is no card (gutter tier)', (tester) async {
+      await pumpBand(
+          tester,
+          bandWidget(
+            tile: bandTile(),
+            kind: TravelBandKind.pre,
+            height: 55,
+          ));
+      expect(find.byKey(TravelBandWidget.cardKey), findsNothing);
+    });
+
+    testWidgets('a post band card shows the window after the tile',
+        (tester) async {
+      final tile = makeTile(
+        id: 'p',
+        start: DateTime(2026, 5, 15, 10, 0),
+        end: DateTime(2026, 5, 15, 11, 0),
+        travelTimeAfter: 24 * 60 * 1000,
+      );
+      await pumpBand(
+          tester,
+          bandWidget(tile: tile, kind: TravelBandKind.post, height: 60));
+      expect(find.text('Travel • 24 min'), findsOneWidget);
+      expect(find.text('11:00 – 11:24 AM'), findsOneWidget);
+    });
+
     testWidgets('the band color follows the tardy rule', (tester) async {
       // Not tardy -> TileColors.travel.
       await pumpBand(
