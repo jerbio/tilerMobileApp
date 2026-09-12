@@ -19,7 +19,8 @@ import 'package:tiler_app/util.dart';
 ///   2. post-frame settle delay so the surface renders first;
 ///   3. optional anchor readiness gate ([anchorReadyTimeout]) for surfaces
 ///      that mount their anchors asynchronously (e.g. behind a network
-///      fetch): the host polls until step 1's target key is mounted;
+///      fetch): the host polls until step 1's target key is mounted, then
+///      leaves the loaded surface undimmed for [anchorSettleDelay];
 ///   4. one-tour-at-a-time guard ([TourCoordinator]);
 ///   5. [StartTutorialEvent] on the per-tour [TutorialBloc].
 ///
@@ -39,9 +40,11 @@ class TourHost extends StatefulWidget {
   /// Delay before starting the tour, letting the surface render first.
   final Duration settleDelay;
 
-  /// When non-null, after [settleDelay] the host waits — polling every
-  /// [anchorPollInterval] — until the first step's `targetKey` is mounted
-  /// before starting, giving up after this long. Use it on surfaces whose
+  /// When non-null, the host polls every [anchorPollInterval] from mount
+  /// until the first step's `targetKey` is mounted, then starts the tour
+  /// once both [settleDelay] (from mount) and [anchorSettleDelay] (from the
+  /// anchor appearing) have elapsed. It gives up this long after
+  /// [settleDelay] if the anchor never appears. Use it on surfaces whose
   /// anchors render asynchronously (a page that shows a pending widget
   /// until its data loads); a timer-only start would spotlight nothing.
   ///
@@ -52,6 +55,12 @@ class TourHost extends StatefulWidget {
 
   /// How often the readiness gate re-checks the first anchor.
   final Duration anchorPollInterval;
+
+  /// Readiness gate only: how long the freshly loaded surface stays
+  /// undimmed after its first anchor appears. Starting on the frame the
+  /// pending widget disappears reads as "the tour began before the page
+  /// loaded", so the user gets a beat to see the page first.
+  final Duration anchorSettleDelay;
 
   final Widget child;
 
@@ -78,6 +87,7 @@ class TourHost extends StatefulWidget {
     this.settleDelay = const Duration(milliseconds: 1200),
     this.anchorReadyTimeout,
     this.anchorPollInterval = const Duration(milliseconds: 100),
+    this.anchorSettleDelay = const Duration(milliseconds: 800),
     this.onShowAddTileSheet,
     this.onDismissAddTileSheet,
     this.stepsBuilder = buildTutorialSteps,
@@ -107,36 +117,58 @@ class _TourHostState extends State<TourHost> {
   void _checkAndStartTour() {
     TourPreferencesHelper.hasCompletedTour(widget.tourId).then((completed) {
       if (completed || !mounted) return;
-      // Delay to let the surface render first.
-      Future.delayed(widget.settleDelay, () {
-        if (!mounted) return;
-        _startWhenAnchorReady(Duration.zero);
-      });
+      if (widget.anchorReadyTimeout == null) {
+        // Timer-only start: delay to let the surface render first.
+        Future.delayed(widget.settleDelay, () {
+          if (mounted) _requestStart();
+        });
+        return;
+      }
+      _pollForAnchor(Duration.zero);
     });
   }
 
-  /// Starts the tour once its first anchor exists (or immediately when no
-  /// readiness gate is configured). [waited] is how long the gate has
-  /// already been polling.
-  void _startWhenAnchorReady(Duration waited) {
+  /// Readiness gate: polls until step 1's anchor is mounted, then holds
+  /// the loaded surface undimmed for [TourHost.anchorSettleDelay] (never
+  /// starting before [TourHost.settleDelay] from mount either). [waited]
+  /// is how long since the host mounted.
+  void _pollForAnchor(Duration waited) {
     if (!mounted) return;
-    final timeout = widget.anchorReadyTimeout;
-    if (timeout != null && !_firstAnchorMounted()) {
-      if (waited >= timeout) {
-        // Give up for this visit. Not marked complete — the tour retries
-        // on the next surface visit.
-        Utility.debugPrint(
-            'TourHost(${widget.tourId}): first anchor never mounted within '
-            '${timeout.inMilliseconds}ms; not starting this visit');
-        return;
-      }
-      Future.delayed(widget.anchorPollInterval, () {
-        _startWhenAnchorReady(waited + widget.anchorPollInterval);
+    if (_firstAnchorMounted()) {
+      final Duration remainingSettle = widget.settleDelay - waited;
+      final Duration beat = remainingSettle > widget.anchorSettleDelay
+          ? remainingSettle
+          : widget.anchorSettleDelay;
+      Future.delayed(beat, () {
+        if (!mounted) return;
+        // The surface may have changed under us (e.g. an error state
+        // replaced the cards): only start if the anchor is still there,
+        // otherwise keep waiting for it.
+        if (_firstAnchorMounted()) {
+          _requestStart();
+        } else {
+          _pollForAnchor(waited + beat);
+        }
       });
       return;
     }
-    // One tour at a time. A blocked tour is not marked complete — it
-    // retries on the next surface visit.
+    if (waited >= widget.settleDelay + widget.anchorReadyTimeout!) {
+      // Give up for this visit. Not marked complete — the tour retries on
+      // the next surface visit.
+      Utility.debugPrint(
+          'TourHost(${widget.tourId}): first anchor never mounted within '
+          '${widget.anchorReadyTimeout!.inMilliseconds}ms after the settle '
+          'delay; not starting this visit');
+      return;
+    }
+    Future.delayed(widget.anchorPollInterval, () {
+      _pollForAnchor(waited + widget.anchorPollInterval);
+    });
+  }
+
+  /// One tour at a time. A blocked tour is not marked complete — it
+  /// retries on the next surface visit.
+  void _requestStart() {
     if (TourCoordinator.instance.requestStart(widget.tourId)) {
       _tourBloc.add(StartTutorialEvent());
     }

@@ -57,6 +57,7 @@ import 'package:tiler_app/theme/theme_data.dart';
 const _settle = Duration(milliseconds: 100);
 const _fade = Duration(milliseconds: 400);
 const _poll = Duration(milliseconds: 100);
+const _anchorSettle = Duration(milliseconds: 300);
 const _readyTimeout = Duration(seconds: 2);
 const _completedKey = 'hasCompletedTour_tile_preferences';
 
@@ -160,6 +161,7 @@ Widget harness({
       settleDelay: _settle,
       anchorReadyTimeout: anchorReadyTimeout,
       anchorPollInterval: _poll,
+      anchorSettleDelay: _anchorSettle,
       stepsBuilder: buildTilePreferencesTourSteps,
       child: Builder(
         builder: (context) {
@@ -221,10 +223,11 @@ Future<void> _load(WidgetTester tester, FakeSettingsApi api) async {
   await tester.pump(); // cards render
 }
 
-/// Pumps through the readiness poll + spotlight resolution once the
-/// anchors are mounted.
+/// Pumps through the readiness poll, the post-load settle beat and the
+/// spotlight resolution once the anchors are mounted.
 Future<void> _pumpTourStart(WidgetTester tester) async {
   await tester.pump(_poll); // readiness poll observes the anchors
+  await tester.pump(_anchorSettle); // loaded page stays undimmed for a beat
   await tester.pump(); // spotlight post-frame resolution
   await tester.pump(); // scroll-into-view layout frame
   await tester.pump(_fade);
@@ -376,6 +379,42 @@ void main() {
         tester.getRect(find.byKey(TilePreferencesTourKeys.transportCardKey)),
         reason: 'The spotlight must sit on the live transport card.',
       );
+    });
+
+    testWidgets(
+        'once the cards mount the loaded page stays undimmed for '
+        'anchorSettleDelay before the tour starts', (tester) async {
+      _mockTimezoneChannel(tester);
+      SharedPreferences.setMockInitialValues({});
+      final (bloc, api) = _pendingBloc();
+
+      await tester.pumpWidget(harness(key: const Key('harness'), bloc: bloc));
+      // A slow fetch: the settle delay has long elapsed when the cards
+      // finally mount.
+      await tester.pump(_settle * 5);
+      await _load(tester, api);
+      await tester.pump(_poll); // the poll sees the anchors
+      await tester.pump();
+
+      expect(
+          find.byKey(TilePreferencesTourKeys.transportCardKey), findsOneWidget);
+      expect(capturedBloc.state.isActive, isFalse,
+          reason: 'The user must see the loaded page before it is dimmed — '
+              'starting on the same frame the spinner disappears reads as '
+              '"the tour began before the page loaded".');
+      expect(_spotlightTarget(tester), isNull);
+
+      await tester.pump(_anchorSettle - _poll);
+      await tester.pump();
+      expect(capturedBloc.state.isActive, isFalse,
+          reason: 'Still inside the post-load beat.');
+
+      await tester.pump(_poll);
+      await tester.pump();
+      await tester.pump(_fade);
+      expect(capturedBloc.state.isActive, isTrue,
+          reason: 'The tour starts once the post-load beat has elapsed.');
+      expect(capturedBloc.state.currentStepIndex, 0);
     });
 
     testWidgets(
@@ -584,6 +623,10 @@ void main() {
       expect(host.anchorReadyTimeout, isNotNull,
           reason: 'The page loads its anchors asynchronously; the route '
               'must enable the readiness gate.');
+      expect(host.anchorSettleDelay,
+          greaterThanOrEqualTo(const Duration(milliseconds: 500)),
+          reason: 'The loaded page must be visible for a real beat before '
+              'the tour dims it.');
       expect(host.child, isA<TilePreferencesScreen>(),
           reason: 'The tour host must wrap the real Tile Preferences page.');
     });
