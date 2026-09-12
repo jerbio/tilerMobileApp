@@ -9,6 +9,12 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 enum WelcomeType { register, login }
 
 class WelcomeScreen extends StatefulWidget {
+  /// How long the welcome beat stays on screen before routing on. The
+  /// launch gate is a local read and the schedule is already loading
+  /// (stages 3.5 / 4.1), so this is purely a brand beat — it used to be a
+  /// 3s sleep in front of a blocking server check.
+  static const Duration displayDuration = Duration(milliseconds: 800);
+
   final WelcomeType welcomeType;
   final String firstName;
 
@@ -52,12 +58,20 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   Future<void> checkOnboarding() async {
-    await Future.delayed(Duration(seconds: 3));
-    final checker = widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
-    bool nextPage = await checker();
+    final checker =
+        widget.onboardingStatusChecker ?? Utility.checkOnboardingStatus;
+    // The gate check runs alongside the beat, never after it: the wait is
+    // max(beat, check), not beat + check.
+    final results = await Future.wait<Object?>([
+      Future.delayed(WelcomeScreen.displayDuration),
+      checker(),
+    ]);
+    final bool nextPage = results[1] as bool;
     if (mounted) {
-      final authorizedBuilder = widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
-      final onboardingBuilder = widget.onboardingRouteBuilder ?? (_) => OnboardingView();
+      final authorizedBuilder =
+          widget.authorizedRouteBuilder ?? (_) => AuthorizedRoute();
+      final onboardingBuilder =
+          widget.onboardingRouteBuilder ?? (_) => OnboardingView();
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
