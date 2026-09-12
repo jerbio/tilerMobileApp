@@ -38,7 +38,36 @@ const _settle = Duration(milliseconds: 100);
 /// its child.
 late TutorialBloc capturedBloc;
 
-Widget host({required String tourId, int stepCount = 2, Key? key}) {
+/// Counts how many times the hosted surface is (re)mounted. A tour must
+/// never remount its surface: a page that creates its bloc and fetches in
+/// `initState`/`create` would load again every time the tour starts or
+/// ends.
+int surfaceMounts = 0;
+
+class _MountCountingSurface extends StatefulWidget {
+  const _MountCountingSurface();
+
+  @override
+  State<_MountCountingSurface> createState() => _MountCountingSurfaceState();
+}
+
+class _MountCountingSurfaceState extends State<_MountCountingSurface> {
+  @override
+  void initState() {
+    super.initState();
+    surfaceMounts++;
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
+}
+
+Widget host({
+  required String tourId,
+  int stepCount = 2,
+  Key? key,
+  Widget surface = const SizedBox.shrink(),
+}) {
   return MaterialApp(
     localizationsDelegates: const [
       AppLocalizations.delegate,
@@ -58,7 +87,7 @@ Widget host({required String tourId, int stepCount = 2, Key? key}) {
         child: Builder(
           builder: (context) {
             capturedBloc = context.read<TutorialBloc>();
-            return const SizedBox.shrink();
+            return surface;
           },
         ),
       ),
@@ -167,6 +196,38 @@ void main() {
       expect(capturedBloc.state.isActive, isTrue,
           reason: 'Skipping a tour must release the coordinator so another '
               'tour can start.');
+    });
+  });
+
+  group('TourHost — surface stability', () {
+    testWidgets(
+        'the hosted surface is not remounted when the tour starts or ends',
+        (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      surfaceMounts = 0;
+
+      await tester.pumpWidget(host(
+        tourId: 'settings',
+        surface: const _MountCountingSurface(),
+      ));
+      expect(surfaceMounts, 1);
+
+      // Tour starts: the overlay is layered on top of the surface.
+      await tester.pump(_settle);
+      await tester.pump();
+      expect(capturedBloc.state.isActive, isTrue);
+      expect(surfaceMounts, 1,
+          reason: 'Starting the tour must layer the overlay over the '
+              'existing surface, not rebuild the surface underneath it — a '
+              'page that fetches on mount would load twice.');
+
+      // Tour ends: the overlay is removed.
+      capturedBloc.add(SkipTutorialEvent());
+      await tester.pump();
+      await tester.pump();
+      expect(capturedBloc.state.isActive, isFalse);
+      expect(surfaceMounts, 1,
+          reason: 'Ending the tour must not remount the surface either.');
     });
   });
 

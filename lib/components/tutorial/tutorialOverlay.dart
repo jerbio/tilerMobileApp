@@ -405,23 +405,28 @@ class _TutorialOverlayState extends State<TutorialOverlay>
           previous.status != current.status ||
           previous.currentStepIndex != current.currentStepIndex,
       builder: (context, state) {
-        if (!state.isActive) {
-          return widget.child;
-        }
-
-        final currentStep = _steps[state.currentStepIndex];
+        final TutorialStep? currentStep =
+            state.isActive ? _steps[state.currentStepIndex] : null;
 
         // Don't render the tutorial overlay on step 3 (quick_add)
         // because the real modal bottom sheet is shown above everything.
         // The tooltip is embedded in the modal itself.
-        final bool hideOverlay = currentStep.id == 'quick_add';
+        final bool showOverlay =
+            currentStep != null && currentStep.id != 'quick_add';
 
+        // The surface always lives at the same spot in the tree — under
+        // this Stack — whether or not the overlay is showing. Returning
+        // `widget.child` bare while inactive and wrapping it in a Stack
+        // once active changes the tree shape, which remounts the whole
+        // surface when the tour starts and again when it ends: a page
+        // that creates its bloc and fetches on mount (Tile Preferences)
+        // loaded twice.
         return Stack(
           children: [
             // The actual app content underneath
             widget.child,
 
-            if (!hideOverlay)
+            if (showOverlay)
               // Overlay layer with spotlight + tooltip
               _TutorialOverlayLayer(
                 fadeAnimation: _fadeAnimation,

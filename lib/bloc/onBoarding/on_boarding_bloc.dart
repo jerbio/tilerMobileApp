@@ -143,8 +143,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
     // Stage 3.3: the terminal skipped state has no page (pageNumber is
     // null). Page navigation is meaningless after Skip, so treat the
     // event as a guarded no-op instead of dereferencing pageNumber.
-    if (state.pageNumber == null ||
-        state.step == OnboardingStep.skipped) {
+    if (state.pageNumber == null || state.step == OnboardingStep.skipped) {
       return;
     }
     if (!_canProceedToNextPage(state)) {
@@ -169,8 +168,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
   void _onPreviousPageEvent(
       PreviousPageEvent event, Emitter<OnboardingState> emit) {
     // Stage 3.3: same terminal-state guard as _onNextPageChanged.
-    if (state.pageNumber == null ||
-        state.step == OnboardingStep.skipped) {
+    if (state.pageNumber == null || state.step == OnboardingStep.skipped) {
       return;
     }
     if (state.step == OnboardingStep.suggestionLoading ||
@@ -375,7 +373,11 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
 
   void _onSkipOnboarding(
       SkipOnboardingEvent event, Emitter<OnboardingState> emit) async {
+    // Stage 4.1: the essentials done flag is the gate's canonical flag;
+    // the legacy skip flag is still written for readers that predate the
+    // essentials flow.
     await OnBoardingSharedPreferencesHelper.setSkipOnboarding(true);
+    await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(true);
     emit(OnboardingState(step: OnboardingStep.skipped));
   }
 
@@ -446,8 +448,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       // Stage 3.4: persist the local done flag only after a successful
       // submit; the launch gate reads it on the next start (design
       // section 3.5).
-      await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(
-          true);
+      await OnBoardingSharedPreferencesHelper.setEssentialsOnboardingDone(true);
       emit(OnboardingState(step: OnboardingStep.submitted));
     } catch (e) {
       // Failed submit: stay in the flow. The view's error branch shows
