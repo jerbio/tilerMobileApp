@@ -7,12 +7,14 @@ minutes earlier; learning happens in context.
 Development follows TDD: write failing test -> implement -> pass ->
 analyze -> refactor. Update the tracker after every red-green-refactor cycle.
 
-Last updated: 2026-08-26
+Last updated: 2026-09-12
 
-**Resume point (pause/error recovery):** Phases 1 + 2 complete (commits
-`711af31` phase 1, `a10302e` phase 2, `aec0f74` stage 2.4 "How to use Tiler"
-reset row). Next stage: **3.1 — Essentials pages + order + validation**
-(write `test/essentials_onboarding_flow_test.dart` RED first).
+**Resume point (pause/error recovery):** Phases 1–3 complete (commits
+`711af31` phase 1, `a10302e` phase 2, `aec0f74` stage 2.4, `70d643c` phase 3).
+2026-09-12 review retargeted the in-app product tour from the Settings list
+to the **Tile Preferences** page (section 3.4). Next stage: **2.5 — Retarget
+tour to Tile Preferences** (write `test/tile_preferences_tour_test.dart` RED
+first), then Phase 4 starting at 4.1.
 Resume protocol: (1) read this block, (2) the section 9 tracker row for
 the next stage, (3) the newest section 10 cycle entry. The tracker and
 cycle log are updated in the same commit as the code, so a mid-stage
@@ -33,7 +35,8 @@ matching commit — re-run that stage's tests to locate the break.
 | Onboarding gate | Local flag only (`essentialsOnboardingDone`); no blocking server round-trip |
 | Sign-in tour | None |
 | Home tour | Existing 8-step tour, unchanged content |
-| Settings tour | New; 4 steps; first visit to `/Setting` |
+| Settings-list pointer | 1 step; first visit to `/Setting`; points at the Tile Preferences row (discovery only) |
+| Tile Preferences tour | New; 3 steps (transport, work/personal hours, block-out hours); first visit to `/tilePreferences`. This is the tour that teaches how to update AI preferences |
 | Tour frequency | **Once per Tiler device** (SharedPreferences; survives logout; replays on reinstall/new device) |
 | Existing-user seeding | None — everyone gets the settings tour once per device |
 | Manual replay | Settings › "How to use Tiler" resets tours per device |
@@ -72,8 +75,10 @@ flowchart TD
     D -->|Submit: sendOnboardingData| E
     E --> F{home tour done on device?}
     F -->|no| G[Home tour]
-    E -->|opens /Setting| H{settings tour done on device?}
-    H -->|no| I[Settings tour]
+    E -->|opens /Setting| H{settings pointer done on device?}
+    H -->|no| I[1-step pointer → Tile Preferences row]
+    E -->|opens /tilePreferences| J{tile preferences tour done on device?}
+    J -->|no| K[Tile Preferences tour]
 ```
 
 ### 3.2 Essentials onboarding
@@ -107,14 +112,42 @@ flowchart TD
 - `TutorialOverlay` generalized to render any tour's steps; home-specific
   add-tile-sheet choreography stays scoped to the `home` tour definition.
 
-### 3.4 Settings tour steps
+### 3.4 Tour steps
+
+**Settings-list pointer** (`settings` tour, 1 step) — discovery only:
+
+| # | Anchor | Message |
+| --- | --- | --- |
+| 1 | Tile Preferences row | Your AI preferences live here — how you travel, your work/personal hours, and block-out time |
+
+**Tile Preferences tour** (`tile_preferences` tour, 3 steps) — anchors are
+the three section cards in `tilePreferences.dart`. The template's Save
+button is not a step: it only renders once `hasChanges` is true, so it does
+not exist when the tour runs.
 
 | # | Anchor (new GlobalKeys) | Message |
 | --- | --- | --- |
-| 1 | Account Info tile | Profile and account details |
-| 2 | Tile Preferences tile | Hours, locations, profiles — "fine-tune what onboarding used to ask" |
-| 3 | Notifications tile | How Tiler nudges you |
-| 4 | Connections tile | Connect Google Calendar |
+| 1 | Transport card | How you get around — Tiler budgets travel time between tiles from this |
+| 2 | Work / Personal hours card | When Tiler may schedule work vs. personal tiles; tap either to set a profile |
+| 3 | Block-out hours card | Bed time and sleep — hours Tiler never schedules into |
+
+Engine requirements surfaced by this page (both generic, in `TourHost`):
+
+- **Anchor readiness gate.** The page shows `PendingWidget` until
+  `PreferencesLoaded`; a timer-based start would spotlight nothing. After
+  the settle delay `TourHost` starts only once step 1's `targetKey` is
+  mounted (bounded polling); on timeout it gives up *without* marking the
+  tour complete, so it retries on the next visit (same semantics as a
+  coordinator block).
+- **Scroll-into-view.** The page content is a non-scrolling `Column`; on
+  small viewports the block-out card can sit below the fold. Content gets a
+  scroll view and the overlay calls `Scrollable.ensureVisible` on the
+  current step's anchor before measuring the spotlight.
+
+History: 2.1–2.3 originally shipped a 4-step Settings-list tour (Account
+Info / Tile Preferences / Notifications / Connections). Reviewed 2026-09-12
+and cut to the 1-step pointer above: the list rows are self-explanatory,
+and the learning users actually need is on the Tile Preferences page.
 
 ### 3.5 Gate simplification
 
@@ -134,11 +167,15 @@ flowchart TD
 3. `TourHost` extracted; `home` tour re-wired through it (behavior parity).
 4. Tour coordinator: one active tour at a time.
 
-### Phase 2 — Settings tour
+### Phase 2 — Settings tour (superseded — see 2.5)
 1. GlobalKeys on settings list tiles.
 2. `settings` `TourDefinition` (4 steps) + l10n strings (en + es).
 3. `TourHost` wired into the Settings scaffold.
 4. "How to use Tiler" reset extended to per-tour / replay-all.
+5. **Retarget (2026-09-12):** `settings` tour cut to a 1-step pointer at the
+   Tile Preferences row; new `tile_preferences` tour (3 steps) hosted on the
+   `/tilePreferences` route; `TourHost` anchor-readiness gate +
+   scroll-into-view; registry `[home, settings, tile_preferences]`.
 
 ### Phase 3 — Slim essentials onboarding
 1. Reduce `pages` to [Profession, Location]; profession validation keyed to
@@ -154,7 +191,7 @@ flowchart TD
    remove the 3s `WelcomeScreen` delay.
 2. Set `essentialsOnboardingDone` on submit and on skip.
 3. Keep `OnboardingView` full flow reachable behind a debug flag (kill
-   switch); delete unused sub-widgets in a later cleanup pass.
+   switch, `constants.dart`); delete unused sub-widgets in a later cleanup pass.
 4. Optional background server reconcile.
 
 ### Phase 5 — Instrumentation, QA & rollout
@@ -174,12 +211,13 @@ patterns (`test/ai_consent_gate_test.dart` for injectable seams,
 | 1 | `test/tutorial_bloc_multi_tour_test.dart` | Bloc writes `hasCompletedTour_<id>` on complete/skip; step navigation unchanged |
 | 1 | `test/tour_host_test.dart` | Starts tour when key unset; no start when set; no start when another tour active; retries next visit |
 | 1 | `test/tour_coordinator_test.dart` | Single active tour; release on complete/skip |
-| 2 | `test/settings_tour_test.dart` | 4 steps anchor to live settings tiles (key-sync test, mirroring `kTutorialStepCount` sync tests); triggers once per device; reset replays |
+| 2 | `test/settings_tour_test.dart` | 1-step pointer anchors to the live Tile Preferences row (key-sync test, mirroring `kTutorialStepCount` sync tests); triggers once per device; reset replays |
+| 2 | `test/tile_preferences_tour_test.dart` | 3 steps anchor to the live section cards; no start while `PendingWidget` shows; starts once `PreferencesLoaded`; readiness timeout does not mark complete; small-viewport step is scrolled into view; once per device; reset replays all three tours |
 | 3 | `test/essentials_onboarding_flow_test.dart` | Page order profession→location; profession 3-char rule on page 1; swipe does not fire location consent; consent only via button |
 | 3 | `test/essentials_onboarding_skip_test.dart` | Global Skip on both pages; skip sets flag; unsubmitted data discarded (no API call) |
 | 3 | `test/essentials_onboarding_submit_test.dart` | Submit sends profession+location only; navigates to AuthorizedRoute (no intro slider); flag set |
 | 4 | `test/onboarding_gate_test.dart` | Gate is local-only (no API call); legacy `skipOnboarding` honored; new flag honored; fresh device → essentials |
-| 4 | `test/welcome_screen_routing_test.dart` | Existing tests updated: delay removed/shortened, routes to essentials vs AuthorizedRoute by local flag |
+| 4 | `test/welcome_screen_navigation_test.dart` | Existing tests updated: delay removed/shortened, routes to essentials vs AuthorizedRoute by local flag |
 
 Gate checks per stage before marking Done:
 
@@ -272,14 +310,15 @@ Status legend: `Not started` | `Red (test failing)` | `Green (test passing)` | `
 | 2.1 | Settings anchors + tour definition | `test/settings_tour_test.dart` | `lib/components/tutorial/tours/settingsTour.dart`, `settingsWidget.dart` | Done | 4-step contract locked (ids `account_info` → `tile_preferences` → `notifications` → `connections`); `SettingsTourKeys` anchors attached to the 4 live `Settings` rows exactly once (`_buildListTile` gained an optional `Key`); once-per-device lifecycle pinned (first-visit start, spotlight == live row rect, real overlay taps advance, completion persists `hasCompletedTour_settings`, no restart on revisit, reset replays); `TourHost.stepsBuilder` added with home-tour default so home parity is unchanged |
 | 2.2 | Settings tour l10n | (compiled via 2.1 test) | `lib/l10n/app_en.arb`, `app_es.arb` | Done | 4 EN + 4 ES strings; titles echo the row labels, bodies per section 3.4; generated `app_localizations*.dart` compiled via `flutter gen-l10n` and checked in |
 | 2.3 | TourHost wired into the `/Setting` route | (extend 2.1: production-route group) | `lib/main.dart` | Done | `/Setting` is now built by top-level `buildSettingsRoute` (single source of truth for the routes map and tests): `TourHost(tourId: settingsTourId, stepCount: kSettingsTourStepCount, stepsBuilder: buildSettingsTourSteps, child: Settings())` with the default 1200ms settle delay. 2 tests green: static contract on the route builder + first visit to the real route starts the tour on row 1. Red: `buildSettingsRoute` undefined |
+| 2.5 | Retarget tour to Tile Preferences | `test/tile_preferences_tour_test.dart` (+ `settings_tour_test.dart` trimmed) | `tours/tilePreferencesTour.dart`, `tours/settingsTour.dart`, `tourHost.dart`, `tutorialOverlay.dart`, `tilePreferences.dart`, `main.dart`, l10n | Not started | Supersedes the 4-step list tour from 2.1–2.3. Save button is not a step (renders only on `hasChanges`) |
 | 2.4 | Per-tour "How to use Tiler" reset row in Settings | (extend 2.1) | `settingsWidget.dart`, `tutorialPreferencesHelper.dart`, `HowToUseTiler.svg` | Done | Replay-all per section 1 "Manual replay": tap clears every registered tour (new `TourPreferencesHelper.allTourIds` + `resetTours`, default `[home, settings]`); writes `false` per key, never the legacy flag (1.2 design); each tour replays on its next surface visit. Settings row between Feedback and Logout, new `HowToUseTiler.svg` + `howToUseTiler` l10n (en + es); sends `SETTINGS_REPLAY_TOURS`. 8 tests: 5 unit (registry contents, full + partial reset, no legacy write, reset-false beats legacy migration) + 3 widget (row visible, tap resets both flags in place, next-visit replay from step 1). settings_tour 15/15, tour_preferences_helper 16/16, full suite 460 pass / 5 pre-existing fails (unchanged), analyze 542 (baseline) |
 | 3.1 | Essentials pages + order + validation | `test/essentials_onboarding_flow_test.dart` | `onBoarding.dart`, `on_boarding_bloc.dart` | Done | 6 tests: 2 pages, Profession→Location order, 3-char custom-profession gate (state-driven via `professionPageIndex`, not a page number), swipe/Next never touch the geolocator, consent only via the in-page button (no navigation), decline is a no-op. `OnboardingView` gained an optional `bloc` DI seam so tests seed state without network fetches |
 | 3.2 | Merged location page | (extend 3.1) | `primaryLocationWidget.dart` | Done | Landed together with 3.1: address search + consent sub-text + in-page `useDeviceLocation` button wired to `GetTimeAndLocationEvent(true)`; consent behavior pinned by 3.1's tests |
 | 3.3 | Global skip semantics | `test/essentials_onboarding_skip_test.dart` | `on_boarding_bloc.dart`, `onBoarding.dart` | Done | 7 tests: Skip visible on both pages; tapping Skip pushes the exit destination (production `AuthorizedRoute`) and the onboarding tree is removed after the transition; skip persists `skipOnboarding=true` with zero onboarding API calls (no fetch, no send); the terminal skipped state (`pageNumber == null`) is safe - post-Skip `NextPageEvent`/`PreviousPageEvent` are guarded no-ops (new early-return guards in `_onNextPageChanged`/`_onPreviousPageEvent` when `pageNumber == null` or `step == skipped`); skip from page 2; normal swipe/Next never skips. `OnboardingView` gained an optional `skipDestinationBuilder` seam so tests verify the exit route without rendering `AuthorizedRoute` (its `initState` needs ancestor providers/platform channels) |
 | 3.4 | Atomic submit → AuthorizedRoute | `test/essentials_onboarding_submit_test.dart` | `on_boarding_bloc.dart`, `onBoarding.dart`, `onBoardingHelper.dart`, `data/onBoarding.dart` | Done | 7 tests: submit is page-2 only (page-1 Next never sends); the payload is essentials-only (`profession` + primary location + optional device coords/timezone; the legacy hours/day-sections/tasks/tiles/usage fields are no longer collected and are not sent -- `OnboardingContent` gained a `Profession` JSON field); restriction-profile save removed from the submit handler (Settings owns it, design 3.2); success persists the local `essentialsOnboardingDone` flag (new key + getter/setter in `OnBoardingSharedPreferencesHelper`; `skipOnboarding` untouched), buzzes the schedule exactly once, and pushReplaces to `AuthorizedRoute` directly (intro slider cut; unused `OnBoardingDescriptionSlider` import removed); failure keeps the flow on the location page with the existing error toast (`TilerError.Message` now surfaced instead of `Instance of 'TilerError'`), Skip left available, no navigation/buzz/flag, no retry. `OnboardingView` gained optional `submitDestinationBuilder` + `scheduleApi` seams (tests inject a `FakeScheduleApi` so the buzz call is recorded, not performed). Dead code removed: `_requestFormatTime` + two unused locals |
 | 4.1 | Local-only gate + call sites | `test/onboarding_gate_test.dart` | `util.dart`, `signInComponent.dart`, `main.dart` | Not started | |
-| 4.2 | WelcomeScreen delay + routing | `test/welcome_screen_routing_test.dart` | `welcomeScreen.dart` | Not started | existing tests must be updated |
-| 4.3 | Kill-switch flag for legacy flow | (manual) | `executionConstants.dart` or equivalent | Not started | |
+| 4.2 | WelcomeScreen delay + routing | `test/welcome_screen_navigation_test.dart` | `welcomeScreen.dart` | Not started | existing 2 tests must be updated (both `pump(3s)`); the 6 `signInComponent` call sites discard the gate result and re-run it via `WelcomeScreen` — delete them in 4.1 |
+| 4.3 | Kill-switch flag for legacy flow | (manual) | `constants.dart` | Not started | `executionConstants.dart` holds one unrelated constant; `constants.dart` already owns `isDebug` |
 | 5.1 | Analytics signals | (unit-light; verify names) | tour engine + onboarding files | Not started | |
 | 5.2 | Logging hardening (remove header/body prints) | (analyze pass) | `onBoardingApi.dart` | Not started | security: stop logging auth headers |
 | 5.3 | Manual QA (section 8) | — | — | Not started | Android + iOS |
@@ -290,6 +329,7 @@ Record each meaningful cycle. Newest first.
 
 | Date | Stage | Cycle | Result | Notes |
 | --- | --- | --- | --- | --- |
+| 2026-09-12 | 0 (review) | — | Doc sync | Review against the repo before Phase 4. Corrections: resume block still pointed at 3.1 although Phase 3 landed in `70d643c`; 4.2's test file is `welcome_screen_navigation_test.dart` (no `_routing_` file exists); 4.3's flag belongs in `constants.dart`. Product correction: the 4-step Settings-list tour teaches the wrong surface — the learning users need (how to update AI preferences) lives on Tile Preferences. Redesigned as a 1-step list pointer + 3-step Tile Preferences tour (section 3.4), tracked as stage 2.5. Repo hygiene: `70d643c` had committed `android/build/.last_build_id` and `android/build/reports/problems/problems-report.html` (Gradle output) — untracked and `android/build/` added to `.gitignore`. |
 | 2026-08-27 | 3.4 | 1 | Green | Atomic submit -> AuthorizedRoute. Red: `test/essentials_onboarding_submit_test.dart` (7 tests) failed to compile -- the stage-3.4 contract was missing (`OnboardingView.submitDestinationBuilder` / `scheduleApi` seams, `OnBoardingSharedPreferencesHelper.getEssentialsOnboardingDone`, `OnboardingContent.profession`); the one assertion that did run (no intro slider) failed against the legacy `OnBoardingDescriptionSlider` navigation. Green: submit payload is essentials-only (`profession` + primary location + optional device coords/timezone; the legacy hours/day-sections/tasks/tiles/usage fields are no longer collected and are sent as null), restriction-profile save removed from `_onOnboardingRequestedEvent` (Settings owns it, design 3.2), success path persists the local `essentialsOnboardingDone` flag (new key in `OnBoardingSharedPreferencesHelper`) and buzzes the schedule exactly once before pushReplacing to `AuthorizedRoute` directly (intro slider cut; unused `OnBoardingDescriptionSlider` import removed from the route). Failure path stays in the flow: existing error toast, location page intact, Skip available, no navigation/buzz/flag, no retry. One real bug surfaced and fixed: the catch emitted `e.toString()`, so `TilerError`s toasted as "Instance of 'TilerError'" -- the handler now surfaces `TilerError.Message`. `OnboardingView` gained optional `submitDestinationBuilder` + `scheduleApi` seams (tests inject a `FakeScheduleApi` so the buzz call is recorded, not performed); dead code removed (`_requestFormatTime`, two unused locals). Test mechanics: the 700ms debounce is flushed with bounded pumps (`pump(800ms)`), never `pumpAndSettle` while the 2.5s toast timer is live; `group` (not a nested `testWidgets`) as the container. Final: 7/7 green; full suite 480 pass / 5 pre-existing fails (same 5 as the 3.3 baseline: enhanced_tile_batch x2, home_layout chat icon, preview_sentence load, widget_test smoke); `flutter analyze` 539 (2 below the 541 baseline -- dead code removed; zero new issues on touched files). |
 | 2026-08-26 | 3.3 | 1 | Green | Global skip semantics + safe terminal skipped state. Red: post-Skip `NextPageEvent`/`PreviousPageEvent` crashed on `state.pageNumber!` (the skipped state carries `pageNumber == null`); the exit navigation was also untestable because the route builds `AuthorizedRoute`, whose `initState` needs ancestor providers/platform channels unavailable in tests. Green: 7 tests in `essentials_onboarding_skip_test.dart` - Skip visible on both pages; Skip pushes the exit destination (verified through a new optional `skipDestinationBuilder` seam on `OnboardingView` with a marker stand-in; onboarding removed from the tree after `pumpAndSettle`); skip persists `skipOnboarding` with zero onboarding API calls (`FakeOnBoardingApi` counters at 0); post-Skip page-change events are guarded no-ops (bloc guards added to `_onNextPageChanged`/`_onPreviousPageEvent` on `pageNumber == null` or `step == skipped`); skip from page 2; normal swipe/Next never skips. Harness notes: `tester.tap` already pumps a frame, so the destination route's first build lands one frame after the push - assert after `pumpAndSettle`; `SharedPreferences.setMockInitialValues` for the persisted preference; geolocator + onboarding API faked. Full suite 473 pass / 5 pre-existing fails (unchanged vs baseline); analyze 541 (baseline). |
 | 2026-08-26 | 3.1 + 3.2 | 1 | Green | Two-page essentials flow (Phases 3.1 + 3.2 — the merged location page landed with 3.1; its behavior is pinned by 3.1's tests). Red: `test/essentials_onboarding_flow_test.dart` (6 tests) failed against the legacy 10-page flow — page count 10 ≠ 2, page 0 not profession, no in-page location button. Green: (a) `onBoarding.dart` — `pages = [ProfessionWidget(), PrimaryLocationWidget()]` (profession first, location second), 8 now-unused widget imports removed, optional `OnboardingBloc? bloc` DI seam added (tests seed the bloc without network fetches). (b) `on_boarding_bloc.dart` — `numberOfPages = 2` + named `professionPageIndex = 0`; removed the `pageNumber == 4` auto-`GetTimeAndLocationEvent(true)` swipe trigger and the `_setWorkOrPersonalLoadedStep` `==5/6` index gating; `_canProceedToNextPage` is state-driven (on the profession page: custom professions need a non-'Other' profession with `trim().length >= 3`); `_onGetTimeAndLocationEvent` is consent-only — it no longer advances the page (location is the last page), declines return early, and a denied permission no longer attempts `getCurrentPosition` (optional input). (c) `primaryLocationWidget.dart` — in-page `useDeviceLocation` button (l10n en + es) driving `GetTimeAndLocationEvent(true)`, plus the `timeAndLocationSecondarySubTitle` consent sub-text. Notes: removed deprecated `synthetic-package: false` from `l10n.yaml` — `flutter gen-l10n` on Flutter 3.47.1 aborts on that option. Test mechanics: `tester.drag` produces no `primaryVelocity`, so the swipe test uses `tester.fling`; the 2.5s toast timer is flushed with bounded pumps (never `pumpAndSettle` against the overlay). Final: 6/6 green; full suite 466 pass / 5 pre-existing fails (same 5: enhanced_tile_batch ×2, home_layout chat icon, preview_sentence load, widget_test smoke); `flutter analyze` 541 — one below the 542 baseline (dead code removed), zero new issues on touched files. |
