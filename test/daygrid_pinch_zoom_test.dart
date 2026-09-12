@@ -264,6 +264,64 @@ void main() {
       controller.dispose();
     });
 
+    testWidgets(
+        'pinching past the zoom limit does NOT keep scrolling the grid',
+        (tester) async {
+      _setSurface(tester);
+      // A SHORT viewport (540 x 500): at the 40 px/h floor the day (960px)
+      // still overflows it, so a drifting anchor has room to scroll.
+      tester.view.physicalSize = const Size(1080, 1000);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      controller.setPxPerHour(60); // close to the 40 px/h floor.
+      // Mid-day tiles so the initial scroll sits mid-content (room to
+      // scroll in either direction if the bug fires).
+      final tiles = <SubCalendarEvent>[
+        _tile('mid', DateTime(2027, 1, 15, 10), DateTime(2027, 1, 15, 11)),
+      ];
+      await tester.pumpWidget(_buildApp(
+        bloc: bloc,
+        controller: controller,
+        tiles: tiles,
+        now: now,
+        day: dayStart,
+      ));
+      await tester.pump();
+      final scroll = tester
+          .widget<CustomScrollView>(find.byType(CustomScrollView))
+          .controller!;
+
+      // Pinch IN (fingers together) until the floor is hit, then keep
+      // pinching well past it.
+      final g1 = await tester.startGesture(const Offset(100, 300));
+      final g2 = await tester.startGesture(const Offset(400, 300));
+      await tester.pump();
+      double? pixelsAtFloor;
+      for (int i = 0; i < 12; i++) {
+        await g1.moveBy(const Offset(10, 0));
+        await g2.moveBy(const Offset(-10, 0));
+        await tester.pump();
+        if (controller.pxPerHour <= DayGridController.minPxPerHour + 1e-9) {
+          pixelsAtFloor ??= scroll.position.pixels;
+        }
+      }
+      expect(controller.pxPerHour, DayGridController.minPxPerHour,
+          reason: 'the pinch must have hit the floor');
+      expect(pixelsAtFloor, isNotNull);
+      // Once clamped, further pinching must not move the scroll offset —
+      // the zoom is fixed, so the anchor must be fixed too.
+      expect(scroll.position.pixels, closeTo(pixelsAtFloor!, 0.5),
+          reason: 'past the limit the pinch must not turn into a scroll');
+
+      await g1.up();
+      await g2.up();
+      await tester.pump();
+      await tester.pump();
+      expect(controller.mode, DayGridMode.idle);
+      await _closeBloc(tester, bloc);
+      controller.dispose();
+    });
+
     testWidgets('a single-finger vertical drag scrolls and does NOT zoom',
         (tester) async {
       _setSurface(tester);

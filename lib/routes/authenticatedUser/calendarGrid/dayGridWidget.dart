@@ -931,7 +931,11 @@ class DayGridWidgetState extends State<DayGridWidget> {
     // Stable base * total ratio: no compounding on an already-mutated value.
     final newPx = startPx * details.scale;
     _controller.setPxPerHour(newPx);
-    _anchorZoomToCentre(newPx);
+    // Anchor on the CLAMPED zoom. Past the min/max the controller stops
+    // changing, so the anchor must stop too — anchoring on the raw
+    // `newPx` kept re-deriving the scroll target from a zoom that was not
+    // being applied, turning an over-pinch into a scroll.
+    _anchorZoomToCentre(_controller.pxPerHour);
   }
 
   void _onScaleEnd(ScaleEndDetails details) {
