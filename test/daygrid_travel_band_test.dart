@@ -258,7 +258,88 @@ void main() {
   // DayGrid integration
   // ---------------------------------------------------------------------------
 
+  group('TravelBand.postBandSuperseded (A-after == B-before dedupe)', () {
+    const msPerMin = 60 * 1000.0;
+    test('the next tile carrying a pre band supersedes this tile post band',
+        () {
+      final a = makeTile(
+        id: 'a',
+        start: DateTime(2026, 5, 15, 16, 0),
+        end: DateTime(2026, 5, 15, 17, 10),
+        travelTimeAfter: 5 * msPerMin,
+      );
+      final b = makeTile(
+        id: 'b',
+        start: DateTime(2026, 5, 15, 17, 15),
+        end: DateTime(2026, 5, 15, 19, 15),
+        travelTimeBefore: 5 * msPerMin,
+      );
+      expect(TravelBand.postBandSuperseded(a, [a, b]), isTrue);
+      // The last tile of the day keeps its post band (the return home).
+      expect(TravelBand.postBandSuperseded(b, [a, b]), isFalse);
+    });
+
+    test('no dedupe when the next tile has no pre band', () {
+      final a = makeTile(
+        id: 'a',
+        start: DateTime(2026, 5, 15, 16, 0),
+        end: DateTime(2026, 5, 15, 17, 0),
+        travelTimeAfter: 5 * msPerMin,
+      );
+      final b = makeTile(
+        id: 'b',
+        start: DateTime(2026, 5, 15, 18, 0),
+        end: DateTime(2026, 5, 15, 19, 0),
+      );
+      expect(TravelBand.postBandSuperseded(a, [a, b]), isFalse);
+    });
+
+    test('an OVERLAPPING later tile is not "next" — its pre band is elsewhere',
+        () {
+      final a = makeTile(
+        id: 'a',
+        start: DateTime(2026, 5, 15, 16, 0),
+        end: DateTime(2026, 5, 15, 18, 0),
+        travelTimeAfter: 5 * msPerMin,
+      );
+      final b = makeTile(
+        id: 'b',
+        start: DateTime(2026, 5, 15, 17, 0),
+        end: DateTime(2026, 5, 15, 17, 30),
+        travelTimeBefore: 5 * msPerMin,
+      );
+      expect(TravelBand.postBandSuperseded(a, [a, b]), isFalse);
+    });
+  });
+
   group('DayGrid renders travel bands', () {
+    testWidgets(
+        'adjacent tiles render ONE band for the shared gap (the pre band)',
+        (tester) async {
+      final controller = DayGridController()..setPxPerHour(80);
+      addTearDown(controller.dispose);
+      final a = makeTile(
+        id: 'a',
+        start: DateTime(2026, 5, 15, 16, 0),
+        end: DateTime(2026, 5, 15, 17, 10),
+        travelTimeAfter: 5 * 60 * 1000,
+      );
+      final b = makeTile(
+        id: 'b',
+        start: DateTime(2026, 5, 15, 17, 15),
+        end: DateTime(2026, 5, 15, 19, 15),
+        travelTimeBefore: 5 * 60 * 1000,
+        travelTimeAfter: 20 * 60 * 1000,
+      );
+      await pumpGrid(tester, tiles: [a, b], controller: controller);
+
+      expect(bandFinder('a', TravelBandKind.post), findsNothing,
+          reason: "A's after-travel IS B's before-travel — render once");
+      expect(bandFinder('b', TravelBandKind.pre), findsOneWidget);
+      expect(bandFinder('b', TravelBandKind.post), findsOneWidget,
+          reason: 'the last tile keeps its return band');
+    });
+
     testWidgets('valid tiles render their bands with the expected keys',
         (tester) async {
       final controller = DayGridController()..setPxPerHour(80);

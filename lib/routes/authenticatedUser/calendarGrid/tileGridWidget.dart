@@ -6,7 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:tiler_app/components/tileUI/enhancedTileCard.dart';
 import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
 
+import 'package:tiler_app/data/subCalendarEvent.dart';
 import 'package:tiler_app/data/tilerEvent.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/gridPositionableWidgetWidget.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/tileCardStyle.dart';
 import 'package:tiler_app/constants.dart' as constant;
@@ -66,6 +68,11 @@ class TileGridWidget extends GridPositionableWidget {
   /// tile rendering is added later.
   final bool preview;
 
+  /// Whether the tap-out detail sheet opens the edit flow. The grid sets
+  /// this `false` for the forecast peek (`DayCast`, no `day`) and TileCast
+  /// preview; what-if tiles are excluded per tile regardless.
+  final bool editable;
+
   /// The dotted-border treatment for the highlighted
   /// TileCast action tile — same rule as `EnhancedTileCard.hasDottedBorder`
   /// (id `contains` the action's entity id).
@@ -119,6 +126,7 @@ class TileGridWidget extends GridPositionableWidget {
       this.enterDelay,
       this.exiting,
       this.preview = false,
+      this.editable = false,
       this.hasDottedBorder = false,
       this.onLongPressStart,
       this.onDragUpdate,
@@ -425,7 +433,50 @@ class TileGridWidgetState extends GridPositionableState {
     (this.widget as TileGridWidget).onDragEnd?.call();
   }
 
+  /// Test key for the detail sheet's tappable body (whole sheet = edit).
+  static const Key sheetEditTargetKey = ValueKey('daygrid_sheet_edit');
+
+  /// Opens the edit flow for [tile] — the same `EditTile` route, with the
+  /// same id / source resolution, as the list card's tap
+  /// (`EnhancedTileCard`). Closes the detail sheet first so the edit
+  /// screen comes back to the grid, not to a stale sheet.
+  void _openEditFlow(BuildContext sheetContext, TilerEvent tile) {
+    Navigator.of(sheetContext).pop();
+    final SubCalendarEvent? subEvent =
+        tile is SubCalendarEvent ? tile : null;
+    // Third-party tiles are addressed by their third-party id; Tiler tiles
+    // (and anything without one) by the tile id.
+    final String? thirdPartyId = tile.thirdpartyId;
+    final String tileId = (!tile.isFromTiler &&
+            thirdPartyId != null &&
+            thirdPartyId.isNotEmpty)
+        ? thirdPartyId
+        : (tile.id ?? "");
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditTile(
+          tileId: tileId,
+          tileSource: tile.thirdpartyType,
+          thirdPartyUserId: subEvent?.thirdPartyUserId,
+        ),
+      ),
+    );
+  }
+
+  /// Whether the detail sheet for [tile] opens the edit flow on tap: the
+  /// grid must have marked this tile editable (not the forecast peek, not
+  /// TileCast preview) and the tile must be a real, persisted one (not
+  /// what-if).
+  bool _sheetEditable(TilerEvent tile) {
+    final bool gridEditable = this.widget is TileGridWidget &&
+        (this.widget as TileGridWidget).editable &&
+        !(this.widget as TileGridWidget).preview;
+    return gridEditable && tile.isWhatIf != true;
+  }
+
   void onTapPreviewTile(TilerEvent tile) {
+    final bool editable = _sheetEditable(tile);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -434,15 +485,26 @@ class TileGridWidgetState extends GridPositionableState {
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(TileDimensions.borderRadius)),
       ),
-      builder: (BuildContext context) {
+      builder: (BuildContext sheetContext) {
+        final Widget body = Padding(
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(sheetContext).viewInsets.bottom),
+          child: PreviewDetailsTileWidget(tile),
+        );
         return Container(
-          width: MediaQuery.of(context).size.width,
+          width: MediaQuery.of(sheetContext).size.width,
           child: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom),
-              child: PreviewDetailsTileWidget(tile),
-            ),
+            // The whole sheet is the edit affordance (when editable): tap
+            // anywhere on it to open the edit flow. Forecast / preview
+            // sheets stay read-only.
+            child: editable
+                ? GestureDetector(
+                    key: sheetEditTargetKey,
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _openEditFlow(sheetContext, tile),
+                    child: body,
+                  )
+                : body,
           ),
         );
       },

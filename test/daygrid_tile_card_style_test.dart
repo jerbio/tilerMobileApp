@@ -25,7 +25,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tiler_app/bloc/schedule/schedule_bloc.dart';
+import 'package:tiler_app/bloc/SubCalendarTiles/sub_calendar_tiles_bloc.dart';
+import 'package:tiler_app/components/tileUI/previewDetailsTileWidget.dart';
+import 'package:tiler_app/routes/authenticatedUser/editTile/editTile.dart';
 import 'package:tiler_app/data/subCalendarEvent.dart';
+import 'package:tiler_app/data/tilerEvent.dart';
 import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridController.dart';
 import 'package:tiler_app/routes/authenticatedUser/calendarGrid/dayGridPinnedHeader.dart';
@@ -304,6 +308,132 @@ void main() {
 
       expect(_tileIcons('meeting'), findsNothing);
       expect(_tileIcons('plain'), findsNothing);
+      await _closeBloc(tester, bloc);
+    });
+  });
+
+  group('tile detail sheet (tap-out)', () {
+    Widget sheetApp(ScheduleBloc bloc, DayGridController controller,
+        List<SubCalendarEvent> tiles,
+        {required DateTime? day, bool preview = false}) {
+      // Providers ABOVE MaterialApp so the pushed EditTile route sees them.
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<ScheduleBloc>.value(value: bloc),
+          BlocProvider(
+              create: (_) =>
+                  SubCalendarTileBloc(getContextCallBack: () => null)),
+        ],
+        child: MaterialApp(
+          theme: TileThemeData.lightTheme,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DayGridWidget(
+              tiles: tiles,
+              now: DateTime(2026, 5, 15, 14, 30),
+              day: day,
+              controller: controller,
+              preview: preview,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Future<void> openSheet(WidgetTester tester, String tileName) async {
+      await tester.tap(find.text(tileName));
+      // The sheet body carries a repeating animation, so settle by time.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(PreviewDetailsTileWidget), findsOneWidget);
+    }
+
+    testWidgets(
+        'on the live grid, tapping anywhere on the detail sheet opens EditTile',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tile = _tile('editable', dayStart.add(const Duration(hours: 4)),
+          dayStart.add(const Duration(hours: 6)))
+        ..thirdpartyType = TileSource.tiler;
+      await tester.pumpWidget(sheetApp(bloc, controller, [tile], day: dayStart));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await openSheet(tester, 'editable');
+      // No pencil: the sheet itself is the affordance.
+      expect(find.byIcon(Icons.edit_outlined), findsNothing);
+      final target = find.byKey(TileGridWidgetState.sheetEditTargetKey);
+      expect(target, findsOneWidget);
+
+      // Tap the details body (not a dedicated button).
+      await tester.tap(find.byType(PreviewDetailsTileWidget));
+      await tester.pump(); // sheet pops + EditTile route pushes
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(find.byType(PreviewDetailsTileWidget), findsNothing,
+          reason: 'the sheet closes before the edit flow opens');
+      expect(find.byType(EditTile), findsOneWidget);
+      final EditTile edit = tester.widget<EditTile>(find.byType(EditTile));
+      expect(edit.tileId, 'editable');
+      expect(edit.tileSource, TileSource.tiler);
+
+      await tester.pump(const Duration(milliseconds: 300));
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets('the forecast peek (no day) sheet is NOT editable',
+        (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tile = _tile('forecast', dayStart.add(const Duration(hours: 4)),
+          dayStart.add(const Duration(hours: 6)))
+        ..thirdpartyType = TileSource.tiler;
+      // DayCast builds the grid without `day` (read-only peek).
+      await tester.pumpWidget(sheetApp(bloc, controller, [tile], day: null));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await openSheet(tester, 'forecast');
+      expect(find.byKey(TileGridWidgetState.sheetEditTargetKey), findsNothing);
+      await tester.tap(find.byType(PreviewDetailsTileWidget));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(EditTile), findsNothing);
+      expect(find.byType(PreviewDetailsTileWidget), findsOneWidget,
+          reason: 'a read-only sheet stays open');
+      await _closeBloc(tester, bloc);
+    });
+
+    testWidgets('the TileCast preview sheet is NOT editable', (tester) async {
+      _setSurface(tester);
+      final bloc = _RecordingScheduleBloc();
+      final controller = DayGridController();
+      addTearDown(controller.dispose);
+      final tile = _tile('previewed', dayStart.add(const Duration(hours: 4)),
+          dayStart.add(const Duration(hours: 6)))
+        ..thirdpartyType = TileSource.tiler;
+      await tester.pumpWidget(
+          sheetApp(bloc, controller, [tile], day: dayStart, preview: true));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      await openSheet(tester, 'previewed');
+      expect(find.byKey(TileGridWidgetState.sheetEditTargetKey), findsNothing);
+      await tester.tap(find.byType(PreviewDetailsTileWidget));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(find.byType(EditTile), findsNothing);
       await _closeBloc(tester, bloc);
     });
   });

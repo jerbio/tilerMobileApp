@@ -104,6 +104,30 @@ class TravelBand {
     return bands;
   }
 
+  /// Whether [tile]'s post (after-travel) band is superseded by the NEXT
+  /// tile's pre (before-travel) band: A's after-travel and B's before-travel
+  /// describe the same gap, so it must render once. Mirrors list mode,
+  /// where the connector between two tiles is always the destination's
+  /// before-travel and after-travel appears only for the last tile (the
+  /// return home).
+  ///
+  /// "Next" is the first tile in [sortedTiles] (ascending start) whose
+  /// start is at/after [tile]'s end — an overlapping later tile is not next
+  /// (its pre band sits inside [tile], not in the gap after it).
+  static bool postBandSuperseded(
+      SubCalendarEvent tile, List<SubCalendarEvent> sortedTiles) {
+    final int? end = tile.end;
+    if (end == null) return false;
+    for (final other in sortedTiles) {
+      if (identical(other, tile) || other.uniqueId == tile.uniqueId) continue;
+      final int? otherStart = other.start;
+      if (otherStart == null || otherStart < end) continue;
+      final double? before = other.travelTimeBefore;
+      return before != null && before > 0;
+    }
+    return false;
+  }
+
   /// The "leave by" time of a pre-travel band (tile start minus the
   /// travel time) -- the same rule as `TravelConnector._getLeaveByTime`.
   /// `null` when the tile has no positive travel time or no start.

@@ -1903,6 +1903,10 @@ class DayGridWidgetState extends State<DayGridWidget> {
                   // TileCast preview mode (read-only
                   // per-tile surface, mirrors `EnhancedTileCard.preview`).
                   preview: widget.preview,
+                  // The tap-out sheet edits only on the live grid: not the
+                  // forecast peek (`DayCast` passes no `day`) and not the
+                  // TileCast preview.
+                  editable: !widget.preview && widget.day != null,
                   // The highlighted TileCast
                   // action's tile gets the dotted-border treatment (same
                   // rule as `EnhancedTileCard.hasDottedBorder`).
@@ -1963,7 +1967,14 @@ class DayGridWidgetState extends State<DayGridWidget> {
                 }
                 final colLeft = column?.left ?? tileLeft;
                 final colWidth = column?.width ?? tileWidth;
+                // A's after-travel == the next tile's before-travel: render
+                // the gap once, as the destination's pre band (list parity).
+                final bool skipPost =
+                    TravelBand.postBandSuperseded(tile, renderable);
                 for (final band in bands) {
+                  if (skipPost && band.kind == TravelBandKind.post) {
+                    continue;
+                  }
                   travelBandWidgets.add(TravelBandWidget(
                     key: ValueKey<String>(
                       'daygrid_band_${keyPrefix}${tile.uniqueId}_${band.kind}',
