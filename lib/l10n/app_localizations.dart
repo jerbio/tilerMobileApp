@@ -4085,18 +4085,6 @@ abstract class AppLocalizations {
   /// **'{current}/{total}'**
   String tutorialStepCounter(int current, int total);
 
-  /// No description provided for @tutorialStepSettingsAccountTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Account Info'**
-  String get tutorialStepSettingsAccountTitle;
-
-  /// No description provided for @tutorialStepSettingsAccountBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Profile and account details.'**
-  String get tutorialStepSettingsAccountBody;
-
   /// No description provided for @tutorialStepSettingsTilesTitle.
   ///
   /// In en, this message translates to:
@@ -4106,32 +4094,44 @@ abstract class AppLocalizations {
   /// No description provided for @tutorialStepSettingsTilesBody.
   ///
   /// In en, this message translates to:
-  /// **'Hours, locations, profiles — fine-tune what onboarding used to ask.'**
+  /// **'Your AI preferences live here — how you travel, your work and personal hours, and block-out time.'**
   String get tutorialStepSettingsTilesBody;
 
-  /// No description provided for @tutorialStepSettingsNotificationsTitle.
+  /// No description provided for @tutorialStepTilePrefsTransportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Notifications'**
-  String get tutorialStepSettingsNotificationsTitle;
+  /// **'How you get around'**
+  String get tutorialStepTilePrefsTransportTitle;
 
-  /// No description provided for @tutorialStepSettingsNotificationsBody.
+  /// No description provided for @tutorialStepTilePrefsTransportBody.
   ///
   /// In en, this message translates to:
-  /// **'How Tiler nudges you.'**
-  String get tutorialStepSettingsNotificationsBody;
+  /// **'Tiler budgets travel time between tiles from the way you usually travel.'**
+  String get tutorialStepTilePrefsTransportBody;
 
-  /// No description provided for @tutorialStepSettingsConnectionsTitle.
+  /// No description provided for @tutorialStepTilePrefsHoursTitle.
   ///
   /// In en, this message translates to:
-  /// **'Connections'**
-  String get tutorialStepSettingsConnectionsTitle;
+  /// **'Work and personal hours'**
+  String get tutorialStepTilePrefsHoursTitle;
 
-  /// No description provided for @tutorialStepSettingsConnectionsBody.
+  /// No description provided for @tutorialStepTilePrefsHoursBody.
   ///
   /// In en, this message translates to:
-  /// **'Connect Google Calendar.'**
-  String get tutorialStepSettingsConnectionsBody;
+  /// **'When Tiler may schedule work versus personal tiles. Tap either to set a profile.'**
+  String get tutorialStepTilePrefsHoursBody;
+
+  /// No description provided for @tutorialStepTilePrefsBlockOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block-out hours'**
+  String get tutorialStepTilePrefsBlockOutTitle;
+
+  /// No description provided for @tutorialStepTilePrefsBlockOutBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Bed time and sleep duration — hours Tiler never schedules into.'**
+  String get tutorialStepTilePrefsBlockOutBody;
 
   /// No description provided for @chat.
   ///

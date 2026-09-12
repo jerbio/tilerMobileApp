@@ -161,7 +161,8 @@ void main() {
   });
 
   group('TourPreferencesHelper — resetTours replay-all (stage 2.4)', () {
-    test('the registry covers the home and settings tours', () {
+    test('the registry covers the home, settings and tile-preferences tours',
+        () {
       // Locks the registry contents behind the "How to use Tiler" row: the
       // manual replay must cover every tour the user can currently see.
       expect(
@@ -169,8 +170,11 @@ void main() {
         containsAll([
           TourPreferencesHelper.homeTourId,
           TourPreferencesHelper.settingsTourId,
+          TourPreferencesHelper.tilePreferencesTourId,
         ]),
       );
+      expect(TourPreferencesHelper.tilePreferencesTourId, 'tile_preferences',
+          reason: 'The per-tour key is hasCompletedTour_tile_preferences.');
     });
 
     test('default reset clears every registered tour', () async {
@@ -210,8 +214,7 @@ void main() {
 
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getBool(TourPreferencesHelper.legacyCompletedKey), isNull,
-          reason:
-              'The multi-tour path must not touch the legacy flag (1.2).');
+          reason: 'The multi-tour path must not touch the legacy flag (1.2).');
     });
 
     test('reset writes false so the legacy migration cannot re-apply',

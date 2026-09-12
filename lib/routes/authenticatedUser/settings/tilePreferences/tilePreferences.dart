@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tiler_app/components/PendingWidget.dart';
 import 'package:tiler_app/components/notification_overlay.dart';
 import 'package:tiler_app/components/template/cancelAndProceedTemplate.dart';
+import 'package:tiler_app/components/tutorial/tours/tilePreferencesTour.dart';
 import 'package:tiler_app/data/executionEnums.dart';
 import 'package:tiler_app/data/restrictionProfile.dart';
 import 'package:tiler_app/data/startOfDay.dart';
@@ -15,6 +16,7 @@ import 'package:tiler_app/l10n/app_localizations.dart';
 import 'package:tiler_app/services/api/settingsApi.dart';
 import 'package:tiler_app/theme/tile_theme_extension.dart';
 import 'package:tiler_app/theme/tile_button_styles.dart';
+import 'package:tiler_app/theme/tile_dimensions.dart';
 import 'package:tiler_app/theme/tile_text_styles.dart';
 import 'package:tiler_app/util.dart';
 
@@ -22,9 +24,19 @@ class TilePreferencesScreen extends StatelessWidget {
   static const String routeName = '/tilePreferences';
   static final String tilePreferencesCancelAndProceedRouteName =
       "tilePreferencesCancelAndProceedRouteName";
+
+  /// Optional injected bloc (tests). When provided the screen renders
+  /// against it as-is — the caller owns its lifecycle and its fetch — so
+  /// tests can control exactly when the page leaves its pending state
+  /// without touching the network.
+  final TilePreferencesBloc? bloc;
+
+  const TilePreferencesScreen({Key? key, this.bloc}) : super(key: key);
+
   Widget _buildSectionContainer(
-      {required Widget child, required ColorScheme colorScheme}) {
+      {required Widget child, required ColorScheme colorScheme, Key? key}) {
     return Container(
+      key: key,
       width: double.infinity,
       padding: EdgeInsets.all(20),
       margin: EdgeInsets.symmetric(vertical: 10),
@@ -46,6 +58,7 @@ class TilePreferencesScreen extends StatelessWidget {
   Widget _buildTransportOptions(BuildContext context, PreferencesLoaded state,
       ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return _buildSectionContainer(
+      key: TilePreferencesTourKeys.transportCardKey,
       colorScheme: colorScheme,
       child: Column(
         children: [
@@ -211,6 +224,7 @@ class TilePreferencesScreen extends StatelessWidget {
   Widget timeRestrictionWidget(
       BuildContext context, PreferencesLoaded state, ColorScheme colorScheme) {
     return _buildSectionContainer(
+      key: TilePreferencesTourKeys.timeRestrictionsCardKey,
       colorScheme: colorScheme,
       child: Column(
         children: [
@@ -328,6 +342,7 @@ class TilePreferencesScreen extends StatelessWidget {
   Widget _buildBlockOutHourWidget(BuildContext context, PreferencesLoaded state,
       ColorScheme colorScheme, TileThemeExtension tileThemeExtension) {
     return _buildSectionContainer(
+      key: TilePreferencesTourKeys.blockOutCardKey,
       colorScheme: colorScheme,
       child: Center(
         child: IntrinsicWidth(
@@ -376,53 +391,56 @@ class TilePreferencesScreen extends StatelessWidget {
     final tileThemeExtension = theme.extension<TileThemeExtension>();
     NotificationOverlayMessage notificationOverlayMessage =
         NotificationOverlayMessage();
-    return BlocProvider(
-      create: (context) => TilePreferencesBloc(
-        settingsApi: SettingsApi(getContextCallBack: () => context),
-      )..add(FetchProfiles()),
-      child: BlocListener<TilePreferencesBloc, TilePreferencesState>(
-        listener: (context, state) {
-          if (state is UpdateSuccess) {
-            notificationOverlayMessage.showToast(
-              context,
-              AppLocalizations.of(context)!.tilePreferencesUpdatedSuccessfully,
-              NotificationOverlayMessageType.success,
-            );
-          }
-          if (state is PreferencesError) {
-            notificationOverlayMessage.showToast(
-              context,
-              state.message,
-              NotificationOverlayMessageType.error,
-            );
-          }
-        },
-        child: BlocBuilder<TilePreferencesBloc, TilePreferencesState>(
-            builder: (context, state) {
-          return CancelAndProceedTemplateWidget(
-            onProceed: (state is PreferencesLoaded &&
-                    (state as PreferencesLoaded).hasChanges)
-                ? () => _saveTilePreferences(context)
-                : null,
-            routeName:
-                TilePreferencesScreen.tilePreferencesCancelAndProceedRouteName,
-            appBar: AppBar(
-              title: Text(
-                AppLocalizations.of(context)!.tilePreferences,
-              ),
-              automaticallyImplyLeading: false,
-            ),
-            child: SafeArea(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: _buildContent(
-                    context, state, colorScheme, tileThemeExtension!),
-              ),
-            ),
+    final Widget body = BlocListener<TilePreferencesBloc, TilePreferencesState>(
+      listener: (context, state) {
+        if (state is UpdateSuccess) {
+          notificationOverlayMessage.showToast(
+            context,
+            AppLocalizations.of(context)!.tilePreferencesUpdatedSuccessfully,
+            NotificationOverlayMessageType.success,
           );
-        }),
-      ),
+        }
+        if (state is PreferencesError) {
+          notificationOverlayMessage.showToast(
+            context,
+            state.message,
+            NotificationOverlayMessageType.error,
+          );
+        }
+      },
+      child: BlocBuilder<TilePreferencesBloc, TilePreferencesState>(
+          builder: (context, state) {
+        return CancelAndProceedTemplateWidget(
+          onProceed: (state is PreferencesLoaded &&
+                  (state as PreferencesLoaded).hasChanges)
+              ? () => _saveTilePreferences(context)
+              : null,
+          routeName:
+              TilePreferencesScreen.tilePreferencesCancelAndProceedRouteName,
+          appBar: AppBar(
+            title: Text(
+              AppLocalizations.of(context)!.tilePreferences,
+            ),
+            automaticallyImplyLeading: false,
+          ),
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: _buildContent(
+                  context, state, colorScheme, tileThemeExtension!),
+            ),
+          ),
+        );
+      }),
     );
+    return bloc != null
+        ? BlocProvider<TilePreferencesBloc>.value(value: bloc!, child: body)
+        : BlocProvider(
+            create: (context) => TilePreferencesBloc(
+              settingsApi: SettingsApi(getContextCallBack: () => context),
+            )..add(FetchProfiles()),
+            child: body,
+          );
   }
 
   Widget _buildContent(BuildContext context, TilePreferencesState state,
@@ -432,8 +450,14 @@ class TilePreferencesScreen extends StatelessWidget {
     }
 
     final loadedState = state as PreferencesLoaded;
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    // The scroll viewport ends above the template's Cancel/Save bar so the
+    // last card can always be scrolled fully clear of the buttons (the
+    // product tour scrolls each card into view before spotlighting it).
+    final double bottomBarHeight = TileDimensions.proceedAndCancelButtonWidth +
+        MediaQuery.of(context).padding.bottom +
+        5;
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(16, 24, 16, 24 + bottomBarHeight),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,

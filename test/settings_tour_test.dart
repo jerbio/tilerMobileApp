@@ -1,26 +1,23 @@
 // settings_tour_test.dart
 //
-// TDD stage 2.1 for the product tour & slim onboarding redesign
-// (product-tour-onboarding-redesign.md, section 3.4 "Settings tour steps"
-// and Phase 2 "Settings tour").
+// TDD stage 2.1–2.4 (+ 2.5 retarget) for the product tour & slim onboarding
+// redesign (product-tour-onboarding-redesign.md, Phase 2 "Settings tour").
 //
-// Locks in the 4-step settings tour contract:
-//   1. `buildSettingsTourSteps(context)` returns exactly
-//      `kSettingsTourStepCount` (4) steps.
-//   2. Step ids are unique and ordered:
-//      `account_info`, `tile_preferences`, `notifications`, `connections`.
-//   3. Each step id anchors to the correct `SettingsTourKeys` GlobalKey.
-//   4. The real `Settings` widget attaches each anchor key exactly once
-//      (key-sync test, mirroring the `kTutorialStepCount` sync tests).
-//   5. The tour triggers once per device: it starts on the first allowed
-//      visit via `TourHost(stepsBuilder: buildSettingsTourSteps)`, the
-//      spotlight lands on the live settings rows, and advancing with real
-//      taps on the dimmed overlay persists `hasCompletedTour_settings`.
-//   6. Revisits do not restart the tour.
-//   7. An explicit per-tour reset (`TourPreferencesHelper.resetTour`)
-//      replays the tour.
-//   8. Home parity: `TourHost` without `stepsBuilder` keeps the home tour
-//      as its default (pass-through behavior).
+// Stage 2.5 cut the settings tour to a single-step pointer: it exists only
+// so users discover the Tile Preferences row, where the tour that actually
+// teaches AI preferences lives (test/tile_preferences_tour_test.dart).
+// Locks in:
+//   1. Contract: exactly one step, anchored to the Tile Preferences row
+//      via `SettingsTourKeys`, with real l10n copy.
+//   2. Key sync: the live Settings page attaches that anchor exactly once.
+//   3. Lifecycle: once per device — starts on the first visit with the
+//      spotlight on the live row, the overlay tap completes it and persists
+//      `hasCompletedTour_settings`, no restart on revisit, explicit reset
+//      replays.
+//   4. Production wiring: `/Setting` is built by `buildSettingsRoute`.
+//   5. "How to use Tiler" replay-all row clears every registered tour
+//      (home, settings, tile_preferences) and the pointer replays on the
+//      next settings visit.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,10 +46,7 @@ const _fade = Duration(milliseconds: 400);
 
 /// (step id, anchor key) pairs in tour order — section 3.4 of the spec.
 final _expectedOrder = <(String, GlobalKey)>[
-  ('account_info', SettingsTourKeys.accountInfoTileKey),
   ('tile_preferences', SettingsTourKeys.tilePreferencesTileKey),
-  ('notifications', SettingsTourKeys.notificationsTileKey),
-  ('connections', SettingsTourKeys.connectionsTileKey),
 ];
 
 late TutorialBloc capturedBloc;
@@ -145,15 +139,15 @@ void main() {
   });
 
   group('buildSettingsTourSteps — contract', () {
-    testWidgets('returns exactly kSettingsTourStepCount steps',
-        (tester) async {
+    testWidgets('returns exactly kSettingsTourStepCount steps', (tester) async {
       SharedPreferences.setMockInitialValues({});
       final context = await _pumpL10nContext(tester);
 
       final steps = buildSettingsTourSteps(context);
 
-      expect(kSettingsTourStepCount, 4,
-          reason: 'Section 3.4 defines exactly four settings tour steps.');
+      expect(kSettingsTourStepCount, 1,
+          reason: 'Section 3.4 defines the settings tour as a single-step '
+              'pointer at the Tile Preferences row.');
       expect(steps, hasLength(kSettingsTourStepCount));
     });
 
@@ -164,12 +158,7 @@ void main() {
 
       final ids = buildSettingsTourSteps(context).map((s) => s.id).toList();
 
-      expect(ids, [
-        'account_info',
-        'tile_preferences',
-        'notifications',
-        'connections',
-      ]);
+      expect(ids, ['tile_preferences']);
       expect(ids.toSet().length, ids.length,
           reason: 'Step ids must be unique.');
     });
@@ -201,7 +190,7 @@ void main() {
         isTrue,
         reason: 'Titles and bodies must come from real l10n strings.',
       );
-      expect(steps.map((s) => s.title).toSet().length, 4,
+      expect(steps.map((s) => s.title).toSet().length, 1,
           reason: 'Titles must be distinct.');
     });
   });
@@ -220,8 +209,7 @@ void main() {
 
       for (final (id, anchor) in _expectedOrder) {
         expect(find.byKey(anchor), findsOneWidget,
-            reason:
-                'The real Settings screen must attach the "$id" anchor key '
+            reason: 'The real Settings screen must attach the "$id" anchor key '
                 'exactly once.');
       }
     });
@@ -247,25 +235,25 @@ void main() {
       expect(capturedBloc.state.currentStepIndex, 0);
       expect(capturedBloc.state.totalSteps, kSettingsTourStepCount);
 
-      // The visible tooltip card must be the first settings step. (Match
-      // the card itself: the step title intentionally echoes the row
-      // label, so a plain find.text would match both.)
+      // The visible tooltip card must be the pointer step. (Match the card
+      // itself: the step title intentionally echoes the row label, so a
+      // plain find.text would match both.)
       expect(find.byType(TutorialTooltipWidget), findsOneWidget);
       final tooltip = tester
           .widget<TutorialTooltipWidget>(find.byType(TutorialTooltipWidget));
-      expect(tooltip.step.id, 'account_info');
+      expect(tooltip.step.id, 'tile_preferences');
 
-      // The spotlight cutout must sit on the live Account Info row.
+      // The spotlight cutout must sit on the live Tile Preferences row.
       expect(
         _spotlightTarget(tester),
-        tester.getRect(find.byKey(SettingsTourKeys.accountInfoTileKey)),
+        tester.getRect(find.byKey(SettingsTourKeys.tilePreferencesTileKey)),
         reason: 'The spotlight must target the real settings row, not a '
             'stale rect.',
       );
     });
 
     testWidgets(
-        'advancing with real taps on the dimmed overlay walks the 4 steps '
+        'a real tap on the dimmed overlay completes the single-step pointer '
         'and completion persists hasCompletedTour_settings', (tester) async {
       SharedPreferences.setMockInitialValues({});
 
@@ -279,33 +267,12 @@ void main() {
 
       expect(capturedBloc.state.isActive, isTrue);
 
-      // Advance through the first three steps with a real tap gesture on
-      // the dimmed overlay (the overlay's GestureDetector absorbs the tap,
-      // even over the spotlight cutout — the rows underneath never receive
-      // it).
-      for (int i = 0; i < kSettingsTourStepCount - 1; i++) {
-        final rowRect = tester.getRect(find.byKey(_expectedOrder[i].$2));
-        await tester.tapAt(Offset(28, rowRect.center.dy));
-        await tester.pump();
-        await tester.pump(_fade);
-        await tester.pump(); // post-frame key resolution for the next row
+      expect(capturedBloc.state.totalSteps, 1);
 
-        expect(capturedBloc.state.currentStepIndex, i + 1,
-            reason: 'A tap on the dimmed overlay must advance to step '
-                '${i + 2}.');
-        // The visible tooltip card must be the advanced step (its title
-        // intentionally echoes the row label, so match the card itself).
-        final tooltip = tester
-            .widget<TutorialTooltipWidget>(find.byType(TutorialTooltipWidget));
-        expect(tooltip.step.id, _expectedOrder[i + 1].$1);
-        expect(
-          _spotlightTarget(tester),
-          tester.getRect(find.byKey(_expectedOrder[i + 1].$2)),
-          reason: 'Step ${i + 2} must spotlight the live settings row.',
-        );
-      }
-
-      // The fourth (last) step: tapping the overlay completes the tour.
+      // The only step: a real tap gesture on the dimmed overlay completes
+      // the tour (the overlay's GestureDetector absorbs the tap, even over
+      // the spotlight cutout — the row underneath never receives it, so
+      // the pointer never navigates by itself).
       final lastRect = tester.getRect(find.byKey(_expectedOrder.last.$2));
       await tester.tapAt(Offset(28, lastRect.center.dy));
       await tester.pump();
@@ -320,6 +287,8 @@ void main() {
           reason: 'Completion must persist once per device.');
       expect(TourCoordinator.instance.activeTourId, isNull,
           reason: 'Completion must release the coordinator.');
+      expect(find.byType(Settings), findsOneWidget,
+          reason: 'Completing the pointer must not navigate away.');
     });
 
     testWidgets('does not restart the tour on revisit after completion',
@@ -480,15 +449,13 @@ void main() {
       expect(find.byType(TutorialTooltipWidget), findsOneWidget);
       final tooltip = tester
           .widget<TutorialTooltipWidget>(find.byType(TutorialTooltipWidget));
-      expect(tooltip.step.id, 'account_info',
-          reason:
-              'First visit to the production /Setting route must start the '
-              'settings tour at step 1.');
+      expect(tooltip.step.id, 'tile_preferences',
+          reason: 'First visit to the production /Setting route must start the '
+              'settings pointer.');
       expect(
         _spotlightTarget(tester),
-        tester.getRect(find.byKey(SettingsTourKeys.accountInfoTileKey)),
-        reason:
-            "The production route's spotlight must target the real row.",
+        tester.getRect(find.byKey(SettingsTourKeys.tilePreferencesTileKey)),
+        reason: "The production route's spotlight must target the real row.",
       );
     });
   });
@@ -517,6 +484,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'hasCompletedTour_home': true,
         'hasCompletedTour_settings': true,
+        'hasCompletedTour_tile_preferences': true,
       });
 
       await tester.pumpWidget(settingsHarness(
@@ -534,7 +502,10 @@ void main() {
       expect(prefs.getBool('hasCompletedTour_home'), isFalse,
           reason: 'Replay-all must clear the home tour completion.');
       expect(prefs.getBool('hasCompletedTour_settings'), isFalse,
-          reason: 'Replay-all must clear the settings tour completion.');
+          reason: 'Replay-all must clear the settings pointer completion.');
+      expect(prefs.getBool('hasCompletedTour_tile_preferences'), isFalse,
+          reason:
+              'Replay-all must clear the Tile Preferences tour completion.');
       expect(prefs.getBool('hasCompletedAppTutorial'), isNull,
           reason:
               'The multi-tour path must never write the legacy flag (1.2).');
@@ -576,8 +547,7 @@ void main() {
       await tester.pump(_fade);
 
       expect(capturedBloc.state.isActive, isTrue,
-          reason:
-              '"How to use Tiler" must replay the tour on the next visit.');
+          reason: '"How to use Tiler" must replay the tour on the next visit.');
       expect(capturedBloc.state.currentStepIndex, 0);
 
       final prefs = await SharedPreferences.getInstance();

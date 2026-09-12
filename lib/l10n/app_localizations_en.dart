@@ -2301,29 +2301,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tutorialStepSettingsAccountTitle => 'Account Info';
-
-  @override
-  String get tutorialStepSettingsAccountBody => 'Profile and account details.';
-
-  @override
   String get tutorialStepSettingsTilesTitle => 'Tile Preferences';
 
   @override
   String get tutorialStepSettingsTilesBody =>
-      'Hours, locations, profiles — fine-tune what onboarding used to ask.';
+      'Your AI preferences live here — how you travel, your work and personal hours, and block-out time.';
 
   @override
-  String get tutorialStepSettingsNotificationsTitle => 'Notifications';
+  String get tutorialStepTilePrefsTransportTitle => 'How you get around';
 
   @override
-  String get tutorialStepSettingsNotificationsBody => 'How Tiler nudges you.';
+  String get tutorialStepTilePrefsTransportBody =>
+      'Tiler budgets travel time between tiles from the way you usually travel.';
 
   @override
-  String get tutorialStepSettingsConnectionsTitle => 'Connections';
+  String get tutorialStepTilePrefsHoursTitle => 'Work and personal hours';
 
   @override
-  String get tutorialStepSettingsConnectionsBody => 'Connect Google Calendar.';
+  String get tutorialStepTilePrefsHoursBody =>
+      'When Tiler may schedule work versus personal tiles. Tap either to set a profile.';
+
+  @override
+  String get tutorialStepTilePrefsBlockOutTitle => 'Block-out hours';
+
+  @override
+  String get tutorialStepTilePrefsBlockOutBody =>
+      'Bed time and sleep duration — hours Tiler never schedules into.';
 
   @override
   String get chat => 'Chat';

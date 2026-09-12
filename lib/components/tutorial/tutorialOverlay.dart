@@ -144,7 +144,7 @@ List<TutorialStep> buildTutorialSteps(BuildContext context) {
       targetKey: TutorialKeys.bottomNavKey,
       title: l10n.tutorialStepBigPictureTitle,
       body: l10n.tutorialStepBigPictureBody,
-        headerIcon: Icons.calendar_view_month,
+      headerIcon: Icons.calendar_view_month,
       tooltipPosition: TooltipPosition.above,
       spotlightShape: SpotlightShape.roundedRect,
       spotlightPadding: 4,
@@ -302,57 +302,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
     return null;
   }
 
-  /// Computes the position of the tooltip relative to the target.
-  /// Ensures the tooltip never overlaps the spotlight cutout.
-  Offset _computeTooltipOffset(
-    Rect? targetRect,
-    TooltipPosition position,
-    Size screenSize,
-  ) {
-    if (targetRect == null || position == TooltipPosition.center) {
-      return Offset(0, screenSize.height * 0.2);
-    }
-
-    const double tooltipMargin = 16.0;
-    const double estimatedTooltipHeight = 320.0;
-    const double minTopPadding = 40.0;
-
-    final double cutoutTop = targetRect.top -
-        (position == TooltipPosition.above || position == TooltipPosition.below
-            ? 8
-            : 0);
-    final double cutoutBottom =
-        targetRect.bottom + 8; // account for spotlightPadding
-    final double spaceAbove = cutoutTop - minTopPadding;
-    final double spaceBelow = screenSize.height - cutoutBottom;
-
-    if (position == TooltipPosition.above) {
-      // Try above first
-      if (spaceAbove >= estimatedTooltipHeight) {
-        double top = cutoutTop - tooltipMargin - estimatedTooltipHeight;
-        if (top < minTopPadding) top = minTopPadding;
-        return Offset(0, top);
-      }
-      // Fall back to below if not enough room above
-      double top = cutoutBottom + tooltipMargin;
-      return Offset(0, top);
-    } else {
-      // Below — try below first
-      if (spaceBelow >= estimatedTooltipHeight + tooltipMargin) {
-        double top = cutoutBottom + tooltipMargin;
-        return Offset(0, top);
-      }
-      // Fall back to above if not enough room below
-      if (spaceAbove >= estimatedTooltipHeight) {
-        double top = cutoutTop - tooltipMargin - estimatedTooltipHeight;
-        if (top < minTopPadding) top = minTopPadding;
-        return Offset(0, top);
-      }
-      // Neither side fits well — place at top of screen
-      return Offset(0, minTopPadding);
-    }
-  }
-
   /// Opens the real add-tile sheet via the callback.
   void _showAddTileSheet() {
     if (widget.onShowAddTileSheet == null || _addTileSheetShowing) return;
@@ -479,7 +428,6 @@ class _TutorialOverlayState extends State<TutorialOverlay>
                 currentStep: currentStep,
                 state: state,
                 getTargetRect: _getTargetRect,
-                computeTooltipOffset: _computeTooltipOffset,
               ),
           ],
         );
@@ -495,14 +443,12 @@ class _TutorialOverlayLayer extends StatefulWidget {
   final TutorialStep currentStep;
   final TutorialState state;
   final Rect? Function(GlobalKey?) getTargetRect;
-  final Offset Function(Rect?, TooltipPosition, Size) computeTooltipOffset;
 
   const _TutorialOverlayLayer({
     required this.fadeAnimation,
     required this.currentStep,
     required this.state,
     required this.getTargetRect,
-    required this.computeTooltipOffset,
   });
 
   @override
@@ -529,44 +475,52 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
   void _resolveTargetRect() {
     // Schedule after the frame so GlobalKeys have valid RenderObjects
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          _targetRect = widget.getTargetRect(widget.currentStep.targetKey);
+      if (!mounted) return;
+      final key = widget.currentStep.targetKey;
+      if (_scrollTargetIntoView(key)) {
+        // The enclosing scrollable jumped, which scheduled a layout frame;
+        // the anchor's global rect is only correct after it.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() => _targetRect = widget.getTargetRect(key));
+          }
         });
+        return;
       }
+      setState(() => _targetRect = widget.getTargetRect(key));
     });
   }
 
-  /// Computes the bottom constraint for the tooltip so it never overlaps
-  /// the spotlight cutout. Returns null when no constraint is needed.
-  double? _getTooltipBottom(
-    Rect? targetRect,
-    double tooltipTop,
-    TooltipPosition position,
-    Size screenSize,
-  ) {
-    if (targetRect == null) return null;
-
-    const double padding = 8.0; // spotlightPadding allowance
-
-    if (position == TooltipPosition.above || tooltipTop < targetRect.top) {
-      // Tooltip is above the cutout — constrain its bottom edge
-      // so it doesn't extend into the cutout.
-      final bottomLimit = screenSize.height - (targetRect.top - padding);
-      return bottomLimit > 0 ? bottomLimit : null;
-    }
-
-    // Tooltip is below the cutout — let it extend to screen bottom.
-    return null;
+  /// Scrolls the step's anchor into its enclosing scrollable, moving the
+  /// minimum needed (a fully visible anchor never moves — home-tour parity).
+  /// Returns true if a scroll position actually changed.
+  bool _scrollTargetIntoView(GlobalKey? key) {
+    final targetContext = key?.currentContext;
+    if (targetContext == null) return false;
+    final scrollable = Scrollable.maybeOf(targetContext);
+    if (scrollable == null || !scrollable.position.hasPixels) return false;
+    final before = scrollable.position.pixels;
+    // Forward only if the trailing edge is past the viewport end, then
+    // backward only if the leading edge is before the viewport start.
+    Scrollable.ensureVisible(
+      targetContext,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+    );
+    Scrollable.ensureVisible(
+      targetContext,
+      alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtStart,
+    );
+    return scrollable.position.pixels != before;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final tooltipOffset = widget.computeTooltipOffset(
+    final slot = computeTooltipSlot(
       _targetRect,
       widget.currentStep.tooltipPosition,
       screenSize,
+      cutoutPadding: widget.currentStep.spotlightPadding,
     );
 
     return AnimatedBuilder(
@@ -604,14 +558,10 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
               Positioned(
                 left: 0,
                 right: 0,
-                top: tooltipOffset.dy,
-                bottom: _getTooltipBottom(
-                  _targetRect,
-                  tooltipOffset.dy,
-                  widget.currentStep.tooltipPosition,
-                  screenSize,
-                ),
-                child: Center(
+                top: slot.top,
+                bottom: slot.bottom,
+                child: Align(
+                  alignment: slot.alignment,
                   child: Material(
                     color: Colors.transparent,
                     child: TutorialTooltipWidget(
@@ -635,4 +585,92 @@ class _TutorialOverlayLayerState extends State<_TutorialOverlayLayer> {
       },
     );
   }
+}
+
+/// The vertical band the tooltip card is laid out in, and where it sits
+/// inside that band.
+///
+/// The band is always bounded (top and bottom) so the card can only ever be
+/// as tall as the space it was given: [TutorialTooltipWidget] pins its
+/// header and footer and scrolls its body, so a tight band shrinks the card
+/// instead of overflowing it.
+class TooltipSlot {
+  final double top;
+  final double bottom;
+
+  /// `bottomCenter` when the card hugs a cutout from above, `topCenter`
+  /// when it hugs one from below, `center` when floating.
+  final Alignment alignment;
+
+  const TooltipSlot({
+    required this.top,
+    required this.bottom,
+    required this.alignment,
+  });
+}
+
+/// The smallest band in which the tooltip card is still usable: pinned
+/// header + step dots + nav row plus a couple of body lines.
+const double kTooltipMinUsableHeight = 200.0;
+
+/// Picks the band the tooltip card is laid out in relative to the spotlight
+/// cutout around [targetRect].
+///
+/// Honours [position] when that side can hold a usable card; otherwise takes
+/// whichever side has more room. When neither side can hold a usable card
+/// (a tall anchor on a short screen) the card floats over the full screen
+/// and overlaps the spotlight — a legible card over the cutout beats an
+/// overflowed one beside it. Exposed at the top level so the placement rule
+/// can be unit-tested without rendering the overlay.
+TooltipSlot computeTooltipSlot(
+  Rect? targetRect,
+  TooltipPosition position,
+  Size screenSize, {
+  double cutoutPadding = 8.0,
+}) {
+  const double tooltipMargin = 16.0;
+  const double minTopPadding = 40.0;
+  const double bottomMargin = 16.0;
+
+  if (targetRect == null || position == TooltipPosition.center) {
+    return TooltipSlot(
+      top: screenSize.height * 0.2,
+      bottom: bottomMargin,
+      alignment: Alignment.topCenter,
+    );
+  }
+
+  final double cutoutTop = targetRect.top - cutoutPadding;
+  final double cutoutBottom = targetRect.bottom + cutoutPadding;
+  final double spaceAbove = (cutoutTop - tooltipMargin) - minTopPadding;
+  final double spaceBelow =
+      (screenSize.height - bottomMargin) - (cutoutBottom + tooltipMargin);
+
+  final bool preferredUsable = position == TooltipPosition.above
+      ? spaceAbove >= kTooltipMinUsableHeight
+      : spaceBelow >= kTooltipMinUsableHeight;
+  final bool above = preferredUsable
+      ? position == TooltipPosition.above
+      : spaceAbove > spaceBelow;
+
+  if (above && spaceAbove >= kTooltipMinUsableHeight) {
+    return TooltipSlot(
+      top: minTopPadding,
+      bottom: screenSize.height - (cutoutTop - tooltipMargin),
+      alignment: Alignment.bottomCenter,
+    );
+  }
+  if (!above && spaceBelow >= kTooltipMinUsableHeight) {
+    return TooltipSlot(
+      top: cutoutBottom + tooltipMargin,
+      bottom: bottomMargin,
+      alignment: Alignment.topCenter,
+    );
+  }
+  // Neither side can hold a usable card: overlap the spotlight.
+  return TooltipSlot(
+    top: minTopPadding,
+    bottom: bottomMargin,
+    alignment: Alignment.center,
+  );
 }

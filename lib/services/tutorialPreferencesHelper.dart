@@ -19,8 +19,13 @@ class TourPreferencesHelper {
   /// Tour id for the existing 8-step home tour.
   static const String homeTourId = 'home';
 
-  /// Tour id for the 4-step settings tour (Phase 2, section 3.4).
+  /// Tour id for the 1-step Settings-list pointer that points users at the
+  /// Tile Preferences row (Phase 2 / stage 2.5, section 3.4).
   static const String settingsTourId = 'settings';
+
+  /// Tour id for the 3-step Tile Preferences tour — the tour that teaches
+  /// how to update AI preferences (stage 2.5, section 3.4).
+  static const String tilePreferencesTourId = 'tile_preferences';
 
   /// Legacy single-tour flag written by the pre-multi-tour engine.
   static const String legacyCompletedKey = 'hasCompletedAppTutorial';
@@ -71,7 +76,11 @@ class TourPreferencesHelper {
   /// (settings row, product-tour-onboarding-redesign.md section 1 "Manual
   /// replay" + Phase 2 item 4). New tours MUST append their id here so the
   /// replay-all behavior covers them too.
-  static const List<String> allTourIds = [homeTourId, settingsTourId];
+  static const List<String> allTourIds = [
+    homeTourId,
+    settingsTourId,
+    tilePreferencesTourId,
+  ];
 
   /// Clears completion for [tourIds] (default: every registered tour) so the
   /// tours can be replayed — the "How to use Tiler" settings row behavior

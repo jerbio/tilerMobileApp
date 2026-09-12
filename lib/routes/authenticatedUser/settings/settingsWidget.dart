@@ -90,7 +90,6 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/AccountInfo.svg',
               title: AppLocalizations.of(context)!.accountInfo,
               color: textColor,
-              key: SettingsTourKeys.accountInfoTileKey,
               onTap: () => Navigator.pushNamed(context, '/accountInfo'),
             ),
             _buildListTile(
@@ -104,7 +103,6 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/NotificationsPreferences.svg',
               title: AppLocalizations.of(context)!.notificationsPreferences,
               color: textColor,
-              key: SettingsTourKeys.notificationsTileKey,
               onTap: () =>
                   Navigator.pushNamed(context, '/notificationsPreferences'),
             ),
@@ -119,7 +117,6 @@ class Settings extends StatelessWidget {
               icon: 'assets/icons/settings/Connections.svg',
               title: AppLocalizations.of(context)!.connections,
               color: textColor,
-              key: SettingsTourKeys.connectionsTileKey,
               onTap: () => Navigator.pushNamed(context, '/Connections'),
             ),
             // _buildListTile(
